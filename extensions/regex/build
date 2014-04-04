@@ -1,0 +1,4 @@
+#!/bin/bash
+
+silver -I . -I ../.. -o ableC.jar $@ artifact
+

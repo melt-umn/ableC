@@ -1,0 +1,28 @@
+#!/bin/bash
+
+
+FILES=`find . -name "*.stdout"`
+
+for file in $FILES; do
+  # remove the trailing .error from the file name
+  cfile=${file/.stdout/}
+  # get the number of the real character index from a parse error message
+  realcharacterindex=`cat $file | grep index | awk '{ print $7 }' | cut -d\) -f1`
+  # well, maybe there wasn't a parse error message?
+  if [ -n "$realcharacterindex" ]; then
+    # tail -c+1 starts at the beginning of the file. *sigh* add one to fix its behavior
+    fortail=$(($realcharacterindex + 1))
+    printf "%65s at %5d \t " "$cfile" $realcharacterindex
+    #echo -n "$cfile    at $realcharacterindex"
+    #echo -ne "\t"
+    # we need to look this char index up in the pre-processed file, not the original
+    gencpp=${cfile/.c/.gen_cpp}
+    # to work around a copper bug where parse errors are currently reported
+    # too early (before munching layout), eat layout.
+    # sed command N appends next line onto current input buffer, so we can remove one
+    # \n from it in addition to some spaces or tabs
+    tail --byte=+$fortail $gencpp | sed -e 'N;s/^[\ \n\t\r]*//' | head -n 1 | head -c 50 | tr '\n' ' '
+    echo ""
+    #echo "-----"
+  fi
+done

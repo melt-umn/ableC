@@ -1,0 +1,12 @@
+#!/bin/bash
+
+
+FILES=`find . -name "*.stdout"`
+
+if [ "$1" == "" ]; then
+  # strip off the file, line, column, and just print what errors appeared, somewhere
+  cat $FILES | cut -d: -f4- | sort | uniq
+else
+  grep "$1" $FILES
+fi
+

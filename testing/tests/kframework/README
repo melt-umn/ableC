@@ -1,0 +1,9 @@
+Files in testing/tests/kframework/ were pulled from
+
+https://code.google.com/p/c-semantics/
+
+on 2013-7-31. The zip file provided split the tests between allgood and allbad.
+The allgood tests are copied into the positive/ directory, and the allbad tests
+are copied into the negative/ directory. The negative files appear to be
+related to the Excel file, which has been copied into the kframework/
+directory for further investigation.

@@ -1,0 +1,36 @@
+#!/bin/bash
+
+# be in the right directory
+if [[ -d testing ]]; then
+  cd testing
+elif [[ -d grammars ]]; then
+  cd grammars/edu.umn.cs.melt.ableC/testing || exit 1
+fi
+
+## Supply jar file to script
+./build-test-artifact || exit 1
+
+## Load up silver nailgun support (source it)
+. sv-nailgun
+
+# Start the nailgun server
+sv-serve ableC.jar
+
+
+## Directories containing neutral, positive, and negative subdirectories
+## which each contain files to be tested (delimited by spaces)
+if [[ -z "$TESTDIRS" ]]; then
+  TESTDIRS="tests/headers tests/gcc/assemble tests/gcc/compile tests/gcc/default tests/gcc/link tests/gcc/run tests/kframework/ tests/melt/"
+fi
+
+#  TESTDIRS="tests/headers tests/gcc/assemble tests/gcc/compile tests/gcc/default tests/gcc/link tests/gcc/run tests/kframework/ tests/melt/"
+
+# tests/headers tests/gcc/compile tests/gcc/default tests/gcc/link tests/gcc/run tests/kframework/ tests/melt/
+
+## Run supertest.py with compiled jar file
+python ./supertest.py "sv-call" $TESTDIRS $@
+
+
+# End the nailgun server
+sv-serve-stop
+

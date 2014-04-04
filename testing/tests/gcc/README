@@ -1,0 +1,25 @@
+The five directories in ableC/testing/tests/gcc are as follows:
+
+assemble
+* These tests have the dg-assemble flag and nothing else (no warnings, errors, etc)
+* Should be assembled, no more
+* ...not sure what happens if anything beyond assembling is done
+
+compile
+* These tests have the dg-compile flag
+* compile/negative/ contains tests with dg-error flags
+* compile/positive/ may contain tests with dg-warning or dg-message flags
+
+default
+* Contain zero dg-* flags. 
+* Some .h files required in other directories may be found here
+* Runnable?
+
+link
+* Just like assemble, these tests have the dg-link flag and nothing else
+* Should be linked, no more
+* ...not sure what happens if anything beyond linking is done
+
+run
+* Contain only dg-run flags
+* Should be run

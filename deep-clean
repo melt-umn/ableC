@@ -1,0 +1,16 @@
+#!/bin/bash
+
+# find by default never follows symlinks, so this should be relatively safe:
+find . -name "*~" -delete
+find . -name "build.xml" -delete
+find . -name "*.copperdump.html" -delete
+
+find testing/ extensions/ -name "*.gen_cpp" -delete
+find testing/ extensions/ -name "*.pp_out.c" -delete
+find testing/ -name "*.c.std[oe][ur][tr]" -delete
+find testing/ extensions/ -name "*.o" -delete
+
+find testing/ extensions/ -name "*.jar" -delete
+
+rm -f *.jar
+

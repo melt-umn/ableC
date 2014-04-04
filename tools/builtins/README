@@ -1,0 +1,7 @@
+
+These files are borrow from Clang directly.
+
+The *.def files are covered by the license in this directory (DEF_CLANG_LICENSE.TXT).
+
+The *.sv files are covered by the same license as the rest of AbleC.
+
