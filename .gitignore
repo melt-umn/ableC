@@ -1,3 +1,7 @@
 *~
 build.xml
 *.jar
+*.pp_out.c
+*.gen_cpp
+*.stdout
+*.stderr
