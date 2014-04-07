@@ -1,4 +1,4 @@
-grammar edu:umn:cs:melt:ableC:tools:builtins;
+grammar tools:builtins;
 
 import edu:umn:cs:melt:ableC:abstractsyntax as a;
 import edu:umn:cs:melt:ableC:abstractsyntax:env as a;
@@ -33,7 +33,8 @@ terminal Size_t 'z';
 terminal ObjC_F 'F'; -- ignore this
 terminal VaList 'a';
 terminal VaListReference 'A';
--- skipping V for now... need to figure that out, but right now we don't have vector types
+terminal Vector 'V';
+terminal VectorNum /[0-9]+/;
 -- ditto E
 terminal Complex 'X';
 -- skipping Y, J, SJ, K, p
@@ -188,7 +189,7 @@ concrete productions top::TypePrefix
 --| 'LLL' {}
 | 'S' {}
 | 'U' { top.issigned = false;}
-| 'I' { top.ignoreMe = true; } -- maybe ignore all of these?
+| 'I' { }-- top.ignoreMe = true; } -- maybe ignore all of these? -- TODO: for now, allowing it!
 
 nonterminal TypeSpecifier with ignoreMe, specifier, givenSign, givenDomain;
 
@@ -224,11 +225,12 @@ concrete productions top::TypeSpecifier
 | 'X'  more::TypeSpecifier {-_Complex-} { more.givenSign = a:complexIntegerType;
                                           more.givenDomain = a:complexType;
                                           top.specifier = more.specifier; }
+| 'V'  n::VectorNum  more::TypeSpecifier { top.specifier = createVectorType(_, more.specifier, n.lexeme); }
 
-function ignoreFst
-a:Type ::= [a:Qualifier] result::a:Type
+function createVectorType
+a:Type ::= qs::[a:Qualifier] more::(a:Type ::= [a:Qualifier]) n::String
 {
-  return result;
+  return a:vectorType(more(qs), toInt(n));
 }
 
 nonterminal TypeSuffix with ignoreMe, qualifiers, pointercount;
@@ -263,7 +265,7 @@ concrete productions top::MaybeDots
 
 
 parser parseDef :: Builtins {
-  edu:umn:cs:melt:ableC:tools:builtins;
+  tools:builtins;
 }
 
 
