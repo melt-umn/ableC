@@ -45,6 +45,8 @@ Boolean ::= a::Type  b::Type  ignoreQualifiers::Boolean
         v1 == v2
   | functionType(r1, _), functionType(r2, _) -> 
       compatibleTypes(r1, r2, ignoreQualifiers)
+  -- extensions
+  | vectorType(b1, s1), vectorType(b2, s2) -> s1 == s2 && compatibleTypes(b1, b2, ignoreQualifiers)
   end;
 }
 
@@ -69,6 +71,9 @@ Type ::= a::Type  b::Type
   -- TODO: these are not complete. they should be integers, etc.
   | pointerType(_, _), builtinType(_, _) -> a
   | builtinType(_, _), pointerType(_, _) -> a
+  -- extensions
+  | vectorType(b1, s1), vectorType(b2, s2) ->
+      if compatibleTypes(b1, b2, false) && s1 == s2 then a else errorType() -- TODO: no idea
   | _, _ -> errorType()
   end;
 }
@@ -86,6 +91,9 @@ Type ::= a::Type  b::Type
   | builtinType(_, _), pointerType(_, _) -> a
   -- The special case for subtraction:
   | pointerType(_, _), pointerType(_, _) -> builtinType([], signedType(intType()))
+  -- extensions
+  | vectorType(b1, s1), vectorType(b2, s2) ->
+      if compatibleTypes(b1, b2, false) && s1 == s2 then a else errorType() -- TODO: no idea
   | _, _ -> errorType()
   end;
 }
@@ -98,6 +106,9 @@ Type ::= a::Type  b::Type
       | nothing() -> errorType()
       | just(z) -> builtinType([], z) -- qualifiers?
       end
+  -- extensions
+  | vectorType(b1, s1), vectorType(b2, s2) ->
+      if compatibleTypes(b1, b2, false) && s1 == s2 then a else errorType() -- TODO: no idea
   | _, _ -> errorType()
   end;
 }
@@ -269,6 +280,13 @@ Boolean ::= lval::Type  rval::Type
         case rval.defaultFunctionArrayLvalueConversion of
         | pointerType(_, _) -> true
         | t -> t.isIntegerType -- TODO? nullptr
+        end
+  -- extensions
+    | vectorType(b1, s1) ->
+        case rval of
+        | vectorType(b2, s2) ->
+            compatibleTypes(b1, b2, false) && s1 == s2 -- TODO: no idea
+        | _ -> false -- TODO also no idea
         end
 -- the left operand has type atomic, qualified, or unqualified _Bool, and the right is a pointer.
     | _ ->

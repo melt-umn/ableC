@@ -29,6 +29,9 @@ top::Decls ::=
 
 nonterminal Decl with pp, errors, defs, env, isTopLevel;
 
+{-- Pass down from top-level declaration the list of attribute to each name-declaration -}
+autocopy attribute givenAttributes :: [Attribute];
+
 abstract production variableDecls
 top::Decl ::= storage::[StorageClass]  attrs::[Attribute]  ty::BaseTypeExpr  dcls::Declarators
 {
@@ -41,6 +44,7 @@ top::Decl ::= storage::[StorageClass]  attrs::[Attribute]  ty::BaseTypeExpr  dcl
   
   dcls.baseType = ty.typerep;
   dcls.isTypedef = false;
+  dcls.givenAttributes = attrs;
 }
 
 abstract production typeExprDecl
@@ -60,6 +64,7 @@ top::Decl ::= attrs::[Attribute]  ty::BaseTypeExpr  dcls::Declarators
   
   dcls.baseType = ty.typerep;
   dcls.isTypedef = true;
+  dcls.givenAttributes = attrs;
 }
 
 abstract production functionDeclaration
@@ -117,7 +122,7 @@ top::Decl ::= s::String
   -- but used to be the way to put c functions and such in custom sections.
 }
 
-nonterminal Declarators with pps, errors, defs, env, baseType, isTopLevel, isTypedef;
+nonterminal Declarators with pps, errors, defs, env, baseType, isTopLevel, isTypedef, givenAttributes;
 
 abstract production consDeclarator
 top::Declarators ::= h::Declarator  t::Declarators
@@ -136,7 +141,7 @@ top::Declarators ::=
   top.defs = [];
 }
 
-nonterminal Declarator with pps, errors, defs, env, baseType, typerep, sourceLocation, isTopLevel, isTypedef;
+nonterminal Declarator with pps, errors, defs, env, baseType, typerep, sourceLocation, isTopLevel, isTypedef, givenAttributes;
 
 autocopy attribute isTypedef :: Boolean;
 
@@ -146,7 +151,7 @@ top::Declarator ::= name::Name  ty::TypeModifierExpr  attrs::[Attribute]  initia
   top.pps = [concat([ty.lpp, name.pp, ty.rpp, ppAttributesRHS(attrs), initializer.pp])];
   top.errors := ty.errors ++ initializer.errors;
   top.defs = [valueDef(name.name, declaratorValueItem(top))];
-  top.typerep = ty.typerep;
+  top.typerep = animateAttributeOnType(allAttrs, ty.typerep);
   top.sourceLocation = name.location;
   
   top.errors <- 
@@ -154,6 +159,8 @@ top::Declarator ::= name::Name  ty::TypeModifierExpr  attrs::[Attribute]  initia
       name.valueRedeclarationCheck(top.typerep)
     else
       name.valueRedeclarationCheckNoCompatible;
+  
+  local allAttrs :: [Attribute] = top.givenAttributes ++ attrs;
 }
 abstract production errorDeclarator
 top::Declarator ::= msg::[Message]
@@ -433,6 +440,7 @@ top::StructItem ::= attrs::[Attribute]  ty::BaseTypeExpr  dcls::StructDeclarator
   top.localdefs = dcls.localdefs;
   
   dcls.baseType = ty.typerep;
+  dcls.givenAttributes = attrs;
 }
 abstract production warnStructItem
 top::StructItem ::= msg::[Message]
@@ -444,7 +452,7 @@ top::StructItem ::= msg::[Message]
 }
 
 
-nonterminal StructDeclarators with pps, errors, localdefs, env, baseType;
+nonterminal StructDeclarators with pps, errors, localdefs, env, baseType, givenAttributes;
 
 abstract production consStructDeclarator
 top::StructDeclarators ::= h::StructDeclarator  t::StructDeclarators
@@ -463,7 +471,7 @@ top::StructDeclarators ::=
   top.localdefs = [];
 }
 
-nonterminal StructDeclarator with pps, errors, localdefs, env, typerep, sourceLocation, baseType;
+nonterminal StructDeclarator with pps, errors, localdefs, env, typerep, sourceLocation, baseType, givenAttributes;
 
 abstract production structField
 top::StructDeclarator ::= name::Name  ty::TypeModifierExpr  attrs::[Attribute]
@@ -475,6 +483,8 @@ top::StructDeclarator ::= name::Name  ty::TypeModifierExpr  attrs::[Attribute]
   top.sourceLocation = name.location;
   
   top.errors <- name.valueRedeclarationCheckNoCompatible;
+  
+  local allAttrs :: [Attribute] = top.givenAttributes ++ attrs;
 }
 abstract production structBitfield
 top::StructDeclarator ::= name::MaybeName  ty::TypeModifierExpr  e::Expr  attrs::[Attribute]
@@ -492,6 +502,8 @@ top::StructDeclarator ::= name::MaybeName  ty::TypeModifierExpr  e::Expr  attrs:
   top.sourceLocation = error("fixme location 2"); -- TODO oh whatever name.location;
   
   top.errors <- name.valueRedeclarationCheckNoCompatible;
+
+  local allAttrs :: [Attribute] = top.givenAttributes ++ attrs;
 }
 -- Similar to external declarations, this pretends not to exist if it's only a warning
 abstract production warnStructField

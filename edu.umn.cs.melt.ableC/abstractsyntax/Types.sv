@@ -288,6 +288,25 @@ top::Type ::= q::[Qualifier]  bt::Type
   top.withoutTypeQualifiers = atomicType([], bt);
 }
 
+{-------------------------------------------------------------------------------
+ - GCC Vector (MMX/SSE/etc) types.
+ -}
+abstract production vectorType
+top::Type ::= bt::Type  bytes::Integer
+{
+  top.lpp = concat([ text("__attribute__((__vector_size__(" ++ toString(bytes) ++ "))) "), bt.lpp]);
+  top.rpp = bt.rpp;
+  -- You know, who knows what these rules are: TODO
+  top.integerPromotions = top;
+  top.defaultArgumentPromotions = top;
+  top.defaultLvalueConversion = top;
+  top.defaultFunctionArrayLvalueConversion = top;
+  top.withoutTypeQualifiers = top;
+  -- TODO: dunno? left here explicitly since... dunno what to do here.
+  top.isIntegerType = false;
+  top.isScalarType = false;
+  top.isArithmeticType = false;
+}
 
 {-------------------------------------------------------------------------------
  - Types that resolve to other types
