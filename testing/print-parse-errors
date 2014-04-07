@@ -7,7 +7,7 @@ for file in $FILES; do
   # remove the trailing .error from the file name
   cfile=${file/.stdout/}
   # get the number of the real character index from a parse error message
-  realcharacterindex=`cat $file | grep index | awk '{ print $7 }' | cut -d\) -f1`
+  realcharacterindex=`cat $file | grep "index:" | awk '{ print $7 }' | cut -d\) -f1`
   # well, maybe there wasn't a parse error message?
   if [ -n "$realcharacterindex" ]; then
     # tail -c+1 starts at the beginning of the file. *sigh* add one to fix its behavior
