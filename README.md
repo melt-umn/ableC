@@ -14,7 +14,7 @@ Current migration status:
  - [X] Host language ported over
  - [X] Git repository built, published
  - [X] Regex extension ported over
- - [ ] Conditional table extension ported over
+ - [X] Conditional table extension ported over
  - [ ] Algebraic datatype extension ported over
  - [ ] Matrix extension ported over
  - [ ] Mex extension ported over
