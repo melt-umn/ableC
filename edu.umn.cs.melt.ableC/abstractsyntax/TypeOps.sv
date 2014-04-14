@@ -260,7 +260,9 @@ Boolean ::= q1::[String]  q2::[String]
 }
 
 
-
+{--
+ - True, if rval can be assigned to lval.
+ -}
 function typeAssignableTo
 Boolean ::= lval::Type  rval::Type
 {
