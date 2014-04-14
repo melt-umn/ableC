@@ -11,6 +11,7 @@ find testing/ -name "*.c.std[oe][ur][tr]" -delete
 find testing/ extensions/ -name "*.o" -delete
 
 find testing/ extensions/ -name "*.jar" -delete
+find testing/ extensions/ -name "a.out" -delete
 
 rm -f *.jar
 

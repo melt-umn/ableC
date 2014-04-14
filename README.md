@@ -55,10 +55,10 @@ N.B. the currently released version will preprocess a `*.xc` file into a `*.c` o
 ```
 cd extensions/regex
 ./build
-java -jar ableC.jar test1.xc
+java -jar ableC.jar example1.xc
 ```
 
-This should produce test1.c.
+This should produce `example1.pp_out.c`.
 
 
 

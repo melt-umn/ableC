@@ -5,3 +5,4 @@ build.xml
 *.gen_cpp
 *.stdout
 *.stderr
+a.out

@@ -5,6 +5,8 @@ imports silver:langutil only ast;
 
 import edu:umn:cs:melt:exts:ableC:regex;
 
+-- Spurious import, to trigger the tests on build.
+import edu:umn:cs:melt:exts:ableC:regex:mda_test;
 
 marking terminal RegexBegin_t '/';
 terminal RegexEnd_t '/';

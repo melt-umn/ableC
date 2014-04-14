@@ -1,4 +1,4 @@
-grammar edu:umn:cs:melt:exts:ableC:regex;
+grammar edu:umn:cs:melt:exts:ableC:regex:mda_test;
 
 import edu:umn:cs:melt:ableC:host;
 

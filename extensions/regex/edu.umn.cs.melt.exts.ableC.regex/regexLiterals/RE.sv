@@ -1,4 +1,3 @@
-
 grammar edu:umn:cs:melt:exts:ableC:regex:regexLiterals;
 --from grammar silver:definition:regex;
 
