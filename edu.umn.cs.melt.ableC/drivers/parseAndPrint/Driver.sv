@@ -18,9 +18,11 @@ IOVal<Integer> ::= args::[String] ioIn::IO
   
   local isF :: IOVal<Boolean> = isFile(fileName, ioIn);
 
+  local cppCmd :: String = "gcc -E -x c -D _POSIX_C_SOURCE -std=gnu1x \"";
+
   -- Run C pre processor over the file.
   local mkCppFile :: IOVal<Integer> =
-    system("cpp -E -C \"" ++ fileName ++ "\" > " ++ cppFileName, isF.io);
+    system(cppCmd ++ fileName ++ "\" > " ++ cppFileName, isF.io);
 
   -- Read the output of CPP and parse it.
   local text :: IOVal<String> = readFile(cppFileName, mkCppFile.io);
