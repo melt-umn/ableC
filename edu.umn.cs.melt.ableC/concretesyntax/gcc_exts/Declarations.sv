@@ -19,13 +19,15 @@ terminal Typeof_t 'typeof' lexer classes {Ckeyword};
 terminal CPP_Typeof_t '__typeof__' lexer classes {Ckeyword};
 terminal CPP_UUTypeof_t '__typeof' lexer classes {Ckeyword};
 
+concrete productions top::TranslationUnit_c
+| h::TranslationUnit_c  ';' 
+    { top.ast = h.ast; }
+
 concrete productions top::ExternalDeclaration_c
-| ';'
-    { top.ast = []; }
 | '__extension__' d::ExternalDeclaration_c
     { top.ast = d.ast; } -- We simply discard and ignore these annotations.
 | s::SimpleAsmStatement_c
-    { top.ast = [ast:fileScopeAsm(s.ast)]; }
+    { top.ast = ast:fileScopeAsm(s.ast); }
 
 concrete productions top::FunctionSpecifier_c
 | '__inline__'

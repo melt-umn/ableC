@@ -11,8 +11,8 @@ terminal Pack_t /pack\([^\)]*\)\n/;
 concrete productions top::ExternalDeclaration_c
 | '#' 'pragma' Pack_t
     layout { Space_t }
-    { top.ast = [ast:warnDecl([wrn(top.location, "Ignored pack pragma")])]; }
+    { top.ast = ast:warnDecl([wrn(top.location, "Ignored pack pragma")]); }
 | '#' 'pragma' 'redefine_extname' Identifier_t Identifier_t
     layout { Space_t }
-    { top.ast = [ast:warnDecl([wrn(top.location, "Ignored redefine_extname pragma")])]; }
+    { top.ast = ast:warnDecl([wrn(top.location, "Ignored redefine_extname pragma")]); }
 

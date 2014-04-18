@@ -37,7 +37,7 @@ concrete productions top::FunctionDefinition_c
     }
 
 
-closed nonterminal Declaration_c with location, ast<[ast:Decl]>;
+closed nonterminal Declaration_c with location, ast<ast:Decl>;
 concrete productions top::Declaration_c
 | ds::DeclarationSpecifiers_c  idcl::InitDeclaratorList_c  ';'
     {
@@ -49,13 +49,17 @@ concrete productions top::Declaration_c
         ast:foldDeclarator(idcl.ast);
       
       top.ast = 
-        (if ds.isTypedef && !null(ds.storageClass) then
-          [ast:warnDecl([err(ds.location, "Typedef declaration also claims another storage class")])]
-         else []) ++
         if ds.isTypedef then
-          [ast:typedefDecls(ds.attributes, bt, dcls)]
+          if !null(ds.storageClass) then
+            ast:typedefDecls(ds.attributes, 
+              ast:warnTypeExpr(
+                [err(ds.location, "Typedef declaration also claims another storage class")],
+                bt),
+              dcls)
+          else
+            ast:typedefDecls(ds.attributes, bt, dcls)
         else
-          [ast:variableDecls(ds.storageClass, ds.attributes, bt, dcls)];
+          ast:variableDecls(ds.storageClass, ds.attributes, bt, dcls);
     }
     action {
       context =
@@ -66,9 +70,9 @@ concrete productions top::Declaration_c
 | ds::DeclarationSpecifiers_c  ';'
     { ds.givenQualifiers = ds.typeQualifiers;
       top.ast =
-        [ast:typeExprDecl(
-          ast:figureOutTypeFromSpecifiers(ds.location, ds.typeQualifiers, ds.preTypeSpecifiers, ds.realTypeSpecifiers, ds.mutateTypeSpecifiers))] ++
-          if null(ds.attributes) then [] else [ast:warnDecl([wrn(top.location, "Ignoring attributes on type decl")])];
+        ast:typeExprDecl(
+          ds.attributes,
+          ast:figureOutTypeFromSpecifiers(ds.location, ds.typeQualifiers, ds.preTypeSpecifiers, ds.realTypeSpecifiers, ds.mutateTypeSpecifiers));
     }
 
 
@@ -170,7 +174,7 @@ concrete productions top::DeclarationList_c
     { top.ast = [];
       top.isDeclListEmpty = true; }
 | h::Declaration_c  t::DeclarationList_c
-    { top.ast = h.ast ++ t.ast;
+    { top.ast = h.ast :: t.ast;
       top.isDeclListEmpty = false; }
 
 

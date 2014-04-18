@@ -144,20 +144,9 @@ top::Stmt ::= b::Stmt  e::Expr
 abstract production forStmt
 top::Stmt ::= i::MaybeExpr  c::MaybeExpr  s::MaybeExpr  b::Stmt
 {
-  top.pp = concat([ text("for"), space(), parens( concat([
-    case i.pp of
-    | cat(cat(text("("), iNoParens), text(")")) -> iNoParens
-    | _ -> text(hackUnparse(i.pp))
-    end, semi(), space(), 
-    case c.pp of
-    | cat(cat(text("("), cNoParens), text(")")) -> cNoParens
-    | _ -> text(hackUnparse(c.pp))
-    end, semi(), space(), 
-    case s.pp of 
-    | cat(cat(text("("), sNoParens), text(")")) -> sNoParens
-    | _ -> text(hackUnparse(s.pp))
-    end])), line(), 
-                    braces(nestlines(2, b.pp)) ]);
+  top.pp = 
+    concat([text("for"), parens(concat([i.pp, semi(), space(), c.pp, semi(), space(), s.pp])), line(),
+      braces(nestlines(2, b.pp)) ]);
   top.errors := i.errors ++ c.errors ++ s.errors ++ b.errors;
   top.functiondefs = b.functiondefs;
   
@@ -177,10 +166,9 @@ top::Stmt ::= i::MaybeExpr  c::MaybeExpr  s::MaybeExpr  b::Stmt
 }
 
 abstract production forDeclStmt
-top::Stmt ::= i::Decls  c::MaybeExpr  s::MaybeExpr  b::Stmt
+top::Stmt ::= i::Decl  c::MaybeExpr  s::MaybeExpr  b::Stmt
 {
-  top.pp = concat([ text("for"), space(), parens( concat([ ppImplode( cat( comma(), space() ), i.pps ), 
-                                                           semi(), space(), c.pp, semi(), space(), s.pp]) ), 
+  top.pp = concat([ text("for"), space(), parens( concat([ i.pp, space(), c.pp, semi(), space(), s.pp]) ), 
                     line(), braces(nestlines(2, b.pp)) ]);
   top.errors := i.errors ++ c.errors ++ s.errors ++ b.errors;
   top.functiondefs = b.functiondefs;

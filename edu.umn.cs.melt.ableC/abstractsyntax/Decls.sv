@@ -48,7 +48,7 @@ top::Decl ::= storage::[StorageClass]  attrs::[Attribute]  ty::BaseTypeExpr  dcl
 }
 
 abstract production typeExprDecl
-top::Decl ::= ty::BaseTypeExpr
+top::Decl ::= attrs::[Attribute] ty::BaseTypeExpr
 {
   top.pp = cat( ty.pp, semi() );
   top.errors := ty.errors;

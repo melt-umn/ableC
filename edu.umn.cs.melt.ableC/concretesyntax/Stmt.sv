@@ -34,7 +34,7 @@ concrete productions top::BlockItemList_c
 closed nonterminal BlockItem_c with location, ast<[ast:Stmt]>;
 concrete productions top::BlockItem_c
 | d::Declaration_c
-    { top.ast = map(ast:declStmt, d.ast); }
+    { top.ast = [ast:declStmt(d.ast)]; }
 (blockStmt_c) | s::Stmt_c
     { top.ast = [s.ast]; }
 
@@ -102,9 +102,9 @@ concrete productions top::IterationStmt_c
     { top.ast = ast:forStmt(init.asMaybeExpr, cond.asMaybeExpr, ast:nothingExpr(), body.ast); }
 -- Note that Declaration ends with ;
 | 'for' '(' init::Declaration_c cond::ExprStmt_c iter::Expr_c ')' body::Stmt_c
-    { top.ast = ast:forDeclStmt(ast:foldDecl(init.ast), cond.asMaybeExpr, ast:justExpr(iter.ast), body.ast); }
+    { top.ast = ast:forDeclStmt(init.ast, cond.asMaybeExpr, ast:justExpr(iter.ast), body.ast); }
 | 'for' '(' init::Declaration_c cond::ExprStmt_c ')' body::Stmt_c
-    { top.ast = ast:forDeclStmt(ast:foldDecl(init.ast), cond.asMaybeExpr, ast:nothingExpr(), body.ast); }
+    { top.ast = ast:forDeclStmt(init.ast, cond.asMaybeExpr, ast:nothingExpr(), body.ast); }
 
 -- TODO: BUG: FIXME: The scoping w.r.t. the lexer hack isn't done right here!
 -- We should open a scope after 'for', unfortunately.

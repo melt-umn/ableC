@@ -13,16 +13,16 @@ closed nonterminal TranslationUnit_c with location, ast<[ast:Decl]>;
 
 concrete productions top::TranslationUnit_c
 | h::ExternalDeclaration_c 
-    { top.ast = h.ast; }
+    { top.ast = [h.ast]; }
 | h::TranslationUnit_c  t::ExternalDeclaration_c 
-    { top.ast = h.ast ++ t.ast; }
+    { top.ast = h.ast ++ [t.ast]; }
 
 
-closed nonterminal ExternalDeclaration_c with location, ast<[ast:Decl]>; 
+closed nonterminal ExternalDeclaration_c with location, ast<ast:Decl>; 
 
 concrete productions top::ExternalDeclaration_c
 | d::Declaration_c 
     { top.ast = d.ast; }
 | d::FunctionDefinition_c 
-    { top.ast = [ast:functionDeclaration(d.ast)]; }
+    { top.ast = ast:functionDeclaration(d.ast); }
 

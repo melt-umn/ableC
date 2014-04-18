@@ -22,7 +22,7 @@ concrete productions top::LabelDeclaration_c
 
 concrete productions top::BlockItem_c
 | '__extension__' d::Declaration_c -- NestedDeclaration_c
-    { top.ast = map(ast:declStmt, d.ast); } -- Discard and ignore these annotations
+    { top.ast = [ast:declStmt(d.ast)]; } -- Discard and ignore these annotations
 | d::NestedFunctionDefinition_c
     { top.ast = [ast:functionDeclStmt(d.ast)]; }
 

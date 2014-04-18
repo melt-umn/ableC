@@ -133,10 +133,10 @@ concrete productions top::StorageClassSpecifier_c
 -- Static assert
 terminal C11_Static_assert_t '_Static_assert' lexer classes {Ckeyword};
 
-closed nonterminal StaticAssertDeclaration_c with location, ast<[ast:Decl]>;
+closed nonterminal StaticAssertDeclaration_c with location, ast<ast:Decl>;
 concrete productions top::StaticAssertDeclaration_c
 | '_Static_assert' '(' e::ConstantExpr_c ',' s::StringConstant_c ')' ';'
-    { top.ast = [ast:staticAssertDecl(e.ast, s.ast)]; }
+    { top.ast = ast:staticAssertDecl(e.ast, s.ast); }
 
 concrete productions top::Declaration_c
 | s::StaticAssertDeclaration_c
