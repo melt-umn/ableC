@@ -27,7 +27,7 @@ top::Attribute ::= s::String
 }
 
 
-nonterminal Attrib with pp;
+nonterminal Attrib with pp, env;
 
 -- e.g. __attribute__(())
 abstract production emptyAttrib

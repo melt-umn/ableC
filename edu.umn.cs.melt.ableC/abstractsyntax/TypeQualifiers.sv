@@ -30,7 +30,7 @@ top::Qualifier ::=
  - e.g. Function specifiers (inline, _Noreturn)
  -      Alignment specifiers (_Alignas)
  -}
-nonterminal SpecialSpecifier with pp;
+nonterminal SpecialSpecifier with pp, env;
 
 abstract production inlineQualifier
 top::SpecialSpecifier ::=
@@ -53,4 +53,8 @@ top::SpecialSpecifier ::= e::Expr
 --  top.errors := e.errors;
 }
 
-
+function ppSpecial
+Document ::= s::SpecialSpecifier  e::Decorated Env
+{
+  return decorate s with { env = e; } . pp;
+}

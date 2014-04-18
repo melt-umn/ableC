@@ -177,7 +177,7 @@ nonterminal FunctionDecl with pp, errors, defs, env, typerep, sourceLocation;
 abstract production functionDecl
 top::FunctionDecl ::= storage::[StorageClass]  fnquals::[SpecialSpecifier]  bty::BaseTypeExpr mty::TypeModifierExpr  name::Name  attrs::[Attribute]  decls::Decls  body::Stmt
 {
-  top.pp = concat([terminate(space(), map((.pp), storage)), terminate( space(), map( (.pp), fnquals ) ),
+  top.pp = concat([terminate(space(), map((.pp), storage)), terminate( space(), map( ppSpecial(_, top.env), fnquals ) ),
     bty.pp, space(), mty.lpp, name.pp, mty.rpp, ppAttributesRHS(attrs), line(), terminate(cat(semi(), line()), decls.pps),
     text("{"), line(), nestlines(2,body.pp), text("}")]);
   
