@@ -17,7 +17,7 @@ Current migration status:
  - [X] Conditional table extension ported over
  - [ ] Algebraic datatype extension ported over
  - [X] Matrix extension ported over
- - [ ] Mex extension ported over
+ - [X] Mex extension ported over
  - [ ] Create a Jenkins-updated combined download for AbleC + Silver + Copper, to make things easier to get started.
 
 We hope to have the above done by April ~~18th~~ 22nd at the latest.
