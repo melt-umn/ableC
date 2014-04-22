@@ -8,6 +8,22 @@ imports silver:langutil;
 imports silver:langutil:pp;
 
 abstract production matrixIndex
+top::abs:Expr ::= m::abs:Name  i::[abs:Expr]
+{
+  -- This is a quick hack, not necessarily the recommended way of implementing overriding.
+  -- The issue is that collections like this are discouraged: every one is a potential hole
+  -- where there needs to be a defined semantics for how it works, especially w.r.t extension.
+  -- This one has no such semantics.
+  -- More preferrably, we'd have a list of ("struct name" --> handler) mappings,
+  -- where our rules could be "only map your extension's structs to
+  -- their respective handlers".
+  production attribute overrides :: [abs:Expr] with ++;
+  overrides := [];
+  
+  forwards to if null(overrides) then matrixActualIndex(m, abs:foldExpr(i), location=top.location) else head(overrides);
+}
+
+abstract production matrixActualIndex
 top::abs:Expr ::= m::abs:Name  i::abs:Exprs
 {
   local tydef :: [abs:ValueItem] = abs:lookupValue("Matrix", top.abs:env);

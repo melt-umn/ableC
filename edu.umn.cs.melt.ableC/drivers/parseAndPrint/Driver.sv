@@ -18,7 +18,7 @@ IOVal<Integer> ::= args::[String] ioIn::IO
   
   local isF :: IOVal<Boolean> = isFile(fileName, ioIn);
 
-  local cppCmd :: String = "gcc -E -x c -D _POSIX_C_SOURCE -std=gnu1x " ++
+  local cppCmd :: String = "gcc -E -x c -D _POSIX_C_SOURCE -std=gnu1x -I . " ++
     cppOptions;
   local cppOptions :: String =
     if length(args) >= 2 then implode(" ", tail(args)) else "" ;

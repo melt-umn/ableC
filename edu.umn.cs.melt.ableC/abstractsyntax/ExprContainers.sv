@@ -29,6 +29,7 @@ synthesized attribute pps :: [Document];
 nonterminal Exprs with pps, errors, defs, env, expectedTypes, argumentPosition, callExpr, argumentErrors, count, callVariadic;
 
 inherited attribute expectedTypes :: [Type];
+{-- Initially 1. -}
 inherited attribute argumentPosition :: Integer;
 autocopy attribute callExpr :: Decorated Expr;
 autocopy attribute callVariadic :: Boolean;
@@ -48,7 +49,7 @@ top::Exprs ::= h::Expr  t::Exprs
     if null(top.expectedTypes) then
       if top.callVariadic then []
       else
-        [err(top.callExpr.location, "call expected " ++ toString(top.argumentPosition) ++ " arguments, got " ++ toString(top.argumentPosition + t.count))]
+        [err(top.callExpr.location, "call expected " ++ toString(top.argumentPosition) ++ " arguments, got " ++ toString(top.argumentPosition + t.count - 1))]
     else
       if !typeAssignableTo(head(top.expectedTypes).withoutTypeQualifiers, h.typerep) then
         [err(h.location, "argument " ++ toString(top.argumentPosition) ++ " expected type " ++ showType(head(top.expectedTypes)) ++ " (got " ++ showType(h.typerep) ++ ")")] ++ t.argumentErrors

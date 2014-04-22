@@ -15,6 +15,6 @@ import edu:umn:cs:melt:exts:ableC:matrix:mda_test;
 concrete production matrixExpr
 top::cnc:PostfixExpr_c ::= 'matrix' id::MatrixID '(' indexes::cnc:ArgumentExprList_c ')'
 {
-  top.ast = abs:matrixIndex(fromMId(id), abs:foldExpr(indexes.ast), location=top.location);
+  top.ast = abs:matrixIndex(fromMId(id), indexes.ast, location=top.location);
 }
 
