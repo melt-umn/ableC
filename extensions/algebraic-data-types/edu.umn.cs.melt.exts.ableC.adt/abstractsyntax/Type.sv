@@ -104,7 +104,7 @@ b::BaseTypeExpr ::= q::[Qualifier] n::Name
     -- not already declared, this is the declaration
     | [ ] -> [  adtTagDef( n.name, adtRefIdTagItem( refId, structRefId ) ) ]
     -- already declared, so nothing to declare here
-    | _ -> error ("NOT DECLARED ADT") -- [ ]
+    | _ -> [] 
     end ;
 
   b.typerep = 
@@ -113,10 +113,20 @@ b::BaseTypeExpr ::= q::[Qualifier] n::Name
     | [ ] ->  adtTagType( n.name, refId, structRefId )
     -- It's an ADT and the tag type agrees.
     | adtRefIdTagItem(r,s)::_ -> adtTagType( n.name, refId, structRefId )
-    | _ -> error ("HERE ADT 111") -- errorType()
+    | _ -> errorType()
     end ;
     
-  forwards to tagReferenceTypeExpr( q, structSEU(), n );
+    
+    
+  forwards to 
+    case tags of
+    | [ ] -> tagReferenceTypeExpr( q, structSEU(), n )
+    | adtRefIdTagItem(r,s)::_ -> tagReferenceTypeExpr( q, structSEU(), n )
+    | _ -> errorTypeExpr([err(n.location, n.name ++ " is not a declared datatype")])
+    end ;
+
+  
+  
 }
 
 {- ToDo: 

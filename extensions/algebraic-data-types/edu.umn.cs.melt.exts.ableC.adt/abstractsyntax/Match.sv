@@ -35,8 +35,8 @@ e::Expr ::= scrutinee::Expr cs::StmtClauses
   forwards to
       stmtExpr (
         foldStmt([
-          blockCommentStmt(concat([ text("match"), space(), parens(scrutinee.pp), 
-            text(" ...") ])),
+          {-blockCommentStmt(concat([ text("match"), space(), parens(scrutinee.pp), 
+            text(" ...") ])),-}
           -- Allocate space for pointers for pattern variables.
           -- 10 should be the depth of patterns, this is wrong
           txtStmt ("void *_current_" ++ scrutineeTypeInfo.fst ++ "[10];"), 
@@ -131,7 +131,7 @@ c::StmtClause ::= p::Pattern s::Stmt
 
   c.transform 
     = foldStmt ( [ 
-        blockCommentStmt( cat(text("Match pattern: "), p.pp )) ] ++
+        {-blockCommentStmt( cat(text("Match pattern: "), p.pp ))-} ] ++
         -- Declarations of pattern variables.
         p.decls ++
 

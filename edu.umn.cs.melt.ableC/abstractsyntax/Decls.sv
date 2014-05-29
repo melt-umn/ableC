@@ -37,7 +37,7 @@ top::Decl ::= storage::[StorageClass]  attrs::[Attribute]  ty::BaseTypeExpr  dcl
 {
   top.pp = concat(
     terminate(space(), map((.pp), storage)) ::
-      ppAttributes(attrs) ::
+      ppAttributes(attrs, top.env) ::
       [ty.pp, space(), ppImplode(text(", "), dcls.pps), semi()]);
   top.errors := ty.errors ++ dcls.errors;
   top.defs = ty.defs ++ dcls.defs;
@@ -58,7 +58,7 @@ top::Decl ::= attrs::[Attribute] ty::BaseTypeExpr
 abstract production typedefDecls
 top::Decl ::= attrs::[Attribute]  ty::BaseTypeExpr  dcls::Declarators
 {
-  top.pp = concat([text("typedef "), ppAttributes(attrs), ty.pp, space(), ppImplode(text(", "), dcls.pps), semi()]);
+  top.pp = concat([text("typedef "), ppAttributes(attrs, top.env), ty.pp, space(), ppImplode(text(", "), dcls.pps), semi()]);
   top.errors := ty.errors ++ dcls.errors;
   top.defs = ty.defs ++ dcls.defs;
   
@@ -148,10 +148,10 @@ autocopy attribute isTypedef :: Boolean;
 abstract production declarator
 top::Declarator ::= name::Name  ty::TypeModifierExpr  attrs::[Attribute]  initializer::MaybeInitializer
 {
-  top.pps = [concat([ty.lpp, name.pp, ty.rpp, ppAttributesRHS(attrs), initializer.pp])];
+  top.pps = [concat([ty.lpp, name.pp, ty.rpp, ppAttributesRHS(attrs, top.env), initializer.pp])];
   top.errors := ty.errors ++ initializer.errors;
   top.defs = [valueDef(name.name, declaratorValueItem(top))];
-  top.typerep = animateAttributeOnType(allAttrs, ty.typerep);
+  top.typerep = animateAttributeOnType(allAttrs, ty.typerep, top.env);
   top.sourceLocation = name.location;
   
   top.errors <- 
@@ -178,7 +178,7 @@ abstract production functionDecl
 top::FunctionDecl ::= storage::[StorageClass]  fnquals::[SpecialSpecifier]  bty::BaseTypeExpr mty::TypeModifierExpr  name::Name  attrs::[Attribute]  decls::Decls  body::Stmt
 {
   top.pp = concat([terminate(space(), map((.pp), storage)), terminate( space(), map( ppSpecial(_, top.env), fnquals ) ),
-    bty.pp, space(), mty.lpp, name.pp, mty.rpp, ppAttributesRHS(attrs), line(), terminate(cat(semi(), line()), decls.pps),
+    bty.pp, space(), mty.lpp, name.pp, mty.rpp, ppAttributesRHS(attrs, top.env), line(), terminate(cat(semi(), line()), decls.pps),
     text("{"), line(), nestlines(2,body.pp), text("}")]);
   
   local parameters :: Decorated Parameters =
@@ -251,10 +251,14 @@ abstract production parameterDecl
 top::ParameterDecl ::= storage::[StorageClass]  bty::BaseTypeExpr  mty::TypeModifierExpr  name::MaybeName  attrs::[Attribute]
 {
   top.pp = concat([terminate(space(), map((.pp), storage)),
-    bty.pp, space(), mty.lpp, space(), name.pp, mty.rpp, ppAttributesRHS(attrs)]);
+    bty.pp, space(), mty.lpp, space(), name.pp, mty.rpp, ppAttributesRHS(attrs, top.env)]);
   top.paramname = name.maybename;
   top.typerep = mty.typerep;
-  top.sourceLocation = error("fixme location"); -- TODO oh whatever name.location;
+  top.sourceLocation = 
+    case name.maybename of
+    | just(n) -> n.location
+    | nothing() -> loc("??",-1,-1,-1,-1,-1,-1) -- TODO: bug? probably okay, since only used to lookup names from env
+    end;
   top.errors := bty.errors ++ mty.errors;
   top.defs = bty.defs ++
     case name.maybename of
@@ -276,7 +280,7 @@ abstract production structDecl
 top::StructDecl ::= attrs::[Attribute]  name::MaybeName  dcls::StructItemList
 {
   top.maybename = name.maybename;
-  top.pp = concat([text("struct "), ppAttributes(attrs), name.pp,
+  top.pp = concat([text("struct "), ppAttributes(attrs, top.env), name.pp,
     -- DEBUGGING
     --text("/*" ++ top.refId ++ "*/"),
     -- END DEBUGGING
@@ -328,7 +332,7 @@ abstract production unionDecl
 top::UnionDecl ::= attrs::[Attribute]  name::MaybeName  dcls::StructItemList
 {
   top.maybename = name.maybename;
-  top.pp = concat([text("union "), ppAttributes(attrs), name.pp, 
+  top.pp = concat([text("union "), ppAttributes(attrs, top.env), name.pp, 
     -- DEBUGGING
     --text("/*" ++ top.refId ++ "*/"),
     -- END DEBUGGING
@@ -434,7 +438,7 @@ nonterminal StructItem with pp, errors, defs, env, localdefs;
 abstract production structItem
 top::StructItem ::= attrs::[Attribute]  ty::BaseTypeExpr  dcls::StructDeclarators
 {
-  top.pp = concat([ppAttributes(attrs), ty.pp, space(), ppImplode(text(", "), dcls.pps)]);
+  top.pp = concat([ppAttributes(attrs, top.env), ty.pp, space(), ppImplode(text(", "), dcls.pps)]);
   top.errors := ty.errors ++ dcls.errors;
   top.defs = ty.defs;
   top.localdefs = dcls.localdefs;
@@ -476,7 +480,7 @@ nonterminal StructDeclarator with pps, errors, localdefs, env, typerep, sourceLo
 abstract production structField
 top::StructDeclarator ::= name::Name  ty::TypeModifierExpr  attrs::[Attribute]
 {
-  top.pps = [concat([ty.lpp, name.pp, ty.rpp, ppAttributesRHS(attrs)])];
+  top.pps = [concat([ty.lpp, name.pp, ty.rpp, ppAttributesRHS(attrs, top.env)])];
   top.errors := ty.errors;
   top.localdefs = [valueDef(name.name, fieldValueItem(top))];
   top.typerep = ty.typerep;
@@ -489,7 +493,7 @@ top::StructDeclarator ::= name::Name  ty::TypeModifierExpr  attrs::[Attribute]
 abstract production structBitfield
 top::StructDeclarator ::= name::MaybeName  ty::TypeModifierExpr  e::Expr  attrs::[Attribute]
 {
-  top.pps = [concat([ty.lpp, name.pp, ty.rpp, text(" : "), e.pp, ppAttributesRHS(attrs)])];
+  top.pps = [concat([ty.lpp, name.pp, ty.rpp, text(" : "), e.pp, ppAttributesRHS(attrs, top.env)])];
   top.errors := ty.errors ++ e.errors;
 
   local thisdcl :: [Def] =
@@ -499,7 +503,11 @@ top::StructDeclarator ::= name::MaybeName  ty::TypeModifierExpr  e::Expr  attrs:
     end;
   top.localdefs = thisdcl;
   top.typerep = ty.typerep;
-  top.sourceLocation = error("fixme location 2"); -- TODO oh whatever name.location;
+  top.sourceLocation = 
+    case name.maybename of
+    | just(n) -> n.location
+    | nothing() -> loc("??",-1,-1,-1,-1,-1,-1) -- TODO: bug? probably okay, since only used to lookup names from env
+    end;
   
   top.errors <- name.valueRedeclarationCheckNoCompatible;
 

@@ -17,7 +17,7 @@ e::Expr ::= txt::String
  e.pp = text(txt);
  e.errors := [];
  e.defs = [];
- e.typerep = error("Need a type on txtExpr"); 
+ e.typerep = errorType(); -- error("Need a type on txtExpr"); 
 }
 abstract production txtStmt
 s::Stmt ::= txt::String

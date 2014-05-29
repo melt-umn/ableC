@@ -1,23 +1,36 @@
 
 function ppAttributes
-Document ::= l::[Attribute]
+Document ::= l::[Attribute]  env::Decorated Env
 {
-  return terminate(space(), map((.pp), l));
+  return terminate(space(), map(ppAttribute(_, env), l));
 }
 function ppAttributesRHS
-Document ::= l::[Attribute]
+Document ::= l::[Attribute]  env::Decorated Env
 {
-  return initiate(space(), map((.pp), l));
+  return initiate(space(), map(ppAttribute(_, env), l));
 }
 
 
+function ppAttribute
+Document ::= a::Attribute env::Decorated Env
+{
+  a.env = env;
+  return a.pp;
+}
+function ppAttrib
+Document ::= a::Attrib env::Decorated Env
+{
+  a.env = env;
+  return a.pp;
+}
+
 {-- __attribute__ syntax representation -}
-nonterminal Attribute with pp;
+nonterminal Attribute with pp, env;
 
 abstract production gccAttribute
 top::Attribute ::= l::[Attrib]
 {
-  top.pp = concat([text("__attribute__(("), ppImplode(text(", "), map((.pp), l)), text("))")]);
+  top.pp = concat([text("__attribute__(("), ppImplode(text(", "), map(ppAttrib(_, top.env), l)), text("))")]);
 }
 
 abstract production simpleAsm
@@ -56,7 +69,7 @@ top::Attrib ::= n::AttribName  id::Name  e::Exprs
 }
 
 
-nonterminal AttribName with pp;
+nonterminal AttribName with pp, env;
 
 abstract production attribName
 top::AttribName ::= n::Name
