@@ -172,9 +172,13 @@ abs:Stmt ::= id::abs:Name  l::Location
 
 nonterminal MatrixExpr with location, givenStorage, usedStorage, temporaries, actions, errors, abs:env;
 
+-- Informs this matrixExpr whether or not there is a variable already created to store this matrix, and if so, what its name is
 inherited attribute givenStorage :: Maybe<abs:Name>;
+-- Informs the parent what variable this matrix value was stored in. If there was givenStorage, it must be the same!
 synthesized attribute usedStorage :: abs:Name;
+-- A list of temporary intermediate values. Need to pre-declare these, and post-clean up and deallocate them as well.
 synthesized attribute temporaries :: [abs:Name];
+-- Actions to take to compute all the values, in order.
 synthesized attribute actions :: [abs:Stmt];
 
 abstract production matrixRef
