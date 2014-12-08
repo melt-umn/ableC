@@ -417,7 +417,13 @@ top::NoncanonicalType ::= q::[Qualifier]  resolved::Type
 --  top.canonicalType = error("?"); -- TODO: Perhaps this is supposed to have already been interepreted somehow
 --}
 
-
+abstract production hackUnusedType
+top::BaseTypeExpr ::=
+{
+  -- No pp equation: make that need env too (via forwarding)
+  -- Forwarding based on env.
+  forwards to if false then error(hackUnparse(top.env)) else hackUnusedType();
+}
 
 
 

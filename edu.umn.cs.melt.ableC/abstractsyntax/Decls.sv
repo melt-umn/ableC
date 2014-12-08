@@ -552,6 +552,13 @@ top::StorageClass ::= { top.pp = text("register"); }
 abstract production threadLocalStorageClass
 top::StorageClass ::= { top.pp = text("_Thread_local"); }
 
+abstract production hackUnusedDecl
+top::Decl ::=
+{
+  -- No pp equation: make that need env too (via forwarding)
+  -- Forwarding based on env.
+  forwards to if false then error(hackUnparse(top.env)) else hackUnusedDecl();
+}
 
 {-
 From clang:

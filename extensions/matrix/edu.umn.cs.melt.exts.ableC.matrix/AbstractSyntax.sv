@@ -18,7 +18,7 @@ top::abs:Expr ::= m::abs:Name  i::[abs:Expr]
   -- where our rules could be "only map your extension's structs to
   -- their respective handlers".
   production attribute overrides :: [abs:Expr] with ++;
-  overrides := [];
+  overrides := if false then error(hackUnparse(top.abs:env)) else []; -- TODO: flow type hack. fix.
   
   forwards to if null(overrides) then matrixActualIndex(m, abs:foldExpr(i), location=top.location) else head(overrides);
 }

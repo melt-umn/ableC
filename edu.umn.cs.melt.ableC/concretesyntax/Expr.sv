@@ -226,7 +226,8 @@ terminal AddMulNone_NEVER_t 'AddMulNone_Never!!!nevernever1234567890' ;
 concrete productions top::AddMulNoneOp_c
 | AddMulNone_NEVER_t
     { top.ast = ast:errorExpr ( [ err (top.location, "Internal Error. " ++
-        "Placeholder for AddMulNoneOp_c should not appear in the tree." ) ],
+        "Placeholder for AddMulNoneOp_c should not appear in the tree." ++
+        hackUnparse(pair(pair(top.leftExpr, top.rightExpr), top.exprLocation))) ], -- TODO: flowtype hack, remove
         location=top.location ) ; }
 
 
