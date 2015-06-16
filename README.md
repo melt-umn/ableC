@@ -63,7 +63,14 @@ cd extensions/regex
 java -jar ableC.jar example1.xc
 ```
 
-This should produce `example1.pp_out.c`.
+This should produce `example1.pp_out.c`. Then:
+
+```
+gcc -std=gnu1x -o example1 example1.pp_out.c
+./example1
+```
+
+Note the requirement to tell GCC to use the C11 standard plus GNU extensions. This is generally necessary for AbleC generated files.
 
 
 
