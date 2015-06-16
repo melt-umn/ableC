@@ -39,7 +39,9 @@ IOVal<Integer> ::= args::[String] ioIn::IO
 
   local writePP :: IO = writeFile(ppFileName, show(80, ast.pp), text.io);
 
-  return if !isF.iovalue then
+  return if null(args) then
+    ioval(print("Usage: [ableC invocation] [file name] [c preprocessor arguments]\n", ioIn), 5)
+  else if !isF.iovalue then
     ioval(print("File \"" ++ fileName ++ "\" not found.\n", isF.io), 1)
   else if mkCppFile.iovalue != 0 then
     ioval(print("CPP call failed.\n", mkCppFile.io), 3)

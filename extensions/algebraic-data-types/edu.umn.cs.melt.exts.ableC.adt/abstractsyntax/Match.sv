@@ -11,7 +11,10 @@ imports edu:umn:cs:melt:ableC:abstractsyntax:env;
 abstract production matchStmt
 e::Expr ::= scrutinee::Expr cs::StmtClauses
 {
-  e.errors := scrutinee.errors ++ cs.errors;
+  e.errors := case scrutinee.typerep of
+              | pointerType(_,adtTagType(_, adtRefId, _)) -> []
+              | _ -> [err(scrutinee.location, "scrutinee expression does not have adt pointer type (got " ++ showType(scrutinee.typerep) ++ ")")]
+              end ++ scrutinee.errors ++ cs.errors;
 
   local scrutineeTypeInfo :: Pair<String [ Pair<String [Type]> ]>    
     = case scrutinee.typerep of
