@@ -126,7 +126,7 @@ top::ADTDecl ::= n::Name cs::ConstructorList
                       [],
                       unionDecl([],
                         justName(
-                          name("Contents_s",location=builtIn())),
+                          name("Contents_s_" ++ toString(genInt()),location=builtIn())),
                         cs.structItems, location=builtIn())),
                     consStructDeclarator(
                       structField(
