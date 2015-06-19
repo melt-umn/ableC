@@ -11,12 +11,12 @@ import edu:umn:cs:melt:exts:ableC:gc:mda_test;
 marking terminal GcMalloc_t  'gcmalloc' lexer classes {Ckeyword};
 marking terminal GcRealloc_t 'gcrealloc' lexer classes {Ckeyword};
 
+terminal To_t 'to' lexer classes {Ckeyword};
+
 concrete productions top::cnc:PostfixExpr_c
 | 'gcmalloc' '(' size::cnc:Expr_c ')'
     { top.ast = gcMallocExpr(size.ast,
         location=top.location); }
-{-
-| 'gcrealloc' '(' pointer::cnc:Expr_c ',' size::cnc:Expr_c ')'
-    { top.ast = gcReallocExpr(top.ast,
-        location=top.cnc:exprLocation); }
--}
+| 'gcrealloc' ptr::cnc:Expr_c 'to' '(' size::cnc:Expr_c ')'
+    { top.ast = gcReallocExpr(ptr.ast, size.ast,
+        location=top.location); }
