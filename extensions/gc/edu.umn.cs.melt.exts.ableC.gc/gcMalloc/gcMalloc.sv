@@ -13,7 +13,7 @@ marking terminal GcRealloc_t 'gcrealloc' lexer classes {Ckeyword};
 
 concrete productions top::cnc:PostfixExpr_c
 | 'gcmalloc' '(' size::cnc:Expr_c ')'
-    { top.ast = gcMallocExpr(top.ast,
+    { top.ast = gcMallocExpr(size.ast,
         location=top.location); }
 {-
 | 'gcrealloc' '(' pointer::cnc:Expr_c ',' size::cnc:Expr_c ')'
