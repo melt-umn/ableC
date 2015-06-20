@@ -65,6 +65,7 @@ top::abs:Expr ::= typeName::abs:Name
     (if !null(abs:lookupValue("GC_malloc", top.abs:env)) then [] else
       [err(top.location, "Garbage collection requires <gc.h> to be included.")]);
   
+  --top.abs:typerep = resType.abs:typerep;
   
   forwards to
     if null(localErrs) then
