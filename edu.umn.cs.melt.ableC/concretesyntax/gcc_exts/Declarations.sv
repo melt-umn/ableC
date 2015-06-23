@@ -40,7 +40,7 @@ concrete productions top::TypeQualifier_c
     { top.typeQualifiers = [ast:constQualifier()];
       top.mutateTypeSpecifiers = []; }
 | '__restrict'
-    { top.typeQualifiers = [ast:restrictQualifier()];
+    { top.typeQualifiers = [ast:uuRestrictQualifier()];
       top.mutateTypeSpecifiers = []; }
 | '__restrict__'
     { top.typeQualifiers = [ast:restrictQualifier()];
