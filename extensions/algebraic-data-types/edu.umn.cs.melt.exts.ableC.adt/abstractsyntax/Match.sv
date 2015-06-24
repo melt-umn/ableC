@@ -356,10 +356,11 @@ p::Pattern ::=
 
 abstract production patternIntegerConst
 p::Pattern ::= i::Integer
-{ --ToDo
+{
   p.pp = text(toString(i));
   p.defs = [];
-  p.errors := [];   -- ToDo: check that p.expectedType = integerType();
+  p.errors := (if compatibleTypes(p.expectedType, builtinType([], signedType(intType())), false) then [] else
+                  [err(p.location, "Unexpected integer constant in pattern")]);
   p.transform = p.transformIn;
   p.decls = [];
 }
