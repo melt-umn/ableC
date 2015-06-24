@@ -26,6 +26,13 @@ top::Qualifier ::=
   top.qualname = "restrict";
 }
 
+abstract production uuRestrictQualifier
+top::Qualifier ::=
+{
+  top.pp = text(top.qualname);
+  top.qualname = "__restrict";
+}
+
 {-- Specifiers that apply to specific types.
  - e.g. Function specifiers (inline, _Noreturn)
  -      Alignment specifiers (_Alignas)
