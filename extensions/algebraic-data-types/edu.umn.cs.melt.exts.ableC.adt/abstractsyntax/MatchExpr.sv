@@ -45,7 +45,7 @@ e::Expr ::= scrutinee::Expr cs::ExprClauses
 
   cs.nonEvaluatedFailureExpr = 
     stmtExpr( 
-      txtStmt("printf(\"BOOM 2 !\\n\"); exit(1);"), 
+      txtStmt("fprintf(stderr, \"Non-exhaustive match failure!\\n\"); exit(1);"), 
       explicitCastExpr(
         typeName(
           directTypeExpr(e.typerep),
