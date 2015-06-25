@@ -32,8 +32,29 @@ int valueExpr (Expr *e) {
       Sub(e1,e2): valueExpr(e1) - valueExpr(e2);
       Mul(e1,e2): valueExpr(e1) * valueExpr(e2);
       Div(e1,e2): valueExpr(e1) / valueExpr(e2);
-      
+      Const(v): v;
+    ) ;
+}
+
+int valueIncorrect (Expr *e) {
+  return
+    match (e) (
+      Add(e1,e2): valueIncorrect(e1) + valueIncorrect(e2);
+      Sub(e1,e2): valueIncorrect(e1) - valueIncorrect(e2);
+      Mul(e1,e2): valueIncorrect(e1) * valueIncorrect(e2);
+      Div(e1,e2): valueIncorrect(e1) / valueIncorrect(e2);
       _: 99;
+    ) ;
+}
+
+int valueInexhaustive (Expr *e) {
+  return
+    match (e) (
+      Add(e1,e2): valueInexhaustive(e1) + valueInexhaustive(e2);
+      Sub(e1,e2): valueInexhaustive(e1) - valueInexhaustive(e2);
+      Mul(e1,e2): valueInexhaustive(e1) * valueInexhaustive(e2);
+      Div(e1,e2): valueInexhaustive(e1) / valueInexhaustive(e2);
+      // Const(v): v;
     ) ;
 }
 
@@ -55,6 +76,10 @@ int main () {
   printf("value is %d\n", value(t) );
 
   printf("value is %d\n", valueExpr(t) );
+
+  printf("value is %d\n", valueIncorrect(t) );
+
+  printf("value is %d\n", valueInexhaustive(t) );
   
   free_Expr(t);
   
