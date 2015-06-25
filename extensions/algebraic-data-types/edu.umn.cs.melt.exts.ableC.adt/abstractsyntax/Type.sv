@@ -1,7 +1,7 @@
 grammar edu:umn:cs:melt:exts:ableC:adt:abstractsyntax;
 
 {- ADTs, like structs, allow forward declarations so that mutually
-   recurive ADTs can be specified.  Thus we use the same refId-based
+   recursive ADTs can be specified.  Thus we use the same refId-based
    type scheme that structs use.
 
    RefIdItem - contains reference attribute to the declaration
