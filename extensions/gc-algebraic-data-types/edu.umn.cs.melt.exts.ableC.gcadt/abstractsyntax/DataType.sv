@@ -69,7 +69,7 @@ top::Constructor ::= n::String tms::TypeNameList
                   [],
                   nothingInitializer()),
                 nilDeclarator()))),
-          --txtStmt("temp = (" ++ top.topTypeName ++ " *) gcMalloc (sizeof(" ++ top.topTypeName ++ "));"), --ToDo
+          --txtStmt("temp = (" ++ top.topTypeName ++ " *) gcMalloc (sizeof(" ++ top.topTypeName ++ "));"),
           exprStmt(
             binaryOpExpr(
               declRefExpr(name("temp",location=builtIn()),location=builtIn()),
