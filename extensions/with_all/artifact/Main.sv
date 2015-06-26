@@ -9,6 +9,7 @@ parser extendedParser :: cst:Root {
   edu:umn:cs:melt:ableC:concretesyntax;
   edu:umn:cs:melt:exts:ableC:tables;
   edu:umn:cs:melt:exts:ableC:regex;
+  edu:umn:cs:melt:exts:ableC:gc;
   edu:umn:cs:melt:exts:ableC:adt;
   edu:umn:cs:melt:exts:ableC:matrix;
   edu:umn:cs:melt:exts:ableC:mex;
