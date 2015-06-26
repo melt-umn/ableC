@@ -98,9 +98,12 @@ top::ADTDecl ::= n::Name cs::ConstructorList
   top.adtInfo = pair(n.name,cs.constructors);
 
   cs.topTypeName = n.name;
-
-  top.transform =
-    decls(
+  
+  {- This attribute is for extensions to use to add additional auto-generated functions
+     for ADT, for example an auto-generated recursive freeing function.  
+  -}
+  production attribute adtDecls::Decls with appendDecls;
+  adtDecls :=
       consDecl(
         typeExprDecl(
           [],
@@ -135,8 +138,18 @@ top::ADTDecl ::= n::Name cs::ConstructorList
                         []),
                       nilStructDeclarator())),
                   nilStructItem())), location=builtIn()))),
-        cs.funDecls)) 
-        ;
+        cs.funDecls);
+
+  top.transform = decls(adtDecls);
+}
+
+function appendDecls
+Decls ::= d1::Decls d2::Decls
+{
+  return case d1 of
+              nilDecl() -> d2
+            | consDecl(d, rest) -> consDecl(d, appendDecls(rest, d2))
+         end;
 }
 
 

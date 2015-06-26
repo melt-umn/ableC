@@ -18,7 +18,7 @@ e::Expr ::= scrutinee::Expr cs::ExprClauses
 {
   
   e.errors := case scrutinee.typerep of
-              | pointerType(_,adtTagType(_, adtRefId, _)) -> []
+              | pointerType(_,adtTagType(_, _, _)) -> []
               | _ -> [err(scrutinee.location,
                           "scrutinee expression does not have adt pointer type (got " ++
                           showType(scrutinee.typerep) ++ ")")]
