@@ -42,9 +42,9 @@ e::Expr ::= scrutinee::Expr cs::StmtClauses
             text(" ...") ])),-}
           -- Allocate space for pointers for pattern variables.
           -- 10 should be the depth of patterns, this is wrong
-          txtStmt ("void *_current_" ++ scrutineeTypeInfo.fst ++ "[10];"), 
+          txtStmt ("void *_current_ADT" ++ "[10];"), 
           
-          txtStmt ("_current_" ++ scrutineeTypeInfo.fst ++ "[0] = " ++
+          txtStmt ("_current_ADT" ++ "[0] = " ++
                      "(void *)( " ++ show(100,scrutinee.pp) ++ " );"),
           txtStmt (""),
 
@@ -256,10 +256,10 @@ p::Pattern ::= id::String ps::PatternList
   p.transform =
    foldStmt (
      (if   p.depth > 0 
-      then [txtStmt("_current_" ++ idTypeIndicator ++ "[" ++ toString(p.depth) ++ "] = " ++
+      then [txtStmt("_current_ADT" ++ "[" ++ toString(p.depth) ++ "] = " ++
                     "( void *)" ++
                     "((" ++ p.parent_idType ++ ")" ++
-                    "_current_" ++ p.parent_idTypeIndicator ++ "[" ++ 
+                    "_current_ADT" ++ "[" ++ 
                     toString(p.depth-1) ++ "])" ++ 
                     "->contents." ++ 
                     p.parent_id ++ ".f" ++ toString(p.position) ++ " ; ")]
@@ -268,7 +268,7 @@ p::Pattern ::= id::String ps::PatternList
     [ ifStmt(
         -- check that the 'tag' field of the current node has the tag for this pattern.
         txtExpr(" ((" ++ idType ++ ")" ++ 
-                "_current_" ++ idTypeIndicator ++ "[" ++ toString(p.depth) ++ "])->tag == " ++
+                "_current_ADT" ++ "[" ++ toString(p.depth) ++ "])->tag == " ++
                 " " ++ idTypeIndicator ++ "_" ++ id, location=p.location),
       
         -- then clause
@@ -338,7 +338,7 @@ p::Pattern ::= id::String
 
   p.transform = 
     seqStmt ( txtStmt(id ++ " = ((" ++ p.parent_idType ++ ")" ++ 
-                  "_current_" ++ p.parent_idTypeIndicator ++ "[" ++ toString(p.depth-1) ++ "])->contents." ++ 
+                  "_current_ADT" ++ "[" ++ toString(p.depth-1) ++ "])->contents." ++ 
                   p.parentTag ++ ".f" ++ toString(p.position) ++ " ; " ),
 
               p.transformIn) ;

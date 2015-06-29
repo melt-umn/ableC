@@ -64,9 +64,9 @@ e::Expr ::= scrutinee::Expr cs::ExprClauses
             text(" ...") ])),-}
           -- Allocate space for pointers for pattern variables.
           -- 10 should be the depth of patterns, this is wrong
-          txtStmt ("void *_current_" ++ scrutineeTypeInfo.fst ++ "[10];"), 
+          txtStmt ("void *_current_ADT" ++ "[10];"), 
           
-          txtStmt ("_current_" ++ scrutineeTypeInfo.fst ++ "[0] = " ++
+          txtStmt ("_current_ADT" ++ "[0] = " ++
                      "(void *)( " ++ show(100,scrutinee.pp) ++ " );"),
           txtStmt ("")
          ]), 
