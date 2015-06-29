@@ -19,9 +19,10 @@ ts::TypeNameList ::= t::TypeName rest::TypeNameList
 synthesized attribute asParameters :: Parameters;
 synthesized attribute asStructItemList :: StructItemList;
 synthesized attribute asAssignments :: Stmt;
+synthesized attribute len :: Integer;
 autocopy attribute name_i :: String;
 
-attribute asParameters, asStructItemList, asAssignments, position, name_i
+attribute asParameters, asStructItemList, asAssignments, len, position, name_i
   occurs on TypeNameList ;
 
 aspect production nilTypeName
@@ -30,6 +31,7 @@ ts::TypeNameList ::=
   ts.asParameters = nilParameters();
   ts.asStructItemList = nilStructItem();
   ts.asAssignments = nullStmt();
+  ts.len = 0;
 }
 
 aspect production consTypeName
@@ -89,4 +91,5 @@ ts::TypeNameList ::= t::TypeName rest::TypeNameList
             name("f"++toString(ts.position),location=builtIn()),location=builtIn()),location=builtIn())),
       rest.asAssignments);
 
+  ts.len = rest.len + 1;
 }

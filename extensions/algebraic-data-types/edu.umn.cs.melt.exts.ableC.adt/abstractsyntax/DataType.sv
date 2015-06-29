@@ -103,7 +103,9 @@ top::ADTDecl ::= n::Name cs::ConstructorList
      for ADT, for example an auto-generated recursive freeing function.  
   -}
   production attribute adtDecls::Decls with appendDecls;
-  adtDecls :=
+  adtDecls := nilDecl();
+  
+  local attribute defaultDecls::Decls =
       consDecl(
         typeExprDecl(
           [],
@@ -140,7 +142,7 @@ top::ADTDecl ::= n::Name cs::ConstructorList
                   nilStructItem())), location=builtIn()))),
         cs.funDecls);
 
-  top.transform = decls(adtDecls);
+  top.transform = decls(appendDecls(defaultDecls, adtDecls));
 }
 
 function appendDecls
