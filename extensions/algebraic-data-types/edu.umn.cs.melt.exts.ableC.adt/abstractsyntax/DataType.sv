@@ -49,7 +49,7 @@ top::Decl ::= adt::ADTDecl
     -- but not the 'struct ADT' defs.
     forward.defs;
 
-  forwards to adt.transform ;
+  forwards to adt.transform with {env = addEnv(adt.defs, top.env);};
 }
 
 nonterminal ADTDecl with env, defs, structRefId, structDcl, name, adtInfo, transform<Decl>;
@@ -100,7 +100,8 @@ top::ADTDecl ::= n::Name cs::ConstructorList
   cs.topTypeName = n.name;
   
   {- This attribute is for extensions to use to add additional auto-generated functions
-     for ADT, for example an auto-generated recursive freeing function.  
+     for ADT, for example an auto-generated recursive freeing function.  This is being used
+     in the rewriting extension for the construct and destruct functions
   -}
   production attribute adtDecls::Decls with appendDecls;
   adtDecls := nilDecl();
