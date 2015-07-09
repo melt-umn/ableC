@@ -18,6 +18,6 @@ marking terminal Apply_t 'appclosure' lexer classes {Ckeyword};
 terminal To_t 'to' lexer classes {Ckeyword};
 
 -- Someday, we may overload function application instead
-concrete productions top::Expr_c
+concrete productions top::AssignExpr_c
 | 'appclosure' fn::Expr_c 'to' '(' param::Expr_c ')'
   { top.ast = applyExpr(fn.ast, param.ast, location=top.location); }
