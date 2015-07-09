@@ -152,11 +152,19 @@ top::EnvNameList ::= n::Name rest::EnvNameList
 {
   top.errors := n.valueLookupCheck ++ rest.errors;
   
-  -- If true, then don't capture this variable, even if though it is in the capture list
+  -- If true, then don't generate load/store code for this variable
   local skip::Boolean =
     case n.valueItem.typerep of
       functionType(_, _) -> true
     | tagType(_, refIdTagType(_, sName, _)) -> null(lookupRefId(sName, top.env))
+    | pointerType(_, functionType(_, _)) -> true -- Temporary hack until pp for function pointer variable defs is fixed
+    | _ -> false
+    end;
+    
+  -- If true, then don't capture this variable, even if though it is in the capture list
+  local skipDef::Boolean =
+    case n.valueItem.typerep of
+      tagType(_, refIdTagType(_, sName, _)) -> null(lookupRefId(sName, top.env))
     | pointerType(_, functionType(_, _)) -> true -- Temporary hack until pp for function pointer variable defs is fixed
     | _ -> false
     end;
@@ -198,7 +206,7 @@ top::EnvNameList ::= n::Name rest::EnvNameList
       justInitializer(exprInitializer(envAccess)));
   
   top.defs =
-    if skip then rest.defs else
+    if skipDef then rest.defs else
       valueDef(
         n.name,
         declaratorValueItem(

@@ -18,7 +18,7 @@ int res = appclosure fn to (4);
 ```
 This will eventually be replaced by overloading function application.  
 Note that the "closure.h" header must be included to use this extension.  
-Currently, functions cannot be captured, and are ignored if included in the capture list.  This will probably never be fixed, since if you really need to capture a function, you can also create a local variable that is a closure that wraps a call to that function.  Struct and union variables with only a forward declaration of the struct or union cannot be captured, since the size cannot be known.  Function pointers are also ignored for now, due to bugs in other parts of ableC.  
+~~Currently, functions cannot be captured, and are ignored if included in the capture list.  This will probably never be fixed, since if you really need to capture a function, you can also create a local variable that is a closure that wraps a call to that function.~~  This has been fixed.  Struct and union variables with only a forward declaration of the struct or union cannot be captured, since the size cannot be known.  Function pointers are also ignored for now, due to bugs in other parts of ableC.  
 
 The purpose of this extension is
 
