@@ -21,7 +21,7 @@ IOVal<Integer> ::= args::[String] ioIn::IO
   local cppCmd :: String = "gcc -E -x c -D _POSIX_C_SOURCE -std=gnu1x -I . " ++
     cppOptions;
   local cppOptions :: String =
-    if length(args) >= 2 then implode(" ", tail(args)) else "" ;
+    if length(args) >= 2 then implode(" ", tail(removeNonCppArgs(args))) else "" ;
 
   -- Run C pre processor over the file.
   local mkCppFile :: IOVal<Integer> =
@@ -47,9 +47,20 @@ IOVal<Integer> ::= args::[String] ioIn::IO
     ioval(print("CPP call failed.\n", mkCppFile.io), 3)
   else if !result.parseSuccess then
     ioval(print(result.parseErrors ++ "\n", text.io), 2)
+  else if containsBy(stringEq, "--show-ast", args) then
+    ioval(print(hackUnparse(ast) ++ "\n", text.io), 0)
   else if !null(ast.errors) then
     ioval(print(messagesToString(ast.errors) ++ "\n", text.io), if containsErrors(ast.errors, false) then 4 else 0)
   else
     ioval(writePP, 0);
 }
 
+function removeNonCppArgs
+[String] ::= args::[String]
+{
+  return case args of
+           [] -> []
+         | "--show-ast" :: rest -> removeNonCppArgs(rest)
+         | arg :: rest -> arg :: removeNonCppArgs(rest)
+         end;
+}
