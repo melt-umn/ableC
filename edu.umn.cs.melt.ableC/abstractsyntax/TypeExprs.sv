@@ -258,7 +258,11 @@ abstract production pointerTypeExpr
 top::TypeModifierExpr ::= q::[Qualifier]  target::TypeModifierExpr
 {
   top.lpp = concat([ target.lpp, space(),
-                     text("*"), terminate( space(), map( (.pp), q ) ) ]);
+                     case target of
+                       functionTypeExprWithArgs(_, _, _) -> text("(*)")
+                     | functionTypeExprWithoutArgs(_, _) -> text("(*)")
+                     | _ -> text("*")
+                     end, terminate( space(), map( (.pp), q ) ) ]);
   top.rpp = target.rpp;
   top.typerep = pointerType(q, target.typerep);
   top.errors := target.errors;
