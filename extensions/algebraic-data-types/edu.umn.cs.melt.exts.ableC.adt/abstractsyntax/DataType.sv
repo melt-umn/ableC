@@ -118,7 +118,7 @@ top::ADTDecl ::= n::Name cs::ConstructorList
                 structItem([],
                   enumTypeExpr(
                     [],
-                    enumDecl(nothingName(),
+                    enumDecl(justName(name("_" ++ n.name ++ "_types", location=builtIn())),
                       cs.enumItems, location=builtIn())),
                   consStructDeclarator(
                     structField(
@@ -132,7 +132,7 @@ top::ADTDecl ::= n::Name cs::ConstructorList
                       [],
                       unionDecl([],
                         justName(
-                          name("Contents_s_" ++ toString(genInt()),location=builtIn())),
+                          name("_" ++ n.name ++ "_contents", location=builtIn())),
                         cs.structItems, location=builtIn())),
                     consStructDeclarator(
                       structField(
