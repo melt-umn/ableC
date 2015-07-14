@@ -86,7 +86,26 @@ top::Constructor ::= n::String tms::TypeNameList
               assignOp(
                 eqOp(location=builtIn()),location=builtIn()), 
               declRefExpr(
-                name(top.topTypeName++"_"++n,location=builtIn()),location=builtIn()),location=builtIn())),
+                name(top.topTypeName++"_"++n,location=builtIn()),location=builtIn()),location=builtIn())),exprStmt(
+            binaryOpExpr(
+              memberExpr(
+                declRefExpr(
+                  name("temp",location=builtIn()),location=builtIn()),
+                true,
+                name("refId",location=builtIn()),location=builtIn()),
+              assignOp(
+                eqOp(location=builtIn()),location=builtIn()), 
+              realConstant(
+                integerConstant(
+                  case lookupTag(top.topTypeName, top.env) of
+                    refIdTagItem(_, id) :: _ -> id
+                  | _ -> error("refId not found")
+                  end,
+                  false,
+                  noIntSuffix(),
+                  location=builtIn()),
+                location=builtIn()),
+              location=builtIn())),
           tms.asAssignments,
           returnStmt(justExpr(declRefExpr(name("temp",location=builtIn()),location=builtIn())))
         ])));
