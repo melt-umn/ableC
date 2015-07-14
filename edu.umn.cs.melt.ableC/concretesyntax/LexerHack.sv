@@ -2,7 +2,7 @@ grammar edu:umn:cs:melt:ableC:concretesyntax;
 
 {--
  - The outer list is scopes, the inner list is a mapping from an
- - identifier to a sort. 
+ - identifier to a sort (ident, or typename). 
  - 
  - N.B. The inner list is *ordered*. The first match applies, the later are
  - shadowed.
@@ -13,7 +13,7 @@ grammar edu:umn:cs:melt:ableC:concretesyntax;
  -
  - The initial value is an empty, outer scope. [[]] not [], which is no scopes at all.
  -}
-parser attribute context :: [[Pair<String IdentType>]]
+parser attribute context :: [[Pair<String lh:IdentType>]]
   action { context = [[]]; };
 
 {--
@@ -27,6 +27,9 @@ parser attribute context :: [[Pair<String IdentType>]]
  - after we have reduced the declaration.
  -}
 
+{- now in concretesyntax:lexerHack/LexerHack.sv, to avoid the nonterminal
+   IdentType being flagged as useless by the Copper MDA analysis.
+
 nonterminal IdentType;
 abstract production identType_c     top::IdentType ::= {}
 abstract production typenameType_c  top::IdentType ::= {}
@@ -34,6 +37,8 @@ abstract production typenameType_c  top::IdentType ::= {}
 -- convenient, one single object for each. totally unnecessary of course...
 global identType :: IdentType = identType_c();
 global typenameType :: IdentType = typenameType_c();
+-}
+
 
 -- Here is the actual decision logic
 disambiguate Identifier_t, TypeName_t
@@ -41,10 +46,13 @@ disambiguate Identifier_t, TypeName_t
   pluck
 
     case lookupBy(stringEq, lexeme, head(context)) of
-    | just(typenameType_c()) -> TypeName_t
+    | just(lh:typenameType_c()) -> TypeName_t
     | _ -> Identifier_t
     end;
 }
+
+{- now in concretesyntax:lexerHack/LexerHack.sv since they depend
+   on IdentType which has been moved there.  See comment above.
 
 -- The logic that mutates the 'context' value is distributed amoung the rules
 -- elsewhere in the grammar. grep for 'action' to find them all.
@@ -85,3 +93,4 @@ function beginFunctionScope
           context)));
 }
 
+-}

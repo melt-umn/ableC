@@ -33,7 +33,7 @@ concrete productions top::FunctionDefinition_c
       d.givenStmt = s.ast;
     }
     action {
-      context = closeScope(context); -- Opened by InitialFunctionDefinition.
+      context = lh:closeScope(context); -- Opened by InitialFunctionDefinition.
     }
 
 
@@ -64,8 +64,8 @@ concrete productions top::Declaration_c
     action {
       context =
         if ds.isTypedef
-        then addTypenamesToScope(idcl.declaredIdents, context)
-        else addIdentsToScope(idcl.declaredIdents, context);
+        then lh:addTypenamesToScope(idcl.declaredIdents, context)
+        else lh:addIdentsToScope(idcl.declaredIdents, context);
     }
 | ds::DeclarationSpecifiers_c  ';'
     { ds.givenQualifiers = ds.typeQualifiers;
@@ -142,7 +142,7 @@ concrete productions top::InitialFunctionDefinition_c
     action {
       -- Function are annoying because we have to open a scope, then add the
       -- parameters, and close it after the brace.
-      context = beginFunctionScope(d.declaredIdent, d.declaredParamIdents, context);
+      context = lh:beginFunctionScope(d.declaredIdent, d.declaredParamIdents, context);
     }
 | d::Declarator_c  l::DeclarationList_c
     {
@@ -157,7 +157,7 @@ concrete productions top::InitialFunctionDefinition_c
       -- Unfortunate duplication. This production is necessary for K&R compatibility
       -- We can't make it a proper optional nonterminal, since that requires a reduce far too early.
       -- (i.e. LALR conflicts)
-      context = beginFunctionScope(d.declaredIdent, d.declaredParamIdents, context);
+      context = lh:beginFunctionScope(d.declaredIdent, d.declaredParamIdents, context);
     }
 
 

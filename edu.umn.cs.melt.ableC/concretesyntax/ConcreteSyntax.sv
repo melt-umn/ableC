@@ -18,3 +18,7 @@ imports edu:umn:cs:melt:ableC:abstractsyntax as ast;
 -- easier construction of ast nodes
 imports edu:umn:cs:melt:ableC:abstractsyntax:construction as ast;
 
+-- used in LexerHack.sv
+imports edu:umn:cs:melt:ableC:concretesyntax:lexerHack as lh;
+
+
