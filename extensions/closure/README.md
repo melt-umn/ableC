@@ -24,3 +24,10 @@ The purpose of this extension is
 
 1. To allow 'true' functional programming in C, there are some tasks for which passing a closure is much better than passing a function pointer.  
 2. To provide an easy way of passing functions which can be used easily by other extensions without needing extra parameters to capture local scope. 
+
+TODO items:
+* Remove txtStmt and txtExprs
+* Resolve issues with capturing function pointers and anonymous union fields (ableC host bug?)
+* Clean up hacks with passing _closure refId
+* Fix closure type expr to pass copper MDA
+* Captured variables should appear as const in the body of the closure
