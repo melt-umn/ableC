@@ -14,6 +14,7 @@ abstract production lambdaExpr
 e::Expr ::= captured::EnvNameList paramType::TypeName param::Name res::Expr
 {
   local localErrs :: [Message] =
+  --e.errors :=
     (if !null(lookupValue("_closure", e.env)) then []
      else [err(e.location, "Closures require closure.h to be included.")]) ++
     captured.errors ++ res.errors;
@@ -39,8 +40,76 @@ e::Expr ::= captured::EnvNameList paramType::TypeName param::Name res::Expr
               directTypeExpr(paramType.typerep),
               baseTypeExpr(),
               justName(param),
-              []) with {env = e.env;})) :: captured.defs,
+              []) with {env = e.env;})) ::
+      captured.defs ++ tagRefIdTypeItems,
     emptyEnv());
+  
+  local tagRefIdTypeItems::[Def] =
+    doubleMap(
+      tagDef,
+      tagItemNames,
+      foldr(
+        append,
+        [],
+        map(
+          lookupTag(_, e.env),
+          tagItemNames))) ++
+    doubleMap(
+      refIdDef,
+      refIdItemNames,
+      foldr(
+        append,
+        [],
+        map(
+          lookupRefId(_, e.env),
+          refIdItemNames))) ++
+    doubleMap(
+      valueDef,
+      typeValueItemNames,
+      foldr(
+        append,
+        [],
+        map(
+          lookupValue(_, e.env),
+          typeValueItemNames)));
+  
+  local tagItemNames::[String] =
+    removeDuplicatesBy(
+      stringEq,
+      map(
+        fst,
+        foldr(
+          append,
+          [],
+          map(
+            tm:toList,
+            e.env.tags))));
+            
+  local refIdItemNames::[String] =
+    removeDuplicatesBy(
+      stringEq,
+      map(
+        fst,
+        foldr(
+          append,
+          [],
+          map(
+            tm:toList,
+            e.env.refIds))));
+            
+  local typeValueItemNames::[String] =
+    removeDuplicatesBy(
+      stringEq,
+      map(
+        fst,
+        filter(
+          isItemTypedef,
+          foldr(
+            append,
+            [],
+            map(
+              tm:toList,
+              e.env.values)))));
   
   local fnDecl::FunctionDecl =
     functionDecl(
@@ -169,10 +238,18 @@ top::EnvNameList ::= n::Name rest::EnvNameList
     | _ -> false
     end;
 
+  local varBaseType::Type =
+    if !null(n.valueLookupCheck)
+    then errorType()
+    else case n.valueItem.typerep of
+           arrayType(t, _, _, _) -> pointerType([], t) -- Arrays get turned into pointers
+         | t -> t
+         end;
+        
   local varBaseTypeExpr::BaseTypeExpr =
     if !null(n.valueLookupCheck)
     then errorTypeExpr(n.valueLookupCheck)
-    else directTypeExpr(n.valueItem.typerep);
+    else directTypeExpr(varBaseType);
   
   local envAccess::Expr =
     unaryOpExpr(
@@ -217,7 +294,7 @@ top::EnvNameList ::= n::Name rest::EnvNameList
               [],
               nothingInitializer())
           with {env = top.env;
-                baseType = attatchQualifiers([constQualifier()], n.valueItem.typerep);
+                baseType = attatchQualifiers([constQualifier()], varBaseType);
                 givenAttributes = [];
                 isTopLevel = false;
                 isTypedef = false;})) ::
@@ -285,6 +362,12 @@ top::EnvNameList ::=
   forwards to foldr(consEnvNameList, nilEnvNameList(), contents);
 }
 
+function isItemTypedef
+Boolean ::= i::Pair<String ValueItem>
+{
+  return i.snd.isItemTypedef;
+}
+
 function isNotItemTypedef
 Boolean ::= i::Pair<String ValueItem>
 {
@@ -305,6 +388,14 @@ function removeDuplicatesBy
          else if containsBy(eq, head(l), tail(l))
          then removeDuplicatesBy(eq, tail(l))
          else head(l) :: removeDuplicatesBy(eq, tail(l));
+}
+
+function doubleMap
+[a] ::= f::(a ::= b c) l1::[b] l2::[c]
+{
+  return if null(l1) || null(l2)
+         then []
+         else f(head(l1), head(l2)) :: doubleMap(f, tail(l1), tail(l2));
 }
 
 {-
