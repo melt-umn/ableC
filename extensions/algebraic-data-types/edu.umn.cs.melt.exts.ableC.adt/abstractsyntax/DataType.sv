@@ -81,6 +81,8 @@ top::ADTDecl ::= n::Name cs::ConstructorList
     else [ adtTagDef( n.name, adtRefIdTagItem( name_tagRefId_workaround, -- n.tagRefId,
                                                top.structRefId )) ];
 
+  cs.env = addEnv(preDefs, top.env);
+
   top.defs = preDefs ++
     [ adtRefIdDef( name_tagRefId_workaround, adtRefIdItem(top, top.structDcl) ) ] ;
 
@@ -116,31 +118,43 @@ top::ADTDecl ::= n::Name cs::ConstructorList
               justName( n ),
               consStructItem(
                 structItem([],
-                  enumTypeExpr(
-                    [],
-                    enumDecl(justName(name("_" ++ n.name ++ "_types", location=builtIn())),
-                      cs.enumItems, location=builtIn())),
+                  directTypeExpr(
+                    builtinType(
+                      [],
+                      signedType(intType()))),
                   consStructDeclarator(
                     structField(
-                      name("tag", location=builtIn()),
+                      name("refId", location=builtIn()),
                       baseTypeExpr(),
                       []),
                     nilStructDeclarator())),
                 consStructItem(
                   structItem([],
-                    unionTypeExpr(
+                    enumTypeExpr(
                       [],
-                      unionDecl([],
-                        justName(
-                          name("_" ++ n.name ++ "_contents", location=builtIn())),
-                        cs.structItems, location=builtIn())),
+                      enumDecl(justName(name("_" ++ n.name ++ "_types", location=builtIn())),
+                        cs.enumItems, location=builtIn())),
                     consStructDeclarator(
                       structField(
-                        name("contents",location=builtIn()), 
+                        name("tag", location=builtIn()),
                         baseTypeExpr(),
                         []),
                       nilStructDeclarator())),
-                  nilStructItem())), location=builtIn()))),
+                  consStructItem(
+                    structItem([],
+                      unionTypeExpr(
+                        [],
+                        unionDecl([],
+                          justName(
+                            name("_" ++ n.name ++ "_contents", location=builtIn())),
+                          cs.structItems, location=builtIn())),
+                      consStructDeclarator(
+                        structField(
+                          name("contents",location=builtIn()), 
+                          baseTypeExpr(),
+                          []),
+                        nilStructDeclarator())),
+                    nilStructItem()))), location=builtIn()))),
         cs.funDecls);
 
   top.transform = decls(appendDecls(defaultDecls, adtDecls));
@@ -285,6 +299,25 @@ top::Constructor ::= n::String tms::TypeNameList
                 eqOp(location=builtIn()),location=builtIn()), 
               declRefExpr(
                 name(top.topTypeName++"_"++n,location=builtIn()),location=builtIn()),location=builtIn())),
+          exprStmt(
+            binaryOpExpr(
+              memberExpr(
+                declRefExpr(
+                  name("temp",location=builtIn()),location=builtIn()),
+                true,
+                name("refId",location=builtIn()),location=builtIn()),
+              assignOp(
+                eqOp(location=builtIn()),location=builtIn()), 
+              realConstant(
+                integerConstant(
+                  case head(lookupRefId(top.topTypeName, top.env)) of
+                    structRefIdItem(d) -> d.refId
+                  end,
+                  false,
+                  noIntSuffix(),
+                  location=builtIn()),
+                location=builtIn()),
+              location=builtIn())),
           tms.asAssignments,
           returnStmt(justExpr(declRefExpr(name("temp",location=builtIn()),location=builtIn())))
         ])));
