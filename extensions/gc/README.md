@@ -7,7 +7,7 @@ This extension introduces three new pieces of syntax:
 2. An operator 'gcrealloc' (e.g. `gcrealloc a to (5)`) that works like realloc but returns a pointer to garbage-collected memory.
 3. An operator 'gcnew' (e.g. `gcnew int`) that allocates space for a pointer to the given type.
 
-It uses the Boehm `<gc.h>` library.  Note that you must compile the generated code with -lgc
+It uses the `<gc.h>` header, for the Boehm gc library.  You can install this with `sudo apt-get install libgc-dev` on most systems.  Note that you must compile the generated code with -lgc.  
 
 The purpose of this extension is
 
