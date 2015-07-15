@@ -7,7 +7,7 @@ imports silver:langutil only ast;
 import edu:umn:cs:melt:exts:ableC:gc;
 
 -- Spurious import, to trigger the tests on build.
---import edu:umn:cs:melt:exts:ableC:gc:mda_test;
+import edu:umn:cs:melt:exts:ableC:gc:mda_test;
 
 marking terminal GcNew_t 'gcnew' lexer classes {Ckeyword};
 

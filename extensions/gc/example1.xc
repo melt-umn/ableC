@@ -9,7 +9,7 @@ struct test {
 
 int main (int argc, char **argv) {
     int *a = gcmalloc (10 * sizeof(int));
-    gcrealloc a to (12);
+    gcrealloc (a) to (12);
     
     test *b = gcnew test;
 }

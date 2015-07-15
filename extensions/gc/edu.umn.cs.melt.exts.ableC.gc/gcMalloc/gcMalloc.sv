@@ -1,7 +1,9 @@
 grammar edu:umn:cs:melt:exts:ableC:gc:gcMalloc;
 
-imports edu:umn:cs:melt:ableC:concretesyntax as cnc;
 imports silver:langutil only ast;
+
+imports edu:umn:cs:melt:ableC:concretesyntax as cnc;
+imports edu:umn:cs:melt:ableC:abstractsyntax as abs;
 
 import edu:umn:cs:melt:exts:ableC:gc;
 
@@ -9,14 +11,14 @@ import edu:umn:cs:melt:exts:ableC:gc;
 import edu:umn:cs:melt:exts:ableC:gc:mda_test;
 
 marking terminal GcMalloc_t  'gcmalloc' lexer classes {Ckeyword};
-marking terminal GcRealloc_t 'gcrealloc' lexer classes {Ckeyword};
-
-terminal To_t 'to' lexer classes {Ckeyword};
 
 concrete productions top::cnc:PostfixExpr_c
-| 'gcmalloc' '(' size::cnc:Expr_c ')'
+| 'gcmalloc' m::Malloc_c
+    { top.ast = m.ast; }
+
+nonterminal Malloc_c with ast<abs:Expr>, location;
+
+concrete productions top::Malloc_c
+| '(' size::cnc:Expr_c ')'
     { top.ast = gcMallocExpr(size.ast,
-        location=top.location); }
-| 'gcrealloc' ptr::cnc:Expr_c 'to' '(' size::cnc:Expr_c ')'
-    { top.ast = gcReallocExpr(ptr.ast, size.ast,
         location=top.location); }
