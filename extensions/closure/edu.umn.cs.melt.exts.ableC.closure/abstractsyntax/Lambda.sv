@@ -225,18 +225,20 @@ top::EnvNameList ::= n::Name rest::EnvNameList
   local skip::Boolean =
     case n.valueItem.typerep of
       functionType(_, _) -> true
+    | noncanonicalType(_) -> false
     | tagType(_, refIdTagType(_, sName, _)) -> null(lookupRefId(sName, top.env))
     | pointerType(_, functionType(_, _)) -> true -- Temporary hack until pp for function pointer variable defs is fixed
     | _ -> false
-    end;
+    end || n.name == "_env";
     
   -- If true, then don't capture this variable, even if though it is in the capture list
   local skipDef::Boolean =
     case n.valueItem.typerep of
-      tagType(_, refIdTagType(_, sName, _)) -> null(lookupRefId(sName, top.env))
+      noncanonicalType(_) -> false
+    | tagType(_, refIdTagType(_, sName, _)) -> null(lookupRefId(sName, top.env))
     | pointerType(_, functionType(_, _)) -> true -- Temporary hack until pp for function pointer variable defs is fixed
     | _ -> false
-    end;
+    end || n.name == "_env";
 
   local varBaseType::Type =
     if !null(n.valueLookupCheck)
@@ -282,7 +284,7 @@ top::EnvNameList ::= n::Name rest::EnvNameList
       [],
       justInitializer(exprInitializer(envAccess)));
   
-  top.defs =
+  top.defs = 
     if skipDef then rest.defs else
       valueDef(
         n.name,

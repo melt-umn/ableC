@@ -8,6 +8,7 @@ e::Expr ::= fn::Expr arg::Expr
       closureType(param, res, _) ->
         if compatibleTypes(param, arg.typerep, true) then []
         else [err(arg.location, s"Incompatible parameter type (expected ${showType(param)}, got ${showType(arg.typerep)})")]
+    | errorType() -> []
     | _ -> [err(arg.location, s"Cannot apply non-closure (got ${showType(fn.typerep)})")]
     end ++
     fn.errors ++ arg.errors;
