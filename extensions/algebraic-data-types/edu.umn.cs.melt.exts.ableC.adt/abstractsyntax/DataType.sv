@@ -103,10 +103,58 @@ top::ADTDecl ::= n::Name cs::ConstructorList
   
   {- This attribute is for extensions to use to add additional auto-generated functions
      for ADT, for example an auto-generated recursive freeing function.  This is being used
-     in the rewriting extension for the construct and destruct functions
+     in the rewriting extension for the construct and destruct functions.
   -}
   production attribute adtDecls::Decls with appendDecls;
   adtDecls := nilDecl();
+  
+  {- Used to generate prototypes for adtDecls which are inserted before the constructors -}
+  production attribute adtProtos::Decls with appendDecls;
+  adtProtos := nilDecl();
+  
+  production attribute structItems::StructItemList with appendStructItemList;
+  structItems := nilStructItem();
+  
+  structItems <-
+    consStructItem(
+      structItem(
+        [],
+        directTypeExpr(
+          builtinType(
+            [],
+            unsignedType(intType()))),
+            consStructDeclarator(
+              structField(
+                name("refId", location=builtIn()),
+                baseTypeExpr(),
+                []),
+            nilStructDeclarator())),
+      nilStructItem());
+      
+  local attribute genericAdtDecl::Decl =
+    typeExprDecl(
+      [],
+      structTypeExpr(
+        [],
+        structDecl([],
+          justName(name("_GenericDatatype", location=builtIn())),
+          appendStructItemList(
+            structItems,
+            consStructItem(
+              structItem(
+                [],
+                directTypeExpr(
+                  builtinType(
+                    [],
+                    unsignedType(intType()))),
+                consStructDeclarator(
+                  structField(
+                    name("tag", location=builtIn()),
+                    baseTypeExpr(),
+                    []),
+                  nilStructDeclarator())),
+              nilStructItem())),
+          location=builtIn())));
   
   local attribute defaultDecls::Decls =
       consDecl(
@@ -116,25 +164,15 @@ top::ADTDecl ::= n::Name cs::ConstructorList
             [],
             structDecl([],
               justName( n ),
-              consStructItem(
-                structItem([],
-                  directTypeExpr(
-                    builtinType(
-                      [],
-                      signedType(intType()))),
-                  consStructDeclarator(
-                    structField(
-                      name("refId", location=builtIn()),
-                      baseTypeExpr(),
-                      []),
-                    nilStructDeclarator())),
+              appendStructItemList(
+                structItems,
                 consStructItem(
                   structItem([],
                     enumTypeExpr(
                       [],
                       enumDecl(justName(name("_" ++ n.name ++ "_types", location=builtIn())),
-                        cs.enumItems, location=builtIn())),
-                    consStructDeclarator(
+                       cs.enumItems, location=builtIn())),
+                     consStructDeclarator(
                       structField(
                         name("tag", location=builtIn()),
                         baseTypeExpr(),
@@ -144,7 +182,8 @@ top::ADTDecl ::= n::Name cs::ConstructorList
                     structItem([],
                       unionTypeExpr(
                         [],
-                        unionDecl([],
+                        unionDecl(
+                          [],
                           justName(
                             name("_" ++ n.name ++ "_contents", location=builtIn())),
                           cs.structItems, location=builtIn())),
@@ -154,10 +193,30 @@ top::ADTDecl ::= n::Name cs::ConstructorList
                           baseTypeExpr(),
                           []),
                         nilStructDeclarator())),
-                    nilStructItem()))), location=builtIn()))),
-        cs.funDecls);
+                    nilStructItem()))),
+                location=builtIn()))),
+        nilDecl());
 
-  top.transform = decls(appendDecls(defaultDecls, adtDecls));
+  top.transform =
+    if !null(lookupTag("_GenericDatatype", top.env))
+    then decls(
+           appendDecls(
+             defaultDecls,
+             appendDecls(
+               adtProtos,
+               appendDecls(
+                 cs.funDecls,
+                 adtDecls))))
+    else decls(
+           consDecl(
+             genericAdtDecl,
+               appendDecls(
+                 defaultDecls,
+                 appendDecls(
+                   adtProtos,
+                   appendDecls(
+                     cs.funDecls,
+                     adtDecls)))));
 }
 
 function appendDecls
@@ -166,6 +225,15 @@ Decls ::= d1::Decls d2::Decls
   return case d1 of
               nilDecl() -> d2
             | consDecl(d, rest) -> consDecl(d, appendDecls(rest, d2))
+         end;
+}
+
+function appendStructItemList
+StructItemList ::= d1::StructItemList d2::StructItemList
+{
+  return case d1 of
+              nilStructItem() -> d2
+            | consStructItem(d, rest) -> consStructItem(d, appendStructItemList(rest, d2))
          end;
 }
 
@@ -232,6 +300,9 @@ nonterminal Constructor
 abstract production constructor
 top::Constructor ::= n::String tms::TypeNameList
 {
+  production attribute initStmts::[Stmt] with ++;
+  initStmts := [];
+
   top.pp = concat( [ text(n ++ " ( "), ppImplode (text(", "), tms.pps),
                      text(" );") ] );
   tms.position = 0;  
@@ -318,6 +389,7 @@ top::Constructor ::= n::String tms::TypeNameList
                   location=builtIn()),
                 location=builtIn()),
               location=builtIn())),
+          foldStmt(initStmts),
           tms.asAssignments,
           returnStmt(justExpr(declRefExpr(name("temp",location=builtIn()),location=builtIn())))
         ])));
