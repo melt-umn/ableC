@@ -354,16 +354,58 @@ p::Pattern ::=
   p.decls = [];
 }
 
-abstract production patternIntegerConst
-p::Pattern ::= i::Integer
+abstract production patternConst
+p::Pattern ::= constExpr::Expr
 {
-  p.pp = text(toString(i));
+  p.pp = constExpr.pp;
   p.defs = [];
-  p.errors := (if compatibleTypes(p.expectedType, builtinType([], signedType(intType())), false) then [] else
-                  [err(p.location, "Unexpected integer constant in pattern")]);
-  p.transform = p.transformIn;
+  p.errors := (if compatibleTypes(p.expectedType, constExpr.typerep, false) then [] else
+                  [err(p.location, "Unexpected constant in pattern")]);
+  p.transform =
+    ifStmt(
+      txtExpr("((" ++ p.parent_idType ++ ")" ++ 
+                  "_current_ADT" ++ "[" ++ toString(p.depth-1) ++ "])->contents." ++ 
+                  p.parentTag ++ ".f" ++ toString(p.position) ++ " == " ++ show(10, constExpr.pp),
+      location=p.location),
+      
+        -- then clause
+      p.transformIn,           
+        -- else clause
+      nullStmt());
   p.decls = [];
 }
+
+abstract production patternStringLiteral
+p::Pattern ::= s::String
+{
+  p.pp = text(s);
+  p.defs = [];
+  p.errors := (if compatibleTypes(
+                    p.expectedType,
+                    pointerType(
+                      [],
+                      builtinType(
+                        [constQualifier()],
+                        signedType(charType()))),
+                    false) then [] else
+                  [err(p.location, "Unexpected string constant in pattern")]) ++
+              (if !null(lookupValue("strcmp", p.env)) then [] else
+                  [err(p.location, "Pattern string literals require <string.h> to be included")]);
+  p.transform =
+    ifStmt(
+      txtExpr("!strcmp(((" ++ p.parent_idType ++ ")" ++ 
+                  "_current_ADT" ++ "[" ++ toString(p.depth-1) ++ "])->contents." ++ 
+                  p.parentTag ++ ".f" ++ toString(p.position) ++ " == " ++ s ++ ")",
+      location=p.location),
+      
+        -- then clause
+      p.transformIn,           
+        -- else clause
+      nullStmt());
+  p.decls = [];
+}
+
+
 synthesized attribute pslength::Integer ;
 
 nonterminal PatternList 

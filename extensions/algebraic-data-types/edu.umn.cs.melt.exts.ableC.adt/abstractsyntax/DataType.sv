@@ -171,7 +171,16 @@ top::ADTDecl ::= n::Name cs::ConstructorList
                     enumTypeExpr(
                       [],
                       enumDecl(justName(name("_" ++ n.name ++ "_types", location=builtIn())),
-                       cs.enumItems, location=builtIn())),
+                      case cs.enumItems of
+                        nilEnumItem() ->
+                          consEnumItem(
+                            enumItem(
+                              name("_dummy_" ++ n.name ++ "_enum_item", location=builtIn()),
+                              nothingExpr()),
+                            nilEnumItem())
+                      | _ -> cs.enumItems
+                      end,
+                      location=builtIn())),
                      consStructDeclarator(
                       structField(
                         name("tag", location=builtIn()),

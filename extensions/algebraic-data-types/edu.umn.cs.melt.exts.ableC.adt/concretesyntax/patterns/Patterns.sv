@@ -43,13 +43,8 @@ concrete productions p::Pattern
             else abs:patternVariable( id.lexeme, location=p.location );
   }
 
-
-
-{- ToDo: Provide patterns for constants of the built in type.
-
 | c::Constant_c 
-    { } --top.ast = c.ast; }
-| sl::StringConstant_c
-    { } --top.ast = ast:stringLiteral(sl.ast, location=top.location); }
+    { p.ast = abs:patternConst(c.ast, location=p.location); }
 
--}
+| sl::StringConstant_c
+    { p.ast = abs:patternStringLiteral(sl.ast, location=p.location); }
