@@ -26,6 +26,21 @@ e::Expr ::= fn::Expr arg::Expr
       errorExpr(localErrs, location=e.location);
   
   local fwrd::Expr =
+    stmtExpr(
+      declStmt(
+        variableDecls([], [],
+          typedefTypeExpr([], name("_closure", location=builtIn())),
+          consDeclarator(
+            declarator(
+              name("_temp_closure", location=builtIn()),
+              baseTypeExpr(),
+              [],
+              justInitializer(exprInitializer(fn))),
+            nilDeclarator()))),
+         call,
+         location=builtIn());
+  
+  local call::Expr =
     callExpr(
       explicitCastExpr(
         case fn.typerep of
@@ -52,9 +67,12 @@ e::Expr ::= fn::Expr arg::Expr
                         []),
                       nilParameters())),
                 false)))
+        | _ -> typeName(errorTypeExpr(localErrs), baseTypeExpr())
         end,
         memberExpr(
-          fn,
+          declRefExpr(
+            name("_temp_closure", location=builtIn()),
+            location=builtIn()),
           false,
           name("fn", location=builtIn()),
           location=builtIn()),
@@ -63,7 +81,9 @@ e::Expr ::= fn::Expr arg::Expr
         arg,
         consExpr(
           memberExpr(
-            fn,
+            declRefExpr(
+              name("_temp_closure", location=builtIn()),
+              location=builtIn()),
             false,
             name("env", location=builtIn()),
             location=builtIn()),
