@@ -1,6 +1,6 @@
 
 
-nonterminal MaybeExpr with pp, isJust, errors, defs, env, maybeTyperep;
+nonterminal MaybeExpr with pp, isJust, errors, defs, env, maybeTyperep, returnType;
 
 synthesized attribute maybeTyperep :: Maybe<Type>;
 
@@ -26,7 +26,7 @@ top::MaybeExpr ::=
 
 synthesized attribute pps :: [Document];
 
-nonterminal Exprs with pps, errors, defs, env, expectedTypes, argumentPosition, callExpr, argumentErrors, count, callVariadic;
+nonterminal Exprs with pps, errors, defs, env, expectedTypes, argumentPosition, callExpr, argumentErrors, count, callVariadic, returnType;
 
 inherited attribute expectedTypes :: [Type];
 {-- Initially 1. -}
@@ -74,7 +74,7 @@ top::Exprs ::=
       [err(top.callExpr.location, "call expected " ++ toString(top.argumentPosition + length(top.expectedTypes)) ++ " arguments, got only " ++ toString(top.argumentPosition))];
 }
 
-nonterminal ExprOrTypeName with pp, errors, defs, env, typerep;
+nonterminal ExprOrTypeName with pp, errors, defs, env, typerep, returnType;
 
 abstract production exprExpr
 top::ExprOrTypeName ::= e::Expr

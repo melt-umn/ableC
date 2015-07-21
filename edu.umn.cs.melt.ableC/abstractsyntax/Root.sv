@@ -10,6 +10,7 @@ top::Root ::= d::Decls
   top.errors := d.errors;
   d.env = builtinfunctions:initialEnv;
   d.isTopLevel = true;
+  d.returnType = nothing();
 }
 
 

@@ -1,7 +1,7 @@
 
-nonterminal Stmt with pp, errors, defs, env, functiondefs;
+nonterminal Stmt with pp, errors, defs, env, functiondefs, returnType;
 
-autocopy attribute returnType :: Type;
+autocopy attribute returnType :: Maybe<Type>;
 
 abstract production nullStmt
 top::Stmt ::=
@@ -153,7 +153,7 @@ top::Stmt ::= i::MaybeExpr  c::MaybeExpr  s::MaybeExpr  b::Stmt
   local cty :: Type = fromMaybe(errorType(), c.maybeTyperep);
   top.errors <-
     if cty.defaultFunctionArrayLvalueConversion.isScalarType then []
-    else [err(loc("TODOfor1",-1,-1,-1,-1,-1,-1), "For condition must be scalar type, instead it is " ++ showType(cty))];
+    else [err(loc("TODOfor1",-1,-1,-1,-1,-1,-1), "For condition must be scalar type, instead it is " ++ showType(cty))]; -- TODO: location
 }
 
 abstract production forDeclStmt
@@ -177,14 +177,23 @@ top::Stmt ::= i::Decl  c::MaybeExpr  s::MaybeExpr  b::Stmt
   local cty :: Type = fromMaybe(errorType(), c.maybeTyperep);
   top.errors <-
     if cty.defaultFunctionArrayLvalueConversion.isScalarType then []
-    else [err(loc("TODOfor2",-1,-1,-1,-1,-1,-1), "For condition must be scalar type, instead it is " ++ showType(cty))];
+    else [err(loc("TODOfor2",-1,-1,-1,-1,-1,-1), "For condition must be scalar type, instead it is " ++ showType(cty))]; -- TODO: location
 }
 
 abstract production returnStmt
 top::Stmt ::= e::MaybeExpr
 {
   top.pp = concat([text("return"), space(), e.pp, semi()]);
-  top.errors := e.errors;
+  top.errors := case top.returnType, e.maybeTyperep of
+                  nothing(), nothing() -> []
+                | just(builtinType(_, voidType())), nothing() -> []
+                | just(expected), just(actual) ->
+                    if compatibleTypes(expected, actual, true) then []
+                    else [err(case e of justExpr(e1) -> e1.location end,
+                              "Incorrect return type, expected " ++ showType(expected) ++ " but found " ++ showType(actual))]
+                | nothing(), just(actual) -> [err(case e of justExpr(e1) -> e1.location end, "Unexpected return")]
+                | just(expected), nothing() -> [err(loc("TODOreturn",-1,-1,-1,-1,-1,-1), "Expected return value, but found valueless return")] -- TODO: location
+                end ++ e.errors;
   top.defs = e.defs;
   top.functiondefs = [];
   -- TODO: this needs to follow the same rules as assignment. We should try to factor that out.

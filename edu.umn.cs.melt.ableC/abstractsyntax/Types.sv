@@ -426,7 +426,6 @@ top::BaseTypeExpr ::=
 }
 
 
-
 {- 
 NON_CANONICAL_UNLESS_DEPENDENT_TYPE(TypeOfExpr, Type)
 NON_CANONICAL_UNLESS_DEPENDENT_TYPE(TypeOf, Type)
@@ -437,3 +436,17 @@ NON_CANONICAL_UNLESS_DEPENDENT_TYPE(TypeOf, Type)
 
 -}
 
+{-- Tacks on qualifiers to a type at the outermost level -}
+function addQualifiers
+Type ::= qs::[Qualifier] base::Type
+{
+  return case base of
+           builtinType(q, bt) -> builtinType(q ++ qs, bt)
+         | pointerType(q, t) -> pointerType(q ++ qs, t) -- TODO: array types?  
+         | tagType(q, tt) -> tagType(q ++ qs, tt)
+         | atomicType(q, t) -> atomicType(q ++ qs, t)
+         | noncanonicalType(typedefType(q, n, t)) -> noncanonicalType(typedefType(q ++ qs, n, t))
+         | noncanonicalType(typeofType(q, t)) -> noncanonicalType(typeofType(q ++ qs, t))
+         | _ -> base
+         end;
+}

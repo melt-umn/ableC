@@ -5,7 +5,7 @@
 -- Declaration is rooted in External, but also in stmts. Either a variableDecl or a typedefDecl.
 -- ParameterDecl should probably be something special, distinct from variableDecl.
 
-nonterminal Decls with pps, errors, defs, env, isTopLevel;
+nonterminal Decls with pps, errors, defs, env, isTopLevel, returnType;
 
 autocopy attribute isTopLevel :: Boolean;
 
@@ -27,7 +27,7 @@ top::Decls ::=
   top.defs = [];
 }
 
-nonterminal Decl with pp, errors, defs, env, isTopLevel;
+nonterminal Decl with pp, errors, defs, env, isTopLevel, returnType;
 
 {-- Pass down from top-level declaration the list of attribute to each name-declaration -}
 autocopy attribute givenAttributes :: [Attribute];
@@ -122,7 +122,7 @@ top::Decl ::= s::String
   -- but used to be the way to put c functions and such in custom sections.
 }
 
-nonterminal Declarators with pps, errors, defs, env, baseType, isTopLevel, isTypedef, givenAttributes;
+nonterminal Declarators with pps, errors, defs, env, baseType, isTopLevel, isTypedef, givenAttributes, returnType;
 
 abstract production consDeclarator
 top::Declarators ::= h::Declarator  t::Declarators
@@ -141,7 +141,7 @@ top::Declarators ::=
   top.defs = [];
 }
 
-nonterminal Declarator with pps, errors, defs, env, baseType, typerep, sourceLocation, isTopLevel, isTypedef, givenAttributes;
+nonterminal Declarator with pps, errors, defs, env, baseType, typerep, sourceLocation, isTopLevel, isTypedef, givenAttributes, returnType;
 
 autocopy attribute isTypedef :: Boolean;
 
@@ -172,7 +172,7 @@ top::Declarator ::= msg::[Message]
   top.sourceLocation = loc("nowhere", -1, -1, -1, -1, -1, -1); -- TODO fix this? add locaiton maybe?
 }
 
-nonterminal FunctionDecl with pp, errors, defs, env, typerep, sourceLocation;
+nonterminal FunctionDecl with pp, errors, defs, env, typerep, sourceLocation, returnType;
 
 abstract production functionDecl
 top::FunctionDecl ::= storage::[StorageClass]  fnquals::[SpecialSpecifier]  bty::BaseTypeExpr mty::TypeModifierExpr  name::Name  attrs::[Attribute]  decls::Decls  body::Stmt
@@ -185,7 +185,7 @@ top::FunctionDecl ::= storage::[StorageClass]  fnquals::[SpecialSpecifier]  bty:
     case mty of
     | functionTypeExprWithArgs(result, args, variadic) ->
         args
-    | _ -> decorate nilParameters() with { env = top.env; }
+    | _ -> decorate nilParameters() with { env = top.env; returnType = top.returnType; }
     end;
   
   top.errors := bty.errors ++ mty.errors ++ body.errors;
@@ -194,6 +194,13 @@ top::FunctionDecl ::= storage::[StorageClass]  fnquals::[SpecialSpecifier]  bty:
   top.sourceLocation = name.location;
   
   mty.baseType = bty.typerep;
+  
+  body.returnType =
+    case mty of
+      functionTypeExprWithArgs(ret, _, _) -> just(decorate typeName(bty, ret) with {env = top.env; returnType = top.returnType;}.typerep)
+    | functionTypeExprWithoutArgs(ret, _) -> just(decorate typeName(bty, ret) with {env = top.env; returnType = top.returnType;}.typerep)
+    | _ -> nothing() -- Don't error here, this is caught in type checking
+    end;
   
   -- TODO: add __func__ to environment here!
   body.env = addEnv(top.defs ++ parameters.defs ++ decls.defs ++ body.functiondefs, openScope(addEnv(bty.defs, top.env)));
@@ -220,7 +227,7 @@ top::FunctionDecl ::= msg::[Message]
   top.sourceLocation = loc("nowhere", -1, -1, -1, -1, -1, -1); -- TODO fix this? add locaiton maybe?
 }
 
-nonterminal Parameters with typereps, pps, errors, defs, env;
+nonterminal Parameters with typereps, pps, errors, defs, env, returnType;
 
 abstract production consParameters
 top::Parameters ::= h::ParameterDecl  t::Parameters
@@ -245,7 +252,7 @@ top::Parameters ::=
 -- TODO: move these, later
 synthesized attribute paramname :: Maybe<Name>;
 
-nonterminal ParameterDecl with paramname, typerep, pp, errors, defs, env, sourceLocation;
+nonterminal ParameterDecl with paramname, typerep, pp, errors, defs, env, sourceLocation, returnType;
 
 abstract production parameterDecl
 top::ParameterDecl ::= storage::[StorageClass]  bty::BaseTypeExpr  mty::TypeModifierExpr  name::MaybeName  attrs::[Attribute]
@@ -274,7 +281,7 @@ top::ParameterDecl ::= storage::[StorageClass]  bty::BaseTypeExpr  mty::TypeModi
 
 synthesized attribute refId :: String; -- TODO move this later?
 
-nonterminal StructDecl with location, pp, maybename, errors, defs, env, tagEnv, refId;
+nonterminal StructDecl with location, pp, maybename, errors, defs, env, tagEnv, refId, returnType;
 
 abstract production structDecl
 top::StructDecl ::= attrs::[Attribute]  name::MaybeName  dcls::StructItemList
@@ -326,7 +333,7 @@ top::StructDecl ::= attrs::[Attribute]  name::MaybeName  dcls::StructItemList
     else [err(top.location, "Redeclaration of struct " ++ name.maybename.fromJust.name)];
 }
 
-nonterminal UnionDecl with location, pp, maybename, errors, defs, env, tagEnv, refId;
+nonterminal UnionDecl with location, pp, maybename, errors, defs, env, tagEnv, refId, returnType;
 
 abstract production unionDecl
 top::UnionDecl ::= attrs::[Attribute]  name::MaybeName  dcls::StructItemList
@@ -361,7 +368,7 @@ top::UnionDecl ::= attrs::[Attribute]  name::MaybeName  dcls::StructItemList
     else [err(top.location, "Redeclaration of union " ++ name.maybename.fromJust.name)];
 }
 
-nonterminal EnumDecl with location, pp, maybename, errors, defs, env;
+nonterminal EnumDecl with location, pp, maybename, errors, defs, env, returnType;
 
 abstract production enumDecl
 top::EnumDecl ::= name::MaybeName  dcls::EnumItemList
@@ -389,7 +396,7 @@ top::EnumDecl ::= name::MaybeName  dcls::EnumItemList
 }
 
 
-nonterminal StructItemList with pps, errors, defs, env, localdefs;
+nonterminal StructItemList with pps, errors, defs, env, localdefs, returnType;
 
 abstract production nilStructItem
 top::StructItemList ::=
@@ -411,7 +418,7 @@ top::StructItemList ::= h::StructItem  t::StructItemList
   t.env = addEnv(h.defs ++ h.localdefs, h.env);
 }
 
-nonterminal EnumItemList with pps, errors, defs, env, containingEnum;
+nonterminal EnumItemList with pps, errors, defs, env, containingEnum, returnType;
 
 autocopy attribute containingEnum :: Type;
 
@@ -433,7 +440,7 @@ top::EnumItemList ::= h::EnumItem  t::EnumItemList
   t.env = addEnv(h.defs, h.env);
 }
 
-nonterminal StructItem with pp, errors, defs, env, localdefs;
+nonterminal StructItem with pp, errors, defs, env, localdefs, returnType;
 
 abstract production structItem
 top::StructItem ::= attrs::[Attribute]  ty::BaseTypeExpr  dcls::StructDeclarators
@@ -456,7 +463,7 @@ top::StructItem ::= msg::[Message]
 }
 
 
-nonterminal StructDeclarators with pps, errors, localdefs, env, baseType, givenAttributes;
+nonterminal StructDeclarators with pps, errors, localdefs, env, baseType, givenAttributes, returnType;
 
 abstract production consStructDeclarator
 top::StructDeclarators ::= h::StructDeclarator  t::StructDeclarators
@@ -475,7 +482,7 @@ top::StructDeclarators ::=
   top.localdefs = [];
 }
 
-nonterminal StructDeclarator with pps, errors, localdefs, env, typerep, sourceLocation, baseType, givenAttributes;
+nonterminal StructDeclarator with pps, errors, localdefs, env, typerep, sourceLocation, baseType, givenAttributes, returnType;
 
 abstract production structField
 top::StructDeclarator ::= name::Name  ty::TypeModifierExpr  attrs::[Attribute]
@@ -524,7 +531,7 @@ top::StructDeclarator ::= msg::[Message]
   top.sourceLocation = loc("nowhere", -1, -1, -1, -1, -1, -1); -- TODO fix this? add locaiton maybe?
 }
 
-nonterminal EnumItem with pp, errors, defs, env, containingEnum, typerep, sourceLocation;
+nonterminal EnumItem with pp, errors, defs, env, containingEnum, typerep, sourceLocation, returnType;
 
 abstract production enumItem
 top::EnumItem ::= name::Name  e::MaybeExpr

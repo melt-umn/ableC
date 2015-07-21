@@ -1,6 +1,6 @@
 
 
-nonterminal Expr with location, pp, errors, defs, env, typerep;
+nonterminal Expr with location, pp, errors, defs, env, returnType, typerep;
 
 synthesized attribute integerConstantValue :: Maybe<Integer>;
 
@@ -278,7 +278,7 @@ top::Expr ::= e::Expr  gl::GenericAssocs  def::MaybeExpr
   -- TODO: type checking!!
 }
 
-nonterminal GenericAssocs with pps, errors, defs, env, selectionType, compatibleSelections;
+nonterminal GenericAssocs with pps, errors, defs, env, selectionType, compatibleSelections, returnType;
 
 autocopy attribute selectionType :: Type;
 synthesized attribute compatibleSelections :: [Decorated Expr];
@@ -300,7 +300,7 @@ top::GenericAssocs ::=
   top.compatibleSelections = [];
 }
 
-nonterminal GenericAssoc with location, pp, errors, defs, env, selectionType, compatibleSelections;
+nonterminal GenericAssoc with location, pp, errors, defs, env, selectionType, compatibleSelections, returnType;
 
 abstract production genericAssoc
 top::GenericAssoc ::= ty::TypeName  fun::Expr

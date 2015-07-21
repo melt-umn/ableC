@@ -26,7 +26,7 @@ top::Expr ::= ty::TypeName  e::MemberDesignator
   top.typerep = builtinType([], signedType(intType()));
 }
 
-nonterminal MemberDesignator with pp, errors, defs, env;
+nonterminal MemberDesignator with pp, errors, defs, env, returnType;
 
 abstract production initialMemberDesignator
 top::MemberDesignator ::= id::Name

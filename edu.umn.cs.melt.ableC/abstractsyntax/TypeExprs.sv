@@ -33,7 +33,7 @@ synthesized attribute rpp :: Document;
 synthesized attribute typerep :: Type;
 synthesized attribute typereps :: [Type];
 
-nonterminal TypeName with env, typerep, pp, errors, defs;
+nonterminal TypeName with env, typerep, pp, errors, defs, returnType;
 
 abstract production typeName
 top::TypeName ::= bty::BaseTypeExpr  mty::TypeModifierExpr
@@ -49,7 +49,7 @@ top::TypeName ::= bty::BaseTypeExpr  mty::TypeModifierExpr
 {--
  - Corresponds to types obtainable from a TypeSpecifiers.
  -}
-nonterminal BaseTypeExpr with env, typerep, pp, errors, defs;
+nonterminal BaseTypeExpr with env, typerep, pp, errors, defs, returnType;
 
 function errorTypeExpr
 BaseTypeExpr ::= msg::[Message]
@@ -240,7 +240,7 @@ top::BaseTypeExpr ::= q::[Qualifier]  e::ExprOrTypeName
  - Typically, these are just anchored somewhere to obtain the env,
  - and then turn into an environment-independent Type.
  -}
-nonterminal TypeModifierExpr with env, typerep, lpp, rpp, baseType, errors;
+nonterminal TypeModifierExpr with env, typerep, lpp, rpp, baseType, errors, returnType;
 
 
 abstract production baseTypeExpr

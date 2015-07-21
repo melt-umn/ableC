@@ -1,5 +1,5 @@
 
-nonterminal MaybeInitializer with pp, errors, defs, env;
+nonterminal MaybeInitializer with pp, errors, defs, env, returnType;
 
 abstract production nothingInitializer
 top::MaybeInitializer ::=
@@ -16,7 +16,7 @@ top::MaybeInitializer ::= i::Initializer
   top.defs = i.defs;
 }
 
-nonterminal Initializer with pp, errors, defs, env;
+nonterminal Initializer with pp, errors, defs, env, returnType;
 
 abstract production exprInitializer
 top::Initializer ::= e::Expr
@@ -34,7 +34,7 @@ top::Initializer ::= l::InitList
   top.defs = l.defs;
 }
 
-nonterminal InitList with pps, errors, defs, env;
+nonterminal InitList with pps, errors, defs, env, returnType;
 
 abstract production consInit
 top::InitList ::= h::Init  t::InitList
@@ -54,7 +54,7 @@ top::InitList ::=
   top.defs = [];
 }
 
-nonterminal Init with pp, errors, defs, env;
+nonterminal Init with pp, errors, defs, env, returnType;
 
 abstract production init
 top::Init ::= i::Initializer
@@ -78,7 +78,7 @@ top::Init ::= d::Designator  i::Initializer
  - Tree access pattern for designators.
  - e.g.  "[1].d[0] = e" gives "array(0, field(d, array(1, initial)))"
  -}
-nonterminal Designator with pp, errors, defs, env;
+nonterminal Designator with pp, errors, defs, env, returnType;
 
 abstract production initialDesignator
 top::Designator ::=

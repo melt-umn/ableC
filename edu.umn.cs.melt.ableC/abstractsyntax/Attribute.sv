@@ -15,17 +15,19 @@ function ppAttribute
 Document ::= a::Attribute env::Decorated Env
 {
   a.env = env;
+  a.returnType = nothing(); -- TODO: fix flow dependencies
   return a.pp;
 }
 function ppAttrib
 Document ::= a::Attrib env::Decorated Env
 {
   a.env = env;
+  a.returnType = nothing(); -- TODO: fix flow dependencies
   return a.pp;
 }
 
 {-- __attribute__ syntax representation -}
-nonterminal Attribute with pp, env;
+nonterminal Attribute with pp, env, returnType;
 
 abstract production gccAttribute
 top::Attribute ::= l::[Attrib]
@@ -40,7 +42,7 @@ top::Attribute ::= s::String
 }
 
 
-nonterminal Attrib with pp, env;
+nonterminal Attrib with pp, env, returnType;
 
 -- e.g. __attribute__(())
 abstract production emptyAttrib
