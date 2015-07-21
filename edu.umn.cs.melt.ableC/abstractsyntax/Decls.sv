@@ -149,7 +149,13 @@ abstract production declarator
 top::Declarator ::= name::Name  ty::TypeModifierExpr  attrs::[Attribute]  initializer::MaybeInitializer
 {
   top.pps = [concat([ty.lpp, name.pp, ty.rpp, ppAttributesRHS(attrs, top.env), initializer.pp])];
-  top.errors := ty.errors ++ initializer.errors;
+  top.errors :=
+    case initializer of
+      justInitializer(exprInitializer(e)) ->
+        if compatibleTypes(e.typerep, top.typerep, true) then []
+        else [err(top.sourceLocation, "Incompatible type in initialization, expected " ++ showType(top.typerep) ++ " but found " ++ showType(e.typerep))]
+    | _ -> []
+    end ++ ty.errors ++ initializer.errors;
   top.defs = [valueDef(name.name, declaratorValueItem(top))];
   top.typerep = animateAttributeOnType(allAttrs, ty.typerep, top.env);
   top.sourceLocation = name.location;

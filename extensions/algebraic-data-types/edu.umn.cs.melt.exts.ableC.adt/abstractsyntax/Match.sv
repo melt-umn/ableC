@@ -96,7 +96,7 @@ inherited attribute expectedType :: Type;
 inherited attribute expectedTypes :: [Type];
 
 
-nonterminal StmtClauses with location, pp, errors, env, 
+nonterminal StmtClauses with location, pp, errors, env, returnType, 
   expectedType, transform<Stmt>;
 
 abstract production consStmtClause
@@ -121,7 +121,7 @@ cs::StmtClauses ::= {-empty-}
 }
   
 nonterminal StmtClause with location, pp, errors, env, 
-  expectedType, transform<Stmt>, transformIn<Stmt>;
+  expectedType, transform<Stmt>, transformIn<Stmt>, returnType;
 
 abstract production stmtClause
 c::StmtClause ::= p::Pattern s::Stmt
@@ -188,7 +188,7 @@ autocopy attribute parent_idType :: String;
 autocopy attribute parent_idTypeIndicator :: String;
 
 nonterminal Pattern with location, pp, defs, env, errors, 
-  position, depth, parentTag, decls, parent_id, parent_idType, expectedType, parent_idTypeIndicator, transform<Stmt>, transformIn<Stmt> ;
+  position, depth, parentTag, decls, parent_id, parent_idType, expectedType, parent_idTypeIndicator, transform<Stmt>, transformIn<Stmt>;
 
 abstract production constructorPattern
 p::Pattern ::= id::String ps::PatternList
@@ -373,6 +373,7 @@ p::Pattern ::= constExpr::Expr
         -- else clause
       nullStmt());
   p.decls = [];
+  constExpr.returnType = nothing();
 }
 
 abstract production patternStringLiteral
