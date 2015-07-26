@@ -393,7 +393,7 @@ top::Constructor ::= n::String tms::TypeNameList
                   case head(lookupRefId(top.topTypeName, top.env)) of
                     structRefIdItem(d) -> d.refId
                   end,
-                  false,
+                  true,
                   noIntSuffix(),
                   location=builtIn()),
                 location=builtIn()),
