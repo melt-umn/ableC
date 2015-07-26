@@ -5,7 +5,7 @@ e::Expr ::= fn::Expr arg::Expr
 {
   local localErrs :: [Message] =
     case fn.typerep of
-      closureType(param, res, _) ->
+      closureType(_, param, res, _) ->
         if compatibleTypes(param, arg.typerep, true) then []
         else [err(arg.location, s"Incompatible parameter type (expected ${showType(param)}, got ${showType(arg.typerep)})")]
     | errorType() -> []
@@ -15,7 +15,7 @@ e::Expr ::= fn::Expr arg::Expr
   
   e.typerep =
     case fn.typerep of
-      closureType(param, res, _) -> res
+      closureType(_, param, res, _) -> res
     | _ -> errorType()
     end;
   
@@ -37,14 +37,14 @@ e::Expr ::= fn::Expr arg::Expr
               [],
               justInitializer(exprInitializer(fn))),
             nilDeclarator()))),
-         call,
-         location=builtIn());
+       call,
+       location=builtIn());
   
   local call::Expr =
     callExpr(
       explicitCastExpr(
         case fn.typerep of
-          closureType(param, res, _) -> 
+          closureType(_, param, res, _) -> 
             typeName(
               directTypeExpr(res),
               pointerTypeExpr(
@@ -73,7 +73,7 @@ e::Expr ::= fn::Expr arg::Expr
           declRefExpr(
             name("_temp_closure", location=builtIn()),
             location=builtIn()),
-          false,
+          true,
           name("fn", location=builtIn()),
           location=builtIn()),
         location=builtIn()),
@@ -84,7 +84,7 @@ e::Expr ::= fn::Expr arg::Expr
             declRefExpr(
               name("_temp_closure", location=builtIn()),
               location=builtIn()),
-            false,
+            true,
             name("env", location=builtIn()),
             location=builtIn()),
           nilExpr())),

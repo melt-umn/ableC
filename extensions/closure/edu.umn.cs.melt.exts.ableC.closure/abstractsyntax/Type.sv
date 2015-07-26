@@ -8,6 +8,7 @@ b::BaseTypeExpr ::= param::TypeName res::TypeName
 
   b.typerep =
     closureType(
+      [], --TODO
       param.typerep,
       res.typerep,
       case transName.tagItem of
@@ -25,17 +26,19 @@ b::BaseTypeExpr ::= param::TypeName res::TypeName
 
 -- Passing the refId is kind of a hack, because it is always the same.  However, the env isn't available to look it up
 abstract production closureType
-t::Type ::= param::Type res::Type refId::String
+t::Type ::= qs::[Qualifier] param::Type res::Type refId::String
 {
   t.lpp = text("_closure");
   t.rpp = notext();
+  
+  t.withTypeQualifiers = closureType(t.addedTypeQualifiers ++ qs, param, res, refId);
   
   forwards to
     if refId == "undefined _closure" then errorType()
     else
       noncanonicalType(
         typedefType(
-          [],
+          qs,
           "_closure",
           tagType(
             [],

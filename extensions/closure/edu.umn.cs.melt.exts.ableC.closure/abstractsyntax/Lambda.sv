@@ -8,6 +8,8 @@ imports edu:umn:cs:melt:ableC:abstractsyntax:construction;
 imports edu:umn:cs:melt:ableC:abstractsyntax:env;
 --imports edu:umn:cs:melt:ableC:abstractsyntax:debug;
 
+imports edu:umn:cs:melt:exts:ableC:gc;
+
 import silver:util:raw:treemap as tm;
 
 abstract production lambdaExpr
@@ -21,6 +23,7 @@ e::Expr ::= captured::EnvNameList paramType::TypeName param::Name res::Expr
   
   e.typerep =
     closureType(
+      [],
       paramType.typerep,
       res.typerep,
       case lookupTag("_closure", e.env) of
@@ -112,6 +115,7 @@ e::Expr ::= captured::EnvNameList paramType::TypeName param::Name res::Expr
             map(
               tm:toList,
               e.env.values)))));
+  local fnName::String = "_fn_" ++ toString(genInt());
   
   local fnDecl::FunctionDecl =
     functionDecl(
@@ -136,7 +140,7 @@ e::Expr ::= captured::EnvNameList paramType::TypeName param::Name res::Expr
              []),
            nilParameters())),
        false),
-     name("_fn", location=builtIn()),
+     name(fnName, location=builtIn()),
      [],
      nilDecl(),
      foldStmt([
@@ -200,10 +204,15 @@ e::Expr ::= captured::EnvNameList paramType::TypeName param::Name res::Expr
                 name("_result", location=builtIn()),
                 baseTypeExpr(),
                 [],
-                nothingInitializer()),
+                justInitializer(
+                  exprInitializer(
+                    txtExpr(
+                      "(_closure)GC_malloc(sizeof(_closure_s))", --TODO
+                      location=builtIn())))),
               nilDeclarator()))),
-        txtStmt("_result.env = _env;"), --TODO
-        txtStmt("_result.fn = _fn;")]), --TODO
+        txtStmt("_result->env = _env;"), --TODO
+        txtStmt(s"_result->fn = ${fnName};"), -- TODO
+        txtStmt(s"_result->fn_name = \"${fnName}\";")]), --TODO
       declRefExpr(
         name("_result", location=builtIn()),
         location=builtIn()),
