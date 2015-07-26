@@ -188,7 +188,7 @@ top::Stmt ::= e::MaybeExpr
                   nothing(), nothing() -> []
                 | just(builtinType(_, voidType())), nothing() -> []
                 | just(expected), just(actual) ->
-                    if compatibleTypes(expected, actual, true) then []
+                    if typeAssignableTo(expected, actual) then []
                     else [err(case e of justExpr(e1) -> e1.location end,
                               "Incorrect return type, expected " ++ showType(expected) ++ " but found " ++ showType(actual))]
                 | nothing(), just(actual) -> [err(case e of justExpr(e1) -> e1.location end, "Unexpected return")]

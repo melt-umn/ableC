@@ -12,8 +12,8 @@ abstract production assignOp
 top::BinOp ::= op::AssignOp
 {
   top.errors :=
-    (if compatibleTypes(top.lop.typerep, top.rop.typerep, true) then []
-     else [err(top.location, "Incompatible type in assignment, expected " ++ showType(top.lop.typerep) ++ " but found " ++ showType(top.rop.typerep))]);
+    (if typeAssignableTo(top.lop.typerep, top.rop.typerep) then []
+     else [err(top.location, "Incompatible type in rhs of assignment, expected " ++ showType(top.lop.typerep) ++ " but found " ++ showType(top.rop.typerep))]);
   top.pp = op.pp;
   top.typerep = top.lop.typerep.defaultLvalueConversion;
 }
