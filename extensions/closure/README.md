@@ -31,5 +31,4 @@ TODO items:
 * Resolve issues with capturing function pointers and anonymous union fields (ableC host bug?)
 * Clean up hacks with passing _closure refId
 * Fix closure type expr to pass copper MDA
-* Captured variables should appear as const in the body of the closure
 * Type-check return statments are the same as result type

@@ -44,6 +44,8 @@ e::Expr ::= captured::EnvNameList paramType::TypeName param::Name res::Expr
       captured.defs ++ tagRefIdTypeItems,
     emptyEnv());
   
+  res.returnType = just(res.typerep);
+  
   local tagRefIdTypeItems::[Def] =
     doubleMap(
       tagDef,
@@ -296,7 +298,7 @@ top::EnvNameList ::= n::Name rest::EnvNameList
               [],
               nothingInitializer())
           with {env = top.env;
-                baseType = attatchQualifiers([constQualifier()], varBaseType);
+                baseType = addQualifiers([constQualifier()], varBaseType);
                 givenAttributes = [];
                 isTopLevel = false;
                 isTypedef = false;})) ::
@@ -398,19 +400,6 @@ function doubleMap
   return if null(l1) || null(l2)
          then []
          else f(head(l1), head(l2)) :: doubleMap(f, tail(l1), tail(l2));
-}
-
-{-
- - Adds qualifiers to a type
- -}
-abstract production attatchQualifiers
-top::Type ::= q::[Qualifier]  target::Type
-{
-  top.lpp = concat([ target.lpp, space(), ppImplode( space(), map( (.pp), q ) ) ]);
-  top.rpp = target.rpp;
-  top.withoutTypeQualifiers = target;
-  
-  forwards to target;
 }
 
 {-
