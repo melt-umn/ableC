@@ -30,5 +30,4 @@ TODO items:
 * Remove txtStmt and txtExprs
 * Resolve issues with capturing function pointers and anonymous union fields (ableC host bug?)
 * Clean up hacks with passing _closure refId
-* Fix closure type expr to pass copper MDA
-* Type-check return statments are the same as result type
+* Fix lambda expr to pass copper MDA
