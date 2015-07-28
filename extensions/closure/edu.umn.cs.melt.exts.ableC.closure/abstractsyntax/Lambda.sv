@@ -16,10 +16,11 @@ abstract production lambdaExpr
 e::Expr ::= captured::EnvNameList paramType::TypeName param::Name res::Expr
 {
   local localErrs :: [Message] =
-  --e.errors :=
     (if !null(lookupValue("_closure", e.env)) then []
      else [err(e.location, "Closures require closure.h to be included.")]) ++
     captured.errors ++ res.errors;
+    
+  e.globalDecls := pair(fnName.name, functionDeclaration(fnDecl)) :: forward.globalDecls;
   
   e.typerep =
     closureType(
@@ -115,11 +116,12 @@ e::Expr ::= captured::EnvNameList paramType::TypeName param::Name res::Expr
             map(
               tm:toList,
               e.env.values)))));
-  local fnName::String = "_fn_" ++ toString(genInt());
+              
+  local fnName::Name = name(s"_fn_${toString(genInt())}", location=builtIn());
   
   local fnDecl::FunctionDecl =
     functionDecl(
-     [],
+     [staticStorageClass()],
      [],
      directTypeExpr(res.typerep),
      functionTypeExprWithArgs(
@@ -140,7 +142,7 @@ e::Expr ::= captured::EnvNameList paramType::TypeName param::Name res::Expr
              []),
            nilParameters())),
        false),
-     name(fnName, location=builtIn()),
+     fnName,
      [],
      nilDecl(),
      foldStmt([
@@ -173,7 +175,6 @@ e::Expr ::= captured::EnvNameList paramType::TypeName param::Name res::Expr
   local fwrd::Expr =
     stmtExpr(
       foldStmt([
-        declStmt(functionDeclaration(fnDecl)),
         declStmt(
           variableDecls(
             [],
@@ -211,8 +212,8 @@ e::Expr ::= captured::EnvNameList paramType::TypeName param::Name res::Expr
                       location=builtIn())))),
               nilDeclarator()))),
         txtStmt("_result->env = _env;"), --TODO
-        txtStmt(s"_result->fn = ${fnName};"), -- TODO
-        txtStmt(s"_result->fn_name = \"${fnName}\";")]), --TODO
+        txtStmt(s"_result->fn = ${fnName.name};"), -- TODO
+        txtStmt(s"_result->fn_name = \"${fnName.name}\";")]), --TODO
       declRefExpr(
         name("_result", location=builtIn()),
         location=builtIn()),
