@@ -4,7 +4,7 @@ nonterminal Root with location, ast<ast:Root>;
 
 concrete productions top::Root
 | tu::TranslationUnit_c 
-    { top.ast = ast:root(ast:foldDecl(tu.ast)); }
+    { top.ast = ast:root(ast:foldGlobalDecl(tu.ast)); } -- Changed from foldDecl, this is used for handling extension global decls
 |
     { top.ast = ast:root(ast:nilDecl()); }
 

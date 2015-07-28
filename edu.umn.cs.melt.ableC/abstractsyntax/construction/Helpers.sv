@@ -187,6 +187,12 @@ Decls ::= l::[Decl]
   return foldr(consDecl, nilDecl(), l);
 }
 
+function foldGlobalDecl
+Decls ::= l::[Decl]
+{
+  return foldr(consGlobalDecl, nilDecl(), l);
+}
+
 function foldInit
 InitList ::= l::[Init]
 {

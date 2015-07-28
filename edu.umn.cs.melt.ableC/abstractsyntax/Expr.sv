@@ -1,6 +1,6 @@
 
 
-nonterminal Expr with location, pp, errors, defs, env, returnType, typerep;
+nonterminal Expr with location, pp, globalDecls, errors, defs, env, returnType, typerep;
 
 synthesized attribute integerConstantValue :: Maybe<Integer>;
 
@@ -9,6 +9,7 @@ top::Expr ::= msg::[Message]
 {
   top.pp = concat([ text("/*"), text(messagesToString(msg)), text("*/") ]);
   top.errors := msg;
+  top.globalDecls := [];
   top.defs = [];
   top.typerep = errorType();
 }
@@ -17,6 +18,7 @@ top::Expr ::= id::Name
 { -- Reference to a value. (Either a Decl or a EnumItem)
   top.pp = parens( id.pp );
   top.errors := [];
+  top.globalDecls := [];
   top.defs = [];
   top.typerep = id.valueItem.typerep;
   
@@ -27,6 +29,7 @@ top::Expr ::= l::String
 {
   top.pp = text(l);
   top.errors := [];
+  top.globalDecls := [];
   top.defs = [];
   top.typerep = pointerType([], builtinType([constQualifier()], signedType(charType())));
 }
@@ -35,6 +38,7 @@ top::Expr ::= e::Expr
 {
   top.pp = parens( e.pp );
   top.errors := [];
+  top.globalDecls := e.globalDecls;
   top.defs = e.defs;
   top.typerep = e.typerep;
 }
@@ -45,6 +49,7 @@ top::Expr ::= op::UnaryOp  e::Expr
            then parens( cat( op.pp, e.pp ) )
            else parens( cat( e.pp, op.pp ) );
   top.errors := op.errors ++ e.errors;
+  top.globalDecls := e.globalDecls;
   top.defs = e.defs;
   top.typerep = op.typerep;
   
@@ -55,6 +60,7 @@ top::Expr ::= op::UnaryTypeOp  e::ExprOrTypeName
 {
   top.pp = parens( concat([op.pp,parens(e.pp)]) );
   top.errors := op.errors ++ e.errors;
+  top.globalDecls := e.globalDecls;
   top.defs = e.defs;
   top.typerep = builtinType([], signedType(intType())); -- TODO sizeof / alignof result type
 }
@@ -63,6 +69,7 @@ top::Expr ::= lhs::Expr  rhs::Expr
 {
   top.pp = parens( concat([ lhs.pp, brackets( rhs.pp )]) );
   top.errors := lhs.errors ++ rhs.errors;
+  top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
   top.defs = lhs.defs ++ rhs.defs;
   
   local subtype :: Either<Type [Message]> =
@@ -110,6 +117,7 @@ top::Expr ::= f::Expr  a::Exprs
 {
   top.pp = parens( concat([ f.pp, parens( ppImplode( cat( comma(), space() ), a.pps ))]) );
   top.errors := f.errors ++ a.errors;
+  top.globalDecls := f.globalDecls ++ a.globalDecls;
   top.defs = f.defs ++ a.defs;
   
   local subtype :: Either<Pair<Type FunctionType> [Message]> =
@@ -151,6 +159,7 @@ top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
 {
   top.pp = parens(concat([lhs.pp, text(if deref then "->" else "."), rhs.pp]));
   top.errors := lhs.errors;
+  top.globalDecls := lhs.globalDecls;
   top.defs = lhs.defs;
   
   local quals_refid :: Pair<[Qualifier] String> =
@@ -185,6 +194,7 @@ top::Expr ::= lhs::Expr  op::BinOp  rhs::Expr
     | _, _ -> lhs.pp
     end, space(), op.pp, space(), rhs.pp ]) );
   top.errors := lhs.errors ++ op.errors ++ rhs.errors;
+  top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
   top.defs = lhs.defs ++ rhs.defs;
   top.typerep = op.typerep;
   
@@ -198,6 +208,7 @@ top::Expr ::= cond::Expr  t::Expr  e::Expr
 {
   top.pp = parens( concat([ cond.pp, space(), text("?"), space(), t.pp, space(), text(":"),  space(), e.pp]) );
   top.errors := cond.errors ++ t.errors ++ e.errors;
+  top.globalDecls := cond.globalDecls ++ t.globalDecls ++ e.globalDecls;
   top.defs = cond.defs ++ t.defs ++ e.defs;
   
   top.typerep = t.typerep; -- TODO: this is wrong, but it's an approximation for now
@@ -212,6 +223,7 @@ top::Expr ::= cond::Expr  e::Expr
 {
   top.pp = concat([ cond.pp, space(), text("?:"), space(), e.pp]);
   top.errors := cond.errors ++ e.errors;
+  top.globalDecls := cond.globalDecls ++ e.globalDecls;
   top.defs = cond.defs ++ e.defs;
   
   top.typerep = e.typerep; -- TODO: not even sure what this should be
@@ -223,6 +235,7 @@ top::Expr ::= ty::TypeName  e::Expr
 {
   top.pp = parens( concat([parens(ty.pp), e.pp]) );
   top.errors := ty.errors ++ e.errors;
+  top.globalDecls := ty.globalDecls ++ e.globalDecls;
   top.defs = ty.defs ++ e.defs;
   top.typerep = ty.typerep;
   
@@ -235,6 +248,7 @@ top::Expr ::= ty::TypeName  init::InitList
 {
   top.pp = parens( concat([parens(ty.pp), text("{"), ppImplode(text(", "), init.pps), text("}")]) );
   top.errors := ty.errors ++ init.errors;
+  top.globalDecls := ty.globalDecls ++ init.globalDecls;
   top.defs = ty.defs ++ init.defs;
   top.typerep = ty.typerep; -- TODO: actually may involve learning from the initializer e.g. the length of the array.
   
@@ -247,6 +261,7 @@ top::Expr ::=
 { -- Currently (C99) just __func__ in functions.
   top.pp = parens( text("__func__") );
   top.errors := [];
+  top.globalDecls := [];
   top.defs = [];
   top.typerep = pointerType([], builtinType([constQualifier()], signedType(charType()))); -- const char *
 }
@@ -263,6 +278,7 @@ top::Expr ::= e::Expr  gl::GenericAssocs  def::MaybeExpr
         []
       ))]);
   top.errors := e.errors ++ gl.errors ++ def.errors;
+  top.globalDecls := e.globalDecls ++ gl.globalDecls ++ def.globalDecls;
   top.defs = e.defs ++ gl.defs ++ def.defs;
   top.typerep = 
     if null(gl.compatibleSelections) then
@@ -278,7 +294,7 @@ top::Expr ::= e::Expr  gl::GenericAssocs  def::MaybeExpr
   -- TODO: type checking!!
 }
 
-nonterminal GenericAssocs with pps, errors, defs, env, selectionType, compatibleSelections, returnType;
+nonterminal GenericAssocs with pps, errors, globalDecls, defs, env, selectionType, compatibleSelections, returnType;
 
 autocopy attribute selectionType :: Type;
 synthesized attribute compatibleSelections :: [Decorated Expr];
@@ -288,6 +304,7 @@ top::GenericAssocs ::= h::GenericAssoc  t::GenericAssocs
 {
   top.pps = h.pp :: t.pps;
   top.errors := h.errors ++ t.errors;
+  top.globalDecls := h.globalDecls ++ t.globalDecls;
   top.defs = h.defs ++ t.defs;
   top.compatibleSelections = h.compatibleSelections ++ t.compatibleSelections;
 }
@@ -296,17 +313,19 @@ top::GenericAssocs ::=
 {
   top.pps = [];
   top.errors := [];
+  top.globalDecls := [];
   top.defs = [];
   top.compatibleSelections = [];
 }
 
-nonterminal GenericAssoc with location, pp, errors, defs, env, selectionType, compatibleSelections, returnType;
+nonterminal GenericAssoc with location, pp, globalDecls, errors, defs, env, selectionType, compatibleSelections, returnType;
 
 abstract production genericAssoc
 top::GenericAssoc ::= ty::TypeName  fun::Expr
 {
   top.pp = concat([ty.pp, text(": "), fun.pp]);
   top.errors := ty.errors ++ fun.errors;
+  top.globalDecls := ty.globalDecls ++ fun.globalDecls;
   top.defs = ty.defs ++ fun.defs;
   top.compatibleSelections =
     if compatibleTypes(top.selectionType, ty.typerep, true) then [fun] else [];
@@ -318,6 +337,7 @@ top::Expr ::= body::Stmt result::Expr
 {
   top.pp = concat([text("({"), nestlines(2, concat([body.pp, line(), result.pp, text("; })")]))]);
   top.errors := body.errors ++ result.errors;
+  top.globalDecls := body.globalDecls ++ result.globalDecls;
   top.defs = []; -- defs are *not* propagated up. This is beginning of a scope.
   top.typerep = result.typerep;
   
@@ -331,6 +351,7 @@ top::Expr ::= s::String
 {
   top.pp = concat([ text("/* "), text(s), text(" */") ]);
   top.errors := [];
+  top.globalDecls := [];
   top.defs = [];
   top.typerep = errorType();
 }
