@@ -228,15 +228,6 @@ top::ADTDecl ::= n::Name cs::ConstructorList
                      adtDecls)))));
 }
 
-function appendDecls
-Decls ::= d1::Decls d2::Decls
-{
-  return case d1 of
-              nilDecl() -> d2
-            | consDecl(d, rest) -> consDecl(d, appendDecls(rest, d2))
-         end;
-}
-
 function appendStructItemList
 StructItemList ::= d1::StructItemList d2::StructItemList
 {
