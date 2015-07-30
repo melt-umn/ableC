@@ -49,8 +49,10 @@ IOVal<Integer> ::= args::[String] ioIn::IO
     ioval(print(result.parseErrors ++ "\n", text.io), 2)
   else if containsBy(stringEq, "--show-ast", args) then
     ioval(print(hackUnparse(ast) ++ "\n", text.io), 0)
+--  else if !null(ast.errors) then
+--    ioval(print(messagesToString(ast.errors) ++ "\n", text.io), if containsErrors(ast.errors, false) then 4 else 0)
   else if !null(ast.errors) then
-    ioval(print(messagesToString(ast.errors) ++ "\n", text.io), if containsErrors(ast.errors, false) then 4 else 0)
+    ioval(print(messagesToString(ast.errors) ++ "\n", writePP), if containsErrors(ast.errors, false) then 4 else 0)
   else
     ioval(writePP, 0);
 }
