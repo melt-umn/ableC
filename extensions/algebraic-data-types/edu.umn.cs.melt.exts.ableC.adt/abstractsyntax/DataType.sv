@@ -3,7 +3,7 @@ grammar edu:umn:cs:melt:exts:ableC:adt:abstractsyntax ;
 {- 
  - datatype Type {
  -   Unit();
- -   Arrow(Type*, Type*);
+ -   Arrow(Type *, Type *);
  -   Var(char *);
  -  };
  - 
@@ -13,7 +13,7 @@ grammar edu:umn:cs:melt:exts:ableC:adt:abstractsyntax ;
  -   enum { Type_Unit, Type_Arrow, Type_Var } tag;
  -   struct Contents_s {
  -     struct Type_Unit_s { } Unit ;
- -     struct Type_Arrow_s { struct Type * p1; struct Type *p2; } Arrow;
+ -     struct Type_Arrow_s { struct Type *p1; struct Type *p2; } Arrow;
  -     struct Type_Var_s { char* p1; } Var;
  -   } contents;
  - };
@@ -107,7 +107,7 @@ top::ADTDecl ::= n::Name cs::ConstructorList
   -}
   production attribute adtDecls::Decls with appendDecls;
   adtDecls := nilDecl();
-  
+
   local attribute defaultDecls::Decls =
       consDecl(
         typeExprDecl(
@@ -155,6 +155,67 @@ top::ADTDecl ::= n::Name cs::ConstructorList
                           []),
                         nilStructDeclarator())),
                     nilStructItem()))), location=builtIn()))),
+        cs.funDecls);
+
+
+  local attribute testing_defaultDecls::Decls =
+      consDecl(
+        typeExprDecl(
+          [],
+          structTypeExpr(
+            [],
+            structDecl([],
+              justName( n ),
+
+              consStructItem(
+                structItem([],
+                  directTypeExpr(
+                    builtinType(
+                      [],
+                      signedType(intType()))),
+                  consStructDeclarator(
+                    structField(
+                      name("refId", location=builtIn()),
+                      baseTypeExpr(),
+                      []),
+                    nilStructDeclarator())),
+
+                consStructItem(
+                  structItem([],
+
+                    enumTypeExpr(
+                      [],
+                      enumDecl(justName(name("_" ++ n.name ++ "_types", location=builtIn())),
+                        cs.enumItems, location=builtIn())),
+
+                    consStructDeclarator(
+                      structField(
+                        name("tag", location=builtIn()),
+                        baseTypeExpr(),
+                        []),
+                      nilStructDeclarator())),
+
+                  consStructItem(
+                    structItem([],
+                      unionTypeExpr(
+                        [],
+                        unionDecl([],
+                          justName(
+                            name("_" ++ n.name ++ "_contents", location=builtIn())),
+                          cs.structItems, location=builtIn())),
+                      consStructDeclarator(
+                        structField(
+                          name("contents",location=builtIn()), 
+                          baseTypeExpr(),
+                          []),
+                        nilStructDeclarator())),
+
+
+                    nilStructItem()
+                  )           
+                )
+              ), location=builtIn()))),
+
         cs.funDecls);
 
   top.transform = decls(appendDecls(defaultDecls, adtDecls));
@@ -272,7 +333,9 @@ top::Constructor ::= n::String tms::TypeNameList
           false),
         name(n, location=builtIn()),
         [],
+
         nilDecl(),
+
         foldStmt([
           declStmt(
             variableDecls(
@@ -287,6 +350,8 @@ top::Constructor ::= n::String tms::TypeNameList
                   [],
                   nothingInitializer()),
                 nilDeclarator()))),
+
+
           txtStmt("temp = (" ++ top.topTypeName ++ " *) malloc (sizeof(" ++ top.topTypeName ++ "));"), --ToDo
           exprStmt(
             binaryOpExpr(
@@ -299,6 +364,7 @@ top::Constructor ::= n::String tms::TypeNameList
                 eqOp(location=builtIn()),location=builtIn()), 
               declRefExpr(
                 name(top.topTypeName++"_"++n,location=builtIn()),location=builtIn()),location=builtIn())),
+
           exprStmt(
             binaryOpExpr(
               memberExpr(
@@ -310,9 +376,19 @@ top::Constructor ::= n::String tms::TypeNameList
                 eqOp(location=builtIn()),location=builtIn()), 
               realConstant(
                 integerConstant(
-                  case head(lookupRefId(top.topTypeName, top.env)) of
-                    structRefIdItem(d) -> d.refId
+-- orig                 case head(lookupRefId(top.topTypeName, top.env)) of
+-- orig                  structRefIdItem(d) -> d.refId
+-- orig                end,
+
+                  case lookupRefId(top.topTypeName, top.env) of
+                  | [] -> "123456"
+                          -- error("BOOM-EVW-1: not found " ++ top.topTypeName)
+                  | xs -> case head(xs) of
+                          | structRefIdItem(d) -> d.refId
+                          end
                   end,
+
+                  
                   false,
                   noIntSuffix(),
                   location=builtIn()),
@@ -320,7 +396,11 @@ top::Constructor ::= n::String tms::TypeNameList
               location=builtIn())),
           tms.asAssignments,
           returnStmt(justExpr(declRefExpr(name("temp",location=builtIn()),location=builtIn())))
-        ])));
+
+
+        ])
+
+       ));
 }
 
 

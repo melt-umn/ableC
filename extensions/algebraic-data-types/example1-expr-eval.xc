@@ -40,9 +40,15 @@ int main () {
   Expr *t = Add( Const(3), 
                  Mul(Const(2), Const(4)) ) ;
  
-  printf("value is %d\n", value(t) );
+  int result = value(t);
+
+  printf("value is %d\n", result );
   
   free_Expr(t);
-  
-  return 0;   
+ 
+  if (result == 11)  
+    return 0;   // correct answer
+  else
+    return 1;   // incorrect answer
+
 }
