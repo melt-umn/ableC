@@ -117,7 +117,7 @@ e::Expr ::= scrutinee::Expr cs::ExprClauses
 
 
 nonterminal ExprClauses with location, pp, errors, env, 
-  expectedType, transform<Expr>, nonEvaluatedFailureExpr;
+  expectedType, transform<Expr>, nonEvaluatedFailureExpr, returnType;
 
 inherited attribute nonEvaluatedFailureExpr :: Expr;
 
@@ -146,7 +146,7 @@ cs::ExprClauses ::=
   
 
 nonterminal ExprClause with location, pp, errors, env, 
-  expectedType, transform<Expr>, transformIn<Expr>;
+  expectedType, transform<Expr>, transformIn<Expr>, returnType;
 
 abstract production exprClause
 c::ExprClause ::= p::Pattern s::Expr

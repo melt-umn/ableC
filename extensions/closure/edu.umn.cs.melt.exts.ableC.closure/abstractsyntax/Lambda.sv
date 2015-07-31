@@ -8,19 +8,23 @@ imports edu:umn:cs:melt:ableC:abstractsyntax:construction;
 imports edu:umn:cs:melt:ableC:abstractsyntax:env;
 --imports edu:umn:cs:melt:ableC:abstractsyntax:debug;
 
+imports edu:umn:cs:melt:exts:ableC:gc;
+
 import silver:util:raw:treemap as tm;
 
 abstract production lambdaExpr
 e::Expr ::= captured::EnvNameList paramType::TypeName param::Name res::Expr
 {
   local localErrs :: [Message] =
-  --e.errors :=
     (if !null(lookupValue("_closure", e.env)) then []
      else [err(e.location, "Closures require closure.h to be included.")]) ++
     captured.errors ++ res.errors;
+    
+  e.globalDecls := pair(fnName.name, functionDeclaration(fnDecl)) :: forward.globalDecls;
   
   e.typerep =
     closureType(
+      [],
       paramType.typerep,
       res.typerep,
       case lookupTag("_closure", e.env) of
@@ -43,6 +47,8 @@ e::Expr ::= captured::EnvNameList paramType::TypeName param::Name res::Expr
               []) with {env = e.env;})) ::
       captured.defs ++ tagRefIdTypeItems,
     emptyEnv());
+  
+  res.returnType = just(res.typerep);
   
   local tagRefIdTypeItems::[Def] =
     doubleMap(
@@ -110,10 +116,12 @@ e::Expr ::= captured::EnvNameList paramType::TypeName param::Name res::Expr
             map(
               tm:toList,
               e.env.values)))));
+              
+  local fnName::Name = name(s"_fn_${toString(genInt())}", location=builtIn());
   
   local fnDecl::FunctionDecl =
     functionDecl(
-     [],
+     [staticStorageClass()],
      [],
      directTypeExpr(res.typerep),
      functionTypeExprWithArgs(
@@ -134,7 +142,7 @@ e::Expr ::= captured::EnvNameList paramType::TypeName param::Name res::Expr
              []),
            nilParameters())),
        false),
-     name("_fn", location=builtIn()),
+     fnName,
      [],
      nilDecl(),
      foldStmt([
@@ -167,7 +175,6 @@ e::Expr ::= captured::EnvNameList paramType::TypeName param::Name res::Expr
   local fwrd::Expr =
     stmtExpr(
       foldStmt([
-        declStmt(functionDeclaration(fnDecl)),
         declStmt(
           variableDecls(
             [],
@@ -198,10 +205,15 @@ e::Expr ::= captured::EnvNameList paramType::TypeName param::Name res::Expr
                 name("_result", location=builtIn()),
                 baseTypeExpr(),
                 [],
-                nothingInitializer()),
+                justInitializer(
+                  exprInitializer(
+                    txtExpr(
+                      "(_closure)GC_malloc(sizeof(_closure_s))", --TODO
+                      location=builtIn())))),
               nilDeclarator()))),
-        txtStmt("_result.env = _env;"), --TODO
-        txtStmt("_result.fn = _fn;")]), --TODO
+        txtStmt("_result->env = _env;"), --TODO
+        txtStmt(s"_result->fn = ${fnName.name};"), -- TODO
+        txtStmt(s"_result->fn_name = \"${fnName.name}\";")]), --TODO
       declRefExpr(
         name("_result", location=builtIn()),
         location=builtIn()),
@@ -225,18 +237,20 @@ top::EnvNameList ::= n::Name rest::EnvNameList
   local skip::Boolean =
     case n.valueItem.typerep of
       functionType(_, _) -> true
+    | noncanonicalType(_) -> false -- TODO
     | tagType(_, refIdTagType(_, sName, _)) -> null(lookupRefId(sName, top.env))
     | pointerType(_, functionType(_, _)) -> true -- Temporary hack until pp for function pointer variable defs is fixed
     | _ -> false
-    end;
+    end || n.name == "_env";
     
   -- If true, then don't capture this variable, even if though it is in the capture list
   local skipDef::Boolean =
     case n.valueItem.typerep of
-      tagType(_, refIdTagType(_, sName, _)) -> null(lookupRefId(sName, top.env))
+      noncanonicalType(_) -> false -- TODO
+    | tagType(_, refIdTagType(_, sName, _)) -> null(lookupRefId(sName, top.env))
     | pointerType(_, functionType(_, _)) -> true -- Temporary hack until pp for function pointer variable defs is fixed
     | _ -> false
-    end;
+    end || n.name == "_env";
 
   local varBaseType::Type =
     if !null(n.valueLookupCheck)
@@ -282,7 +296,7 @@ top::EnvNameList ::= n::Name rest::EnvNameList
       [],
       justInitializer(exprInitializer(envAccess)));
   
-  top.defs =
+  top.defs = 
     if skipDef then rest.defs else
       valueDef(
         n.name,
@@ -294,7 +308,7 @@ top::EnvNameList ::= n::Name rest::EnvNameList
               [],
               nothingInitializer())
           with {env = top.env;
-                baseType = attatchQualifiers([constQualifier()], varBaseType);
+                baseType = addQualifiers([constQualifier()], varBaseType);
                 givenAttributes = [];
                 isTopLevel = false;
                 isTypedef = false;})) ::
@@ -396,19 +410,6 @@ function doubleMap
   return if null(l1) || null(l2)
          then []
          else f(head(l1), head(l2)) :: doubleMap(f, tail(l1), tail(l2));
-}
-
-{-
- - Adds qualifiers to a type
- -}
-abstract production attatchQualifiers
-top::Type ::= q::[Qualifier]  target::Type
-{
-  top.lpp = concat([ target.lpp, space(), ppImplode( space(), map( (.pp), q ) ) ]);
-  top.rpp = target.rpp;
-  top.withoutTypeQualifiers = target;
-  
-  forwards to target;
 }
 
 {-

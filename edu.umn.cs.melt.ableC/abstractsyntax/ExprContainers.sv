@@ -1,6 +1,6 @@
 
 
-nonterminal MaybeExpr with pp, isJust, errors, defs, env, maybeTyperep;
+nonterminal MaybeExpr with pp, isJust, errors, globalDecls, defs, env, maybeTyperep, returnType;
 
 synthesized attribute maybeTyperep :: Maybe<Type>;
 
@@ -10,6 +10,7 @@ top::MaybeExpr ::= e::Expr
   top.pp = e.pp;
   top.isJust = true;
   top.errors := e.errors;
+  top.globalDecls := e.globalDecls;
   top.defs = e.defs;
   top.maybeTyperep = just(e.typerep);
 }
@@ -19,6 +20,7 @@ top::MaybeExpr ::=
   top.pp = notext();
   top.isJust = false;
   top.errors := [];
+  top.globalDecls := [];
   top.defs = [];
   top.maybeTyperep = nothing();
 }
@@ -26,7 +28,7 @@ top::MaybeExpr ::=
 
 synthesized attribute pps :: [Document];
 
-nonterminal Exprs with pps, errors, defs, env, expectedTypes, argumentPosition, callExpr, argumentErrors, count, callVariadic;
+nonterminal Exprs with pps, errors, globalDecls, defs, env, expectedTypes, argumentPosition, callExpr, argumentErrors, count, callVariadic, returnType;
 
 inherited attribute expectedTypes :: [Type];
 {-- Initially 1. -}
@@ -42,6 +44,7 @@ top::Exprs ::= h::Expr  t::Exprs
 {
   top.pps = h.pp :: t.pps;
   top.errors := h.errors ++ t.errors;
+  top.globalDecls := h.globalDecls ++ t.globalDecls;
   top.defs = h.defs ++ t.defs;
   top.count = 1 + t.count;
   
@@ -65,6 +68,7 @@ top::Exprs ::=
 {
   top.pps = [];
   top.errors := [];
+  top.globalDecls := [];
   top.defs = [];
   top.count = 0;
   
@@ -74,13 +78,14 @@ top::Exprs ::=
       [err(top.callExpr.location, "call expected " ++ toString(top.argumentPosition + length(top.expectedTypes)) ++ " arguments, got only " ++ toString(top.argumentPosition))];
 }
 
-nonterminal ExprOrTypeName with pp, errors, defs, env, typerep;
+nonterminal ExprOrTypeName with pp, errors, globalDecls, defs, env, typerep, returnType;
 
 abstract production exprExpr
 top::ExprOrTypeName ::= e::Expr
 {
   top.pp = e.pp;
   top.errors := e.errors;
+  top.globalDecls := e.globalDecls;
   top.defs = e.defs;
   top.typerep = e.typerep;
 }
@@ -89,6 +94,7 @@ top::ExprOrTypeName ::= ty::TypeName
 {
   top.pp = ty.pp;
   top.errors := ty.errors;
+  top.globalDecls := ty.globalDecls;
   top.defs = ty.defs;
   top.typerep = ty.typerep;
 }

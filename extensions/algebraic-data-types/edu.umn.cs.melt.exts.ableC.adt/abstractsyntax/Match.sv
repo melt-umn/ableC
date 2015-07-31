@@ -96,7 +96,7 @@ inherited attribute expectedType :: Type;
 inherited attribute expectedTypes :: [Type];
 
 
-nonterminal StmtClauses with location, pp, errors, env, 
+nonterminal StmtClauses with location, pp, errors, env, returnType, 
   expectedType, transform<Stmt>;
 
 abstract production consStmtClause
@@ -121,7 +121,7 @@ cs::StmtClauses ::= {-empty-}
 }
   
 nonterminal StmtClause with location, pp, errors, env, 
-  expectedType, transform<Stmt>, transformIn<Stmt>;
+  expectedType, transform<Stmt>, transformIn<Stmt>, returnType;
 
 abstract production stmtClause
 c::StmtClause ::= p::Pattern s::Stmt
@@ -188,7 +188,7 @@ autocopy attribute parent_idType :: String;
 autocopy attribute parent_idTypeIndicator :: String;
 
 nonterminal Pattern with location, pp, defs, env, errors, 
-  position, depth, parentTag, decls, parent_id, parent_idType, expectedType, parent_idTypeIndicator, transform<Stmt>, transformIn<Stmt> ;
+  position, depth, parentTag, decls, parent_id, parent_idType, expectedType, parent_idTypeIndicator, transform<Stmt>, transformIn<Stmt>;
 
 abstract production constructorPattern
 p::Pattern ::= id::String ps::PatternList
@@ -354,16 +354,59 @@ p::Pattern ::=
   p.decls = [];
 }
 
-abstract production patternIntegerConst
-p::Pattern ::= i::Integer
+abstract production patternConst
+p::Pattern ::= constExpr::Expr
 {
-  p.pp = text(toString(i));
+  p.pp = constExpr.pp;
   p.defs = [];
-  p.errors := (if compatibleTypes(p.expectedType, builtinType([], signedType(intType())), false) then [] else
-                  [err(p.location, "Unexpected integer constant in pattern")]);
-  p.transform = p.transformIn;
+  p.errors := (if compatibleTypes(p.expectedType, constExpr.typerep, false) then [] else
+                  [err(p.location, "Unexpected constant in pattern")]);
+  p.transform =
+    ifStmt(
+      txtExpr("((" ++ p.parent_idType ++ ")" ++ 
+                  "_current_ADT" ++ "[" ++ toString(p.depth-1) ++ "])->contents." ++ 
+                  p.parentTag ++ ".f" ++ toString(p.position) ++ " == " ++ show(10, constExpr.pp),
+      location=p.location),
+      
+        -- then clause
+      p.transformIn,           
+        -- else clause
+      nullStmt());
+  p.decls = [];
+  constExpr.returnType = nothing();
+}
+
+abstract production patternStringLiteral
+p::Pattern ::= s::String
+{
+  p.pp = text(s);
+  p.defs = [];
+  p.errors := (if compatibleTypes(
+                    p.expectedType,
+                    pointerType(
+                      [],
+                      builtinType(
+                        [constQualifier()],
+                        signedType(charType()))),
+                    false) then [] else
+                  [err(p.location, "Unexpected string constant in pattern")]) ++
+              (if !null(lookupValue("strcmp", p.env)) then [] else
+                  [err(p.location, "Pattern string literals require <string.h> to be included")]);
+  p.transform =
+    ifStmt(
+      txtExpr("!strcmp(((" ++ p.parent_idType ++ ")" ++ 
+                  "_current_ADT" ++ "[" ++ toString(p.depth-1) ++ "])->contents." ++ 
+                  p.parentTag ++ ".f" ++ toString(p.position) ++ " == " ++ s ++ ")",
+      location=p.location),
+      
+        -- then clause
+      p.transformIn,           
+        -- else clause
+      nullStmt());
   p.decls = [];
 }
+
+
 synthesized attribute pslength::Integer ;
 
 nonterminal PatternList 

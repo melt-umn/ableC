@@ -1,13 +1,14 @@
 
-nonterminal Stmt with pp, errors, defs, env, functiondefs;
+nonterminal Stmt with pp, errors, globalDecls, defs, env, functiondefs, returnType;
 
-autocopy attribute returnType :: Type;
+autocopy attribute returnType :: Maybe<Type>;
 
 abstract production nullStmt
 top::Stmt ::=
 {
   top.pp = notext();
   top.errors := [];
+  top.globalDecls := [];
   top.defs = [];
   top.functiondefs = [];
 }
@@ -17,6 +18,7 @@ top::Stmt ::= h::Stmt  t::Stmt
 {
   top.pp = concat([ h.pp, line(), t.pp ]);
   top.errors := h.errors ++ t.errors;
+  top.globalDecls := h.globalDecls ++ t.globalDecls;
   top.defs = h.defs ++ t.defs;
   top.functiondefs = h.functiondefs ++ t.functiondefs;
   
@@ -28,6 +30,7 @@ top::Stmt ::= s::Stmt
 {
   top.pp = braces(nestlines(2, s.pp));
   top.errors := s.errors;
+  top.globalDecls := s.globalDecls;
   top.defs = []; -- compound prevents declarations from bubbling up
   top.functiondefs = s.functiondefs;
 
@@ -40,6 +43,7 @@ top::Stmt ::= msg::[Message]
 {
   top.pp = text("/*err*/");
   top.errors := msg;
+  top.globalDecls := [];
   top.defs = [];
   top.functiondefs = [];
 }
@@ -49,6 +53,7 @@ top::Stmt ::= d::Decl
 {
   top.pp = cat( d.pp, semi() );
   top.errors := d.errors;
+  top.globalDecls := d.globalDecls;
   top.defs = d.defs;
   top.functiondefs = [];
   d.isTopLevel = false;
@@ -59,6 +64,7 @@ top::Stmt ::= d::Expr
 {
   top.pp = cat( d.pp, semi() );
   top.errors := d.errors;
+  top.globalDecls := d.globalDecls;
   top.defs = d.defs;
   top.functiondefs = [];
 }
@@ -75,6 +81,7 @@ top::Stmt ::= c::Expr  t::Stmt  e::Stmt
           braces(nestlines(2, e.pp))]
       end);
   top.errors := c.errors ++ t.errors ++ e.errors;
+  top.globalDecls := c.globalDecls ++ t.globalDecls ++ e.globalDecls;
   top.functiondefs = t.functiondefs ++ e.functiondefs;
   
   -- A selection statement is a block whose scope is a strict subset of the scope of its
@@ -97,6 +104,7 @@ top::Stmt ::= e::Expr  b::Stmt
   top.pp = concat([ text("while"), space(), parens(e.pp), line(), 
                     braces(nestlines(2, b.pp)) ]);
   top.errors := e.errors ++ b.errors;
+  top.globalDecls := e.globalDecls ++ b.globalDecls;
   top.functiondefs = b.functiondefs;
   
   -- An iteration statement is a block whose scope is a strict subset of the scope of its
@@ -118,6 +126,7 @@ top::Stmt ::= b::Stmt  e::Expr
                     braces(nestlines(2,b.pp)), line(), 
                     text("while"), space(), parens(e.pp), semi()]);
   top.errors := b.errors ++ e.errors;
+  top.globalDecls := b.globalDecls ++ e.globalDecls;
   top.functiondefs = b.functiondefs;
   
   -- An iteration statement is a block whose scope is a strict subset of the scope of its
@@ -139,6 +148,7 @@ top::Stmt ::= i::MaybeExpr  c::MaybeExpr  s::MaybeExpr  b::Stmt
     concat([text("for"), parens(concat([i.pp, semi(), space(), c.pp, semi(), space(), s.pp])), line(),
       braces(nestlines(2, b.pp)) ]);
   top.errors := i.errors ++ c.errors ++ s.errors ++ b.errors;
+  top.globalDecls := i.globalDecls ++ c.globalDecls ++ s.globalDecls ++ b.globalDecls;
   top.functiondefs = b.functiondefs;
   
   -- An iteration statement is a block whose scope is a strict subset of the scope of its
@@ -153,7 +163,7 @@ top::Stmt ::= i::MaybeExpr  c::MaybeExpr  s::MaybeExpr  b::Stmt
   local cty :: Type = fromMaybe(errorType(), c.maybeTyperep);
   top.errors <-
     if cty.defaultFunctionArrayLvalueConversion.isScalarType then []
-    else [err(loc("TODOfor1",-1,-1,-1,-1,-1,-1), "For condition must be scalar type, instead it is " ++ showType(cty))];
+    else [err(loc("TODOfor1",-1,-1,-1,-1,-1,-1), "For condition must be scalar type, instead it is " ++ showType(cty))]; -- TODO: location
 }
 
 abstract production forDeclStmt
@@ -162,6 +172,7 @@ top::Stmt ::= i::Decl  c::MaybeExpr  s::MaybeExpr  b::Stmt
   top.pp = concat([ text("for"), space(), parens( concat([ i.pp, space(), c.pp, semi(), space(), s.pp]) ), 
                     line(), braces(nestlines(2, b.pp)) ]);
   top.errors := i.errors ++ c.errors ++ s.errors ++ b.errors;
+  top.globalDecls := i.globalDecls ++ c.globalDecls ++ s.globalDecls ++ b.globalDecls;
   top.functiondefs = b.functiondefs;
   
   -- An iteration statement is a block whose scope is a strict subset of the scope of its
@@ -177,14 +188,24 @@ top::Stmt ::= i::Decl  c::MaybeExpr  s::MaybeExpr  b::Stmt
   local cty :: Type = fromMaybe(errorType(), c.maybeTyperep);
   top.errors <-
     if cty.defaultFunctionArrayLvalueConversion.isScalarType then []
-    else [err(loc("TODOfor2",-1,-1,-1,-1,-1,-1), "For condition must be scalar type, instead it is " ++ showType(cty))];
+    else [err(loc("TODOfor2",-1,-1,-1,-1,-1,-1), "For condition must be scalar type, instead it is " ++ showType(cty))]; -- TODO: location
 }
 
 abstract production returnStmt
 top::Stmt ::= e::MaybeExpr
 {
   top.pp = concat([text("return"), space(), e.pp, semi()]);
-  top.errors := e.errors;
+  top.errors := case top.returnType, e.maybeTyperep of
+                  nothing(), nothing() -> []
+                | just(builtinType(_, voidType())), nothing() -> []
+                | just(expected), just(actual) ->
+                    if typeAssignableTo(expected, actual) then []
+                    else [err(case e of justExpr(e1) -> e1.location end,
+                              "Incorrect return type, expected " ++ showType(expected) ++ " but found " ++ showType(actual))]
+                | nothing(), just(actual) -> [err(case e of justExpr(e1) -> e1.location end, "Unexpected return")]
+                | just(expected), nothing() -> [err(loc("TODOreturn",-1,-1,-1,-1,-1,-1), "Expected return value, but found valueless return")] -- TODO: location
+                end ++ e.errors;
+  top.globalDecls := e.globalDecls;
   top.defs = e.defs;
   top.functiondefs = [];
   -- TODO: this needs to follow the same rules as assignment. We should try to factor that out.
@@ -196,6 +217,7 @@ top::Stmt ::= e::Expr  b::Stmt
   top.pp = concat([ text("switch"), space(), parens(e.pp),  line(), 
                     braces(nestlines(2, b.pp)) ]);
   top.errors := e.errors ++ b.errors;
+  top.globalDecls := e.globalDecls ++ b.globalDecls;
   top.functiondefs = b.functiondefs;
   
   -- A selection statement is a block whose scope is a strict subset of the scope of its
@@ -215,6 +237,7 @@ top::Stmt ::= l::Name
 {
   top.pp = concat([ text("goto"), space(), l.pp, semi() ]);
   top.errors := [];
+  top.globalDecls := [];
   top.defs = [];
   top.functiondefs = [];
   
@@ -226,6 +249,7 @@ top::Stmt ::=
 {
   top.pp = cat( text("continue"), semi() );
   top.errors := [];
+  top.globalDecls := [];
   top.defs = [];
   top.functiondefs = [];
 }
@@ -235,6 +259,7 @@ top::Stmt ::=
 {
   top.pp = concat([ text("break"), semi()  ]);
   top.errors := [];
+  top.globalDecls := [];
   top.defs = [];
   top.functiondefs = [];
 }
@@ -244,6 +269,7 @@ top::Stmt ::= l::Name  s::Stmt
 {
   top.pp = concat([ l.pp, text(":"), space(), s.pp]);
   top.errors := s.errors;
+  top.globalDecls := s.globalDecls;
   top.defs = s.defs;
   top.functiondefs = [labelDef(l.name, labelItem(top))] ++ s.functiondefs;
   
@@ -255,6 +281,7 @@ top::Stmt ::= v::Expr  s::Stmt
 {
   top.pp = concat([text("case"), space(), v.pp, text(":"), nestlines(2,s.pp)]); 
   top.errors := v.errors ++ s.errors;
+  top.globalDecls := v.globalDecls ++ s.globalDecls;
   top.defs = v.defs ++ s.defs;
   top.functiondefs = s.functiondefs; -- ??
   
@@ -266,6 +293,7 @@ top::Stmt ::= s::Stmt
 {
   top.pp = concat([ text("default"), text(":"), nestlines(2,s.pp)]);
   top.errors := s.errors;
+  top.globalDecls := s.globalDecls;
   top.defs = s.defs;
   top.functiondefs = s.functiondefs; -- ??
 }
@@ -276,6 +304,7 @@ top::Stmt ::= d::FunctionDecl
 {
   top.pp = d.pp;
   top.errors := d.errors;
+  top.globalDecls := d.globalDecls;
   top.defs = d.defs;
   top.functiondefs = [];
 }
@@ -286,14 +315,17 @@ top::Stmt ::= l::Expr  u::Expr  s::Stmt
 {
   top.pp = concat([text("case"), space(), l.pp, text("..."), u.pp, text(":"), space(),s.pp]); 
   top.errors := l.errors ++ u.errors ++ s.errors;
+  top.globalDecls := l.globalDecls ++ u.globalDecls ++ s.globalDecls;
   top.defs = l.defs ++ u.defs ++ s.defs;
   top.functiondefs = s.functiondefs;
 }
 
 abstract production asmStmt
 top::Stmt ::= asm::AsmStatement
-{ top.pp = asm.pp;
+{
+  top.pp = asm.pp;
   top.errors := [];
+  top.globalDecls := [];
   top.defs = [];
   top.functiondefs = [];
 }

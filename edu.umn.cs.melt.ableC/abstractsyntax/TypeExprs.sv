@@ -33,7 +33,7 @@ synthesized attribute rpp :: Document;
 synthesized attribute typerep :: Type;
 synthesized attribute typereps :: [Type];
 
-nonterminal TypeName with env, typerep, pp, errors, defs;
+nonterminal TypeName with env, typerep, pp, errors, globalDecls, defs, returnType;
 
 abstract production typeName
 top::TypeName ::= bty::BaseTypeExpr  mty::TypeModifierExpr
@@ -42,6 +42,7 @@ top::TypeName ::= bty::BaseTypeExpr  mty::TypeModifierExpr
   top.typerep = mty.typerep;
   mty.baseType = bty.typerep;
   top.errors := bty.errors ++ mty.errors;
+  top.globalDecls := bty.globalDecls ++ mty.globalDecls;
   top.defs = bty.defs;
 }
 
@@ -49,7 +50,7 @@ top::TypeName ::= bty::BaseTypeExpr  mty::TypeModifierExpr
 {--
  - Corresponds to types obtainable from a TypeSpecifiers.
  -}
-nonterminal BaseTypeExpr with env, typerep, pp, errors, defs;
+nonterminal BaseTypeExpr with env, typerep, pp, errors, globalDecls, defs, returnType;
 
 function errorTypeExpr
 BaseTypeExpr ::= msg::[Message]
@@ -63,6 +64,7 @@ top::BaseTypeExpr ::= msg::[Message]  ty::BaseTypeExpr
   top.pp = ty.pp;
   top.typerep = ty.typerep;
   top.errors := msg ++ ty.errors;
+  top.globalDecls := ty.globalDecls;
   top.defs = ty.defs;
 }
 
@@ -74,6 +76,7 @@ top::BaseTypeExpr ::= result::Type
   top.pp = cat(result.lpp, result.rpp);
   top.typerep = result;
   top.errors := [];
+  top.globalDecls := [];
   top.defs = [];
 }
 
@@ -133,6 +136,8 @@ top::BaseTypeExpr ::= q::[Qualifier]  kwd::StructOrEnumOrUnion  name::Name
     | unionSEU(), _ :: _ -> [err(name.location, "Tag " ++ name.name ++ " is not a union")]
     end;
   
+  top.globalDecls := [];
+  
   top.defs =
     case kwd, tags of
     -- It's an enum and we see the declaration.
@@ -159,6 +164,7 @@ top::BaseTypeExpr ::= q::[Qualifier]  def::StructDecl
     end;
   top.typerep = tagType(q, refIdTagType(structSEU(), name, def.refId));
   top.errors := def.errors;
+  top.globalDecls := def.globalDecls;
   top.defs = def.defs;
 }
 
@@ -174,6 +180,7 @@ top::BaseTypeExpr ::= q::[Qualifier]  def::UnionDecl
     end;
   top.typerep = tagType(q, refIdTagType(unionSEU(), name, def.refId));
   top.errors := def.errors;
+  top.globalDecls := def.globalDecls;
   top.defs = def.defs;
 }
 
@@ -184,6 +191,7 @@ top::BaseTypeExpr ::= q::[Qualifier]  def::EnumDecl
   top.pp = concat([ terminate( space(), map( (.pp), q ) ), def.pp ]);
   top.typerep = tagType(q, enumTagType(def));
   top.errors := def.errors;
+  top.globalDecls := def.globalDecls;
   top.defs = def.defs;
 }
 
@@ -197,6 +205,7 @@ top::BaseTypeExpr ::= q::[Qualifier]  name::Name
     if !null(name.valueLookupCheck) then errorType()
     else noncanonicalType(typedefType(q, name.name, name.valueItem.typerep)); -- TODO bug: we are discarding qualifiers here!
   top.errors := [];
+  top.globalDecls := [];
   top.defs = [];
 
   top.errors <- name.valueLookupCheck;
@@ -212,6 +221,7 @@ top::BaseTypeExpr ::= q::[Qualifier]  wrapped::TypeName
   top.pp = concat([ ppImplode( space(), map( (.pp), q)), space(),
                      text("_Atomic"), parens(wrapped.pp)]);
   top.errors := wrapped.errors;
+  top.globalDecls := wrapped.globalDecls;
   top.defs = wrapped.defs;
 }
 {-- GCC builtin type -}
@@ -221,6 +231,7 @@ top::BaseTypeExpr ::=
   top.typerep = pointerType([], builtinType([], voidType())); -- TODO this should be a special type, not void
   top.pp = text("__builtin_va_list");
   top.errors := [];
+  top.globalDecls := [];
   top.defs = [];
 }
 {-- GCC typeof type -}
@@ -230,6 +241,7 @@ top::BaseTypeExpr ::= q::[Qualifier]  e::ExprOrTypeName
   top.typerep = noncanonicalType(typeofType(q, e.typerep));
   top.pp = concat([text("__typeof__"), parens(e.pp)]);
   top.errors := e.errors;
+  top.globalDecls := e.globalDecls;
   top.defs = e.defs;
 }
 
@@ -240,7 +252,7 @@ top::BaseTypeExpr ::= q::[Qualifier]  e::ExprOrTypeName
  - Typically, these are just anchored somewhere to obtain the env,
  - and then turn into an environment-independent Type.
  -}
-nonterminal TypeModifierExpr with env, typerep, lpp, rpp, baseType, errors;
+nonterminal TypeModifierExpr with env, typerep, lpp, rpp, baseType, errors, globalDecls, returnType;
 
 
 abstract production baseTypeExpr
@@ -251,6 +263,7 @@ top::TypeModifierExpr ::=
   
   top.typerep = top.baseType; 
   top.errors := [];
+  top.globalDecls := [];
 }
 
 {-- Pointers -}
@@ -266,6 +279,7 @@ top::TypeModifierExpr ::= q::[Qualifier]  target::TypeModifierExpr
   top.rpp = target.rpp;
   top.typerep = pointerType(q, target.typerep);
   top.errors := target.errors;
+  top.globalDecls := target.globalDecls;
 }
 
 {-- Arrays (constant, variable, etc) -}
@@ -283,6 +297,7 @@ top::TypeModifierExpr ::= element::TypeModifierExpr  indexQualifiers::[Qualifier
     -- TODO: this is a lie: we're not checking if it's constant sized!
     variableArrayType(size));
   top.errors := element.errors ++ size.errors;
+  top.globalDecls := element.globalDecls ++ size.globalDecls;
 }
 abstract production arrayTypeExprWithoutExpr
 top::TypeModifierExpr ::= element::TypeModifierExpr  indexQualifiers::[Qualifier]  sizeModifier::ArraySizeModifier
@@ -295,6 +310,7 @@ top::TypeModifierExpr ::= element::TypeModifierExpr  indexQualifiers::[Qualifier
 
   top.typerep = arrayType(element.typerep, indexQualifiers, sizeModifier, incompleteArrayType());
   top.errors := element.errors;
+  top.globalDecls := element.globalDecls;
 }
 
 {-- Functions (with or without args) -}
@@ -314,6 +330,7 @@ top::TypeModifierExpr ::= result::TypeModifierExpr  args::Parameters  variadic::
   top.typerep = functionType(result.typerep, 
                              protoFunctionType(args.typereps, variadic));
   top.errors := result.errors ++ args.errors;
+  top.globalDecls := result.globalDecls ++ args.globalDecls;
   
   args.env = openScope(top.env);
 }
@@ -325,6 +342,7 @@ top::TypeModifierExpr ::= result::TypeModifierExpr  ids::[Name]  --fnquals::[Spe
   
   top.typerep = functionType(result.typerep, noProtoFunctionType());
   top.errors := result.errors;
+  top.globalDecls := result.globalDecls;
 }
 {-- Parens -}
 abstract production parenTypeExpr
@@ -336,6 +354,7 @@ top::TypeModifierExpr ::= wrapped::TypeModifierExpr
 
   top.typerep = noncanonicalType(parenType(wrapped.typerep));
   top.errors := wrapped.errors;
+  top.globalDecls := wrapped.globalDecls;
 }
 
 

@@ -11,6 +11,9 @@ top::BinOp ::= { top.errors := []; } -- TODO REMOVE
 abstract production assignOp
 top::BinOp ::= op::AssignOp
 {
+  top.errors :=
+    (if typeAssignableTo(top.lop.typerep, top.rop.typerep) then []
+     else [err(top.location, "Incompatible type in rhs of assignment, expected " ++ showType(top.lop.typerep) ++ " but found " ++ showType(top.rop.typerep))]);
   top.pp = op.pp;
   top.typerep = top.lop.typerep.defaultLvalueConversion;
 }

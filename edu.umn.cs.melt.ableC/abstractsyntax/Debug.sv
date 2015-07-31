@@ -16,6 +16,7 @@ e::Expr ::= txt::String
 {
  e.pp = text(txt);
  e.errors := [];
+ e.globalDecls := [];
  e.defs = [];
  e.typerep = errorType(); -- error("Need a type on txtExpr"); 
 }
@@ -24,6 +25,7 @@ s::Stmt ::= txt::String
 {
  s.pp = text(txt);
  s.errors := [];
+ s.globalDecls := [];
  s.defs = [];
  s.functiondefs = [];
 }
@@ -33,6 +35,7 @@ d::Decl ::= txt::String
 {
   d.pp = text(txt);
   d.errors := [ ];
+  d.globalDecls := [];
   d.defs = [ ];
 }
 
@@ -111,6 +114,7 @@ abstract production printEnv
 e::Expr ::=
 {
   e.errors := [];
+  e.globalDecls := [];
   e.defs = [];
   forwards to comment( show(80,showEnv(e.env)), location=e.location );
 }

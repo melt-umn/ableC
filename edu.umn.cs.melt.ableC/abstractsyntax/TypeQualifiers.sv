@@ -37,7 +37,7 @@ top::Qualifier ::=
  - e.g. Function specifiers (inline, _Noreturn)
  -      Alignment specifiers (_Alignas)
  -}
-nonterminal SpecialSpecifier with pp, env;
+nonterminal SpecialSpecifier with pp, env, returnType;
 
 abstract production inlineQualifier
 top::SpecialSpecifier ::=

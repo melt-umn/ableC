@@ -14,6 +14,9 @@ imports edu:umn:cs:melt:exts:ableC:gc;
 abstract production gcConstructor
 top::Constructor ::= n::String tms::TypeNameList
 {
+  production attribute initStmts::[Stmt] with ++;
+  initStmts := [];
+  
   top.pp = concat( [ text(n ++ " ( "), ppImplode (text(", "), tms.pps),
                      text(" );") ] );
   tms.position = 0;  
@@ -86,7 +89,8 @@ top::Constructor ::= n::String tms::TypeNameList
               assignOp(
                 eqOp(location=builtIn()),location=builtIn()), 
               declRefExpr(
-                name(top.topTypeName++"_"++n,location=builtIn()),location=builtIn()),location=builtIn())),exprStmt(
+                name(top.topTypeName++"_"++n,location=builtIn()),location=builtIn()),location=builtIn())),
+          exprStmt(
             binaryOpExpr(
               memberExpr(
                 declRefExpr(
@@ -106,6 +110,7 @@ top::Constructor ::= n::String tms::TypeNameList
                   location=builtIn()),
                 location=builtIn()),
               location=builtIn())),
+          foldStmt(initStmts),
           tms.asAssignments,
           returnStmt(justExpr(declRefExpr(name("temp",location=builtIn()),location=builtIn())))
         ])));

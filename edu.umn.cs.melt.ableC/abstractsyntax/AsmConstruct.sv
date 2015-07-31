@@ -1,5 +1,5 @@
 
-nonterminal AsmStatement with location, pp, env;
+nonterminal AsmStatement with location, pp, env, returnType;
 
 abstract production asmStatement
 a::AsmStatement ::= arg::AsmArgument
@@ -13,7 +13,7 @@ a::AsmStatement ::= tq::Qualifier arg::AsmArgument
  a.pp = concat( [ text("asm "), tq.pp, text(" ("), arg.pp, text(")") ] );
 }
 
-nonterminal AsmArgument with location, pp, env;
+nonterminal AsmArgument with location, pp, env, returnType;
 abstract production asmArgument
 top::AsmArgument ::= s::String asmOps1::AsmOperands asmOps2::AsmOperands asmC::AsmClobbers
 {
@@ -51,7 +51,7 @@ top::AsmClobbers ::= asmC::AsmClobbers s::String
  top.pp = concat( [asmC.pp, text(", "), text(s) ] );
 }
 
-nonterminal AsmOperands with location, pp, env;
+nonterminal AsmOperands with location, pp, env, returnType;
 abstract production noneAsmOps
 top::AsmOperands ::= 
 {
@@ -68,7 +68,7 @@ top::AsmOperands ::= asmOps::AsmOperands asmOp::AsmOperand
  top.pp = concat ( [asmOps.pp, text(", "), asmOp.pp] );
 }
 
-nonterminal AsmOperand with location, pp, env;
+nonterminal AsmOperand with location, pp, env, returnType;
 abstract production asmOperand
 top::AsmOperand ::= s::String e::Expr
 { 

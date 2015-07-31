@@ -7,7 +7,7 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax;
  - Variants: builtin, pointer, array, function, tagged, noncanonical.
  - Noncanonical forwards, and so doesn't need any attributes, etc attached to it.
  -}
-nonterminal Type with lpp, rpp, integerPromotions, defaultArgumentPromotions, defaultLvalueConversion, defaultFunctionArrayLvalueConversion, isIntegerType, isScalarType, isArithmeticType, withoutTypeQualifiers;
+nonterminal Type with lpp, rpp, integerPromotions, defaultArgumentPromotions, defaultLvalueConversion, defaultFunctionArrayLvalueConversion, isIntegerType, isScalarType, isArithmeticType, withoutTypeQualifiers, withTypeQualifiers, addedTypeQualifiers;
 
 -- char -> int and stuff in operations
 synthesized attribute integerPromotions :: Type;
@@ -21,9 +21,16 @@ synthesized attribute defaultFunctionArrayLvalueConversion :: Type;
 -- Strip top-level only of qualifiers from the type
 synthesized attribute withoutTypeQualifiers :: Type;
 
+-- Used in addQualifiers to add qualifiers to a type
+synthesized attribute withTypeQualifiers :: Type;
+inherited attribute addedTypeQualifiers :: [Qualifier];
+
 aspect default production
 top::Type ::=
 {
+  top.withoutTypeQualifiers = top;
+  top.withTypeQualifiers = top;
+  
   top.isIntegerType = false;
   top.isScalarType = false;
   top.isArithmeticType = false;
@@ -72,6 +79,7 @@ top::Type ::= q::[Qualifier]  bt::BuiltinType
   top.isArithmeticType = bt.isArithmeticType;
   top.isScalarType = bt.isArithmeticType;
   top.withoutTypeQualifiers = builtinType([], bt);
+  top.withTypeQualifiers = builtinType(top.addedTypeQualifiers ++ q, bt);
 }
 
 
@@ -91,6 +99,7 @@ top::Type ::= q::[Qualifier]  target::Type
   top.defaultLvalueConversion = pointerType([], target);
   top.defaultFunctionArrayLvalueConversion = top.defaultLvalueConversion;
   top.withoutTypeQualifiers = pointerType([], target);
+  top.withTypeQualifiers = pointerType(top.addedTypeQualifiers ++ q, target);
   
   top.isScalarType = true;
 }
@@ -133,7 +142,6 @@ top::Type ::= element::Type  indexQualifiers::[Qualifier]  sizeModifier::ArraySi
       -- possible bug: uncertain of this. discarding qualifiers because of lvalue conversion
       -- but then when DO these qualifiers show up in the decayed type?
       pointerType([], element)));
-  top.withoutTypeQualifiers = top;
 }
 
 {-- The subtypes of arrays -}
@@ -186,7 +194,6 @@ top::Type ::= result::Type  sub::FunctionType
   top.defaultFunctionArrayLvalueConversion =
     noncanonicalType(decayedType(top,
       pointerType([], top)));
-  top.withoutTypeQualifiers = top;
 }
 
 {-- The subtypes of functions -}
@@ -230,6 +237,7 @@ top::Type ::= q::[Qualifier]  sub::TagType
   top.defaultLvalueConversion = tagType([], sub);
   top.defaultFunctionArrayLvalueConversion = top.defaultLvalueConversion;
   top.withoutTypeQualifiers = tagType([], sub);
+  top.withTypeQualifiers = tagType(top.addedTypeQualifiers ++ q, sub);
   
   top.isIntegerType = sub.isIntegerType;
   top.isArithmeticType = sub.isIntegerType;
@@ -286,6 +294,7 @@ top::Type ::= q::[Qualifier]  bt::Type
   top.defaultLvalueConversion = bt.defaultLvalueConversion;
   top.defaultFunctionArrayLvalueConversion = top.defaultLvalueConversion;
   top.withoutTypeQualifiers = atomicType([], bt);
+  top.withTypeQualifiers = atomicType(top.addedTypeQualifiers ++ q, bt);
 }
 
 {-------------------------------------------------------------------------------
@@ -392,7 +401,7 @@ abstract production typedefType
 top::NoncanonicalType ::= q::[Qualifier]  name::String  resolved::Type
 {
   top.lpp = concat([ terminate( space(), map( (.pp), q ) ), text(name) ]);
-  top.rpp = notext();  
+  top.rpp = notext();
 
   top.canonicalType = resolved;
 }
@@ -426,7 +435,6 @@ top::BaseTypeExpr ::=
 }
 
 
-
 {- 
 NON_CANONICAL_UNLESS_DEPENDENT_TYPE(TypeOfExpr, Type)
 NON_CANONICAL_UNLESS_DEPENDENT_TYPE(TypeOf, Type)
@@ -437,3 +445,10 @@ NON_CANONICAL_UNLESS_DEPENDENT_TYPE(TypeOf, Type)
 
 -}
 
+{-- Tacks on qualifiers to a type at the outermost level -}
+function addQualifiers
+Type ::= qs::[Qualifier] base::Type
+{
+  base.addedTypeQualifiers = qs;
+  return base.withTypeQualifiers;
+}

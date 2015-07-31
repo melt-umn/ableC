@@ -271,6 +271,14 @@ Boolean ::= lval::Type  rval::Type
 -- the left operand has atomic, qualified, or unqualified arithmetic type, and the right has arithmetic type;
     if lval.isArithmeticType && rval.isArithmeticType then true
     else
+    case lval of
+    | errorType() -> true
+    | _ -> false
+    end ||
+    case rval of
+    | errorType() -> true
+    | _ -> false
+    end ||
 -- the left operand has an atomic, qualified, or unqualified version of a structure or union type compatible with the type of the right;
     case lval.defaultFunctionArrayLvalueConversion of
     | tagType(_, _) -> compatibleTypes(lval.defaultFunctionArrayLvalueConversion, rval.defaultFunctionArrayLvalueConversion, false)
