@@ -6,3 +6,7 @@ build.xml
 *.stdout
 *.stderr
 a.out
+
+*.test.out
+*.test.stdout
+*.test.stderr

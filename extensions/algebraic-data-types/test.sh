@@ -63,6 +63,65 @@ fi
 
 
 
+echo ""
+echo "test: java -jar ableC.jar example2-type-errors.xc"
+
+rm -f ableC_example_2.test.out
+java -jar ableC.jar example2-type-errors.xc &> ableC_example_2.test.out
+
+if [ $? != 0 ]; then
+    echo ${PassMsg}
+else
+    echo ${FailMsg}
+    AllPassed=0
+fi
+
+
+
+
+echo ""
+echo "test: java -jar ableC.jar example3-corrected.xc"
+
+rm -f ableC_example_3.test.out
+java -jar ableC.jar example3-corrected.xc &> ableC_example_3.test.out
+
+if [ $? == 0 ]; then
+    echo ${PassMsg}
+else
+    echo ${FailMsg}
+    AllPassed=0
+fi
+
+
+echo ""
+echo "test: gcc example3-corrected.pp_out.c"
+
+rm -f gcc_example_3.test.out
+gcc example3-corrected.pp_out.c &> gcc_example_3.test.out
+
+if [ $? == 0 ]; then
+    echo ${PassMsg}
+else
+    echo ${FailMsg}
+    AllPassed=0
+fi
+
+
+echo ""
+echo "test: ./a.out"
+
+rm -f run_example_3.test.out
+./a.out &> run_example_3.test.out
+
+if [ $? == 0 ]; then
+    echo ${PassMsg}
+else
+    echo ${FailMsg}
+    AllPassed=0
+fi
+
+
+
 
 echo ""
 rm -f TESTS_FAILED
