@@ -4,7 +4,14 @@
 # This script just calls individual testing scripts in the extendion
 # directories.
 
-pwd
+cd ../
 
-cd ../extensions/conditional-tables/
+cd extensions/conditional-tables/
 ./test.sh
+cd ../../
+
+cd extensions/algebraic-data-types/
+./test.sh
+cd ../../
+
+

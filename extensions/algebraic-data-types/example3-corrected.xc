@@ -22,6 +22,13 @@ int main () {
   Tree *t = Node( Leaf(3), 
                  Node(Leaf(2), Leaf(4)) ) ;
 
-  printf("value is %d\n", value(t) );
-  return 0;   
+  int result = value(t);
+
+  printf("value is %d\n", result );
+  
+  if (result == 9)  
+    return 0;   // correct answer
+  else
+    return 1;   // incorrect answer
+
 }
