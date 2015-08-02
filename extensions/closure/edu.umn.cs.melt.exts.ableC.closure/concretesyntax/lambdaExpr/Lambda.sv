@@ -16,10 +16,21 @@ import edu:umn:cs:melt:exts:ableC:closure:mda_test;
 marking terminal Lambda_t 'lambda' lexer classes {Ckeyword};
 
 concrete productions top::PostfixExpr_c
-| 'lambda' '{' captured::EnvNameList_c '}' pType::TypeName_c param::Identifier_t '.' '(' res::Expr_c ')'
-    { top.ast = lambdaExpr(captured.ast, pType.ast, fromId(param), res.ast, location=top.location); }
-| 'lambda' pType::TypeName_c param::Identifier_t '.' '(' res::Expr_c ')'
-    { top.ast = lambdaExpr(envContents(), pType.ast, fromId(param), res.ast, location=top.location); }
+| 'lambda' body::Lambda_c
+    { top.ast = body.ast; }
+
+nonterminal Lambda_c with ast<Expr>, location;
+
+concrete productions top::Lambda_c
+| '{' captured::EnvNameList_c '}' '(' pType::TypeName_c ')' param::Identifier_t 
+  '.' '(' res::Expr_c ')'
+    { top.ast = lambdaExpr(captured.ast, pType.ast, fromId(param), res.ast,
+        location=top.location); }
+
+| '(' pType::TypeName_c ')' param::Identifier_t '.' '(' res::Expr_c ')'
+    { top.ast = lambdaExpr(envContents(), pType.ast, fromId(param), res.ast,
+        location=top.location); 
+    }
 
 nonterminal EnvNameList_c with ast<EnvNameList>;
 

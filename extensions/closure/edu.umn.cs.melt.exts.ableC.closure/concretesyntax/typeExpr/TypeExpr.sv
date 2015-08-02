@@ -16,6 +16,6 @@ import edu:umn:cs:melt:exts:ableC:closure:mda_test;
 marking terminal Closure_t 'closure' lexer classes {Ckeyword};
 
 concrete productions top::TypeSpecifier_c
-| 'closure' '<' param::TypeName_c ',' res::TypeName_c '>'
+| 'closure' '<' param::TypeName_c ',' res::TypeName_c ',' '>'
     { top.realTypeSpecifiers = [closureTypeExpr(param.ast, res.ast)];
       top.preTypeSpecifiers = []; }
