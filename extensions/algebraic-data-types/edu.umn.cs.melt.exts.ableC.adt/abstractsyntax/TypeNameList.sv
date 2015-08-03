@@ -1,6 +1,6 @@
 grammar edu:umn:cs:melt:exts:ableC:adt:abstractsyntax ;
 
-nonterminal TypeNameList with pps, env, typereps;
+nonterminal TypeNameList with pps, env, typereps, returnType;
 
 abstract production nilTypeName
 ts::TypeNameList ::= 
