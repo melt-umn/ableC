@@ -32,14 +32,14 @@ top::Decl ::= adt::ADTDecl
   -- Get the struct RefId and StructDecl off of forwards to tree since
   -- they are to be used in the ADT tag and ref Def items.
   adt.structRefId
-    = case head(lookupTag( adt.name, addEnv(forward.defs, emptyEnv()) ) ) of
-      | refIdTagItem(_, r) -> r
+    = case lookupTag( adt.name, addEnv(forward.defs, emptyEnv()) ) of
+      | refIdTagItem(_, r) :: _ -> r
       | _ -> error( "struct ref id not found.")
       end;
 
   adt.structDcl
-    = case head(lookupRefId(adt.structRefId, addEnv(forward.defs, emptyEnv()) ) ) of
-      | structRefIdItem (s) -> s
+    = case lookupRefId(adt.structRefId, addEnv(forward.defs, emptyEnv()) ) of
+      | structRefIdItem(s) :: _  -> s
       | _ -> error( "struct decl not found")
       end;
 
@@ -69,7 +69,7 @@ top::ADTDecl ::= n::Name cs::ConstructorList
      structs create a tagItem and a refIdItem in the environment
       < structName, refIdTagItem ( SEU, RefIdAsString ) >
       < refIdAsString, structRefIdItem(decorated StructDecl) >
-     The resaon for this is to deal with forward declarations of structs.
+     The reason for this is to deal with forward declarations of structs.
      
      We have to do this for ADTs as well.
    -} 
