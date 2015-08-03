@@ -1,7 +1,7 @@
 grammar edu:umn:cs:melt:exts:ableC:closure:concretesyntax:lambdaExpr;
 
 imports edu:umn:cs:melt:ableC:concretesyntax;
-imports silver:langutil only ast;
+imports silver:langutil;
 
 imports edu:umn:cs:melt:ableC:abstractsyntax;
 imports edu:umn:cs:melt:ableC:abstractsyntax:construction;
@@ -22,14 +22,30 @@ concrete productions top::PostfixExpr_c
 nonterminal Lambda_c with ast<Expr>, location;
 
 concrete productions top::Lambda_c
-| '{' captured::EnvNameList_c '}' '(' pType::TypeName_c ')' param::Identifier_t 
+| '{' captured::EnvNameList_c '}' '(' sqs::SpecifierQualifierList_c param::DirectDeclarator_c ')'
   '.' '(' res::Expr_c ')'
-    { top.ast = lambdaExpr(captured.ast, pType.ast, fromId(param), res.ast,
-        location=top.location); }
+    { sqs.givenQualifiers = sqs.typeQualifiers;
+      local bt::BaseTypeExpr =
+        figureOutTypeFromSpecifiers(sqs.location, sqs.typeQualifiers, sqs.preTypeSpecifiers, sqs.realTypeSpecifiers, sqs.mutateTypeSpecifiers);
+      param.givenType = baseTypeExpr();
+      local pType::TypeName = 
+        typeName(
+          if null(sqs.attributes) then bt else warnTypeExpr([wrn(top.location, "Ignoring attributes in type name1")], bt),
+          param.ast);
+      top.ast = lambdaExpr(captured.ast, pType, param.declaredIdent, res.ast,
+                  location=top.location); }
 
-| '(' pType::TypeName_c ')' param::Identifier_t '.' '(' res::Expr_c ')'
-    { top.ast = lambdaExpr(envContents(), pType.ast, fromId(param), res.ast,
-        location=top.location); 
+| '(' sqs::SpecifierQualifierList_c param::DirectDeclarator_c ')' '.' '(' res::Expr_c ')'
+    { sqs.givenQualifiers = sqs.typeQualifiers;
+      local bt::BaseTypeExpr =
+        figureOutTypeFromSpecifiers(sqs.location, sqs.typeQualifiers, sqs.preTypeSpecifiers, sqs.realTypeSpecifiers, sqs.mutateTypeSpecifiers);
+      param.givenType = baseTypeExpr();
+      local pType::TypeName = 
+        typeName(
+          if null(sqs.attributes) then bt else warnTypeExpr([wrn(top.location, "Ignoring attributes in type name1")], bt),
+          param.ast);
+      top.ast = lambdaExpr(envContents(), pType, param.declaredIdent, res.ast,
+                  location=top.location); 
     }
 
 nonterminal EnvNameList_c with ast<EnvNameList>;
