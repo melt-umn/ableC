@@ -11,7 +11,7 @@ echo "----------------------------------------------------------------------"
 echo "test: ./build --clean --warn-all"
 
 rm -f build.test.out
-./build --clean --warn-all &> build_test.out
+./build --clean --warn-all &> build.test.out
 
 if [ $? == 0 ]; then
     echo ${PassMsg}
