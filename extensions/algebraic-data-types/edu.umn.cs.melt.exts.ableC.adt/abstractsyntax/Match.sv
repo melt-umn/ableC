@@ -318,6 +318,50 @@ Boolean ::= n::String cnst::Pair<String [Type]>
 { return n == cnst.fst;
 }
 
+
+abstract production patternNot
+p::Pattern ::= p1::Pattern
+{
+  p.pp = cat(text("!"), p1.pp);
+  p.defs = [];
+  p.errors := [];
+  
+  local scrutineeTypeInfo :: Pair<String [ Pair<String [Type]> ]> 
+    = getExpectedADTTypeInfo ( p.expectedType, p.env );
+  local idType :: String = scrutineeTypeInfo.fst ++ " *";
+  p.transform =
+    seqStmt(
+      txtStmt("void *_temp_ADT = ( void *)" ++
+              "((" ++ p.parent_idType ++ ")" ++
+              "_current_ADT" ++ "[" ++ 
+              toString(p.depth-1) ++ "])" ++ 
+              "->contents." ++ 
+              p.parent_id ++ ".f" ++ toString(p.position) ++ " ; "),
+      exprStmt(
+        matchStmt(
+          explicitCastExpr(
+            typeName(directTypeExpr(p.expectedType), baseTypeExpr()),
+            declRefExpr(
+              name("_temp_ADT", location=builtIn()),
+              location=builtIn()),
+            location=builtIn()),
+          consStmtClause(
+            stmtClause(
+              p1,
+              nullStmt(),
+              location=builtIn()),
+            consStmtClause(
+              stmtClause(
+                patternWildcard(location=builtIn()),
+                p.transformIn,
+                location=builtIn()),
+              nilStmtClause(location=builtIn()),
+              location=builtIn()),
+            location=builtIn()),
+          location=builtIn())));
+  p.decls = [];
+}
+
 abstract production patternVariable
 p::Pattern ::= id::String
 {
@@ -342,6 +386,36 @@ p::Pattern ::= id::String
                   p.parentTag ++ ".f" ++ toString(p.position) ++ " ; " ),
 
               p.transformIn) ;
+}
+
+abstract production patternNamed
+p::Pattern ::= id::String p1::Pattern
+{
+  p.pp = text(id);
+  p.defs = d.defs;
+  local d :: Decl
+    = variableDecls( [], [], directTypeExpr(p.expectedType), 
+        consDeclarator(
+          declarator( name(id, location=p.location), baseTypeExpr(), [], 
+            nothingInitializer() ),
+          nilDeclarator()) );
+  d.env = emptyEnv(); 
+  d.isTopLevel = false;
+
+  p.decls = [declStmt(d)];
+
+  p.errors := []; --ToDo: - check for non-linearity
+
+  p.transform = 
+    seqStmt ( txtStmt(id ++ " = ((" ++ p.parent_idType ++ ")" ++ 
+                  "_current_ADT" ++ "[" ++ toString(p.depth-1) ++ "])->contents." ++ 
+                  p.parentTag ++ ".f" ++ toString(p.position) ++ " ; " ),
+
+              p1.transform) ;
+  p1.transformIn = p.transformIn;
+  p1.expectedType = p.expectedType;
+  p1.depth = p.depth;
+  p1.position = p.position;
 }
 
 abstract production patternWildcard
