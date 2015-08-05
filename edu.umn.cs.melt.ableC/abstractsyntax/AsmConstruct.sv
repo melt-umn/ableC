@@ -4,13 +4,13 @@ nonterminal AsmStatement with location, pp, env, returnType;
 abstract production asmStatement
 a::AsmStatement ::= arg::AsmArgument
 {
- a.pp = concat( [ text("asm ("), arg.pp, text(")") ] );
+ a.pp = concat( [ text("asm ("), arg.pp, text(")"), text(";") ] );
 }
 
 abstract production asmStatementTypeQual
 a::AsmStatement ::= tq::Qualifier arg::AsmArgument
 {
- a.pp = concat( [ text("asm "), tq.pp, text(" ("), arg.pp, text(")") ] );
+ a.pp = concat( [ text("asm "), tq.pp, text(" ("), arg.pp, text(")"), text(";") ] );
 }
 
 nonterminal AsmArgument with location, pp, env, returnType;
