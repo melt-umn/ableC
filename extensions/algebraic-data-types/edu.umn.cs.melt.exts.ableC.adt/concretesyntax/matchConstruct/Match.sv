@@ -5,7 +5,7 @@ imports silver:langutil:pp with implode as ppImplode ;
 
 imports edu:umn:cs:melt:ableC:concretesyntax;
 imports edu:umn:cs:melt:ableC:abstractsyntax;
---imports edu:umn:cs:melt:ableC:abstractsyntax:construction;
+imports edu:umn:cs:melt:ableC:abstractsyntax:construction;
 --imports edu:umn:cs:melt:ableC:abstractsyntax:env;
 
 imports edu:umn:cs:melt:exts:ableC:adt:abstractsyntax as abs ;
@@ -17,7 +17,7 @@ exports edu:umn:cs:melt:exts:ableC:adt:concretesyntax:patterns;
 import edu:umn:cs:melt:exts:ableC:adt:mda_test;
 
 
--- Match expression --
+-- Match statment --
 
 concrete production match_c
 e::Stmt_c ::= 'match' m::Match
@@ -44,7 +44,9 @@ concrete productions cs::StmtClauses
   
 nonterminal StmtClause with location, ast<abs:StmtClause> ;
 concrete productions c::StmtClause
-| p::Pattern ':' s::Stmt_c 
-  { c.ast = abs:stmtClause( p.ast, s.ast, location=c.location ); }
+| p::Pattern ':' '{' l::BlockItemList_c '}'
+  { c.ast = abs:stmtClause( p.ast, foldStmt(l.ast), location=c.location ); }
+| p::Pattern ':' '{' '}'
+  { c.ast = abs:stmtClause( p.ast, nullStmt(), location=c.location ); }
 
 

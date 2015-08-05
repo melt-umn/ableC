@@ -14,4 +14,3 @@ copper_mda testDatatype(ablecParser) {
 copper_mda testDatatypeFwd(ablecParser) {
   edu:umn:cs:melt:exts:ableC:adt:concretesyntax:datatypeFwd;
 }
-
