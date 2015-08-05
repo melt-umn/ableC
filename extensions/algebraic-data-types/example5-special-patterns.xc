@@ -38,8 +38,8 @@ int free_Expr (Expr *e) {
 }
 
 int main () {
-  Expr *t = Div( Const(3), 
-                 Mul(Const(2), Const(0)) ) ;
+  Expr *t = Add( Const(3), 
+                 Div(Const(1), Const(0)) ) ;
  
   int result = value(t);
 
@@ -47,7 +47,7 @@ int main () {
   
   free_Expr(t);
  
-  if (result == 11)  
+  if (result == -12342)  
     return 0;   // correct answer
   else
     return 1;   // incorrect answer
