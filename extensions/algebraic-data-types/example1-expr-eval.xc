@@ -17,11 +17,11 @@ datatype Expr {
 
 int value (Expr *e) {
   match (e) {
-    Add(e1,e2): return value(e1) + value(e2);
-    Sub(e1,e2): return value(e1) - value(e2);
-    Mul(e1,e2): return value(e1) * value(e2);
-    Div(e1,e2): return value(e1) / value(e2);
-    Const(v):  return v;
+    Add(e1,e2): { return value(e1) + value(e2); }
+    Sub(e1,e2): { return value(e1) - value(e2); }
+    Mul(e1,e2): { return value(e1) * value(e2); }
+    Div(e1,e2): { return value(e1) / value(e2); }
+    Const(v):  { return v; }
   };
 }
 
@@ -31,7 +31,7 @@ int free_Expr (Expr *e) {
     Sub(e1,e2): { free_Expr(e1); free_Expr(e2); }
     Mul(e1,e2): { free_Expr(e1); free_Expr(e2); }
     Div(e1,e2): { free_Expr(e1); free_Expr(e2); }
-    Const(v): ;
+    Const(v):   { ; } 
   };
   free(e);
 }
