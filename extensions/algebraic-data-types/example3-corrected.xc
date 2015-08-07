@@ -12,8 +12,8 @@ int value (Tree *e) {
   int res;
 
   match (e) {
-    Node(e1,e2): res = value(e1) + value(e2);
-    Leaf(v):  res = v;
+    Node(e1,e2): { res = value(e1) + value(e2); }
+    Leaf(v): { res = v; }
   };
 
   return res;  
