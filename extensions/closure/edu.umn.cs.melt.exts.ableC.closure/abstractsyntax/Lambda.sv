@@ -12,6 +12,7 @@ imports edu:umn:cs:melt:exts:ableC:gc;
 
 import silver:util:raw:treemap as tm;
 
+
 abstract production lambdaExpr
 e::Expr ::= captured::EnvNameList paramType::TypeName param::Name res::Expr
 {
@@ -20,7 +21,7 @@ e::Expr ::= captured::EnvNameList paramType::TypeName param::Name res::Expr
      else [err(e.location, "Closures require closure.h to be included.")]) ++
     captured.errors ++ res.errors;
     
-  e.globalDecls := pair(fnName.name, functionDeclaration(fnDecl)) :: forward.globalDecls;
+  e.globalDecls := pair(theName, functionDeclaration(fnDecl)) :: (res.globalDecls ++ paramType.globalDecls) ;
   
   e.typerep =
     closureType(
@@ -117,7 +118,10 @@ e::Expr ::= captured::EnvNameList paramType::TypeName param::Name res::Expr
               tm:toList,
               e.env.values)))));
               
-  local fnName::Name = name(s"_fn_${toString(genInt())}", location=builtIn());
+  -- ToDo: Replace the use of location index as a unique name creation
+  -- mechanism once we have a better way to create unique names.
+  local theName::String = "_fn_" ++ toString(e.location.index); 
+  local fnName::Name = name(theName, location=builtIn());
   
   local fnDecl::FunctionDecl =
     functionDecl(
@@ -168,10 +172,10 @@ e::Expr ::= captured::EnvNameList paramType::TypeName param::Name res::Expr
   
   forwards to 
     if null(localErrs) then
-      fwrd
+       fwrd
     else
       errorExpr(localErrs, location=e.location);
-  
+
   local fwrd::Expr =
     stmtExpr(
       foldStmt([
@@ -212,8 +216,8 @@ e::Expr ::= captured::EnvNameList paramType::TypeName param::Name res::Expr
                       location=builtIn())))),
               nilDeclarator()))),
         txtStmt("_result->env = _env;"), --TODO
-        txtStmt(s"_result->fn = ${fnName.name};"), -- TODO
-        txtStmt(s"_result->fn_name = \"${fnName.name}\";")]), --TODO
+        txtStmt(s"_result->fn = ${theName};"), -- TODO
+        txtStmt(s"_result->fn_name = \"${theName}\";")]), --TODO
       declRefExpr(
         name("_result", location=builtIn()),
         location=builtIn()),
