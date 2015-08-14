@@ -14,9 +14,11 @@ top::abs:Expr ::= size::abs:Expr
   local localErrs :: [Message] =
     (if !null(abs:lookupValue("GC_malloc", top.abs:env)) then [] else
       [err(top.location, "Garbage collection requires <gc.h> to be included.")]) ++
+
     (if size.abs:typerep.abs:isIntegerType then [] else
-      [err(size.location, "size expression does not have integer type (got " ++ abs:showType(size.abs:typerep) ++ ")")]);
-  
+      [err(size.location, "size expression does not have integer type (got " ++ 
+        abs:showType(size.abs:typerep) ++ ")")]);
+ 
   forwards to
     if null(localErrs) then
       gcMalloc
