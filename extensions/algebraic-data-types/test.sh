@@ -8,6 +8,11 @@ echo "----------------------------------------------------------------------"
 echo "-- Testing edu:umn:cs:melt:exts:ableC:adt                           --"
 echo "----------------------------------------------------------------------"
 
+# Turn on debugging mode if the flag is present.
+if [[ $@ =~ "-x" ]]; then
+    set -x
+fi
+
 if [[ $@ =~ "--no-build" ]]; then
     echo "Not building the AbleC artifact."
 else
