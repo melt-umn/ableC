@@ -1,5 +1,7 @@
 grammar edu:umn:cs:melt:ableC:concretesyntax;
 
+import edu:umn:cs:melt:ableC:abstractsyntax:env only env;
+import edu:umn:cs:melt:ableC:abstractsyntax only returnType;
 -- "Exported" nonterminals
 
 closed nonterminal Expr_c with location, ast<ast:Expr>; 
@@ -282,6 +284,16 @@ concrete productions top::UnaryOp_c
 | '!'  { top.ast = ast:notOp(location=top.location); }
 
 
+
+-- These messages are used in the PostFixExpr_c below and Attrib_c in gcc_exts/VariableAttributes.sv
+global csPatternMatchingEnvMsg::String = "Internal ableC Error in concretesyntax/gcc_exts/VariableAttributes.sv. \n" ++
+        "An env value is used by some construct to determine what it forwards to. \n" ++
+        "Need a better solution for this...";
+global csPatternMatchingRetMsg::String = "Internal ableC Error in concretesyntax/gcc_exts/VariableAttributes.sv. \n" ++
+        "A returnType value is used by some construct to determine what it forwards to. \n" ++
+        "Need a better solution for this...";
+
+
 closed nonterminal PostfixExpr_c with location, ast<ast:Expr>;
 concrete productions top::PostfixExpr_c
 | e::PrimaryExpr_c
@@ -290,13 +302,23 @@ concrete productions top::PostfixExpr_c
     { top.ast = ast:arraySubscriptExpr(e.ast, index.ast, location=top.location); }
 | e::PostfixExpr_c '(' args::ArgumentExprList_c ')'
     { top.ast = 
-        case e.ast of
+        {- ToDo: this is a poor way to handle this, but I'm not sure of a better way.
+           Presumably determining if something is a declRefExp should be avoided.
+           The string error messages are defined in concretesyntax/Expr.sv
+         -}
+        case decorate e.ast with { env = error(csPatternMatchingEnvMsg); 
+                                   returnType=error(csPatternMatchingRetMsg); } of
         | ast:declRefExpr(id) -> ast:directCallExpr(id, ast:foldExpr(args.ast), location=top.location)
         | _ -> ast:callExpr(e.ast, ast:foldExpr(args.ast), location=top.location)
         end; }
 | e::PostfixExpr_c '(' ')'
     { top.ast = 
-        case e.ast of
+        {- ToDo: this is a poor way to handle this, but I'm not sure of a better way.
+           Presumably determining if something is a declRefExp should be avoided.
+           The string error messages are defined in concretesyntax/Expr.sv
+         -}
+        case decorate e.ast with { env = error(csPatternMatchingEnvMsg); 
+                                   returnType=error(csPatternMatchingRetMsg); } of
         | ast:declRefExpr(id) -> ast:directCallExpr(id, ast:nilExpr(), location=top.location)
         | _ -> ast:callExpr(e.ast, ast:nilExpr(), location=top.location)
         end; }

@@ -1,5 +1,7 @@
 grammar edu:umn:cs:melt:ableC:concretesyntax:gcc_exts;
 
+import edu:umn:cs:melt:ableC:abstractsyntax:env only env;
+
 -- We have AttrList in Lists of other stuff, this precedence is here to each it up in one go
 terminal CPP_Attribute_t '__attribute__' lexer classes {Ckeyword}, precedence=10;
 terminal CPP_UUAttribute_t '__attribute' lexer classes {Ckeyword}, precedence=10;
@@ -44,9 +46,16 @@ concrete productions top::Attrib_c
 | n::AttribName_c '(' e::ArgumentExprList_c ')'
     { top.ast = case e.ast of
       | [] -> ast:appliedAttrib(n.ast, ast:foldExpr([]))
-      | ast:declRefExpr(id) :: tail -> ast:idAppliedAttrib(n.ast, id, ast:foldExpr(tail))
-      | tail -> ast:appliedAttrib(n.ast, ast:foldExpr(tail))
-      end; }
+        {- ToDo: this is a poor way to handle this, but I'm not sure of a better way.
+           Presumably determining if something is a declRefExp should be avoided.
+           The string error messages are defined in concretesyntax/Expr.sv
+         -}
+      | hd::tl -> case decorate hd with { env = error(csPatternMatchingEnvMsg); ast:returnType=error(csPatternMatchingRetMsg); } of
+                  | ast:declRefExpr(id) -> ast:idAppliedAttrib(n.ast, id, ast:foldExpr(tl))
+                  | _ -> ast:appliedAttrib(n.ast, ast:foldExpr(e.ast))
+                  end
+      end; 
+    }
 
 terminal AttributeNameUnfetterdByKeywords_t /[A-Za-z_\$][A-Za-z_0-9\$]*/;
 
