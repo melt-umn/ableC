@@ -18,10 +18,10 @@ fi
 if [[ $@ =~ "--no-build" ]]; then
     echo "Not building the AbleC artifact."
 else
-    echo "test: ./build --clean --warn-all"
+    echo "test: ./build.sh --clean --warn-all"
 
     rm -f build.test.out
-    ./build --clean --warn-all &> build.test.out
+    ./build.sh --clean --warn-all &> build.test.out
 
     if [ $? == 0 ]; then
 	echo ${PassMsg}

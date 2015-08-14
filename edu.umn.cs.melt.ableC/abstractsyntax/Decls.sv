@@ -17,37 +17,21 @@ autocopy attribute isTopLevel :: Boolean;
 abstract production consGlobalDecl
 top::Decls ::= h::Decl  t::Decls
 {
---  local globalDecls::Decls =  removeDuplicateGlobalDecls(
---     h.globalDecls ++ t.globalDecls);
-
-  local globalDecls::[Decl] = removeDuplicateGlobalDecls2(
-     h.globalDecls ++ t.globalDecls);
-  
+  local globalDecls::[Decl] = removeDuplicateGlobalDecls(h.globalDecls); 
   top.globalDecls := [];
-  
---  forwards to appendDecls(globalDecls, consDecl(h, t));
-  forwards to --consDecl( decls( foldDecl(globalDecls) ), 
-             consDecl( decls(
-                        removeDuplicateGlobalDecls(
-                             h.globalDecls ++ t.globalDecls)),
-              -- consDecl(    (head( h.globalDecls ++ t.globalDecls)).snd,
-                           consDecl(h, t));
+
+  forwards to consDecl(decls(foldDecl(globalDecls)), consDecl(h, t));
+
+-- forwards to appendDecls(foldDecl(globalDecls), consDecl(h, t));  
+-- forwards to consDecl(decls(foldDecl([])), consDecl(h, t));
+-- forwards to consDecl(decls(nilDecl()), consDecl(h, nilDecl()));
+-- forwards to consDecl(decls(nilDecl()), consDecl(h, t));
+-- forwards to consDecl(h, t);
+-- forwards to consDecl(decls(consDecl(h,nilDecl())), t);
+-- forwards to appendDecls( consDecl(decls(foldDecl(globalDecls)), consDecl(h, t)), nilDecl() );
 }
 
 function removeDuplicateGlobalDecls
-Decls ::= ds::[Pair<String Decl>]
-{
-  return
-    case ds of
-      [] -> nilDecl()
-    | pair(n, d) :: t ->
-        if containsBy(stringEq, n, map(fst, t))
-        then removeDuplicateGlobalDecls(t)
-        else consDecl(d, removeDuplicateGlobalDecls(t))
-    end;
-}
-
-function removeDuplicateGlobalDecls2
 [Decl] ::= ds::[Pair<String Decl>]
 {
   return
@@ -55,24 +39,18 @@ function removeDuplicateGlobalDecls2
       [] -> []
     | pair(n, d) :: t ->
         if containsBy(stringEq, n, map(fst, t))
-        then removeDuplicateGlobalDecls2(t)
-        else d :: removeDuplicateGlobalDecls2(t)
+        then removeDuplicateGlobalDecls(t)
+        else d :: removeDuplicateGlobalDecls(t)
     end;
 }
 
-function appendDecls
-Decls ::= d1::Decls d2::Decls
+abstract production decls
+top::Decl ::= d::Decls
 {
-  return case d1 of
-              nilDecl() -> d2
-            | consDecl(d, rest) -> consDecl(d, appendDecls(rest, d2))
-         end;
-}
-
-function fst
-a ::= p::Pair<a b>
-{
-  return p.fst;
+  top.pp = terminate( line(), d.pps );
+  top.errors := d.errors;
+  top.globalDecls := d.globalDecls;
+  top.defs = d.defs;
 }
 
 abstract production consDecl
@@ -94,6 +72,13 @@ top::Decls ::=
   top.globalDecls := [];
   top.defs = [];
 }
+
+function appendDecls
+Decls ::= d1::Decls d2::Decls
+{ return consDecl( decls(d1), d2);
+}
+
+
 
 nonterminal Decl with pp, errors, globalDecls, defs, env, isTopLevel, returnType;
 
@@ -147,14 +132,6 @@ top::Decl ::= f::FunctionDecl
   top.defs = f.defs;
 }
 
-abstract production decls
-top::Decl ::= d::Decls
-{
-  top.pp = terminate( line(), d.pps );
-  top.errors := d.errors;
-  top.globalDecls := d.globalDecls;
-  top.defs = d.defs;
-}
   
 
 {--

@@ -7,11 +7,18 @@
 cd ../
 
 cd extensions/conditional-tables/
-./test.sh
+bash $@ ./test.sh
 cd ../../
 
 cd extensions/algebraic-data-types/
-./test.sh
+bash $@ ./test.sh
 cd ../../
 
+cd extensions/gc/
+bash $@ ./test.sh
+cd ../../
+
+cd extensions/closure/
+bash $@ ./test.sh
+cd ../../
 
