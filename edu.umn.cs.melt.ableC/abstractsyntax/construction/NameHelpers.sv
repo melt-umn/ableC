@@ -1,0 +1,12 @@
+
+function fromId
+Name ::= n::cst:Identifier_t
+{
+  return name(n.lexeme, location=n.location);
+}
+function fromTy
+Name ::= n::cst:TypeName_t
+{
+  return name(n.lexeme, location=n.location);
+}
+

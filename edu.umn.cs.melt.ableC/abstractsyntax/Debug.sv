@@ -41,63 +41,7 @@ d::Decl ::= txt::String
 
 
 
--- Expr --
 
--- 1, 2, etc.
-function mkIntExpr
-Expr ::= val::String l::Location
-{ return realConstant(integerConstant(val, false, noIntSuffix(), 
-            location=l), location=l) ;
-}
--- x = a ;
-function mkIntAssign
-Stmt ::= x::String a::String l::Location
-{ return exprStmt (
-           binaryOpExpr(
-             declRefExpr(name(x,location=l),location=l),
-             assignOp(eqOp(location=l),location=l),
-             mkIntExpr(a,l),
-             location=l
-            )
-          );
-}
-
-
--- Decl --
-
--- int n ;
-function mkIntDecl
-Stmt ::= n::String l::Location
-{
-  return  mkIntDeclGeneral( n, nothingInitializer() , l);
-}
-
--- int n = val;
-function mkIntDeclInit
-Stmt ::= n::String val::String l::Location
-{
-  return mkIntDeclGeneral( 
-           n, 
-           justInitializer(
-             exprInitializer( mkIntExpr(val, l) ) ),
-           l);
-}
-
-function mkIntDeclGeneral
-Stmt ::= n::String init::MaybeInitializer l::Location
-{
-  return  declStmt( 
-            variableDecls( [], [], 
-               directTypeExpr(
-                 builtinType([], signedType(intType()))),
-                 consDeclarator( 
-                   declarator( name(n, location=l), baseTypeExpr(), [], 
-                     init) , 
-                 nilDeclarator() )
-               )
-          ) ;
-}
-    
 
 
 {- ------------------------------------------------------------

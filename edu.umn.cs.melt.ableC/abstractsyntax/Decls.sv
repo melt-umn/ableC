@@ -12,15 +12,26 @@ synthesized attribute globalDecls::[Pair<String Decl>] with ++;
 
 autocopy attribute isTopLevel :: Boolean;
 
--- Inserted globalDecls before h. Should only ever get used by top-level foldGlobalDecl in concrete syntax.
+-- Inserted globalDecls before h. Should only ever get used by top-level 
+-- foldGlobalDecl in concrete syntax.
 abstract production consGlobalDecl
 top::Decls ::= h::Decl  t::Decls
 {
-  local globalDecls::Decls = removeDuplicateGlobalDecls(h.globalDecls ++ t.globalDecls);
+--  local globalDecls::Decls =  removeDuplicateGlobalDecls(
+--     h.globalDecls ++ t.globalDecls);
+
+  local globalDecls::[Decl] = removeDuplicateGlobalDecls2(
+     h.globalDecls ++ t.globalDecls);
   
   top.globalDecls := [];
   
-  forwards to appendDecls(globalDecls, consDecl(h, t));
+--  forwards to appendDecls(globalDecls, consDecl(h, t));
+  forwards to --consDecl( decls( foldDecl(globalDecls) ), 
+             consDecl( decls(
+                        removeDuplicateGlobalDecls(
+                             h.globalDecls ++ t.globalDecls)),
+              -- consDecl(    (head( h.globalDecls ++ t.globalDecls)).snd,
+                           consDecl(h, t));
 }
 
 function removeDuplicateGlobalDecls
@@ -33,6 +44,19 @@ Decls ::= ds::[Pair<String Decl>]
         if containsBy(stringEq, n, map(fst, t))
         then removeDuplicateGlobalDecls(t)
         else consDecl(d, removeDuplicateGlobalDecls(t))
+    end;
+}
+
+function removeDuplicateGlobalDecls2
+[Decl] ::= ds::[Pair<String Decl>]
+{
+  return
+    case ds of
+      [] -> []
+    | pair(n, d) :: t ->
+        if containsBy(stringEq, n, map(fst, t))
+        then removeDuplicateGlobalDecls2(t)
+        else d :: removeDuplicateGlobalDecls2(t)
     end;
 }
 
@@ -251,7 +275,8 @@ top::FunctionDecl ::= storage::[StorageClass]  fnquals::[SpecialSpecifier]  bty:
     end;
   
   top.errors := bty.errors ++ mty.errors ++ body.errors;
-  top.globalDecls := bty.globalDecls ++ mty.globalDecls ++ decls.globalDecls ++ body.globalDecls;
+  top.globalDecls := bty.globalDecls ++ mty.globalDecls ++ decls.globalDecls ++ 
+                     body.globalDecls;
   top.defs = bty.defs ++ [valueDef(name.name, functionValueItem(top))];
   top.typerep = mty.typerep;
   top.sourceLocation = name.location;
@@ -260,16 +285,27 @@ top::FunctionDecl ::= storage::[StorageClass]  fnquals::[SpecialSpecifier]  bty:
   
   body.returnType =
     case mty of
-      functionTypeExprWithArgs(ret, _, _) -> just(decorate typeName(bty, ret) with {env = top.env; returnType = top.returnType;}.typerep)
-    | functionTypeExprWithoutArgs(ret, _) -> just(decorate typeName(bty, ret) with {env = top.env; returnType = top.returnType;}.typerep)
+    | functionTypeExprWithArgs(ret, _, _) -> 
+        just(decorate typeName(bty, ret) 
+             with {env = top.env; returnType = top.returnType;}.typerep)
+
+    | functionTypeExprWithoutArgs(ret, _) ->
+        just(decorate typeName(bty, ret) 
+             with {env = top.env; returnType = top.returnType;}.typerep)
+
     | _ -> nothing() -- Don't error here, this is caught in type checking
     end;
   
-  -- TODO: add __func__ to environment here!
-  body.env = addEnv(top.defs ++ parameters.defs ++ decls.defs ++ body.functiondefs, openScope(addEnv(bty.defs, top.env)));
+
+  local thisFuncDef :: Def = miscDef("this_func", currentFunctionItem(name, top));
+  mty.env = addEnv ([thisFuncDef], top.env);  -- TODO: extend this to decls, body, etc.
+
+  body.env = addEnv(top.defs ++ parameters.defs ++ decls.defs ++ body.functiondefs, 
+                    openScope(addEnv(bty.defs, top.env)));
   decls.isTopLevel = false;
   
-  top.errors <- name.valueRedeclarationCheck(top.typerep); -- TODO: so long as the original wasn't also a definition
+  -- TODO: so long as the original wasn't also a definition
+  top.errors <- name.valueRedeclarationCheck(top.typerep); 
   
   top.errors <-
     if name.name == "main" && 
@@ -277,6 +313,10 @@ top::FunctionDecl ::= storage::[StorageClass]  fnquals::[SpecialSpecifier]  bty:
     then [wrn(name.location, "Main function should return 'int' not " ++ showType(bty.typerep))]
     else []; -- TODO: check the rest of the signature.
 }
+
+--
+--    with { env = addEnv ([ miscDef(cilk_in_fast_clone_id, emptyMiscItem()) ], d.env); } ;
+
 
 abstract production badFunctionDecl
 top::FunctionDecl ::= msg::[Message]
