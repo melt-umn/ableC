@@ -30,7 +30,7 @@ Decls ::= ds::[Pair<String Decl>]
     case ds of
       [] -> nilDecl()
     | pair(n, d) :: t ->
-        if containsBy(stringEq, n, map(fst, t))
+        if false--containsBy(stringEq, n, map(fst, t))
         then removeDuplicateGlobalDecls(t)
         else consDecl(d, removeDuplicateGlobalDecls(t))
     end;
@@ -49,6 +49,12 @@ function fst
 a ::= p::Pair<a b>
 {
   return p.fst;
+}
+
+function snd
+b ::= p::Pair<a b>
+{
+  return p.snd;
 }
 
 abstract production consDecl
@@ -202,7 +208,28 @@ autocopy attribute isTypedef :: Boolean;
 abstract production declarator
 top::Declarator ::= name::Name  ty::TypeModifierExpr  attrs::[Attribute]  initializer::MaybeInitializer
 {
-  top.pps = [concat([ty.lpp, name.pp, ty.rpp, ppAttributesRHS(attrs, top.env), initializer.pp])];
+  top.pps =
+    case ty of
+{-      pointerTypeExpr(qs, functionTypeExprWithArgs(result, args, variadic)) ->
+        [concat([
+          ty.lpp,
+          parens(cat(name.pp, text("*"))),
+          parens(
+            if null(args.pps) 
+            then text("void") 
+            else ppImplode(text(", "), 
+                (if variadic then args.pps ++ [text("...")] else args.pps))),
+          result.rpp])]
+    | pointerTypeExpr(qs, functionTypeExprWithoutArgs(result, ids)) ->
+      [concat([
+        ty.lpp,
+        parens(cat(name.pp, text("*"))),
+        parens(ppImplode(text(", "),
+        map((.pp), ids))),
+        result.rpp])]-}
+    | _ -> [concat([ty.lpp, name.pp, ty.rpp, ppAttributesRHS(attrs, top.env), initializer.pp])]
+    end;
+  
   top.errors :=
     case initializer of
       justInitializer(exprInitializer(e)) ->
@@ -276,6 +303,14 @@ top::FunctionDecl ::= storage::[StorageClass]  fnquals::[SpecialSpecifier]  bty:
       !compatibleTypes(bty.typerep, builtinType([], signedType(intType())), true)
     then [wrn(name.location, "Main function should return 'int' not " ++ showType(bty.typerep))]
     else []; -- TODO: check the rest of the signature.
+}
+
+-- Allows extensions to handle nested functions differently
+abstract production nestedFunctionDecl
+top::FunctionDecl ::= storage::[StorageClass]  fnquals::[SpecialSpecifier]  bty::BaseTypeExpr mty::TypeModifierExpr  name::Name  attrs::[Attribute]  decls::Decls  body::Stmt
+{
+  top.defs = bty.defs ++ [valueDef(name.name, functionValueItem(top))];
+  forwards to functionDecl(storage, fnquals, bty, mty, name, attrs, decls, body);
 }
 
 abstract production badFunctionDecl
