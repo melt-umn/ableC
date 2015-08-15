@@ -10,8 +10,9 @@ imports edu:umn:cs:melt:ableC:abstractsyntax;
 imports edu:umn:cs:melt:exts:ableC:adt:abstractsyntax as abs ;
 
 terminal PatternName_t /[A-Za-z_\$][A-Za-z_0-9\$]*/ lexer classes {Cidentifier}; -- Same as Identifier_t
-terminal NamedPatternOp_t '@' lexer classes {Csymbol};
-terminal AntipatternOp_t '!' lexer classes {Csymbol};
+
+terminal NamedPatternOp_t '@' precedence = 0, lexer classes {Csymbol};
+terminal AntipatternOp_t '!'  precedence = 1, lexer classes {Csymbol};
 
 -- Patterns --
 --------------
@@ -22,6 +23,12 @@ concrete productions ps::PatternList
   { ps.ast = abs:consPattern( p.ast, rest.ast, location=ps.location ); }
 
 | p::Pattern
+  { ps.ast = 
+      abs:consPattern( p.ast, abs:nilPattern(location=ps.location),
+        location=p.location ); 
+  }
+
+| p::ConstPattern
   { ps.ast = 
       abs:consPattern( p.ast, abs:nilPattern(location=ps.location),
         location=p.location ); 
@@ -40,9 +47,9 @@ concrete productions p::Pattern
         location=p.location );
   }
 
-| id::PatternName_t '@' p1::Pattern
+|  p1::Pattern '@' p2::Pattern
   { p.ast = 
-      abs:patternNamed( id.lexeme, p1.ast,
+      abs:patternBoth( p1.ast, p2.ast,
         location=p.location );
   }
 
@@ -58,6 +65,9 @@ concrete productions p::Pattern
             else abs:patternVariable( id.lexeme, location=p.location );
   }
 
+nonterminal ConstPattern with location, ast<abs:Pattern> ;
+
+concrete productions p::ConstPattern
 | c::Constant_c 
     { p.ast = abs:patternConst(c.ast, location=p.location); }
 
