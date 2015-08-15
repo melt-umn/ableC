@@ -22,7 +22,7 @@ concrete productions top::PostfixExpr_c
 nonterminal Lambda_c with ast<Expr>, location;
 
 concrete productions top::Lambda_c
-| '{' captured::EnvNameList_c '}' '(' sqs::SpecifierQualifierList_c param::DirectDeclarator_c ')'
+| '{' captured::EnvNameList_c '}' '(' sqs::SpecifierQualifierList_c param::Declarator_c ')'
   '.' '(' res::Expr_c ')'
     { sqs.givenQualifiers = sqs.typeQualifiers;
       local bt::BaseTypeExpr =
@@ -35,7 +35,7 @@ concrete productions top::Lambda_c
       top.ast = lambdaExpr(captured.ast, pType, param.declaredIdent, res.ast,
                   location=top.location); }
 
-| '(' sqs::SpecifierQualifierList_c param::DirectDeclarator_c ')' '.' '(' res::Expr_c ')'
+| '(' sqs::SpecifierQualifierList_c param::Declarator_c ')' '.' '(' res::Expr_c ')'
     { sqs.givenQualifiers = sqs.typeQualifiers;
       local bt::BaseTypeExpr =
         figureOutTypeFromSpecifiers(sqs.location, sqs.typeQualifiers, sqs.preTypeSpecifiers, sqs.realTypeSpecifiers, sqs.mutateTypeSpecifiers);
