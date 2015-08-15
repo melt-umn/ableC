@@ -24,3 +24,9 @@ top::Def ::= s::String  l::RefIdItem
 {
   top.refIdContribs = [pair(s, l)];
 }
+
+abstract production miscDef
+top::Def ::= s::String  l::MiscItem
+{
+  top.miscContribs = [pair(s, l)];
+}

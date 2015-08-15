@@ -54,17 +54,17 @@ top::Name ::= n::String
   local labels :: [LabelItem] = lookupLabel(n, top.env);
   top.valueLookupCheck =
     case values of
-    | [] -> [err(top.location, "Undeclared " ++ n)]
+    | [] -> [err(top.location, "Undeclared value " ++ n)]
     | _ :: _ -> []
     end;
   top.labelLookupCheck =
     case labels of
-    | [] -> [err(top.location, "Undeclared " ++ n)]
+    | [] -> [err(top.location, "Undeclared label " ++ n)]
     | _ :: _ -> []
     end;
   top.tagLookupCheck =
     case tags of
-    | [] -> [err(top.location, "Undeclared " ++ n)]
+    | [] -> [err(top.location, "Undeclared tag " ++ n)]
     | _ :: _ -> []
     end;
   

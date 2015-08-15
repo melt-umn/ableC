@@ -318,6 +318,7 @@ abstract production functionTypeExprWithArgs
 top::TypeModifierExpr ::= result::TypeModifierExpr  args::Parameters  variadic::Boolean
 {
   top.lpp = concat([ result.lpp ]);
+
   top.rpp = 
     cat(parens(
       if null(args.pps) 

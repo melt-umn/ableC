@@ -4,16 +4,9 @@ PassMsg="passed"
 FailMsg="failed"
 AllPassed=1
 
-export JAVA_OPTS="-Xss20M -Xmx400M ${JAVA_OPTS}"
-
 echo "----------------------------------------------------------------------"
-echo "-- Testing edu:umn:cs:melt:exts:ableC:adt                           --"
+echo "-- Testing edu:umn:cs:melt:exts:ableC:closure"
 echo "----------------------------------------------------------------------"
-
-# Turn on debugging mode if the flag is present.
-if [[ $@ =~ "-x" ]]; then
-    set -x
-fi
 
 if [[ $@ =~ "--no-build" ]]; then
     echo "Not building the AbleC artifact."
@@ -32,13 +25,15 @@ else
 fi
 
 
-FILE="example1-expr-eval"
+# to gain access to the 'gc' library
+export C_INCLUDE_PATH=/project/melt/Software/ext-libs/usr/local/include
+export LIBRARY_PATH=/project/melt/Software/ext-libs/usr/local/lib
 
 echo ""
-echo "test: java ${JAVA_OPTS} -jar ableC.jar ${FILE}.xc"
+echo "test: java -jar ableC.jar example1.xc"
 
-rm -f ableC_${FILE}.test.out
-java ${JAVA_OPTS} -jar ableC.jar ${FILE}.xc &> ableC_${FILE}.test.out
+rm -f ableC_example_1.test.out
+java -jar ableC.jar example1.xc  -Iinclude  &> ableC_example_1.test.out
 
 if [ $? == 0 ]; then
     echo ${PassMsg}
@@ -49,10 +44,10 @@ fi
 
 
 echo ""
-echo "test: gcc ${FILE}.pp_out.c"
+echo "test: gcc example1.pp_out.c"
 
-rm -f gcc_${FILE}.test.out
-gcc ${FILE}.pp_out.c &> gcc_${FILE}.test.out
+rm -f gcc_example_1.test.out
+gcc example1.pp_out.c -lgc &> gcc_example_1.test.out
 
 if [ $? == 0 ]; then
     echo ${PassMsg}
@@ -65,8 +60,8 @@ fi
 echo ""
 echo "test: ./a.out"
 
-rm -f run_${FILE}.test.out
-./a.out &> run_${FILE}.test.out
+rm -f run_example_1.test.out
+./a.out &> run_example_1.test.out
 
 if [ $? == 0 ]; then
     echo ${PassMsg}
@@ -76,16 +71,15 @@ else
 fi
 
 
+exit 1
 
-
-
-FILE="example2-type-errors"
+# complete for rest of gc tests!
 
 echo ""
-echo "test: java ${JAVA_OPTS} -jar ableC.jar ${FILE}.xc"
+echo "test: java -jar ableC.jar example2-type-errors.xc"
 
-rm -f ableC_${FILE}.test.out
-java ${JAVA_OPTS} -jar ableC.jar ${FILE}.xc &> ableC_${FILE}.test.out
+rm -f ableC_example_2.test.out
+java -jar ableC.jar example2-type-errors.xc &> ableC_example_2.test.out
 
 if [ $? != 0 ]; then
     echo ${PassMsg}
@@ -97,13 +91,11 @@ fi
 
 
 
-FILE="example3-corrected"
-
 echo ""
-echo "test: java ${JAVA_OPTS} -jar ableC.jar ${FILE}.xc"
+echo "test: java -jar ableC.jar example3-corrected.xc"
 
-rm -f ableC_${FILE}.test.out
-java ${JAVA_OPTS} -jar ableC.jar ${FILE}.xc &> ableC_${FILE}.test.out
+rm -f ableC_example_3.test.out
+java -jar ableC.jar example3-corrected.xc &> ableC_example_3.test.out
 
 if [ $? == 0 ]; then
     echo ${PassMsg}
@@ -114,10 +106,10 @@ fi
 
 
 echo ""
-echo "test: gcc ${FILE}.pp_out.c"
+echo "test: gcc example3-corrected.pp_out.c"
 
-rm -f gcc_${FILE}.test.out
-gcc ${FILE}.pp_out.c &> gcc_${FILE}.test.out
+rm -f gcc_example_3.test.out
+gcc example3-corrected.pp_out.c &> gcc_example_3.test.out
 
 if [ $? == 0 ]; then
     echo ${PassMsg}
@@ -130,8 +122,8 @@ fi
 echo ""
 echo "test: ./a.out"
 
-rm -f run_${FILE}.test.out
-./a.out &> run_${FILE}.test.out
+rm -f run_example_3.test.out
+./a.out &> run_example_3.test.out
 
 if [ $? == 0 ]; then
     echo ${PassMsg}
@@ -139,6 +131,7 @@ else
     echo ${FailMsg}
     AllPassed=0
 fi
+
 
 
 

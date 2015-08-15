@@ -6,17 +6,19 @@ imports silver:util:raw:treemap as tm;
 {--
  - The environment values that get passed around and used to look up names.
  -}
-nonterminal Env with labels, tags, values, refIds;
+nonterminal Env with labels, tags, values, refIds, misc;
 
 {--
  - A list of definitions, only used in contributing new names to the environment.
  -}
-nonterminal Defs with labelContribs, tagContribs, valueContribs, refIdContribs;
+nonterminal Defs 
+  with labelContribs, tagContribs, valueContribs, refIdContribs, miscContribs;
 
 {--
  - An individual definition of a name.
  -}
-closed nonterminal Def with labelContribs, tagContribs, valueContribs, refIdContribs;
+closed nonterminal Def 
+  with labelContribs, tagContribs, valueContribs, refIdContribs, miscContribs;
 
 
 {--
@@ -90,6 +92,12 @@ function lookupRefId
   return readScope_i(n, e.refIds);
 }
 
+function lookupMisc 
+[MiscItem] ::= n::String  e::Decorated Env
+{
+  return readScope_i(n, e.misc);
+}
+
 
 function lookupValueInLocalScope
 [ValueItem] ::= n::String  e::Decorated Env
@@ -105,5 +113,11 @@ function lookupLabelInLocalScope
 [LabelItem] ::= n::String  e::Decorated Env
 {
   return tm:lookup(n, head(e.labels));
+}
+
+function lookupMiscInLocalScope
+[MiscItem] ::= n::String  e::Decorated Env
+{
+  return tm:lookup(n, head(e.misc));
 }
 

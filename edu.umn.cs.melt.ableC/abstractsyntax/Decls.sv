@@ -12,43 +12,45 @@ synthesized attribute globalDecls::[Pair<String Decl>] with ++;
 
 autocopy attribute isTopLevel :: Boolean;
 
--- Inserted globalDecls before h. Should only ever get used by top-level foldGlobalDecl in concrete syntax.
+-- Inserted globalDecls before h. Should only ever get used by top-level 
+-- foldGlobalDecl in concrete syntax.
 abstract production consGlobalDecl
 top::Decls ::= h::Decl  t::Decls
 {
-  local globalDecls::Decls = removeDuplicateGlobalDecls(h.globalDecls ++ t.globalDecls);
-  
+  local globalDecls::[Decl] = removeDuplicateGlobalDecls(h.globalDecls); 
   top.globalDecls := [];
-  
-  forwards to appendDecls(globalDecls, consDecl(h, t));
+
+  forwards to consDecl(decls(foldDecl(globalDecls)), consDecl(h, t));
+
+-- forwards to appendDecls(foldDecl(globalDecls), consDecl(h, t));  
+-- forwards to consDecl(decls(foldDecl([])), consDecl(h, t));
+-- forwards to consDecl(decls(nilDecl()), consDecl(h, nilDecl()));
+-- forwards to consDecl(decls(nilDecl()), consDecl(h, t));
+-- forwards to consDecl(h, t);
+-- forwards to consDecl(decls(consDecl(h,nilDecl())), t);
+-- forwards to appendDecls( consDecl(decls(foldDecl(globalDecls)), consDecl(h, t)), nilDecl() );
 }
 
 function removeDuplicateGlobalDecls
-Decls ::= ds::[Pair<String Decl>]
+[Decl] ::= ds::[Pair<String Decl>]
 {
   return
     case ds of
-      [] -> nilDecl()
+      [] -> []
     | pair(n, d) :: t ->
         if false--containsBy(stringEq, n, map(fst, t))
         then removeDuplicateGlobalDecls(t)
-        else consDecl(d, removeDuplicateGlobalDecls(t))
+        else d :: removeDuplicateGlobalDecls(t)
     end;
 }
 
-function appendDecls
-Decls ::= d1::Decls d2::Decls
+abstract production decls
+top::Decl ::= d::Decls
 {
-  return case d1 of
-              nilDecl() -> d2
-            | consDecl(d, rest) -> consDecl(d, appendDecls(rest, d2))
-         end;
-}
-
-function fst
-a ::= p::Pair<a b>
-{
-  return p.fst;
+  top.pp = terminate( line(), d.pps );
+  top.errors := d.errors;
+  top.globalDecls := d.globalDecls;
+  top.defs = d.defs;
 }
 
 function snd
@@ -76,6 +78,13 @@ top::Decls ::=
   top.globalDecls := [];
   top.defs = [];
 }
+
+function appendDecls
+Decls ::= d1::Decls d2::Decls
+{ return consDecl( decls(d1), d2);
+}
+
+
 
 nonterminal Decl with pp, errors, globalDecls, defs, env, isTopLevel, returnType;
 
@@ -129,14 +138,6 @@ top::Decl ::= f::FunctionDecl
   top.defs = f.defs;
 }
 
-abstract production decls
-top::Decl ::= d::Decls
-{
-  top.pp = terminate( line(), d.pps );
-  top.errors := d.errors;
-  top.globalDecls := d.globalDecls;
-  top.defs = d.defs;
-}
   
 
 {--
@@ -278,7 +279,8 @@ top::FunctionDecl ::= storage::[StorageClass]  fnquals::[SpecialSpecifier]  bty:
     end;
   
   top.errors := bty.errors ++ mty.errors ++ body.errors;
-  top.globalDecls := bty.globalDecls ++ mty.globalDecls ++ decls.globalDecls ++ body.globalDecls;
+  top.globalDecls := bty.globalDecls ++ mty.globalDecls ++ decls.globalDecls ++ 
+                     body.globalDecls;
   top.defs = bty.defs ++ [valueDef(name.name, functionValueItem(top))];
   top.typerep = mty.typerep;
   top.sourceLocation = name.location;
@@ -287,16 +289,27 @@ top::FunctionDecl ::= storage::[StorageClass]  fnquals::[SpecialSpecifier]  bty:
   
   body.returnType =
     case mty of
-      functionTypeExprWithArgs(ret, _, _) -> just(decorate typeName(bty, ret) with {env = top.env; returnType = top.returnType;}.typerep)
-    | functionTypeExprWithoutArgs(ret, _) -> just(decorate typeName(bty, ret) with {env = top.env; returnType = top.returnType;}.typerep)
+    | functionTypeExprWithArgs(ret, _, _) -> 
+        just(decorate typeName(bty, ret) 
+             with {env = top.env; returnType = top.returnType;}.typerep)
+
+    | functionTypeExprWithoutArgs(ret, _) ->
+        just(decorate typeName(bty, ret) 
+             with {env = top.env; returnType = top.returnType;}.typerep)
+
     | _ -> nothing() -- Don't error here, this is caught in type checking
     end;
   
-  -- TODO: add __func__ to environment here!
-  body.env = addEnv(top.defs ++ parameters.defs ++ decls.defs ++ body.functiondefs, openScope(addEnv(bty.defs, top.env)));
+
+  local thisFuncDef :: Def = miscDef("this_func", currentFunctionItem(name, top));
+  mty.env = addEnv ([thisFuncDef], top.env);  -- TODO: extend this to decls, body, etc.
+
+  body.env = addEnv(top.defs ++ parameters.defs ++ decls.defs ++ body.functiondefs, 
+                    openScope(addEnv(bty.defs, top.env)));
   decls.isTopLevel = false;
   
-  top.errors <- name.valueRedeclarationCheck(top.typerep); -- TODO: so long as the original wasn't also a definition
+  -- TODO: so long as the original wasn't also a definition
+  top.errors <- name.valueRedeclarationCheck(top.typerep); 
   
   top.errors <-
     if name.name == "main" && 

@@ -12,6 +12,7 @@ imports edu:umn:cs:melt:exts:ableC:gc;
 
 import silver:util:raw:treemap as tm;
 
+
 abstract production lambdaExpr
 e::Expr ::= captured::EnvNameList paramType::TypeName param::Name res::Expr
 {
@@ -25,10 +26,10 @@ e::Expr ::= captured::EnvNameList paramType::TypeName param::Name res::Expr fnNu
     (if !null(lookupValue("_closure", e.env)) then []
      else [err(e.location, "Closures require closure.h to be included.")]) ++
     captured.errors ++ res.errors;
-    
+  
   e.globalDecls :=
     (if null(localErrs)
-     then [pair(fnName.name, functionDeclaration(fnDecl))]
+     then [pair(theName, functionDeclaration(fnDecl))]
      else []) ++ paramType.globalDecls ++ res.globalDecls;
   
   e.typerep =
@@ -124,9 +125,12 @@ e::Expr ::= captured::EnvNameList paramType::TypeName param::Name res::Expr fnNu
             [],
             map(
               tm:toList,
-              e.env.values)))));
+              e.env.values)))));       
   
-  local fnName::Name = name(s"_fn_${toString(fnNum)}", location=builtIn());
+  -- ToDo: Replace the use of location index as a unique name creation
+  -- mechanism once we have a better way to create unique names.
+  local theName::String = "_fn_" ++ toString(fnNum); 
+  local fnName::Name = name(theName, location=builtIn());
   
   local fnDecl::FunctionDecl =
     functionDecl(
@@ -177,10 +181,10 @@ e::Expr ::= captured::EnvNameList paramType::TypeName param::Name res::Expr fnNu
   
   forwards to 
     if null(localErrs) then
-      fwrd
+       fwrd
     else
       errorExpr(localErrs, location=e.location);
-  
+
   local fwrd::Expr =
     stmtExpr(
       foldStmt([
@@ -221,8 +225,8 @@ e::Expr ::= captured::EnvNameList paramType::TypeName param::Name res::Expr fnNu
                       location=builtIn())))),
               nilDeclarator()))),
         txtStmt("_result->env = _env;"), --TODO
-        txtStmt(s"_result->fn = ${fnName.name};"), -- TODO
-        txtStmt(s"_result->fn_name = \"${fnName.name}\";")]), --TODO
+        txtStmt(s"_result->fn = ${theName};"), -- TODO
+        txtStmt(s"_result->fn_name = \"${theName}\";")]), --TODO
       declRefExpr(
         name("_result", location=builtIn()),
         location=builtIn()),

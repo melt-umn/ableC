@@ -24,11 +24,12 @@ IOVal<Integer> ::= args::[String] ioIn::IO
     if length(args) >= 2 then implode(" ", tail(removeNonCppArgs(args))) else "" ;
 
   -- Run C pre processor over the file.
+  local fullCppCmd :: String = cppCmd ++ " \"" ++ fileName ++ "\" > " ++ cppFileName;
   local mkCppFile :: IOVal<Integer> =
-    system(cppCmd ++ " \"" ++ fileName ++ "\" > " ++ cppFileName,  
-       {- print("CPP: " ++ cppCmd ++ "\n\n", -}
-       isF.io)
-       {- ) -} ;
+    system(fullCppCmd,  
+        print("CPP: " ++ fullCppCmd ++ "\n\n",
+              isF.io)
+       ) ;
 
   -- Read the output of CPP and parse it.
   local text :: IOVal<String> = readFile(cppFileName, mkCppFile.io);

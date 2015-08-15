@@ -1,14 +1,16 @@
 
 
-nonterminal MaybeExpr with pp, isJust, errors, globalDecls, defs, env, maybeTyperep, returnType;
+nonterminal MaybeExpr with pp, isJust, errors, globalDecls, defs, env, maybeTyperep, returnType, justTheExpr;
 
 synthesized attribute maybeTyperep :: Maybe<Type>;
+synthesized attribute justTheExpr :: Maybe<Expr>;
 
 abstract production justExpr
 top::MaybeExpr ::= e::Expr
 {
   top.pp = e.pp;
   top.isJust = true;
+  top.justTheExpr = just(e);
   top.errors := e.errors;
   top.globalDecls := e.globalDecls;
   top.defs = e.defs;
@@ -19,6 +21,7 @@ top::MaybeExpr ::=
 {
   top.pp = notext();
   top.isJust = false;
+  top.justTheExpr = nothing();
   top.errors := [];
   top.globalDecls := [];
   top.defs = [];

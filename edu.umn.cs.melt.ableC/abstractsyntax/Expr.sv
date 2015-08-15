@@ -4,6 +4,17 @@ nonterminal Expr with location, pp, globalDecls, errors, defs, env, returnType, 
 
 synthesized attribute integerConstantValue :: Maybe<Integer>;
 
+{- The production below is never used.  But it adds a dependency for
+   the forwards-to equation on returnType so that it may be used by
+    extensions to determine what the forward to.  -}
+abstract production seedingForwardsToEquationDependencies
+top::Expr ::=
+{ forwards to case top.returnType of
+    | nothing() -> mkIntConst(1, top.location)
+    | _ -> mkIntConst(1, top.location)
+    end;
+}
+
 abstract production errorExpr
 top::Expr ::= msg::[Message]
 {

@@ -7,11 +7,13 @@ synthesized attribute labels :: Scope<LabelItem>;
 synthesized attribute tags :: Scope<TagItem>;
 synthesized attribute values :: Scope<ValueItem>;
 synthesized attribute refIds :: Scope<RefIdItem>;
+synthesized attribute misc :: Scope<MiscItem>;
 
 synthesized attribute labelContribs :: Contribs<LabelItem>;
 synthesized attribute tagContribs :: Contribs<TagItem>;
 synthesized attribute valueContribs :: Contribs<ValueItem>;
 synthesized attribute refIdContribs :: Contribs<RefIdItem>;
+synthesized attribute miscContribs :: Contribs<MiscItem>;
 
 {-- Adds contributions to an existing scope -}
 function augmentScope_i
@@ -39,6 +41,7 @@ top::Env ::=
   top.tags = [tm:empty(compareString)];
   top.values = [tm:empty(compareString)];
   top.refIds = [tm:empty(compareString)];
+  top.misc = [tm:empty(compareString)];
 }
 abstract production addEnv_i
 top::Env ::= d::Defs  e::Decorated Env
@@ -47,6 +50,7 @@ top::Env ::= d::Defs  e::Decorated Env
   top.tags = augmentScope_i(d.tagContribs, e.tags);
   top.values = augmentScope_i(d.valueContribs, e.values);
   top.refIds = augmentScope_i(d.refIdContribs, e.refIds);
+  top.misc = augmentScope_i(d.miscContribs, e.misc);
 }
 abstract production openScope_i
 top::Env ::= e::Decorated Env
@@ -55,6 +59,7 @@ top::Env ::= e::Decorated Env
   top.tags = tm:empty(compareString) :: e.tags;
   top.values = tm:empty(compareString) :: e.values;
   top.refIds = tm:empty(compareString) :: e.refIds;
+  top.misc = tm:empty(compareString) :: e.misc;
 }
 
 -- Definition list productions
@@ -66,6 +71,7 @@ top::Defs ::=
   top.tagContribs = [];
   top.valueContribs = [];
   top.refIdContribs = [];
+  top.miscContribs = [];
 }
 
 abstract production consDefs
@@ -75,6 +81,7 @@ top::Defs ::= h::Def  t::Defs
   top.tagContribs = h.tagContribs ++ t.tagContribs;
   top.valueContribs = h.valueContribs ++ t.valueContribs;
   top.refIdContribs = h.refIdContribs ++ t.refIdContribs;
+  top.miscContribs = h.miscContribs ++ t.miscContribs;
 }
 
 -- Defaults for Def
@@ -86,5 +93,6 @@ top::Def ::=
   top.tagContribs = [];
   top.valueContribs = [];
   top.refIdContribs = [];
+  top.miscContribs = [];
 }
 
