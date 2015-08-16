@@ -11,6 +11,15 @@ imports edu:umn:cs:melt:ableC:abstractsyntax:env;
 abstract production matchStmt
 e::Expr ::= scrutinee::Expr cs::StmtClauses
 {
+  forwards to
+    if   null(lookupValue("--xc-new-match", e.env))
+    then matchStmtNew (scrutinee, cs, location=e.location)
+    else matchStmtOrig(scrutinee, cs, location=e.location);
+}
+
+abstract production matchStmtOrig
+e::Expr ::= scrutinee::Expr cs::StmtClauses
+{
   local localErrors::[Message] =
     case scrutinee.typerep of
     | pointerType(_,adtTagType(_, adtRefId, _)) -> []

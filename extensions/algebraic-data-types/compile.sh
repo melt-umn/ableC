@@ -22,7 +22,8 @@ filename_withoutpath=$(basename $filename)
 basefilename="${filename_withoutpath%.*}"
 
 
-java ${JAVA_OPTS} -jar ableC.jar ${basefilename}.xc
+java ${JAVA_OPTS} -jar ableC.jar $@
+#${basefilename}.xc
 
 if [ $? != 0 ]; then
     exit 3
