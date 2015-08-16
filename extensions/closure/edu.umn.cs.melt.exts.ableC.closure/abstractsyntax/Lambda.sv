@@ -16,12 +16,21 @@ import silver:util:raw:treemap as tm;
 abstract production lambdaExpr
 e::Expr ::= captured::EnvNameList paramType::TypeName param::Name res::Expr
 {
-  local localErrs :: [Message] =
+  forwards to lambdaExpr_i(captured, paramType, param, res, genInt(), location=e.location);
+}
+
+abstract production lambdaExpr_i
+e::Expr ::= captured::EnvNameList paramType::TypeName param::Name res::Expr fnNum::Integer
+{
+  local localErrs::[Message] =
     (if !null(lookupValue("_closure", e.env)) then []
      else [err(e.location, "Closures require closure.h to be included.")]) ++
     captured.errors ++ res.errors;
-    
-  e.globalDecls := pair(theName, functionDeclaration(fnDecl)) :: (res.globalDecls ++ paramType.globalDecls) ;
+  
+  e.globalDecls :=
+    (if null(localErrs)
+     then [pair(theName, functionDeclaration(fnDecl))]
+     else []) ++ paramType.globalDecls ++ res.globalDecls;
   
   e.typerep =
     closureType(
@@ -116,11 +125,11 @@ e::Expr ::= captured::EnvNameList paramType::TypeName param::Name res::Expr
             [],
             map(
               tm:toList,
-              e.env.values)))));
-              
+              e.env.values)))));       
+  
   -- ToDo: Replace the use of location index as a unique name creation
   -- mechanism once we have a better way to create unique names.
-  local theName::String = "_fn_" ++ toString(e.location.index); 
+  local theName::String = "_fn_" ++ toString(fnNum); 
   local fnName::Name = name(theName, location=builtIn());
   
   local fnDecl::FunctionDecl =
@@ -235,10 +244,13 @@ synthesized attribute len::Integer occurs on EnvNameList; -- Also uses for index
 abstract production consEnvNameList
 top::EnvNameList ::= n::Name rest::EnvNameList
 {
-  top.errors := n.valueLookupCheck ++ rest.errors;
+  top.errors :=
+    n.valueLookupCheck ++
+    (if skipDef then [wrn(n.location, n.name ++ " cannot be captured")] else []) ++
+    rest.errors;
   
   -- If true, then don't generate load/store code for this variable
-  local skip::Boolean =
+  local skip::Boolean = 
     case n.valueItem.typerep of
       functionType(_, _) -> true
     | noncanonicalType(_) -> false -- TODO
@@ -248,7 +260,7 @@ top::EnvNameList ::= n::Name rest::EnvNameList
     end || n.name == "_env";
     
   -- If true, then don't capture this variable, even if though it is in the capture list
-  local skipDef::Boolean =
+  local skipDef::Boolean = 
     case n.valueItem.typerep of
       noncanonicalType(_) -> false -- TODO
     | tagType(_, refIdTagType(_, sName, _)) -> null(lookupRefId(sName, top.env))
@@ -268,6 +280,24 @@ top::EnvNameList ::= n::Name rest::EnvNameList
     if !null(n.valueLookupCheck)
     then errorTypeExpr(n.valueLookupCheck)
     else directTypeExpr(varBaseType);
+    
+  local isFunction::Boolean =
+    case n.valueItem.typerep of
+      functionType(_, _) -> true
+    | _ -> false
+    end;
+    
+  local isFunctionWithBody::Boolean =
+    case n.valueItem of
+      functionValueItem(functionDecl(_, _, _, _, _, _, _, _)) -> true
+    | _ -> false
+    end;
+    
+  local isNestedFunction::Boolean =
+    case n.valueItem of
+      functionValueItem(nestedFunctionDecl(_, _, _, _, _, _, _, _)) -> true
+    | _ -> false
+    end;
   
   local envAccess::Expr =
     unaryOpExpr(
@@ -321,12 +351,13 @@ top::EnvNameList ::= n::Name rest::EnvNameList
   top.envAllocTrans =
     if skip then rest.envAllocTrans else
       seqStmt(
-        txtStmt("_env[" ++ toString(rest.len) ++ "] = (void *)GC_malloc(sizeof(void *));"), -- TODO
-        rest.envAllocTrans);
+        rest.envAllocTrans,
+        txtStmt("_env[" ++ toString(rest.len) ++ "] = (void *)GC_malloc(sizeof(void *));")); -- TODO
   
   top.envCopyInTrans =
     if skip then rest.envCopyInTrans else
       seqStmt(
+        rest.envCopyInTrans,
         exprStmt(
           binaryOpExpr(
             envAccess,
@@ -334,16 +365,19 @@ top::EnvNameList ::= n::Name rest::EnvNameList
               eqOp(location=builtIn()),
               location=builtIn()),
             declRefExpr(n, location=builtIn()),
-          location=builtIn())),
-        rest.envCopyInTrans);
+          location=builtIn())));
   
   top.envCopyOutTrans =
-    if skip then rest.envCopyOutTrans else
+    if skipDef || (isFunction && (!isFunctionWithBody || (isFunctionWithBody && !isNestedFunction))) then rest.envCopyOutTrans else
       seqStmt(
-        declStmt(variableDecls([], [], varBaseTypeExpr, consDeclarator(varDecl, nilDeclarator()))),
-        rest.envCopyOutTrans);
+        rest.envCopyOutTrans,
+        case n.valueItem of
+          functionValueItem(functionDecl(_, fnquals, bty, mty, n, attrs, dcls, body)) ->
+            declStmt(functionDeclaration(functionDecl([], fnquals, bty, mty, n, attrs, dcls, body)))
+        | _ -> declStmt(variableDecls([], [], varBaseTypeExpr, consDeclarator(varDecl, nilDeclarator())))
+        end);
   
-  top.len = if skip then rest.len else rest.len + 1;
+  top.len = if skip || isNestedFunction then rest.len else rest.len + 1;
 }
 
 abstract production nilEnvNameList
@@ -361,6 +395,8 @@ top::EnvNameList ::=
 abstract production envContents
 top::EnvNameList ::=
 {
+  top.errors := []; -- Ignore warnings about variables being excluded
+  
   local contents::[Name] =
     map(
       name(_, location=builtIn()),

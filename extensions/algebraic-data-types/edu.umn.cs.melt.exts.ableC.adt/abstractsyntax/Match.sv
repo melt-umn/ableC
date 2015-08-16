@@ -1,6 +1,6 @@
 grammar edu:umn:cs:melt:exts:ableC:adt:abstractsyntax;
 
-imports silver:langutil only ast, pp, errors, err; --, err, wrn;
+imports silver:langutil;
 imports silver:langutil:pp with implode as ppImplode ;
 
 imports edu:umn:cs:melt:ableC:abstractsyntax;
@@ -11,10 +11,12 @@ imports edu:umn:cs:melt:ableC:abstractsyntax:env;
 abstract production matchStmt
 e::Expr ::= scrutinee::Expr cs::StmtClauses
 {
-  e.errors := case scrutinee.typerep of
-              | pointerType(_,adtTagType(_, adtRefId, _)) -> []
-              | _ -> [err(scrutinee.location, "scrutinee expression does not have adt pointer type (got " ++ showType(scrutinee.typerep) ++ ")")]
-              end ++ scrutinee.errors ++ cs.errors;
+  local localErrors::[Message] =
+    case scrutinee.typerep of
+    | pointerType(_,adtTagType(_, adtRefId, _)) -> []
+    | errorType() -> []
+    | _ -> [err(scrutinee.location, "scrutinee expression does not have adt pointer type (got " ++ showType(scrutinee.typerep) ++ ")")]
+    end ++ scrutinee.errors ++ cs.errors;
 
   local scrutineeTypeInfo :: Pair<String [ Pair<String [Type]> ]>    
     = case scrutinee.typerep of
@@ -36,6 +38,9 @@ e::Expr ::= scrutinee::Expr cs::StmtClauses
   cs.expectedType = scrutinee.typerep;
   
   forwards to
+    if !null(localErrors) then
+      errorExpr(localErrors, location=e.location)
+    else
       stmtExpr (
         foldStmt([
           {-blockCommentStmt(concat([ text("match"), space(), parens(scrutinee.pp), 
@@ -45,14 +50,13 @@ e::Expr ::= scrutinee::Expr cs::StmtClauses
           txtStmt ("void *_current_ADT" ++ "[10];"), 
           
           txtStmt ("_current_ADT" ++ "[0] = " ++
-                     "(void *)( " ++ show(100,scrutinee.pp) ++ " );"),
+                     "(void *)( " ++ show(100, scrutinee.pp) ++ " );"),
           txtStmt (""),
 
           cs.transform  
          ]), 
         comment ("no value to return", location=e.location),
-        location=e.location
-       ) ;
+        location=e.location);
 }
 
 
@@ -224,6 +228,7 @@ p::Pattern ::= id::String ps::PatternList
     = case p.expectedType of
       | adtTagType( _, adtRefId,_) -> pair(true, lookupRefId(adtRefId, p.env))
       | pointerType( _, adtTagType(_,adtRefId,_) ) -> pair(true, lookupRefId(adtRefId, p.env))
+      | errorType() -> pair(true, [])
       | _ -> pair(false, [])
       end;
 
@@ -324,7 +329,9 @@ p::Pattern ::= p1::Pattern
 {
   p.pp = cat(text("!"), p1.pp);
   p.defs = [];
-  p.errors := [];
+  p.errors := p1.errors;
+  
+  p1.expectedType = p.expectedType;
   
   local scrutineeTypeInfo :: Pair<String [ Pair<String [Type]> ]> 
     = getExpectedADTTypeInfo ( p.expectedType, p.env );
@@ -341,9 +348,12 @@ p::Pattern ::= p1::Pattern
         matchStmt(
           explicitCastExpr(
             typeName(directTypeExpr(p.expectedType), baseTypeExpr()),
-            declRefExpr(
-              name("_temp_ADT", location=builtIn()),
-              location=builtIn()),
+            {-declRefExpr(
+                name("_temp_ADT", location=builtIn()),
+                location=builtIn()),-}
+              txtExpr(
+                "_temp_ADT",
+                location=builtIn()),
             location=builtIn()),
           consStmtClause(
             stmtClause(
@@ -388,34 +398,26 @@ p::Pattern ::= id::String
               p.transformIn) ;
 }
 
-abstract production patternNamed
-p::Pattern ::= id::String p1::Pattern
+abstract production patternBoth
+p::Pattern ::= p1::Pattern p2::Pattern
 {
-  p.pp = text(id);
-  p.defs = d.defs;
-  local d :: Decl
-    = variableDecls( [], [], directTypeExpr(p.expectedType), 
-        consDeclarator(
-          declarator( name(id, location=p.location), baseTypeExpr(), [], 
-            nothingInitializer() ),
-          nilDeclarator()) );
-  d.env = emptyEnv(); 
-  d.isTopLevel = false;
-
-  p.decls = [declStmt(d)];
-
-  p.errors := []; --ToDo: - check for non-linearity
-
-  p.transform = 
-    seqStmt ( txtStmt(id ++ " = ((" ++ p.parent_idType ++ ")" ++ 
-                  "_current_ADT" ++ "[" ++ toString(p.depth-1) ++ "])->contents." ++ 
-                  p.parentTag ++ ".f" ++ toString(p.position) ++ " ; " ),
-
-              p1.transform) ;
-  p1.transformIn = p.transformIn;
+  p.pp = cat(p1.pp, cat(text("@"), p2.pp));
+  p.defs = p1.defs ++ p2.defs;
+  p.decls = p1.decls ++ p2.decls;
+  p.errors := p1.errors ++ p2.errors;
+  
   p1.expectedType = p.expectedType;
-  p1.depth = p.depth;
+  p2.expectedType = p.expectedType;
   p1.position = p.position;
+  p2.position = p.position;
+  p1.depth = p.depth;
+  p2.depth = p.depth;
+  p1.parentTag = p.parentTag;
+  p2.parentTag = p.parentTag;
+
+  p1.transformIn = p.transformIn;
+  p2.transformIn = p1.transform;
+  p.transform = p2.transform;
 }
 
 abstract production patternWildcard

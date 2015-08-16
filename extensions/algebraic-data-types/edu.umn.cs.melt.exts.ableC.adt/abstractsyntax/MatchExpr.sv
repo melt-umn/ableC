@@ -16,13 +16,14 @@ grammar edu:umn:cs:melt:exts:ableC:adt:abstractsyntax;
 abstract production matchExpr
 e::Expr ::= scrutinee::Expr cs::ExprClauses
 {
-  
-  e.errors := case scrutinee.typerep of
-              | pointerType(_,adtTagType(_, _, _)) -> []
-              | _ -> [err(scrutinee.location,
-                          "scrutinee expression does not have adt pointer type (got " ++
-                          showType(scrutinee.typerep) ++ ")")]
-              end ++ scrutinee.errors ++ cs.errors;
+  local localErrors::[Message] =
+    case scrutinee.typerep of
+    | pointerType(_,adtTagType(_, _, _)) -> []
+    | errorType() -> []
+    | _ -> [err(scrutinee.location,
+              "scrutinee expression does not have adt pointer type (got " ++
+              showType(scrutinee.typerep) ++ ")")]
+    end ++ scrutinee.errors ++ cs.errors;
 
   local scrutineeTypeInfo :: Pair<String [ Pair<String [Type]> ]>    
     = case scrutinee.typerep of
@@ -58,6 +59,9 @@ e::Expr ::= scrutinee::Expr cs::ExprClauses
      ); 
   
   forwards to
+    if !null(localErrors) then
+      errorExpr(localErrors, location=e.location)
+    else
       stmtExpr (
         foldStmt([
           {-blockCommentStmt(concat([ text("match"), space(), parens(scrutinee.pp), 

@@ -100,7 +100,7 @@ concrete productions top::InitialNestedFunctionDefinition_c
         ast:figureOutTypeFromSpecifiers(ds.location, ds.typeQualifiers, ds.preTypeSpecifiers, ds.realTypeSpecifiers, ds.mutateTypeSpecifiers);
 
       top.ast =
-        ast:functionDecl(ds.storageClass, ds.specialSpecifiers, bt, d.ast, d.declaredIdent, ds.attributes, ast:foldDecl([]), top.givenStmt);
+        ast:nestedFunctionDecl(ds.storageClass, ds.specialSpecifiers, bt, d.ast, d.declaredIdent, ds.attributes, ast:foldDecl([]), top.givenStmt);
     }
     action {
       -- TODO: we have to duplicate this more. yaaay...
