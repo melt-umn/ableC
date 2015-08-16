@@ -6,6 +6,8 @@ imports edu:umn:cs:melt:ableC:abstractsyntax as abs;
 imports silver:langutil;
 imports silver:langutil:pp;
 
+import edu:umn:cs:melt:ableC:abstractsyntax:env ; --only env, emptyEnv;
+
 function driver
 IOVal<Integer> ::= args::[String] ioIn::IO 
   theParser::(ParseResult<cst:Root>::=String String)
@@ -15,13 +17,17 @@ IOVal<Integer> ::= args::[String] ioIn::IO
   local baseFileName :: String = splitFileName.fst;
   local cppFileName :: String = baseFileName ++ ".gen_cpp";
   local ppFileName :: String = baseFileName ++ ".pp_out.c";
+
+  local partitionedArgs :: Pair<[String] [String]> = partition( partitionArg, tail(args) );
+  local cppArgs :: [String] = partitionedArgs.snd;
+  local xcArgs :: [String] = partitionedArgs.fst;
   
   local isF :: IOVal<Boolean> = isFile(fileName, ioIn);
 
   local cppCmd :: String = "gcc -E -x c -D _POSIX_C_SOURCE -std=gnu1x -I . " ++
     cppOptions;
   local cppOptions :: String =
-    if length(args) >= 2 then implode(" ", tail(removeNonCppArgs(args))) else "" ;
+    if length(args) >= 2 then implode(" ", cppArgs) else "" ;
 
   -- Run C pre processor over the file.
   local fullCppCmd :: String = cppCmd ++ " \"" ++ fileName ++ "\" > " ++ cppFileName;
@@ -37,6 +43,7 @@ IOVal<Integer> ::= args::[String] ioIn::IO
   local result :: ParseResult<cst:Root> = theParser(text.iovalue, cppFileName);
 
   local ast :: abs:Root = result.parseTree.ast;
+  ast.env = addEnv( map(xcArgDef, xcArgs) , emptyEnv() );
 
   local writePP :: IO = writeFile(ppFileName, show(80, ast.pp), text.io);
 
@@ -58,6 +65,25 @@ IOVal<Integer> ::= args::[String] ioIn::IO
     ioval(writePP, 0);
 }
 
+
+function partitionArg
+Boolean ::= arg::String
+{
+  return 
+    arg=="--show-ast" ||
+    startsWith("--xc-", arg) ;
+}
+
+-- From an arg, create the environment Def that indicates its presence
+-- Note that no value is stored in the env for this.
+-- ToDo: Add ability to add a value for these xc arguments.
+function xcArgDef
+Def ::= arg::String
+{ return miscDef(arg,emptyMiscItem()); }
+
+
+
+{-
 function removeNonCppArgs
 [String] ::= args::[String]
 {
@@ -67,3 +93,6 @@ function removeNonCppArgs
          | arg :: rest -> arg :: removeNonCppArgs(rest)
          end;
 }
+-}
+
+
