@@ -59,7 +59,7 @@ concrete productions cs::ExprClauses
 nonterminal ExprClause with location, ast<abs:ExprClause> ;
 
 concrete productions c::ExprClause
-| p::Pattern ':' e::Expr_c ';'
+| p::Pattern '->' e::Expr_c ';'
   { c.ast = 
       abs:exprClause( p.ast, e.ast, location=c.location ); 
   }
