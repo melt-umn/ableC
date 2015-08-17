@@ -142,6 +142,99 @@ fi
 
 
 
+
+FILE="example4-no-forward-decl"
+
+echo ""
+echo "test: java ${JAVA_OPTS} -jar ableC.jar ${FILE}.xc"
+
+rm -f ableC_${FILE}.test.out
+java ${JAVA_OPTS} -jar ableC.jar ${FILE}.xc &> ableC_${FILE}.test.out
+
+if [ $? == 0 ]; then
+    echo ${PassMsg}
+else
+    echo ${FailMsg}
+    AllPassed=0
+fi
+
+
+echo ""
+echo "test: gcc ${FILE}.pp_out.c"
+
+rm -f gcc_${FILE}.test.out
+gcc ${FILE}.pp_out.c &> gcc_${FILE}.test.out
+
+if [ $? == 0 ]; then
+    echo ${PassMsg}
+else
+    echo ${FailMsg}
+    AllPassed=0
+fi
+
+
+echo ""
+echo "test: ./a.out"
+
+rm -f run_${FILE}.test.out
+./a.out &> run_${FILE}.test.out
+
+if [ $? == 0 ]; then
+    echo ${PassMsg}
+else
+    echo ${FailMsg}
+    AllPassed=0
+fi
+
+
+
+
+
+FILE="example5-special-patterns"
+
+echo ""
+echo "test: java ${JAVA_OPTS} -jar ableC.jar ${FILE}.xc"
+
+rm -f ableC_${FILE}.test.out
+java ${JAVA_OPTS} -jar ableC.jar ${FILE}.xc &> ableC_${FILE}.test.out
+
+if [ $? == 0 ]; then
+    echo ${PassMsg}
+else
+    echo ${FailMsg}
+    AllPassed=0
+fi
+
+
+echo ""
+echo "test: gcc ${FILE}.pp_out.c"
+
+rm -f gcc_${FILE}.test.out
+gcc ${FILE}.pp_out.c &> gcc_${FILE}.test.out
+
+if [ $? == 0 ]; then
+    echo ${PassMsg}
+else
+    echo ${FailMsg}
+    AllPassed=0
+fi
+
+
+echo ""
+echo "test: ./a.out"
+
+rm -f run_${FILE}.test.out
+./a.out &> run_${FILE}.test.out
+
+if [ $? == 0 ]; then
+    echo ${PassMsg}
+else
+    echo ${FailMsg}
+    AllPassed=0
+fi
+
+
+
 echo ""
 rm -f TESTS_FAILED
 if [ ${AllPassed} = 1 ]; then
