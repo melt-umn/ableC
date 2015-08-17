@@ -6,7 +6,10 @@ synthesized attribute preExpr :: Boolean;
 synthesized attribute noLvalueConversion :: Boolean;
 
 aspect default production
-top::UnaryOp ::= { top.errors := []; } -- TODO REMOVE
+top::UnaryOp ::=
+{
+  top.errors := []; -- TODO REMOVE
+}
 
 abstract production preIncOp
 top::UnaryOp ::=
@@ -128,7 +131,10 @@ autocopy attribute typeop :: Type;
 nonterminal UnaryTypeOp with location, typeop, pp, errors;
 
 aspect default production
-top::UnaryTypeOp ::= { top.errors := []; } -- TODO REMOVE
+top::UnaryTypeOp ::=
+{
+  top.errors := []; -- TODO REMOVE
+}
 
 abstract production sizeofOp
 top::UnaryTypeOp ::=

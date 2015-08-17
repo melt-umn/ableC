@@ -150,6 +150,7 @@ top::BaseTypeExpr ::= q::[Qualifier]  kwd::StructOrEnumOrUnion  name::Name
     -- Otherwise, error!
     | _, _ -> []
     end;
+  
 }
 
 {-- An actual declaration of, not reference to, a struct. -}
@@ -233,6 +234,7 @@ top::BaseTypeExpr ::=
   top.errors := [];
   top.globalDecls := [];
   top.defs = [];
+  
 }
 {-- GCC typeof type -}
 abstract production typeofTypeExpr
@@ -332,6 +334,7 @@ top::TypeModifierExpr ::= result::TypeModifierExpr  args::Parameters  variadic::
                              protoFunctionType(args.typereps, variadic));
   top.errors := result.errors ++ args.errors;
   top.globalDecls := result.globalDecls ++ args.globalDecls;
+  
   
   args.env = openScope(top.env);
 }

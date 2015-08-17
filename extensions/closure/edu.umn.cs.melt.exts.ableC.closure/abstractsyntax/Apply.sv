@@ -18,7 +18,7 @@ e::Expr ::= fn::Expr arg::Expr
       closureType(_, param, res, _) -> res
     | _ -> errorType()
     end;
-  
+
   forwards to
     if null(localErrs) then
       fwrd

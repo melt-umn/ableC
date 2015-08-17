@@ -5,7 +5,10 @@ autocopy attribute rop :: Decorated Expr;
 nonterminal BinOp with location, lop, rop, pp, typerep, errors;
 
 aspect default production
-top::BinOp ::= { top.errors := []; } -- TODO REMOVE
+top::BinOp ::=
+{
+  top.errors := []; -- TODO REMOVE
+}
 
 --------------------------------------------------------------------------------
 abstract production assignOp

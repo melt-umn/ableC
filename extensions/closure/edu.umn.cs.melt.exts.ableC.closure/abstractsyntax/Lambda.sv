@@ -12,25 +12,28 @@ imports edu:umn:cs:melt:exts:ableC:gc;
 
 import silver:util:raw:treemap as tm;
 
-
 abstract production lambdaExpr
 e::Expr ::= captured::EnvNameList paramType::TypeName param::Name res::Expr
 {
-  forwards to lambdaExpr_i(captured, paramType, param, res, genInt(), location=e.location);
+  -- TODO: Replace the use of location index as a unique name creation
+  -- mechanism once we have a better way to create unique names.
+  forwards to lambdaExpr_i(captured, paramType, param, res, e.location.index, location=e.location);
 }
 
 abstract production lambdaExpr_i
 e::Expr ::= captured::EnvNameList paramType::TypeName param::Name res::Expr fnNum::Integer
 {
+
   local localErrs::[Message] =
     (if !null(lookupValue("_closure", e.env)) then []
      else [err(e.location, "Closures require closure.h to be included.")]) ++
     captured.errors ++ res.errors;
   
   e.globalDecls :=
+    paramType.globalDecls ++ res.globalDecls ++
     (if null(localErrs)
      then [pair(theName, functionDeclaration(fnDecl))]
-     else []) ++ paramType.globalDecls ++ res.globalDecls;
+     else []);
   
   e.typerep =
     closureType(
@@ -54,7 +57,7 @@ e::Expr ::= captured::EnvNameList paramType::TypeName param::Name res::Expr fnNu
               directTypeExpr(paramType.typerep),
               baseTypeExpr(),
               justName(param),
-              []) with {env = e.env;})) ::
+              []) with {env = e.env; returnType = error("returnType demanded by parameterDecl in parameterValueItem");})) ::
       captured.defs ++ tagRefIdTypeItems,
     emptyEnv());
   
@@ -125,10 +128,8 @@ e::Expr ::= captured::EnvNameList paramType::TypeName param::Name res::Expr fnNu
             [],
             map(
               tm:toList,
-              e.env.values)))));       
+              e.env.values)))));
   
-  -- ToDo: Replace the use of location index as a unique name creation
-  -- mechanism once we have a better way to create unique names.
   local theName::String = "_fn_" ++ toString(fnNum); 
   local fnName::Name = name(theName, location=builtIn());
   
@@ -345,7 +346,8 @@ top::EnvNameList ::= n::Name rest::EnvNameList
                 baseType = addQualifiers([constQualifier()], varBaseType);
                 givenAttributes = [];
                 isTopLevel = false;
-                isTypedef = false;})) ::
+                isTypedef = false;
+                returnType = error("returnType demanded by declarator in declaratorValueItem");})) ::
       rest.defs;
   
   top.envAllocTrans =

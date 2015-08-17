@@ -14,20 +14,20 @@ import silver:util:raw:treemap as tm;
 abstract production txtExpr
 e::Expr ::= txt::String
 {
- e.pp = text(txt);
- e.errors := [];
- e.globalDecls := [];
- e.defs = [];
- e.typerep = errorType(); -- error("Need a type on txtExpr"); 
+  e.pp = text(txt);
+  e.errors := [];
+  e.globalDecls := [];
+  e.defs = [];
+  e.typerep = errorType(); -- error("Need a type on txtExpr"); 
 }
 abstract production txtStmt
 s::Stmt ::= txt::String
 {
- s.pp = text(txt);
- s.errors := [];
- s.globalDecls := [];
- s.defs = [];
- s.functiondefs = [];
+  s.pp = text(txt);
+  s.errors := [];
+  s.globalDecls := [];
+  s.defs = [];
+  s.functiondefs = [];
 }
 
 abstract production txtDecl

@@ -4,13 +4,13 @@ nonterminal AsmStatement with location, pp, env, returnType;
 abstract production asmStatement
 a::AsmStatement ::= arg::AsmArgument
 {
- a.pp = concat( [ text("asm ("), arg.pp, text(")"), text(";") ] );
+  a.pp = concat( [ text("asm ("), arg.pp, text(")"), text(";") ] );
 }
 
 abstract production asmStatementTypeQual
 a::AsmStatement ::= tq::Qualifier arg::AsmArgument
 {
- a.pp = concat( [ text("asm "), tq.pp, text(" ("), arg.pp, text(")"), text(";") ] );
+  a.pp = concat( [ text("asm "), tq.pp, text(" ("), arg.pp, text(")"), text(";") ] );
 }
 
 nonterminal AsmArgument with location, pp, env, returnType;
@@ -38,45 +38,45 @@ nonterminal AsmClobbers with location, pp;
 abstract production noneAsmClobbers 
 top::AsmClobbers ::=
 {
- top.pp = notext();
+  top.pp = notext();
 }
 abstract production oneAsmClobbers 
 top::AsmClobbers ::= s::String
 {
- top.pp = text(s);
+  top.pp = text(s);
 }
 abstract production snocAsmClobbers 
 top::AsmClobbers ::= asmC::AsmClobbers s::String
 {
- top.pp = concat( [asmC.pp, text(", "), text(s) ] );
+  top.pp = concat( [asmC.pp, text(", "), text(s) ] );
 }
 
 nonterminal AsmOperands with location, pp, env, returnType;
 abstract production noneAsmOps
 top::AsmOperands ::= 
 {
- top.pp = notext();
+  top.pp = notext();
 }
 abstract production oneAsmOps
 top::AsmOperands ::= asmOp::AsmOperand
 {
- top.pp = asmOp.pp;
+  top.pp = asmOp.pp;
 }
 abstract production snocAsmOps
 top::AsmOperands ::= asmOps::AsmOperands asmOp::AsmOperand
 {
- top.pp = concat ( [asmOps.pp, text(", "), asmOp.pp] );
+  top.pp = concat ( [asmOps.pp, text(", "), asmOp.pp] );
 }
 
 nonterminal AsmOperand with location, pp, env, returnType;
 abstract production asmOperand
 top::AsmOperand ::= s::String e::Expr
 { 
- top.pp = concat( [ text(s), text(" ("), e.pp, text(")") ] );
+  top.pp = concat( [ text(s), text(" ("), e.pp, text(")") ] );
 }
 
 abstract production asmOperandId
 top::AsmOperand ::= id::Name  s::String e::Expr
 {
- top.pp = concat( [ text("["), id.pp, text("] "), text(s), text(" ("), e.pp, text(")") ] ); 
+  top.pp = concat( [ text("["), id.pp, text("] "), text(s), text(" ("), e.pp, text(")") ] ); 
 }

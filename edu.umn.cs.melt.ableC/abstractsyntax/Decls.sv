@@ -19,7 +19,7 @@ top::Decls ::= h::Decl  t::Decls
 {
   local globalDecls::[Decl] = removeDuplicateGlobalDecls(h.globalDecls); 
   top.globalDecls := [];
-
+  
   forwards to consDecl(decls(foldDecl(globalDecls)), consDecl(h, t));
 
 -- forwards to appendDecls(foldDecl(globalDecls), consDecl(h, t));  
@@ -44,21 +44,6 @@ function removeDuplicateGlobalDecls
     end;
 }
 
-abstract production decls
-top::Decl ::= d::Decls
-{
-  top.pp = terminate( line(), d.pps );
-  top.errors := d.errors;
-  top.globalDecls := d.globalDecls;
-  top.defs = d.defs;
-}
-
-function snd
-b ::= p::Pair<a b>
-{
-  return p.snd;
-}
-
 abstract production consDecl
 top::Decls ::= h::Decl  t::Decls
 {
@@ -81,15 +66,24 @@ top::Decls ::=
 
 function appendDecls
 Decls ::= d1::Decls d2::Decls
-{ return consDecl( decls(d1), d2);
+{
+  return consDecl(decls(d1), d2);
 }
-
 
 
 nonterminal Decl with pp, errors, globalDecls, defs, env, isTopLevel, returnType;
 
 {-- Pass down from top-level declaration the list of attribute to each name-declaration -}
 autocopy attribute givenAttributes :: [Attribute];
+
+abstract production decls
+top::Decl ::= d::Decls
+{
+  top.pp = terminate( line(), d.pps );
+  top.errors := d.errors;
+  top.globalDecls := d.globalDecls;
+  top.defs = d.defs;
+}
 
 abstract production variableDecls
 top::Decl ::= storage::[StorageClass]  attrs::[Attribute]  ty::BaseTypeExpr  dcls::Declarators
@@ -308,6 +302,7 @@ top::FunctionDecl ::= storage::[StorageClass]  fnquals::[SpecialSpecifier]  bty:
                     openScope(addEnv(bty.defs, top.env)));
   decls.isTopLevel = false;
   
+  
   -- TODO: so long as the original wasn't also a definition
   top.errors <- name.valueRedeclarationCheck(top.typerep); 
   
@@ -323,6 +318,10 @@ abstract production nestedFunctionDecl
 top::FunctionDecl ::= storage::[StorageClass]  fnquals::[SpecialSpecifier]  bty::BaseTypeExpr mty::TypeModifierExpr  name::Name  attrs::[Attribute]  decls::Decls  body::Stmt
 {
   top.defs = bty.defs ++ [valueDef(name.name, functionValueItem(top))];
+  
+  decls.isTopLevel = false;
+  
+  
   forwards to functionDecl(storage, fnquals, bty, mty, name, attrs, decls, body);
 }
 
@@ -387,6 +386,7 @@ top::ParameterDecl ::= storage::[StorageClass]  bty::BaseTypeExpr  mty::TypeModi
     | just(n) -> [valueDef(n.name, parameterValueItem(top))]
     | _ -> []
     end;
+  
 
   mty.baseType = bty.typerep;
   
@@ -443,6 +443,7 @@ top::StructDecl ::= attrs::[Attribute]  name::MaybeName  dcls::StructItemList
   
   dcls.env = openScope(addEnv(preDefs, top.env));
   
+  
   -- Redeclaration error if there IS a forward declaration AND an existing refid declaration.
   top.errors <-
     if !name.tagHasForwardDcl || null(lookupRefId(top.refId, top.env)) then []
@@ -479,6 +480,7 @@ top::UnionDecl ::= attrs::[Attribute]  name::MaybeName  dcls::StructItemList
   
   dcls.env = openScope(addEnv(preDefs, top.env));
   
+  
   -- Redeclaration error if there IS a forward declaration AND an existing refid declaration.
   top.errors <-
     if !name.tagHasForwardDcl || null(lookupRefId(top.refId, top.env)) then []
@@ -506,6 +508,7 @@ top::EnumDecl ::= name::MaybeName  dcls::EnumItemList
   
   dcls.env = addEnv(thisdcl, top.env);
   dcls.containingEnum = tagType([], enumTagType(top));
+  
 
   top.errors <-
     if null(name.tagLocalLookup) then []
@@ -620,6 +623,7 @@ top::StructDeclarator ::= name::Name  ty::TypeModifierExpr  attrs::[Attribute]
   top.typerep = ty.typerep;
   top.sourceLocation = name.location;
   
+  
   top.errors <- name.valueRedeclarationCheckNoCompatible;
   
   local allAttrs :: [Attribute] = top.givenAttributes ++ attrs;
@@ -643,6 +647,7 @@ top::StructDeclarator ::= name::MaybeName  ty::TypeModifierExpr  e::Expr  attrs:
     | just(n) -> n.location
     | nothing() -> loc("??",-1,-1,-1,-1,-1,-1) -- TODO: bug? probably okay, since only used to lookup names from env
     end;
+  
   
   top.errors <- name.valueRedeclarationCheckNoCompatible;
 
@@ -671,6 +676,7 @@ top::EnumItem ::= name::Name  e::MaybeExpr
   top.defs = [valueDef(name.name, enumValueItem(top))];
   top.typerep = top.containingEnum;
   top.sourceLocation = name.location;
+  
   
   top.errors <- name.valueRedeclarationCheckNoCompatible;
 }
