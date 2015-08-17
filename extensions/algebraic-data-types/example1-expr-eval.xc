@@ -17,6 +17,7 @@ datatype Expr {
 
 int value (Expr *e) {
   match (e) {
+    Add(Sub(e1,e2),Mul(e3,e4)): { return (value(e1) - value(e2)) + (value(e3) * value(e4)); }
     Add(e1,e2): { return value(e1) + value(e2); }
     Sub(e1,e2): { return value(e1) - value(e2); }
     Mul(e1,e2): { return value(e1) * value(e2); }
