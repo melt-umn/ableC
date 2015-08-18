@@ -33,13 +33,19 @@ synthesized attribute rpp :: Document;
 synthesized attribute typerep :: Type;
 synthesized attribute typereps :: [Type];
 
-nonterminal TypeName with env, typerep, pp, errors, globalDecls, defs, returnType;
+{- Util attributes -}
+synthesized attribute bty :: BaseTypeExpr;
+synthesized attribute mty :: TypeModifierExpr;
+
+nonterminal TypeName with env, typerep, bty, mty, pp, errors, globalDecls, defs, returnType;
 
 abstract production typeName
 top::TypeName ::= bty::BaseTypeExpr  mty::TypeModifierExpr
 {
   top.pp = concat([bty.pp, mty.lpp, mty.rpp]);
   top.typerep = mty.typerep;
+  top.bty = bty;
+  top.mty = mty;
   mty.baseType = bty.typerep;
   top.errors := bty.errors ++ mty.errors;
   top.globalDecls := bty.globalDecls ++ mty.globalDecls;

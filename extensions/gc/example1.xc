@@ -14,7 +14,7 @@ int main (int argc, char **argv) {
     int *a = gcmalloc (10 * sizeof(int));
     gcrealloc (a) to (12);
     
-    test *b = gcnew test;
+    test *b = gcnew(test);
 
     return 0; //(!a && !b);
 }

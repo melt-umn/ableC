@@ -77,7 +77,13 @@ top::Constructor ::= n::String tms::TypeNameList
             binaryOpExpr(
               declRefExpr(name("temp",location=builtIn()),location=builtIn()),
               assignOp(eqOp(location=builtIn()),location=builtIn()),
-              gcNewExpr(name(top.topTypeName, location=builtIn()), location=builtIn()),
+              gcNewExpr(
+                typeName(
+                  typedefTypeExpr(
+                    [],
+                    name(top.topTypeName, location=builtIn())),
+                  baseTypeExpr()),
+                location=builtIn()),
               location=builtIn())),
           exprStmt(
             binaryOpExpr(

@@ -12,8 +12,8 @@ import edu:umn:cs:melt:exts:ableC:gc:mda_test;
 marking terminal GcNew_t 'gcnew' lexer classes {Ckeyword};
 
 concrete productions top::cnc:PostfixExpr_c
-| 'gcnew' typeId::cnc:Identifier_t
-    { top.ast = gcNewExpr(fromId(typeId),
+| 'gcnew' '(' ty::cnc:TypeName_c ')'
+    { top.ast = gcNewExpr(ty.ast,
         location=top.location); }
         
 function fromId

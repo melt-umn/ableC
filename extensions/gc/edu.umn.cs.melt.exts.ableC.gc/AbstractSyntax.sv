@@ -60,7 +60,7 @@ top::abs:Expr ::= ptr::abs:Expr size::abs:Expr
 }
 
 abstract production gcNewExpr
-top::abs:Expr ::= typeName::abs:Name
+top::abs:Expr ::= ty::abs:TypeName
 {
   -- We check to make sure GC_realloc is in the environment. 
   local localErrs :: [Message] =
@@ -74,15 +74,14 @@ top::abs:Expr ::= typeName::abs:Name
       gcNew
     else
       abs:errorExpr(localErrs, location=top.location);
-      
-  local inType :: abs:TypeName = abs:typeName(abs:typedefTypeExpr([], typeName), abs:baseTypeExpr());
-  local resType :: abs:TypeName = abs:typeName(abs:typedefTypeExpr([], typeName),
-                                               abs:pointerTypeExpr([], abs:baseTypeExpr()));
+  
+  local resType :: abs:TypeName = abs:typeName(ty.abs:bty,
+                                               abs:pointerTypeExpr([], ty.abs:mty));
   
   local gcNew :: abs:Expr =
     abs:explicitCastExpr(resType,
                          gcMallocExpr(abs:unaryExprOrTypeTraitExpr(abs:sizeofOp(location=top.location),
-                                                                   abs:typeNameExpr(inType),
+                                                                   abs:typeNameExpr(ty),
                                                                    location=top.location),
                                       location=top.location),
                          location=top.location);
