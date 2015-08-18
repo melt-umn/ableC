@@ -253,7 +253,7 @@ top::TagType ::= ref::Decorated EnumDecl
   top.pp =
     case ref.maybename of
     | just(n) -> cat(text("enum "), n.pp)
-    | nothing() -> text("<anon enum>") -- TODO: location
+    | nothing() -> text("int/*anon enum*/") -- TODO: location
     end;
   top.isIntegerType = true;
 }
