@@ -17,44 +17,44 @@ datatype Expr {
 
 int value (Expr *e) {
   match (e) {
-    Add(e1,e2): return value(e1) + value(e2);
-    Sub(e1,e2): return value(e1) - value(e2);
-    Mul(e1,e2): return value(e1) * value(e2);
-    Div(e1,e2): return value(e1) / value(e2);
-    Const(v): return v;
+    Add(e1,e2): { return value(e1) + value(e2); }
+    Sub(e1,e2): { return value(e1) - value(e2); }
+    Mul(e1,e2): { return value(e1) * value(e2); }
+    Div(e1,e2): { return value(e1) / value(e2); }
+    Const(v): { return v; }
   }
 }
 
 int valueExpr (Expr *e) {
   return
     match (e) (
-      Add(e1,e2): valueExpr(e1) + valueExpr(e2);
-      Sub(e1,e2): valueExpr(e1) - valueExpr(e2);
-      Mul(e1,e2): valueExpr(e1) * valueExpr(e2);
-      Div(e1,e2): valueExpr(e1) / valueExpr(e2);
-      Const(v): v;
+      Add(e1,e2) -> valueExpr(e1) + valueExpr(e2);
+      Sub(e1,e2) -> valueExpr(e1) - valueExpr(e2);
+      Mul(e1,e2) -> valueExpr(e1) * valueExpr(e2);
+      Div(e1,e2) -> valueExpr(e1) / valueExpr(e2);
+      Const(v) -> v;
     ) ;
 }
 
 int valueIncorrect (Expr *e) {
   return
     match (e) (
-      Add(e1,e2): valueIncorrect(e1) + valueIncorrect(e2);
-      Sub(e1,e2): valueIncorrect(e1) - valueIncorrect(e2);
-      Mul(e1,e2): valueIncorrect(e1) * valueIncorrect(e2);
-      Div(e1,e2): valueIncorrect(e1) / valueIncorrect(e2);
-      _: 99;
+      Add(e1,e2) -> valueIncorrect(e1) + valueIncorrect(e2);
+      Sub(e1,e2) -> valueIncorrect(e1) - valueIncorrect(e2);
+      Mul(e1,e2) -> valueIncorrect(e1) * valueIncorrect(e2);
+      Div(e1,e2) -> valueIncorrect(e1) / valueIncorrect(e2);
+      _ -> 99;
     ) ;
 }
 
 int valueInexhaustive (Expr *e) {
   return
     match (e) (
-      Add(e1,e2): valueInexhaustive(e1) + valueInexhaustive(e2);
-      Sub(e1,e2): valueInexhaustive(e1) - valueInexhaustive(e2);
-      Mul(e1,e2): valueInexhaustive(e1) * valueInexhaustive(e2);
-      Div(e1,e2): valueInexhaustive(e1) / valueInexhaustive(e2);
-      // Const(v): v;
+      Add(e1,e2) -> valueInexhaustive(e1) + valueInexhaustive(e2);
+      Sub(e1,e2) -> valueInexhaustive(e1) - valueInexhaustive(e2);
+      Mul(e1,e2) -> valueInexhaustive(e1) * valueInexhaustive(e2);
+      Div(e1,e2) -> valueInexhaustive(e1) / valueInexhaustive(e2);
+      // Const(v) -> v;
     ) ;
 }
 
@@ -64,7 +64,7 @@ int free_Expr (Expr *e) {
     Sub(e1,e2): { free_Expr(e1); free_Expr(e2); }
     Mul(e1,e2): { free_Expr(e1); free_Expr(e2); }
     Div(e1,e2): { free_Expr(e1); free_Expr(e2); }
-    Const(v): ;
+    Const(v): {;}
   };
   free(e);
 }
