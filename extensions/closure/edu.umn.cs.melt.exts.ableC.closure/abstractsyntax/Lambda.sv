@@ -46,6 +46,8 @@ e::Expr ::= captured::EnvNameList paramType::TypeName param::Name res::Expr fnNu
       | _ -> "undefined _closure"
       end);
   
+  captured.freeVariablesIn = e.freeVariables; -- Not body.freeVariables, to exclude the parameter
+  
   res.env =
     addEnv(
       valueDef(
@@ -240,7 +242,9 @@ synthesized attribute envAllocTrans::Stmt occurs on EnvNameList;   -- gc mallocs
 synthesized attribute envCopyInTrans::Stmt occurs on EnvNameList;  -- Copys env vars into _env
 synthesized attribute envCopyOutTrans::Stmt occurs on EnvNameList; -- Copys _env out to vars
 
-synthesized attribute len::Integer occurs on EnvNameList; -- Also uses for indexing
+synthesized attribute len::Integer occurs on EnvNameList; -- Also used for indexing
+
+inherited attribute freeVariablesIn::[Name] occurs on EnvNameList;
 
 abstract production consEnvNameList
 top::EnvNameList ::= n::Name rest::EnvNameList
@@ -420,11 +424,11 @@ top::EnvNameList ::=
 -}
 
 abstract production exprFreeVariables
-top::EnvNameList ::= e::Expr
+top::EnvNameList ::=
 {
   top.errors := []; -- Ignore warnings about variables being excluded
   
-  local contents::[Name] = removeDuplicateNames(e.freeVariables);
+  local contents::[Name] = removeDuplicateNames(top.freeVariablesIn);
   
   forwards to foldr(consEnvNameList, nilEnvNameList(), contents);
 }
