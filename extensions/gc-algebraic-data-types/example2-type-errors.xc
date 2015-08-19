@@ -12,10 +12,10 @@ int value (Tree *e) {
   int res;
 
   match (e) {
-    Node(e1,e2,e3): res = value(e1) + value(e2);
-    Node(e1): res = value(e1) ;
-    NotAConstructor(x) : res = x ;
-    Leaf(v):  res = v;
+    Node(e1,e2,e3): {res = value(e1) + value(e2);}
+    Node(e1): {res = value(e1);}
+    NotAConstructor(x): {res = x;}
+    Leaf(v):  {res = v;}
   };
 
   return res;  

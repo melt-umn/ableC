@@ -1,0 +1,8 @@
+#!/bin/bash
+
+source ../../init_build.sh
+source init_build.sh
+
+# -e tells make to look at env variables before builtin variables
+# -k tells make to keep going after failure
+make -ek -f ../../testing/makefile $@

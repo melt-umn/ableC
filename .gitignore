@@ -3,10 +3,13 @@ build.xml
 *.jar
 *.pp_out.c
 *.gen_cpp
+*.o
+*.out
 *.stdout
 *.stderr
 a.out
 
+*.test
 *.test.out
 *.test.stdout
 *.test.stderr

@@ -18,11 +18,11 @@ datatype Expr {
 
 int value (Expr *e) {
   match (e) {
-    Add(e1,e2): return value(e1) + value(e2);
-    Sub(e1,e2): return value(e1) - value(e2);
-    Mul(e1,e2): return value(e1) * value(e2);
-    Div(e1,e2): return value(e1) / value(e2);
-    Const(v):  return v;
+    Add(e1,e2): {return value(e1) + value(e2);}
+    Sub(e1,e2): {return value(e1) - value(e2);}
+    Mul(e1,e2): {return value(e1) * value(e2);}
+    Div(e1,e2): {return value(e1) / value(e2);}
+    Const(v):  {return v;}
   };
 }
 
