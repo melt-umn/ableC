@@ -10,6 +10,7 @@ top::Expr ::= c::NumericConstant
   top.errors := [];
   top.globalDecls := [];
   top.defs = [];
+  top.freeVariables = [];
   top.typerep = builtinType([], c.constanttyperep);
 }
 abstract production imaginaryConstant
@@ -19,6 +20,7 @@ top::Expr ::= c::NumericConstant
   top.errors := [];
   top.globalDecls := [];
   top.defs = [];
+  top.freeVariables = [];
   top.typerep = builtinType([], case c.constanttyperep of
     | realType(rt) -> complexType(rt)
     | signedType(it) -> complexIntegerType(it)
@@ -32,6 +34,7 @@ top::Expr ::= num::String  c::CharPrefix
   top.errors := [];
   top.globalDecls := [];
   top.defs = [];
+  top.freeVariables = [];
   top.typerep = builtinType([], signedType(intType())); -- TODO: no idea
 }
 

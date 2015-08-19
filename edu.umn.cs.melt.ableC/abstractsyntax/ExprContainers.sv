@@ -1,6 +1,6 @@
 
 
-nonterminal MaybeExpr with pp, isJust, errors, globalDecls, defs, env, maybeTyperep, returnType, justTheExpr;
+nonterminal MaybeExpr with pp, isJust, errors, globalDecls, defs, env, maybeTyperep, returnType, freeVariables, justTheExpr;
 
 synthesized attribute maybeTyperep :: Maybe<Type>;
 synthesized attribute justTheExpr :: Maybe<Expr>;
@@ -14,6 +14,7 @@ top::MaybeExpr ::= e::Expr
   top.errors := e.errors;
   top.globalDecls := e.globalDecls;
   top.defs = e.defs;
+  top.freeVariables = e.freeVariables;
   top.maybeTyperep = just(e.typerep);
 }
 abstract production nothingExpr
@@ -25,13 +26,14 @@ top::MaybeExpr ::=
   top.errors := [];
   top.globalDecls := [];
   top.defs = [];
+  top.freeVariables = [];
   top.maybeTyperep = nothing();
 }
 
 
 synthesized attribute pps :: [Document];
 
-nonterminal Exprs with pps, errors, globalDecls, defs, env, expectedTypes, argumentPosition, callExpr, argumentErrors, count, callVariadic, returnType;
+nonterminal Exprs with pps, errors, globalDecls, defs, env, expectedTypes, argumentPosition, callExpr, argumentErrors, count, callVariadic, returnType, freeVariables;
 
 inherited attribute expectedTypes :: [Type];
 {-- Initially 1. -}
@@ -49,6 +51,7 @@ top::Exprs ::= h::Expr  t::Exprs
   top.errors := h.errors ++ t.errors;
   top.globalDecls := h.globalDecls ++ t.globalDecls;
   top.defs = h.defs ++ t.defs;
+  top.freeVariables = h.freeVariables ++ removeDefsFromNames(h.defs, t.freeVariables);
   top.count = 1 + t.count;
   
   top.argumentErrors =
@@ -73,6 +76,7 @@ top::Exprs ::=
   top.errors := [];
   top.globalDecls := [];
   top.defs = [];
+  top.freeVariables = [];
   top.count = 0;
   
   top.argumentErrors =
@@ -81,7 +85,7 @@ top::Exprs ::=
       [err(top.callExpr.location, "call expected " ++ toString(top.argumentPosition + length(top.expectedTypes)) ++ " arguments, got only " ++ toString(top.argumentPosition))];
 }
 
-nonterminal ExprOrTypeName with pp, errors, globalDecls, defs, env, typerep, returnType;
+nonterminal ExprOrTypeName with pp, errors, globalDecls, defs, env, typerep, returnType, freeVariables;
 
 abstract production exprExpr
 top::ExprOrTypeName ::= e::Expr
@@ -90,6 +94,7 @@ top::ExprOrTypeName ::= e::Expr
   top.errors := e.errors;
   top.globalDecls := e.globalDecls;
   top.defs = e.defs;
+  top.freeVariables = e.freeVariables;
   top.typerep = e.typerep;
 }
 abstract production typeNameExpr
@@ -99,6 +104,7 @@ top::ExprOrTypeName ::= ty::TypeName
   top.errors := ty.errors;
   top.globalDecls := ty.globalDecls;
   top.defs = ty.defs;
+  top.freeVariables = ty.freeVariables;
   top.typerep = ty.typerep;
 }
 

@@ -44,7 +44,7 @@ concrete productions top::Lambda_c
         typeName(
           if null(sqs.attributes) then bt else warnTypeExpr([wrn(top.location, "Ignoring attributes in type name1")], bt),
           param.ast);
-      top.ast = lambdaExpr(envContents(), pType, param.declaredIdent, res.ast,
+      top.ast = lambdaExpr(exprFreeVariables(res.ast), pType, param.declaredIdent, res.ast,
                   location=top.location); 
     }
 

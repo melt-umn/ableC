@@ -37,7 +37,7 @@ synthesized attribute typereps :: [Type];
 synthesized attribute bty :: BaseTypeExpr;
 synthesized attribute mty :: TypeModifierExpr;
 
-nonterminal TypeName with env, typerep, bty, mty, pp, errors, globalDecls, defs, returnType;
+nonterminal TypeName with env, typerep, bty, mty, pp, errors, globalDecls, defs, returnType, freeVariables;
 
 abstract production typeName
 top::TypeName ::= bty::BaseTypeExpr  mty::TypeModifierExpr
@@ -50,13 +50,14 @@ top::TypeName ::= bty::BaseTypeExpr  mty::TypeModifierExpr
   top.errors := bty.errors ++ mty.errors;
   top.globalDecls := bty.globalDecls ++ mty.globalDecls;
   top.defs = bty.defs;
+  top.freeVariables = bty.freeVariables ++ mty.freeVariables;
 }
 
 
 {--
  - Corresponds to types obtainable from a TypeSpecifiers.
  -}
-nonterminal BaseTypeExpr with env, typerep, pp, errors, globalDecls, defs, returnType;
+nonterminal BaseTypeExpr with env, typerep, pp, errors, globalDecls, defs, returnType, freeVariables;
 
 function errorTypeExpr
 BaseTypeExpr ::= msg::[Message]
@@ -72,6 +73,7 @@ top::BaseTypeExpr ::= msg::[Message]  ty::BaseTypeExpr
   top.errors := msg ++ ty.errors;
   top.globalDecls := ty.globalDecls;
   top.defs = ty.defs;
+  top.freeVariables = ty.freeVariables;
 }
 
 {-- A TypeExpr that simply yields a type directly, no interpretation necessary.
@@ -84,6 +86,7 @@ top::BaseTypeExpr ::= result::Type
   top.errors := [];
   top.globalDecls := [];
   top.defs = [];
+  top.freeVariables = [];
 }
 
 {-- A reference to a tag type. e.g. 'struct foo' not 'struct foo {...}' -}
@@ -157,6 +160,8 @@ top::BaseTypeExpr ::= q::[Qualifier]  kwd::StructOrEnumOrUnion  name::Name
     | _, _ -> []
     end;
   
+  top.freeVariables = [];
+  
 }
 
 {-- An actual declaration of, not reference to, a struct. -}
@@ -173,6 +178,7 @@ top::BaseTypeExpr ::= q::[Qualifier]  def::StructDecl
   top.errors := def.errors;
   top.globalDecls := def.globalDecls;
   top.defs = def.defs;
+  top.freeVariables = [];
 }
 
 {-- An actual declaration of, not reference to, a union. -}
@@ -189,6 +195,7 @@ top::BaseTypeExpr ::= q::[Qualifier]  def::UnionDecl
   top.errors := def.errors;
   top.globalDecls := def.globalDecls;
   top.defs = def.defs;
+  top.freeVariables = [];
 }
 
 {-- An actual declaration of, not reference to, an enum. -}
@@ -200,6 +207,7 @@ top::BaseTypeExpr ::= q::[Qualifier]  def::EnumDecl
   top.errors := def.errors;
   top.globalDecls := def.globalDecls;
   top.defs = def.defs;
+  top.freeVariables = [];
 }
 
 {-- A name, that needs to be looked up. -}
@@ -214,6 +222,7 @@ top::BaseTypeExpr ::= q::[Qualifier]  name::Name
   top.errors := [];
   top.globalDecls := [];
   top.defs = [];
+  top.freeVariables = [];
 
   top.errors <- name.valueLookupCheck;
   top.errors <-
@@ -230,6 +239,7 @@ top::BaseTypeExpr ::= q::[Qualifier]  wrapped::TypeName
   top.errors := wrapped.errors;
   top.globalDecls := wrapped.globalDecls;
   top.defs = wrapped.defs;
+  top.freeVariables = wrapped.freeVariables;
 }
 {-- GCC builtin type -}
 abstract production vaListTypeExpr
@@ -240,6 +250,7 @@ top::BaseTypeExpr ::=
   top.errors := [];
   top.globalDecls := [];
   top.defs = [];
+  top.freeVariables = [];
   
 }
 {-- GCC typeof type -}
@@ -251,6 +262,7 @@ top::BaseTypeExpr ::= q::[Qualifier]  e::ExprOrTypeName
   top.errors := e.errors;
   top.globalDecls := e.globalDecls;
   top.defs = e.defs;
+  top.freeVariables = e.freeVariables;
 }
 
 
@@ -260,7 +272,7 @@ top::BaseTypeExpr ::= q::[Qualifier]  e::ExprOrTypeName
  - Typically, these are just anchored somewhere to obtain the env,
  - and then turn into an environment-independent Type.
  -}
-nonterminal TypeModifierExpr with env, typerep, lpp, rpp, baseType, errors, globalDecls, returnType;
+nonterminal TypeModifierExpr with env, typerep, lpp, rpp, baseType, errors, globalDecls, returnType, freeVariables;
 
 
 abstract production baseTypeExpr
@@ -272,6 +284,7 @@ top::TypeModifierExpr ::=
   top.typerep = top.baseType; 
   top.errors := [];
   top.globalDecls := [];
+  top.freeVariables = [];
 }
 
 {-- Pointers -}
@@ -288,6 +301,7 @@ top::TypeModifierExpr ::= q::[Qualifier]  target::TypeModifierExpr
   top.typerep = pointerType(q, target.typerep);
   top.errors := target.errors;
   top.globalDecls := target.globalDecls;
+  top.freeVariables = target.freeVariables;
 }
 
 {-- Arrays (constant, variable, etc) -}
@@ -306,6 +320,7 @@ top::TypeModifierExpr ::= element::TypeModifierExpr  indexQualifiers::[Qualifier
     variableArrayType(size));
   top.errors := element.errors ++ size.errors;
   top.globalDecls := element.globalDecls ++ size.globalDecls;
+  top.freeVariables = element.freeVariables ++ size.freeVariables;
 }
 abstract production arrayTypeExprWithoutExpr
 top::TypeModifierExpr ::= element::TypeModifierExpr  indexQualifiers::[Qualifier]  sizeModifier::ArraySizeModifier
@@ -319,6 +334,7 @@ top::TypeModifierExpr ::= element::TypeModifierExpr  indexQualifiers::[Qualifier
   top.typerep = arrayType(element.typerep, indexQualifiers, sizeModifier, incompleteArrayType());
   top.errors := element.errors;
   top.globalDecls := element.globalDecls;
+  top.freeVariables = element.freeVariables;
 }
 
 {-- Functions (with or without args) -}
@@ -340,7 +356,7 @@ top::TypeModifierExpr ::= result::TypeModifierExpr  args::Parameters  variadic::
                              protoFunctionType(args.typereps, variadic));
   top.errors := result.errors ++ args.errors;
   top.globalDecls := result.globalDecls ++ args.globalDecls;
-  
+  top.freeVariables = result.freeVariables;
   
   args.env = openScope(top.env);
 }
@@ -353,6 +369,7 @@ top::TypeModifierExpr ::= result::TypeModifierExpr  ids::[Name]  --fnquals::[Spe
   top.typerep = functionType(result.typerep, noProtoFunctionType());
   top.errors := result.errors;
   top.globalDecls := result.globalDecls;
+  top.freeVariables = result.freeVariables;
 }
 {-- Parens -}
 abstract production parenTypeExpr
@@ -365,6 +382,7 @@ top::TypeModifierExpr ::= wrapped::TypeModifierExpr
   top.typerep = noncanonicalType(parenType(wrapped.typerep));
   top.errors := wrapped.errors;
   top.globalDecls := wrapped.globalDecls;
+  top.freeVariables = wrapped.freeVariables;
 }
 
 

@@ -32,10 +32,11 @@ IOVal<Integer> ::= args::[String] ioIn::IO
   -- Run C pre processor over the file.
   local fullCppCmd :: String = cppCmd ++ " \"" ++ fileName ++ "\" > " ++ cppFileName;
   local mkCppFile :: IOVal<Integer> =
-    system(fullCppCmd,  
-        print("CPP: " ++ fullCppCmd ++ "\n\n",
-              isF.io)
-       ) ;
+    system(
+      fullCppCmd,  
+      if containsBy(stringEq, "--show-cpp", args)
+      then print("CPP command: " ++ fullCppCmd ++ "\n", isF.io)
+      else isF.io);
 
   -- Read the output of CPP and parse it.
   local text :: IOVal<String> = readFile(cppFileName, mkCppFile.io);
@@ -71,6 +72,7 @@ Boolean ::= arg::String
 {
   return 
     arg=="--show-ast" ||
+    arg=="--show-cpp" ||
     startsWith("--xc-", arg) ;
 }
 

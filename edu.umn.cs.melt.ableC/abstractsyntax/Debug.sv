@@ -18,6 +18,7 @@ e::Expr ::= txt::String
   e.errors := [];
   e.globalDecls := [];
   e.defs = [];
+  e.freeVariables = [];
   e.typerep = errorType(); -- error("Need a type on txtExpr"); 
 }
 abstract production txtStmt
@@ -27,6 +28,7 @@ s::Stmt ::= txt::String
   s.errors := [];
   s.globalDecls := [];
   s.defs = [];
+  s.freeVariables = [];
   s.functiondefs = [];
 }
 
@@ -37,6 +39,7 @@ d::Decl ::= txt::String
   d.errors := [ ];
   d.globalDecls := [];
   d.defs = [ ];
+  d.freeVariables = [];
 }
 
 

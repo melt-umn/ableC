@@ -1,6 +1,6 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax;
 
-nonterminal Expr with location, pp, globalDecls, errors, defs, env, returnType, typerep;
+nonterminal Expr with location, pp, globalDecls, errors, defs, env, returnType, freeVariables, typerep;
 
 synthesized attribute integerConstantValue :: Maybe<Integer>;
 
@@ -22,6 +22,7 @@ top::Expr ::= msg::[Message]
   top.errors := msg;
   top.globalDecls := [];
   top.defs = [];
+  top.freeVariables = [];
   top.typerep = errorType();
 }
 abstract production declRefExpr
@@ -32,6 +33,7 @@ top::Expr ::= id::Name
   top.globalDecls := [];
   top.defs = [];
   top.typerep = id.valueItem.typerep;
+  top.freeVariables = [id];
   
   top.errors <- id.valueLookupCheck;
 }
@@ -42,6 +44,7 @@ top::Expr ::= l::String
   top.errors := [];
   top.globalDecls := [];
   top.defs = [];
+  top.freeVariables = [];
   top.typerep = pointerType([], builtinType([constQualifier()], signedType(charType())));
 }
 abstract production parenExpr
@@ -51,6 +54,7 @@ top::Expr ::= e::Expr
   top.errors := [];
   top.globalDecls := e.globalDecls;
   top.defs = e.defs;
+  top.freeVariables = e.freeVariables;
   top.typerep = e.typerep;
 }
 abstract production unaryOpExpr
@@ -62,6 +66,7 @@ top::Expr ::= op::UnaryOp  e::Expr
   top.errors := op.errors ++ e.errors;
   top.globalDecls := e.globalDecls;
   top.defs = e.defs;
+  top.freeVariables = e.freeVariables;
   top.typerep = op.typerep;
   
   op.op = e;
@@ -73,6 +78,7 @@ top::Expr ::= op::UnaryTypeOp  e::ExprOrTypeName
   top.errors := op.errors ++ e.errors;
   top.globalDecls := e.globalDecls;
   top.defs = e.defs;
+  top.freeVariables = e.freeVariables;
   top.typerep = builtinType([], signedType(intType())); -- TODO sizeof / alignof result type
 }
 abstract production arraySubscriptExpr
@@ -82,6 +88,7 @@ top::Expr ::= lhs::Expr  rhs::Expr
   top.errors := lhs.errors ++ rhs.errors;
   top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
   top.defs = lhs.defs ++ rhs.defs;
+  top.freeVariables = lhs.freeVariables ++ removeDefsFromNames(rhs.defs, rhs.freeVariables);
   
   local subtype :: Either<Type [Message]> =
     case lhs.typerep.defaultFunctionArrayLvalueConversion, rhs.typerep.defaultFunctionArrayLvalueConversion of
@@ -130,6 +137,7 @@ top::Expr ::= f::Expr  a::Exprs
   top.errors := f.errors ++ a.errors;
   top.globalDecls := f.globalDecls ++ a.globalDecls;
   top.defs = f.defs ++ a.defs;
+  top.freeVariables = f.freeVariables ++ removeDefsFromNames(f.defs, a.freeVariables);
   
   local subtype :: Either<Pair<Type FunctionType> [Message]> =
     case f.typerep.defaultFunctionArrayLvalueConversion of
@@ -172,6 +180,7 @@ top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
   top.errors := lhs.errors;
   top.globalDecls := lhs.globalDecls;
   top.defs = lhs.defs;
+  top.freeVariables = lhs.freeVariables;
   
   local quals_refid :: Pair<[Qualifier] String> =
     case deref, lhs.typerep of
@@ -207,6 +216,9 @@ top::Expr ::= lhs::Expr  op::BinOp  rhs::Expr
   top.errors := lhs.errors ++ op.errors ++ rhs.errors;
   top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
   top.defs = lhs.defs ++ rhs.defs;
+  top.freeVariables =
+    lhs.freeVariables ++
+    removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = op.typerep;
   
   op.lop = lhs;
@@ -221,6 +233,10 @@ top::Expr ::= cond::Expr  t::Expr  e::Expr
   top.errors := cond.errors ++ t.errors ++ e.errors;
   top.globalDecls := cond.globalDecls ++ t.globalDecls ++ e.globalDecls;
   top.defs = cond.defs ++ t.defs ++ e.defs;
+  top.freeVariables =
+    cond.freeVariables ++
+    removeDefsFromNames(cond.defs, t.freeVariables) ++
+    removeDefsFromNames(cond.defs ++ t.defs, e.freeVariables);
   
   top.typerep = t.typerep; -- TODO: this is wrong, but it's an approximation for now
   
@@ -236,6 +252,7 @@ top::Expr ::= cond::Expr  e::Expr
   top.errors := cond.errors ++ e.errors;
   top.globalDecls := cond.globalDecls ++ e.globalDecls;
   top.defs = cond.defs ++ e.defs;
+  top.freeVariables = cond.freeVariables ++ e.freeVariables;
   
   top.typerep = e.typerep; -- TODO: not even sure what this should be
   
@@ -248,6 +265,7 @@ top::Expr ::= ty::TypeName  e::Expr
   top.errors := ty.errors ++ e.errors;
   top.globalDecls := ty.globalDecls ++ e.globalDecls;
   top.defs = ty.defs ++ e.defs;
+  top.freeVariables = ty.freeVariables ++ removeDefsFromNames(ty.defs, e.freeVariables);
   top.typerep = ty.typerep;
   
   e.env = addEnv(ty.defs, ty.env);
@@ -261,6 +279,7 @@ top::Expr ::= ty::TypeName  init::InitList
   top.errors := ty.errors ++ init.errors;
   top.globalDecls := ty.globalDecls ++ init.globalDecls;
   top.defs = ty.defs ++ init.defs;
+  top.freeVariables = ty.freeVariables ++ removeDefsFromNames(ty.defs, init.freeVariables);
   top.typerep = ty.typerep; -- TODO: actually may involve learning from the initializer e.g. the length of the array.
   
   init.env = addEnv(ty.defs, ty.env);
@@ -274,6 +293,7 @@ top::Expr ::=
   top.errors := [];
   top.globalDecls := [];
   top.defs = [];
+  top.freeVariables = [];
   top.typerep = pointerType([], builtinType([constQualifier()], signedType(charType()))); -- const char *
 }
 
@@ -291,6 +311,7 @@ top::Expr ::= e::Expr  gl::GenericAssocs  def::MaybeExpr
   top.errors := e.errors ++ gl.errors ++ def.errors;
   top.globalDecls := e.globalDecls ++ gl.globalDecls ++ def.globalDecls;
   top.defs = e.defs ++ gl.defs ++ def.defs;
+  top.freeVariables = e.freeVariables ++ gl.freeVariables ++ def.freeVariables;
   top.typerep = 
     if null(gl.compatibleSelections) then
       case def of
@@ -305,7 +326,7 @@ top::Expr ::= e::Expr  gl::GenericAssocs  def::MaybeExpr
   -- TODO: type checking!!
 }
 
-nonterminal GenericAssocs with pps, errors, globalDecls, defs, env, selectionType, compatibleSelections, returnType;
+nonterminal GenericAssocs with pps, errors, globalDecls, defs, env, selectionType, compatibleSelections, returnType, freeVariables;
 
 autocopy attribute selectionType :: Type;
 synthesized attribute compatibleSelections :: [Decorated Expr];
@@ -317,6 +338,7 @@ top::GenericAssocs ::= h::GenericAssoc  t::GenericAssocs
   top.errors := h.errors ++ t.errors;
   top.globalDecls := h.globalDecls ++ t.globalDecls;
   top.defs = h.defs ++ t.defs;
+  top.freeVariables = h.freeVariables ++ t.freeVariables;
   top.compatibleSelections = h.compatibleSelections ++ t.compatibleSelections;
 }
 abstract production nilGenericAssoc
@@ -326,10 +348,11 @@ top::GenericAssocs ::=
   top.errors := [];
   top.globalDecls := [];
   top.defs = [];
+  top.freeVariables = [];
   top.compatibleSelections = [];
 }
 
-nonterminal GenericAssoc with location, pp, globalDecls, errors, defs, env, selectionType, compatibleSelections, returnType;
+nonterminal GenericAssoc with location, pp, globalDecls, errors, defs, env, selectionType, compatibleSelections, returnType, freeVariables;
 
 abstract production genericAssoc
 top::GenericAssoc ::= ty::TypeName  fun::Expr
@@ -338,6 +361,7 @@ top::GenericAssoc ::= ty::TypeName  fun::Expr
   top.errors := ty.errors ++ fun.errors;
   top.globalDecls := ty.globalDecls ++ fun.globalDecls;
   top.defs = ty.defs ++ fun.defs;
+  top.freeVariables = ty.freeVariables ++ fun.freeVariables;
   top.compatibleSelections =
     if compatibleTypes(top.selectionType, ty.typerep, true) then [fun] else [];
 }
@@ -350,6 +374,7 @@ top::Expr ::= body::Stmt result::Expr
   top.errors := body.errors ++ result.errors;
   top.globalDecls := body.globalDecls ++ result.globalDecls;
   top.defs = []; -- defs are *not* propagated up. This is beginning of a scope.
+  top.freeVariables = body.freeVariables ++ removeDefsFromNames(body.defs, result.freeVariables);
   top.typerep = result.typerep;
   
   body.env = openScope(top.env);
@@ -364,6 +389,7 @@ top::Expr ::= s::String
   top.errors := [];
   top.globalDecls := [];
   top.defs = [];
+  top.freeVariables = [];
   top.typerep = errorType();
 }
 

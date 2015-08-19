@@ -393,7 +393,7 @@ top::EnvNameList ::=
   top.envCopyOutTrans = nullStmt();
   top.len = 0;
 }
-
+{-
 abstract production envContents
 top::EnvNameList ::=
 {
@@ -414,6 +414,17 @@ top::EnvNameList ::=
               map(
                 tm:toList,
                 top.env.values))))));
+  
+  forwards to foldr(consEnvNameList, nilEnvNameList(), contents);
+}
+-}
+
+abstract production exprFreeVariables
+top::EnvNameList ::= e::Expr
+{
+  top.errors := []; -- Ignore warnings about variables being excluded
+  
+  local contents::[Name] = removeDuplicateNames(e.freeVariables);
   
   forwards to foldr(consEnvNameList, nilEnvNameList(), contents);
 }
