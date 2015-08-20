@@ -47,7 +47,7 @@ cleantests:
 	rm -rf *.test *.test.out
 
 realclean: clean
-	rm -rf $(JAR_NAME)
+	rm -rf $(REALCLEAN_FILES)
 
 .PHONY: all tests clean realclean
 .INTERMEDIATE: $(INTERMEDIATES)
