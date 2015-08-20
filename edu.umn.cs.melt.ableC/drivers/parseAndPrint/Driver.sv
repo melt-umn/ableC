@@ -60,7 +60,7 @@ IOVal<Integer> ::= args::[String] ioIn::IO
     ioval(print(hackUnparse(ast) ++ "\n", text.io), 0)
 --  else if !null(ast.errors) then
 --    ioval(print(messagesToString(ast.errors) ++ "\n", text.io), if containsErrors(ast.errors, false) then 4 else 0)
-  else if !null(ast.errors) then
+  else if !null(ast.errors) || containsBy(stringEq, "--force-trans", args) then
     ioval(print(messagesToString(ast.errors) ++ "\n", writePP), if containsErrors(ast.errors, false) then 4 else 0)
   else
     ioval(writePP, 0);
@@ -73,6 +73,7 @@ Boolean ::= arg::String
   return 
     arg=="--show-ast" ||
     arg=="--show-cpp" ||
+    arg=="--force-trans" ||
     startsWith("--xc-", arg) ;
 }
 
