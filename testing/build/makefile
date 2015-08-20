@@ -16,7 +16,7 @@ $(JAR_NAME): $(ABLEC_SOURCE)
 ifdef TESTING
 	echo -n "Building $(shell basename `pwd`)/$(JAR_NAME)... "
 	touch artifact/Main.sv
-	silver -I . $(SILVER_INCLUDES) -o $(JAR_NAME) artifact &> /dev/null && echo "passed" || (echo "failed" ; touch .tests_failed)
+	silver -I . $(SILVER_INCLUDES) -o $(JAR_NAME) artifact &> $@.test.out && echo "passed" || (echo "failed" ; touch .tests_failed)
 else
 	touch artifact/Main.sv
 	silver -I . $(SILVER_INCLUDES) -o $(JAR_NAME) artifact
@@ -25,7 +25,7 @@ endif
 %.c: %.xc $(JAR_NAME)
 ifdef TESTING
 	echo -n "Compiling $<... "
-	if [ -z $(findstring error, $<) ] ; then { java $(JAVA_FLAGS) -jar $(JAR_NAME) $< $(CPPFLAGS) &> /dev/null && echo "passed" || { echo "failed" ; touch .tests_failed ; } ; } ; else { java $(JAVA_FLAGS) -jar $(JAR_NAME) $< $(CPPFLAGS) &> /dev/null && { echo "failed (did not error)" ; touch .tests_failed ; } || echo "passed (did not compile)" ; } ; fi
+	if [ -z $(findstring error, $<) ] ; then { java $(JAVA_FLAGS) -jar $(JAR_NAME) $< $(CPPFLAGS) &> $@.test.out && echo "passed" || { echo "failed" ; touch .tests_failed ; } ; } ; else { java $(JAVA_FLAGS) -jar $(JAR_NAME) $< $(CPPFLAGS) &> $@.test.out && { echo "failed (did not error)" ; touch .tests_failed ; } || echo "passed (did not compile)" ; } ; fi
 else
 	java $(JAVA_FLAGS) -jar $(JAR_NAME) $< $(CPPFLAGS)
 endif

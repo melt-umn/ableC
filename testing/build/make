@@ -5,7 +5,7 @@
 ABLEC_PATH=$1
 ARGS=${@:2}
 
-source $ABLEC_PATH/testing/build/init_build.sh ""
+source $ABLEC_PATH/testing/build/init_build.sh --ablec-path $ABLEC_PATH
 source init_build.sh
 
 # -e tells make to look at env variables before builtin variables
