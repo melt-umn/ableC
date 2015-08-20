@@ -46,7 +46,7 @@ e::Expr ::= captured::EnvNameList paramType::TypeName param::Name res::Expr fnNu
       | _ -> "undefined _closure"
       end);
   
-  captured.freeVariablesIn = e.freeVariables; -- Not body.freeVariables, to exclude the parameter
+  captured.freeVariablesIn = removeName(param, res.freeVariables); -- Not body.freeVariables, to exclude the parameter
   
   res.env =
     addEnv(

@@ -20,6 +20,12 @@ function removeDuplicateNames
   return removeDuplicatesBy(nameEq, n);
 }
 
+function removeName
+[Name] ::= n::Name l::[Name]
+{
+  return removeBy(nameEq, n, l);
+}
+
 function nameEq
 Boolean ::= n1::Name n2::Name
 {
@@ -34,6 +40,16 @@ function removeDuplicatesBy
          else if containsBy(eq, head(l), tail(l))
          then removeDuplicatesBy(eq, tail(l))
          else head(l) :: removeDuplicatesBy(eq, tail(l));
+}
+
+function removeBy
+[a] ::= eq::(Boolean ::= a a) elem::a l::[a]
+{
+  return if null(l)
+         then []
+         else if eq(elem, head(l))
+         then removeBy(eq, elem, tail(l))
+         else head(l) :: removeBy(eq, elem, tail(l));
 }
 
 function definesVarWithName
