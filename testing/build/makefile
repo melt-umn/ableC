@@ -54,7 +54,7 @@ endif
 %.test: %.out
 	@echo -n "Running $(shell basename $<)... "
 ifdef TESTING
-	-@./$< &> $@.out && (touch $@; echo "passed") || (echo "failed"; touch .tests_failed; exit 6)
+	-@./$< &> $@.out && (touch $@; echo "passed") || (echo "failed (exit $$?)"; touch .tests_failed; exit 6)
 else
 	@echo ""
 	@./$<
@@ -64,7 +64,7 @@ endif
 
 tests:
 	@echo "Testing $(shell basename `pwd`)..."
-	@rm -f *.test .tests_failed
+	@rm -f *.test *.test.out .tests_failed
 	-@./make -s TESTING=true "$(AUTOTESTS)" 2>/dev/null ||:
 	@if [ -f .tests_failed ]; then echo -e "\e[91mSome tests failed\e[39m"; else echo -e "\e[92mAll tests passed\e[39m"; fi
 
@@ -72,7 +72,7 @@ clean:
 	find . -path ./.git -prune -o -type d -exec sh -c 'cd {} && rm -rf $(CLEAN_FILES)' ';'
 
 testsclean:
-	rm -rf *.test *.test.out
+	rm -rf *.test *.test.out .tests_failed
 
 realclean: clean
 	find . -path ./.git -prune -o -type d -exec sh -c 'cd {} && rm -rf $(REALCLEAN_FILES)' ';'
