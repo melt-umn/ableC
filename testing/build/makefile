@@ -2,8 +2,6 @@ SHELL=/bin/bash
 
 # All other variables are set as environment variables
 
-include $(INCLUDES)
-
 EXAMPLES=$(filter-out $(wildcard example*error*.xc), $(wildcard example*.xc))
 OBJECTS=$(EXAMPLES:.xc=.o)
 EXECUTABLES=$(EXAMPLES:.xc=.out)
@@ -14,6 +12,8 @@ AUTOTESTS=$(AUTOTESTS_SRC:.xc=.c) $(TESTS)
 
 # Also building all object files to speed up compilation when rewrite_driver.xc changes
 all: $(EXECUATBLE_DEPENDS) $(OBJECTS) $(EXECUTABLES) $(TESTS)
+
+include $(INCLUDES)
 
 $(JAR_NAME): $(ABLEC_SOURCE)
 ifdef TESTING
