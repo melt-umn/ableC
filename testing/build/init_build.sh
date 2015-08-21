@@ -33,7 +33,7 @@ export TRANSLATE_DEPENDS=
 export CFLAGS="-g -std=gnu1x"
 export LOADLIBES=
 export LDLIBS=
-export EXECUATBLE_DEPENDS=
+export EXECUTABLE_DEPENDS=
 export INTERMEDIATES=
 export CLEAN_FILES="*~ *.c *.gen_cpp *.o *.out *.test *.test.out *.copperdump.html"
 export REALCLEAN_FILES="$JAR_NAME"

@@ -8,10 +8,10 @@ EXECUTABLES=$(EXAMPLES:.xc=.out)
 TESTS=$(EXAMPLES:.xc=.test)
 
 AUTOTESTS_SRC=$(wildcard example*.xc)
-AUTOTESTS=$(AUTOTESTS_SRC:.xc=.c) $(TESTS)
+AUTOTESTS=$(EXECUTABLE_DEPENDS) $(AUTOTESTS_SRC:.xc=.c) $(OBJECTS) $(EXECUTABLES) $(TESTS)
 
 # Also building all object files to speed up compilation when rewrite_driver.xc changes
-all: $(EXECUATBLE_DEPENDS) $(OBJECTS) $(EXECUTABLES) $(TESTS)
+all: $(EXECUTABLE_DEPENDS) $(OBJECTS) $(EXECUTABLES) $(TESTS)
 
 include $(INCLUDES)
 
@@ -19,7 +19,7 @@ $(JAR_NAME): $(ABLEC_SOURCE)
 ifdef TESTING
 	echo -n "Building $(shell basename `pwd`)/$(JAR_NAME)... "
 	touch artifact/Main.sv
-	silver -I . $(SILVER_INCLUDES) -o $(JAR_NAME) artifact &> $@.test.out && echo "passed" || (echo "failed" ; touch .tests_failed)
+	silver -I . $(SILVER_INCLUDES) -o $(JAR_NAME) artifact &> $@.test.out && echo "passed" || (echo "failed" ; touch .tests_failed ; exit 1)
 else
 	touch artifact/Main.sv
 	silver -I . $(SILVER_INCLUDES) -o $(JAR_NAME) artifact
@@ -27,48 +27,55 @@ endif
 
 %.c: %.xc $(JAR_NAME)
 ifdef TESTING
-	echo -n "Translating $<... "
-	if [ -z $(findstring error, $<) ] ; then { java $(JAVA_FLAGS) -jar $(JAR_NAME) $< $(CPPFLAGS) &> $@.test.out && echo "passed" || { echo "failed" ; touch .tests_failed ; } ; } ; else { java $(JAVA_FLAGS) -jar $(JAR_NAME) $< $(CPPFLAGS) &> $@.test.out && { echo "failed (did not error)" ; touch .tests_failed ; } || echo "passed (did not compile)" ; } ; fi
+	echo -n "Translating $(shell basename $<)... "
+	if [ -z $(findstring error, $<) ]; then (java $(JAVA_FLAGS) -jar $(JAR_NAME) $< $(CPPFLAGS) &> $@.test.out && echo "passed" || (echo "failed"; touch .tests_failed; exit 2)) else (java $(JAVA_FLAGS) -jar $(JAR_NAME) $< $(CPPFLAGS) &> $@.test.out && (echo "failed (did not error)"; touch .tests_failed; exit 3) || echo "passed (did not compile)") fi
 else
 	java $(JAVA_FLAGS) -jar $(JAR_NAME) $< $(CPPFLAGS)
 endif
-	mv $(patsubst %.xc, %.pp_out.c, $<) $@
-	rm $(patsubst %.xc, %.gen_cpp, $<)
+	mv $*.pp_out.c $@
+	rm $*.gen_cpp
 
-ifdef TESTING
 %.o: %.c
-	echo -n "Compiling $<... "
-	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< &> $@.test.out && echo "passed" || (echo "failed" ; touch .tests_failed)
+ifdef TESTING
+	echo -n "Compiling $(shell basename $<)... "
+	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< &> $@.test.out && echo "passed" || (echo "failed"; touch .tests_failed; exit 4)
+else
+	$(CC) $(CPPFLAGS) $(CFLAGS) -c $<
 endif
 
-%.out: %.o $(EXECUATBLE_DEPENDS)
+%.out: %.o $(EXECUTABLE_DEPENDS)
+ifdef TESTING
+	echo -n "Linking $(shell basename $<)... "
+	$(CC) $(LDFLAGS) $< $(LOADLIBES) $(LDLIBS) -o $@ &> $@.test.out && echo "passed" || (echo "failed"; touch .tests_failed; exit 5)
+else
 	$(CC) $(LDFLAGS) $< $(LOADLIBES) $(LDLIBS) -o $@
+endif
 
 %.test: %.out
-	@echo -n "Running $<... "
-	-@./$< &> $@.out && touch $@
+	@echo -n "Running $(shell basename $<)... "
 ifdef TESTING
-	@if [ -f $@ ] ; then echo "passed" ; else echo "failed" ; touch .tests_failed ; fi
+	-@./$< &> $@.out && (touch $@; echo "passed") || (echo "failed"; touch .tests_failed; exit 6)
 else
 	@echo ""
-	@cat $@.out
-	@rm $@.out
+	@./$<
+	touch $@
+	@echo ""
 endif
 
 tests:
 	@echo "Testing $(shell basename `pwd`)..."
 	@rm -f *.test .tests_failed
-	-@./make -s TESTING=true $(AUTOTESTS) 2>/dev/null ||:
-	@if [ -f .tests_failed ] ; then echo -e "\e[91mSome tests failed\e[39m" ; else echo -e "\e[92mAll tests passed\e[39m" ; fi
+	-@./make -s TESTING=true "$(AUTOTESTS)" 2>/dev/null ||:
+	@if [ -f .tests_failed ]; then echo -e "\e[91mSome tests failed\e[39m"; else echo -e "\e[92mAll tests passed\e[39m"; fi
 
 clean:
 	find . -path ./.git -prune -o -type d -exec sh -c 'cd {} && rm -rf $(CLEAN_FILES)' ';'
 
-cleantests:
+testsclean:
 	rm -rf *.test *.test.out
 
 realclean: clean
-	rm -rf $(REALCLEAN_FILES)
+	find . -path ./.git -prune -o -type d -exec sh -c 'cd {} && rm -rf $(REALCLEAN_FILES)' ';'
 
 .PHONY: all tests clean cleantests realclean
 .INTERMEDIATE: $(INTERMEDIATES)
