@@ -46,7 +46,7 @@ e::Expr ::= captured::EnvNameList paramType::TypeName param::Name res::Expr fnNu
       | _ -> "undefined _closure"
       end);
   
-  captured.freeVariablesIn = removeName(param, res.freeVariables); -- Not body.freeVariables, to exclude the parameter
+  captured.freeVariablesIn = removeName(param, removeDuplicateNames(res.freeVariables));
   
   res.env =
     addEnv(
@@ -397,7 +397,7 @@ top::EnvNameList ::=
   top.envCopyOutTrans = nullStmt();
   top.len = 0;
 }
-{-
+
 abstract production envContents
 top::EnvNameList ::=
 {
@@ -421,12 +421,17 @@ top::EnvNameList ::=
   
   forwards to foldr(consEnvNameList, nilEnvNameList(), contents);
 }
--}
 
 abstract production exprFreeVariables
 top::EnvNameList ::=
 {
   top.errors := []; -- Ignore warnings about variables being excluded
+  
+  -- Have to use envContents for defs to avoid circular dependency of body freeVariables on generated env
+  top.defs =
+    decorate envContents()
+    with {env = top.env;
+          freeVariablesIn = error("Free variables demanded by envContents");}.defs;
   
   local contents::[Name] = removeDuplicateNames(top.freeVariablesIn);
   
