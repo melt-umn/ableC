@@ -3,6 +3,7 @@ build.xml
 *.jar
 *.pp_out.c
 *.gen_cpp
+*.c
 *.o
 *.out
 *.stdout
