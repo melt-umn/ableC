@@ -481,7 +481,7 @@ p::Pattern ::= s::String
     ifStmt(
       txtExpr("!strcmp(((" ++ p.parent_idType ++ ")" ++ 
                   "_current_ADT" ++ "[" ++ toString(p.depth-1) ++ "])->contents." ++ 
-                  p.parentTag ++ ".f" ++ toString(p.position) ++ " == " ++ s ++ ")",
+                  p.parentTag ++ ".f" ++ toString(p.position) ++ ", " ++ s ++ ")",
       location=p.location),
       
         -- then clause

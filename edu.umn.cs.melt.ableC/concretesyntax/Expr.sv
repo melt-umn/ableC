@@ -209,7 +209,7 @@ terminal AddMulRight_NEVER_t 'AddMulRight_Never!!!nevernever1234567890' ;
 concrete productions top::AddMulRightOp_c
 | AddMulRight_NEVER_t
     { top.ast = ast:errorExpr ( [ err (top.location, "Internal Error. " ++
-        "Placeholder for AddMulRigthOp_c should not appear in the tree." ) ],
+        "Placeholder for AddMulRightOp_c should not appear in the tree." ) ],
         location=top.location ) ; }
 
 -- Non-associative

@@ -72,7 +72,7 @@ function showEnv
 Document ::= e::Decorated Env
 {
   return concat( [
-    text("/* Environment:"),
+    text(" Environment:"),
     nestlines(5, 
       concat([
        --text("Labels:"),line(),
@@ -82,8 +82,7 @@ Document ::= e::Decorated Env
          nestlines(5, tagsD),
        text("RefIDs:"),
          nestlines(5, refIDsD)
-       ]) ),
-    text("*/")
+       ]) )
    ] );
 
   local valuesD :: Document

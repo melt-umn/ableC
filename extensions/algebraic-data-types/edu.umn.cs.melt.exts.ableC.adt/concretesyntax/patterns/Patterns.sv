@@ -28,12 +28,6 @@ concrete productions ps::PatternList
         location=p.location ); 
   }
 
-| p::ConstPattern
-  { ps.ast = 
-      abs:consPattern( p.ast, abs:nilPattern(location=ps.location),
-        location=p.location ); 
-  }
-
 nonterminal Pattern with location, ast<abs:Pattern> ;
 
 concrete productions p::Pattern
@@ -63,6 +57,10 @@ concrete productions p::Pattern
   { p.ast = if id.lexeme == "_"
             then abs:patternWildcard( location=p.location )
             else abs:patternVariable( id.lexeme, location=p.location );
+  }
+
+| cp::ConstPattern
+  { p.ast = cp.ast; 
   }
 
 nonterminal ConstPattern with location, ast<abs:Pattern> ;

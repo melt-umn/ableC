@@ -6,6 +6,9 @@ exports edu:umn:cs:melt:ableC:concretesyntax:cppTags;
 exports edu:umn:cs:melt:ableC:concretesyntax:c11;
 exports edu:umn:cs:melt:ableC:concretesyntax:gcc_exts;
 
+-- Uncomment to enable printEnv expression
+exports edu:umn:cs:melt:ableC:concretesyntax:debug;
+
 -- Standard attributes for errors, abstract syntax.
 -- C's concrete syntax is so permissive that we are unable to translate some
 -- constructs to abstract syntax. This is the *only* use for errors on
