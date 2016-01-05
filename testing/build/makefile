@@ -2,7 +2,7 @@ SHELL=/bin/bash
 
 # All other variables are set as environment variables
 
-EXAMPLES=$(filter-out $(wildcard example*error*.xc), $(wildcard example*.xc))
+EXAMPLES=$(filter-out $(wildcard *error*), $(wildcard example*.xc))
 OBJECTS=$(EXAMPLES:.xc=.o)
 EXECUTABLES=$(EXAMPLES:.xc=.out)
 TESTS=$(EXAMPLES:.xc=.test)
@@ -10,7 +10,7 @@ TESTS=$(EXAMPLES:.xc=.test)
 AUTOTESTS_SRC=$(wildcard example*.xc)
 AUTOTESTS=$(EXECUTABLE_DEPENDS) $(AUTOTESTS_SRC:.xc=.c) $(OBJECTS) $(EXECUTABLES) $(TESTS)
 
-# Also building all object files to speed up compilation when rewrite_driver.xc changes
+# Also building all object files to prevent recompilation when linking dependancies change
 all: $(EXECUTABLE_DEPENDS) $(OBJECTS) $(EXECUTABLES) $(TESTS)
 
 include $(INCLUDES)
@@ -54,10 +54,10 @@ endif
 %.test: %.out
 	@echo -n "Running $(shell basename $<)... "
 ifdef TESTING
-	-@./$< &> $@.out && (touch $@; echo "passed") || (echo "failed (exit $$?)"; touch .tests_failed; exit 6)
+	-@if [ -z $(findstring rerr, $<) ]; then ./$< &> $@.out && (touch $@; echo "passed") || (echo "failed (exit $$?)"; touch .tests_failed; exit 6) else ./$< &> $@.out && (echo "failed (did not error)"; touch .tests_failed; exit 7) || (echo "passed (exit $$?)"; touch $@); fi
 else
 	@echo ""
-	@./$<
+	@./$< || (echo -e "(exit $$?)"; ! [ -z $(findstring rerr, $<) ])
 	touch $@
 	@echo ""
 endif
