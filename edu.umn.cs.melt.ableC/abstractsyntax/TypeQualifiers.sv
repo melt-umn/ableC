@@ -1,15 +1,17 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax;
 
 {-- Type qualifiers (cv or cvr qualifiers) -}
-nonterminal Qualifier with pp, qualname;
+nonterminal Qualifier with pp, qualname, qualCheck;
 
 synthesized attribute qualname :: String;
+synthesized attribute qualCheck :: Boolean;
 
 abstract production constQualifier
 top::Qualifier ::=
 {
   top.pp = text(top.qualname);
   top.qualname = "const";
+  top.qualCheck = true;
 }
 
 abstract production volatileQualifier
@@ -17,6 +19,7 @@ top::Qualifier ::=
 {
   top.pp = text(top.qualname);
   top.qualname = "volatile";
+  top.qualCheck = true;
 }
 
 abstract production restrictQualifier
@@ -24,6 +27,7 @@ top::Qualifier ::=
 {
   top.pp = text(top.qualname);
   top.qualname = "restrict";
+  top.qualCheck = false;
 }
 
 abstract production uuRestrictQualifier
@@ -31,6 +35,7 @@ top::Qualifier ::=
 {
   top.pp = text(top.qualname);
   top.qualname = "__restrict";
+  top.qualCheck = false;
 }
 
 {-- Specifiers that apply to specific types.

@@ -243,7 +243,10 @@ Boolean ::= a::IntegerType  b::IntegerType
 function qualifiersEq
 Boolean ::= q1::[Qualifier]  q2::[Qualifier]
 {
-  return qualifiersEqHelp(sortBy(stringLte, map((.qualname), q1)), sortBy(stringLte, map((.qualname), q2)));
+  return
+    qualifiersEqHelp(
+      sortBy(stringLte, map((.qualname), filter((.qualCheck), q1))),
+      sortBy(stringLte, map((.qualname), filter((.qualCheck), q2))));
 }
 
 -- this code is frankly horrible, but hey, something to improve in the future, I suppose.
