@@ -1,0 +1,63 @@
+#include <string.h>
+#include <stdbool.h>
+#include <stdio.h>
+#include <limits.h>
+#include <gc.h>
+
+static inline string _int_to_string(int i) {
+  string result = GC_malloc((CHAR_BIT * sizeof(i) - 1) / 3 + 2);
+  sprintf((char*)result, "%d", i);
+  return result;
+}
+
+static inline string _float_to_string(double f) {
+  string result = GC_malloc((CHAR_BIT * sizeof(f) - 1) / 3 + 2);
+  sprintf((char*)result, "%f", f);
+  return result;
+}
+
+static inline string _char_to_string(char c) {
+  char *result = GC_malloc(2);
+  result[0] = c;
+  result[1] = '\0';
+  return (string)result;
+}
+
+static inline bool _eq_string(string s1, string s2) {
+  return !strcmp(s1, s2);
+}
+
+static inline string _append_string(string s1, string s2) {
+  string result = GC_malloc(strlen(s1) + strlen(s2) + 1);
+  strcpy((char*)result, s1);
+  strcat((char*)result, s2);
+  return result;
+}
+
+static inline string _repeat_string(string s, int num) {
+  char *result = GC_malloc(strlen(s) * num + 1);
+  result[0] = '\0';
+  int i;
+  for (int i = 0; i < num; i++)
+    strcat(result, s);
+  return (string)result;
+}
+
+static inline string _remove_string(string s1, string s2) {
+  int i, j;
+  int len1 = strlen(s1);
+  int len2 = strlen(s2);
+  char *result = GC_malloc(strlen(s1) + 1);
+  for (i = 0, j = 0; i < len1; i++) {
+    if (i > len1 - len2 || strncmp((const char*)s1 + i, s2, len2)) {
+      result[j] = s1[i];
+      j++;
+    }
+    else {
+      i += len2 - 1;
+    }
+  }
+  result[j] += '\0';
+  
+  return (string)result;
+}
