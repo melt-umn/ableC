@@ -35,7 +35,7 @@ top::Expr ::= num::String  c::CharPrefix
   top.globalDecls := [];
   top.defs = [];
   top.freeVariables = [];
-  top.typerep = builtinType([], signedType(intType())); -- TODO: no idea
+  top.typerep = builtinType([], signedType(charType())); -- TODO: no idea
 }
 
 nonterminal NumericConstant with location, pp, errors, env, constanttyperep;
