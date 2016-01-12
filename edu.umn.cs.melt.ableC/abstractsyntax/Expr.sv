@@ -60,6 +60,15 @@ top::Expr ::= e::Expr
 abstract production unaryOpExpr
 top::Expr ::= op::UnaryOp  e::Expr
 {
+  top.globalDecls := e.globalDecls;
+  top.defs = e.defs;
+  top.freeVariables = e.freeVariables;
+  
+  forwards to getUnaryOverload(op, e.typerep)(e, top.location);
+}
+abstract production unaryOpExprDefault
+top::Expr ::= op::UnaryOp  e::Expr
+{
   top.pp = if op.preExpr
            then parens( cat( op.pp, e.pp ) )
            else parens( cat( e.pp, op.pp ) );
@@ -173,6 +182,49 @@ top::Expr ::= f::Expr  a::Exprs
   
   a.env = addEnv(f.defs, f.env);
 }
+abstract production callExprDefault
+top::Expr ::= f::Expr  a::Exprs
+{
+  top.pp = parens( concat([ f.pp, parens( ppImplode( cat( comma(), space() ), a.pps ))]) );
+  top.errors := f.errors ++ a.errors;
+  top.globalDecls := f.globalDecls ++ a.globalDecls;
+  top.defs = f.defs ++ a.defs;
+  top.freeVariables = f.freeVariables ++ removeDefsFromNames(f.defs, a.freeVariables);
+  
+  local subtype :: Either<Pair<Type FunctionType> [Message]> =
+    case f.typerep.defaultFunctionArrayLvalueConversion of
+    | pointerType(_, functionType(rt, sub)) -> left(pair(rt, sub))
+    | errorType() -> right([]) -- error already raised.
+    | _ -> right([err(f.location, "call expression is not function type (got " ++ showType(f.typerep) ++ ")")])
+    end;
+  top.typerep =
+    case subtype of
+    | left(l) -> l.fst
+    | right(_) -> errorType()
+    end;
+  top.errors <-
+    case subtype of
+     | left(_) -> a.argumentErrors
+     | right(r) -> r
+    end;
+
+  a.expectedTypes =
+    case subtype of
+    | left(pair(_, protoFunctionType(args, _))) -> args
+    | _ -> []
+    end;
+  a.argumentPosition = 1;
+  a.callExpr = f;
+  a.callVariadic =
+    case subtype of
+    | left(pair(_, protoFunctionType(_, variadic))) -> variadic
+    | left(pair(_, noProtoFunctionType())) -> true
+    | left(_) -> false
+    | _ -> true -- suppress errors
+    end;
+  
+  a.env = addEnv(f.defs, f.env);
+}
 abstract production memberExpr
 top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
 {
@@ -206,6 +258,19 @@ top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
   -- TODO: error checking!! Type checking
 }
 abstract production binaryOpExpr
+top::Expr ::= lhs::Expr  op::BinOp  rhs::Expr
+{
+  top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
+  top.defs = lhs.defs ++ rhs.defs;
+  top.freeVariables =
+    lhs.freeVariables ++
+    removeDefsFromNames(lhs.defs, rhs.freeVariables);
+  
+  rhs.env = addEnv(lhs.defs, lhs.env);
+  
+  forwards to getBinaryOverload(top.env, top.returnType, lhs.typerep, op, rhs.typerep)(lhs, rhs, top.location);
+}
+abstract production binaryOpExprDefault
 top::Expr ::= lhs::Expr  op::BinOp  rhs::Expr
 {
   top.pp = parens( concat([ 

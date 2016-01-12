@@ -2,12 +2,17 @@
 autocopy attribute lop :: Decorated Expr;
 autocopy attribute rop :: Decorated Expr;
 
-nonterminal BinOp with location, lop, rop, pp, typerep, errors;
+nonterminal BinOp with location, lop, rop, opName, pp, typerep, errors;
 
 aspect default production
 top::BinOp ::=
 {
   top.errors := []; -- TODO REMOVE
+  top.opName =
+    case top.pp of
+      text(opName) -> opName
+    | _ -> error("Op pp isn't simple text, opName must be overridden manually")
+    end;
 }
 
 --------------------------------------------------------------------------------

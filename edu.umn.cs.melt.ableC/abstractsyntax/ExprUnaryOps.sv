@@ -1,7 +1,8 @@
 
-nonterminal UnaryOp with location, op, pp, preExpr, noLvalueConversion, typerep, errors;
+nonterminal UnaryOp with location, op, opName, pp, preExpr, noLvalueConversion, typerep, errors;
 
 autocopy attribute op :: Decorated Expr;
+synthesized attribute opName :: String;
 synthesized attribute preExpr :: Boolean;
 synthesized attribute noLvalueConversion :: Boolean;
 
@@ -9,11 +10,17 @@ aspect default production
 top::UnaryOp ::=
 {
   top.errors := []; -- TODO REMOVE
+  top.opName =
+    case top.pp of
+      text(opName) -> opName
+    | _ -> error("Op pp isn't simple text, opName must be overridden manually")
+    end;
 }
 
 abstract production preIncOp
 top::UnaryOp ::=
 {
+  top.opName = "pre++";
   top.pp = text("++");
   top.preExpr = true;
   top.noLvalueConversion = false;
@@ -22,6 +29,7 @@ top::UnaryOp ::=
 abstract production preDecOp
 top::UnaryOp ::= 
 {
+  top.opName = "pre--";
   top.pp = text("--");
   top.preExpr = true;
   top.noLvalueConversion = true;
@@ -30,6 +38,7 @@ top::UnaryOp ::=
 abstract production postIncOp
 top::UnaryOp ::= 
 {
+  top.opName = "post++";
   top.pp = text("++");
   top.preExpr = false;
   top.noLvalueConversion = true;
@@ -38,6 +47,7 @@ top::UnaryOp ::=
 abstract production postDecOp
 top::UnaryOp ::= 
 {
+  top.opName = "post--";
   top.pp = text("--");
   top.preExpr = false;
   top.noLvalueConversion = true;
@@ -123,8 +133,6 @@ top::UnaryOp ::=
   top.noLvalueConversion = false;
   top.typerep = top.op.typerep.defaultLvalueConversion.integerPromotions;
 }
-
-
 
 autocopy attribute typeop :: Type;
 
