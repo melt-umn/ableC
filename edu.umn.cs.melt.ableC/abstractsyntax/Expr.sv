@@ -93,6 +93,20 @@ top::Expr ::= op::UnaryTypeOp  e::ExprOrTypeName
 abstract production arraySubscriptExpr
 top::Expr ::= lhs::Expr  rhs::Expr
 {
+  top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
+  top.defs = lhs.defs ++ rhs.defs;
+  top.freeVariables = lhs.freeVariables ++ removeDefsFromNames(rhs.defs, rhs.freeVariables);
+  
+  rhs.env = addEnv(lhs.defs, lhs.env);
+  
+  forwards to 
+    if lhs.typerep.subscriptProd.isJust
+    then lhs.typerep.subscriptProd.fromJust(lhs, rhs, top.location)
+    else arraySubscriptExprDefault(lhs, rhs, location=top.location);
+}
+abstract production arraySubscriptExprDefault
+top::Expr ::= lhs::Expr  rhs::Expr
+{
   top.pp = parens( concat([ lhs.pp, brackets( rhs.pp )]) );
   top.errors := lhs.errors ++ rhs.errors;
   top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;

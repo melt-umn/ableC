@@ -2,6 +2,9 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax;
 
 inherited attribute otherType::Type occurs on Type;
 
+synthesized attribute callProd::Maybe<(Expr ::= Expr Exprs Location)> occurs on Type;
+synthesized attribute subscriptProd::Maybe<(Expr ::= Expr Expr Location)> occurs on Type;
+
 synthesized attribute preIncProd::Maybe<(Expr ::= Expr Location)> occurs on Type;
 synthesized attribute preDecProd::Maybe<(Expr ::= Expr Location)> occurs on Type;
 synthesized attribute postIncProd::Maybe<(Expr ::= Expr Location)> occurs on Type;
@@ -12,6 +15,7 @@ synthesized attribute unaryPlusProd::Maybe<(Expr ::= Expr Location)> occurs on T
 synthesized attribute unaryMinusProd::Maybe<(Expr ::= Expr Location)> occurs on Type;
 synthesized attribute unaryTildaProd::Maybe<(Expr ::= Expr Location)> occurs on Type;
 synthesized attribute unaryBangProd::Maybe<(Expr ::= Expr Location)> occurs on Type;
+
 synthesized attribute lAssignProd::Maybe<(Expr ::= Expr Expr Location)> occurs on Type;
 synthesized attribute lAssignStarProd::Maybe<(Expr ::= Expr Expr Location)> occurs on Type;
 synthesized attribute lAssignSlashProd::Maybe<(Expr ::= Expr Expr Location)> occurs on Type;
@@ -74,6 +78,8 @@ synthesized attribute rBinaryPercentProd::Maybe<(Expr ::= Expr Expr Location)> o
 aspect default production
 top::Type ::= 
 {
+  top.callProd = nothing();
+  top.subscriptProd = nothing();
   top.preIncProd = nothing();
   top.preDecProd = nothing();
   top.postIncProd = nothing();
