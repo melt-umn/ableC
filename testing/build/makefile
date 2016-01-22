@@ -25,7 +25,7 @@ else
 	silver -I . $(SILVER_INCLUDES) -o $(JAR_NAME) artifact
 endif
 
-%.c: %.xc $(JAR_NAME)
+%.c: %.xc $(JAR_NAME) $(TRANSLATE_DEPENDS)
 ifdef TESTING
 	echo -n "Translating $(shell basename $<)... "
 	if [ -z $(findstring error, $<) ]; then (java $(JAVA_FLAGS) -jar $(JAR_NAME) $< $(CPPFLAGS) &> $@.test.out && echo "passed" || (echo "failed"; touch .tests_failed; exit 2)) else if java $(JAVA_FLAGS) -jar $(JAR_NAME) $< $(CPPFLAGS) &> $@.test.out; then echo "failed (did not error)"; rm $@; touch .tests_failed; exit 3; else echo "passed (did not compile)"; fi; fi
