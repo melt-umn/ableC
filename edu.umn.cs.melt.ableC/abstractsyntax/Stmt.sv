@@ -67,6 +67,25 @@ top::Stmt ::= d::Decl
   d.isTopLevel = false;
 }
 
+-- Most common use case, makes things easier for extensions
+abstract production basicVarDeclStmt
+top::Stmt ::= t::Type n::Name init::Expr
+{
+  forwards to
+    declStmt(
+      variableDecls(
+        [], [],
+        directTypeExpr(t),
+        consDeclarator(
+          declarator(
+            n,
+            baseTypeExpr(),
+            [],
+            justInitializer(exprInitializer(init))),
+          nilDeclarator())));
+        
+}
+
 abstract production exprStmt
 top::Stmt ::= d::Expr
 {
