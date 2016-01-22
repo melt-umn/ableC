@@ -18,7 +18,7 @@ top::Expr ::= e::Expr  ty::TypeName
   top.globalDecls := e.globalDecls ++ ty.globalDecls;
   top.defs = e.defs ++ ty.defs;
   top.freeVariables = e.freeVariables ++ ty.freeVariables;
-  top.typerep = builtinType([], voidType());
+  top.typerep = ty.typerep;
 }
 
 abstract production offsetofExpr
