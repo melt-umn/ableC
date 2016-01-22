@@ -1,9 +1,12 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax;
 
 inherited attribute otherType::Type occurs on Type;
+inherited attribute otherType2::Type occurs on Type;
+inherited attribute otherTypes::[Type] occurs on Type;
 
 synthesized attribute callProd::Maybe<(Expr ::= Expr Exprs Location)> occurs on Type;
 synthesized attribute subscriptProd::Maybe<(Expr ::= Expr Expr Location)> occurs on Type;
+synthesized attribute subscriptAssignProd::Maybe<(Expr ::= Expr Expr AssignOp Expr Location)> occurs on Type;
 
 synthesized attribute preIncProd::Maybe<(Expr ::= Expr Location)> occurs on Type;
 synthesized attribute preDecProd::Maybe<(Expr ::= Expr Location)> occurs on Type;
@@ -80,6 +83,7 @@ top::Type ::=
 {
   top.callProd = nothing();
   top.subscriptProd = nothing();
+  top.subscriptAssignProd = nothing();
   top.preIncProd = nothing();
   top.preDecProd = nothing();
   top.postIncProd = nothing();
@@ -183,8 +187,6 @@ function getBinaryOverload
 {
   local prod::Maybe<(Expr ::= Expr Expr Location)> =
     getBinaryOverloadHelp(l, op.opName, r);
-  local assignProd::Maybe<(Expr ::= Expr Expr Location)> =
-    getBinaryOverloadHelp(l, "=", r);
   local assignOpProd::Maybe<(Expr ::= Expr Expr Location)> =
     getBinaryOverloadHelp(l, substitute("=", "", op.opName), r);
   local eqOpProd::Maybe<(Expr ::= Expr Expr Location)> =
@@ -203,8 +205,8 @@ function getBinaryOverload
     then prod.fromJust
     else if
       containsBy(stringEq, op.opName, ["*=", "/=", "%=", "+=", "-=", "<<=", ">>=", "&=", "|=", "^="]) &&
-      assignOpProd.isJust && assignProd.isJust
-    then constructAssignOp(_, _, _, assignOpProd.fromJust, assignProd.fromJust)
+      assignOpProd.isJust
+    then constructAssignOp(_, _, _, assignOpProd.fromJust)
     else if op.opName == "!=" && eqOpProd.isJust
     then constructNot(_, _, _, env, returnType, eqOpProd.fromJust)
     else if op.opName == ">" && lteOpProd.isJust
@@ -219,9 +221,9 @@ function getBinaryOverload
 }
 
 function constructAssignOp
-Expr ::= e1::Expr e2::Expr l::Location assignOpProd::(Expr ::= Expr Expr Location) assignProd::(Expr ::= Expr Expr Location)
+Expr ::= e1::Expr e2::Expr l::Location assignOpProd::(Expr ::= Expr Expr Location)
 {
-  return assignProd(e1, assignOpProd(e1, e2, l), l);
+  return binaryOpExpr(e1, assignOp(eqOp(location=l), location=l), assignOpProd(e1, e2, l), location=l);
 }
 
 function constructNot
@@ -336,6 +338,9 @@ Maybe<(Expr ::= Expr Expr Location)> ::= opName::String t::Type other::Type
 abstract production hackUnusedType2
 top::Type ::=
 {
+  top.callProd = case top.otherTypes of errorType() :: [] -> error("unused") | _ -> error("unused1") end;
+  top.subscriptProd = case top.otherType of errorType() -> error("unused") | _ -> error("unused1") end;
+  top.subscriptAssignProd = case top.otherType, top.otherType2 of errorType(), errorType() -> error("unused") | _, _ -> error("unused1") end;
   top.lAssignProd = case top.otherType of errorType() -> error("unused") | _ -> error("unused1") end;
   top.lAssignStarProd = case top.otherType of errorType() -> error("unused") | _ -> error("unused1") end;
   top.lAssignSlashProd = case top.otherType of errorType() -> error("unused") | _ -> error("unused1") end;
