@@ -245,7 +245,7 @@ top::Declarator ::= name::Name  ty::TypeModifierExpr  attrs::[Attribute]  initia
     case initializer of
       justInitializer(exprInitializer(e)) ->
         if typeAssignableTo(e.typerep, top.typerep) then []
-        else [err(top.sourceLocation, "Incompatible type in initialization, expected " ++ showType(top.typerep) ++ " but found " ++ showType(e.typerep))]
+        else [err(top.sourceLocation, s"Incompatible type in initialization, expected ${showType(top.typerep)} but found ${showType(e.typerep)}")]
     | _ -> []
     end ++ ty.errors ++ initializer.errors;
   top.globalDecls := ty.globalDecls ++ initializer.globalDecls;
@@ -455,7 +455,8 @@ top::StructDecl ::= attrs::[Attribute]  name::MaybeName  dcls::StructItemList
   (c) quick and easy equality: equality of refids.
 -}
 
-  top.refId = name.tagRefId;
+  local maybeAttribRefIdName::Maybe<String> = getRefIdFromAttributes(attrs);
+  top.refId = fromMaybe(name.tagRefId, maybeAttribRefIdName);
   top.tagEnv = addEnv(dcls.localdefs, emptyEnv());
   
   -- If there is no forward declaration, and we have a name, then add a tag dcl for the refid.
@@ -476,6 +477,28 @@ top::StructDecl ::= attrs::[Attribute]  name::MaybeName  dcls::StructItemList
   top.errors <-
     if !name.tagHasForwardDcl || null(lookupRefId(top.refId, top.env)) then []
     else [err(top.location, "Redeclaration of struct " ++ name.maybename.fromJust.name)];
+}
+
+function getRefIdFromAttributes
+Maybe<String> ::= attrs::[Attribute]
+{
+  return
+    case attrs of
+      gccAttribute(ats) :: rest -> orElse(getRefIdFromAttribs(ats), getRefIdFromAttributes(attrs))
+    | _ :: rest -> getRefIdFromAttributes(rest)
+    | [] -> nothing()
+    end;
+}
+
+function getRefIdFromAttribs
+Maybe<String> ::= attrs::[Attrib]
+{
+  return
+    case attrs of
+      appliedAttrib(attribName(name("refId")), consExpr(stringLiteral(s), nilExpr())) :: _ -> just(substring(1, length(s) - 1, s))
+    | _ :: rest -> getRefIdFromAttribs(rest)
+    | [] -> nothing()
+    end;
 }
 
 nonterminal UnionDecl with location, pp, maybename, errors, globalDecls, defs, env, tagEnv, refId, returnType, freeVariables;

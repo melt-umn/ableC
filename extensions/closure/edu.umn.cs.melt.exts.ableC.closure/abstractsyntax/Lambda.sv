@@ -35,16 +35,7 @@ e::Expr ::= captured::EnvNameList paramType::TypeName param::Name res::Expr fnNu
      then [pair(theName, functionDeclaration(fnDecl))]
      else []);
   
-  e.typerep =
-    closureType(
-      [],
-      paramType.typerep,
-      res.typerep,
-      case lookupTag("_closure", e.env) of
-        enumTagItem(_) :: _ -> error("Expected _closure to be a struct")
-      | refIdTagItem(_, refId) :: _ -> refId
-      | _ -> "undefined _closure"
-      end);
+  e.typerep = closureType([], paramType.typerep, res.typerep);
   
   captured.freeVariablesIn = removeName(param, removeDuplicateNames(res.freeVariables));
   
@@ -224,7 +215,7 @@ e::Expr ::= captured::EnvNameList paramType::TypeName param::Name res::Expr fnNu
                 justInitializer(
                   exprInitializer(
                     txtExpr(
-                      "(_closure)GC_malloc(sizeof(_closure_s))", --TODO
+                      "(_closure)GC_malloc(sizeof(struct _closure_s))", --TODO
                       location=builtIn())))),
               nilDeclarator()))),
         txtStmt("_result->env = _env;"), --TODO

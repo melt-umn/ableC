@@ -5,7 +5,7 @@ e::Expr ::= fn::Expr arg::Expr
 {
   local localErrs :: [Message] =
     case fn.typerep of
-      closureType(_, param, res, _) ->
+      closureType(_, param, res) ->
         if compatibleTypes(param, arg.typerep, true) then []
         else [err(arg.location, s"Incompatible parameter type (expected ${showType(param)}, got ${showType(arg.typerep)})")]
     | errorType() -> []
@@ -15,7 +15,7 @@ e::Expr ::= fn::Expr arg::Expr
   
   e.typerep =
     case fn.typerep of
-      closureType(_, param, res, _) -> res
+      closureType(_, param, res) -> res
     | _ -> errorType()
     end;
 
@@ -44,7 +44,7 @@ e::Expr ::= fn::Expr arg::Expr
     callExpr(
       explicitCastExpr(
         case fn.typerep of
-          closureType(_, param, res, _) -> 
+          closureType(_, param, res) -> 
             typeName(
               directTypeExpr(res),
               pointerTypeExpr(

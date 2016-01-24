@@ -58,10 +58,10 @@ top::Exprs ::= h::Expr  t::Exprs
     if null(top.expectedTypes) then
       if top.callVariadic then []
       else
-        [err(top.callExpr.location, "call expected " ++ toString(top.argumentPosition) ++ " arguments, got " ++ toString(top.argumentPosition + t.count - 1))]
+        [err(top.callExpr.location, s"call expected ${toString(top.argumentPosition)} arguments, got ${toString(top.argumentPosition + t.count - 1)}")]
     else
       if !typeAssignableTo(head(top.expectedTypes).withoutTypeQualifiers, h.typerep) then
-        [err(h.location, "argument " ++ toString(top.argumentPosition) ++ " expected type " ++ showType(head(top.expectedTypes)) ++ " (got " ++ showType(h.typerep) ++ ")")] ++ t.argumentErrors
+        [err(h.location, s"argument ${toString(top.argumentPosition)} expected type ${showType(head(top.expectedTypes))} (got ${showType(h.typerep)})")] ++ t.argumentErrors
       else
         t.argumentErrors;
   t.expectedTypes = tail(top.expectedTypes);
@@ -82,7 +82,7 @@ top::Exprs ::=
   top.argumentErrors =
     if null(top.expectedTypes) then []
     else
-      [err(top.callExpr.location, "call expected " ++ toString(top.argumentPosition + length(top.expectedTypes)) ++ " arguments, got only " ++ toString(top.argumentPosition))];
+      [err(top.callExpr.location, s"call expected ${toString(top.argumentPosition + length(top.expectedTypes))} arguments, got only ${toString(top.argumentPosition)}")];
 }
 
 nonterminal ExprOrTypeName with pp, errors, globalDecls, defs, env, typerep, returnType, freeVariables;
