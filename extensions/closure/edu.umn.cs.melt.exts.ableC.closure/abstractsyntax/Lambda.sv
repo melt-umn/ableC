@@ -128,50 +128,50 @@ e::Expr ::= captured::EnvNameList paramType::TypeName param::Name res::Expr fnNu
   
   local fnDecl::FunctionDecl =
     functionDecl(
-     [staticStorageClass()],
-     [],
-     directTypeExpr(res.typerep),
-     functionTypeExprWithArgs(
-       baseTypeExpr(),
-       consParameters(
-         parameterDecl(
-           [],
-           directTypeExpr(paramType.typerep),
-           baseTypeExpr(),
-           justName(param),
-           []),
-         consParameters(
-           parameterDecl(
+      [staticStorageClass()],
+      [],
+      directTypeExpr(res.typerep),
+      functionTypeExprWithArgs(
+        baseTypeExpr(),
+        consParameters(
+          parameterDecl(
+            [],
+            directTypeExpr(paramType.typerep),
+            baseTypeExpr(),
+            justName(param),
+            []),
+          consParameters(
+            parameterDecl(
+              [],
+              directTypeExpr(builtinType([], voidType())),
+              pointerTypeExpr([], pointerTypeExpr([], baseTypeExpr())),
+              justName(name("_env", location=builtIn())),
+              []),
+            nilParameters())),
+        false),
+      fnName,
+      [],
+      nilDecl(),
+      foldStmt([
+        captured.envCopyOutTrans,
+        declStmt(
+           variableDecls(
              [],
-             directTypeExpr(builtinType([], voidType())),
-             pointerTypeExpr([], pointerTypeExpr([], baseTypeExpr())),
-             justName(name("_env", location=builtIn())),
-             []),
-           nilParameters())),
-       false),
-     fnName,
-     [],
-     nilDecl(),
-     foldStmt([
-       captured.envCopyOutTrans,
-       declStmt(
-          variableDecls(
-            [],
-            [],
-            directTypeExpr(res.typerep),
-            consDeclarator(
-              declarator(
-                name("_result", location=builtIn()),
-                baseTypeExpr(),
-                [],
-                justInitializer(exprInitializer(res))),
-              nilDeclarator()))),
-       --captured.envCopyInTrans, -- Not needed, as everything is either a const pointer or a const
-       returnStmt(
-         justExpr(
-           declRefExpr(
-             name("_result", location=builtIn()),
-             location=builtIn())))]));
+             [],
+             directTypeExpr(res.typerep),
+             consDeclarator(
+               declarator(
+                 name("_result", location=builtIn()),
+                 baseTypeExpr(),
+                 [],
+                 justInitializer(exprInitializer(res))),
+               nilDeclarator()))),
+        --captured.envCopyInTrans, -- Not needed, as everything is either a const pointer or a const
+        returnStmt(
+          justExpr(
+            declRefExpr(
+              name("_result", location=builtIn()),
+              location=builtIn())))]));
   
   forwards to 
     if null(localErrs) then
