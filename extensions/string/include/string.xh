@@ -4,8 +4,8 @@
 #include <limits.h>
 #include <gc.h>
 
-#ifndef _STRING_H
-#define _STRING_H
+#ifndef _STRING_XH
+#define _STRING_XH
 
 static inline string _int_to_string(int i) {
   string result = GC_malloc((CHAR_BIT * sizeof(i) - 1) / 3 + 2);
