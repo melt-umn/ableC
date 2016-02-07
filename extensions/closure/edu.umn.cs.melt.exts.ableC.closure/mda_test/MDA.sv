@@ -6,11 +6,6 @@ copper_mda testLambdaExpr(ablecParser) {
   edu:umn:cs:melt:exts:ableC:closure:concretesyntax:lambdaExpr;
 }
 
-copper_mda testApplyExpr(ablecParser) {
-  edu:umn:cs:melt:exts:ableC:closure:concretesyntax:applyExpr;
-}
-
-
 copper_mda testTypeExpr(ablecParser) {
   edu:umn:cs:melt:exts:ableC:closure:concretesyntax:typeExpr;
 }

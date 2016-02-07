@@ -16,6 +16,21 @@ import edu:umn:cs:melt:exts:ableC:closure:mda_test;
 marking terminal Closure_t 'closure' lexer classes {Ckeyword};
 
 concrete productions top::TypeSpecifier_c
-| 'closure' '(' param::TypeName_c ',' res::TypeName_c ')'
-    { top.realTypeSpecifiers = [closureTypeExpr(param.ast, res.ast)];
+| 'closure' '(' te::ClosureTypeExpr_c ')'
+    { top.realTypeSpecifiers = [te.ast];
       top.preTypeSpecifiers = []; }
+{-| 'closure' '(' res::TypeName_c '(' params::TypeNames_c ')' ')'
+    { top.realTypeSpecifiers = [closureTypeExpr(params.ast, res.ast)];
+      top.preTypeSpecifiers = []; } -}
+
+nonterminal ClosureTypeExpr_c with ast<BaseTypeExpr>;
+
+concrete productions top::ClosureTypeExpr_c
+| '(' params::TypeNames_c ')' '->' rest::ClosureTypeExpr_c
+    { top.ast = closureTypeExpr(params.ast, typeName(rest.ast, baseTypeExpr())); }
+| '(' params::TypeNames_c ')' '->' ret::TypeName_c
+    { top.ast = closureTypeExpr(params.ast, ret.ast); }
+| '(' param::ClosureTypeExpr_c ')' '->' ret::TypeName_c
+    { top.ast = closureTypeExpr(consTypeName(typeName(param.ast, baseTypeExpr()), nilTypeName()), ret.ast); }
+| '(' param::ClosureTypeExpr_c ')' '->' rest::ClosureTypeExpr_c
+    { top.ast = closureTypeExpr(consTypeName(typeName(param.ast, baseTypeExpr()), nilTypeName()), typeName(rest.ast, baseTypeExpr())); }

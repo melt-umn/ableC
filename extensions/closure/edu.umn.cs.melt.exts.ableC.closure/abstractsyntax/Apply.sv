@@ -1,22 +1,29 @@
 grammar edu:umn:cs:melt:exts:ableC:closure:abstractsyntax;
 
 abstract production applyExpr
-e::Expr ::= fn::Expr arg::Expr
+e::Expr ::= fn::Expr args::Exprs
 {
   local localErrs :: [Message] =
     case fn.typerep of
-      closureType(_, param, res) ->
-        if compatibleTypes(param, arg.typerep, true) then []
-        else [err(arg.location, s"Incompatible parameter type (expected ${showType(param)}, got ${showType(arg.typerep)})")]
+      closureType(_, _, _) -> args.argumentErrors
     | errorType() -> []
-    | _ -> [err(arg.location, s"Cannot apply non-closure (got ${showType(fn.typerep)})")]
+    | _ -> [err(fn.location, s"Cannot apply non-closure (got ${showType(fn.typerep)})")]
     end ++
-    fn.errors ++ arg.errors;
+    fn.errors ++ args.errors;
   
   e.typerep =
     case fn.typerep of
       closureType(_, param, res) -> res
     | _ -> errorType()
+    end;
+    
+  args.argumentPosition = 1;
+  args.callExpr = fn;
+  args.callVariadic = false;
+  args.expectedTypes = 
+    case fn.typerep of
+      closureType(_, params, _) -> params
+    | _ -> error("expectedTypes demanded by args when call expression has non-closure type")
     end;
 
   forwards to
@@ -44,7 +51,7 @@ e::Expr ::= fn::Expr arg::Expr
     callExpr(
       explicitCastExpr(
         case fn.typerep of
-          closureType(_, param, res) -> 
+          closureType(_, params, res) -> 
             typeName(
               directTypeExpr(res),
               pointerTypeExpr(
@@ -54,18 +61,11 @@ e::Expr ::= fn::Expr arg::Expr
                   consParameters(
                     parameterDecl(
                       [],
-                      directTypeExpr(param),
-                      baseTypeExpr(),
+                      directTypeExpr(builtinType([], voidType())),
+                      pointerTypeExpr([], baseTypeExpr()),
                       nothingName(),
                       []),
-                    consParameters(
-                      parameterDecl(
-                        [],
-                        directTypeExpr(builtinType([], voidType())),
-                        pointerTypeExpr([], baseTypeExpr()),
-                        nothingName(),
-                        []),
-                      nilParameters())),
+                    getParams(params)),
                 false)))
         | _ -> typeName(errorTypeExpr(localErrs), baseTypeExpr())
         end,
@@ -78,15 +78,31 @@ e::Expr ::= fn::Expr arg::Expr
           location=builtIn()),
         location=builtIn()),
       consExpr(
-        arg,
-        consExpr(
-          memberExpr(
-            declRefExpr(
-              name("_temp_closure", location=builtIn()),
-              location=builtIn()),
-            true,
-            name("env", location=builtIn()),
+        memberExpr(
+          declRefExpr(
+            name("_temp_closure", location=builtIn()),
             location=builtIn()),
-          nilExpr())),
+          true,
+          name("env", location=builtIn()),
+          location=builtIn()),
+        args),
       location=builtIn());
+}
+
+function getParams
+Parameters ::= ts::[Type]
+{
+  return
+    case ts of
+      h :: t ->
+        consParameters(
+          parameterDecl(
+            [],
+            directTypeExpr(h),
+            baseTypeExpr(),
+            nothingName(),
+            []),
+          getParams(t))
+    | [] -> nilParameters()
+    end;
 }

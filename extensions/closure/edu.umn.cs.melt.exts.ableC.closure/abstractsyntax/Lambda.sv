@@ -13,15 +13,15 @@ imports edu:umn:cs:melt:exts:ableC:gc;
 import silver:util:raw:treemap as tm;
 
 abstract production lambdaExpr
-e::Expr ::= captured::EnvNameList paramType::TypeName param::Name res::Expr
+e::Expr ::= captured::EnvNameList params::Parameters res::Expr
 {
   -- TODO: Replace the use of location index as a unique name creation
   -- mechanism once we have a better way to create unique names.
-  forwards to lambdaExpr_i(captured, paramType, param, res, e.location.index, location=e.location);
+  forwards to lambdaExpr_i(captured, params, res, e.location.index, location=e.location);
 }
 
 abstract production lambdaExpr_i
-e::Expr ::= captured::EnvNameList paramType::TypeName param::Name res::Expr fnNum::Integer
+e::Expr ::= captured::EnvNameList params::Parameters res::Expr fnNum::Integer
 {
 
   local localErrs::[Message] =
@@ -30,29 +30,17 @@ e::Expr ::= captured::EnvNameList paramType::TypeName param::Name res::Expr fnNu
     captured.errors ++ res.errors;
   
   e.globalDecls :=
-    paramType.globalDecls ++ res.globalDecls ++
+    params.globalDecls ++
     (if null(localErrs)
      then [pair(theName, functionDeclaration(fnDecl))]
      else []);
   
-  e.typerep = closureType([], paramType.typerep, res.typerep);
+  e.typerep = closureType([], params.typereps, res.typerep);
   
-  captured.freeVariablesIn = removeName(param, removeDuplicateNames(res.freeVariables));
+  local paramNames::[Name] = map(name(_, location=builtIn()), map(fst, foldr(append, [], map((.valueContribs), params.defs))));
+  captured.freeVariablesIn = removeAllBy(nameEq, paramNames, removeDuplicateNames(res.freeVariables));
   
-  res.env =
-    addEnv(
-      valueDef(
-        param.name,
-        parameterValueItem(
-          decorate
-            parameterDecl(
-              [],
-              directTypeExpr(paramType.typerep),
-              baseTypeExpr(),
-              justName(param),
-              []) with {env = e.env; returnType = error("returnType demanded by parameterDecl in parameterValueItem");})) ::
-      captured.defs ++ tagRefIdTypeItems,
-    emptyEnv());
+  res.env = addEnv(params.defs ++ captured.defs ++ tagRefIdTypeItems, emptyEnv());
   
   res.returnType = just(res.typerep);
   
@@ -136,18 +124,11 @@ e::Expr ::= captured::EnvNameList paramType::TypeName param::Name res::Expr fnNu
         consParameters(
           parameterDecl(
             [],
-            directTypeExpr(paramType.typerep),
-            baseTypeExpr(),
-            justName(param),
+            directTypeExpr(builtinType([], voidType())),
+            pointerTypeExpr([], pointerTypeExpr([], baseTypeExpr())),
+            justName(name("_env", location=builtIn())),
             []),
-          consParameters(
-            parameterDecl(
-              [],
-              directTypeExpr(builtinType([], voidType())),
-              pointerTypeExpr([], pointerTypeExpr([], baseTypeExpr())),
-              justName(name("_env", location=builtIn())),
-              []),
-            nilParameters())),
+          params),
         false),
       fnName,
       [],
@@ -375,6 +356,8 @@ top::EnvNameList ::= n::Name rest::EnvNameList
         end);
   
   top.len = if skip || isNestedFunction then rest.len else rest.len + 1;
+      
+  rest.freeVariablesIn = error("freeVariablesIn demanded by tail of capture list");
 }
 
 abstract production nilEnvNameList

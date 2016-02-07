@@ -22,29 +22,13 @@ concrete productions top::PostfixExpr_c
 nonterminal Lambda_c with ast<Expr>, location;
 
 concrete productions top::Lambda_c
-| '{' captured::EnvNameList_c '}' '(' sqs::SpecifierQualifierList_c param::Declarator_c ')'
+| '{' captured::EnvNameList_c '}' '(' params::ParameterList_c ')'
   '.' '(' res::Expr_c ')'
-    { sqs.givenQualifiers = sqs.typeQualifiers;
-      local bt::BaseTypeExpr =
-        figureOutTypeFromSpecifiers(sqs.location, sqs.typeQualifiers, sqs.preTypeSpecifiers, sqs.realTypeSpecifiers, sqs.mutateTypeSpecifiers);
-      param.givenType = baseTypeExpr();
-      local pType::TypeName = 
-        typeName(
-          if null(sqs.attributes) then bt else warnTypeExpr([wrn(top.location, "Ignoring attributes in type name1")], bt),
-          param.ast);
-      top.ast = lambdaExpr(captured.ast, pType, param.declaredIdent, res.ast,
+    { top.ast = lambdaExpr(captured.ast, foldParameterDecl(params.ast), res.ast,
                   location=top.location); }
 
-| '(' sqs::SpecifierQualifierList_c param::Declarator_c ')' '.' '(' res::Expr_c ')'
-    { sqs.givenQualifiers = sqs.typeQualifiers;
-      local bt::BaseTypeExpr =
-        figureOutTypeFromSpecifiers(sqs.location, sqs.typeQualifiers, sqs.preTypeSpecifiers, sqs.realTypeSpecifiers, sqs.mutateTypeSpecifiers);
-      param.givenType = baseTypeExpr();
-      local pType::TypeName = 
-        typeName(
-          if null(sqs.attributes) then bt else warnTypeExpr([wrn(top.location, "Ignoring attributes in type name1")], bt),
-          param.ast);
-      top.ast = lambdaExpr(exprFreeVariables(), pType, param.declaredIdent, res.ast,
+| '(' params::ParameterList_c ')' '.' '(' res::Expr_c ')'
+    { top.ast = lambdaExpr(exprFreeVariables(), foldParameterDecl(params.ast), res.ast,
                   location=top.location); 
     }
 
