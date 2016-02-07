@@ -33,7 +33,7 @@ top::MaybeExpr ::=
 
 synthesized attribute pps :: [Document];
 
-nonterminal Exprs with pps, errors, globalDecls, defs, env, expectedTypes, argumentPosition, callExpr, argumentErrors, count, callVariadic, returnType, freeVariables;
+nonterminal Exprs with pps, errors, globalDecls, defs, env, expectedTypes, argumentPosition, callExpr, argumentErrors, typereps, count, callVariadic, returnType, freeVariables, appendedExprs, appendedRes;
 
 inherited attribute expectedTypes :: [Type];
 {-- Initially 1. -}
@@ -44,6 +44,9 @@ synthesized attribute argumentErrors :: [Message];
 
 synthesized attribute count :: Integer;
 
+inherited attribute appendedExprs :: Exprs;
+synthesized attribute appendedRes :: Exprs;
+
 abstract production consExpr
 top::Exprs ::= h::Expr  t::Exprs
 {
@@ -52,7 +55,9 @@ top::Exprs ::= h::Expr  t::Exprs
   top.globalDecls := h.globalDecls ++ t.globalDecls;
   top.defs = h.defs ++ t.defs;
   top.freeVariables = h.freeVariables ++ removeDefsFromNames(h.defs, t.freeVariables);
+  top.typereps = h.typerep :: t.typereps;
   top.count = 1 + t.count;
+  top.appendedRes = consExpr(h, t.appendedRes);
   
   top.argumentErrors =
     if null(top.expectedTypes) then
@@ -66,6 +71,7 @@ top::Exprs ::= h::Expr  t::Exprs
         t.argumentErrors;
   t.expectedTypes = tail(top.expectedTypes);
   t.argumentPosition = top.argumentPosition + 1;
+  t.appendedExprs = top.appendedExprs;
   
   t.env = addEnv(h.defs, h.env);
 }
@@ -77,12 +83,21 @@ top::Exprs ::=
   top.globalDecls := [];
   top.defs = [];
   top.freeVariables = [];
+  top.typereps = [];
   top.count = 0;
+  top.appendedRes = top.appendedExprs;
   
   top.argumentErrors =
     if null(top.expectedTypes) then []
     else
       [err(top.callExpr.location, s"call expected ${toString(top.argumentPosition + length(top.expectedTypes))} arguments, got only ${toString(top.argumentPosition)}")];
+}
+
+function appendExprs
+Exprs ::= e1::Exprs e2::Exprs
+{
+  e1.appendedExprs = e2;
+  return e1.appendedRes;
 }
 
 nonterminal ExprOrTypeName with pp, errors, globalDecls, defs, env, typerep, returnType, freeVariables;
