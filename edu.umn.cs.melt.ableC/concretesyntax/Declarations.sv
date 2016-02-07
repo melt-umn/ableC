@@ -115,6 +115,25 @@ concrete productions top::TypeName_c
           d.ast);
     }
 
+-- Not actually used in the host language, just really useful for extensions
+nonterminal TypeNames_c with ast<ast:TypeNames>;
+
+concrete productions top::TypeNames_c
+| h::TypeName_c ',' t::TypeNames_c
+    { top.ast = ast:consTypeName(h.ast, t.ast); }
+| h::TypeName_c 
+    { top.ast = ast:consTypeName(h.ast, ast:nilTypeName()); }
+| 
+    { top.ast = ast:nilTypeName(); }
+
+-- Ugly hack to allow a close paren after TypeNames_c
+terminal TypeNames_NEVER_t 'TypeNames_NEVER_t!!!nevernever1234567890' ;
+concrete productions top::Expr_c
+| 'TypeNames_NEVER_t!!!nevernever1234567890' TypeNames_c ')'
+    { top.ast = ast:errorExpr ( [ err (top.location, "Internal Error. " ++
+        "Placeholder for TypeNames_c should not appear in the tree.") ],
+        location=top.location ) ; }
+
 
 -- "Non-exported" nonterminals
 

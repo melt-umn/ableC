@@ -41,7 +41,7 @@ concrete productions p::Pattern
         location=p.location );
   }
 
-|  p1::Pattern '@' p2::Pattern
+|  p1::Pattern '@' p2::Pattern -- Currently causing MDA to fail, will be fixed when @ is an overloaded op in the host language
   { p.ast = 
       abs:patternBoth( p1.ast, p2.ast,
         location=p.location );

@@ -362,7 +362,7 @@ nonterminal Constructor
   with pp, env, enumItem, structItem, funDecl, topTypeName, constructors;
 
 abstract production constructor
-top::Constructor ::= n::String tms::TypeNameList
+top::Constructor ::= n::String tms::TypeNames
 {
   production attribute initStmts::[Stmt] with ++;
   initStmts := [];

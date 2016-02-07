@@ -394,4 +394,29 @@ top::TypeModifierExpr ::= wrapped::TypeModifierExpr
 --  top.typerep = original.typerep; -- {-TODO-};
 --}
 
+nonterminal TypeNames with pps, env, typereps, errors, globalDecls, defs, returnType, freeVariables, params;
+
+synthesized attribute params::Parameters;
+
+abstract production consTypeName
+top::TypeNames ::= h::TypeName t::TypeNames
+{
+  top.pps = h.pp :: t.pps;
+  top.typereps = h.typerep :: t.typereps;
+  top.globalDecls := h.globalDecls ++ t.globalDecls;
+  top.errors := h.errors ++ t.errors;
+  top.defs = h.defs ++ t.defs;
+  top.freeVariables = h.freeVariables ++ t.freeVariables;
+}
+
+abstract production nilTypeName
+top::TypeNames ::= 
+{
+  top.pps = [];
+  top.typereps = [];
+  top.globalDecls := [];
+  top.errors := [];
+  top.defs = [];
+  top.freeVariables = [];
+}
 
