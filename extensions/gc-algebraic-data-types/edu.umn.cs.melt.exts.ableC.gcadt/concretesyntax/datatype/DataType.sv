@@ -35,15 +35,14 @@ concrete productions top::Constructor_c
 | n::Identifier_t '(' ad::TypeNameList_c ')' ';'
      { top.ast = gcConstructor(n.lexeme, ad.ast); }
 
-
-nonterminal TypeNameList_c with ast<TypeNameList>;
+nonterminal TypeNameList_c with ast<TypeNames>;
 concrete productions top::TypeNameList_c
 | tn::TypeName_c tl::TailTypeNameList_c
      { top.ast = consTypeName(tn.ast, tl.ast); }
 |
      { top.ast = nilTypeName() ; }
 
-nonterminal TailTypeNameList_c with ast<TypeNameList>;
+nonterminal TailTypeNameList_c with ast<TypeNames>;
 concrete productions top::TailTypeNameList_c
 | ',' tn::TypeName_c tl::TailTypeNameList_c
      { top.ast = consTypeName(tn.ast, tl.ast); }

@@ -12,7 +12,7 @@ imports edu:umn:cs:melt:exts:ableC:adt;
 imports edu:umn:cs:melt:exts:ableC:gc;
 
 abstract production gcConstructor
-top::Constructor ::= n::String tms::TypeNameList
+top::Constructor ::= n::String tms::TypeNames
 {
   production attribute initStmts::[Stmt] with ++;
   initStmts := [];
