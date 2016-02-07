@@ -1,5 +1,6 @@
 *~
 build.xml
+*.copperdump.html
 *.jar
 *.pp_out.c
 *.gen_cpp
