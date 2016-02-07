@@ -14,3 +14,4 @@ a.out
 *.test.out
 *.test.stdout
 *.test.stderr
+*.tests_failed
