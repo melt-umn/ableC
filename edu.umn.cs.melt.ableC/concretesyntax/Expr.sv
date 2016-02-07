@@ -12,10 +12,16 @@ concrete productions top::Expr_c
     { top.ast = ast:binaryOpExpr(l.ast, ast:commaOp(location=$2.location), r.ast, location=top.location); }
 
 
-closed nonterminal AssignExpr_c with location, ast<ast:Expr>; 
+closed nonterminal AssignExpr_c with location, ast<ast:Expr>, directName; 
+aspect default production
+top::AssignExpr_c ::=
+{
+  top.directName = nothing();
+}
 concrete productions top::AssignExpr_c
 | e::ConditionalExpr_c
-    { top.ast = e.ast; }
+    { top.ast = e.ast;
+      top.directName = e.directName; }
 | l::UnaryExpr_c op::AssignOp_c  r::AssignExpr_c
     { top.ast = ast:binaryOpExpr(l.ast, ast:assignOp(op.ast, location=op.location), r.ast, location=top.location); }
 
@@ -54,68 +60,116 @@ concrete productions top::AssignOp_c
 | '|='  { top.ast = ast:orEqOp(location=top.location); }
 
 
-closed nonterminal ConditionalExpr_c with location, ast<ast:Expr>;
+closed nonterminal ConditionalExpr_c with location, ast<ast:Expr>, directName;
+aspect default production
+top::ConditionalExpr_c ::=
+{
+  top.directName = nothing();
+}
 concrete productions top::ConditionalExpr_c
 | ce::LogicalOrExpr_c  '?' te::Expr_c  ':'  ee::ConditionalExpr_c
     { top.ast = ast:conditionalExpr(ce.ast, te.ast, ee.ast, location=top.location); }
 | e::LogicalOrExpr_c
-    { top.ast = e.ast; }
+    { top.ast = e.ast;
+      top.directName = e.directName; }
 
 
-closed nonterminal LogicalOrExpr_c with location, ast<ast:Expr>;
+closed nonterminal LogicalOrExpr_c with location, ast<ast:Expr>, directName;
+aspect default production
+top::LogicalOrExpr_c ::=
+{
+  top.directName = nothing();
+}
 concrete productions top::LogicalOrExpr_c
 | e::LogicalAndExpr_c
-    { top.ast = e.ast; }
+    { top.ast = e.ast;
+      top.directName = e.directName; }
 | l::LogicalOrExpr_c '||' r::LogicalAndExpr_c
     { top.ast = ast:binaryOpExpr(l.ast, ast:boolOp(ast:orBoolOp(location=$2.location), location=$2.location), r.ast, location=top.location); }
 
 
-closed nonterminal LogicalAndExpr_c with location, ast<ast:Expr>;
+closed nonterminal LogicalAndExpr_c with location, ast<ast:Expr>, directName;
+aspect default production
+top::LogicalAndExpr_c ::=
+{
+  top.directName = nothing();
+}
 concrete productions top::LogicalAndExpr_c
 | e::InclusiveOrExpr_c
-    { top.ast = e.ast; }
+    { top.ast = e.ast;
+      top.directName = e.directName; }
 | l::LogicalAndExpr_c '&&' r::InclusiveOrExpr_c
     { top.ast = ast:binaryOpExpr(l.ast, ast:boolOp(ast:andBoolOp(location=$2.location), location=$2.location), r.ast, location=top.location); }
 
 
-closed nonterminal InclusiveOrExpr_c with location, ast<ast:Expr>;
+closed nonterminal InclusiveOrExpr_c with location, ast<ast:Expr>, directName;
+aspect default production
+top::InclusiveOrExpr_c ::=
+{
+  top.directName = nothing();
+}
 concrete productions top::InclusiveOrExpr_c
 | e::ExclusiveOrExpr_c
-    { top.ast = e.ast; }
+    { top.ast = e.ast;
+      top.directName = e.directName; }
 | l::InclusiveOrExpr_c '|' r::ExclusiveOrExpr_c
     { top.ast = ast:binaryOpExpr(l.ast, ast:bitOp(ast:orBitOp(location=$2.location), location=$2.location), r.ast, location=top.location); }
 
 
-closed nonterminal ExclusiveOrExpr_c with location, ast<ast:Expr>;
+closed nonterminal ExclusiveOrExpr_c with location, ast<ast:Expr>, directName;
+aspect default production
+top::ExclusiveOrExpr_c ::=
+{
+  top.directName = nothing();
+}
 concrete productions top::ExclusiveOrExpr_c
 | e::AndExpr_c
-    { top.ast = e.ast; }
+    { top.ast = e.ast;
+      top.directName = e.directName; }
 | l::ExclusiveOrExpr_c '^' r::AndExpr_c
     { top.ast = ast:binaryOpExpr(l.ast, ast:bitOp(ast:xorBitOp(location=$2.location), location=$2.location), r.ast, location=top.location); }
 
 
-closed nonterminal AndExpr_c with location, ast<ast:Expr>;
+closed nonterminal AndExpr_c with location, ast<ast:Expr>, directName;
+aspect default production
+top::AndExpr_c ::=
+{
+  top.directName = nothing();
+}
 concrete productions top::AndExpr_c
 | e::EqualityExpr_c
-    { top.ast = e.ast; }
+    { top.ast = e.ast;
+      top.directName = e.directName; }
 | l::AndExpr_c '&' r::EqualityExpr_c
     { top.ast = ast:binaryOpExpr(l.ast, ast:bitOp(ast:andBitOp(location=$2.location), location=$2.location), r.ast, location=top.location); }
 
 
-closed nonterminal EqualityExpr_c with location, ast<ast:Expr>;
+closed nonterminal EqualityExpr_c with location, ast<ast:Expr>, directName;
+aspect default production
+top::EqualityExpr_c ::=
+{
+  top.directName = nothing();
+}
 concrete productions top::EqualityExpr_c
 | e::RelationalExpr_c
-    { top.ast = e.ast; }
+    { top.ast = e.ast;
+      top.directName = e.directName; }
 | l::EqualityExpr_c '==' r::RelationalExpr_c
     { top.ast = ast:binaryOpExpr(l.ast, ast:compareOp(ast:equalsOp(location=$2.location), location=$2.location), r.ast, location=top.location); }
 | l::EqualityExpr_c '!=' r::RelationalExpr_c
     { top.ast = ast:binaryOpExpr(l.ast, ast:compareOp(ast:notEqualsOp(location=$2.location), location=$2.location), r.ast, location=top.location); }
 
 
-closed nonterminal RelationalExpr_c with location, ast<ast:Expr>;
+closed nonterminal RelationalExpr_c with location, ast<ast:Expr>, directName;
+aspect default production
+top::RelationalExpr_c ::=
+{
+  top.directName = nothing();
+}
 concrete productions top::RelationalExpr_c
 | e::ShiftExpr_c
-    { top.ast = e.ast; }
+    { top.ast = e.ast;
+      top.directName = e.directName; }
 | l::RelationalExpr_c '<' r::ShiftExpr_c 
     { top.ast = ast:binaryOpExpr(l.ast, ast:compareOp(ast:ltOp(location=$2.location), location=$2.location), r.ast, location=top.location); }
 | l::RelationalExpr_c '>' r::ShiftExpr_c
@@ -126,10 +180,16 @@ concrete productions top::RelationalExpr_c
     { top.ast = ast:binaryOpExpr(l.ast, ast:compareOp(ast:gteOp(location=$2.location), location=$2.location), r.ast, location=top.location); }
 
 
-closed nonterminal ShiftExpr_c with location, ast<ast:Expr>;
+closed nonterminal ShiftExpr_c with location, ast<ast:Expr>, directName;
+aspect default production
+top::ShiftExpr_c ::=
+{
+  top.directName = nothing();
+}
 concrete productions top::ShiftExpr_c
 | e::AdditiveExpr_c
-    { top.ast = e.ast; }
+    { top.ast = e.ast;
+      top.directName = e.directName; }
 | l::ShiftExpr_c '<<' r::AdditiveExpr_c
     { top.ast = ast:binaryOpExpr(l.ast, ast:bitOp(ast:lshBitOp(location=$2.location), location=$2.location), r.ast, location=top.location); }
 | l::ShiftExpr_c '>>' r::AdditiveExpr_c
@@ -138,7 +198,12 @@ concrete productions top::ShiftExpr_c
 
 -- Additive Expressions --
 --------------------------
-closed nonterminal AdditiveExpr_c with location, ast<ast:Expr>;
+closed nonterminal AdditiveExpr_c with location, ast<ast:Expr>, directName;
+aspect default production
+top::AdditiveExpr_c ::=
+{
+  top.directName = nothing();
+}
 {- Below is the previous implementation of AdditiveExpr_c.  
 concrete productions top::AdditiveExpr_c
 | e::MultiplicativeExpr_c
@@ -149,7 +214,8 @@ concrete productions top::AdditiveExpr_c
     { top.ast = ast:binaryOpExpr(l.ast, ast:numOp(ast:subOp(location=$2.location), location=$2.location), r.ast, location=top.location); }           -}
 concrete productions top::AdditiveExpr_c
 | e::AddMulLeft_c 
-    { top.ast = e.ast; }
+    { top.ast = e.ast;
+      top.directName = e.directName; }
 | l::AdditiveExpr_c  op::AdditiveOp_c  r::AddMulLeft_c 
     { top.ast = op.ast; 
       op.leftExpr=l.ast; op.rightExpr=r.ast; op.exprLocation=top.location; }
@@ -175,10 +241,16 @@ concrete productions top::AdditiveOp_c
 -- Operators with precedence between Additive and Multiplicitive opererators
 
 -- Left Associative
-closed nonterminal AddMulLeft_c with location, ast<ast:Expr> ;
+closed nonterminal AddMulLeft_c with location, ast<ast:Expr>, directName;
+aspect default production
+top::AddMulLeft_c ::=
+{
+  top.directName = nothing();
+}
 concrete productions top::AddMulLeft_c
 | e::AddMulRight_c
-    { top.ast = e.ast; }
+    { top.ast = e.ast;
+      top.directName = e.directName; }
 | l::AddMulLeft_c  op::AddMulLeftOp_c r::AddMulRight_c
     { top.ast = op.ast; 
       op.leftExpr=l.ast; op.rightExpr=r.ast; op.exprLocation=top.location; }
@@ -194,10 +266,16 @@ concrete productions top::AddMulLeftOp_c
         location=top.location ) ; }
 
 -- Right Associative
-closed nonterminal AddMulRight_c with location, ast<ast:Expr> ;
+closed nonterminal AddMulRight_c with location, ast<ast:Expr>, directName;
+aspect default production
+top::AddMulRight_c ::=
+{
+  top.directName = nothing();
+}
 concrete productions top::AddMulRight_c
 | e::AddMulNone_c
-    { top.ast = e.ast; }
+    { top.ast = e.ast;
+      top.directName = e.directName; }
 | l::AddMulNone_c  op::AddMulRightOp_c r::AddMulRight_c 
     { top.ast = op.ast; 
       op.leftExpr=l.ast; op.rightExpr=r.ast; op.exprLocation=top.location; }
@@ -213,10 +291,16 @@ concrete productions top::AddMulRightOp_c
         location=top.location ) ; }
 
 -- Non-associative
-closed nonterminal AddMulNone_c with location, ast<ast:Expr> ;
+closed nonterminal AddMulNone_c with location, ast<ast:Expr>, directName;
+aspect default production
+top::AddMulNone_c ::=
+{
+  top.directName = nothing();
+}
 concrete productions top::AddMulNone_c
 | e::MultiplicativeExpr_c
-    { top.ast = e.ast; }
+    { top.ast = e.ast;
+      top.directName = e.directName; }
 | l::MultiplicativeExpr_c  op::AddMulNoneOp_c r::MultiplicativeExpr_c 
     { top.ast = op.ast; 
       op.leftExpr=l.ast; op.rightExpr=r.ast; op.exprLocation=top.location; }
@@ -235,10 +319,16 @@ concrete productions top::AddMulNoneOp_c
 
 -- Multiplicative Expressions --
 --------------------------------
-closed nonterminal MultiplicativeExpr_c with location, ast<ast:Expr>;
+closed nonterminal MultiplicativeExpr_c with location, ast<ast:Expr>, directName;
+aspect default production
+top::MultiplicativeExpr_c ::=
+{
+  top.directName = nothing();
+}
 concrete productions top::MultiplicativeExpr_c
 | e::CastExpr_c
-    { top.ast = e.ast; }
+    { top.ast = e.ast;
+      top.directName = e.directName; }
 | l::MultiplicativeExpr_c '*' r::CastExpr_c
     { top.ast = ast:binaryOpExpr(l.ast, ast:numOp(ast:mulOp(location=$2.location), 
         location=$2.location), r.ast, location=top.location); }
@@ -250,18 +340,30 @@ concrete productions top::MultiplicativeExpr_c
         location=$2.location), r.ast, location=top.location); }
 
 
-closed nonterminal CastExpr_c with location, ast<ast:Expr>;
+closed nonterminal CastExpr_c with location, ast<ast:Expr>, directName;
+aspect default production
+top::CastExpr_c ::=
+{
+  top.directName = nothing();
+}
 concrete productions top::CastExpr_c
 | e::UnaryExpr_c
-    { top.ast = e.ast; }
+    { top.ast = e.ast;
+      top.directName = e.directName; }
 | '(' tn::TypeName_c ')' e::CastExpr_c
     { top.ast = ast:explicitCastExpr(tn.ast, e.ast, location=top.location); }
 
 
-closed nonterminal UnaryExpr_c with location, ast<ast:Expr>;
+closed nonterminal UnaryExpr_c with location, ast<ast:Expr>, directName;
+aspect default production
+top::UnaryExpr_c ::=
+{
+  top.directName = nothing();
+}
 concrete productions top::UnaryExpr_c
 | e::PostfixExpr_c
-    { top.ast = e.ast; }
+    { top.ast = e.ast;
+      top.directName = e.directName; }
 | '++' e::UnaryExpr_c
     { top.ast = ast:unaryOpExpr(ast:preIncOp(location=$1.location), e.ast, location=top.location); }
 | '--' e::UnaryExpr_c
@@ -283,44 +385,33 @@ concrete productions top::UnaryOp_c
 | '~'  { top.ast = ast:bitNegateOp(location=top.location); }
 | '!'  { top.ast = ast:notOp(location=top.location); }
 
+-- Needed for constructing calls correctly
+synthesized attribute directName::Maybe<Identifier_t>;
 
+closed nonterminal PostfixExpr_c with location, ast<ast:Expr>, directName;
+aspect default production
+top::PostfixExpr_c ::=
+{
+  top.directName = nothing();
+}
 
--- These messages are used in the PostFixExpr_c below and Attrib_c in gcc_exts/VariableAttributes.sv
-global csPatternMatchingEnvMsg::String = "Internal ableC Error in concretesyntax/gcc_exts/VariableAttributes.sv. \n" ++
-        "An env value is used by some construct to determine what it forwards to. \n" ++
-        "Need a better solution for this...";
-global csPatternMatchingRetMsg::String = "Internal ableC Error in concretesyntax/gcc_exts/VariableAttributes.sv. \n" ++
-        "A returnType value is used by some construct to determine what it forwards to. \n" ++
-        "Need a better solution for this...";
-
-
-closed nonterminal PostfixExpr_c with location, ast<ast:Expr>;
 concrete productions top::PostfixExpr_c
 | e::PrimaryExpr_c
-    { top.ast = e.ast; }
+    { top.ast = e.ast;
+      top.directName = e.directName; }
 | e::PostfixExpr_c '[' index::Expr_c ']'
     { top.ast = ast:arraySubscriptExpr(e.ast, index.ast, location=top.location); }
 | e::PostfixExpr_c '(' args::ArgumentExprList_c ')'
     { top.ast = 
-        {- ToDo: this is a poor way to handle this, but I'm not sure of a better way.
-           Presumably determining if something is a declRefExp should be avoided.
-           The string error messages are defined in concretesyntax/Expr.sv
-         -}
-        case decorate e.ast with { env = error(csPatternMatchingEnvMsg); 
-                                   returnType=error(csPatternMatchingRetMsg); } of
-        | ast:declRefExpr(id) -> ast:directCallExpr(id, ast:foldExpr(args.ast), location=top.location)
-        | _ -> ast:callExpr(e.ast, ast:foldExpr(args.ast), location=top.location)
+        case e.directName of
+          just(id) -> ast:directCallExpr(ast:fromId(id), ast:foldExpr(args.ast), location=top.location)
+        | nothing() -> ast:callExpr(e.ast, ast:foldExpr(args.ast), location=top.location)
         end; }
 | e::PostfixExpr_c '(' ')'
     { top.ast = 
-        {- ToDo: this is a poor way to handle this, but I'm not sure of a better way.
-           Presumably determining if something is a declRefExp should be avoided.
-           The string error messages are defined in concretesyntax/Expr.sv
-         -}
-        case decorate e.ast with { env = error(csPatternMatchingEnvMsg); 
-                                   returnType=error(csPatternMatchingRetMsg); } of
-        | ast:declRefExpr(id) -> ast:directCallExpr(id, ast:nilExpr(), location=top.location)
-        | _ -> ast:callExpr(e.ast, ast:nilExpr(), location=top.location)
+        case e.directName of
+          just(id) -> ast:directCallExpr(ast:fromId(id), ast:nilExpr(), location=top.location)
+        | nothing() -> ast:callExpr(e.ast, ast:nilExpr(), location=top.location)
         end; }
 | e::PostfixExpr_c '.' id::Identifier_t
     { top.ast = ast:memberExpr(e.ast, false, ast:fromId(id), location=top.location); }
@@ -336,18 +427,32 @@ concrete productions top::PostfixExpr_c
     { top.ast = ast:compoundLiteralExpr(ty.ast, ast:foldInit(il.ast), location=top.location); }
 
 
-closed nonterminal ArgumentExprList_c with location, ast<[ast:Expr]>;
+closed nonterminal ArgumentExprList_c with location, ast<[ast:Expr]>, directName;
+aspect default production
+top::ArgumentExprList_c ::=
+{
+  top.directName = nothing();
+}
+
 concrete productions top::ArgumentExprList_c
 | e::AssignExpr_c
-    { top.ast = [e.ast]; }
+    { top.ast = [e.ast];
+      top.directName = e.directName; }
 | h::ArgumentExprList_c ',' t::AssignExpr_c
-    { top.ast = h.ast ++ [t.ast]; }
+    { top.ast = h.ast ++ [t.ast];
+      top.directName = h.directName;  }
 
+closed nonterminal PrimaryExpr_c with location, ast<ast:Expr>, directName;
+aspect default production
+top::PrimaryExpr_c ::=
+{
+  top.directName = nothing();
+}
 
-closed nonterminal PrimaryExpr_c with location, ast<ast:Expr>;
 concrete productions top::PrimaryExpr_c
 | id::Identifier_t
-    { top.ast = ast:declRefExpr(ast:fromId(id), location=top.location); }
+    { top.ast = ast:declRefExpr(ast:fromId(id), location=top.location);
+      top.directName = just(id); }
 | c::Constant_c
     { top.ast = c.ast; }
 | sl::StringConstant_c

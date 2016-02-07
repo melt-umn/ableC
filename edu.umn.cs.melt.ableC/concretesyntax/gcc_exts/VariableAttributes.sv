@@ -46,13 +46,9 @@ concrete productions top::Attrib_c
 | n::AttribName_c '(' e::ArgumentExprList_c ')'
     { top.ast = case e.ast of
       | [] -> ast:appliedAttrib(n.ast, ast:foldExpr([]))
-        {- ToDo: this is a poor way to handle this, but I'm not sure of a better way.
-           Presumably determining if something is a declRefExp should be avoided.
-           The string error messages are defined in concretesyntax/Expr.sv
-         -}
-      | hd::tl -> case decorate hd with { env = error(csPatternMatchingEnvMsg); ast:returnType=error(csPatternMatchingRetMsg); } of
-                  | ast:declRefExpr(id) -> ast:idAppliedAttrib(n.ast, id, ast:foldExpr(tl))
-                  | _ -> ast:appliedAttrib(n.ast, ast:foldExpr(e.ast))
+      | hd::tl -> case e.directName of
+                    just(id) -> ast:idAppliedAttrib(n.ast, ast:fromId(id), ast:foldExpr(tl))
+                  | nothing() -> ast:appliedAttrib(n.ast, ast:foldExpr(e.ast))
                   end
       end; 
     }
