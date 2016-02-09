@@ -20,7 +20,10 @@ top::Decls ::= h::Decl  t::Decls
   local globalDecls::[Decl] = removeDuplicateGlobalDecls(h.globalDecls); 
   top.globalDecls := [];
   
-  forwards to consDecl(decls(foldDecl(globalDecls)), consDecl(h, t));
+  forwards to 
+    if null(globalDecls)
+    then consDecl(h, t)
+    else consGlobalDecl(decls(foldDecl(globalDecls)), consDecl(h, t));
 
 -- forwards to appendDecls(foldDecl(globalDecls), consDecl(h, t));  
 -- forwards to consDecl(decls(foldDecl([])), consDecl(h, t));
