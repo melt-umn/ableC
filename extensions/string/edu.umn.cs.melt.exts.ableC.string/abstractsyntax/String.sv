@@ -61,7 +61,7 @@ abstract production assignString
 top::Expr ::= lhs::Expr rhs::Expr
 {
   forwards to
-    binaryOpExprDefault(
+    binaryOpExpr(
       lhs,
       assignOp(eqOp(location=builtIn()), location=builtIn()),
       constructString(rhs, location=builtIn()),

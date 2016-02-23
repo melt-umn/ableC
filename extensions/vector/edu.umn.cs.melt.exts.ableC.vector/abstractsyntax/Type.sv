@@ -1,5 +1,7 @@
 grammar edu:umn:cs:melt:exts:ableC:vector:abstractsyntax;
 
+import edu:umn:cs:melt:ableC:abstractsyntax:overload;
+
 abstract production vectorTypeExpr 
 top::BaseTypeExpr ::= sub::TypeName
 {

@@ -1,5 +1,7 @@
 grammar edu:umn:cs:melt:exts:ableC:string:abstractsyntax;
 
+import edu:umn:cs:melt:ableC:abstractsyntax:overload;
+
 synthesized attribute toStringProd::Maybe<(Expr ::= Expr Location)> occurs on Type, BuiltinType;--, IntegerType, RealType;
 
 aspect default production
@@ -68,7 +70,7 @@ top::Type ::=
     case top.otherType of
       pointerType(_, builtinType(_, signedType(charType()))) ->
         just(
-          binaryOpExprDefault(
+          binaryOpExpr(
             _,
             assignOp(eqOp(location=builtIn()), location=builtIn()),
             _,
