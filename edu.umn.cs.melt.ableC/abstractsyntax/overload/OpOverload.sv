@@ -1,6 +1,7 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax:overload;
 
-imports edu:umn:cs:melt:ableC:abstractsyntax with unaryOpExpr as unaryOpExprDefault,
+imports edu:umn:cs:melt:ableC:abstractsyntax hiding directCallExpr
+                                             with unaryOpExpr as unaryOpExprDefault,
                                                   arraySubscriptExpr as arraySubscriptExprDefault,
                                                   callExpr as callExprDefault,
                                                   binaryOpExpr as binaryOpExprDefault;

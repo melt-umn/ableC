@@ -128,6 +128,7 @@ top::Expr ::= f::Name  a::Exprs
 function ordinaryFunctionHandler
 Expr ::= f::Name  a::Exprs  l::Location
 {
+  -- TODO: Figure out a better solution to integrating overloading
   return ovrld:callExpr(declRefExpr(f, location=f.location), a, location=l);
 }
 
