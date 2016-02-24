@@ -24,7 +24,7 @@ top::Expr ::= lhs::Expr  rhs::Expr
   forwards to 
     if lType.subscriptProd.isJust
     then lType.subscriptProd.fromJust(lhs, rhs, top.location)
-    else abs:arraySubscriptExpr(lhs, rhs, location=top.location);
+    else arraySubscriptExprDefault(lhs, rhs, location=top.location);
 }
 abstract production callExpr
 top::Expr ::= f::Expr  a::Exprs
@@ -41,7 +41,7 @@ top::Expr ::= f::Expr  a::Exprs
   forwards to 
     if lType.callProd.isJust
     then lType.callProd.fromJust(f, a, top.location)
-    else abs:callExpr(f, a, location=top.location);
+    else callExprDefault(f, a, location=top.location);
 }
 abstract production binaryOpExpr
 top::Expr ::= lhs::Expr  op::BinOp  rhs::Expr

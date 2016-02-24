@@ -1,5 +1,7 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax;
 
+import edu:umn:cs:melt:ableC:abstractsyntax:overload as ovrld;
+
 nonterminal Expr with location, pp, globalDecls, errors, defs, env, returnType, freeVariables, typerep;
 
 synthesized attribute integerConstantValue :: Maybe<Integer>;
@@ -117,7 +119,7 @@ abstract production directCallExpr
 top::Expr ::= f::Name  a::Exprs
 {
   -- Forwarding depends on env. We must be able to compute a pp without using env.
-  top.pp = parens( concat([ f.pp, parens( ppImplode( cat( comma(), space() ), a.pps ))]) );
+  --top.pp = parens( concat([ f.pp, parens( ppImplode( cat( comma(), space() ), a.pps ))]) ); -- TODO: Fix with host attribute
 
   forwards to f.valueItem.directCallHandler(f, a, top.location);
 }
@@ -126,7 +128,7 @@ top::Expr ::= f::Name  a::Exprs
 function ordinaryFunctionHandler
 Expr ::= f::Name  a::Exprs  l::Location
 {
-  return callExpr(declRefExpr(f, location=f.location), a, location=l);
+  return ovrld:callExpr(declRefExpr(f, location=f.location), a, location=l);
 }
 
 {- Calls where the function is determined by an arbitrary expression. -}

@@ -1,7 +1,9 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax:overload;
 
-imports edu:umn:cs:melt:ableC:abstractsyntax as abs;
-imports edu:umn:cs:melt:ableC:abstractsyntax hiding unaryOpExpr, arraySubscriptExpr, callExpr, binaryOpExpr;
+imports edu:umn:cs:melt:ableC:abstractsyntax with unaryOpExpr as unaryOpExprDefault,
+                                                  arraySubscriptExpr as arraySubscriptExprDefault,
+                                                  callExpr as callExprDefault,
+                                                  binaryOpExpr as binaryOpExprDefault;
 imports edu:umn:cs:melt:ableC:abstractsyntax:env;
 
 inherited attribute otherType::Type occurs on Type;
@@ -173,7 +175,7 @@ function getUnaryOverload
     | "-" -> convertUnaryMaybeProd(op, t.unaryMinusProd)
     | "~" -> convertUnaryMaybeProd(op, t.unaryTildaProd)
     | "!" -> convertUnaryMaybeProd(op, t.unaryBangProd)
-    | _ -> abs:unaryOpExpr(op, _, location=_) -- Misc. ops such as GCC extensions not overloaded
+    | _ -> unaryOpExprDefault(op, _, location=_) -- Misc. ops such as GCC extensions not overloaded
     end;
 }
 
@@ -183,7 +185,7 @@ function convertUnaryMaybeProd
   return
     if prod.isJust
     then prod.fromJust
-    else abs:unaryOpExpr(op, _, location=_);
+    else unaryOpExprDefault(op, _, location=_);
 }
 
 function getBinaryOverload
@@ -221,13 +223,13 @@ function getBinaryOverload
     then constructNot(_, _, _, env, returnType, ltOpProd.fromJust)
     else if op.opName == "<=" && gtOpProd.isJust
     then constructNot(_, _, _, env, returnType, gtOpProd.fromJust)
-    else abs:binaryOpExpr(_, op, _, location=_);
+    else binaryOpExprDefault(_, op, _, location=_);
 }
 
 function constructAssignOp
 Expr ::= e1::Expr e2::Expr l::Location assignOpProd::(Expr ::= Expr Expr Location)
 {
-  return abs:binaryOpExpr(e1, assignOp(eqOp(location=l), location=l), assignOpProd(e1, e2, l), location=l);
+  return binaryOpExprDefault(e1, assignOp(eqOp(location=l), location=l), assignOpProd(e1, e2, l), location=l);
 }
 
 function constructNot
