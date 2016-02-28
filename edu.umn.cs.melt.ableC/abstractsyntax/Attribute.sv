@@ -27,27 +27,30 @@ Document ::= a::Attrib env::Decorated Env
 }
 
 {-- __attribute__ syntax representation -}
-nonterminal Attribute with pp, env, returnType;
+nonterminal Attribute with pp, host<Attribute>, env, returnType;
 
 abstract production gccAttribute
 top::Attribute ::= l::[Attrib]
 {
+  propagate host;
   top.pp = concat([text("__attribute__(("), ppImplode(text(", "), map(ppAttrib(_, top.env), filter((.attribNeedsTrans), l))), text("))")]);
 }
 
 abstract production simpleAsm
 top::Attribute ::= s::String
 {
+  propagate host;
   top.pp = text("__asm__(" ++ s ++ ")");
 }
 
 synthesized attribute attribNeedsTrans::Boolean;
-nonterminal Attrib with pp, attribNeedsTrans, env, returnType;
+nonterminal Attrib with pp, host<Attrib>, attribNeedsTrans, env, returnType;
 
 -- e.g. __attribute__(())
 abstract production emptyAttrib
 top::Attrib ::=
 {
+  propagate host;
   top.pp = notext();
   top.attribNeedsTrans = true;
 }
@@ -55,6 +58,7 @@ top::Attrib ::=
 abstract production wordAttrib
 top::Attrib ::= n::AttribName
 {
+  propagate host;
   top.pp = n.pp;
   top.attribNeedsTrans = true;
 }
@@ -62,6 +66,7 @@ top::Attrib ::= n::AttribName
 abstract production appliedAttrib
 top::Attrib ::= n::AttribName  e::Exprs
 {
+  propagate host;
   top.pp = concat([n.pp, parens(ppImplode(text(", "), e.pps))]);
   top.attribNeedsTrans =
     case n of
@@ -74,16 +79,18 @@ top::Attrib ::= n::AttribName  e::Exprs
 abstract production idAppliedAttrib
 top::Attrib ::= n::AttribName  id::Name  e::Exprs
 {
+  propagate host;
   top.pp = concat([n.pp, parens(ppImplode(text(", "), id.pp :: e.pps))]);
   top.attribNeedsTrans = true;
 }
 
 
-nonterminal AttribName with pp, env;
+nonterminal AttribName with pp, host<AttribName>, env;
 
 abstract production attribName
 top::AttribName ::= n::Name
 {
+  propagate host;
   top.pp = n.pp;
 }
 

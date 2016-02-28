@@ -5,7 +5,7 @@
 -- Declaration is rooted in External, but also in stmts. Either a variableDecl or a typedefDecl.
 -- ParameterDecl should probably be something special, distinct from variableDecl.
 
-nonterminal Decls with pps, errors, globalDecls, defs, env, isTopLevel, returnType, freeVariables;
+nonterminal Decls with pps, host<Decls>, errors, globalDecls, defs, env, isTopLevel, returnType, freeVariables;
 
 -- String is name of decl, used to remove duplicates
 synthesized attribute globalDecls::[Pair<String Decl>] with ++;
@@ -17,6 +17,7 @@ autocopy attribute isTopLevel :: Boolean;
 abstract production consGlobalDecl
 top::Decls ::= h::Decl  t::Decls
 {
+  -- TODO: should this propagate host?
   local globalDecls::[Decl] = removeDuplicateGlobalDecls(h.globalDecls); 
   top.globalDecls := [];
   
@@ -50,6 +51,7 @@ function removeDuplicateGlobalDecls
 abstract production consDecl
 top::Decls ::= h::Decl  t::Decls
 {
+  propagate host;
   top.pps = h.pp :: t.pps;
   top.errors := h.errors ++ t.errors;
   top.defs = h.defs ++ t.defs;
@@ -64,6 +66,7 @@ top::Decls ::= h::Decl  t::Decls
 abstract production nilDecl
 top::Decls ::=
 {
+  propagate host;
   top.pps = [];
   top.errors := [];
   top.globalDecls := [];
@@ -78,7 +81,7 @@ Decls ::= d1::Decls d2::Decls
 }
 
 
-nonterminal Decl with pp, errors, globalDecls, defs, env, isTopLevel, returnType, freeVariables;
+nonterminal Decl with pp, host<Decl>, errors, globalDecls, defs, env, isTopLevel, returnType, freeVariables;
 
 {-- Pass down from top-level declaration the list of attribute to each name-declaration -}
 autocopy attribute givenAttributes :: [Attribute];
@@ -86,6 +89,7 @@ autocopy attribute givenAttributes :: [Attribute];
 abstract production decls
 top::Decl ::= d::Decls
 {
+  propagate host;
   top.pp = terminate( line(), d.pps );
   top.errors := d.errors;
   top.globalDecls := d.globalDecls;
@@ -96,6 +100,7 @@ top::Decl ::= d::Decls
 abstract production variableDecls
 top::Decl ::= storage::[StorageClass]  attrs::[Attribute]  ty::BaseTypeExpr  dcls::Declarators
 {
+  propagate host;
   top.pp = concat(
     terminate(space(), map((.pp), storage)) ::
       ppAttributes(attrs, top.env) ::
@@ -113,6 +118,7 @@ top::Decl ::= storage::[StorageClass]  attrs::[Attribute]  ty::BaseTypeExpr  dcl
 abstract production typeExprDecl
 top::Decl ::= attrs::[Attribute] ty::BaseTypeExpr
 {
+  propagate host;
   top.pp = cat( ty.pp, semi() );
   top.errors := ty.errors;
   top.globalDecls := ty.globalDecls;
@@ -123,6 +129,7 @@ top::Decl ::= attrs::[Attribute] ty::BaseTypeExpr
 abstract production typedefDecls
 top::Decl ::= attrs::[Attribute]  ty::BaseTypeExpr  dcls::Declarators
 {
+  propagate host;
   top.pp = concat([text("typedef "), ppAttributes(attrs, top.env), ty.pp, space(), ppImplode(text(", "), dcls.pps), semi()]);
   top.errors := ty.errors ++ dcls.errors;
   top.globalDecls := ty.globalDecls ++ dcls.globalDecls;
@@ -137,6 +144,7 @@ top::Decl ::= attrs::[Attribute]  ty::BaseTypeExpr  dcls::Declarators
 abstract production functionDeclaration
 top::Decl ::= f::FunctionDecl
 {
+  propagate host;
   top.pp = f.pp;
   top.errors := f.errors;
   top.globalDecls := f.globalDecls;
@@ -156,6 +164,7 @@ top::Decl ::= f::FunctionDecl
 abstract production warnDecl
 top::Decl ::= msg::[Message]
 {
+  propagate host;
   top.pp = concat([text("/*"),
     ppImplode(line(), map(text, map((.output), msg))),
     text("*/")]);
@@ -169,6 +178,7 @@ top::Decl ::= msg::[Message]
 abstract production staticAssertDecl
 top::Decl ::= e::Expr  s::String
 {
+  propagate host;
   top.pp = concat([text("_Static_assert("), e.pp, text(", "), text(s), text(");")]);
   top.errors := e.errors;
   top.globalDecls := e.globalDecls;
@@ -179,6 +189,7 @@ top::Decl ::= e::Expr  s::String
 abstract production fileScopeAsm
 top::Decl ::= s::String
 {
+  propagate host;
   top.pp = concat([text("asm"), parens(text(s))]);
   top.errors := [];
   top.globalDecls := [];
@@ -190,11 +201,12 @@ top::Decl ::= s::String
   -- but used to be the way to put c functions and such in custom sections.
 }
 
-nonterminal Declarators with pps, errors, globalDecls, defs, env, baseType, isTopLevel, isTypedef, givenAttributes, returnType, freeVariables;
+nonterminal Declarators with pps, host<Declarators>, errors, globalDecls, defs, env, baseType, isTopLevel, isTypedef, givenAttributes, returnType, freeVariables;
 
 abstract production consDeclarator
 top::Declarators ::= h::Declarator  t::Declarators
 {
+  propagate host;
   top.pps = h.pps ++ t.pps;
   top.errors := h.errors ++ t.errors;
   top.defs = h.defs ++ t.defs;
@@ -208,6 +220,7 @@ top::Declarators ::= h::Declarator  t::Declarators
 abstract production nilDeclarator
 top::Declarators ::=
 {
+  propagate host;
   top.pps = [];
   top.errors := [];
   top.globalDecls := [];
@@ -215,13 +228,14 @@ top::Declarators ::=
   top.freeVariables = [];
 }
 
-nonterminal Declarator with pps, errors, globalDecls, defs, env, baseType, typerep, sourceLocation, isTopLevel, isTypedef, givenAttributes, returnType, freeVariables;
+nonterminal Declarator with pps, host<Declarator>, errors, globalDecls, defs, env, baseType, typerep, sourceLocation, isTopLevel, isTypedef, givenAttributes, returnType, freeVariables;
 
 autocopy attribute isTypedef :: Boolean;
 
 abstract production declarator
 top::Declarator ::= name::Name  ty::TypeModifierExpr  attrs::[Attribute]  initializer::MaybeInitializer
 {
+  propagate host;
   top.pps =
     case ty of
 {-      pointerTypeExpr(qs, functionTypeExprWithArgs(result, args, variadic)) ->
@@ -268,6 +282,7 @@ top::Declarator ::= name::Name  ty::TypeModifierExpr  attrs::[Attribute]  initia
 abstract production errorDeclarator
 top::Declarator ::= msg::[Message]
 {
+  propagate host;
   top.pps = [];
   top.errors := msg;
   top.globalDecls := [];
@@ -277,11 +292,12 @@ top::Declarator ::= msg::[Message]
   top.sourceLocation = loc("nowhere", -1, -1, -1, -1, -1, -1); -- TODO fix this? add locaiton maybe?
 }
 
-nonterminal FunctionDecl with pp, errors, globalDecls, defs, env, typerep, sourceLocation, returnType, freeVariables;
+nonterminal FunctionDecl with pp, host<FunctionDecl>, errors, globalDecls, defs, env, typerep, sourceLocation, returnType, freeVariables;
 
 abstract production functionDecl
 top::FunctionDecl ::= storage::[StorageClass]  fnquals::[SpecialSpecifier]  bty::BaseTypeExpr mty::TypeModifierExpr  name::Name  attrs::[Attribute]  decls::Decls  body::Stmt
 {
+  propagate host;
   top.pp = concat([terminate(space(), map((.pp), storage)), terminate( space(), map( ppSpecial(_, top.env), fnquals ) ),
     bty.pp, space(), mty.lpp, name.pp, mty.rpp, ppAttributesRHS(attrs, top.env), line(), terminate(cat(semi(), line()), decls.pps),
     text("{"), line(), nestlines(2,body.pp), text("}")]);
@@ -353,6 +369,7 @@ top::FunctionDecl ::= storage::[StorageClass]  fnquals::[SpecialSpecifier]  bty:
 abstract production badFunctionDecl
 top::FunctionDecl ::= msg::[Message]
 {
+  propagate host;
   top.pp = concat([text("/*"),
     ppImplode(line(), map(text, map((.output), msg))),
     text("*/")]);
@@ -364,11 +381,12 @@ top::FunctionDecl ::= msg::[Message]
   top.sourceLocation = loc("nowhere", -1, -1, -1, -1, -1, -1); -- TODO fix this? add locaiton maybe?
 }
 
-nonterminal Parameters with typereps, pps, errors, globalDecls, defs, env, returnType, freeVariables;
+nonterminal Parameters with typereps, pps, host<Parameters>, errors, globalDecls, defs, env, returnType, freeVariables;
 
 abstract production consParameters
 top::Parameters ::= h::ParameterDecl  t::Parameters
 {
+  propagate host;
   top.pps = h.pp :: t.pps;
   top.typereps = h.typerep :: t.typereps;
   top.errors := h.errors ++ t.errors;
@@ -384,6 +402,7 @@ top::Parameters ::= h::ParameterDecl  t::Parameters
 abstract production nilParameters
 top::Parameters ::=
 {
+  propagate host;
   top.pps = [];
   top.typereps = [];
   top.errors := [];
@@ -395,11 +414,12 @@ top::Parameters ::=
 -- TODO: move these, later
 synthesized attribute paramname :: Maybe<Name>;
 
-nonterminal ParameterDecl with paramname, typerep, pp, errors, globalDecls, defs, env, sourceLocation, returnType, freeVariables;
+nonterminal ParameterDecl with paramname, typerep, pp, host<ParameterDecl>, errors, globalDecls, defs, env, sourceLocation, returnType, freeVariables;
 
 abstract production parameterDecl
 top::ParameterDecl ::= storage::[StorageClass]  bty::BaseTypeExpr  mty::TypeModifierExpr  name::MaybeName  attrs::[Attribute]
 {
+  propagate host;
   top.pp = concat([terminate(space(), map((.pp), storage)),
     bty.pp, space(), mty.lpp, space(), name.pp, mty.rpp, ppAttributesRHS(attrs, top.env)]);
   top.paramname = name.maybename;
@@ -426,11 +446,12 @@ top::ParameterDecl ::= storage::[StorageClass]  bty::BaseTypeExpr  mty::TypeModi
 
 synthesized attribute refId :: String; -- TODO move this later?
 
-nonterminal StructDecl with location, pp, maybename, errors, globalDecls, defs, env, tagEnv, refId, returnType, freeVariables;
+nonterminal StructDecl with location, pp, host<StructDecl>, maybename, errors, globalDecls, defs, env, tagEnv, refId, returnType, freeVariables;
 
 abstract production structDecl
 top::StructDecl ::= attrs::[Attribute]  name::MaybeName  dcls::StructItemList
 {
+  propagate host;
   top.maybename = name.maybename;
   top.pp = concat([text("struct "), ppAttributes(attrs, top.env), name.pp,
     -- DEBUGGING
@@ -504,11 +525,12 @@ Maybe<String> ::= attrs::[Attrib]
     end;
 }
 
-nonterminal UnionDecl with location, pp, maybename, errors, globalDecls, defs, env, tagEnv, refId, returnType, freeVariables;
+nonterminal UnionDecl with location, pp, host<UnionDecl>, maybename, errors, globalDecls, defs, env, tagEnv, refId, returnType, freeVariables;
 
 abstract production unionDecl
 top::UnionDecl ::= attrs::[Attribute]  name::MaybeName  dcls::StructItemList
 {
+  propagate host;
   top.maybename = name.maybename;
   top.pp = concat([text("union "), ppAttributes(attrs, top.env), name.pp, 
     -- DEBUGGING
@@ -542,11 +564,12 @@ top::UnionDecl ::= attrs::[Attribute]  name::MaybeName  dcls::StructItemList
     else [err(top.location, "Redeclaration of union " ++ name.maybename.fromJust.name)];
 }
 
-nonterminal EnumDecl with location, pp, maybename, errors, globalDecls, defs, env, returnType, freeVariables;
+nonterminal EnumDecl with location, pp, host<EnumDecl>, maybename, errors, globalDecls, defs, env, returnType, freeVariables;
 
 abstract production enumDecl
 top::EnumDecl ::= name::MaybeName  dcls::EnumItemList
 {
+  propagate host;
   top.maybename = name.maybename;
   top.pp = concat([text("enum"), space(), name.pp, space(), text("{"),
     nestlines(2, ppImplode(cat(comma(),line()), dcls.pps)),
@@ -573,11 +596,12 @@ top::EnumDecl ::= name::MaybeName  dcls::EnumItemList
 }
 
 
-nonterminal StructItemList with pps, errors, globalDecls, defs, env, localdefs, returnType, freeVariables;
+nonterminal StructItemList with pps, host<StructItemList>, errors, globalDecls, defs, env, localdefs, returnType, freeVariables;
 
 abstract production consStructItem
 top::StructItemList ::= h::StructItem  t::StructItemList
 {
+  propagate host;
   top.pps = h.pp :: t.pps;
   top.errors := h.errors ++ t.errors;
   top.globalDecls := h.globalDecls ++ t.globalDecls;
@@ -593,6 +617,7 @@ top::StructItemList ::= h::StructItem  t::StructItemList
 abstract production nilStructItem
 top::StructItemList ::=
 {
+  propagate host;
   top.pps = [];
   top.errors := [];
   top.globalDecls := [];
@@ -601,13 +626,14 @@ top::StructItemList ::=
   top.localdefs = [];
 }
 
-nonterminal EnumItemList with pps, errors, globalDecls, defs, env, containingEnum, returnType, freeVariables;
+nonterminal EnumItemList with pps, host<EnumItemList>, errors, globalDecls, defs, env, containingEnum, returnType, freeVariables;
 
 autocopy attribute containingEnum :: Type;
 
 abstract production consEnumItem
 top::EnumItemList ::= h::EnumItem  t::EnumItemList
 {
+  propagate host;
   top.pps = h.pp :: t.pps;
   top.errors := h.errors ++ t.errors;
   top.globalDecls := h.globalDecls ++ t.globalDecls;
@@ -622,6 +648,7 @@ top::EnumItemList ::= h::EnumItem  t::EnumItemList
 abstract production nilEnumItem
 top::EnumItemList ::=
 {
+  propagate host;
   top.pps = [];
   top.errors := [];
   top.globalDecls := [];
@@ -629,11 +656,12 @@ top::EnumItemList ::=
   top.freeVariables = [];
 }
 
-nonterminal StructItem with pp, errors, globalDecls, defs, env, localdefs, returnType, freeVariables;
+nonterminal StructItem with pp, host<StructItem>, errors, globalDecls, defs, env, localdefs, returnType, freeVariables;
 
 abstract production structItem
 top::StructItem ::= attrs::[Attribute]  ty::BaseTypeExpr  dcls::StructDeclarators
 {
+  propagate host;
   top.pp = concat([ppAttributes(attrs, top.env), ty.pp, space(), ppImplode(text(", "), dcls.pps)]);
   top.errors := ty.errors ++ dcls.errors;
   top.globalDecls := ty.globalDecls ++ dcls.globalDecls;
@@ -647,6 +675,7 @@ top::StructItem ::= attrs::[Attribute]  ty::BaseTypeExpr  dcls::StructDeclarator
 abstract production warnStructItem
 top::StructItem ::= msg::[Message]
 {
+  propagate host;
   top.pp = notext();
   top.errors := msg;
   top.globalDecls := [];
@@ -656,11 +685,12 @@ top::StructItem ::= msg::[Message]
 }
 
 
-nonterminal StructDeclarators with pps, errors, globalDecls, localdefs, env, baseType, givenAttributes, returnType, freeVariables;
+nonterminal StructDeclarators with pps, host<StructDeclarators>, errors, globalDecls, localdefs, env, baseType, givenAttributes, returnType, freeVariables;
 
 abstract production consStructDeclarator
 top::StructDeclarators ::= h::StructDeclarator  t::StructDeclarators
 {
+  propagate host;
   top.pps = h.pps ++ t.pps;
   top.errors := h.errors ++ t.errors;
   top.globalDecls := h.globalDecls ++ t.globalDecls;
@@ -674,6 +704,7 @@ top::StructDeclarators ::= h::StructDeclarator  t::StructDeclarators
 abstract production nilStructDeclarator
 top::StructDeclarators ::=
 {
+  propagate host;
   top.pps = [];
   top.errors := [];
   top.globalDecls := [];
@@ -681,11 +712,12 @@ top::StructDeclarators ::=
   top.freeVariables = [];
 }
 
-nonterminal StructDeclarator with pps, errors, globalDecls, localdefs, env, typerep, sourceLocation, baseType, givenAttributes, returnType, freeVariables;
+nonterminal StructDeclarator with pps, host<StructDeclarator>, errors, globalDecls, localdefs, env, typerep, sourceLocation, baseType, givenAttributes, returnType, freeVariables;
 
 abstract production structField
 top::StructDeclarator ::= name::Name  ty::TypeModifierExpr  attrs::[Attribute]
 {
+  propagate host;
   top.pps = [concat([ty.lpp, name.pp, ty.rpp, ppAttributesRHS(attrs, top.env)])];
   top.errors := ty.errors;
   top.globalDecls := ty.globalDecls;
@@ -702,6 +734,7 @@ top::StructDeclarator ::= name::Name  ty::TypeModifierExpr  attrs::[Attribute]
 abstract production structBitfield
 top::StructDeclarator ::= name::MaybeName  ty::TypeModifierExpr  e::Expr  attrs::[Attribute]
 {
+  propagate host;
   top.pps = [concat([ty.lpp, name.pp, ty.rpp, text(" : "), e.pp, ppAttributesRHS(attrs, top.env)])];
   top.errors := ty.errors ++ e.errors;
   top.globalDecls := ty.globalDecls ++ e.globalDecls;
@@ -729,6 +762,7 @@ top::StructDeclarator ::= name::MaybeName  ty::TypeModifierExpr  e::Expr  attrs:
 abstract production warnStructField
 top::StructDeclarator ::= msg::[Message]
 {
+  propagate host;
   top.pps = [];
   top.errors := msg;
   top.globalDecls := [];
@@ -738,11 +772,12 @@ top::StructDeclarator ::= msg::[Message]
   top.sourceLocation = loc("nowhere", -1, -1, -1, -1, -1, -1); -- TODO fix this? add locaiton maybe?
 }
 
-nonterminal EnumItem with pp, errors, globalDecls, defs, env, containingEnum, typerep, sourceLocation, returnType, freeVariables;
+nonterminal EnumItem with pp, host<EnumItem>, errors, globalDecls, defs, env, containingEnum, typerep, sourceLocation, returnType, freeVariables;
 
 abstract production enumItem
 top::EnumItem ::= name::Name  e::MaybeExpr
 {
+  propagate host;
   top.pp = concat([name.pp] ++ if e.isJust then [text(" = "), e.pp] else []);
   top.errors := e.errors;
   top.globalDecls := e.globalDecls;

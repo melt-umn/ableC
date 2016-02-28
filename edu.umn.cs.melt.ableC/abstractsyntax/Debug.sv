@@ -14,6 +14,7 @@ import silver:util:raw:treemap as tm;
 abstract production txtExpr
 e::Expr ::= txt::String
 {
+  propagate host;
   e.pp = text(txt);
   e.errors := [];
   e.globalDecls := [];
@@ -24,6 +25,7 @@ e::Expr ::= txt::String
 abstract production txtStmt
 s::Stmt ::= txt::String
 {
+  propagate host;
   s.pp = text(txt);
   s.errors := [];
   s.globalDecls := [];
@@ -35,6 +37,7 @@ s::Stmt ::= txt::String
 abstract production txtDecl
 d::Decl ::= txt::String
 {
+  propagate host;
   d.pp = text(txt);
   d.errors := [ ];
   d.globalDecls := [];

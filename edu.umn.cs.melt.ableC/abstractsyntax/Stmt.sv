@@ -1,12 +1,13 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax;
 
-nonterminal Stmt with pp, errors, globalDecls, defs, env, functiondefs, returnType, freeVariables;
+nonterminal Stmt with pp, host<Stmt>, errors, globalDecls, defs, env, functiondefs, returnType, freeVariables;
 
 autocopy attribute returnType :: Maybe<Type>;
 
 abstract production nullStmt
 top::Stmt ::=
 {
+  propagate host;
   top.pp = notext();
   top.errors := [];
   top.globalDecls := [];
@@ -18,6 +19,7 @@ top::Stmt ::=
 abstract production seqStmt
 top::Stmt ::= h::Stmt  t::Stmt
 {
+  propagate host;
   top.pp = concat([ h.pp, line(), t.pp ]);
   top.errors := h.errors ++ t.errors;
   top.globalDecls := h.globalDecls ++ t.globalDecls;
@@ -33,6 +35,7 @@ top::Stmt ::= h::Stmt  t::Stmt
 abstract production compoundStmt
 top::Stmt ::= s::Stmt
 {
+  propagate host;
   top.pp = braces(nestlines(2, s.pp));
   top.errors := s.errors;
   top.globalDecls := s.globalDecls;
@@ -47,6 +50,7 @@ top::Stmt ::= s::Stmt
 abstract production warnStmt
 top::Stmt ::= msg::[Message]
 {
+  propagate host;
   top.pp = text("/*err*/");
   top.errors := msg;
   top.globalDecls := [];
@@ -58,6 +62,7 @@ top::Stmt ::= msg::[Message]
 abstract production declStmt
 top::Stmt ::= d::Decl
 {
+  propagate host;
   top.pp = cat( d.pp, semi() );
   top.errors := d.errors;
   top.globalDecls := d.globalDecls;
@@ -89,6 +94,7 @@ top::Stmt ::= t::Type n::Name init::Expr
 abstract production exprStmt
 top::Stmt ::= d::Expr
 {
+  propagate host;
   top.pp = cat( d.pp, semi() );
   top.errors := d.errors;
   top.globalDecls := d.globalDecls;
@@ -100,6 +106,7 @@ top::Stmt ::= d::Expr
 abstract production ifStmt
 top::Stmt ::= c::Expr  t::Stmt  e::Stmt
 {
+  propagate host;
   top.pp = concat([
     text("if"), space(), parens(c.pp), line(),
     braces(nestlines(2, t.pp)) ] ++
@@ -134,6 +141,7 @@ top::Stmt ::= c::Expr  t::Stmt  e::Stmt
 abstract production whileStmt
 top::Stmt ::= e::Expr  b::Stmt
 {
+  propagate host;
   top.pp = concat([ text("while"), space(), parens(e.pp), line(), 
                     braces(nestlines(2, b.pp)) ]);
   top.errors := e.errors ++ b.errors;
@@ -159,6 +167,7 @@ top::Stmt ::= e::Expr  b::Stmt
 abstract production doStmt
 top::Stmt ::= b::Stmt  e::Expr
 {
+  propagate host;
   top.pp = concat([ text("do"),  line(), 
                     braces(nestlines(2,b.pp)), line(), 
                     text("while"), space(), parens(e.pp), semi()]);
@@ -185,6 +194,7 @@ top::Stmt ::= b::Stmt  e::Expr
 abstract production forStmt
 top::Stmt ::= i::MaybeExpr  c::MaybeExpr  s::MaybeExpr  b::Stmt
 {
+  propagate host;
   top.pp = 
     concat([text("for"), parens(concat([i.pp, semi(), space(), c.pp, semi(), space(), s.pp])), line(),
       braces(nestlines(2, b.pp)) ]);
@@ -216,6 +226,7 @@ top::Stmt ::= i::MaybeExpr  c::MaybeExpr  s::MaybeExpr  b::Stmt
 abstract production forDeclStmt
 top::Stmt ::= i::Decl  c::MaybeExpr  s::MaybeExpr  b::Stmt
 {
+  propagate host;
   top.pp = concat([ text("for"), space(), parens( concat([ i.pp, space(), c.pp, semi(), space(), s.pp]) ), 
                     line(), braces(nestlines(2, b.pp)) ]);
   top.errors := i.errors ++ c.errors ++ s.errors ++ b.errors;
@@ -247,6 +258,7 @@ top::Stmt ::= i::Decl  c::MaybeExpr  s::MaybeExpr  b::Stmt
 abstract production returnStmt
 top::Stmt ::= e::MaybeExpr
 {
+  propagate host;
   top.pp = concat([text("return"), space(), e.pp, semi()]);
   top.errors := case top.returnType, e.maybeTyperep of
                   nothing(), nothing() -> []
@@ -268,6 +280,7 @@ top::Stmt ::= e::MaybeExpr
 abstract production switchStmt
 top::Stmt ::= e::Expr  b::Stmt
 {
+  propagate host;
   top.pp = concat([ text("switch"), space(), parens(e.pp),  line(), 
                     braces(nestlines(2, b.pp)) ]);
   top.errors := e.errors ++ b.errors;
@@ -293,6 +306,7 @@ top::Stmt ::= e::Expr  b::Stmt
 abstract production gotoStmt
 top::Stmt ::= l::Name
 {
+  propagate host;
   top.pp = concat([ text("goto"), space(), l.pp, semi() ]);
   top.errors := [];
   top.globalDecls := [];
@@ -306,6 +320,7 @@ top::Stmt ::= l::Name
 abstract production continueStmt
 top::Stmt ::=
 {
+  propagate host;
   top.pp = cat( text("continue"), semi() );
   top.errors := [];
   top.globalDecls := [];
@@ -317,6 +332,7 @@ top::Stmt ::=
 abstract production breakStmt
 top::Stmt ::=
 {
+  propagate host;
   top.pp = concat([ text("break"), semi()  ]);
   top.errors := [];
   top.globalDecls := [];
@@ -328,6 +344,7 @@ top::Stmt ::=
 abstract production labelStmt
 top::Stmt ::= l::Name  s::Stmt
 {
+  propagate host;
   top.pp = concat([ l.pp, text(":"), space(), s.pp]);
   top.errors := s.errors;
   top.globalDecls := s.globalDecls;
@@ -341,6 +358,7 @@ top::Stmt ::= l::Name  s::Stmt
 abstract production caseLabelStmt
 top::Stmt ::= v::Expr  s::Stmt
 {
+  propagate host;
   top.pp = concat([text("case"), space(), v.pp, text(":"), nestlines(2,s.pp)]); 
   top.errors := v.errors ++ s.errors;
   top.globalDecls := v.globalDecls ++ s.globalDecls;
@@ -356,6 +374,7 @@ top::Stmt ::= v::Expr  s::Stmt
 abstract production defaultLabelStmt
 top::Stmt ::= s::Stmt
 {
+  propagate host;
   top.pp = concat([ text("default"), text(":"), nestlines(2,s.pp)]);
   top.errors := s.errors;
   top.globalDecls := s.globalDecls;
@@ -368,6 +387,7 @@ top::Stmt ::= s::Stmt
 abstract production functionDeclStmt
 top::Stmt ::= d::FunctionDecl
 {
+  propagate host;
   top.pp = d.pp;
   top.errors := d.errors;
   top.globalDecls := d.globalDecls;
@@ -380,6 +400,7 @@ top::Stmt ::= d::FunctionDecl
 abstract production caseLabelRangeStmt
 top::Stmt ::= l::Expr  u::Expr  s::Stmt
 {
+  propagate host;
   top.pp = concat([text("case"), space(), l.pp, text("..."), u.pp, text(":"), space(),s.pp]); 
   top.errors := l.errors ++ u.errors ++ s.errors;
   top.globalDecls := l.globalDecls ++ u.globalDecls ++ s.globalDecls;
@@ -391,6 +412,7 @@ top::Stmt ::= l::Expr  u::Expr  s::Stmt
 abstract production asmStmt
 top::Stmt ::= asm::AsmStatement
 {
+  propagate host;
   top.pp = asm.pp;
   top.errors := [];
   top.globalDecls := [];

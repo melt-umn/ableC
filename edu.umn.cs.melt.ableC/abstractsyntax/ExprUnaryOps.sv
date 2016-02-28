@@ -1,5 +1,5 @@
 
-nonterminal UnaryOp with location, op, opName, pp, preExpr, noLvalueConversion, typerep, errors;
+nonterminal UnaryOp with location, op, opName, pp, host<UnaryOp>, preExpr, noLvalueConversion, typerep, errors;
 
 autocopy attribute op :: Decorated Expr;
 synthesized attribute opName :: String;
@@ -21,6 +21,7 @@ abstract production preIncOp
 top::UnaryOp ::=
 {
   top.opName = "pre++";
+  propagate host;
   top.pp = text("++");
   top.preExpr = true;
   top.noLvalueConversion = false;
@@ -30,6 +31,7 @@ abstract production preDecOp
 top::UnaryOp ::= 
 {
   top.opName = "pre--";
+  propagate host;
   top.pp = text("--");
   top.preExpr = true;
   top.noLvalueConversion = true;
@@ -39,6 +41,7 @@ abstract production postIncOp
 top::UnaryOp ::= 
 {
   top.opName = "post++";
+  propagate host;
   top.pp = text("++");
   top.preExpr = false;
   top.noLvalueConversion = true;
@@ -48,6 +51,7 @@ abstract production postDecOp
 top::UnaryOp ::= 
 {
   top.opName = "post--";
+  propagate host;
   top.pp = text("--");
   top.preExpr = false;
   top.noLvalueConversion = true;
@@ -56,6 +60,7 @@ top::UnaryOp ::=
 abstract production addressOfOp
 top::UnaryOp ::=
 {
+  propagate host;
   top.pp = text("&");
   top.preExpr = true;
   top.noLvalueConversion = true;
@@ -64,6 +69,7 @@ top::UnaryOp ::=
 abstract production dereferenceOp
 top::UnaryOp ::=
 {
+  propagate host;
   top.pp = text("*");
   top.preExpr = true;
   top.noLvalueConversion = false;
@@ -76,6 +82,7 @@ top::UnaryOp ::=
 abstract production positiveOp
 top::UnaryOp ::=
 {
+  propagate host;
   top.pp = text("+");
   top.preExpr = true;
   top.noLvalueConversion = false;
@@ -84,6 +91,7 @@ top::UnaryOp ::=
 abstract production negativeOp
 top::UnaryOp ::=
 {
+  propagate host;
   top.pp = text("-");
   top.preExpr = true;
   top.noLvalueConversion = false;
@@ -92,6 +100,7 @@ top::UnaryOp ::=
 abstract production bitNegateOp
 top::UnaryOp ::=
 {
+  propagate host;
   top.pp = text("~");
   top.preExpr = true;
   top.noLvalueConversion = false;
@@ -100,6 +109,7 @@ top::UnaryOp ::=
 abstract production notOp
 top::UnaryOp ::=
 {
+  propagate host;
   top.pp = text("!");
   top.preExpr = true;
   top.noLvalueConversion = false;
@@ -109,6 +119,7 @@ top::UnaryOp ::=
 abstract production warnNoOp
 top::UnaryOp ::= msg::[Message]
 {
+  propagate host;
   top.pp = text("");
   top.preExpr = true;
   top.noLvalueConversion = false;
@@ -119,6 +130,7 @@ top::UnaryOp ::= msg::[Message]
 abstract production realOp
 top::UnaryOp ::=
 {
+  propagate host;
   top.pp = text("__real__");
   top.preExpr = true;
   top.noLvalueConversion = false;
@@ -128,6 +140,7 @@ top::UnaryOp ::=
 abstract production imagOp
 top::UnaryOp ::=
 {
+  propagate host;
   top.pp = text("__imag__");
   top.preExpr = true;
   top.noLvalueConversion = false;
@@ -136,7 +149,7 @@ top::UnaryOp ::=
 
 autocopy attribute typeop :: Type;
 
-nonterminal UnaryTypeOp with location, typeop, pp, errors;
+nonterminal UnaryTypeOp with location, typeop, pp, host<UnaryTypeOp>, errors;
 
 aspect default production
 top::UnaryTypeOp ::=
@@ -147,6 +160,7 @@ top::UnaryTypeOp ::=
 abstract production sizeofOp
 top::UnaryTypeOp ::=
 {
+  propagate host;
   top.pp = text("sizeof");
 }
 
@@ -154,6 +168,7 @@ top::UnaryTypeOp ::=
 abstract production alignofOp
 top::UnaryTypeOp ::=
 {
+  propagate host;
   top.pp = text("_Alignof");
 }
 

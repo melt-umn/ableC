@@ -8,7 +8,12 @@ nonterminal Root with pp, errors, env;
 abstract production root
 top::Root ::= d::Decls
 {
-  top.pp = terminate(line(), d.pps);
+  local hostTrans::Decls = d.host;
+  hostTrans.env = d.env;
+  hostTrans.isTopLevel = d.isTopLevel;
+  hostTrans.returnType = d.returnType;
+  
+  top.pp = terminate(line(), hostTrans.pps);
   top.errors := if null(d.globalDecls) then d.errors else error("Found globalDecls at root");
 --  d.env = addEnv(builtinfunctions:initialEnv;
   d.env = addEnv(builtinfunctions:getInitialEnvDefs(), top.env);

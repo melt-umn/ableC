@@ -7,7 +7,7 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax;
  - Variants: builtin, pointer, array, function, tagged, noncanonical.
  - Noncanonical forwards, and so doesn't need any attributes, etc attached to it.
  -}
-nonterminal Type with lpp, rpp, integerPromotions, defaultArgumentPromotions, defaultLvalueConversion, defaultFunctionArrayLvalueConversion, isIntegerType, isScalarType, isArithmeticType, withoutTypeQualifiers, withTypeQualifiers, addedTypeQualifiers;
+nonterminal Type with lpp, rpp, host<Type>, integerPromotions, defaultArgumentPromotions, defaultLvalueConversion, defaultFunctionArrayLvalueConversion, isIntegerType, isScalarType, isArithmeticType, withoutTypeQualifiers, withTypeQualifiers, addedTypeQualifiers;
 
 -- char -> int and stuff in operations
 synthesized attribute integerPromotions :: Type;
@@ -44,6 +44,7 @@ top::Type ::=
 abstract production errorType
 top::Type ::=
 {
+  propagate host;
   top.lpp = text("/*err*/");
   top.rpp = text("");
   top.integerPromotions = top;
@@ -67,6 +68,7 @@ top::Type ::=
 abstract production builtinType
 top::Type ::= q::[Qualifier]  bt::BuiltinType
 {
+  propagate host;
   top.lpp =
     concat([terminate(space(), map((.pp), q)),
             bt.pp]);
@@ -91,6 +93,7 @@ top::Type ::= q::[Qualifier]  bt::BuiltinType
 abstract production pointerType
 top::Type ::= q::[Qualifier]  target::Type
 {
+  propagate host;
   top.lpp = concat([ target.lpp, space(), ppImplode( space(), map( (.pp), q ) ),
                      text("*") ]);
   top.rpp = target.rpp;
@@ -128,6 +131,7 @@ top::Type ::= q::[Qualifier]  target::Type
 abstract production arrayType
 top::Type ::= element::Type  indexQualifiers::[Qualifier]  sizeModifier::ArraySizeModifier  sub::ArrayType
 {
+  propagate host;
   top.lpp = element.lpp;
   
   top.rpp = cat(brackets(concat([
@@ -145,22 +149,25 @@ top::Type ::= element::Type  indexQualifiers::[Qualifier]  sizeModifier::ArraySi
 }
 
 {-- The subtypes of arrays -}
-nonterminal ArrayType with pp;
+nonterminal ArrayType with pp, host<ArrayType>;
 
 abstract production constantArrayType
 top::ArrayType ::= size::Integer
 {
+  propagate host;
   top.pp = text(toString(size));
   -- TODO: include the Decorated Expr here too maybe?
 }
 abstract production incompleteArrayType
 top::ArrayType ::=
 {
+  propagate host;
   top.pp = notext();
 }
 abstract production variableArrayType
 top::ArrayType ::= size::Decorated Expr
 {
+  propagate host;
   top.pp = size.pp;
 }
 
@@ -185,6 +192,7 @@ top::ArraySizeModifier ::= { top.pps = [text("*")]; }
 abstract production functionType
 top::Type ::= result::Type  sub::FunctionType
 {
+  propagate host;
   --TODO should this space be here? also TODO: ordering? result lpp before sub.lpp maybe? TODO: actually sub.lpp is always nothing. FIXME
   top.lpp = concat([ sub.lpp, space(), result.lpp ]);
   top.rpp = cat(sub.rpp, result.rpp);
@@ -197,12 +205,13 @@ top::Type ::= result::Type  sub::FunctionType
 }
 
 {-- The subtypes of functions -}
-nonterminal FunctionType with lpp, rpp;
+nonterminal FunctionType with lpp, rpp, host<FunctionType>;
 -- clang has an 'extinfo' structure with calling convention, noreturn, 'produces'?, regparam
 
 abstract production protoFunctionType
 top::FunctionType ::= args::[Type]  variadic::Boolean
 {
+  propagate host;
   top.lpp = notext();
   top.rpp = parens(
     if null(args) then
@@ -219,6 +228,7 @@ top::FunctionType ::= args::[Type]  variadic::Boolean
 abstract production noProtoFunctionType
 top::FunctionType ::=
 {
+  propagate host;
   top.lpp = notext();
   top.rpp = text("()");
 }
@@ -230,6 +240,7 @@ top::FunctionType ::=
 abstract production tagType
 top::Type ::= q::[Qualifier]  sub::TagType
 {
+  propagate host;
   top.lpp = concat([ terminate( space(), map( (.pp), q ) ), sub.pp ]);
   top.rpp = notext();
   top.integerPromotions = top;
@@ -245,11 +256,12 @@ top::Type ::= q::[Qualifier]  sub::TagType
 }
 
 {-- Structs, unions and enums -}
-nonterminal TagType with pp, isIntegerType;
+nonterminal TagType with pp, host<TagType>, isIntegerType;
 
 abstract production enumTagType
 top::TagType ::= ref::Decorated EnumDecl
 {
+  propagate host;
   top.pp =
     case ref.maybename of
     | just(n) -> cat(text("enum "), n.pp)
@@ -266,6 +278,7 @@ top::TagType ::= ref::Decorated EnumDecl
 abstract production refIdTagType
 top::TagType ::= kwd::StructOrEnumOrUnion  name::String  refId::String
 {
+  propagate host;
   top.pp = concat([kwd.pp, space(), text(name)]);
   top.isIntegerType = false;
 }
@@ -285,6 +298,7 @@ top::StructOrEnumOrUnion ::= { top.pp = text("enum"); }
 abstract production atomicType
 top::Type ::= q::[Qualifier]  bt::Type
 {
+  propagate host;
   top.lpp = concat([ ppImplode( space(), map( (.pp), q)), space(),
                      text("_Atomic"), parens(cat(bt.lpp, bt.rpp))]);
   top.rpp = notext();
@@ -303,6 +317,7 @@ top::Type ::= q::[Qualifier]  bt::Type
 abstract production vectorType
 top::Type ::= bt::Type  bytes::Integer
 {
+  propagate host;
   top.lpp = concat([ text("__attribute__((__vector_size__(" ++ toString(bytes) ++ "))) "), bt.lpp]);
   top.rpp = bt.rpp;
   -- You know, who knows what these rules are: TODO
@@ -323,6 +338,7 @@ top::Type ::= bt::Type  bytes::Integer
 abstract production noncanonicalType
 top::Type ::= sub::NoncanonicalType
 {
+  propagate host;
   top.lpp = sub.lpp;
   top.rpp = sub.rpp;
 
@@ -337,7 +353,7 @@ top::Type ::= sub::NoncanonicalType
 }
 
 {-- Types that resolve to other types. -}
-nonterminal NoncanonicalType with canonicalType, lpp, rpp;
+nonterminal NoncanonicalType with canonicalType, lpp, rpp, host<NoncanonicalType>;
 
 synthesized attribute canonicalType :: Type;
 
@@ -357,6 +373,7 @@ synthesized attribute canonicalType :: Type;
 abstract production parenType
 top::NoncanonicalType ::= wrapped::Type
 {
+  propagate host;
   top.lpp = concat([ wrapped.lpp, space(), text("(") ]);
   top.rpp = cat( text(")"), wrapped.rpp );
 
@@ -382,6 +399,7 @@ top::NoncanonicalType ::= wrapped::Type
 abstract production decayedType
 top::NoncanonicalType ::= original::Type  pointer::Type
 {
+  propagate host;
   top.lpp = original.lpp;
   top.rpp = original.rpp;
 
@@ -400,6 +418,7 @@ top::NoncanonicalType ::= original::Type  pointer::Type
 abstract production typedefType
 top::NoncanonicalType ::= q::[Qualifier]  name::String  resolved::Type
 {
+  propagate host;
   top.lpp = concat([ terminate( space(), map( (.pp), q ) ), text(name) ]);
   top.rpp = notext();
 
@@ -410,6 +429,7 @@ top::NoncanonicalType ::= q::[Qualifier]  name::String  resolved::Type
 abstract production typeofType
 top::NoncanonicalType ::= q::[Qualifier]  resolved::Type
 {
+  propagate host;
   top.canonicalType = resolved;-- todo: some sort of discipline of what to do with qualifiers here
   top.lpp = concat([text("__typeof__"), parens(cat(resolved.lpp, resolved.rpp))]);
   top.rpp = notext();
