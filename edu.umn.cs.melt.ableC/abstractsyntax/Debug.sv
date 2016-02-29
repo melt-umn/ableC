@@ -66,6 +66,7 @@ e::Expr ::=
   e.errors := [];
   e.globalDecls := [];
   e.defs = [];
+  e.pp = comment("printEnv pp should be demanded through host pp", location=e.location).pp;
   forwards to comment( show(80,showEnv(e.env)), location=e.location );
 }
 
