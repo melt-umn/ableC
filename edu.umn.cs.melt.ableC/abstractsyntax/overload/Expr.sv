@@ -7,7 +7,12 @@ top::Expr ::= op::UnaryOp  e::Expr
   top.defs = e.defs;
   top.freeVariables = e.freeVariables;
   
-  forwards to getUnaryOverload(op, e.typerep)(e, top.location);
+  op.op = e;
+  
+  forwards to
+    if op.unaryProd.isJust
+    then op.unaryProd.fromJust(e, top.location)
+    else unaryOpExprDefault(op, e, location=top.location);
 }
 abstract production arraySubscriptExpr
 top::Expr ::= lhs::Expr  rhs::Expr
@@ -53,26 +58,11 @@ top::Expr ::= lhs::Expr  op::BinOp  rhs::Expr
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   
   rhs.env = addEnv(lhs.defs, lhs.env);
-  
-  local lType::Type = 
-    case lhs of 
-      arraySubscriptExpr(l, r) -> l.typerep
-    | _ -> error("shouldn't happen")
-    end;
-  lType.otherType = 
-    case lhs of 
-      arraySubscriptExpr(l, r) -> r.typerep
-    | _ -> error("shouldn't happen")
-    end;
-  lType.otherType2 = rhs.typerep;
+  op.lop = lhs;
+  op.rop = rhs;
   
   forwards to
-    case lhs, op of -- TODO, it seems like this check belongs somewhere else
-      arraySubscriptExpr(l, r), assignOp(ao) ->
-        case lType.subscriptAssignProd of
-          just(p) -> p(l, r, ao, rhs, top.location)
-        | nothing() -> getBinaryOverload(top.env, top.returnType, lhs.typerep, op, rhs.typerep)(lhs, rhs, top.location)
-        end
-    | _, _ -> getBinaryOverload(top.env, top.returnType, lhs.typerep, op, rhs.typerep)(lhs, rhs, top.location)
-    end;
+    if op.binaryProd.isJust
+    then op.binaryProd.fromJust(lhs, rhs, top.location)
+    else binaryOpExprDefault(lhs, op, rhs, location=top.location);
 }
