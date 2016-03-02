@@ -430,6 +430,8 @@ top::Stmt ::=
 {
   -- Not allowed to need env.
   top.functiondefs = [];
+  -- pp doesn't depend on env
+  top.pp = text("hack");
   
   -- No pp equation: make that need env too (via forwarding)
   -- Forwarding based on env.

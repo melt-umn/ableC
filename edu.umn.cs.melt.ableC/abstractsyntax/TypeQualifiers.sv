@@ -71,9 +71,3 @@ top::SpecialSpecifier ::= e::Expr
   top.pp = concat([text("_Alignas"), parens(e.pp)]);
 --  top.errors := e.errors;
 }
-
-function ppSpecial
-Document ::= s::SpecialSpecifier  e::Decorated Env
-{
-  return decorate s with { env = e; } . pp;
-}

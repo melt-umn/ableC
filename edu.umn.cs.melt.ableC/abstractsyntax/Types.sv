@@ -449,7 +449,8 @@ top::NoncanonicalType ::= q::[Qualifier]  resolved::Type
 abstract production hackUnusedType
 top::BaseTypeExpr ::=
 {
-  -- No pp equation: make that need env too (via forwarding)
+  -- pp doesn't depend on env
+  top.pp = text("hack");
   -- Forwarding based on env.
   forwards to if false then error(hackUnparse(top.env)) else hackUnusedType();
 }

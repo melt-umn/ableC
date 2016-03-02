@@ -18,9 +18,9 @@ concrete productions top::Attributes_c
 closed nonterminal Attribute_c with location, ast<ast:Attribute>;
 concrete productions top::Attribute_c
 | '__attribute__' '(' '(' a::AttributeList_c ')' ')'
-    { top.ast = ast:gccAttribute(a.ast); }
+    { top.ast = ast:gccAttribute(foldr(ast:consAttrib, ast:nilAttrib(), a.ast)); }
 | '__attribute' '(' '(' a::AttributeList_c ')' ')'
-    { top.ast = ast:gccAttribute(a.ast); }
+    { top.ast = ast:gccAttribute(foldr(ast:consAttrib, ast:nilAttrib(), a.ast)); }
 
 closed nonterminal AttributeList_c with location, ast<[ast:Attrib]>;
 concrete productions top::AttributeList_c

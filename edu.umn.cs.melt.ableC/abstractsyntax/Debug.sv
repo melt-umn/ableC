@@ -59,7 +59,7 @@ d::Decl ::= txt::String
 
    ------------------------------------------------------------
  -}
-
+{- Seems to be causing flow dep issues?
 abstract production printEnv
 e::Expr ::=
 {
@@ -69,7 +69,7 @@ e::Expr ::=
   e.pp = comment("printEnv pp should be demanded through host pp", location=e.location).pp;
   forwards to comment( show(80,showEnv(e.env)), location=e.location );
 }
-
+-}
 
 
 function showEnv

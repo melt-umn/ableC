@@ -4,26 +4,27 @@
 
 -- Currently, this does nothing except spot vector __vector_size__(8) annotations
 function animateAttributeOnType
-Type ::= attr::[Attribute]  ty::Type  env::Decorated Env
+Type ::= attr::[Attribute]  ty::Type
 {
   return if null(attr) then ty
-  else case decorate head(attr) with {env = env;} of
-  | gccAttribute(l) -> animateAttributeOnType(tail(attr), animateAttribOnType(l, ty, env), env)
-  | _ -> animateAttributeOnType(tail(attr), ty, env)
+  else case head(attr) of
+  | gccAttribute(l) -> animateAttributeOnType(tail(attr), animateAttribOnType(l, ty))
+  | _ -> animateAttributeOnType(tail(attr), ty)
   end;
 }
 
 
 function animateAttribOnType
-Type ::= attr::[Attrib]  ty::Type  env::Decorated Env
+Type ::= attr::Attribs  ty::Type
 {
-  return if null(attr) then ty
-  else case decorate head(attr) with {env = env;} of
+  return case attr of
+    nilAttrib() -> ty
   -- __vector_size__(num)
-  | appliedAttrib(attribName(name("__vector_size__")), 
-      consExpr(realConstant(integerConstant(num, _, _)), nilExpr())) ->
-        vectorType(ty, toInt(num))
-  | _ -> animateAttribOnType(tail(attr), ty, env)
+  | consAttrib(
+      appliedAttrib(attribName(name("__vector_size__")), 
+        consExpr(realConstant(integerConstant(num, _, _)), nilExpr())),
+      _) -> vectorType(ty, toInt(num))
+  | consAttrib(_, t) -> animateAttribOnType(t, ty)
   end;
 }
 

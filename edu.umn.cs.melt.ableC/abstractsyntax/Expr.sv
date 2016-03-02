@@ -425,8 +425,8 @@ top::Expr ::= s::String
 abstract production hackUnused
 top::Expr ::=
 {
-  -- No pp equation: make that need env too (via forwarding)
-  --top.pp = text("hack");
+  -- pp doesn't depend on env
+  top.pp = text("hack");
   -- Forwarding based on env.
   forwards to if false then error(hackUnparse(top.env)) else hackUnused(location=top.location);
 }
