@@ -17,9 +17,10 @@ autocopy attribute isTopLevel :: Boolean;
 abstract production consGlobalDecl
 top::Decls ::= h::Decl  t::Decls
 {
-  -- TODO: should this propagate host?
   local globalDecls::[Decl] = removeDuplicateGlobalDecls(h.globalDecls); 
   top.globalDecls := [];
+  
+  top.pps = h.pp :: t.pps;
   
   forwards to 
     if null(globalDecls)
