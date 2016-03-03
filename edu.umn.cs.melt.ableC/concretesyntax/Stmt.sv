@@ -82,7 +82,7 @@ concrete productions top::ExprStmt_c
 closed nonterminal SelectionStmt_c with location, ast<ast:Stmt>;
 concrete productions top::SelectionStmt_c
 | 'if' '(' cond::Expr_c ')' tc::Stmt_c
-    { top.ast = ast:ifStmt(cond.ast, tc.ast, ast:nullStmt()); }
+    { top.ast = ast:ifStmtNoElse(cond.ast, tc.ast); }
 | 'if' '(' cond::Expr_c ')' tc::Stmt_c 'else' ec::Stmt_c 
     { top.ast = ast:ifStmt(cond.ast, tc.ast, ec.ast); }
 | 'switch' '(' cond::Expr_c ')' body::Stmt_c

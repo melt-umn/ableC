@@ -401,7 +401,7 @@ concrete productions top::PostfixExpr_c
     { top.ast = e.ast;
       top.directName = e.directName; }
 | e::PostfixExpr_c '[' index::Expr_c ']'
-    { top.ast = ast:arraySubscriptExpr(e.ast, index.ast, location=top.location); }
+    { top.ast = ovrld:arraySubscriptExpr(e.ast, index.ast, location=top.location); }
 | e::PostfixExpr_c '(' args::ArgumentExprList_c ')'
     { top.ast = 
         case e.directName of

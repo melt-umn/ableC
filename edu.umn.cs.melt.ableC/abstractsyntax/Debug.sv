@@ -14,6 +14,7 @@ import silver:util:raw:treemap as tm;
 abstract production txtExpr
 e::Expr ::= txt::String
 {
+  propagate host;
   e.pp = text(txt);
   e.errors := [];
   e.globalDecls := [];
@@ -24,6 +25,7 @@ e::Expr ::= txt::String
 abstract production txtStmt
 s::Stmt ::= txt::String
 {
+  propagate host;
   s.pp = text(txt);
   s.errors := [];
   s.globalDecls := [];
@@ -35,6 +37,7 @@ s::Stmt ::= txt::String
 abstract production txtDecl
 d::Decl ::= txt::String
 {
+  propagate host;
   d.pp = text(txt);
   d.errors := [ ];
   d.globalDecls := [];
@@ -56,16 +59,17 @@ d::Decl ::= txt::String
 
    ------------------------------------------------------------
  -}
-
+{- Seems to be causing flow dep issues?
 abstract production printEnv
 e::Expr ::=
 {
   e.errors := [];
   e.globalDecls := [];
   e.defs = [];
+  e.pp = comment("printEnv pp should be demanded through host pp", location=e.location).pp;
   forwards to comment( show(80,showEnv(e.env)), location=e.location );
 }
-
+-}
 
 
 function showEnv

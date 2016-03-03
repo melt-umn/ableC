@@ -46,7 +46,9 @@ IOVal<Integer> ::= args::[String] ioIn::IO
   local ast :: abs:Root = result.parseTree.ast;
   ast.env = addEnv( map(xcArgDef, xcArgs) , emptyEnv() );
 
-  local writePP :: IO = writeFile(ppFileName, show(80, ast.pp), text.io);
+  local hostAst :: abs:Root = ast.abs:host;
+
+  local writePP :: IO = writeFile(ppFileName, show(80, hostAst.pp), text.io);
 
   return if null(args) then
     ioval(print("Usage: [ableC invocation] [file name] [c preprocessor arguments]\n", ioIn), 5)

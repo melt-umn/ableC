@@ -3,11 +3,13 @@
 
 import edu:umn:cs:melt:ableC:abstractsyntax:builtins as builtinfunctions;
 
-nonterminal Root with pp, errors, env;
+nonterminal Root with pp, host<Root>, errors, env;
 
 abstract production root
 top::Root ::= d::Decls
 {
+  propagate host;
+  
   top.pp = terminate(line(), d.pps);
   top.errors := if null(d.globalDecls) then d.errors else error("Found globalDecls at root");
 --  d.env = addEnv(builtinfunctions:initialEnv;
