@@ -12,6 +12,7 @@ synthesized attribute integerConstantValue :: Maybe<Integer>;
 abstract production seedingForwardsToEquationDependencies
 top::Expr ::=
 {
+  -- this is adding ft(fwd) to ft(pp), which probably includes env.
   forwards to case top.returnType of
     | nothing() -> mkIntConst(1, top.location)
     | _ -> mkIntConst(1, top.location)
@@ -222,6 +223,7 @@ abstract production binaryOpExpr
 top::Expr ::= lhs::Expr  op::BinOp  rhs::Expr
 {
   propagate host;
+  -- case op here is a potential problem, since that emits a dep on op->forward, which eventually should probably include env
   top.pp = parens( concat([ 
     case op, lhs.pp of
     | assignOp(eqOp()), cat(cat(text("("), lhsNoParens), text(")")) -> lhsNoParens
