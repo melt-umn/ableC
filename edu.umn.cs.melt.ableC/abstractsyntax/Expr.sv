@@ -12,6 +12,8 @@ synthesized attribute integerConstantValue :: Maybe<Integer>;
 abstract production seedingForwardsToEquationDependencies
 top::Expr ::=
 {
+  top.pp = text("hack");
+  
   forwards to case top.returnType of
     | nothing() -> mkIntConst(1, top.location)
     | _ -> mkIntConst(1, top.location)
@@ -222,11 +224,13 @@ abstract production binaryOpExpr
 top::Expr ::= lhs::Expr  op::BinOp  rhs::Expr
 {
   propagate host;
+  -- case op here is a potential problem, since that emits a dep on op->forward, which eventually should probably include env
+  -- Find a way to do this that doesn't cause problems if an op forwards.
   top.pp = parens( concat([ 
-    case op, lhs.pp of
+    {-case op, lhs.pp of
     | assignOp(eqOp()), cat(cat(text("("), lhsNoParens), text(")")) -> lhsNoParens
     | _, _ -> lhs.pp
-    end, space(), op.pp, space(), rhs.pp ]) );
+    end-} lhs.pp, space(), op.pp, space(), rhs.pp ]) );
   top.errors := lhs.errors ++ op.errors ++ rhs.errors;
   top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
   top.defs = lhs.defs ++ rhs.defs;
@@ -425,8 +429,8 @@ top::Expr ::= s::String
 abstract production hackUnused
 top::Expr ::=
 {
-  -- No pp equation: make that need env too (via forwarding)
-  --top.pp = text("hack");
+  -- pp doesn't depend on env
+  top.pp = text("hack");
   -- Forwarding based on env.
   forwards to if false then error(hackUnparse(top.env)) else hackUnused(location=top.location);
 }

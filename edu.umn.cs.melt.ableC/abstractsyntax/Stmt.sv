@@ -109,12 +109,8 @@ top::Stmt ::= c::Expr  t::Stmt  e::Stmt
   propagate host;
   top.pp = concat([
     text("if"), space(), parens(c.pp), line(),
-    braces(nestlines(2, t.pp)) ] ++
-      case e of nullStmt() -> []
-      | _ -> [
-          text(" else "),
-          braces(nestlines(2, e.pp))]
-      end);
+    braces(nestlines(2, t.pp)),
+    text(" else "), braces(nestlines(2, e.pp))]);
   top.errors := c.errors ++ t.errors ++ e.errors;
   top.globalDecls := c.globalDecls ++ t.globalDecls ++ e.globalDecls;
   top.functiondefs = t.functiondefs ++ e.functiondefs;
@@ -136,6 +132,15 @@ top::Stmt ::= c::Expr  t::Stmt  e::Stmt
   top.errors <-
     if c.typerep.defaultFunctionArrayLvalueConversion.isScalarType then []
     else [err(c.location, "If condition must be scalar type, instead it is " ++ showType(c.typerep))];
+}
+
+abstract production ifStmtNoElse
+top::Stmt ::= c::Expr  t::Stmt
+{
+  top.pp = concat([
+    text("if"), space(), parens(c.pp), line(),
+    braces(nestlines(2, t.pp)) ]);
+  forwards to ifStmt(c, t, nullStmt());
 }
 
 abstract production whileStmt
@@ -430,6 +435,8 @@ top::Stmt ::=
 {
   -- Not allowed to need env.
   top.functiondefs = [];
+  -- pp doesn't depend on env
+  top.pp = text("hack");
   
   -- No pp equation: make that need env too (via forwarding)
   -- Forwarding based on env.

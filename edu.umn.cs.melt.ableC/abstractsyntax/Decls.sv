@@ -17,9 +17,10 @@ autocopy attribute isTopLevel :: Boolean;
 abstract production consGlobalDecl
 top::Decls ::= h::Decl  t::Decls
 {
-  -- TODO: should this propagate host?
   local globalDecls::[Decl] = removeDuplicateGlobalDecls(h.globalDecls); 
   top.globalDecls := [];
+  
+  top.pps = h.pp :: t.pps;
   
   forwards to 
     if null(globalDecls)
@@ -103,7 +104,7 @@ top::Decl ::= storage::[StorageClass]  attrs::[Attribute]  ty::BaseTypeExpr  dcl
   propagate host;
   top.pp = concat(
     terminate(space(), map((.pp), storage)) ::
-      ppAttributes(attrs, top.env) ::
+      ppAttributes(attrs) ::
       [ty.pp, space(), ppImplode(text(", "), dcls.pps), semi()]);
   top.errors := ty.errors ++ dcls.errors;
   top.globalDecls := dcls.globalDecls;
@@ -130,7 +131,7 @@ abstract production typedefDecls
 top::Decl ::= attrs::[Attribute]  ty::BaseTypeExpr  dcls::Declarators
 {
   propagate host;
-  top.pp = concat([text("typedef "), ppAttributes(attrs, top.env), ty.pp, space(), ppImplode(text(", "), dcls.pps), semi()]);
+  top.pp = concat([text("typedef "), ppAttributes(attrs), ty.pp, space(), ppImplode(text(", "), dcls.pps), semi()]);
   top.errors := ty.errors ++ dcls.errors;
   top.globalDecls := ty.globalDecls ++ dcls.globalDecls;
   top.defs = ty.defs ++ dcls.defs;
@@ -255,7 +256,7 @@ top::Declarator ::= name::Name  ty::TypeModifierExpr  attrs::[Attribute]  initia
         parens(ppImplode(text(", "),
         map((.pp), ids))),
         result.rpp])]-}
-    | _ -> [concat([ty.lpp, name.pp, ty.rpp, ppAttributesRHS(attrs, top.env), initializer.pp])]
+    | _ -> [concat([ty.lpp, name.pp, ty.rpp, ppAttributesRHS(attrs), initializer.pp])]
     end;
   
   top.errors :=
@@ -268,7 +269,7 @@ top::Declarator ::= name::Name  ty::TypeModifierExpr  attrs::[Attribute]  initia
   top.globalDecls := ty.globalDecls ++ initializer.globalDecls;
   top.defs = [valueDef(name.name, declaratorValueItem(top))];
   top.freeVariables = ty.freeVariables ++ initializer.freeVariables;
-  top.typerep = animateAttributeOnType(allAttrs, ty.typerep, top.env);
+  top.typerep = animateAttributeOnType(allAttrs, ty.typerep);
   top.sourceLocation = name.location;
   
   top.errors <- 
@@ -298,8 +299,8 @@ abstract production functionDecl
 top::FunctionDecl ::= storage::[StorageClass]  fnquals::[SpecialSpecifier]  bty::BaseTypeExpr mty::TypeModifierExpr  name::Name  attrs::[Attribute]  decls::Decls  body::Stmt
 {
   propagate host;
-  top.pp = concat([terminate(space(), map((.pp), storage)), terminate( space(), map( ppSpecial(_, top.env), fnquals ) ),
-    bty.pp, space(), mty.lpp, name.pp, mty.rpp, ppAttributesRHS(attrs, top.env), line(), terminate(cat(semi(), line()), decls.pps),
+  top.pp = concat([terminate(space(), map((.pp), storage)), terminate( space(), map( (.pp), fnquals ) ),
+    bty.pp, space(), mty.lpp, name.pp, mty.rpp, ppAttributesRHS(attrs), line(), terminate(cat(semi(), line()), decls.pps),
     text("{"), line(), nestlines(2,body.pp), text("}")]);
   
   local parameters :: Decorated Parameters =
@@ -421,7 +422,7 @@ top::ParameterDecl ::= storage::[StorageClass]  bty::BaseTypeExpr  mty::TypeModi
 {
   propagate host;
   top.pp = concat([terminate(space(), map((.pp), storage)),
-    bty.pp, space(), mty.lpp, space(), name.pp, mty.rpp, ppAttributesRHS(attrs, top.env)]);
+    bty.pp, space(), mty.lpp, space(), name.pp, mty.rpp, ppAttributesRHS(attrs)]);
   top.paramname = name.maybename;
   top.typerep = mty.typerep;
   top.sourceLocation = 
@@ -453,7 +454,7 @@ top::StructDecl ::= attrs::[Attribute]  name::MaybeName  dcls::StructItemList
 {
   propagate host;
   top.maybename = name.maybename;
-  top.pp = concat([text("struct "), ppAttributes(attrs, top.env), name.pp,
+  top.pp = concat([text("struct "), ppAttributes(attrs), name.pp,
     -- DEBUGGING
     --text("/*" ++ top.refId ++ "*/"),
     -- END DEBUGGING
@@ -515,13 +516,14 @@ Maybe<String> ::= attrs::[Attribute]
 }
 
 function getRefIdFromAttribs
-Maybe<String> ::= attrs::[Attrib]
+Maybe<String> ::= attrs::Attribs
 {
   return
     case attrs of
-      appliedAttrib(attribName(name("refId")), consExpr(stringLiteral(s), nilExpr())) :: _ -> just(substring(1, length(s) - 1, s))
-    | _ :: rest -> getRefIdFromAttribs(rest)
-    | [] -> nothing()
+      consAttrib(appliedAttrib(attribName(name("refId")), consExpr(stringLiteral(s), nilExpr())), _) ->
+        just(substring(1, length(s) - 1, s))
+    | consAttrib(_, rest) -> getRefIdFromAttribs(rest)
+    | nilAttrib() -> nothing()
     end;
 }
 
@@ -532,7 +534,7 @@ top::UnionDecl ::= attrs::[Attribute]  name::MaybeName  dcls::StructItemList
 {
   propagate host;
   top.maybename = name.maybename;
-  top.pp = concat([text("union "), ppAttributes(attrs, top.env), name.pp, 
+  top.pp = concat([text("union "), ppAttributes(attrs), name.pp, 
     -- DEBUGGING
     --text("/*" ++ top.refId ++ "*/"),
     -- END DEBUGGING
@@ -662,7 +664,7 @@ abstract production structItem
 top::StructItem ::= attrs::[Attribute]  ty::BaseTypeExpr  dcls::StructDeclarators
 {
   propagate host;
-  top.pp = concat([ppAttributes(attrs, top.env), ty.pp, space(), ppImplode(text(", "), dcls.pps)]);
+  top.pp = concat([ppAttributes(attrs), ty.pp, space(), ppImplode(text(", "), dcls.pps)]);
   top.errors := ty.errors ++ dcls.errors;
   top.globalDecls := ty.globalDecls ++ dcls.globalDecls;
   top.defs = ty.defs;
@@ -718,7 +720,7 @@ abstract production structField
 top::StructDeclarator ::= name::Name  ty::TypeModifierExpr  attrs::[Attribute]
 {
   propagate host;
-  top.pps = [concat([ty.lpp, name.pp, ty.rpp, ppAttributesRHS(attrs, top.env)])];
+  top.pps = [concat([ty.lpp, name.pp, ty.rpp, ppAttributesRHS(attrs)])];
   top.errors := ty.errors;
   top.globalDecls := ty.globalDecls;
   top.localdefs = [valueDef(name.name, fieldValueItem(top))];
@@ -735,7 +737,7 @@ abstract production structBitfield
 top::StructDeclarator ::= name::MaybeName  ty::TypeModifierExpr  e::Expr  attrs::[Attribute]
 {
   propagate host;
-  top.pps = [concat([ty.lpp, name.pp, ty.rpp, text(" : "), e.pp, ppAttributesRHS(attrs, top.env)])];
+  top.pps = [concat([ty.lpp, name.pp, ty.rpp, text(" : "), e.pp, ppAttributesRHS(attrs)])];
   top.errors := ty.errors ++ e.errors;
   top.globalDecls := ty.globalDecls ++ e.globalDecls;
 
@@ -807,7 +809,8 @@ top::StorageClass ::= { top.pp = text("_Thread_local"); }
 abstract production hackUnusedDecl
 top::Decl ::=
 {
-  -- No pp equation: make that need env too (via forwarding)
+  -- pp doesn't depend on env
+  top.pp = text("hack");
   -- Forwarding based on env.
   forwards to if false then error(hackUnparse(top.env)) else hackUnusedDecl();
 }

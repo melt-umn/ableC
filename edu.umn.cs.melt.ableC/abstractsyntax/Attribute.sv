@@ -1,39 +1,23 @@
 
 function ppAttributes
-Document ::= l::[Attribute]  env::Decorated Env
+Document ::= l::[Attribute]
 {
-  return terminate(space(), map(ppAttribute(_, env), l));
+  return terminate(space(), map((.pp), l));
 }
 function ppAttributesRHS
-Document ::= l::[Attribute]  env::Decorated Env
+Document ::= l::[Attribute]
 {
-  return initiate(space(), map(ppAttribute(_, env), l));
-}
-
-
-function ppAttribute
-Document ::= a::Attribute env::Decorated Env
-{
-  a.env = env;
-  a.returnType = nothing(); -- TODO: fix flow dependencies
-  return a.pp;
-}
-function ppAttrib
-Document ::= a::Attrib env::Decorated Env
-{
-  a.env = env;
-  a.returnType = nothing(); -- TODO: fix flow dependencies
-  return a.pp;
+  return initiate(space(), map((.pp), l));
 }
 
 {-- __attribute__ syntax representation -}
 nonterminal Attribute with pp, host<Attribute>, env, returnType;
 
 abstract production gccAttribute
-top::Attribute ::= l::[Attrib]
+top::Attribute ::= l::Attribs
 {
   propagate host;
-  top.pp = concat([text("__attribute__(("), ppImplode(text(", "), map(ppAttrib(_, top.env), filter((.attribNeedsTrans), l))), text("))")]);
+  top.pp = concat([text("__attribute__(("), l.pp, text("))")]);
 }
 
 abstract production simpleAsm
@@ -43,8 +27,30 @@ top::Attribute ::= s::String
   top.pp = text("__asm__(" ++ s ++ ")");
 }
 
+nonterminal Attribs with pp, host<Attribs>, env, returnType;
+
+abstract production consAttrib
+top::Attribs ::= h::Attrib t::Attribs
+{
+  propagate host;
+  top.pp =
+    if h.attribNeedsTrans
+    then case t of
+           consAttrib(_, _) -> pp"${h.pp}, ${t.pp}"
+         | nilAttrib() -> h.pp
+         end
+    else t.pp;
+}
+
+abstract production nilAttrib
+top::Attribs ::= 
+{
+  propagate host;
+  top.pp = text("");
+}
+
 synthesized attribute attribNeedsTrans::Boolean;
-nonterminal Attrib with pp, host<Attrib>, attribNeedsTrans, env, returnType;
+nonterminal Attrib with pp, host<Attrib>, env, attribNeedsTrans, returnType;
 
 -- e.g. __attribute__(())
 abstract production emptyAttrib
@@ -85,7 +91,7 @@ top::Attrib ::= n::AttribName  id::Name  e::Exprs
 }
 
 
-nonterminal AttribName with pp, host<AttribName>, env;
+nonterminal AttribName with pp, host<AttribName>;
 
 abstract production attribName
 top::AttribName ::= n::Name
