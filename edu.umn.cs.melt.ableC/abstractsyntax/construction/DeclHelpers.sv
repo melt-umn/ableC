@@ -39,6 +39,38 @@ Stmt ::= n::String init::MaybeInitializer l::Location
             )
           ) ;
 }
+
+function mkDeclGeneral
+Stmt ::= n::String typ::Type l::Location
+{
+  local bty::BaseTypeExpr = directTypeExpr(typ);
+
+  return  declStmt( 
+            variableDecls( [], [], bty,
+              consDeclarator( 
+                declarator( name(n, location=l), baseTypeExpr(), [], 
+                    nothingInitializer() ) , 
+                nilDeclarator() )
+            )
+          ) ;
+}
+
+
+function mkDecl
+Stmt ::= n::String typ::Type v::Expr l::Location
+{
+  local bty::BaseTypeExpr = directTypeExpr(typ);
+
+  return  declStmt( 
+            variableDecls( [], [], bty,
+              consDeclarator( 
+                declarator( name(n, location=l), baseTypeExpr(), [], 
+                    justInitializer(exprInitializer(v)) ) , 
+                nilDeclarator() )
+            )
+          ) ;
+}
+
 {-
 function mkDeclGeneral
 Stmt ::= n::String type: init::MaybeInitializer l::Location
