@@ -48,6 +48,25 @@ top::Expr ::= f::Expr  a::Exprs
     then lType.callProd.fromJust(f, a, top.location)
     else callExprDefault(f, a, location=top.location);
 }
+abstract production memberExpr
+top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
+{
+  top.globalDecls := lhs.globalDecls;
+  top.defs = lhs.defs;
+  top.freeVariables = lhs.freeVariables;
+  
+  local lType::Type = lhs.typerep;
+  lType.otherName = rhs.name;
+  
+  forwards to 
+    if deref
+    then if lType.memberDerefProd.isJust
+         then lType.memberDerefProd.fromJust(lhs, top.location)
+         else memberExprDefault(lhs, deref, rhs, location=top.location)
+    else if lType.memberProd.isJust
+         then lType.memberProd.fromJust(lhs, top.location)
+         else memberExprDefault(lhs, deref, rhs, location=top.location);
+}
 abstract production binaryOpExpr
 top::Expr ::= lhs::Expr  op::BinOp  rhs::Expr
 {
