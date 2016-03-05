@@ -61,5 +61,13 @@ int main(int argc, char **argv) {
   if (i != "3.140000")
     return 9;
 
+  if (i.length != 8)
+    return 10;
+
+  string j = i.substring(3, 6);
+  printf("j: %s\n", j);
+  if (j != "400")
+    return 11;
+
   return 0;
 }

@@ -94,6 +94,10 @@ static _vector _append_vectors(_vector v1, _vector v2) {
   return _append_update_vector(result, v2);
 }
 
+static void _append_item(_vector v, void *elem, size_t elem_size) {
+  _update_index_vector(v, v->length, elem, elem_size);
+}
+
 static bool _equal_vectors(_vector v1, _vector v2, _EqFun eq) {
   if (v1->length != v2->length)
     return false;

@@ -77,6 +77,21 @@ top::Type ::=
             location=_))
     | _ -> nothing()
     end;
+    
+  top.subscriptProd = just(subscriptString(_, _, location=_));
+  top.subscriptAssignProd = just(subscriptAssignString(_, _, _, _, location=_));
+    
+  top.memberCallProd = 
+    case top.otherName of
+      "substring" -> just(substringString(_, _, location=_))
+    | _ -> nothing()
+    end;
+    
+  top.memberProd = 
+    case top.otherName of
+      "length" -> just(lengthString(_, location=_))
+    | _ -> nothing()
+    end;
   
   top.toStringProd = just(constructStringFromString(_, location=_));
 
