@@ -59,7 +59,9 @@ IOVal<Integer> ::= args::[String] ioIn::IO
   else if !result.parseSuccess then
     ioval(print(result.parseErrors ++ "\n", text.io), 2)
   else if containsBy(stringEq, "--show-ast", args) then
-    ioval(print(hackUnparse(ast) ++ "\n", text.io), 0)
+    ioval(print(substitute("edu:umn:cs:melt:", "", hackUnparse(ast)) ++ "\n", text.io), 0)
+  else if containsBy(stringEq, "--show-host-ast", args) then
+    ioval(print(substitute("edu:umn:cs:melt:", "", hackUnparse(hostAst)) ++ "\n", text.io), 0)
 --  else if !null(ast.errors) then
 --    ioval(print(messagesToString(ast.errors) ++ "\n", text.io), if containsErrors(ast.errors, false) then 4 else 0)
   else if !null(ast.errors) || containsBy(stringEq, "--force-trans", args) then
@@ -74,6 +76,7 @@ Boolean ::= arg::String
 {
   return 
     arg=="--show-ast" ||
+    arg=="--show-host-ast" ||
     arg=="--show-cpp" ||
     arg=="--force-trans" ||
     startsWith("--xc-", arg) ;
