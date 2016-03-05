@@ -43,10 +43,31 @@ top::Expr ::= f::Expr  a::Exprs
   local lType::Type = f.typerep;
   lType.otherTypes = a.typereps;
   
+  
+  local lType2::Type =
+    case f of
+      memberExpr(lhs, _, _) -> lhs.typerep
+    end;
+  lType2.otherName =
+    case f of
+      memberExpr(_, _, rhs) -> rhs.name
+    end;
+  
   forwards to 
-    if lType.callProd.isJust
-    then lType.callProd.fromJust(f, a, top.location)
-    else callExprDefault(f, a, location=top.location);
+    case f of
+      memberExpr(lhs, deref, _) ->
+        if deref
+        then if lType2.memberDerefCallProd.isJust
+             then lType2.memberDerefCallProd.fromJust(lhs, a, top.location)
+             else callExprDefault(f, a, location=top.location)
+        else if lType2.memberCallProd.isJust
+             then lType2.memberCallProd.fromJust(lhs, a, top.location)
+             else callExprDefault(f, a, location=top.location)
+    | _ ->
+      if lType.callProd.isJust
+      then lType.callProd.fromJust(f, a, top.location)
+      else callExprDefault(f, a, location=top.location)
+    end;
 }
 abstract production memberExpr
 top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name

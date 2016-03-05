@@ -10,12 +10,14 @@ imports edu:umn:cs:melt:ableC:abstractsyntax:env;
 
 inherited attribute otherType::Type occurs on Type;
 inherited attribute otherType2::Type occurs on Type;
-inherited attribute otherTypes::[Type] occurs on Type;
+inherited attribute otherTypes::[Type] occurs on Type; -- Note: extensions usually shouldn't depend on otherTypes for determining whether to dispatch, that error checking is best done manually
 inherited attribute otherName::String occurs on Type;
 
 synthesized attribute callProd::Maybe<(Expr ::= Expr Exprs Location)> occurs on Type;
 synthesized attribute memberProd::Maybe<(Expr ::= Expr Location)> occurs on Type;
 synthesized attribute memberDerefProd::Maybe<(Expr ::= Expr Location)> occurs on Type;
+synthesized attribute memberCallProd::Maybe<(Expr ::= Expr Exprs Location)> occurs on Type;
+synthesized attribute memberDerefCallProd::Maybe<(Expr ::= Expr Exprs Location)> occurs on Type;
 synthesized attribute subscriptProd::Maybe<(Expr ::= Expr Expr Location)> occurs on Type;
 synthesized attribute subscriptAssignProd::Maybe<(Expr ::= Expr Expr AssignOp Expr Location)> occurs on Type;
 
@@ -95,6 +97,8 @@ top::Type ::=
   top.callProd = nothing();
   top.memberProd = nothing();
   top.memberDerefProd = nothing();
+  top.memberCallProd = nothing();
+  top.memberDerefCallProd = nothing();
   top.subscriptProd = nothing();
   top.subscriptAssignProd = nothing();
   top.preIncProd = nothing();
@@ -171,11 +175,13 @@ top::Type ::=
 abstract production hackUnusedType2
 top::Type ::=
 {
-  top.callProd = case top.otherTypes of errorType() :: [] -> error("unused") | _ -> error("unused1") end;
+  top.callProd = case top.otherTypes of [errorType()] -> error("unused") | _ -> error("unused1") end;
   top.subscriptProd = case top.otherType of errorType() -> error("unused") | _ -> error("unused1") end;
   top.subscriptAssignProd = case top.otherType, top.otherType2 of errorType(), errorType() -> error("unused") | _, _ -> error("unused1") end;
   top.memberProd = case top.otherName of "" -> error("unused") | _ -> error("unused1") end;
   top.memberDerefProd = case top.otherName of "" -> error("unused") | _ -> error("unused1") end;
+  top.memberCallProd = case top.otherName, top.otherTypes of "", [errorType()] -> error("unused") | _, _ -> error("unused1") end;
+  top.memberDerefCallProd = case top.otherName, top.otherTypes of "", [errorType()] -> error("unused") | _, _ -> error("unused1") end;
   top.lAssignProd = case top.otherType of errorType() -> error("unused") | _ -> error("unused1") end;
   top.lAssignStarProd = case top.otherType of errorType() -> error("unused") | _ -> error("unused1") end;
   top.lAssignSlashProd = case top.otherType of errorType() -> error("unused") | _ -> error("unused1") end;
