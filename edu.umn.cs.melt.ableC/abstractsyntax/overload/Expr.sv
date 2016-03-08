@@ -10,9 +10,10 @@ top::Expr ::= op::UnaryOp  e::Expr
   op.op = e;
   
   forwards to
-    if op.unaryProd.isJust
-    then op.unaryProd.fromJust(e, top.location)
-    else unaryOpExprDefault(op, e, location=top.location);
+    case op.unaryProd of
+      just(prod) -> prod(e, top.location)
+    | nothing() -> unaryOpExprDefault(op, e, location=top.location)
+    end;
 }
 abstract production arraySubscriptExpr
 top::Expr ::= lhs::Expr  rhs::Expr
@@ -27,9 +28,10 @@ top::Expr ::= lhs::Expr  rhs::Expr
   lType.otherType = rhs.typerep;
   
   forwards to 
-    if lType.subscriptProd.isJust
-    then lType.subscriptProd.fromJust(lhs, rhs, top.location)
-    else arraySubscriptExprDefault(lhs, rhs, location=top.location);
+    case lType.subscriptProd of
+      just(prod) -> prod(lhs, rhs, top.location)
+    | nothing() -> arraySubscriptExprDefault(lhs, rhs, location=top.location)
+    end;
 }
 abstract production callExpr
 top::Expr ::= f::Expr  a::Exprs
@@ -43,7 +45,6 @@ top::Expr ::= f::Expr  a::Exprs
   local lType::Type = f.typerep;
   lType.otherTypes = a.typereps;
   
-  
   local lType2::Type =
     case f of
       memberExpr(lhs, _, _) -> lhs.typerep
@@ -52,21 +53,25 @@ top::Expr ::= f::Expr  a::Exprs
     case f of
       memberExpr(_, _, rhs) -> rhs.name
     end;
+  lType2.otherTypes = a.typereps;
   
   forwards to 
     case f of
       memberExpr(lhs, deref, _) ->
         if deref
-        then if lType2.memberDerefCallProd.isJust
-             then lType2.memberDerefCallProd.fromJust(lhs, a, top.location)
-             else callExprDefault(f, a, location=top.location)
-        else if lType2.memberCallProd.isJust
-             then lType2.memberCallProd.fromJust(lhs, a, top.location)
-             else callExprDefault(f, a, location=top.location)
+        then case lType2.memberDerefCallProd of
+          just(prod) -> prod(lhs, a, top.location)
+        | nothing() -> callExprDefault(f, a, location=top.location)
+        end
+        else case lType2.memberCallProd of
+          just(prod) -> prod(lhs, a, top.location)
+        | nothing() -> callExprDefault(f, a, location=top.location)
+        end
     | _ ->
-      if lType.callProd.isJust
-      then lType.callProd.fromJust(f, a, top.location)
-      else callExprDefault(f, a, location=top.location)
+      case lType.callProd of
+        just(prod) -> prod(f, a, top.location)
+      | nothing() -> callExprDefault(f, a, location=top.location)
+      end
     end;
 }
 abstract production memberExpr
@@ -81,12 +86,14 @@ top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
   
   forwards to 
     if deref
-    then if lType.memberDerefProd.isJust
-         then lType.memberDerefProd.fromJust(lhs, top.location)
-         else memberExprDefault(lhs, deref, rhs, location=top.location)
-    else if lType.memberProd.isJust
-         then lType.memberProd.fromJust(lhs, top.location)
-         else memberExprDefault(lhs, deref, rhs, location=top.location);
+    then case lType.memberDerefProd of
+      just(prod) -> prod(lhs, top.location)
+    | nothing() -> memberExprDefault(lhs, deref, rhs, location=top.location)
+    end
+    else case lType.memberProd of
+      just(prod) -> prod(lhs, top.location)
+    | nothing() -> memberExprDefault(lhs, deref, rhs, location=top.location)
+    end;
 }
 abstract production binaryOpExpr
 top::Expr ::= lhs::Expr  op::BinOp  rhs::Expr
@@ -102,7 +109,8 @@ top::Expr ::= lhs::Expr  op::BinOp  rhs::Expr
   op.rop = rhs;
   
   forwards to
-    if op.binaryProd.isJust
-    then op.binaryProd.fromJust(lhs, rhs, top.location)
-    else binaryOpExprDefault(lhs, op, rhs, location=top.location);
+    case op.binaryProd of
+      just(prod) -> prod(lhs, rhs, top.location)
+    | nothing() -> binaryOpExprDefault(lhs, op, rhs, location=top.location)
+    end;
 }

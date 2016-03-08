@@ -179,9 +179,10 @@ top::CompareOp ::=
   local complementProd::Maybe<(Expr ::= Expr Expr Location)> = 
     getBinaryProd(top.lop.typerep, top.rop.typerep, (.lBinaryNeqProd), (.rBinaryNeqProd));
   local option2::Maybe<(Expr ::= Expr Expr Location)> =
-    if complementProd.isJust
-    then just(constructNot(_, _, _, complementProd.fromJust))
-    else nothing();
+    case complementProd of
+      just(prod) -> just(constructNot(_, _, _, prod))
+    | nothing() -> nothing()
+    end;
   top.binaryProd = orElse(option1, option2);
 }
 aspect production notEqualsOp
@@ -193,9 +194,10 @@ top::CompareOp ::=
   local complementProd::Maybe<(Expr ::= Expr Expr Location)> = 
     getBinaryProd(top.lop.typerep, top.rop.typerep, (.lBinaryEqProd), (.rBinaryEqProd));
   local option2::Maybe<(Expr ::= Expr Expr Location)> =
-    if complementProd.isJust
-    then just(constructNot(_, _, _, complementProd.fromJust))
-    else nothing();
+    case complementProd of
+      just(prod) -> just(constructNot(_, _, _, prod))
+    | nothing() -> nothing()
+    end;
   top.binaryProd = orElse(option1, option2);
 }
 aspect production gtOp
@@ -207,9 +209,10 @@ top::CompareOp ::=
   local complementProd::Maybe<(Expr ::= Expr Expr Location)> = 
     getBinaryProd(top.lop.typerep, top.rop.typerep, (.lBinaryLteProd), (.rBinaryLteProd));
   local option2::Maybe<(Expr ::= Expr Expr Location)> =
-    if complementProd.isJust
-    then just(constructNot(_, _, _, complementProd.fromJust))
-    else nothing();
+    case complementProd of
+      just(prod) -> just(constructNot(_, _, _, prod))
+    | nothing() -> nothing()
+    end;
   top.binaryProd = orElse(option1, option2);
 }
 aspect production ltOp
@@ -221,9 +224,10 @@ top::CompareOp ::=
   local complementProd::Maybe<(Expr ::= Expr Expr Location)> = 
     getBinaryProd(top.lop.typerep, top.rop.typerep, (.lBinaryGteProd), (.rBinaryGteProd));
   local option2::Maybe<(Expr ::= Expr Expr Location)> =
-    if complementProd.isJust
-    then just(constructNot(_, _, _, complementProd.fromJust))
-    else nothing();
+    case complementProd of
+      just(prod) -> just(constructNot(_, _, _, prod))
+    | nothing() -> nothing()
+    end;
   top.binaryProd = orElse(option1, option2);
 }
 aspect production gteOp
@@ -235,9 +239,10 @@ top::CompareOp ::=
   local complementProd::Maybe<(Expr ::= Expr Expr Location)> = 
     getBinaryProd(top.lop.typerep, top.rop.typerep, (.lBinaryLtProd), (.rBinaryLtProd));
   local option2::Maybe<(Expr ::= Expr Expr Location)> =
-    if complementProd.isJust
-    then just(constructNot(_, _, _, complementProd.fromJust))
-    else nothing();
+    case complementProd of
+      just(prod) -> just(constructNot(_, _, _, prod))
+    | nothing() -> nothing()
+    end;
   top.binaryProd = orElse(option1, option2);
 }
 aspect production lteOp
@@ -249,9 +254,10 @@ top::CompareOp ::=
   local complementProd::Maybe<(Expr ::= Expr Expr Location)> = 
     getBinaryProd(top.lop.typerep, top.rop.typerep, (.lBinaryGteProd), (.rBinaryGteProd));
   local option2::Maybe<(Expr ::= Expr Expr Location)> =
-    if complementProd.isJust
-    then just(constructNot(_, _, _, complementProd.fromJust))
-    else nothing();
+    case complementProd of
+      just(prod) -> just(constructNot(_, _, _, prod))
+    | nothing() -> nothing()
+    end;
   top.binaryProd = orElse(option1, option2);
 }
 
