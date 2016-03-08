@@ -296,6 +296,15 @@ Maybe<(Expr ::= Expr Expr Location)> ::= l::Type r::Type lAccess::(Maybe<(Expr :
 {
   l.otherType = r;
   r.otherType = l;
+  
+  -- None of these should actually be needed, but Silver requires them because we don't have a type for partially decorated nonterminals, yet
+  l.otherType2 = error("otherType2 demanded in binary overload attribute access");
+  l.otherTypes = error("otherTypes demanded in binary overload attribute access");
+  l.addedTypeQualifiers = error("addedTypeQualifiers demanded in binary overload attribute access");
+  r.otherType2 = error("otherType2 demanded in binary overload attribute access");
+  r.otherTypes = error("otherTypes demanded in binary overload attribute access");
+  r.addedTypeQualifiers = error("addedTypeQualifiers demanded in binary overload attribute access");
+  
   -- Warnings here shouldn't be an issue
   return 
     if lAccess(l).isJust
