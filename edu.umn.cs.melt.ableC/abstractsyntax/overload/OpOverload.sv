@@ -8,6 +8,45 @@ imports edu:umn:cs:melt:ableC:abstractsyntax hiding directCallExpr
                                                   binaryOpExpr as binaryOpExprDefault;
 imports edu:umn:cs:melt:ableC:abstractsyntax:env;
 
+{- Explaination of overloading
+ - All standard unary and binary operators may be overloaded, in addition to function calls, array
+ - subscripts, and field access.  
+ - For unary operators, the overload may be provided simply by
+ - providing an equation for one of the operators, which must have type Maybe<(Expr ::= Expr
+ - Exprs Location)>.  
+ - For binary operators, the equation must have type Maybe<(Expr ::= Expr Expr Location)>.  There
+ - is a left and right attribute for each operator.  The left attibute on the left child is first
+ - tried, and if that fails, then the right attribute on the right child is used.  In addition,
+ - there is an inherited attribute, 'otherType', which provides the type of the other child.  
+ - Assignment operators, such as +=, can be automaticly overloaded if the base operator, such as
+ - +, is overloaded.  Comparison operators are also overloaded if their negation (!= for ==, >= for
+ - <, etc.) as well as ! are both overloaded.  
+ - Function call overloading is similar, where the equation is provided by the lhs, and the
+ - parameter types are provided through the otherTypes attribute.  The equation must have type
+ - Maybe<(Expr ::= Expr Exprs Location)>.  
+ - Array subscript overloading is also similar, with the type used as the index passed via
+ - otherType.  It must have type subscriptProd::Maybe<(Expr ::= Expr Expr Location)>.  Assignment
+ - to an array index is treated specially, handled before plain array indexing or assignment
+ - operators.  A special attibute on the base type of the index expression may be defined, with
+ - otherType being the type in the brackets, and otherType2 being the type on the rhs of the
+ - assignment.  The attribute has type Maybe<(Expr ::= Expr Expr AssignOp Expr Location)>, with 
+ - the first Expr being the lhs of the index, the second Expr being the expression in the brackets,
+ - the AssignOp being the assignment operator used, and the third Expr being the Expr on the rhs of
+ - the assignment.  
+ - Member access operators (. and ->) may also be overloaded via the memberProd and memberDerefProd
+ - attributes, respectively.  They have type Maybe<(Expr ::= Expr Location)>.  The name used on the
+ - rhs of the operator is passed down via the otherName attribute.  To overload a function call of
+ - a member access (e.g. foo.bar(x, y, z)), the attributes memberCallProd and memberDerefCallProd
+ - may be used, having the same type as a regular call prod.  The attribute name is passed via
+ - otherName, and the parameter types via otherTypes.  
+ - Note that by default, all possible overloads are checked before the built-in meanings of
+ - operators are used.  This can also make type checking / error reporting rather simple because
+ - all type checking can simply be done in the overload equation.  If the other types/name are
+ - invalid, then nothing() can be returned, meaning the built-in productions will be used.  Either
+ - the types can be handled by the built-in production, or an appropriate error message will be
+ - produced.  
+ -}
+
 inherited attribute otherType::Type occurs on Type;
 inherited attribute otherType2::Type occurs on Type;
 inherited attribute otherTypes::[Type] occurs on Type; -- Note: extensions usually shouldn't depend on otherTypes for determining whether to dispatch, that error checking is best done manually
