@@ -1,6 +1,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <limits.h>
 #include <gc.h>
 
@@ -24,6 +25,19 @@ static inline string _char_to_string(char c) {
   result[0] = c;
   result[1] = '\0';
   return (string)result;
+}
+
+static inline void _check_index_string(string s, int i) {
+  int len = s.length;
+  if (i < 0 || i >= len) {
+    fprintf(stderr, "String index out of bounds: length %d, index %d", len, i);
+    exit(1);
+  }
+}
+
+static inline char _index_string(string s, int i) {
+  _check_index_string(s, i);
+  return ((char*)s)[i];
 }
 
 static inline bool _eq_string(string s1, string s2) {
@@ -62,6 +76,17 @@ static inline string _remove_string(string s1, string s2) {
   }
   result[j] += '\0';
   
+  return (string)result;
+}
+
+static inline string _substring(string s, int start, int end) {
+  int len = s.length;
+  if (start < 0 || start >= len || end < 0 || end >= len || start > end) {
+    fprintf(stderr, "Substring index out of bounds: length %d, start %d, end %d", len, start, end);
+    exit(1);
+  }
+  char *result = GC_malloc(end - start + 1);
+  strncpy(result, (const char*)s + start, end - start);
   return (string)result;
 }
 

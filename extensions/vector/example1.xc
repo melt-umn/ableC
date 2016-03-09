@@ -23,6 +23,8 @@ int main(int argc, char **argv) {
     return 3;
   if (b[3] != 6)
     return 4;
+  if (b.length != 4)
+    return 5;
 
   return 0;
 }

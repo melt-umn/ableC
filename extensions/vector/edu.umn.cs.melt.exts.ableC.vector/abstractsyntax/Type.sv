@@ -39,6 +39,14 @@ top::Type ::= qs::[Qualifier] sub::Type
         else nothing()
     | _ -> nothing()
     end;
+  
+  top.memberProd =
+    case top.otherName of
+      "length"   -> just(memberExpr(_, true, name("length", location=builtIn()), location=_))
+    | "size"     -> just(memberExpr(_, true, name("length", location=builtIn()), location=_))
+    | "capacity" -> just(memberExpr(_, true, name("capacity", location=builtIn()), location=_))
+    | _ -> nothing()
+    end;
     
   top.subscriptProd =
     case top.otherType of
