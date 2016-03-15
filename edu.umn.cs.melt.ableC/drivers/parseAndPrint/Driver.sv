@@ -75,11 +75,11 @@ IOVal<Integer> ::= args::[String] ioIn::IO
   else if !result.parseSuccess then
     ioval(print(result.parseErrors ++ "\n", text.io), 2)
   else if containsBy(stringEq, "--show-ast", args) then
-    ioval(print(hackUnparse(ast) ++ "\n", text.io), 0)
+    ioval(print(substitute("edu:umn:cs:melt:", "", hackUnparse(ast)) ++ "\n", text.io), 0)
   else if containsBy(stringEq, "--show-host-ast", args) then
-    ioval(print(hackUnparse(hostAst) ++ "\n", text.io), 0)
+    ioval(print(substitute("edu:umn:cs:melt:", "", hackUnparse(hostAst)) ++ "\n", text.io), 0)
   else if containsBy(stringEq, "--show-lifted-ast", args) then
-    ioval(print(hackUnparse(liftedAst) ++ "\n", text.io), 0)
+    ioval(print(substitute("edu:umn:cs:melt:", "", hackUnparse(liftedAst)) ++ "\n", text.io), 0)
   else if containsBy(stringEq, "--show-host-pp", args) then
     ioval(print(show(100, hostAst.pp) ++ "\n", text.io), 0)
 --  else if !null(ast.errors) then
