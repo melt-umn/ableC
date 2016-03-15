@@ -55,9 +55,9 @@ IOVal<Integer> ::= args::[String] ioIn::IO
   local errors::[Message] = 
     if !null(ast.errors)
     then ast.errors
-    else if !null(hostAst.errors)
+    else {-if !null(hostAst.errors)
     then hostAst.errors
-    else if !null(liftedAst.errors)
+    else-} if !null(liftedAst.errors)
     then liftedAst.errors
     else if !null(liftedAst.abs:globalDecls)
     then [wrn(loc("Top level", -1, -1, -1, -1, -1, -1),
