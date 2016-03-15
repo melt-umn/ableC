@@ -27,8 +27,11 @@ abstract production consGlobalDecl
 top::Decls ::= h::Decl  t::Decls
 {
   propagate host;
+  
+  -- pp is of the original program
   top.pps = h.pp :: t.pps;
   
+  -- Using nilDecls() here and appending t to avoid redecorating the entire tree 
   local newDecls::Decls =
     getGlobalDecls(
       consDecl(h, nilDecl()),
@@ -37,6 +40,9 @@ top::Decls ::= h::Decl  t::Decls
   newDecls.isTopLevel = top.isTopLevel;
   newDecls.returnType = top.returnType;
   
+  -- Compute the lifted transformation by appending any new decls to the tail decls
+  -- TODO: This could be made more efficent by pattern matching first to see if there actually are
+  -- any decls, and do something more efficent than appendDecls
   top.lifted = 
     if !null(t.globalDecls)
     then error("consGlobalDecl tail has global decls!")
@@ -45,9 +51,13 @@ top::Decls ::= h::Decl  t::Decls
   
   t.env = addEnv(newDecls.defs, top.env); -- Needed for computing lifted on tail
   
+  -- OK to forward, as lifted is semanticly the same as consDecl with inserted global decls
+  -- Gets errors, etc off the tree with the env added automaticly
   forwards to top.lifted;
 }
 
+-- Compute the global decls as Decls for an input Decls by performing a 'fixed-point' transformation
+-- Actually we only make the recursive call on the actual new decls for efficeny reasons
 function getGlobalDecls
 Decls ::= ds::Decls env::Decorated Env isTopLevel::Boolean returnType::Maybe<Type>
 {
@@ -62,8 +72,11 @@ Decls ::= ds::Decls env::Decorated Env isTopLevel::Boolean returnType::Maybe<Typ
   
   return 
     if !null(ds.globalDecls)
-    then getGlobalDecls(
-      appendDecls(newDecls.host, ds.lifted),
-      env, isTopLevel, returnType)
+    then
+      appendDecls(
+        -- TODO: We are getting host off newDecls first, even if this is the original ast.  Low
+        -- prority, but need a better solution to this
+        getGlobalDecls(newDecls.host, env, isTopLevel, returnType),
+        ds.lifted)
     else ds;
 }
