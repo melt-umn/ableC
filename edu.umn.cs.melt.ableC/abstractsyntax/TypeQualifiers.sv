@@ -1,7 +1,7 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax;
 
 {-- Type qualifiers (cv or cvr qualifiers) -}
-nonterminal Qualifier with pp, host<Qualifier>, qualname, qualCheck;
+nonterminal Qualifier with pp, host<Qualifier>, lifted<Qualifier>, qualname, qualCheck;
 
 synthesized attribute qualname :: String;
 synthesized attribute qualCheck :: Boolean;
@@ -9,7 +9,7 @@ synthesized attribute qualCheck :: Boolean;
 abstract production constQualifier
 top::Qualifier ::=
 {
-  propagate host;
+  propagate host, lifted;
   top.pp = text(top.qualname);
   top.qualname = "const";
   top.qualCheck = true;
@@ -18,7 +18,7 @@ top::Qualifier ::=
 abstract production volatileQualifier
 top::Qualifier ::=
 {
-  propagate host;
+  propagate host, lifted;
   top.pp = text(top.qualname);
   top.qualname = "volatile";
   top.qualCheck = true;
@@ -27,7 +27,7 @@ top::Qualifier ::=
 abstract production restrictQualifier
 top::Qualifier ::=
 {
-  propagate host;
+  propagate host, lifted;
   top.pp = text(top.qualname);
   top.qualname = "restrict";
   top.qualCheck = false;
@@ -36,7 +36,7 @@ top::Qualifier ::=
 abstract production uuRestrictQualifier
 top::Qualifier ::=
 {
-  propagate host;
+  propagate host, lifted;
   top.pp = text(top.qualname);
   top.qualname = "__restrict";
   top.qualCheck = false;
@@ -46,12 +46,12 @@ top::Qualifier ::=
  - e.g. Function specifiers (inline, _Noreturn)
  -      Alignment specifiers (_Alignas)
  -}
-nonterminal SpecialSpecifier with pp, host<SpecialSpecifier>, env, returnType;
+nonterminal SpecialSpecifier with pp, host<SpecialSpecifier>, lifted<SpecialSpecifier>, env, returnType;
 
 abstract production inlineQualifier
 top::SpecialSpecifier ::=
 {
-  propagate host;
+  propagate host, lifted;
   top.pp = text("inline");
 }
 
@@ -59,7 +59,7 @@ top::SpecialSpecifier ::=
 abstract production noreturnQualifier
 top::SpecialSpecifier ::=
 {
-  propagate host;
+  propagate host, lifted;
   top.pp = text("_Noreturn");
 }
 
@@ -67,7 +67,7 @@ top::SpecialSpecifier ::=
 abstract production alignasSpecifier
 top::SpecialSpecifier ::= e::Expr
 {
-  propagate host;
+  propagate host, lifted;
   top.pp = concat([text("_Alignas"), parens(e.pp)]);
 --  top.errors := e.errors;
 }

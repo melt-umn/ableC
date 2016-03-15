@@ -16,25 +16,10 @@ import silver:util:raw:treemap as tm;
 abstract production lambdaExpr
 e::Expr ::= captured::EnvNameList params::Parameters res::Expr
 {
-  -- TODO: Replace the use of location index as a unique name creation
-  -- mechanism once we have a better way to create unique names.
-  forwards to lambdaExpr_i(captured, params, res, e.location.index, location=e.location);
-}
-
-abstract production lambdaExpr_i
-e::Expr ::= captured::EnvNameList params::Parameters res::Expr fnNum::Integer
-{
-
-  local localErrs::[Message] =
+  e.errors <-
     (if !null(lookupValue("_closure", e.env)) then []
      else [err(e.location, "Closures require closure.h to be included.")]) ++
-    captured.errors ++ res.errors;
-  
-  e.globalDecls :=
-    params.globalDecls ++
-    (if null(localErrs)
-     then [pair(theName, functionDeclaration(fnDecl))]
-     else []);
+    captured.errors;
   
   e.typerep = closureType([], params.typereps, res.typerep);
   
@@ -112,7 +97,7 @@ e::Expr ::= captured::EnvNameList params::Parameters res::Expr fnNum::Integer
               tm:toList,
               e.env.values)))));
   
-  local theName::String = "_fn_" ++ toString(fnNum); 
+  local theName::String = "_fn_" ++ toString(genInt()); 
   local fnName::Name = name(theName, location=builtIn());
   
   local fnDecl::FunctionDecl =
@@ -155,11 +140,9 @@ e::Expr ::= captured::EnvNameList params::Parameters res::Expr fnNum::Integer
               name("_result", location=builtIn()),
               location=builtIn())))]));
   
-  forwards to 
-    if null(localErrs) then
-       fwrd
-    else
-      errorExpr(localErrs, location=e.location);
+  forwards to injectGlobalDecls(globalDecls, fwrd, location=e.location);
+  
+  local globalDecls::[Pair<String Decl>] = [pair(theName, functionDeclaration(fnDecl))];
 
   local fwrd::Expr =
     stmtExpr(
