@@ -61,12 +61,33 @@ Decorated Env ::=
 function addEnv
 Decorated Env ::= d::[Def]  e::Decorated Env
 {
-  return if null(d) then e else decorate addEnv_i(foldr(consDefs, nilDefs(), d), e) with {};
+  return if null(d) then e else addEnvDefs(foldr(consDefs, nilDefs(), d), e);
+}
+function addEnvDefs
+Decorated Env ::= d::Defs  e::Decorated Env
+{
+  return decorate addEnv_i(d, e) with {};
 }
 function openScope
 Decorated Env ::= e::Decorated Env
 {
   return decorate openScope_i(e) with {};
+}
+function globalEnv
+Decorated Env ::= e::Decorated Env
+{
+  --return decorate globalEnv_i(e) with {};
+  return globalEnvHelp(e, []);
+}
+
+function globalEnvHelp
+Decorated Env ::= e::Decorated Env ds::[Defs]
+{
+  return case e of
+    emptyEnv_i() -> foldr(addEnvDefs, emptyEnv(), ds)
+  | addEnv_i(d, e) -> globalEnvHelp(e, d :: ds)
+  | openScope_i(e) -> globalEnvHelp(e, [])
+  end;
 }
 
 -- Environment lookup functions
