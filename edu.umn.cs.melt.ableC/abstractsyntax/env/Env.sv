@@ -76,7 +76,7 @@ Decorated Env ::= e::Decorated Env
 function globalEnv
 Decorated Env ::= e::Decorated Env
 {
-  -- Two different methods of providing the global env
+  -- Two different methods of getting the global env
   --return decorate globalEnv_i(e) with {};
   return globalEnvHelp(e, []);
 }
