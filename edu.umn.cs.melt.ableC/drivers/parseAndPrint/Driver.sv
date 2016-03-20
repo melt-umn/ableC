@@ -55,10 +55,12 @@ IOVal<Integer> ::= args::[String] ioIn::IO
   local errors::[Message] = 
     if !null(ast.errors)
     then ast.errors
-    else {-if !null(hostAst.errors)
-    then hostAst.errors
+    else {- if !null(hostAst.errors) -- host error checking dissabled for efficency reasons
+    then wrn(loc("", -1, -1, -1, -1, -1, -1),
+             "Errors in host tree:") :: hostAst.errors
     else-} if !null(liftedAst.errors)
-    then liftedAst.errors
+    then wrn(loc("", -1, -1, -1, -1, -1, -1),
+             "Errors in lifted tree:") :: liftedAst.errors
     else if !null(liftedAst.abs:globalDecls)
     then [wrn(loc("Top level", -1, -1, -1, -1, -1, -1),
               "globalDecls at top level in lifted tree: " ++ implode(", ", map(fst, liftedAst.abs:globalDecls)))]
@@ -80,12 +82,14 @@ IOVal<Integer> ::= args::[String] ioIn::IO
     ioval(print(substitute("edu:umn:cs:melt:", "", hackUnparse(hostAst)) ++ "\n", text.io), 0)
   else if containsBy(stringEq, "--show-lifted-ast", args) then
     ioval(print(substitute("edu:umn:cs:melt:", "", hackUnparse(liftedAst)) ++ "\n", text.io), 0)
+  else if containsBy(stringEq, "--show-pp", args) then
+    ioval(print(show(100, ast.pp) ++ "\n", text.io), 0)
   else if containsBy(stringEq, "--show-host-pp", args) then
     ioval(print(show(100, hostAst.pp) ++ "\n", text.io), 0)
---  else if !null(ast.errors) then
---    ioval(print(messagesToString(ast.errors) ++ "\n", text.io), if containsErrors(ast.errors, false) then 4 else 0)
-  else if !null(errors) || containsBy(stringEq, "--force-trans", args) then
-    ioval(print(messagesToString(errors) ++ "\n", writePP), if containsErrors(ast.errors, false) then 4 else 0)
+  else if !null(errors) && (containsBy(stringEq, "--force-trans", args) || !containsErrors(errors, false)) then
+    ioval(print(messagesToString(errors) ++ "\n", writePP), if containsErrors(errors, false) then 4 else 0)
+  else if !null(errors) then
+    ioval(print(messagesToString(errors) ++ "\n", text.io), 4)
   else
     ioval(writePP, 0);
 }
@@ -99,6 +103,7 @@ Boolean ::= arg::String
     arg=="--show-host-ast" ||
     arg=="--show-lifted-ast" ||
     arg=="--show-host-pp" ||
+    arg=="--show-pp" ||
     arg=="--show-cpp" ||
     arg=="--force-trans" ||
     startsWith("--xc-", arg) ;
