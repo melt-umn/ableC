@@ -31,7 +31,7 @@ e::Expr ::= captured::EnvNameList params::Parameters res::Expr
   res.returnType = just(res.typerep);
   
   local tagRefIdTypeItems::[Def] =
-    doubleMap(
+    zipWith(
       tagDef,
       tagItemNames,
       foldr(
@@ -40,7 +40,7 @@ e::Expr ::= captured::EnvNameList params::Parameters res::Expr
         map(
           lookupTag(_, e.env),
           tagItemNames))) ++
-    doubleMap(
+    zipWith(
       refIdDef,
       refIdItemNames,
       foldr(
@@ -49,7 +49,7 @@ e::Expr ::= captured::EnvNameList params::Parameters res::Expr
         map(
           lookupRefId(_, e.env),
           refIdItemNames))) ++
-    doubleMap(
+    zipWith(
       valueDef,
       typeValueItemNames,
       foldr(
@@ -383,7 +383,7 @@ top::EnvNameList ::=
 abstract production exprFreeVariables
 top::EnvNameList ::=
 {
-  top.errors := []; -- Ignore warnings about variables being excluded
+  --top.errors := []; -- Ignore warnings about variables being excluded
   
   -- Have to use envContents for defs to avoid circular dependency of body freeVariables on generated env
   top.defs =
@@ -406,30 +406,6 @@ function isNotItemTypedef
 Boolean ::= i::Pair<String ValueItem>
 {
   return !i.snd.isItemTypedef;
-}
-
-function fst
-a ::= x::Pair<a b>
-{
-  return x.fst;
-}
-
-function removeDuplicatesBy
-[a] ::= eq::(Boolean ::= a a) l::[a]
-{
-  return if null(l)
-         then []
-         else if containsBy(eq, head(l), tail(l))
-         then removeDuplicatesBy(eq, tail(l))
-         else head(l) :: removeDuplicatesBy(eq, tail(l));
-}
-
-function doubleMap
-[a] ::= f::(a ::= b c) l1::[b] l2::[c]
-{
-  return if null(l1) || null(l2)
-         then []
-         else f(head(l1), head(l2)) :: doubleMap(f, tail(l1), tail(l2));
 }
 
 {-
