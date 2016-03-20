@@ -75,6 +75,7 @@ top::Env ::= e::Decorated Env
   top.refIds = tm:empty(compareString) :: e.refIds;
   top.misc = tm:empty(compareString) :: e.misc;
 }
+
 abstract production globalEnv_i
 top::Env ::= e::Decorated Env
 {
