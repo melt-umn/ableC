@@ -55,7 +55,7 @@ IOVal<Integer> ::= args::[String] ioIn::IO
   else if !isF.iovalue then
     ioval(print("File \"" ++ fileName ++ "\" not found.\n", isF.io), 1)
   else if mkCppFile.iovalue != 0 then
-    ioval(print("CPP call failed.\n", mkCppFile.io), 3)
+    ioval(print("CPP call failed: " ++ fullCppCmd ++ "\n", mkCppFile.io), 3)
   else if !result.parseSuccess then
     ioval(print(result.parseErrors ++ "\n", text.io), 2)
   else if containsBy(stringEq, "--show-ast", args) then
