@@ -116,6 +116,62 @@ top::Expr ::= e1::Expr e2::Expr
       location=top.location);
 }
 
+abstract production subscriptString
+top::Expr ::= e1::Expr e2::Expr
+{
+  forwards to
+    directCallExpr(
+      name("_index_string", location=builtIn()),
+      consExpr(e1, consExpr(e2, nilExpr())),
+      location=top.location);
+}
+
+abstract production subscriptAssignString
+top::Expr ::= e1::Expr e2::Expr op::AssignOp e3::Expr
+{
+  forwards to
+    stmtExpr(
+      exprStmt(
+        directCallExpr(
+          name("_check_index_string", location=builtIn()),
+          consExpr(e1, consExpr(e2, nilExpr())),
+          location=top.location)),
+        binaryOpExpr(
+          arraySubscriptExpr(
+            e1, e2,
+            location=builtIn()),
+          assignOp(op, location=builtIn()),
+          e3,
+          location=builtIn()),
+      location=top.location);
+}
+
+abstract production substringString
+top::Expr ::= e1::Expr a::Exprs
+{
+  -- TODO: check arg types
+  top.errors <-
+    if a.count != 2
+    then [err(top.location, s"Invalid number of arguments to substring: expected 2, got ${toString(a.count)}")]
+    else [];
+  
+  forwards to
+    directCallExpr(
+      name("_substring", location=builtIn()),
+      consExpr(e1, a),
+      location=top.location);
+}
+
+abstract production lengthString
+top::Expr ::= e1::Expr
+{
+  forwards to
+    directCallExpr(
+      name("strlen", location=builtIn()),
+      consExpr(e1, nilExpr()),
+      location=top.location);
+}
+
 {-
  - New location for expressions which don't have real locations
  -}

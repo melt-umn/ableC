@@ -7,7 +7,13 @@ top::Expr ::= op::UnaryOp  e::Expr
   top.defs = e.defs;
   top.freeVariables = e.freeVariables;
   
-  forwards to getUnaryOverload(op, e.typerep)(e, top.location);
+  op.op = e;
+  
+  forwards to
+    case op.unaryProd of
+      just(prod) -> prod(e, top.location)
+    | nothing() -> unaryOpExprDefault(op, e, location=top.location)
+    end;
 }
 abstract production arraySubscriptExpr
 top::Expr ::= lhs::Expr  rhs::Expr
@@ -22,9 +28,10 @@ top::Expr ::= lhs::Expr  rhs::Expr
   lType.otherType = rhs.typerep;
   
   forwards to 
-    if lType.subscriptProd.isJust
-    then lType.subscriptProd.fromJust(lhs, rhs, top.location)
-    else arraySubscriptExprDefault(lhs, rhs, location=top.location);
+    case lType.subscriptProd of
+      just(prod) -> prod(lhs, rhs, top.location)
+    | nothing() -> arraySubscriptExprDefault(lhs, rhs, location=top.location)
+    end;
 }
 abstract production callExpr
 top::Expr ::= f::Expr  a::Exprs
@@ -38,10 +45,55 @@ top::Expr ::= f::Expr  a::Exprs
   local lType::Type = f.typerep;
   lType.otherTypes = a.typereps;
   
+  local lType2::Type =
+    case f of
+      memberExpr(lhs, _, _) -> lhs.typerep
+    end;
+  lType2.otherName =
+    case f of
+      memberExpr(_, _, rhs) -> rhs.name
+    end;
+  lType2.otherTypes = a.typereps;
+  
   forwards to 
-    if lType.callProd.isJust
-    then lType.callProd.fromJust(f, a, top.location)
-    else callExprDefault(f, a, location=top.location);
+    case f of
+      memberExpr(lhs, deref, _) ->
+        if deref
+        then case lType2.memberDerefCallProd of
+          just(prod) -> prod(lhs, a, top.location)
+        | nothing() -> callExprDefault(f, a, location=top.location)
+        end
+        else case lType2.memberCallProd of
+          just(prod) -> prod(lhs, a, top.location)
+        | nothing() -> callExprDefault(f, a, location=top.location)
+        end
+    | _ ->
+      case lType.callProd of
+        just(prod) -> prod(f, a, top.location)
+      | nothing() -> callExprDefault(f, a, location=top.location)
+      end
+    end;
+}
+abstract production memberExpr
+top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
+{
+  top.globalDecls := lhs.globalDecls;
+  top.defs = lhs.defs;
+  top.freeVariables = lhs.freeVariables;
+  
+  local lType::Type = lhs.typerep;
+  lType.otherName = rhs.name;
+  
+  forwards to 
+    if deref
+    then case lType.memberDerefProd of
+      just(prod) -> prod(lhs, top.location)
+    | nothing() -> memberExprDefault(lhs, deref, rhs, location=top.location)
+    end
+    else case lType.memberProd of
+      just(prod) -> prod(lhs, top.location)
+    | nothing() -> memberExprDefault(lhs, deref, rhs, location=top.location)
+    end;
 }
 abstract production binaryOpExpr
 top::Expr ::= lhs::Expr  op::BinOp  rhs::Expr
@@ -53,26 +105,12 @@ top::Expr ::= lhs::Expr  op::BinOp  rhs::Expr
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   
   rhs.env = addEnv(lhs.defs, lhs.env);
-  
-  local lType::Type = 
-    case lhs of 
-      arraySubscriptExpr(l, r) -> l.typerep
-    | _ -> error("shouldn't happen")
-    end;
-  lType.otherType = 
-    case lhs of 
-      arraySubscriptExpr(l, r) -> r.typerep
-    | _ -> error("shouldn't happen")
-    end;
-  lType.otherType2 = rhs.typerep;
+  op.lop = lhs;
+  op.rop = rhs;
   
   forwards to
-    case lhs, op of -- TODO, it seems like this check belongs somewhere else
-      arraySubscriptExpr(l, r), assignOp(ao) ->
-        case lType.subscriptAssignProd of
-          just(p) -> p(l, r, ao, rhs, top.location)
-        | nothing() -> getBinaryOverload(top.env, top.returnType, lhs.typerep, op, rhs.typerep)(lhs, rhs, top.location)
-        end
-    | _, _ -> getBinaryOverload(top.env, top.returnType, lhs.typerep, op, rhs.typerep)(lhs, rhs, top.location)
+    case op.binaryProd of
+      just(prod) -> prod(lhs, rhs, top.location)
+    | nothing() -> binaryOpExprDefault(lhs, op, rhs, location=top.location)
     end;
 }

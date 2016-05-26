@@ -414,9 +414,9 @@ concrete productions top::PostfixExpr_c
         | nothing() -> ovrld:callExpr(e.ast, ast:nilExpr(), location=top.location)
         end; }
 | e::PostfixExpr_c '.' id::Identifier_t
-    { top.ast = ast:memberExpr(e.ast, false, ast:fromId(id), location=top.location); }
+    { top.ast = ovrld :memberExpr(e.ast, false, ast:fromId(id), location=top.location); }
 | e::PostfixExpr_c '->' id::Identifier_t
-    { top.ast = ast:memberExpr(e.ast, true, ast:fromId(id), location=top.location); }
+    { top.ast = ovrld:memberExpr(e.ast, true, ast:fromId(id), location=top.location); }
 | e::PostfixExpr_c '++'
     { top.ast = ovrld:unaryOpExpr(ast:postIncOp(location=$2.location), e.ast, location=top.location); }
 | e::PostfixExpr_c '--'
