@@ -43,30 +43,10 @@ IOVal<Integer> ::= args::[String] ioIn::IO
 
   local result :: ParseResult<cst:Root> = theParser(text.iovalue, cppFileName);
 
-  local ast :: abs:Root = result.parseTree.ast;
-  ast.env = addEnv( map(xcArgDef, xcArgs) , emptyEnv() );
+  local comp :: abs:Compilation = abs:compilation(result.parseTree.ast);
+  comp.env = addEnv( map(xcArgDef, xcArgs) , emptyEnv() );
 
-  local hostAst :: abs:Root = ast.abs:host;
-  hostAst.env = ast.env;
-  
-  local liftedAst :: abs:Root = hostAst.abs:lifted;
-  liftedAst.env = hostAst.env;
-  
-  local errors::[Message] = 
-    if !null(ast.errors)
-    then ast.errors
-    else {- if !null(hostAst.errors) -- host error checking dissabled for efficency reasons
-    then wrn(loc("", -1, -1, -1, -1, -1, -1),
-             "Errors in host tree:") :: hostAst.errors
-    else-} if !null(liftedAst.errors)
-    then wrn(loc("", -1, -1, -1, -1, -1, -1),
-             "Errors in lifted tree:") :: liftedAst.errors
-    else if !null(liftedAst.abs:globalDecls)
-    then [wrn(loc("Top level", -1, -1, -1, -1, -1, -1),
-              "globalDecls at top level in lifted tree: " ++ implode(", ", map(fst, liftedAst.abs:globalDecls)))]
-    else [];
-
-  local writePP :: IO = writeFile(ppFileName, show(80, liftedAst.pp), text.io);
+  local writePP :: IO = writeFile(ppFileName, show(80, comp.pp), text.io);
 
   return if null(args) then
     ioval(print("Usage: [ableC invocation] [file name] [c preprocessor arguments]\n", ioIn), 5)
@@ -77,19 +57,21 @@ IOVal<Integer> ::= args::[String] ioIn::IO
   else if !result.parseSuccess then
     ioval(print(result.parseErrors ++ "\n", text.io), 2)
   else if containsBy(stringEq, "--show-ast", args) then
-    ioval(print(substitute("edu:umn:cs:melt:", "", hackUnparse(ast)) ++ "\n", text.io), 0)
+    ioval(print(substitute("edu:umn:cs:melt:", "", hackUnparse(comp.abs:srcAst)) ++ "\n", text.io), 0)
   else if containsBy(stringEq, "--show-host-ast", args) then
-    ioval(print(substitute("edu:umn:cs:melt:", "", hackUnparse(hostAst)) ++ "\n", text.io), 0)
+    ioval(print(substitute("edu:umn:cs:melt:", "", hackUnparse(comp.abs:hostAst)) ++ "\n", text.io), 0)
   else if containsBy(stringEq, "--show-lifted-ast", args) then
-    ioval(print(substitute("edu:umn:cs:melt:", "", hackUnparse(liftedAst)) ++ "\n", text.io), 0)
+    ioval(print(substitute("edu:umn:cs:melt:", "", hackUnparse(comp.abs:liftedAst)) ++ "\n", text.io), 0)
   else if containsBy(stringEq, "--show-pp", args) then
-    ioval(print(show(100, ast.pp) ++ "\n", text.io), 0)
+    ioval(print(show(100, comp.abs:srcPP) ++ "\n", text.io), 0)
   else if containsBy(stringEq, "--show-host-pp", args) then
-    ioval(print(show(100, hostAst.pp) ++ "\n", text.io), 0)
-  else if !null(errors) && (containsBy(stringEq, "--force-trans", args) || !containsErrors(errors, false)) then
-    ioval(print(messagesToString(errors) ++ "\n", writePP), if containsErrors(errors, false) then 4 else 0)
-  else if !null(errors) then
-    ioval(print(messagesToString(errors) ++ "\n", text.io), 4)
+    ioval(print(show(100, comp.abs:hostPP) ++ "\n", text.io), 0)
+  else if containsBy(stringEq, "--show-lifted-pp", args) then
+    ioval(print(show(100, comp.abs:liftedPP) ++ "\n", text.io), 0)
+  else if !null(comp.errors) && (containsBy(stringEq, "--force-trans", args) || !containsErrors(comp.errors, false)) then
+    ioval(print(messagesToString(comp.errors) ++ "\n", writePP), if containsErrors(comp.errors, false) then 4 else 0)
+  else if !null(comp.errors) then
+    ioval(print(messagesToString(comp.errors) ++ "\n", text.io), 4)
   else
     ioval(writePP, 0);
 }
