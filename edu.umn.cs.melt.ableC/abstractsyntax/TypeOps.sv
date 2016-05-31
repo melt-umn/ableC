@@ -312,3 +312,24 @@ Boolean ::= lval::Type  rval::Type
     end;
 }
 
+function freshenRefIds
+Type ::= newEnv::Decorated Env t::Type
+{
+  return case t of
+    tagType(q, refIdTagType(k, n, r)) ->
+      case lookupTag(n, newEnv) of
+        refIdTagItem(tag, refId) :: _ -> tagType(q, refIdTagType(k, n, refId))
+      | _ -> error("ref id not found in new env")
+      end
+  | tagType(q, enumTagType(d)) -> tagType(q, enumTagType(d))
+  | atomicType(q, t) -> atomicType(q, freshenRefIds(newEnv, t))
+  | pointerType(q, t)  -> pointerType(q, freshenRefIds(newEnv, t))
+  | arrayType(t, q, sm, sub) -> arrayType(freshenRefIds(newEnv, t), q, sm, sub)
+  | functionType(t, noProtoFunctionType()) ->
+    functionType(freshenRefIds(newEnv, t), noProtoFunctionType())
+  | functionType(t, protoFunctionType(ts, v)) ->
+    functionType(freshenRefIds(newEnv, t), protoFunctionType(map(freshenRefIds(newEnv, _), ts), v))
+  | vectorType(t, s) -> vectorType(freshenRefIds(newEnv, t), s)
+  | _ -> t
+  end;
+}

@@ -83,13 +83,22 @@ top::BaseTypeExpr ::= msg::[Message]  ty::BaseTypeExpr
 abstract production directTypeExpr
 top::BaseTypeExpr ::= result::Type
 {
-  propagate host, lifted;
+  top.host = freshenDirectTypeExpr(result);
+  top.lifted = freshenDirectTypeExpr(result);
   top.pp = cat(result.lpp, result.rpp);
   top.typerep = result;
   top.errors := [];
   top.globalDecls := [];
   top.defs = [];
   top.freeVariables = [];
+}
+
+{-- When applying a functor attribute, we need to update the refIds in any types in directTypeExprs
+ - to point to the new refIds defined in the new tags -}
+abstract production freshenDirectTypeExpr
+top::BaseTypeExpr ::= result::Type
+{
+  forwards to directTypeExpr(freshenRefIds(top.env, result));
 }
 
 {-- A reference to a tag type. e.g. 'struct foo' not 'struct foo {...}' -}

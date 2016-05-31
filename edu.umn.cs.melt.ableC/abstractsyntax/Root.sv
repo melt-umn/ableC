@@ -19,6 +19,44 @@ top::Root ::= d::Decls
   d.returnType = nothing();
 }
 
+synthesized attribute srcAst::Root;
+synthesized attribute hostAst::Root;
+synthesized attribute liftedAst::Root;
+synthesized attribute srcPP::Document;
+synthesized attribute hostPP::Document;
+synthesized attribute liftedPP::Document;
+nonterminal Compilation with srcAst, hostAst, liftedAst, srcPP, hostPP, liftedPP, pp, errors, globalDecls, env;
+
+abstract production compilation
+top::Compilation ::= srcAst::Root
+{
+  srcAst.env = top.env;
+  production hostAst::Root = srcAst.host;
+  hostAst.env = top.env;
+  production liftedAst::Root = hostAst.lifted;
+  liftedAst.env = top.env;
+  
+  top.errors :=
+    if !null(srcAst.errors)
+    then srcAst.errors
+    else if !null(hostAst.errors)
+    then wrn(loc("", -1, -1, -1, -1, -1, -1), "Errors in host tree:") :: hostAst.errors
+    else if !null(liftedAst.errors)
+    then wrn(loc("", -1, -1, -1, -1, -1, -1), "Errors in lifted tree:") :: liftedAst.errors
+    else if !null(liftedAst.globalDecls)
+    then [wrn(loc("Top level", -1, -1, -1, -1, -1, -1),
+              "globalDecls at top level in lifted tree: " ++ implode(", ", map(fst, liftedAst.globalDecls)))]
+    else [];
+  
+  top.srcAst = srcAst;
+  top.hostAst = hostAst;
+  top.liftedAst = liftedAst;
+  top.srcPP = srcAst.pp;
+  top.hostPP = hostAst.pp;
+  top.liftedPP = liftedAst.pp;
+  top.pp = top.liftedPP;
+}
+
 {- There seem to be some efficiency issues with the way globalDecls are
    compupted and used.  We may want to do this computation a level higher
    (at the TranslationUnit level) and then not rely on forwarding, but

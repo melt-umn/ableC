@@ -52,55 +52,40 @@ IOVal<Integer> ::= args::[String] ioIn::IO
             printM(result.parseErrors ++ "\n");
             return 2;
           } else {
-            ast :: Decorated abs:Root =
-              decorate result.parseTree.ast with {
+            comp :: Decorated abs:Compilation =
+              decorate abs:compilation(result.parseTree.ast) with {
                 env = addEnv( map(xcArgDef, xcArgs) , emptyEnv() );
               };
-            hostAst :: Decorated abs:Root = decorate ast.abs:host with { env = ast.env; };
-            liftedAst :: Decorated abs:Root = decorate ast.abs:lifted with { env = ast.env; };
             if containsBy(stringEq, "--show-ast", args) then {
-              printM(substitute("edu:umn:cs:melt:", "", hackUnparse(hostAst)) ++ "\n");
+              printM(substitute("edu:umn:cs:melt:", "", hackUnparse(comp.abs:srcAst)) ++ "\n");
               return 0;
             }
             else if containsBy(stringEq, "--show-host-ast", args) then {
-              printM(substitute("edu:umn:cs:melt:", "", hackUnparse(hostAst)) ++ "\n");
+              printM(substitute("edu:umn:cs:melt:", "", hackUnparse(comp.abs:hostAst)) ++ "\n");
               return 0;
             }
             else if containsBy(stringEq, "--show-lifted-ast", args) then {
-              printM(substitute("edu:umn:cs:melt:", "", hackUnparse(liftedAst)) ++ "\n");
+              printM(substitute("edu:umn:cs:melt:", "", hackUnparse(comp.abs:liftedAst)) ++ "\n");
               return 0;
             }
             else if containsBy(stringEq, "--show-pp", args) then {
-              printM(show(100, ast.pp) ++ "\n");
+              printM(show(100, comp.abs:srcPP) ++ "\n");
               return 0;
             }
             else if containsBy(stringEq, "--show-host-pp", args) then {
-              printM(show(100, hostAst.pp) ++ "\n");
+              printM(show(100, comp.abs:hostPP) ++ "\n");
               return 0;
             }
             else if containsBy(stringEq, "--show-lifted-pp", args) then {
-              printM(show(100, liftedAst.pp) ++ "\n");
+              printM(show(100, comp.abs:liftedPP) ++ "\n");
               return 0;
             }
             else {
-              errors::[Message] = 
-                if !null(ast.errors)
-                then ast.errors
-                else {-if !null(hostAst.errors) -- host error checking dissabled for efficency reasons
-                then wrn(loc("", -1, -1, -1, -1, -1, -1),
-                         "Errors in host tree:") :: hostAst.errors
-                else -}if !null(liftedAst.errors)
-                then wrn(loc("", -1, -1, -1, -1, -1, -1),
-                        "Errors in lifted tree:") :: liftedAst.errors
-                else if !null(liftedAst.abs:globalDecls)
-                then [wrn(loc("Top level", -1, -1, -1, -1, -1, -1),
-                          "globalDecls at top level in lifted tree: " ++ implode(", ", map(fst, liftedAst.abs:globalDecls)))]
-                else [];
-              if !null(errors) then
-                printM(messagesToString(errors) ++ "\n");
-              if containsBy(stringEq, "--force-trans", args) || null(errors) then
-                writeFileM(ppFileName, show(80, liftedAst.pp));
-              if containsErrors(errors, false) then
+              if !null(comp.errors) then
+                printM(messagesToString(comp.errors) ++ "\n");
+              if containsBy(stringEq, "--force-trans", args) || null(comp.errors) then
+                writeFileM(ppFileName, show(80, comp.pp));
+              if containsErrors(comp.errors, false) then
                 return 4;
               else
                 return 0;

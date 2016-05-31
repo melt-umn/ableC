@@ -503,7 +503,8 @@ top::UnionDecl ::= attrs::[Attribute]  name::MaybeName  dcls::StructItemList
   top.errors := dcls.errors;
   top.globalDecls := dcls.globalDecls;
 
-  top.refId = name.tagRefId;
+  local maybeAttribRefIdName::Maybe<String> = getRefIdFromAttributes(attrs);
+  top.refId = fromMaybe(name.tagRefId, maybeAttribRefIdName);
   top.tagEnv = addEnv(dcls.localdefs, emptyEnv());
   
   -- If there is no forward declaration, and we have a name, then add a tag dcl for the refid.
