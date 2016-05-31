@@ -75,7 +75,7 @@ top::Env ::= e::Decorated Env
   top.refIds = tm:empty(compareString) :: e.refIds;
   top.misc = tm:empty(compareString) :: e.misc;
 }
-
+{-
 abstract production globalEnv_i
 top::Env ::= e::Decorated Env
 {
@@ -85,7 +85,7 @@ top::Env ::= e::Decorated Env
   top.refIds = [last(e.refIds)];
   top.misc = [last(e.misc)];
 }
-
+-}
 {- Definition list productions provide a way of folding up defs into Contribs lists
  -}
 
