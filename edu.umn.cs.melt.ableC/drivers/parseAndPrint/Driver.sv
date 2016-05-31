@@ -86,10 +86,10 @@ IOVal<Integer> ::= args::[String] ioIn::IO
               errors::[Message] = 
                 if !null(ast.errors)
                 then ast.errors
-                else if !null(hostAst.errors) -- host error checking dissabled for efficency reasons
+                else {-if !null(hostAst.errors) -- host error checking dissabled for efficency reasons
                 then wrn(loc("", -1, -1, -1, -1, -1, -1),
                          "Errors in host tree:") :: hostAst.errors
-                else if !null(liftedAst.errors)
+                else -}if !null(liftedAst.errors)
                 then wrn(loc("", -1, -1, -1, -1, -1, -1),
                         "Errors in lifted tree:") :: liftedAst.errors
                 else if !null(liftedAst.abs:globalDecls)
