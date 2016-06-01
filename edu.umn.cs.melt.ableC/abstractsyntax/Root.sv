@@ -3,19 +3,58 @@
 
 import edu:umn:cs:melt:ableC:abstractsyntax:builtins as builtinfunctions;
 
-nonterminal Root with pp, host<Root>, errors, env;
+nonterminal Root with pp, host<Root>, lifted<Root>, errors, globalDecls, env;
 
 abstract production root
 top::Root ::= d::Decls
 {
-  propagate host;
+  propagate host, lifted;
   
   top.pp = terminate(line(), d.pps);
-  top.errors := if null(d.globalDecls) then d.errors else error("Found globalDecls at root");
+  top.errors := d.errors;
+  top.globalDecls := d.globalDecls;
 --  d.env = addEnv(builtinfunctions:initialEnv;
   d.env = addEnv(builtinfunctions:getInitialEnvDefs(), top.env);
   d.isTopLevel = true;
   d.returnType = nothing();
+}
+
+synthesized attribute srcAst::Root;
+synthesized attribute hostAst::Root;
+synthesized attribute liftedAst::Root;
+synthesized attribute srcPP::Document;
+synthesized attribute hostPP::Document;
+synthesized attribute liftedPP::Document;
+nonterminal Compilation with srcAst, hostAst, liftedAst, srcPP, hostPP, liftedPP, pp, errors, globalDecls, env;
+
+abstract production compilation
+top::Compilation ::= srcAst::Root
+{
+  srcAst.env = top.env;
+  production hostAst::Root = srcAst.host;
+  hostAst.env = top.env;
+  production liftedAst::Root = hostAst.lifted;
+  liftedAst.env = top.env;
+  
+  top.errors :=
+    if !null(srcAst.errors)
+    then srcAst.errors
+    else if !null(hostAst.errors)
+    then wrn(loc("", -1, -1, -1, -1, -1, -1), "Errors in host tree:") :: hostAst.errors
+    else if !null(liftedAst.errors)
+    then wrn(loc("", -1, -1, -1, -1, -1, -1), "Errors in lifted tree:") :: liftedAst.errors
+    else if !null(liftedAst.globalDecls)
+    then [wrn(loc("Top level", -1, -1, -1, -1, -1, -1),
+              "globalDecls at top level in lifted tree: " ++ implode(", ", map(fst, liftedAst.globalDecls)))]
+    else [];
+  
+  top.srcAst = srcAst;
+  top.hostAst = hostAst;
+  top.liftedAst = liftedAst;
+  top.srcPP = srcAst.pp;
+  top.hostPP = hostAst.pp;
+  top.liftedPP = liftedAst.pp;
+  top.pp = top.liftedPP;
 }
 
 {- There seem to be some efficiency issues with the way globalDecls are
