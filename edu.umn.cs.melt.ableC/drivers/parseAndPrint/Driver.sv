@@ -84,7 +84,7 @@ IOVal<Integer> ::= args::[String] ioIn::IO
               if !null(comp.errors) then
                 printM(messagesToString(comp.errors) ++ "\n");
               if containsBy(stringEq, "--force-trans", args) || null(comp.errors) then
-                writeFileM(ppFileName, show(80, comp.pp));
+                writeFileM(ppFileName, show(80, comp.abs:finalPP));
               if containsErrors(comp.errors, false) then
                 return 4;
               else
