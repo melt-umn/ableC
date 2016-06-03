@@ -44,7 +44,7 @@ ignore terminal Spaces_t
   /[\t\ ]+/ 
   lexer classes {Ccomment};
 
-ignore terminal NewLine_t /\n/ 
+ignore terminal NewLine_t /[\n\r]+/ 
   lexer classes {Ccomment};
 
 {--

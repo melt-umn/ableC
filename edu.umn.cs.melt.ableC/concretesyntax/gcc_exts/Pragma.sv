@@ -2,11 +2,11 @@ grammar edu:umn:cs:melt:ableC:concretesyntax:gcc_exts;
 
 import edu:umn:cs:melt:ableC:concretesyntax:cppTags;
 
-ignore terminal PragmaMark /#pragma\ mark.*\n/ lexer classes {Ccomment};
+ignore terminal PragmaMark /#pragma\ mark.*([\n\r]+)/ lexer classes {Ccomment};
 
 terminal Pragma_t 'pragma';
 terminal RedefExtname_t 'redefine_extname';
-terminal Pack_t /pack\([^\)]*\)\n/;
+terminal Pack_t /pack\([^\)]*\)([\n\r]+)/;
 
 concrete productions top::ExternalDeclaration_c
 | '#' 'pragma' Pack_t

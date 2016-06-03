@@ -28,7 +28,7 @@ terminal Hash_t '#';
 
 
 -- I give up!
-ignore terminal CPP_Location_Tag_t /\#\ [0-9]+\ \"[^\"]+\"[\ 0-9]*\n/
+ignore terminal CPP_Location_Tag_t /\#\ [0-9]+\ \"[^\"]+\"[\ 0-9]*([\n\r]+)/
   action {
     filename = 
       substring(
