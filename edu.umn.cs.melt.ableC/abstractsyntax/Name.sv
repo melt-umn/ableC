@@ -148,7 +148,7 @@ function doValueRedeclarationCheckNoCompatible
   | v :: _ -> 
       [err(n.location, 
         "Redeclaration of " ++ n.name ++ ". Original (from line " ++
-        toString(v.sourceLocation.line))]
+        toString(v.sourceLocation.line) ++ ")")]
   end;
 }
 
