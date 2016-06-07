@@ -3,7 +3,7 @@
 abstract production typesCompatibleExpr
 top::Expr ::= l::TypeName  r::TypeName
 {
-  propagate host;
+  propagate host, lifted;
   top.pp = concat([text("__builtin_types_compatible_p("), l.pp, text(", "), r.pp, text(")")]);
   top.errors := l.errors ++ r.errors;
   top.globalDecls := l.globalDecls ++ r.globalDecls;
@@ -14,7 +14,7 @@ top::Expr ::= l::TypeName  r::TypeName
 abstract production vaArgExpr
 top::Expr ::= e::Expr  ty::TypeName
 {
-  propagate host;
+  propagate host, lifted;
   top.pp = concat([text("__builtin_va_arg("), e.pp, text(", "), ty.pp, text(")")]);
   top.errors := e.errors ++ ty.errors;
   top.globalDecls := e.globalDecls ++ ty.globalDecls;
@@ -26,7 +26,7 @@ top::Expr ::= e::Expr  ty::TypeName
 abstract production offsetofExpr
 top::Expr ::= ty::TypeName  e::MemberDesignator
 {
-  propagate host;
+  propagate host, lifted;
   top.pp = concat([text("__builtin_offsetof("), ty.pp, text(", "), e.pp, text(")")]);
   top.errors := ty.errors ++ e.errors;
   top.globalDecls := ty.globalDecls ++ e.globalDecls;
@@ -35,12 +35,12 @@ top::Expr ::= ty::TypeName  e::MemberDesignator
   top.typerep = builtinType([], signedType(intType()));
 }
 
-nonterminal MemberDesignator with pp, host<MemberDesignator>, errors, globalDecls, defs, env, returnType, freeVariables;
+nonterminal MemberDesignator with pp, host<MemberDesignator>, lifted<MemberDesignator>, errors, globalDecls, defs, env, returnType, freeVariables;
 
 abstract production initialMemberDesignator
 top::MemberDesignator ::= id::Name
 {
-  propagate host;
+  propagate host, lifted;
   top.pp = id.pp;
   top.errors := [];
   top.globalDecls := [];
@@ -50,7 +50,7 @@ top::MemberDesignator ::= id::Name
 abstract production fieldMemberDesignator
 top::MemberDesignator ::= d::MemberDesignator  id::Name
 {
-  propagate host;
+  propagate host, lifted;
   top.pp = concat([d.pp, text("."), id.pp]);
   top.errors := d.errors;
   top.globalDecls := d.globalDecls;
@@ -60,7 +60,7 @@ top::MemberDesignator ::= d::MemberDesignator  id::Name
 abstract production derefMemberDesignator
 top::MemberDesignator ::= d::MemberDesignator  id::Name
 {
-  propagate host;
+  propagate host, lifted;
   top.pp = concat([d.pp, text("->"), id.pp]);
   top.errors := d.errors;
   top.globalDecls := d.globalDecls;
@@ -70,7 +70,7 @@ top::MemberDesignator ::= d::MemberDesignator  id::Name
 abstract production arrayMemberDesignator
 top::MemberDesignator ::= d::MemberDesignator  e::Expr
 {
-  propagate host;
+  propagate host, lifted;
   top.pp = concat([d.pp, text("["), e.pp, text("]")]);
   top.errors := d.errors;
   top.globalDecls := d.globalDecls ++ e.globalDecls;
@@ -81,7 +81,7 @@ top::MemberDesignator ::= d::MemberDesignator  e::Expr
 abstract production isConstantExpr
 top::Expr ::= e::Expr
 {
-  propagate host;
+  propagate host, lifted;
   top.pp = concat([text("__builtin_constant_p("), e.pp, text(")")]);
   top.errors := e.errors;
   top.defs = e.defs;
@@ -93,7 +93,7 @@ top::Expr ::= e::Expr
 abstract production vaArgPackExpr
 top::Expr ::= 
 {
-  propagate host;
+  propagate host, lifted;
   top.pp = text("__builtin_va_arg_pack()");
   top.errors := [];
   top.globalDecls := [];
@@ -105,7 +105,7 @@ top::Expr ::=
 abstract production expectExpr
 top::Expr ::= eval::Expr  expected::Expr
 {
-  propagate host;
+  propagate host, lifted;
   top.pp = concat([text("__builtin_expect("), eval.pp, text(", "), expected.pp, text(")")]);
   top.errors := eval.errors ++ expected.errors;
   top.globalDecls := eval.globalDecls ++ expected.globalDecls;
@@ -117,7 +117,7 @@ top::Expr ::= eval::Expr  expected::Expr
 abstract production vaStartExpr
 top::Expr ::= lastParam::Name  valist::Name
 {
-  propagate host;
+  propagate host, lifted;
   top.pp = concat([text("__builtin_va_start("), lastParam.pp, text(", "), valist.pp, text(")")]);
   top.errors := [];
   top.globalDecls := [];
@@ -128,7 +128,7 @@ top::Expr ::= lastParam::Name  valist::Name
 abstract production vaEndExpr
 top::Expr ::= valist::Name
 {
-  propagate host;
+  propagate host, lifted;
   top.pp = concat([text("__builtin_va_end("), valist.pp, text(")")]);
   top.errors := [];
   top.globalDecls := [];

@@ -10,6 +10,7 @@ build.xml
 *.stdout
 *.stderr
 a.out
+out
 
 *.test
 *.test.out

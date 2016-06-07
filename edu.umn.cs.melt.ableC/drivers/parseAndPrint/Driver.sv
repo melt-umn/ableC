@@ -43,12 +43,10 @@ IOVal<Integer> ::= args::[String] ioIn::IO
 
   local result :: ParseResult<cst:Root> = theParser(text.iovalue, cppFileName);
 
-  local ast :: abs:Root = result.parseTree.ast;
-  ast.env = addEnv( map(xcArgDef, xcArgs) , emptyEnv() );
+  local comp :: abs:Compilation = abs:compilation(result.parseTree.ast);
+  comp.env = addEnv( map(xcArgDef, xcArgs) , emptyEnv() );
 
-  local hostAst :: abs:Root = ast.abs:host;
-
-  local writePP :: IO = writeFile(ppFileName, show(80, hostAst.pp), text.io);
+  local writePP :: IO = writeFile(ppFileName, show(80, comp.pp), text.io);
 
   return if null(args) then
     ioval(print("Usage: [ableC invocation] [file name] [c preprocessor arguments]\n", ioIn), 5)
@@ -59,11 +57,21 @@ IOVal<Integer> ::= args::[String] ioIn::IO
   else if !result.parseSuccess then
     ioval(print(result.parseErrors ++ "\n", text.io), 2)
   else if containsBy(stringEq, "--show-ast", args) then
-    ioval(print(hackUnparse(ast) ++ "\n", text.io), 0)
---  else if !null(ast.errors) then
---    ioval(print(messagesToString(ast.errors) ++ "\n", text.io), if containsErrors(ast.errors, false) then 4 else 0)
-  else if !null(ast.errors) || containsBy(stringEq, "--force-trans", args) then
-    ioval(print(messagesToString(ast.errors) ++ "\n", writePP), if containsErrors(ast.errors, false) then 4 else 0)
+    ioval(print(substitute("edu:umn:cs:melt:", "", hackUnparse(comp.abs:srcAst)) ++ "\n", text.io), 0)
+  else if containsBy(stringEq, "--show-host-ast", args) then
+    ioval(print(substitute("edu:umn:cs:melt:", "", hackUnparse(comp.abs:hostAst)) ++ "\n", text.io), 0)
+  else if containsBy(stringEq, "--show-lifted-ast", args) then
+    ioval(print(substitute("edu:umn:cs:melt:", "", hackUnparse(comp.abs:liftedAst)) ++ "\n", text.io), 0)
+  else if containsBy(stringEq, "--show-pp", args) then
+    ioval(print(show(100, comp.abs:srcPP) ++ "\n", text.io), 0)
+  else if containsBy(stringEq, "--show-host-pp", args) then
+    ioval(print(show(100, comp.abs:hostPP) ++ "\n", text.io), 0)
+  else if containsBy(stringEq, "--show-lifted-pp", args) then
+    ioval(print(show(100, comp.abs:liftedPP) ++ "\n", text.io), 0)
+  else if !null(comp.errors) && (containsBy(stringEq, "--force-trans", args) || !containsErrors(comp.errors, false)) then
+    ioval(print(messagesToString(comp.errors) ++ "\n", writePP), if containsErrors(comp.errors, false) then 4 else 0)
+  else if !null(comp.errors) then
+    ioval(print(messagesToString(comp.errors) ++ "\n", text.io), 4)
   else
     ioval(writePP, 0);
 }
@@ -74,6 +82,10 @@ Boolean ::= arg::String
 {
   return 
     arg=="--show-ast" ||
+    arg=="--show-host-ast" ||
+    arg=="--show-lifted-ast" ||
+    arg=="--show-host-pp" ||
+    arg=="--show-pp" ||
     arg=="--show-cpp" ||
     arg=="--force-trans" ||
     startsWith("--xc-", arg) ;

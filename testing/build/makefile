@@ -22,7 +22,12 @@ ifdef TESTING
 	silver -I . $(SILVER_INCLUDES) -o $(JAR_NAME) artifact &> $@.test.out && echo "passed" || (echo "failed" ; touch .tests_failed ; exit 1)
 else
 	touch artifact/Main.sv
+  ifneq ("$(wildcard .clean)","")
+	rm .clean
+	silver --clean -I . $(SILVER_INCLUDES) -o $(JAR_NAME) artifact
+  else
 	silver -I . $(SILVER_INCLUDES) -o $(JAR_NAME) artifact
+  endif
 endif
 
 %.c: %.xc $(JAR_NAME) $(TRANSLATE_DEPENDS)
@@ -76,6 +81,7 @@ testsclean:
 
 realclean: clean
 	find . -path ./.git -prune -o -type d -exec sh -c 'cd {} && rm -rf $(REALCLEAN_FILES)' ';'
+	touch .clean
 
 .PHONY: all tests clean cleantests realclean
 .INTERMEDIATE: $(INTERMEDIATES)

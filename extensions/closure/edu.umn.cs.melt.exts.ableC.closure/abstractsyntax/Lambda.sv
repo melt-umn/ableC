@@ -16,25 +16,10 @@ import silver:util:raw:treemap as tm;
 abstract production lambdaExpr
 e::Expr ::= captured::EnvNameList params::Parameters res::Expr
 {
-  -- TODO: Replace the use of location index as a unique name creation
-  -- mechanism once we have a better way to create unique names.
-  forwards to lambdaExpr_i(captured, params, res, e.location.index, location=e.location);
-}
-
-abstract production lambdaExpr_i
-e::Expr ::= captured::EnvNameList params::Parameters res::Expr fnNum::Integer
-{
-
-  local localErrs::[Message] =
+  e.errors <-
     (if !null(lookupValue("_closure", e.env)) then []
      else [err(e.location, "Closures require closure.h to be included.")]) ++
-    captured.errors ++ res.errors;
-  
-  e.globalDecls :=
-    params.globalDecls ++
-    (if null(localErrs)
-     then [pair(theName, functionDeclaration(fnDecl))]
-     else []);
+    captured.errors;
   
   e.typerep = closureType([], params.typereps, res.typerep);
   
@@ -46,7 +31,7 @@ e::Expr ::= captured::EnvNameList params::Parameters res::Expr fnNum::Integer
   res.returnType = just(res.typerep);
   
   local tagRefIdTypeItems::[Def] =
-    doubleMap(
+    zipWith(
       tagDef,
       tagItemNames,
       foldr(
@@ -55,7 +40,7 @@ e::Expr ::= captured::EnvNameList params::Parameters res::Expr fnNum::Integer
         map(
           lookupTag(_, e.env),
           tagItemNames))) ++
-    doubleMap(
+    zipWith(
       refIdDef,
       refIdItemNames,
       foldr(
@@ -64,7 +49,7 @@ e::Expr ::= captured::EnvNameList params::Parameters res::Expr fnNum::Integer
         map(
           lookupRefId(_, e.env),
           refIdItemNames))) ++
-    doubleMap(
+    zipWith(
       valueDef,
       typeValueItemNames,
       foldr(
@@ -112,7 +97,7 @@ e::Expr ::= captured::EnvNameList params::Parameters res::Expr fnNum::Integer
               tm:toList,
               e.env.values)))));
   
-  local theName::String = "_fn_" ++ toString(fnNum); 
+  local theName::String = "_fn_" ++ toString(genInt()); 
   local fnName::Name = name(theName, location=builtIn());
   
   local fnDecl::FunctionDecl =
@@ -155,11 +140,9 @@ e::Expr ::= captured::EnvNameList params::Parameters res::Expr fnNum::Integer
               name("_result", location=builtIn()),
               location=builtIn())))]));
   
-  forwards to 
-    if null(localErrs) then
-       fwrd
-    else
-      errorExpr(localErrs, location=e.location);
+  forwards to injectGlobalDecls(globalDecls, fwrd, location=e.location);
+  
+  local globalDecls::[Pair<String Decl>] = [pair(theName, functionDeclaration(fnDecl))];
 
   local fwrd::Expr =
     stmtExpr(
@@ -400,7 +383,7 @@ top::EnvNameList ::=
 abstract production exprFreeVariables
 top::EnvNameList ::=
 {
-  top.errors := []; -- Ignore warnings about variables being excluded
+  --top.errors := []; -- Ignore warnings about variables being excluded
   
   -- Have to use envContents for defs to avoid circular dependency of body freeVariables on generated env
   top.defs =
@@ -423,30 +406,6 @@ function isNotItemTypedef
 Boolean ::= i::Pair<String ValueItem>
 {
   return !i.snd.isItemTypedef;
-}
-
-function fst
-a ::= x::Pair<a b>
-{
-  return x.fst;
-}
-
-function removeDuplicatesBy
-[a] ::= eq::(Boolean ::= a a) l::[a]
-{
-  return if null(l)
-         then []
-         else if containsBy(eq, head(l), tail(l))
-         then removeDuplicatesBy(eq, tail(l))
-         else head(l) :: removeDuplicatesBy(eq, tail(l));
-}
-
-function doubleMap
-[a] ::= f::(a ::= b c) l1::[b] l2::[c]
-{
-  return if null(l1) || null(l2)
-         then []
-         else f(head(l1), head(l2)) :: doubleMap(f, tail(l1), tail(l2));
 }
 
 {-
