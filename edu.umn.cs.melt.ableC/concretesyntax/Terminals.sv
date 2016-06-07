@@ -1,5 +1,8 @@
 grammar edu:umn:cs:melt:ableC:concretesyntax;
 
+-- Prefix seperator specifies the default suffix for transparent prefixes that we append
+--prefix separator ":";
+
 {--
  - Largely exists to permit embedding into other languages. Allows easy
  - dominates relationship
