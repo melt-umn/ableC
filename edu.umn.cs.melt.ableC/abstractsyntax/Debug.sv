@@ -107,17 +107,17 @@ Document ::= scope::[Pair<String a>] showFunc::(Document ::= Pair<String a>)
 function showValueItemBinding
 Document ::= bnd::Pair<String ValueItem>
 {
- return concat( [ text(bnd.fst), text(" -> ") ] ); --, nestlines(10,bnd.snd.pp) ]);
+ return concat( [ text(bnd.fst), text(" -> "), text(hackUnparse(bnd.snd)) ] ); --, nestlines(10,bnd.snd.pp) ]);
 }
 function showTagItemBinding
 Document ::= bnd::Pair<String TagItem>
 {
- return concat( [ text(bnd.fst), text(" -> ") ] ); -- , nestlines(10,bnd.snd.pp) ]);
+ return concat( [ text(bnd.fst), text(" -> "), text(hackUnparse(bnd.snd)) ] ); -- , nestlines(10,bnd.snd.pp) ]);
 }
 function showRefIdItemBinding
 Document ::= bnd::Pair<String RefIdItem>
 {
- return concat( [ text(bnd.fst), text(" -> ") ] ); -- , nestlines(10,bnd.snd.pp) ]);
+ return concat( [ text(bnd.fst), text(" -> "), text(hackUnparse(bnd.snd)) ] ); -- , nestlines(10,bnd.snd.pp) ]);
 }
 
 

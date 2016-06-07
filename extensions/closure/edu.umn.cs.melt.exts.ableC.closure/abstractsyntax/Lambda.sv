@@ -16,7 +16,9 @@ import silver:util:raw:treemap as tm;
 abstract production lambdaExpr
 e::Expr ::= captured::EnvNameList params::Parameters res::Expr
 {
-  e.errors <-
+  e.pp = pp"lambda {${captured.pp}} (${ppImplode(text(", "), params.pps)}) . (${res.pp})";
+
+  local localErrs::[Message] =
     (if !null(lookupValue("_closure", e.env)) then []
      else [err(e.location, "Closures require closure.h to be included.")]) ++
     captured.errors;
@@ -192,7 +194,7 @@ e::Expr ::= captured::EnvNameList params::Parameters res::Expr
       location=builtIn());
 }
 
-nonterminal EnvNameList with env, defs, errors;
+nonterminal EnvNameList with env, defs, pp, errors;
 
 synthesized attribute envAllocTrans::Stmt occurs on EnvNameList;   -- gc mallocs env slots
 synthesized attribute envCopyInTrans::Stmt occurs on EnvNameList;  -- Copys env vars into _env
@@ -205,6 +207,12 @@ inherited attribute freeVariablesIn::[Name] occurs on EnvNameList;
 abstract production consEnvNameList
 top::EnvNameList ::= n::Name rest::EnvNameList
 {
+  top.pp =
+    case rest of
+      nilEnvNameList() -> pp"${n.pp}"
+    | _ -> pp"${n.pp}, ${rest.pp}"
+    end;
+  
   top.errors :=
     n.valueLookupCheck ++
     (if skipDef then [wrn(n.location, n.name ++ " cannot be captured")] else []) ++
@@ -347,6 +355,7 @@ top::EnvNameList ::= n::Name rest::EnvNameList
 abstract production nilEnvNameList
 top::EnvNameList ::=
 {
+  top.pp = pp"";
   top.errors := [];
   
   top.defs = [];  
@@ -359,6 +368,7 @@ top::EnvNameList ::=
 abstract production envContents
 top::EnvNameList ::=
 {
+  top.pp = pp"env_contents";
   top.errors := []; -- Ignore warnings about variables being excluded
   
   local contents::[Name] =
@@ -383,6 +393,7 @@ top::EnvNameList ::=
 abstract production exprFreeVariables
 top::EnvNameList ::=
 {
+  top.pp = pp"free_variables";
   --top.errors := []; -- Ignore warnings about variables being excluded
   
   -- Have to use envContents for defs to avoid circular dependency of body freeVariables on generated env
