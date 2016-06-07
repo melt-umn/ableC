@@ -27,7 +27,7 @@ done
 # Other variables
 export ABLEC_SOURCE="$ABLEC_PATH/edu.umn.cs.melt.ableC/**/* artifact/Main.sv"
 export SILVER_INCLUDES="-I . -I $ABLEC_PATH"
-export JAVA_FLAGS="-Xss20M -Xmx400M"
+export JAVA_FLAGS="-Xss20M -Xms40m -Xmx2000M"
 export CPPFLAGS=
 export TRANSLATE_DEPENDS=
 export CFLAGS="-g -std=gnu1x"
