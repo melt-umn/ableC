@@ -3,6 +3,8 @@
 
 import edu:umn:cs:melt:ableC:abstractsyntax:builtins as builtinfunctions;
 
+global fullErrorCheck::Boolean = true;
+
 nonterminal Root with pp, host<Root>, lifted<Root>, errors, globalDecls, env;
 
 abstract production root
@@ -40,6 +42,8 @@ top::Compilation ::= srcAst::Root
   top.errors :=
     if !null(srcAst.errors)
     then srcAst.errors
+    else if !fullErrorCheck
+    then []
     else if !null(hostAst.errors)
     then wrn(loc("", -1, -1, -1, -1, -1, -1), "Errors in host tree:") :: hostAst.errors
     else if !null(liftedAst.errors)
