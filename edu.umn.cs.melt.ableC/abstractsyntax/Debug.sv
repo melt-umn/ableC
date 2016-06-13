@@ -107,22 +107,18 @@ Document ::= scope::[Pair<String a>] showFunc::(Document ::= Pair<String a>)
 function showValueItemBinding
 Document ::= bnd::Pair<String ValueItem>
 {
- return concat( [ text(bnd.fst), text(" -> "), text(hackUnparse(bnd.snd)) ] ); --, nestlines(10,bnd.snd.pp) ]);
+ return concat( [ text(bnd.fst), text(" -> "), nestlines(10,bnd.snd.pp) ]);
 }
 function showTagItemBinding
 Document ::= bnd::Pair<String TagItem>
 {
- return concat( [ text(bnd.fst), text(" -> "), text(hackUnparse(bnd.snd)) ] ); -- , nestlines(10,bnd.snd.pp) ]);
+ return concat( [ text(bnd.fst), text(" -> "), nestlines(10,bnd.snd.pp) ]);
 }
 function showRefIdItemBinding
 Document ::= bnd::Pair<String RefIdItem>
 {
- return concat( [ text(bnd.fst), text(" -> "), text(hackUnparse(bnd.snd)) ] ); -- , nestlines(10,bnd.snd.pp) ]);
+ return concat( [ text(bnd.fst), text(" -> "), nestlines(10,bnd.snd.pp) ]);
 }
-
-
-
-{-
 
 -- Aspects over different "Item" types in Env --
 ------------------------------------------------
@@ -171,19 +167,19 @@ top::TagItem ::= tag::StructOrEnumOrUnion  refId::String
 aspect production errorTagItem
 top::TagItem ::=
 { top.pp = text("ErrorTagItem"); }
-
+{-
 aspect production adtRefIdTagItem
 t::TagItem ::= adtRefId::String structRefId::String
 { t.pp = text("ADT Tag: adtRefId=" ++ adtRefId ++ ", structRefId=" ++ structRefId); }
-
+-}
 
 
 attribute pp occurs on RefIdItem;
-
+{-
 aspect production adtRefIdItem
 t::RefIdItem ::= adt::Decorated ADTDecl s::Decorated StructDecl 
 { t.pp = text("ADTDecl, adt.name=" ++ adt.name ++ " -> struct ref id=" );}-- ++ s.refId); }
-
+-}
 aspect production structRefIdItem
 top::RefIdItem ::= s::Decorated StructDecl
 { top.pp = text("StructDecl: s.refId=" ++ s.refId); }
@@ -191,6 +187,3 @@ top::RefIdItem ::= s::Decorated StructDecl
 aspect production unionRefIdItem
 top::RefIdItem ::= s::Decorated UnionDecl
 { top.pp = text("UnionDecl"); }
-
-
--}
