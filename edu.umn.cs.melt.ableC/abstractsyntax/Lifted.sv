@@ -30,7 +30,7 @@ synthesized attribute globalDecls::[Pair<String Decl>] with ++;
 abstract production injectGlobalDecls
 top::Expr ::= globalDecls::[Pair<String Decl>] lifted::Expr
 {
- top.pp = pp"injectGlobalDecls {${text(implode(", ", names))}} (${lifted.pp})";
+ top.pp = pp"injectGlobalDecls {${ppImplode(pp"\n", decls.pps)}} (${lifted.pp})";
  top.host = injectGlobalDecls(zipWith(pair, names, unfoldDecl(decls.host)), lifted.host, location=top.location);
  
  local decls::Decls = foldDecl(map(snd, globalDecls));
