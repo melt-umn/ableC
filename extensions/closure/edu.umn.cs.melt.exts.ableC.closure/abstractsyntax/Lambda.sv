@@ -18,86 +18,19 @@ e::Expr ::= captured::EnvNameList params::Parameters res::Expr
 {
   e.pp = pp"lambda {${captured.pp}} (${ppImplode(text(", "), params.pps)}) . (${res.pp})";
 
-  local localErrs::[Message] =
+  local localErrors::[Message] =
     (if !null(lookupValue("_closure", e.env)) then []
      else [err(e.location, "Closures require closure.h to be included.")]) ++
-    captured.errors;
+    captured.errors ++ params.errors ++ res.errors;
   
   e.typerep = closureType([], params.typereps, res.typerep);
   
   local paramNames::[Name] = map(name(_, location=builtIn()), map(fst, foldr(append, [], map((.valueContribs), params.defs))));
   captured.freeVariablesIn = removeAllBy(nameEq, paramNames, removeDuplicateNames(res.freeVariables));
   
-  res.env = addEnv(params.defs ++ captured.defs ++ tagRefIdTypeItems, emptyEnv());
+  res.env = addEnv(params.defs, e.env);
   
   res.returnType = just(res.typerep);
-  
-  local tagRefIdTypeItems::[Def] =
-    zipWith(
-      tagDef,
-      tagItemNames,
-      foldr(
-        append,
-        [],
-        map(
-          lookupTag(_, e.env),
-          tagItemNames))) ++
-    zipWith(
-      refIdDef,
-      refIdItemNames,
-      foldr(
-        append,
-        [],
-        map(
-          lookupRefId(_, e.env),
-          refIdItemNames))) ++
-    zipWith(
-      valueDef,
-      typeValueItemNames,
-      foldr(
-        append,
-        [],
-        map(
-          lookupValue(_, e.env),
-          typeValueItemNames)));
-  
-  local tagItemNames::[String] =
-    removeDuplicatesBy(
-      stringEq,
-      map(
-        fst,
-        foldr(
-          append,
-          [],
-          map(
-            tm:toList,
-            e.env.tags))));
-            
-  local refIdItemNames::[String] =
-    removeDuplicatesBy(
-      stringEq,
-      map(
-        fst,
-        foldr(
-          append,
-          [],
-          map(
-            tm:toList,
-            e.env.refIds))));
-            
-  local typeValueItemNames::[String] =
-    removeDuplicatesBy(
-      stringEq,
-      map(
-        fst,
-        filter(
-          isItemTypedef,
-          foldr(
-            append,
-            [],
-            map(
-              tm:toList,
-              e.env.values)))));
   
   local theName::String = "_fn_" ++ toString(genInt()); 
   local fnName::Name = name(theName, location=builtIn());
@@ -141,8 +74,6 @@ e::Expr ::= captured::EnvNameList params::Parameters res::Expr
             declRefExpr(
               name("_result", location=builtIn()),
               location=builtIn())))]));
-  
-  forwards to injectGlobalDecls(globalDecls, fwrd, location=e.location);
   
   local globalDecls::[Pair<String Decl>] = [pair(theName, functionDeclaration(fnDecl))];
 
@@ -192,9 +123,11 @@ e::Expr ::= captured::EnvNameList params::Parameters res::Expr
         name("_result", location=builtIn()),
         location=builtIn()),
       location=builtIn());
+  
+  forwards to mkErrorCheck(localErrors, injectGlobalDecls(globalDecls, fwrd, location=e.location));
 }
 
-nonterminal EnvNameList with env, defs, pp, errors;
+nonterminal EnvNameList with env, pp, errors;
 
 synthesized attribute envAllocTrans::Stmt occurs on EnvNameList;   -- gc mallocs env slots
 synthesized attribute envCopyInTrans::Stmt occurs on EnvNameList;  -- Copys env vars into _env
@@ -213,10 +146,13 @@ top::EnvNameList ::= n::Name rest::EnvNameList
     | _ -> pp"${n.pp}, ${rest.pp}"
     end;
   
-  top.errors :=
-    n.valueLookupCheck ++
-    (if skipDef then [wrn(n.location, n.name ++ " cannot be captured")] else []) ++
-    rest.errors;
+  top.errors := n.valueLookupCheck ++ rest.errors;
+  top.errors <-
+    if skipDef
+    then if isNestedFunction
+         then [wrn(n.location, n.name ++ " cannot be captured: Cannot capture a nested function")]
+         else [wrn(n.location, n.name ++ " cannot be captured")]
+    else [];
   
   -- If true, then don't generate load/store code for this variable
   local skip::Boolean = 
@@ -231,7 +167,8 @@ top::EnvNameList ::= n::Name rest::EnvNameList
   -- If true, then don't capture this variable, even if though it is in the capture list
   local skipDef::Boolean = 
     case n.valueItem.typerep of
-      noncanonicalType(_) -> false -- TODO
+      functionType(_, _) -> isNestedFunction
+    | noncanonicalType(_) -> false -- TODO
     | tagType(_, refIdTagType(_, sName, _)) -> null(lookupRefId(sName, top.env))
     | pointerType(_, functionType(_, _)) -> true -- Temporary hack until pp for function pointer variable defs is fixed
     | _ -> false
@@ -256,11 +193,12 @@ top::EnvNameList ::= n::Name rest::EnvNameList
     | _ -> false
     end;
     
+  {-
   local isFunctionWithBody::Boolean =
     case n.valueItem of
       functionValueItem(functionDecl(_, _, _, _, _, _, _, _)) -> true
     | _ -> false
-    end;
+    end;-}
     
   local isNestedFunction::Boolean =
     case n.valueItem of
@@ -299,25 +237,6 @@ top::EnvNameList ::= n::Name rest::EnvNameList
       [],
       justInitializer(exprInitializer(envAccess)));
   
-  top.defs = 
-    if skipDef then rest.defs else
-      valueDef(
-        n.name,
-        declaratorValueItem(
-          decorate
-            declarator(
-              n,
-              baseTypeExpr(),
-              [],
-              nothingInitializer())
-          with {env = top.env;
-                baseType = addQualifiers([constQualifier()], varBaseType);
-                givenAttributes = [];
-                isTopLevel = false;
-                isTypedef = false;
-                returnType = error("returnType demanded by declarator in declaratorValueItem");})) ::
-      rest.defs;
-  
   top.envAllocTrans =
     if skip then rest.envAllocTrans else
       seqStmt(
@@ -338,16 +257,12 @@ top::EnvNameList ::= n::Name rest::EnvNameList
           location=builtIn())));
   
   top.envCopyOutTrans =
-    if skipDef || (isFunction && (!isFunctionWithBody || (isFunctionWithBody && !isNestedFunction))) then rest.envCopyOutTrans else
+    if skip then rest.envCopyOutTrans else
       seqStmt(
         rest.envCopyOutTrans,
-        case n.valueItem of
-          functionValueItem(functionDecl(_, fnquals, bty, mty, n, attrs, dcls, body)) ->
-            declStmt(functionDeclaration(functionDecl([], fnquals, bty, mty, n, attrs, dcls, body)))
-        | _ -> declStmt(variableDecls([], [], varBaseTypeExpr, consDeclarator(varDecl, nilDeclarator())))
-        end);
+        declStmt(variableDecls([], [], varBaseTypeExpr, consDeclarator(varDecl, nilDeclarator()))));
   
-  top.len = if skip || isNestedFunction then rest.len else rest.len + 1;
+  top.len = if skip then rest.len else rest.len + 1;
       
   rest.freeVariablesIn = error("freeVariablesIn demanded by tail of capture list");
 }
@@ -358,36 +273,10 @@ top::EnvNameList ::=
   top.pp = pp"";
   top.errors := [];
   
-  top.defs = [];  
   top.envCopyInTrans = nullStmt();
   top.envAllocTrans = nullStmt();
   top.envCopyOutTrans = nullStmt();
   top.len = 0;
-}
-
-abstract production envContents
-top::EnvNameList ::=
-{
-  top.pp = pp"env_contents";
-  top.errors := []; -- Ignore warnings about variables being excluded
-  
-  local contents::[Name] =
-    map(
-      name(_, location=builtIn()),
-      removeDuplicatesBy(
-        stringEq,
-        map(
-          fst,
-          filter(
-            isNotItemTypedef,
-            foldr(
-              append,
-              [],
-              map(
-                tm:toList,
-                top.env.values))))));
-  
-  forwards to foldr(consEnvNameList, nilEnvNameList(), contents);
 }
 
 abstract production exprFreeVariables
@@ -395,12 +284,6 @@ top::EnvNameList ::=
 {
   top.pp = pp"free_variables";
   --top.errors := []; -- Ignore warnings about variables being excluded
-  
-  -- Have to use envContents for defs to avoid circular dependency of body freeVariables on generated env
-  top.defs =
-    decorate envContents()
-    with {env = top.env;
-          freeVariablesIn = error("Free variables demanded by envContents");}.defs;
   
   local contents::[Name] = removeDuplicateNames(top.freeVariablesIn);
   
