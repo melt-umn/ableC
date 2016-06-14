@@ -133,11 +133,11 @@ terminal HexFloatConstantLongDouble_t /
 	[Ll]
 	/ lexer classes {Cliteral};
 
-terminal StringConstant_t      /[\"]([^\"]|[\\][\"])*[\"]/ lexer classes {Cliteral};
-terminal StringConstantU8_t  /u8[\"]([^\"]|[\\][\"])*[\"]/ lexer classes {Cliteral};
-terminal StringConstantL_t    /L[\"]([^\"]|[\\][\"])*[\"]/ lexer classes {Cliteral};
-terminal StringConstantU_t    /u[\"]([^\"]|[\\][\"])*[\"]/ lexer classes {Cliteral};
-terminal StringConstantUBig_t /U[\"]([^\"]|[\\][\"])*[\"]/ lexer classes {Cliteral};
+terminal StringConstant_t      /[\"]([^\"\\]|[\\].)*[\"]/ lexer classes {Cliteral};
+terminal StringConstantU8_t  /u8[\"]([^\"\\]|[\\].)*[\"]/ lexer classes {Cliteral};
+terminal StringConstantL_t    /L[\"]([^\"\\]|[\\].)*[\"]/ lexer classes {Cliteral};
+terminal StringConstantU_t    /u[\"]([^\"\\]|[\\].)*[\"]/ lexer classes {Cliteral};
+terminal StringConstantUBig_t /U[\"]([^\"\\]|[\\].)*[\"]/ lexer classes {Cliteral};
 
 terminal CharConstant_t      /[\']([^\']|[\\].)[\']/ lexer classes {Cliteral};
 terminal CharConstantL_t    /L[\']([^\']|[\\].)[\']/ lexer classes {Cliteral};
