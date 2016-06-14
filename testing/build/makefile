@@ -3,15 +3,17 @@ SHELL=/bin/bash
 # All other variables are set as environment variables
 
 EXAMPLES=$(filter-out $(wildcard *error*), $(wildcard example*.xc))
+C_FILES=$(EXAMPLES:.xc=.c)
 OBJECTS=$(EXAMPLES:.xc=.o)
 EXECUTABLES=$(EXAMPLES:.xc=.out)
 TESTS=$(EXAMPLES:.xc=.test)
 
 AUTOTESTS_SRC=$(wildcard example*.xc)
-AUTOTESTS=$(EXECUTABLE_DEPENDS) $(AUTOTESTS_SRC:.xc=.c) $(OBJECTS) $(EXECUTABLES) $(TESTS)
+AUTOTESTS_C_FILES=$(AUTOTESTS_SRC:.xc=.c)
+AUTOTESTS=$(EXECUTABLE_DEPENDS) $(AUTOTESTS_C_FILES) $(OBJECTS) $(EXECUTABLES) $(TESTS)
 
 # Also building all object files to prevent recompilation when linking dependancies change
-all: $(EXECUTABLE_DEPENDS) $(OBJECTS) $(EXECUTABLES) $(TESTS)
+all: $(EXECUTABLE_DEPENDS) $(C_FILES) $(OBJECTS) $(EXECUTABLES) $(TESTS)
 
 include $(INCLUDES)
 
