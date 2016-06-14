@@ -439,8 +439,9 @@ top::Expr ::=
 {
   -- pp doesn't depend on env
   top.pp = text("hack");
+  
   -- Forwarding based on env.
-  forwards to if false then error(hackUnparse(top.env)) else hackUnused(location=top.location);
+  forwards to if false then error(hackUnparse(top.env) ++ hackUnparse(top.returnType)) else hackUnused(location=top.location);
 }
 ---}
 

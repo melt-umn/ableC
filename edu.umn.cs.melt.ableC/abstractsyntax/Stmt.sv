@@ -439,9 +439,8 @@ top::Stmt ::=
   -- pp doesn't depend on env
   top.pp = text("hack");
   
-  -- No pp equation: make that need env too (via forwarding)
   -- Forwarding based on env.
-  forwards to if false then error(hackUnparse(top.env)) else hackUnusedStmt();
+  forwards to if false then error(hackUnparse(top.env) ++ hackUnparse(top.returnType)) else hackUnusedStmt();
 }---}
 {-
 abstract production blockCommentStmt
