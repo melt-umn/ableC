@@ -150,8 +150,8 @@ top::EnvNameList ::= n::Name rest::EnvNameList
   top.errors <-
     if skipDef
     then if isNestedFunction
-         then [wrn(n.location, n.name ++ " cannot be captured: Cannot capture a nested function")]
-         else [wrn(n.location, n.name ++ " cannot be captured")]
+         then [err(n.location, n.name ++ " cannot be captured: Cannot capture a nested function")]
+         else [err(n.location, n.name ++ " cannot be captured")]
     else [];
   
   -- If true, then don't generate load/store code for this variable
