@@ -43,7 +43,7 @@ IOVal<Integer> ::= args::[String] ioIn::IO
           systemM(
           fullCppCmd);
         if mkCppFile != 0 then {
-          printM("CPP call failed.\n");
+          printM("CPP call failed: " ++ fullCppCmd ++ "\n");
           return 3;
         } else {
           text :: String <- readFileM(cppFileName);
