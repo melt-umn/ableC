@@ -45,11 +45,6 @@ d::Decl ::= txt::String
   d.freeVariables = [];
 }
 
-
-
-
-
-
 {- ------------------------------------------------------------
    Functions and aspects to print out some components of the
    environment.  This maybe useful for some debugging purposes.
@@ -59,14 +54,16 @@ d::Decl ::= txt::String
 
    ------------------------------------------------------------
  -}
--- Seems to be causing flow dep issues?
 abstract production printEnv
 e::Expr ::=
 {
   e.errors := [];
   e.globalDecls := [];
   e.defs = [];
-  e.pp = comment("printEnv pp should be demanded through host pp", location=e.location).pp;
+  e.pp =
+    decorate comment("printEnv pp should be demanded through host pp", location=e.location)
+    with {env = e.env;
+          returnType = e.returnType;}.pp;
   forwards to comment( show(80,showEnv(e.env)), location=e.location );
 }
 
