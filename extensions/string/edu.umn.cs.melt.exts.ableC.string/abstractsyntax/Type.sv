@@ -37,6 +37,9 @@ top::BaseTypeExpr ::=
 abstract production stringType
 top::Type ::= 
 {
+  top.lpp = pp"string";
+  top.rpp = pp"";
+  
   top.lBinaryPlusProd =
     case top.otherType.toStringProd of
       just(p) -> just(appendString(_, _, location=_))
