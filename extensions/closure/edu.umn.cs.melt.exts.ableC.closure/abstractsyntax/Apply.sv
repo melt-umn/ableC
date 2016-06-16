@@ -3,6 +3,8 @@ grammar edu:umn:cs:melt:exts:ableC:closure:abstractsyntax;
 abstract production applyExpr
 e::Expr ::= fn::Expr args::Exprs
 {
+  e.pp = parens(concat([fn.pp, parens(ppImplode(cat(comma(), space()), args.pps))]));
+  
   local localErrs :: [Message] =
     case fn.typerep of
       closureType(_, _, _) -> args.argumentErrors

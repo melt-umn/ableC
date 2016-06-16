@@ -14,7 +14,7 @@ import silver:util:raw:treemap as tm;
 abstract production txtExpr
 e::Expr ::= txt::String
 {
-  propagate host;
+  propagate host, lifted;
   e.pp = text(txt);
   e.errors := [];
   e.globalDecls := [];
@@ -25,7 +25,7 @@ e::Expr ::= txt::String
 abstract production txtStmt
 s::Stmt ::= txt::String
 {
-  propagate host;
+  propagate host, lifted;
   s.pp = text(txt);
   s.errors := [];
   s.globalDecls := [];
@@ -37,7 +37,7 @@ s::Stmt ::= txt::String
 abstract production txtDecl
 d::Decl ::= txt::String
 {
-  propagate host;
+  propagate host, lifted;
   d.pp = text(txt);
   d.errors := [ ];
   d.globalDecls := [];
@@ -107,17 +107,17 @@ Document ::= scope::[Pair<String a>] showFunc::(Document ::= Pair<String a>)
 function showValueItemBinding
 Document ::= bnd::Pair<String ValueItem>
 {
- return concat( [ text(bnd.fst), text(" -> ") ] ); --, nestlines(10,bnd.snd.pp) ]);
+ return concat( [ text(bnd.fst), text(" -> "), text(hackUnparse(bnd.snd)) ] ); --, nestlines(10,bnd.snd.pp) ]);
 }
 function showTagItemBinding
 Document ::= bnd::Pair<String TagItem>
 {
- return concat( [ text(bnd.fst), text(" -> ") ] ); -- , nestlines(10,bnd.snd.pp) ]);
+ return concat( [ text(bnd.fst), text(" -> "), text(hackUnparse(bnd.snd)) ] ); -- , nestlines(10,bnd.snd.pp) ]);
 }
 function showRefIdItemBinding
 Document ::= bnd::Pair<String RefIdItem>
 {
- return concat( [ text(bnd.fst), text(" -> ") ] ); -- , nestlines(10,bnd.snd.pp) ]);
+ return concat( [ text(bnd.fst), text(" -> "), text(hackUnparse(bnd.snd)) ] ); -- , nestlines(10,bnd.snd.pp) ]);
 }
 
 

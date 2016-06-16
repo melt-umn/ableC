@@ -6,7 +6,7 @@
 abstract production realConstant
 top::Expr ::= c::NumericConstant
 {
-  propagate host;
+  propagate host, lifted;
   top.pp = c.pp;
   top.errors := [];
   top.globalDecls := [];
@@ -17,7 +17,7 @@ top::Expr ::= c::NumericConstant
 abstract production imaginaryConstant
 top::Expr ::= c::NumericConstant
 {
-  propagate host;
+  propagate host, lifted;
   top.pp = c.pp;
   top.errors := [];
   top.globalDecls := [];
@@ -32,7 +32,7 @@ top::Expr ::= c::NumericConstant
 abstract production characterConstant
 top::Expr ::= num::String  c::CharPrefix
 {
-  propagate host;
+  propagate host, lifted;
   top.pp = text(num);
   top.errors := [];
   top.globalDecls := [];
@@ -41,14 +41,14 @@ top::Expr ::= num::String  c::CharPrefix
   top.typerep = builtinType([], signedType(charType())); -- TODO: no idea
 }
 
-nonterminal NumericConstant with location, pp, host<NumericConstant>, errors, env, constanttyperep;
+nonterminal NumericConstant with location, pp, host<NumericConstant>, lifted<NumericConstant>, errors, env, constanttyperep;
 
 synthesized attribute constanttyperep :: BuiltinType;
 
 abstract production integerConstant
 top::NumericConstant ::= num::String  unsigned::Boolean  suffix::IntSuffix
 {
-  propagate host;
+  propagate host, lifted;
   top.pp = text(num);
   top.errors := [];
   top.constanttyperep = if unsigned then unsignedType(suffix.constinttyperep) else signedType(suffix.constinttyperep);
@@ -56,7 +56,7 @@ top::NumericConstant ::= num::String  unsigned::Boolean  suffix::IntSuffix
 abstract production hexIntegerConstant
 top::NumericConstant ::= num::String  unsigned::Boolean  suffix::IntSuffix
 {
-  propagate host;
+  propagate host, lifted;
   top.pp = text(num);
   top.errors := [];
   top.constanttyperep = if unsigned then unsignedType(suffix.constinttyperep) else signedType(suffix.constinttyperep);
@@ -64,7 +64,7 @@ top::NumericConstant ::= num::String  unsigned::Boolean  suffix::IntSuffix
 abstract production octIntegerConstant
 top::NumericConstant ::= num::String  unsigned::Boolean  suffix::IntSuffix
 {
-  propagate host;
+  propagate host, lifted;
   top.pp = text(num);
   top.errors := [];
   top.constanttyperep = if unsigned then unsignedType(suffix.constinttyperep) else signedType(suffix.constinttyperep);
@@ -73,7 +73,7 @@ top::NumericConstant ::= num::String  unsigned::Boolean  suffix::IntSuffix
 abstract production floatConstant
 top::NumericConstant ::= num::String  suffix::FloatSuffix
 {
-  propagate host;
+  propagate host, lifted;
   top.pp = text(num);
   top.errors := [];
   top.constanttyperep = realType(suffix.constfloattyperep);
@@ -81,7 +81,7 @@ top::NumericConstant ::= num::String  suffix::FloatSuffix
 abstract production hexFloatConstant
 top::NumericConstant ::= num::String  suffix::FloatSuffix
 {
-  propagate host;
+  propagate host, lifted;
   top.pp = text(num);
   top.errors := [];
   top.constanttyperep = realType(suffix.constfloattyperep);

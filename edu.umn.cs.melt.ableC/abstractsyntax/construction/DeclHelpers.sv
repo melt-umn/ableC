@@ -71,6 +71,29 @@ Stmt ::= n::String typ::Type v::Expr l::Location
           ) ;
 }
 
+function makeDeclIntInit
+Decl ::= n::String val::String l::Location
+{
+  return makeDeclIntGeneral( 
+           n, 
+           justInitializer(
+             exprInitializer( mkIntExpr(val, l) ) ),
+           l);
+}
+function makeDeclIntGeneral
+Decl ::= n::String init::MaybeInitializer l::Location
+{
+  return variableDecls( [], [], 
+           directTypeExpr(
+             builtinType([], signedType(intType()))),
+           consDeclarator( 
+             declarator( name(n, location=l), baseTypeExpr(), [], 
+               init) , 
+             nilDeclarator() 
+           ) ) ;
+}
+
+
 {-
 function mkDeclGeneral
 Stmt ::= n::String type: init::MaybeInitializer l::Location

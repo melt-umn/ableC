@@ -1,5 +1,8 @@
 grammar edu:umn:cs:melt:ableC:concretesyntax;
 
+-- Prefix seperator specifies the default suffix for transparent prefixes that we append
+--prefix separator ":";
+
 {--
  - Largely exists to permit embedding into other languages. Allows easy
  - dominates relationship
@@ -41,7 +44,7 @@ ignore terminal Spaces_t
   /[\t\ ]+/ 
   lexer classes {Ccomment};
 
-ignore terminal NewLine_t /\n/ 
+ignore terminal NewLine_t /[\n\r]+/ 
   lexer classes {Ccomment};
 
 {--

@@ -1,5 +1,14 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax:env;
 
+{-
+ - The enivronment in ableC is represented as a nonterminal which is used to build up various lists
+ - of 'scopes'.  Each scope is a treemap that is used to look up a value.  If the value is not
+ - found in the current scope, then the next one is tried, etc.  The last scope represents the
+ - global level.  This is to allow names in the environment to be shadowed by a name in a lower
+ - scope, while still preventing a name from being declared twice in the local scope.  
+ - Contribs is just a list of items to add to a scope.  
+ -}
+
 type Scope<a> = [tm:Map<String a>];
 type Contribs<a> = [Pair<String a>];
 
@@ -32,7 +41,12 @@ function readScope_i
   end;
 }
 
--- Environment representation productions
+{- Environment representation productions provide implementations for env functions
+ - emptyEnv_i creates the basic environment with empty global scopes
+ - addEnv_i adds provided defs to the current (first on list) scope
+ - openScope_i adds a new scope to the scope lists to which new elements will be added by default
+ - globalEnv_i gets the last (global) scope from the scope lists
+ -}
 
 abstract production emptyEnv_i
 top::Env ::=
@@ -61,8 +75,19 @@ top::Env ::= e::Decorated Env
   top.refIds = tm:empty(compareString) :: e.refIds;
   top.misc = tm:empty(compareString) :: e.misc;
 }
-
--- Definition list productions
+{-
+abstract production globalEnv_i
+top::Env ::= e::Decorated Env
+{
+  top.labels = [last(e.labels)];
+  top.tags = [last(e.tags)];
+  top.values = [last(e.values)];
+  top.refIds = [last(e.refIds)];
+  top.misc = [last(e.misc)];
+}
+-}
+{- Definition list productions provide a way of folding up defs into Contribs lists
+ -}
 
 abstract production nilDefs
 top::Defs ::=

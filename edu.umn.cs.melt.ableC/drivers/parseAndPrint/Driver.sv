@@ -5,6 +5,7 @@ imports edu:umn:cs:melt:ableC:abstractsyntax as abs;
 
 imports silver:langutil;
 imports silver:langutil:pp;
+imports core:monad;
 
 import edu:umn:cs:melt:ableC:abstractsyntax:env ; --only env, emptyEnv;
 
@@ -22,50 +23,80 @@ IOVal<Integer> ::= args::[String] ioIn::IO
   local cppArgs :: [String] = partitionedArgs.snd;
   local xcArgs :: [String] = partitionedArgs.fst;
   
-  local isF :: IOVal<Boolean> = isFile(fileName, ioIn);
-
-  local cppCmd :: String = "gcc -E -x c -D _POSIX_C_SOURCE -std=gnu1x -I . " ++
-    cppOptions;
-  local cppOptions :: String =
-    if length(args) >= 2 then implode(" ", cppArgs) else "" ;
-
-  -- Run C pre processor over the file.
+  local cppOptions :: String = if length(args) >= 2 then implode(" ", cppArgs) else "" ;
+  local cppCmd :: String = "gcc -E -x c -D _POSIX_C_SOURCE -std=gnu1x -I . " ++ cppOptions;
   local fullCppCmd :: String = cppCmd ++ " \"" ++ fileName ++ "\" > " ++ cppFileName;
-  local mkCppFile :: IOVal<Integer> =
-    system(
-      fullCppCmd,  
-      if containsBy(stringEq, "--show-cpp", args)
-      then print("CPP command: " ++ fullCppCmd ++ "\n", isF.io)
-      else isF.io);
-
-  -- Read the output of CPP and parse it.
-  local text :: IOVal<String> = readFile(cppFileName, mkCppFile.io);
-
-  local result :: ParseResult<cst:Root> = theParser(text.iovalue, cppFileName);
-
-  local ast :: abs:Root = result.parseTree.ast;
-  ast.env = addEnv( map(xcArgDef, xcArgs) , emptyEnv() );
-
-  local hostAst :: abs:Root = ast.abs:host;
-
-  local writePP :: IO = writeFile(ppFileName, show(80, hostAst.pp), text.io);
-
-  return if null(args) then
-    ioval(print("Usage: [ableC invocation] [file name] [c preprocessor arguments]\n", ioIn), 5)
-  else if !isF.iovalue then
-    ioval(print("File \"" ++ fileName ++ "\" not found.\n", isF.io), 1)
-  else if mkCppFile.iovalue != 0 then
-    ioval(print("CPP call failed.\n", mkCppFile.io), 3)
-  else if !result.parseSuccess then
-    ioval(print(result.parseErrors ++ "\n", text.io), 2)
-  else if containsBy(stringEq, "--show-ast", args) then
-    ioval(print(hackUnparse(ast) ++ "\n", text.io), 0)
---  else if !null(ast.errors) then
---    ioval(print(messagesToString(ast.errors) ++ "\n", text.io), if containsErrors(ast.errors, false) then 4 else 0)
-  else if !null(ast.errors) || containsBy(stringEq, "--force-trans", args) then
-    ioval(print(messagesToString(ast.errors) ++ "\n", writePP), if containsErrors(ast.errors, false) then 4 else 0)
-  else
-    ioval(writePP, 0);
+  
+  local result::IOMonad<Integer> = do (bindIO, returnIO) {
+    if null(args) then {
+      printM("Usage: [ableC invocation] [file name] [c preprocessor arguments]\n");
+      return 5;
+    } else {
+      isF::Boolean <- isFileM(fileName);
+      if !isF then {
+        printM("File \"" ++ fileName ++ "\" not found.\n");
+        return 1;
+      } else {
+        if containsBy(stringEq, "--show-cpp", args) then
+          printM("CPP command: " ++ fullCppCmd ++ "\n");
+        mkCppFile::Integer <-
+          systemM(
+          fullCppCmd);
+        if mkCppFile != 0 then {
+          printM("CPP call failed.\n");
+          return 3;
+        } else {
+          text :: String <- readFileM(cppFileName);
+          result :: ParseResult<cst:Root> = theParser(text, cppFileName);
+          if !result.parseSuccess then {
+            printM(result.parseErrors ++ "\n");
+            return 2;
+          } else {
+            comp :: Decorated abs:Compilation =
+              decorate abs:compilation(result.parseTree.ast) with {
+                env = addEnv( map(xcArgDef, xcArgs) , emptyEnv() );
+              };
+            if containsBy(stringEq, "--show-ast", args) then {
+              printM(substitute("edu:umn:cs:melt:", "", hackUnparse(comp.abs:srcAst)) ++ "\n");
+              return 0;
+            }
+            else if containsBy(stringEq, "--show-host-ast", args) then {
+              printM(substitute("edu:umn:cs:melt:", "", hackUnparse(comp.abs:hostAst)) ++ "\n");
+              return 0;
+            }
+            else if containsBy(stringEq, "--show-lifted-ast", args) then {
+              printM(substitute("edu:umn:cs:melt:", "", hackUnparse(comp.abs:liftedAst)) ++ "\n");
+              return 0;
+            }
+            else if containsBy(stringEq, "--show-pp", args) then {
+              printM(show(100, comp.abs:srcPP) ++ "\n");
+              return 0;
+            }
+            else if containsBy(stringEq, "--show-host-pp", args) then {
+              printM(show(100, comp.abs:hostPP) ++ "\n");
+              return 0;
+            }
+            else if containsBy(stringEq, "--show-lifted-pp", args) then {
+              printM(show(100, comp.abs:liftedPP) ++ "\n");
+              return 0;
+            }
+            else {
+              if !null(comp.errors) then
+                printM(messagesToString(comp.errors) ++ "\n");
+              if containsBy(stringEq, "--force-trans", args) || null(comp.errors) then
+                writeFileM(ppFileName, show(80, comp.abs:finalPP));
+              if containsErrors(comp.errors, false) then
+                return 4;
+              else
+                return 0;
+            }
+          }
+        }
+      }
+    }
+  };
+  
+  return evalIO(result, ioIn);
 }
 
 
@@ -74,6 +105,11 @@ Boolean ::= arg::String
 {
   return 
     arg=="--show-ast" ||
+    arg=="--show-host-ast" ||
+    arg=="--show-lifted-ast" ||
+    arg=="--show-pp" ||
+    arg=="--show-host-pp" ||
+    arg=="--show-lifted-pp" ||
     arg=="--show-cpp" ||
     arg=="--force-trans" ||
     startsWith("--xc-", arg) ;
