@@ -30,13 +30,13 @@ int main(int argc, char **argv) {
   if (d != "abcdefghij")
     return 4;
 
-  string e = tostring(-1234 + 5);
+  string e = show(-1234 + 5);
   printf("e: %s\n", e);
 
   if (e != "-1229")
     return 5;
   
-  string f = tostring(-1234) + 5;
+  string f = show(-1234) + 5;
   printf("f: %s\n", f);
 
   if (f != "-12345")
@@ -55,7 +55,7 @@ int main(int argc, char **argv) {
   if (g != "xyzxyzxyzxyzxyzxyzxyz")
     return 8;
 
-  string i = tostring(3.14);
+  string i = show(3.14);
   printf("i: %s\n", i);
 
   if (i != "3.140000")

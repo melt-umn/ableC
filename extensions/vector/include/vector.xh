@@ -108,7 +108,7 @@ static bool _equal_vectors(_vector v1, _vector v2, _EqFun eq) {
   return true;
 }
 
-static string _to_str_vector(_vector v, _ToStringFun to_string) {
+static string _showVector(_vector v, _ToStringFun to_string) {
   if (v->length == 0)
     return "[]";
   string result = "[" + to_string(v->contents[0]);

@@ -2,32 +2,36 @@ grammar edu:umn:cs:melt:exts:ableC:string:abstractsyntax;
 
 import edu:umn:cs:melt:ableC:abstractsyntax:overload;
 
-synthesized attribute toStringProd::Maybe<(Expr ::= Expr Location)> occurs on Type, BuiltinType;--, IntegerType, RealType;
+synthesized attribute showProd::Maybe<(Expr ::= Expr Location)> occurs on Type, BuiltinType;--, IntegerType, RealType;
+synthesized attribute pointerShowProd::Maybe<(Expr ::= Expr Location)> occurs on Type, BuiltinType;--, IntegerType, RealType;
 
 aspect default production
 top::Type ::=
 {
-  top.toStringProd = nothing();
+  top.showProd = nothing();
+  top.pointerShowProd = nothing();
 }
 
 aspect default production
 top::BuiltinType ::=
 {
-  top.toStringProd = nothing();
+  top.showProd = nothing();
+  top.pointerShowProd = nothing();
 }
 {-
 aspect default production
 top::IntegerType ::=
 {
-  top.toStringProd = nothing();
+  top.showProd = nothing();
 }
 
 aspect default production
 top::RealType ::=
 {
-  top.toStringProd = nothing();
+  top.showProd = nothing();
 }
 -}
+
 abstract production stringTypeExpr 
 top::BaseTypeExpr ::= 
 {
@@ -41,14 +45,14 @@ top::Type ::=
   top.rpp = pp"";
   
   top.lBinaryPlusProd =
-    case top.otherType.toStringProd of
+    case top.otherType.showProd of
       just(p) -> just(appendString(_, _, location=_))
     | _ -> nothing()
     end;
   top.rBinaryPlusProd = top.lBinaryPlusProd;
   
   top.lBinaryMinusProd =
-    case top.otherType.toStringProd of
+    case top.otherType.showProd of
       just(p) -> just(removeString(_, _, location=_))
     | _ -> nothing()
     end;
@@ -96,7 +100,7 @@ top::Type ::=
     | _ -> nothing()
     end;
   
-  top.toStringProd = just(constructStringFromString(_, location=_));
+  top.showProd = just(showString(_, location=_));
 
   forwards to pointerType([], builtinType([constQualifier()], signedType(charType())));
 }
@@ -104,42 +108,52 @@ top::Type ::=
 aspect production pointerType
 top::Type ::= quals::[Qualifier] sub::Type
 {
-  top.toStringProd =
-    case sub of
-      builtinType(_, signedType(charType())) -> just(constructStringFromString(_, location=_))
-    | builtinType(_, unsignedType(charType())) -> just(constructStringFromString(_, location=_))
-    | _ -> nothing()
+  top.showProd =
+    case sub.pointerShowProd of
+      just(prod) -> just(prod)
+    | nothing() -> just(showPointer(_, location=_))
     end;
 }
 
 aspect production builtinType
 top::Type ::= quals::[Qualifier] sub::BuiltinType
 {
-  top.toStringProd = sub.toStringProd;
+  top.showProd = sub.showProd;
+  top.pointerShowProd = sub.pointerShowProd;
 }
 
 aspect production realType
 top::BuiltinType ::= sub::RealType
 {
-  top.toStringProd = just(constructStringFromFloat(_, location=_));
+  top.showProd = just(showFloat(_, location=_));
 }
 
 aspect production signedType
 top::BuiltinType ::= sub::IntegerType
 {
-  top.toStringProd = 
+  top.showProd = 
     case sub of
-      charType() -> just(constructStringFromChar(_, location=_))
-    | _ -> just(constructStringFromInt(_, location=_))
+      charType() -> just(showChar(_, location=_))
+    | _ -> just(showInt(_, location=_))
+    end;
+  top.pointerShowProd =
+    case sub of
+      charType() -> just(showString(_, location=_))
+    | _ -> nothing()
     end;
 }
 
 aspect production unsignedType
 top::BuiltinType ::= sub::IntegerType
 {
-  top.toStringProd = 
+  top.showProd = 
     case sub of
-      charType() -> just(constructStringFromChar(_, location=_))
-    | _ -> just(constructStringFromInt(_, location=_))
+      charType() -> just(showChar(_, location=_))
+    | _ -> just(showInt(_, location=_))
+    end;
+  top.pointerShowProd =
+    case sub of
+      charType() -> just(showString(_, location=_))
+    | _ -> nothing()
     end;
 }

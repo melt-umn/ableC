@@ -1,4 +1,4 @@
-grammar edu:umn:cs:melt:exts:ableC:string:concretesyntax:constructor;
+grammar edu:umn:cs:melt:exts:ableC:string:concretesyntax:show;
 
 imports edu:umn:cs:melt:ableC:concretesyntax;
 imports silver:langutil only ast;
@@ -13,9 +13,9 @@ import edu:umn:cs:melt:exts:ableC:string;
 -- Spurious import, to trigger the tests on build.
 import edu:umn:cs:melt:exts:ableC:string:mda_test;
 
-marking terminal ToString_t 'tostring' lexer classes {Ckeyword};
+marking terminal Show_t 'show' lexer classes {Ckeyword};
 
 -- Someday, we may overload function application instead
 concrete productions top::PrimaryExpr_c
-| 'tostring' '(' s::Expr_c ')'
-  { top.ast = constructString(s.ast, location=top.location); }
+| 'show' '(' s::Expr_c ')'
+  { top.ast = showExpr(s.ast, location=top.location); }

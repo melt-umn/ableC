@@ -261,13 +261,13 @@ top::Expr ::= lhs::Expr index::Expr op::AssignOp rhs::Expr
     end;
 }
 
-abstract production vectorToString
+abstract production showVector
 top::Expr ::= e::Expr
 {
   local subType::Type = 
     case e.typerep of
       vectorType(_, t) -> t
-    | _ -> error("vectorToString on non-vector")
+    | _ -> error("showVector on non-vector")
     end;
 
   local paramName::Name = name("elem", location=builtIn());
@@ -294,7 +294,7 @@ top::Expr ::= e::Expr
       nilDecl(),
       returnStmt(
         justExpr(
-          constructString(
+          showExpr(
             unaryOpExpr(
               dereferenceOp(location=builtIn()),
               explicitCastExpr(
@@ -312,7 +312,7 @@ top::Expr ::= e::Expr
     stmtExpr(
       declStmt(functionDeclaration(fnDecl)),
       directCallExpr(
-        name("_to_str_vector", location=builtIn()),
+        name("_showVector", location=builtIn()),
         consExpr(
           e,
           consExpr(

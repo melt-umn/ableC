@@ -67,9 +67,9 @@ top::Type ::= qs::[Qualifier] sub::Type
     | _, _ -> nothing()
     end;
   
-  top.toStringProd =
-    case sub.toStringProd of
-      just(_) -> just(vectorToString(_, location=_))
+  top.showProd =
+    case sub.showProd of
+      just(_) -> just(showVector(_, location=_))
     | nothing() -> nothing()
     end;
 
