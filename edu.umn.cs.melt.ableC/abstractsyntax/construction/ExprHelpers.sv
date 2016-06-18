@@ -1,24 +1,41 @@
-
+-- n
 function mkIntConst
 Expr ::= n::Integer l::Location
-{
-  return
+{ return
     realConstant(
       integerConstant (toString(n), false, noIntSuffix(),location=l),
       location=l
     );
 }
 
+-- left + right
 function mkAdd
 Expr ::= left::Expr  right::Expr  l::Location
-{
-  return
+{ return
     binaryOpExpr (
       left,
       numOp(addOp(location=l),location=l),
       right,
       location=l
    ) ;
+}
+
+-- left && right
+function mkAnd
+Expr ::= left::Expr  right::Expr  l::Location
+{ return
+    binaryOpExpr (
+      left,
+      boolOp(andBoolOp(location=l),location=l),
+      right,
+      location=l
+   ) ;
+}
+
+-- & e
+function mkAddressOf
+Expr ::= e::Expr l::Location
+{ return unaryOpExpr( addressOfOp(location=l), e, location=l );
 }
 
 -- Expr --
