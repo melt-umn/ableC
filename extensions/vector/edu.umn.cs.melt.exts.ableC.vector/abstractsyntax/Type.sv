@@ -9,7 +9,6 @@ top::BaseTypeExpr ::= sub::TypeName
   forwards to typedefTypeExpr([], name("_vector", location=builtIn()));
 }
 
--- Passing the refId is kind of a hack, because it is always the same.  However, the env isn't available to look it up
 abstract production vectorType
 top::Type ::= qs::[Qualifier] sub::Type
 {
@@ -85,6 +84,6 @@ top::Type ::= qs::[Qualifier] sub::Type
             [],
             refIdTagType(
               structSEU(),
-              "_vector",
+              "_vector_s",
               "edu:umn:cs:melt:exts:ableC:vector:_vector_s")))));
 }

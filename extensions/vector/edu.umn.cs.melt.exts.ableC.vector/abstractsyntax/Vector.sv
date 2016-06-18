@@ -1,7 +1,7 @@
 grammar edu:umn:cs:melt:exts:ableC:vector:abstractsyntax;
 
 imports silver:langutil;
-imports silver:langutil:pp with implode as ppImplode ;
+imports silver:langutil:pp with implode as ppImplode;
 
 imports edu:umn:cs:melt:ableC:abstractsyntax hiding vectorType;
 imports edu:umn:cs:melt:ableC:abstractsyntax:construction;
@@ -28,10 +28,10 @@ top::Expr ::= sub::TypeName e::Exprs
       location=top.location);
 }
 
-function vectorInitStmt
-Stmt ::= e::Exprs
+abstract production vectorInitStmt
+top::Stmt ::= e::Exprs
 {
-  return
+  forwards to
     case e of
       consExpr(h, t) ->
         seqStmt(
@@ -41,10 +41,10 @@ Stmt ::= e::Exprs
     end;
 }
 
-function vectorInitExprs
-Exprs ::= e::Exprs
+abstract production vectorInitExprs
+top::Exprs ::= e::Exprs
 {
-  return
+  forwards to
     case e of
       consExpr(h, t) ->
         consExpr(
