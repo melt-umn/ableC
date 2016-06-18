@@ -36,6 +36,6 @@ export LDLIBS=
 export EXECUTABLE_DEPENDS=
 export INTERMEDIATES=
 export CLEAN_FILES="*~ *.c *.gen_cpp *.o *.out *.test *.test.out .tests_failed *.copperdump.html build.xml"
-export REALCLEAN_FILES="$JAR_NAME"
+export REALCLEAN_FILES="$JAR_NAME build.sh"
 export INCLUDES=
 

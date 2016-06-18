@@ -13,22 +13,26 @@ AUTOTESTS_C_FILES=$(AUTOTESTS_SRC:.xc=.c)
 AUTOTESTS=$(EXECUTABLE_DEPENDS) $(AUTOTESTS_C_FILES) $(OBJECTS) $(EXECUTABLES) $(TESTS)
 
 # Also building all object files to prevent recompilation when linking dependancies change
-all: $(EXECUTABLE_DEPENDS) $(C_FILES) $(OBJECTS) $(EXECUTABLES) $(TESTS)
+all: build.sh $(EXECUTABLE_DEPENDS) $(C_FILES) $(OBJECTS) $(EXECUTABLES) $(TESTS)
 
 include $(INCLUDES)
 
-$(JAR_NAME): $(ABLEC_SOURCE)
+build.sh: init_build.sh # TODO: This may fail to trigger an update if a change was made in the init_build.sh script for one of the dependancies
+	echo -e "#!/bin/bash\n# GENERATED FILE, DO NOT EDIT\ntouch artifact/Main.sv\nsilver -I . $(SILVER_INCLUDES) -o $(JAR_NAME) \$$@ artifact" > $@
+	chmod +x $@
+
+$(JAR_NAME): build.sh $(ABLEC_SOURCE)
 ifdef TESTING
 	echo -n "Building $(shell basename `pwd`)/$(JAR_NAME)... "
 	touch artifact/Main.sv
-	silver -I . $(SILVER_INCLUDES) -o $(JAR_NAME) artifact &> $@.test.out && echo "passed" || (echo "failed" ; touch .tests_failed ; exit 1)
+	./build.sh &> $@.test.out && echo "passed" || (echo "failed" ; touch .tests_failed ; exit 1)
 else
 	touch artifact/Main.sv
   ifneq ("$(wildcard .clean)","")
 	rm .clean
-	silver --clean -I . $(SILVER_INCLUDES) -o $(JAR_NAME) artifact
+	./build.sh --clean
   else
-	silver -I . $(SILVER_INCLUDES) -o $(JAR_NAME) artifact
+	./build.sh
   endif
 endif
 
