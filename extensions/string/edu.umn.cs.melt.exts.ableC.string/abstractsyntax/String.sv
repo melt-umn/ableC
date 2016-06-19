@@ -17,15 +17,18 @@ top::Expr ::= e::Expr
   forwards to
     case e.typerep.showProd of
       just(p) -> p(e, top.location)
-    | nothing() -> errorExpr([err(top.location, s"String representation of ${showType(e.typerep)} not defined")], location=top.location)
+    | nothing() -> errorExpr([err(e.location, s"show representation of ${showType(e.typerep)} not defined")], location=top.location)
     end;
 }
 
 abstract production showString
 top::Expr ::= e::Expr
 {
-  top.typerep = stringType();
-  forwards to e;
+  forwards to
+    directCallExpr(
+      name("showString", location=builtIn()),
+      consExpr(e, nilExpr()),
+      location=top.location);
 }
 
 abstract production showChar
@@ -72,6 +75,34 @@ top::Expr ::= e::Expr
       location=top.location);
 }
 
+abstract production strExpr
+top::Expr ::= e::Expr
+{
+  top.typerep = stringType();
+  forwards to
+    case e.typerep.strProd of
+      just(p) -> p(e, top.location)
+    | nothing() -> errorExpr([err(e.location, s"string of ${showType(e.typerep)} not defined")], location=top.location)
+    end;
+}
+
+abstract production strString
+top::Expr ::= e::Expr
+{
+  top.typerep = stringType();
+  forwards to e;
+}
+
+abstract production strChar
+top::Expr ::= e::Expr
+{
+  forwards to
+    directCallExpr(
+      name("strChar", location=builtIn()),
+      consExpr(e, nilExpr()),
+      location=top.location);
+}
+
 abstract production assignString
 top::Expr ::= lhs::Expr rhs::Expr
 {
@@ -79,7 +110,7 @@ top::Expr ::= lhs::Expr rhs::Expr
     binaryOpExpr(
       lhs,
       assignOp(eqOp(location=builtIn()), location=builtIn()),
-      showExpr(rhs, location=builtIn()),
+      strExpr(rhs, location=builtIn()),
       location=builtIn());
 }
 
@@ -90,9 +121,9 @@ top::Expr ::= e1::Expr e2::Expr
     directCallExpr(
       name("_append_string", location=builtIn()),
       consExpr(
-        showExpr(e1, location=builtIn()),
+        strExpr(e1, location=builtIn()),
         consExpr(
-          showExpr(e2, location=builtIn()),
+          strExpr(e2, location=builtIn()),
           nilExpr())),
       location=top.location);
 }
@@ -104,9 +135,9 @@ top::Expr ::= e1::Expr e2::Expr
     directCallExpr(
       name("_remove_string", location=builtIn()),
       consExpr(
-        showExpr(e1, location=builtIn()),
+        strExpr(e1, location=builtIn()),
         consExpr(
-          showExpr(e2, location=builtIn()),
+          strExpr(e2, location=builtIn()),
           nilExpr())),
       location=top.location);
 }

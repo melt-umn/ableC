@@ -69,5 +69,10 @@ int main(int argc, char **argv) {
   if (j != "400")
     return 11;
 
+  string k = str("abcd");
+  printf("k: %s\n", k);
+  if (k != "\"abcd\"")
+    return 12;
+
   return 0;
 }
