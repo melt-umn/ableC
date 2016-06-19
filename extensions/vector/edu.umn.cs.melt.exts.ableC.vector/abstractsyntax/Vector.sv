@@ -194,7 +194,7 @@ top::Expr ::= e1::Expr e2::Expr
         explicitCastExpr(
           case e1.typerep of
             vectorType(_, s) -> typeName(directTypeExpr(s), pointerTypeExpr([], baseTypeExpr()))
-          | _ -> error("subscriptAssignVector where lhs is non-vector")
+          | _ -> error("subscriptVector where lhs is non-vector")
           end,
           directCallExpr(
             name("_index_vector", location=builtIn()),
