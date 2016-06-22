@@ -24,47 +24,61 @@ top::Expr ::= e::Expr
 abstract production showString
 top::Expr ::= e::Expr
 {
-  forwards to
+  local localErrors::[Message] =
+    checkStringHeaderDef("showString", top.location, top.env);
+  local fwrd::Expr =
     directCallExpr(
       name("showString", location=builtIn()),
       consExpr(e, nilExpr()),
       location=top.location);
+  forwards to mkErrorCheck(localErrors, fwrd);
 }
 
 abstract production showChar
 top::Expr ::= e::Expr
 {
-  forwards to
+  local localErrors::[Message] =
+    checkStringHeaderDef("showChar", top.location, top.env);
+  local fwrd::Expr =
     directCallExpr(
       name("showChar", location=builtIn()),
       consExpr(e, nilExpr()),
       location=top.location);
+  forwards to mkErrorCheck(localErrors, fwrd);
 }
 
 abstract production showInt
 top::Expr ::= e::Expr
 {
-  forwards to
+  local localErrors::[Message] =
+    checkStringHeaderDef("showInt", top.location, top.env);
+  local fwrd::Expr =
     directCallExpr(
       name("showInt", location=builtIn()),
       consExpr(e, nilExpr()),
       location=top.location);
+  forwards to mkErrorCheck(localErrors, fwrd);
 }
 
 abstract production showFloat
 top::Expr ::= e::Expr
 {
-  forwards to
+  local localErrors::[Message] =
+    checkStringHeaderDef("showFloat", top.location, top.env);
+  local fwrd::Expr =
     directCallExpr(
       name("showFloat", location=builtIn()),
       consExpr(e, nilExpr()),
       location=top.location);
+  forwards to mkErrorCheck(localErrors, fwrd);
 }
 
 abstract production showPointer
 top::Expr ::= e::Expr
 {
-  forwards to
+  local localErrors::[Message] =
+    checkStringHeaderDef("_showPointer", top.location, top.env);
+  local fwrd::Expr =
     directCallExpr(
       name("_showPointer", location=builtIn()),
       consExpr(
@@ -73,6 +87,7 @@ top::Expr ::= e::Expr
           e,
           nilExpr())),
       location=top.location);
+  forwards to mkErrorCheck(localErrors, fwrd);
 }
 
 abstract production strExpr
@@ -82,7 +97,7 @@ top::Expr ::= e::Expr
   forwards to
     case e.typerep.strProd of
       just(p) -> p(e, top.location)
-    | nothing() -> errorExpr([err(e.location, s"string of ${showType(e.typerep)} not defined")], location=top.location)
+    | nothing() -> errorExpr([err(e.location, s"str of ${showType(e.typerep)} not defined")], location=top.location)
     end;
 }
 
@@ -96,11 +111,14 @@ top::Expr ::= e::Expr
 abstract production strChar
 top::Expr ::= e::Expr
 {
-  forwards to
+  local localErrors::[Message] =
+    checkStringHeaderDef("strChar", top.location, top.env);
+  local fwrd::Expr =
     directCallExpr(
       name("strChar", location=builtIn()),
       consExpr(e, nilExpr()),
       location=top.location);
+  forwards to mkErrorCheck(localErrors, fwrd);
 }
 
 abstract production assignString
@@ -117,7 +135,9 @@ top::Expr ::= lhs::Expr rhs::Expr
 abstract production appendString
 top::Expr ::= e1::Expr e2::Expr
 {
-  forwards to
+  local localErrors::[Message] =
+    checkStringHeaderDef("_append_string", top.location, top.env);
+  local fwrd::Expr =
     directCallExpr(
       name("_append_string", location=builtIn()),
       consExpr(
@@ -126,12 +146,15 @@ top::Expr ::= e1::Expr e2::Expr
           strExpr(e2, location=builtIn()),
           nilExpr())),
       location=top.location);
+  forwards to mkErrorCheck(localErrors, fwrd);
 }
 
 abstract production removeString
 top::Expr ::= e1::Expr e2::Expr
 {
-  forwards to
+  local localErrors::[Message] =
+    checkStringHeaderDef("_remove_string", top.location, top.env);
+  local fwrd::Expr =
     directCallExpr(
       name("_remove_string", location=builtIn()),
       consExpr(
@@ -140,42 +163,54 @@ top::Expr ::= e1::Expr e2::Expr
           strExpr(e2, location=builtIn()),
           nilExpr())),
       location=top.location);
+  forwards to mkErrorCheck(localErrors, fwrd);
 }
 
 abstract production repeatString
 top::Expr ::= e1::Expr e2::Expr
 {
-  forwards to
+  local localErrors::[Message] =
+    checkStringHeaderDef("_repeat_string", top.location, top.env);
+  local fwrd::Expr =
     directCallExpr(
       name("_repeat_string", location=builtIn()),
       consExpr(e1, consExpr(e2, nilExpr())),
       location=top.location);
+  forwards to mkErrorCheck(localErrors, fwrd);
 }
 
 abstract production eqString
 top::Expr ::= e1::Expr e2::Expr
 {
-  forwards to
+  local localErrors::[Message] =
+    checkStringHeaderDef("_eq_string", top.location, top.env);
+  local fwrd::Expr =
     directCallExpr(
       name("_eq_string", location=builtIn()),
       consExpr(e1, consExpr(e2, nilExpr())),
       location=top.location);
+  forwards to mkErrorCheck(localErrors, fwrd);
 }
 
 abstract production subscriptString
 top::Expr ::= e1::Expr e2::Expr
 {
-  forwards to
+  local localErrors::[Message] =
+    checkStringHeaderDef("_index_string", top.location, top.env);
+  local fwrd::Expr =
     directCallExpr(
       name("_index_string", location=builtIn()),
       consExpr(e1, consExpr(e2, nilExpr())),
       location=top.location);
+  forwards to mkErrorCheck(localErrors, fwrd);
 }
 
 abstract production subscriptAssignString
 top::Expr ::= e1::Expr e2::Expr op::AssignOp e3::Expr
 {
-  forwards to
+  local localErrors::[Message] =
+    checkStringHeaderDef("_check_index_string", top.location, top.env);
+  local fwrd::Expr =
     stmtExpr(
       exprStmt(
         directCallExpr(
@@ -190,32 +225,47 @@ top::Expr ::= e1::Expr e2::Expr op::AssignOp e3::Expr
           e3,
           location=builtIn()),
       location=top.location);
+  forwards to mkErrorCheck(localErrors, fwrd);
 }
 
 abstract production substringString
 top::Expr ::= e1::Expr a::Exprs
 {
   -- TODO: check arg types
-  top.errors <-
+  local localErrors::[Message] =
+    checkStringHeaderDef("_substring", top.location, top.env) ++
     if a.count != 2
     then [err(top.location, s"Invalid number of arguments to substring: expected 2, got ${toString(a.count)}")]
     else [];
-  
-  forwards to
+  local fwrd::Expr =
     directCallExpr(
       name("_substring", location=builtIn()),
       consExpr(e1, a),
       location=top.location);
+  forwards to mkErrorCheck(localErrors, fwrd);
 }
 
 abstract production lengthString
 top::Expr ::= e1::Expr
 {
-  forwards to
+  local localErrors::[Message] =
+    checkStringHeaderDef("strlen", top.location, top.env);
+  local fwrd::Expr =
     directCallExpr(
       name("strlen", location=builtIn()),
       consExpr(e1, nilExpr()),
       location=top.location);
+  forwards to mkErrorCheck(localErrors, fwrd);
+}
+
+-- Check the given env for the given function name
+function checkStringHeaderDef
+[Message] ::= n::String loc::Location env::Decorated Env
+{
+  return
+    if !null(lookupValue(n, env))
+    then []
+    else [err(loc, "Missing include of string.xh")];
 }
 
 {-

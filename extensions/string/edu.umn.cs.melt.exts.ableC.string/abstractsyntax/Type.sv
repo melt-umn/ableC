@@ -198,3 +198,12 @@ top::BuiltinType ::= sub::IntegerType
     | _ -> nothing()
     end;
 }
+
+aspect production errorType
+top::Type ::=
+{
+  top.showProd = just(\e::Expr l::Location -> errorExpr([], location=l));
+  top.pointerShowProd = just(\e::Expr l::Location -> errorExpr([], location=l));
+  top.strProd = just(\e::Expr l::Location -> errorExpr([], location=l));
+  top.pointerStrProd = just(\e::Expr l::Location -> errorExpr([], location=l));
+}
