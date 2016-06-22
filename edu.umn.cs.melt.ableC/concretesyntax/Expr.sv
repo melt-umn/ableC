@@ -407,6 +407,12 @@ concrete productions top::PostfixExpr_c
           just(id) -> ast:directCallExpr(ast:fromId(id), ast:foldExpr(args.ast), location=top.location)
         | nothing() -> ovrld:callExpr(e.ast, ast:foldExpr(args.ast), location=top.location)
         end; }
+| e::PostfixExpr_c '(' args::ArgumentExprList_c ',' ')'
+    { top.ast = 
+        case e.directName of
+          just(id) -> ast:directCallExpr(ast:fromId(id), ast:foldExpr(args.ast), location=top.location)
+        | nothing() -> ovrld:callExpr(e.ast, ast:foldExpr(args.ast), location=top.location)
+        end; }
 | e::PostfixExpr_c '(' ')'
     { top.ast = 
         case e.directName of
