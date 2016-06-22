@@ -1,7 +1,4 @@
 #!/bin/bash
-
-# Quick hack fix, since all of these compositions are named artifact.
+# GENERATED FILE, DO NOT EDIT
 touch artifact/Main.sv
-
-time silver -I . -I ../../../ableC -o ableC.jar $@ artifact
-
+silver -I . -I . -I ../.. -I ../../extensions/algebraic-data-types -o ableC.jar $@ artifact

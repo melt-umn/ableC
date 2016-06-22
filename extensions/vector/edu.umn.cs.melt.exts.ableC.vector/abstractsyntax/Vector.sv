@@ -1,7 +1,7 @@
 grammar edu:umn:cs:melt:exts:ableC:vector:abstractsyntax;
 
 imports silver:langutil;
-imports silver:langutil:pp with implode as ppImplode ;
+imports silver:langutil:pp with implode as ppImplode;
 
 imports edu:umn:cs:melt:ableC:abstractsyntax hiding vectorType;
 imports edu:umn:cs:melt:ableC:abstractsyntax:construction;
@@ -28,10 +28,10 @@ top::Expr ::= sub::TypeName e::Exprs
       location=top.location);
 }
 
-function vectorInitStmt
-Stmt ::= e::Exprs
+abstract production vectorInitStmt
+top::Stmt ::= e::Exprs
 {
-  return
+  forwards to
     case e of
       consExpr(h, t) ->
         seqStmt(
@@ -41,10 +41,10 @@ Stmt ::= e::Exprs
     end;
 }
 
-function vectorInitExprs
-Exprs ::= e::Exprs
+abstract production vectorInitExprs
+top::Exprs ::= e::Exprs
 {
-  return
+  forwards to
     case e of
       consExpr(h, t) ->
         consExpr(
@@ -194,7 +194,7 @@ top::Expr ::= e1::Expr e2::Expr
         explicitCastExpr(
           case e1.typerep of
             vectorType(_, s) -> typeName(directTypeExpr(s), pointerTypeExpr([], baseTypeExpr()))
-          | _ -> error("subscriptAssignVector where lhs is non-vector")
+          | _ -> error("subscriptVector where lhs is non-vector")
           end,
           directCallExpr(
             name("_index_vector", location=builtIn()),
@@ -261,13 +261,13 @@ top::Expr ::= lhs::Expr index::Expr op::AssignOp rhs::Expr
     end;
 }
 
-abstract production vectorToString
+abstract production showVector
 top::Expr ::= e::Expr
 {
   local subType::Type = 
     case e.typerep of
       vectorType(_, t) -> t
-    | _ -> error("vectorToString on non-vector")
+    | _ -> error("showVector on non-vector")
     end;
 
   local paramName::Name = name("elem", location=builtIn());
@@ -294,7 +294,7 @@ top::Expr ::= e::Expr
       nilDecl(),
       returnStmt(
         justExpr(
-          constructString(
+          showExpr(
             unaryOpExpr(
               dereferenceOp(location=builtIn()),
               explicitCastExpr(
@@ -312,7 +312,7 @@ top::Expr ::= e::Expr
     stmtExpr(
       declStmt(functionDeclaration(fnDecl)),
       directCallExpr(
-        name("_to_str_vector", location=builtIn()),
+        name("_showVector", location=builtIn()),
         consExpr(
           e,
           consExpr(

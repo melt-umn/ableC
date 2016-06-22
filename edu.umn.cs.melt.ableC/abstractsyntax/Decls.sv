@@ -772,8 +772,8 @@ top::Decl ::=
 {
   -- pp doesn't depend on env
   top.pp = text("hack");
-  -- Forwarding based on env.
-  forwards to if false then error(hackUnparse(top.env)) else hackUnusedDecl();
+  -- Forwarding based on env, returnType, and isTopLevel.
+  forwards to if top.isTopLevel then error(hackUnparse(top.env) ++ hackUnparse(top.returnType)) else hackUnusedDecl();
 }
 
 {-

@@ -45,11 +45,6 @@ d::Decl ::= txt::String
   d.freeVariables = [];
 }
 
-
-
-
-
-
 {- ------------------------------------------------------------
    Functions and aspects to print out some components of the
    environment.  This maybe useful for some debugging purposes.
@@ -59,17 +54,19 @@ d::Decl ::= txt::String
 
    ------------------------------------------------------------
  -}
-{- Seems to be causing flow dep issues?
 abstract production printEnv
 e::Expr ::=
 {
   e.errors := [];
   e.globalDecls := [];
   e.defs = [];
-  e.pp = comment("printEnv pp should be demanded through host pp", location=e.location).pp;
+  e.pp =
+    decorate comment("printEnv pp should be demanded through host pp", location=e.location)
+    with {env = e.env;
+          returnType = e.returnType;}.pp;
   forwards to comment( show(80,showEnv(e.env)), location=e.location );
 }
--}
+
 
 
 function showEnv
@@ -107,90 +104,15 @@ Document ::= scope::[Pair<String a>] showFunc::(Document ::= Pair<String a>)
 function showValueItemBinding
 Document ::= bnd::Pair<String ValueItem>
 {
- return concat( [ text(bnd.fst), text(" -> "), text(hackUnparse(bnd.snd)) ] ); --, nestlines(10,bnd.snd.pp) ]);
+ return concat( [ text(bnd.fst), text(" -> "), nestlines(10,bnd.snd.pp) ]);
 }
 function showTagItemBinding
 Document ::= bnd::Pair<String TagItem>
 {
- return concat( [ text(bnd.fst), text(" -> "), text(hackUnparse(bnd.snd)) ] ); -- , nestlines(10,bnd.snd.pp) ]);
+ return concat( [ text(bnd.fst), text(" -> "), nestlines(10,bnd.snd.pp) ]);
 }
 function showRefIdItemBinding
 Document ::= bnd::Pair<String RefIdItem>
 {
- return concat( [ text(bnd.fst), text(" -> "), text(hackUnparse(bnd.snd)) ] ); -- , nestlines(10,bnd.snd.pp) ]);
+ return concat( [ text(bnd.fst), text(" -> "), nestlines(10,bnd.snd.pp) ]);
 }
-
-
-
-{-
-
--- Aspects over different "Item" types in Env --
-------------------------------------------------
-
-attribute pp occurs on ValueItem ;
-
-aspect production declaratorValueItem
-top::ValueItem ::= s::Decorated Declarator
-{ top.pp = ppImplode(text(" "),s.pps); }
-
-aspect production functionValueItem
-top::ValueItem ::= s::Decorated FunctionDecl
-{ top.pp = text("FunctionDecl"); } --s.pp; }
-
-aspect production builtinFunctionValueItem
-top::ValueItem ::= t::Type  handler::(Expr ::= Name Exprs Location)
-{ top.pp = text("BuiltinFunctionValueItem"); }
-
-aspect production fieldValueItem
-top::ValueItem ::= s::Decorated StructDeclarator
-{ top.pp = text("StructDeclarator");} --ppImplode(text(" "),s.pps); }
-
-aspect production enumValueItem
-top::ValueItem ::= s::Decorated EnumItem
-{ top.pp = text("EnumItem");} -- s.pp; }
-
-aspect production parameterValueItem
-top::ValueItem ::= s::Decorated ParameterDecl
-{ top.pp = text("ParameterDecl");} -- s.pp; }
-
-aspect production errorValueItem
-top::ValueItem ::=
-{ top.pp = text("errorValueItem"); }
-
-
-attribute pp occurs on TagItem ;
-
-aspect production enumTagItem
-top::TagItem ::= s::Decorated EnumDecl
-{ top.pp = text("Decorated Enum"); }
-
-aspect production refIdTagItem
-top::TagItem ::= tag::StructOrEnumOrUnion  refId::String
-{ top.pp = text("Struct|Enum, refId = " ++ refId); }
-
-aspect production errorTagItem
-top::TagItem ::=
-{ top.pp = text("ErrorTagItem"); }
-
-aspect production adtRefIdTagItem
-t::TagItem ::= adtRefId::String structRefId::String
-{ t.pp = text("ADT Tag: adtRefId=" ++ adtRefId ++ ", structRefId=" ++ structRefId); }
-
-
-
-attribute pp occurs on RefIdItem;
-
-aspect production adtRefIdItem
-t::RefIdItem ::= adt::Decorated ADTDecl s::Decorated StructDecl 
-{ t.pp = text("ADTDecl, adt.name=" ++ adt.name ++ " -> struct ref id=" );}-- ++ s.refId); }
-
-aspect production structRefIdItem
-top::RefIdItem ::= s::Decorated StructDecl
-{ top.pp = text("StructDecl: s.refId=" ++ s.refId); }
-
-aspect production unionRefIdItem
-top::RefIdItem ::= s::Decorated UnionDecl
-{ top.pp = text("UnionDecl"); }
-
-
--}

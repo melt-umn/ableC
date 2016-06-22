@@ -9,10 +9,12 @@ top::BaseTypeExpr ::= sub::TypeName
   forwards to typedefTypeExpr([], name("_vector", location=builtIn()));
 }
 
--- Passing the refId is kind of a hack, because it is always the same.  However, the env isn't available to look it up
 abstract production vectorType
 top::Type ::= qs::[Qualifier] sub::Type
 {
+  top.lpp = pp"${ppImplode(space(), map((.pp), qs))} vector(${sub.lpp}${sub.rpp})";
+  top.rpp = pp"";
+
   top.lBinaryPlusProd =
     case top.otherType of
       vectorType(_, s) ->
@@ -68,9 +70,9 @@ top::Type ::= qs::[Qualifier] sub::Type
     | _, _ -> nothing()
     end;
   
-  top.toStringProd =
-    case sub.toStringProd of
-      just(_) -> just(vectorToString(_, location=_))
+  top.showProd =
+    case sub.showProd of
+      just(_) -> just(showVector(_, location=_))
     | nothing() -> nothing()
     end;
 
@@ -85,6 +87,6 @@ top::Type ::= qs::[Qualifier] sub::Type
             [],
             refIdTagType(
               structSEU(),
-              "_vector",
+              "_vector_s",
               "edu:umn:cs:melt:exts:ableC:vector:_vector_s")))));
 }

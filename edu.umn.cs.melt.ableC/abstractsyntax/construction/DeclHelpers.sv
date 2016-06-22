@@ -24,6 +24,17 @@ Stmt ::= n::String val::String l::Location
            l);
 }
 
+function mkIntDeclExpr
+Stmt ::= n::String val::Expr l::Location
+{
+  return mkIntDeclGeneral( 
+           n, 
+           justInitializer(
+             exprInitializer( val ) ),
+           l);
+}
+
+
 function mkIntDeclGeneral
 Stmt ::= n::String init::MaybeInitializer l::Location
 {
