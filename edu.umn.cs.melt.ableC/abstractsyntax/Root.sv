@@ -3,6 +3,8 @@
 
 import edu:umn:cs:melt:ableC:abstractsyntax:builtins as builtinfunctions;
 
+global fullErrorCheck::Boolean = true;
+
 nonterminal Root with pp, host<Root>, lifted<Root>, errors, globalDecls, env;
 
 abstract production root
@@ -25,7 +27,8 @@ synthesized attribute liftedAst::Root;
 synthesized attribute srcPP::Document;
 synthesized attribute hostPP::Document;
 synthesized attribute liftedPP::Document;
-nonterminal Compilation with srcAst, hostAst, liftedAst, srcPP, hostPP, liftedPP, pp, errors, globalDecls, env;
+synthesized attribute finalPP::Document;
+nonterminal Compilation with srcAst, hostAst, liftedAst, srcPP, hostPP, liftedPP, finalPP, errors, env;
 
 abstract production compilation
 top::Compilation ::= srcAst::Root
@@ -39,6 +42,8 @@ top::Compilation ::= srcAst::Root
   top.errors :=
     if !null(srcAst.errors)
     then srcAst.errors
+    else if !fullErrorCheck
+    then []
     else if !null(hostAst.errors)
     then wrn(loc("", -1, -1, -1, -1, -1, -1), "Errors in host tree:") :: hostAst.errors
     else if !null(liftedAst.errors)
@@ -54,7 +59,7 @@ top::Compilation ::= srcAst::Root
   top.srcPP = srcAst.pp;
   top.hostPP = hostAst.pp;
   top.liftedPP = liftedAst.pp;
-  top.pp = top.liftedPP;
+  top.finalPP = top.liftedPP;
 }
 
 {- There seem to be some efficiency issues with the way globalDecls are

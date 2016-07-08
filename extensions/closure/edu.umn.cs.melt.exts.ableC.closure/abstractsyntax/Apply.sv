@@ -5,7 +5,7 @@ e::Expr ::= fn::Expr args::Exprs
 {
   e.pp = parens(concat([fn.pp, parens(ppImplode(cat(comma(), space()), args.pps))]));
   
-  local localErrs :: [Message] =
+  local localErrors :: [Message] =
     case fn.typerep of
       closureType(_, _, _) -> args.argumentErrors
     | errorType() -> []
@@ -28,11 +28,7 @@ e::Expr ::= fn::Expr args::Exprs
     | _ -> error("expectedTypes demanded by args when call expression has non-closure type")
     end;
 
-  forwards to
-    if null(localErrs) then
-      fwrd
-    else
-      errorExpr(localErrs, location=e.location);
+  forwards to mkErrorCheck(localErrors, fwrd);
   
   local fwrd::Expr =
     stmtExpr(
@@ -69,7 +65,7 @@ e::Expr ::= fn::Expr args::Exprs
                       []),
                     getParams(params)),
                 false)))
-        | _ -> typeName(errorTypeExpr(localErrs), baseTypeExpr())
+        | _ -> typeName(errorTypeExpr(localErrors), baseTypeExpr())
         end,
         memberExpr(
           declRefExpr(

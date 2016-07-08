@@ -47,6 +47,7 @@ top::Stmt ::= s::Stmt
 }
 
 -- ditto warnExternalDecl, if warning or empty, then this pretends it doesn't exist.
+-- TODO: why is this called warnStmt not errorStmt?
 abstract production warnStmt
 top::Stmt ::= msg::[Message]
 {
@@ -438,9 +439,8 @@ top::Stmt ::=
   -- pp doesn't depend on env
   top.pp = text("hack");
   
-  -- No pp equation: make that need env too (via forwarding)
   -- Forwarding based on env.
-  forwards to if false then error(hackUnparse(top.env)) else hackUnusedStmt();
+  forwards to if false then error(hackUnparse(top.env) ++ hackUnparse(top.returnType)) else hackUnusedStmt();
 }---}
 {-
 abstract production blockCommentStmt

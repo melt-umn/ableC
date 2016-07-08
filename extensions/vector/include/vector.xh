@@ -46,9 +46,10 @@ static void *_update_index_vector(_vector v, int i, void *val, size_t elem_size)
     fprintf(stderr, "Vector index out of bounds: length %d, index %d\n", v->length, i);
     exit(1);
   }
-  if (i == v->length && v->length == v->capacity) {
+  if (i == v->length) {
     v->length++;
-    _expand_vector(v, v->length * 2);
+    if (v->length == v->capacity)
+      _expand_vector(v, v->length * 2);
   }
   v->contents[i] = GC_malloc(elem_size);
   memcpy(v->contents[i], val, elem_size);
@@ -108,7 +109,7 @@ static bool _equal_vectors(_vector v1, _vector v2, _EqFun eq) {
   return true;
 }
 
-static string _to_str_vector(_vector v, _ToStringFun to_string) {
+static string _showVector(_vector v, _ToStringFun to_string) {
   if (v->length == 0)
     return "[]";
   string result = "[" + to_string(v->contents[0]);

@@ -8,22 +8,42 @@
 #ifndef _STRING_XH
 #define _STRING_XH
 
-static inline string _int_to_string(int i) {
+// These functions are in theory OK to call directly
+static inline string showString(string s) {
+  string result = GC_malloc(strlen(s) + 3);
+  sprintf((char*)result, "\"%s\"", s);
+  return result;
+}
+
+static inline string showInt(int i) {
   string result = GC_malloc((CHAR_BIT * sizeof(i) - 1) / 3 + 2);
   sprintf((char*)result, "%d", i);
   return result;
 }
 
-static inline string _float_to_string(double f) {
+static inline string showFloat(double f) {
   string result = GC_malloc((CHAR_BIT * sizeof(f) - 1) / 3 + 2);
   sprintf((char*)result, "%f", f);
   return result;
 }
 
-static inline string _char_to_string(char c) {
+static inline string showChar(char c) {
+  string result = GC_malloc(4);
+  sprintf((char*)result, "'%c'", c);
+  return result;
+}
+
+static inline string strChar(char c) {
   char *result = GC_malloc(2);
   result[0] = c;
   result[1] = '\0';
+  return (string)result;
+}
+
+// Helper functions should really only be used through the extension
+static inline string _showPointer(const char *baseTypeName, void *ptr) {
+  char *result = GC_malloc(strlen(baseTypeName) + 10);
+  sprintf(result, "<%s at 0x%lx>", baseTypeName, (unsigned long)ptr);
   return (string)result;
 }
 

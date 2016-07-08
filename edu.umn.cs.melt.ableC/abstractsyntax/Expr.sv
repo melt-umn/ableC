@@ -31,6 +31,14 @@ top::Expr ::= msg::[Message]
   top.freeVariables = [];
   top.typerep = errorType();
 }
+abstract production warnExpr
+top::Expr ::= msg::[Message] e::Expr
+{
+  propagate host, lifted;
+  top.pp = concat([ text("/*"), text(messagesToString(msg)), text("*/"), e.pp ]);
+  top.errors <- msg;
+  forwards to e;
+}
 abstract production declRefExpr
 top::Expr ::= id::Name
 { -- Reference to a value. (Either a Decl or a EnumItem)
@@ -431,8 +439,9 @@ top::Expr ::=
 {
   -- pp doesn't depend on env
   top.pp = text("hack");
+  
   -- Forwarding based on env.
-  forwards to if false then error(hackUnparse(top.env)) else hackUnused(location=top.location);
+  forwards to if false then error(hackUnparse(top.env) ++ hackUnparse(top.returnType)) else hackUnused(location=top.location);
 }
 ---}
 

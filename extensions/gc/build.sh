@@ -1,6 +1,3 @@
 #!/bin/bash
-
-# Quick hack fix, since all of these compositions are named artifact.
-touch artifact/Main.sv
-silver -I . -I ../.. -o ableC.jar $@ artifact
-
+# GENERATED FILE, DO NOT EDIT
+silver -I . -I . -I ../.. -I ../../extensions/gc -o ableC.jar $@ artifact
