@@ -44,7 +44,7 @@ To build AbleC, you need the following packages:
 
 **Step 2: Silver**
 
-The [Silver install guide](http://code.google.com/p/silver/wiki/InstallGuide) can give full details, but the simplest approach is as follows:
+The [Silver install guide](http://melt.cs.umn.edu/silver/doc/install-guide/) can give full details, but the simplest approach is as follows:
 
  1. Download [the latest development version of Silver](http://melt.cs.umn.edu/downloads/silver-dev/silver-latest.tar.gz).
  2. Under `silver/support/bin` run `install-silver-bin` to put the `silver` script in `~/bin`
