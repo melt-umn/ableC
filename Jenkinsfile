@@ -43,7 +43,11 @@ stage ("Build") {
   /* a node allocates an executor to actually do work */
   node {
     checkout scm
-    sh "./build"
+
+    /* env.PATH is the master's path, not the executor's */
+    withEnv(["PATH=${SILVER_BASE}:${env.PATH}"]) {
+      sh "./build"
+    }
   }
 
 }
