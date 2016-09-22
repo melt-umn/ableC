@@ -45,7 +45,7 @@ stage ("Build") {
     checkout scm
 
     /* env.PATH is the master's path, not the executor's */
-    withEnv(["PATH=${SILVER_BASE}:${env.PATH}"]) {
+    withEnv(["PATH=${SILVER_BASE}/support/bin/:${env.PATH}"]) {
       sh "./build"
     }
   }
