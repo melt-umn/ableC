@@ -38,7 +38,7 @@ properties([
 
 /* stages are pretty much just labels about what's going on */
 
-stage "Build" {
+stage ("Build") {
 
   /* a node allocates an executor to actually do work */
   node {
