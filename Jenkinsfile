@@ -53,10 +53,22 @@ stage ("Build") {
 }
 
 stage ("Test") {
-  node {
-    sh ". ${SILVER_BASE}/support/nailgun/sv-nailgun"
-    sh "sv-serve ableC.jar"
-    sh "python testing/supertest.py ${SILVER_BASE}/support/nailgun/sv-call testing/tests/headers"
-  }
+  parallel(
+    neutral: {
+      node {
+        sh "python -neutral testing/supertest.py ableC.jar testing/tests/*"
+      }
+    },
+    positive: {
+      node {
+        sh "python -positive-only testing/supertest.py ableC.jar testing/tests/*"
+      }
+    },
+    negative: {
+      node {
+        sh "python -negative-only testing/supertest.py ableC.jar testing/tests/*"
+      }
+    }
+  )
 }
 
