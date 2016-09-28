@@ -54,7 +54,9 @@ stage ("Build") {
 
 stage ("Test") {
   node {
-    sh "python testing/supertest.py ableC.jar testing/tests/headers"
+    sh ". ${SILVER_BASE}/support/nailgun/sv-nailgun"
+    sh "sv-serve ableC.jar"
+    sh "python testing/supertest.py ${SILVER_BASE}/support/nailgun/sv-call testing/tests/headers"
   }
 }
 
