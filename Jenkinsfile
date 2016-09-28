@@ -52,3 +52,9 @@ stage ("Build") {
 
 }
 
+stage ("Test") {
+  node {
+    sh "python testing/supertest.py ableC.jar testing/tests/headers"
+  }
+}
+
