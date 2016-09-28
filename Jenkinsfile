@@ -56,17 +56,17 @@ stage ("Test") {
   parallel(
     neutral: {
       node {
-        sh "python -neutral testing/supertest.py ableC.jar testing/tests/*"
+        sh "python testing/supertest.py -neutral ableC.jar testing/tests/*"
       }
     },
     positive: {
       node {
-        sh "python -positive-only testing/supertest.py ableC.jar testing/tests/*"
+        sh "python testing/supertest.py -positive-only ableC.jar testing/tests/*"
       }
     },
     negative: {
       node {
-        sh "python -negative-only testing/supertest.py ableC.jar testing/tests/*"
+        sh "python testing/supertest.py -negative-only ableC.jar testing/tests/*"
       }
     }
   )
