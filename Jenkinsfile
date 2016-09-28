@@ -53,22 +53,16 @@ stage ("Build") {
 }
 
 stage ("Test") {
-  parallel(
-    neutral: {
-      node {
-        sh "python testing/supertest.py -neutral ableC.jar testing/tests/*"
-      }
-    },
-    positive: {
-      node {
-        sh "python testing/supertest.py -positive-only ableC.jar testing/tests/*"
-      }
-    },
-    negative: {
-      node {
-        sh "python testing/supertest.py -negative-only ableC.jar testing/tests/*"
-      }
-    }
-  )
+  node {
+    sh "python testing/supertest.py -neutral ableC.jar testing/tests/*"
+  }
+
+  node {
+    sh "python testing/supertest.py -positive-only ableC.jar testing/tests/*"
+  }
+
+  node {
+    sh "python testing/supertest.py -negative-only ableC.jar testing/tests/*"
+  }
 }
 
