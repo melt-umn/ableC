@@ -1,4 +1,47 @@
-grammar edu:umn:cs:melt:ableC:drivers:parseAndPrint ;
+{- Improving the ableC driver.
+
+The `parseAndPrint` driver does a fine job of translating extended C
+(.xc) programs down to plain C, but it may be nice to provide a driver
+that does more, specifically compiling the generated C code.  The names
+that `parseAndPrint` choses for generated files are also a bit clumsy.
+
+We may also set up this driver to support flags to indicate how much
+work it is to do, so it could subsume parseAndPrint.
+
+We might also take some inspriation for gcc for flag names.
+
+Possible flags:
+
+ -i = stop after running CPP, create a .i file
+
+ -xc = stop after processing .i file, create a .c file
+    This is what parseAndPrint does now.
+    To prevent overwriting pre-existing C file, this phase should
+    add "//ableC generated C file: <timestamp>"
+    as the first line of the generated C file.  We can then check that
+    any C file we would overwrite has this line and thus know it is
+    OK to do so.
+
+ -c = stop after running gcc, create a .o file
+
+ <no flag> = go all the way, run gcc to create executable
+    The  name is the basename of the input file name.
+    e.g.  for `foobar.xc` we create executable `foobar`
+
+ -save-temps - don't delete intermediate files
+
+ -v, -vv = verbosity settings
+    It's be nice to not display so much information when things work!
+    -v - just display the commands being executed
+         - cpp, java -jar ableC.jar, gcc -c, gcc
+    -vv - all the stuff Silver pumps out now.  This would requiring
+      changing Silver's behavior.
+
+ Some existing flags that are probably OK.  The --show-X for trees, e.g.c
+  
+ -}
+
+grammar edu:umn:cs:melt:ableC:drivers:compile ;
 
 imports edu:umn:cs:melt:ableC:concretesyntax as cst;
 imports edu:umn:cs:melt:ableC:abstractsyntax as abs;
@@ -7,7 +50,7 @@ imports silver:langutil;
 imports silver:langutil:pp;
 imports core:monad;
 
-import edu:umn:cs:melt:ableC:abstractsyntax:env ; --only env, emptyEnv;
+import edu:umn:cs:melt:ableC:abstractsyntax:env;
 
 function driver
 IOVal<Integer> ::= args::[String] ioIn::IO 
@@ -16,8 +59,8 @@ IOVal<Integer> ::= args::[String] ioIn::IO
   local fileName :: String = head(args);
   local splitFileName :: Pair<String String> = splitFileNameAndExtension(fileName);
   local baseFileName :: String = splitFileName.fst;
-  local cppFileName :: String = baseFileName ++ ".gen_cpp";
-  local ppFileName :: String = baseFileName ++ ".pp_out.c";
+  local cppFileName :: String = baseFileName ++ ".i";
+  local ppFileName :: String = baseFileName ++ ".c";
 
   local partitionedArgs :: Pair<[String] [String]> = partition( partitionArg, tail(args) );
   local cppArgs :: [String] = partitionedArgs.snd;
