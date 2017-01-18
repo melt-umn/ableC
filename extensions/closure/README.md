@@ -27,6 +27,6 @@ The purpose of this extension is
 2. To provide an easy way of passing functions which can be used easily by other extensions without needing extra parameters to capture local scope. 
 
 TODO items:
+* Generate a custom struct for every lambda expression containing fields for captured variables, instead of allocating memory for each and putting these in a void** array
 * Remove txtStmt and txtExprs
 * Resolve issues with capturing function pointers and anonymous union fields (ableC host bug?)
-* Clean up hacks with passing _closure refId
