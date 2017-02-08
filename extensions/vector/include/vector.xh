@@ -3,6 +3,7 @@
 
 #include <string.h>
 #include <stdbool.h>
+//#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
@@ -11,113 +12,48 @@
 #ifndef _VECTOR_XH
 #define _VECTOR_XH
 
-struct __attribute__((refId("edu:umn:cs:melt:exts:ableC:vector:_vector_s"))) _vector_s {
-  int length;
-  int capacity;
-  void **contents;
+struct _vector_info {
+  size_t length;
+  size_t capacity;
+  size_t elem_size;
 };
 
-typedef struct _vector_s *_vector;
-
-typedef string (*_ToStringFun)(void*);
-typedef bool (*_EqFun)(void*, void*);
-
-static void _check_index_vector(_vector v, int i) {
-  if (i >= v->length || i < 0) {
-    fprintf(stderr, "Vector index out of bounds: length %d, index %d\n", v->length, i);
+// Check whether an index is valid for given vector info
+static void _check_index_vector(struct _vector_info info, void *contents, size_t i) {
+  if (i >= info.length || i < 0) {
+    fprintf(stderr, "Vector index out of bounds: length %lud, index %lud\n", info.length, i);
+    exit(1);
+  }
+  if (contents == NULL) {
+    fprintf(stderr, "Cannot access uninitialized vector\n");
     exit(1);
   }
 }
 
-static void *_index_vector(_vector v, int i) {
-  _check_index_vector(v, i);
-  return v->contents[i];
-}
-
-static void _expand_vector(_vector v, int new_size) {
-  if (new_size > v->capacity) {
-    v->capacity = new_size;
-    v->contents = GC_realloc(v->contents, sizeof(void*) * new_size);
+// Increase the length of a vector to new_size, updating the given info and contents pointers
+static void _resize_vector(struct _vector_info *info, void **contents, size_t new_length) {
+  info->length = new_length;
+  if (new_length > info->capacity) {
+    info->capacity = new_length * 2;
+    *contents = GC_realloc(*contents, info->elem_size * info->capacity);
   }
 }
 
-static void *_update_index_vector(_vector v, int i, void *val, size_t elem_size) {
-  if (i > v->length || i < 0) {
-    fprintf(stderr, "Vector index out of bounds: length %d, index %d\n", v->length, i);
+// If the index is equal to the vector size, expand the vector by one
+static void _maybe_grow_vector_by_one(struct _vector_info *info, void **contents, size_t i) {
+  if (i > info->length || i < 0) {
+    fprintf(stderr, "Vector index out of bounds: length %lud, index %lud\n", info->length, i);
     exit(1);
   }
-  if (i == v->length) {
-    v->length++;
-    if (v->length == v->capacity)
-      _expand_vector(v, v->length * 2);
+  if (i == info->length) {
+    _resize_vector(info, contents, info->length + 1);
   }
-  v->contents[i] = GC_malloc(elem_size);
-  memcpy(v->contents[i], val, elem_size);
-  return v->contents[i];
 }
 
-static _vector _new_vector(int length, ...) {
-  _vector result = GC_malloc(sizeof(struct _vector_s));
-  result->length = length;
-  result->capacity = length;
-  result->contents = GC_malloc(sizeof(void*) * length);
-  
-  va_list ap;
-  va_start(ap, length);
-  for (int i = 0; i < length; i++) {
-    void *item = va_arg(ap, void*);
-    size_t size = va_arg(ap, size_t);
-    _update_index_vector(result, i, item, size);
-  }
-  va_end(ap);
-  
-  return result;
-}
-
-static _vector _copy_vector(_vector v) {
-  _vector result = GC_malloc(sizeof(struct _vector_s));
-  result->length = v->length;
-  result->capacity = v->length;
-  result->contents = GC_malloc(sizeof(void*) * v->length);
-  memcpy(result->contents, v->contents, sizeof(void*) * v->length);
-  return result;
-}
-
-static _vector _append_update_vector(_vector v1, _vector v2) {
-  _expand_vector(v1, v1->length + v2->length);
-  memcpy(&(v1->contents[v1->length]), v2->contents, sizeof(void*) * v2->length);
-  v1->length = v1->length + v2->length;
-  return v1;
-}
-
-static _vector _append_vectors(_vector v1, _vector v2) {
-  _vector result = _copy_vector(v1);
-  return _append_update_vector(result, v2);
-}
-
-static void _append_item(_vector v, void *elem, size_t elem_size) {
-  _update_index_vector(v, v->length, elem, elem_size);
-}
-
-static bool _equal_vectors(_vector v1, _vector v2, _EqFun eq) {
-  if (v1->length != v2->length)
-    return false;
-  for (int i = 0; i < v1->length; i++) {
-    if (!eq(v1->contents[i], v2->contents[i]))
-      return false;
-  }
-  return true;
-}
-
-static string _showVector(_vector v, _ToStringFun to_string) {
-  if (v->length == 0)
-    return "[]";
-  string result = "[" + to_string(v->contents[0]);
-  for (int i = 1; i < v->length; i++) {
-    result += ", " + to_string(v->contents[i]);
-  }
-  result += "]";
-  return result;
+// Initialize a vector to have a given size
+static void _init_vector(struct _vector_info *info, void **contents, size_t elem_size, size_t length) {
+  *info = (struct _vector_info){length, length * 2, elem_size};
+  *contents = GC_malloc(elem_size * info->capacity);
 }
 
 #endif

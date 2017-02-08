@@ -1,12 +1,55 @@
 grammar edu:umn:cs:melt:exts:ableC:vector:abstractsyntax;
 
-import edu:umn:cs:melt:ableC:abstractsyntax:overload;
+function vectorTypedefGlobalDecls
+[Pair<String Decl>] ::= sub::Type
+{
+  return
+    [pair(
+      "_vector_" ++ sub.mangledName,
+      typedefDecls(
+        [gccAttribute(
+          consAttrib(
+            appliedAttrib(
+              attribName(name("refId", location=builtin)),
+              consExpr(
+                stringLiteral(
+                  s"\"edu:umn:cs:melt:exts:ableC:vector:_vector_${sub.mangledName}_s\"",
+                  location=builtin),
+                nilExpr())),
+            nilAttrib()))],
+        structTypeExpr(
+          [],
+          structDecl(
+            [],
+            justName(name("_vector_" ++ sub.mangledName ++ "_s", location=builtin)),
+            consStructItem(
+              structItem(
+                [],
+                tagReferenceTypeExpr([], structSEU(), name("_vector_info", location=builtin)),
+                consStructDeclarator(
+                  structField(name("_info", location=builtin), baseTypeExpr(), []),
+                  nilStructDeclarator())),
+              consStructItem(
+                structItem(
+                  [], directTypeExpr(sub),
+                  consStructDeclarator(
+                    structField(name("_contents", location=builtin), pointerTypeExpr([], baseTypeExpr()), []),
+                    nilStructDeclarator())),
+                nilStructItem())),
+            location=builtin)),
+        consDeclarator(
+          declarator(
+            name("_vector_" ++ sub.mangledName, location=builtin),
+            pointerTypeExpr([], baseTypeExpr()),
+            [],
+            nothingInitializer()),
+          nilDeclarator())))];
+}
 
 abstract production vectorTypeExpr 
 top::BaseTypeExpr ::= sub::TypeName
 {
-  top.typerep = vectorType([], sub.typerep);
-  forwards to typedefTypeExpr([], name("_vector", location=builtIn()));
+  forwards to directTypeExpr(vectorType([], sub.typerep));
 }
 
 abstract production vectorType
@@ -44,9 +87,9 @@ top::Type ::= qs::[Qualifier] sub::Type
   
   top.memberProd =
     case top.otherName of
-      "length"   -> just(memberExpr(_, true, name("length", location=builtIn()), location=_))
-    | "size"     -> just(memberExpr(_, true, name("length", location=builtIn()), location=_))
-    | "capacity" -> just(memberExpr(_, true, name("capacity", location=builtIn()), location=_))
+      "length"   -> just(memberExpr(_, true, name("length", location=builtin), location=_))
+    | "size"     -> just(memberExpr(_, true, name("length", location=builtin), location=_))
+    | "capacity" -> just(memberExpr(_, true, name("capacity", location=builtin), location=_))
     | _ -> nothing()
     end;
     
@@ -78,15 +121,18 @@ top::Type ::= qs::[Qualifier] sub::Type
 
   forwards to
     noncanonicalType(
-      typedefType(
-        qs,
-        "_vector",
-        pointerType(
-          [],
-          tagType(
-            [],
-            refIdTagType(
-              structSEU(),
-              "_vector_s",
-              "edu:umn:cs:melt:exts:ableC:vector:_vector_s")))));
+      injectGlobalDeclsType(
+        vectorTypedefGlobalDecls(sub),
+        noncanonicalType(
+          typedefType(
+            qs,
+            "_vector_" ++ sub.mangledName,
+            pointerType(
+              [],
+              tagType(
+                [],
+                refIdTagType(
+                  structSEU(),
+                  "_vector_" ++ sub.mangledName ++ "_s",
+                  "edu:umn:cs:melt:exts:ableC:vector:_vector_" ++ sub.mangledName ++ "_s")))))));
 }
