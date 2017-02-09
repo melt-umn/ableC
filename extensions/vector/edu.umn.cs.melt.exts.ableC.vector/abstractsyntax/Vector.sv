@@ -226,12 +226,14 @@ top::Expr ::= e1::Expr e2::Expr
       vectorType(_, s) -> s
     | _ -> error("appendVector where lhs is non-vector")
     end;
+    
+  local vecTempName::String = "_vec_" ++ toString(genInt());
   
   forwards to
     stmtExpr(
-      mkDecl("_vec", vectorType([], subType), copyVector(e1, location=builtin), builtin),
+      mkDecl(vecTempName, vectorType([], subType), copyVector(e1, location=builtin), builtin),
       appendAssignVector(
-        declRefExpr(name("_vec", location=builtin), location=builtin),
+        declRefExpr(name(vecTempName, location=builtin), location=builtin),
         e2,
         location=builtin),
       location=builtin);
@@ -526,24 +528,44 @@ top::Expr ::= e1::Expr e2::Expr
       vectorType(_, s) -> s
     | _ -> error("subscriptVector where lhs is non-vector")
     end;
+    
+  local vecTempName::String = "_vec_" ++ toString(genInt());
+  local indexTempName::String = "_index_" ++ toString(genInt());
 
   forwards to
     injectGlobalDecls(
       vectorTypedefGlobalDecls(subType),
         stmtExpr(
-          exprStmt(
-            directCallExpr(
-              name("_check_index_vector", location=builtin),
-              consExpr(
-                memberExpr(e1, true, name("_info", location=builtin), location=builtin),
+          foldStmt([
+            mkDecl(vecTempName, e1.typerep, e1, builtin),
+            mkDecl("_index_", e2.typerep, e2, builtin),
+            exprStmt(
+              directCallExpr(
+                name("_check_index_vector", location=builtin),
                 consExpr(
-                  memberExpr(e1, true, name("_contents", location=builtin), location=builtin),
-                  consExpr(e2, nilExpr()))),
-              location=top.location)),
-            arraySubscriptExpr(
-              memberExpr(e1, true, name("_contents", location=builtin), location=builtin),
-              e2,
+                  memberExpr(
+                    declRefExpr(name(vecTempName, location=builtin), location=builtin),
+                    true,
+                    name("_info", location=builtin),
+                    location=builtin),
+                  consExpr(
+                    memberExpr(
+                      declRefExpr(name(vecTempName, location=builtin), location=builtin),
+                      true,
+                      name("_contents", location=builtin),
+                      location=builtin),
+                    consExpr(
+                      declRefExpr(name("_index_", location=builtin), location=builtin),
+                      nilExpr()))),
+                location=top.location))]),
+          arraySubscriptExpr(
+            memberExpr(
+              declRefExpr(name(vecTempName, location=builtin), location=builtin),
+              true,
+              name("_contents", location=builtin),
               location=builtin),
+            declRefExpr(name("_index_", location=builtin), location=builtin),
+            location=builtin),
           location=top.location),
         location=top.location);
 }
@@ -556,33 +578,53 @@ top::Expr ::= lhs::Expr index::Expr op::AssignOp rhs::Expr
       vectorType(_, s) -> s
     | _ -> error("subscriptAssignVector where lhs is non-vector")
     end;
+    
+  local vecTempName::String = "_vec_" ++ toString(genInt());
+  local indexTempName::String = "_index_" ++ toString(genInt());
   
   forwards to
     injectGlobalDecls(
       vectorTypedefGlobalDecls(subType),
         stmtExpr(
-          exprStmt(
-            directCallExpr(
-              name("_maybe_grow_vector_by_one", location=builtin),
-              consExpr(
-                mkAddressOf(
-                  memberExpr(lhs, true, name("_info", location=builtin), location=builtin),
-                  builtin),
+          foldStmt([
+            mkDecl(vecTempName, lhs.typerep, lhs, builtin),
+            mkDecl(indexTempName, index.typerep, index, builtin),
+            exprStmt(
+              directCallExpr(
+                name("_maybe_grow_vector_by_one", location=builtin),
                 consExpr(
-                  explicitCastExpr(
-                    typeName(
-                      directTypeExpr(builtinType([], voidType())),
-                      pointerTypeExpr([], pointerTypeExpr([], baseTypeExpr()))),
-                    mkAddressOf(
-                      memberExpr(lhs, true, name("_contents", location=builtin), location=builtin),
-                      builtin),
-                    location=builtin),
-                  consExpr(index, nilExpr()))),
-              location=top.location)),
+                  mkAddressOf(
+                    memberExpr(
+                      declRefExpr(name(vecTempName, location=builtin), location=builtin),
+                      true,
+                      name("_info", location=builtin),
+                      location=builtin),
+                    builtin),
+                  consExpr(
+                    explicitCastExpr(
+                      typeName(
+                        directTypeExpr(builtinType([], voidType())),
+                        pointerTypeExpr([], pointerTypeExpr([], baseTypeExpr()))),
+                      mkAddressOf(
+                        memberExpr(
+                          declRefExpr(name(vecTempName, location=builtin), location=builtin),
+                          true,
+                          name("_contents", location=builtin),
+                        location=builtin),
+                        builtin),
+                      location=builtin),
+                    consExpr(
+                      declRefExpr(name(indexTempName, location=builtin), location=builtin),
+                      nilExpr()))),
+                location=top.location))]),
             binaryOpExpr(
               arraySubscriptExpr(
-                memberExpr(lhs, true, name("_contents", location=builtin), location=builtin),
-                index,
+                memberExpr(
+                  declRefExpr(name(vecTempName, location=builtin), location=builtin),
+                  true,
+                  name("_contents", location=builtin),
+                  location=builtin),
+                declRefExpr(name(indexTempName, location=builtin), location=builtin),
                 location=builtin),
               assignOp(op, location=builtin),
               rhs,
