@@ -134,7 +134,6 @@ top::Expr ::= e::Expr
   local funName::String = "_copy_vector_" ++ subType.mangledName;
 
   local globalDecls::[Pair<String Decl>] = -- TODO: Template this instead, someday
-    vectorTypedefGlobalDecls(subType) ++
     [pair(
       funName,
       functionDeclaration(
@@ -206,7 +205,7 @@ top::Expr ::= e::Expr
                       location=builtin),
                     location=builtin)))),
             returnStmt(
-              justExpr(declRefExpr(name("vec", location=builtin), location=builtin)))]))))];
+              justExpr(declRefExpr(name("result", location=builtin), location=builtin)))]))))];
 
   forwards to
     injectGlobalDecls(
@@ -250,7 +249,6 @@ top::Expr ::= e1::Expr e2::Expr
   local funName::String = "_append_to_vector_" ++ subType.mangledName;
 
   local globalDecls::[Pair<String Decl>] = -- TODO: Template this instead, someday
-    vectorTypedefGlobalDecls(subType) ++
     [pair(
       funName,
       functionDeclaration(
@@ -364,7 +362,6 @@ top::Expr ::= e1::Expr e2::Expr
   local funName::String = "_eq_vector_" ++ subType.mangledName;
 
   local globalDecls::[Pair<String Decl>] = -- TODO: Template this instead, someday
-    vectorTypedefGlobalDecls(subType) ++
     [pair(
       funName,
       functionDeclaration(
@@ -599,60 +596,119 @@ top::Expr ::= e::Expr
 {
   local subType::Type = 
     case e.typerep of
-      vectorType(_, t) -> t
-    | _ -> error("showVector on non-vector")
+      vectorType(_, s) -> s
+    | _ -> error("showVector where lhs is non-vector")
     end;
+  
+  local funName::String = "_show_vector_" ++ subType.mangledName;
 
-  local paramName::Name = name("elem", location=builtin);
-  local fnName::Name = name("to_string_fn", location=builtin);
-
-  local fnDecl::FunctionDecl =
-    functionDecl(
-      [],
-      [],
-      stringTypeExpr(),
-      functionTypeExprWithArgs(
-        baseTypeExpr(),
-        consParameters(
-          parameterDecl(
-            [],
-            directTypeExpr(builtinType([], voidType())),
-            pointerTypeExpr([], baseTypeExpr()),
-            justName(paramName),
-            []),
-          nilParameters()),
-        false),
-      fnName,
-      [],
-      nilDecl(),
-      returnStmt(
-        justExpr(
-          showExpr(
-            unaryOpExpr(
-              dereferenceOp(location=builtin),
-              explicitCastExpr(
-                typeName(
-                  directTypeExpr(subType),
-                  pointerTypeExpr([], baseTypeExpr())),
-                declRefExpr(
-                  paramName,
+  local globalDecls::[Pair<String Decl>] = -- TODO: Template this instead, someday
+    [pair(
+      funName,
+      functionDeclaration(
+        functionDecl(
+          [staticStorageClass()],
+          [],
+          directTypeExpr(stringType()),
+          functionTypeExprWithArgs(
+            baseTypeExpr(),
+            consParameters(
+              parameterDecl(
+                [],
+                directTypeExpr(e.typerep),
+                baseTypeExpr(),
+                justName(name("vec", location=builtin)),
+                []),
+              nilParameters()),
+            false),
+          name(funName, location=builtin),
+          [],
+          nilDecl(),
+          foldStmt([
+            ifStmtNoElse(
+              binaryOpExpr(
+                lengthVector(
+                  declRefExpr(name("vec", location=builtin), location=builtin),
+                  location=builtin),
+                compareOp(equalsOp(location=builtin), location=builtin),
+                mkIntConst(0, builtin),
+                location=builtin),
+              returnStmt(justExpr(stringLiteral("\"[]\"", location=builtin)))),
+            mkDecl(
+              "result",
+              stringType(),
+              appendString(
+                stringLiteral("\"[\"", location=builtin),
+                showExpr(
+                  subscriptVector(
+                    declRefExpr(name("vec", location=builtin), location=builtin),
+                    mkIntConst(0, builtin),
+                    location=builtin),
                   location=builtin),
                 location=builtin),
-              location=builtin),
-            location=builtin))));
+              builtin),
+            seqStmt(
+              declStmt( 
+                variableDecls(
+                  [], [],
+                  typedefTypeExpr([], name("size_t", location=builtin)),
+                  consDeclarator( 
+                    declarator(
+                      name("i", location=builtin),
+                      baseTypeExpr(),
+                      [],
+                      nothingInitializer()), 
+                    nilDeclarator()))),
+              forStmt(
+                justExpr(
+                  binaryOpExpr(
+                    declRefExpr(name("i", location=builtin), location=builtin),
+                    assignOp(eqOp(location=builtin), location=builtin),
+                    mkIntConst(1, builtin),
+                    location=builtin)),
+                justExpr(
+                  binaryOpExpr(
+                    declRefExpr(name("i", location=builtin), location=builtin),
+                    compareOp(ltOp(location=builtin), location=builtin),
+                    lengthVector(
+                      declRefExpr(name("vec", location=builtin), location=builtin),
+                      location=builtin),
+                    location=builtin)),
+                justExpr(
+                  unaryOpExpr(
+                    postIncOp(location=builtin),
+                    declRefExpr(name("i", location=builtin), location=builtin),
+                    location=builtin)),
+                exprStmt(
+                  binaryOpExpr(
+                    declRefExpr(name("result", location=builtin), location=builtin),
+                    assignOp(eqOp(location=builtin), location=builtin),
+                    appendString(
+                      declRefExpr(name("result", location=builtin), location=builtin),
+                      appendString(
+                        stringLiteral("\", \"", location=builtin),
+                        showExpr(
+                          subscriptVector(
+                            declRefExpr(name("vec", location=builtin), location=builtin),
+                            declRefExpr(name("i", location=builtin), location=builtin),
+                            location=builtin),
+                          location=builtin),
+                        location=builtin),
+                      location=builtin),
+                    location=builtin)))),
+            returnStmt(
+              justExpr(
+                appendString(
+                  declRefExpr(name("result", location=builtin), location=builtin),
+                  stringLiteral("\"]\"", location=builtin),
+                  location=builtin)))]))))];
   
   forwards to
-    stmtExpr(
-      declStmt(functionDeclaration(fnDecl)),
+    injectGlobalDecls(
+      globalDecls,
       directCallExpr(
-        name("_showVector", location=builtin),
-        consExpr(
-          e,
-          consExpr(
-            declRefExpr(
-              fnName,
-              location=builtin),
-            nilExpr())),
-        location=top.location),
-      location=top.location);
+        name(funName, location=builtin),
+        consExpr(e, nilExpr()),
+        location=builtin),
+      location=builtin);
 }

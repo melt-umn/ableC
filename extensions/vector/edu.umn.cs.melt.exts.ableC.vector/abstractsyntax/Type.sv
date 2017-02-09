@@ -115,7 +115,6 @@ top::Type ::= qs::[Qualifier] sub::Type
     | _, _ -> nothing()
     end;
   
-  -- TODO
   top.showProd =
     case sub.showProd of
       just(_) -> just(showVector(_, location=_))
