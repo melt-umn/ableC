@@ -59,7 +59,6 @@ top::Type ::= qs::[Qualifier] sub::Type
   top.lpp = pp"${ppImplode(space(), map((.pp), qs))} vector(${sub.lpp}${sub.rpp})";
   top.rpp = pp"";
 
-  -- TODO
   top.ovrld:lBinaryPlusProd =
     case top.ovrld:otherType of
       vectorType(_, s) ->
@@ -69,7 +68,6 @@ top::Type ::= qs::[Qualifier] sub::Type
     | _ -> nothing()
     end;
     
-  -- TODO
   top.ovrld:lAssignPlusProd =
     case top.ovrld:otherType of
       vectorType(_, s) ->

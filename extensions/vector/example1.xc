@@ -12,9 +12,9 @@ int main(int argc, char **argv) {
   //printf("a: %s\n", show(a));
   vector<int> b = vec<int> [4, 5, 6];
   //printf("b: %s\n", show(b));
-  //vector<int> c = a + b;
+  vector<int> c = a + b;
   //printf("c: %s\n", show(c));
-  //a += b;
+  a += b;
   //printf("a: %s\n", show(a));
   b[1] += 7;
   b[3] = 6;

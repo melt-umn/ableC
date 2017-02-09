@@ -131,12 +131,12 @@ top::Expr ::= e::Expr
     | _ -> error("copyVector where lhs is non-vector")
     end;
   
-  local subscriptFunName::String = "_copy_vector_" ++ subType.mangledName;
+  local funName::String = "_copy_vector_" ++ subType.mangledName;
 
   local globalDecls::[Pair<String Decl>] = -- TODO: Template this instead, someday
     vectorTypedefGlobalDecls(subType) ++
     [pair(
-      subscriptFunName,
+      funName,
       functionDeclaration(
         functionDecl(
           [staticStorageClass()],
@@ -153,7 +153,7 @@ top::Expr ::= e::Expr
                 []),
               nilParameters()),
             false),
-          name(subscriptFunName, location=builtin),
+          name(funName, location=builtin),
           [],
           nilDecl(),
           foldStmt([
@@ -212,7 +212,7 @@ top::Expr ::= e::Expr
     injectGlobalDecls(
       globalDecls,
       directCallExpr(
-        name(subscriptFunName, location=builtin),
+        name(funName, location=builtin),
         consExpr(e, nilExpr()),
         location=builtin),
       location=builtin);
@@ -222,31 +222,134 @@ top::Expr ::= e::Expr
 abstract production appendVector
 top::Expr ::= e1::Expr e2::Expr
 {
-  top.typerep = e1.typerep;
+  local subType::Type = 
+    case e1.typerep of
+      vectorType(_, s) -> s
+    | _ -> error("appendVector where lhs is non-vector")
+    end;
+  
   forwards to
-    directCallExpr(
-      name("_append_vectors", location=builtin),
-      consExpr(
-        e1,
-        consExpr(
-          e2,
-          nilExpr())),
-      location=top.location);
+    stmtExpr(
+      mkDecl("_vec", vectorType([], subType), copyVector(e1, location=builtin), builtin),
+      appendAssignVector(
+        declRefExpr(name("_vec", location=builtin), location=builtin),
+        e2,
+        location=builtin),
+      location=builtin);
 }
 
 abstract production appendAssignVector
 top::Expr ::= e1::Expr e2::Expr
 {
-  top.typerep = e1.typerep;
+  local subType::Type = 
+    case e1.typerep of
+      vectorType(_, s) -> s
+    | _ -> error("appendAssignVector where lhs is non-vector")
+    end;
+  
+  local funName::String = "_append_to_vector_" ++ subType.mangledName;
+
+  local globalDecls::[Pair<String Decl>] = -- TODO: Template this instead, someday
+    vectorTypedefGlobalDecls(subType) ++
+    [pair(
+      funName,
+      functionDeclaration(
+        functionDecl(
+          [staticStorageClass()],
+          [],
+          directTypeExpr(vectorType([], subType)),
+          functionTypeExprWithArgs(
+            baseTypeExpr(),
+            consParameters(
+              parameterDecl(
+                [],
+                vectorTypeExpr(typeName(directTypeExpr(subType), baseTypeExpr())),
+                baseTypeExpr(),
+                justName(name("vec1", location=builtin)),
+                []),
+              consParameters(
+                parameterDecl(
+                  [],
+                  vectorTypeExpr(typeName(directTypeExpr(subType), baseTypeExpr())),
+                  baseTypeExpr(),
+                  justName(name("vec2", location=builtin)),
+                  []),
+                nilParameters())),
+            false),
+          name(funName, location=builtin),
+          [],
+          nilDecl(),
+          foldStmt([
+            declStmt( 
+              variableDecls(
+                [], [],
+                typedefTypeExpr([], name("size_t", location=builtin)),
+                consDeclarator( 
+                  declarator(
+                    name("vec1_length", location=builtin),
+                    baseTypeExpr(),
+                    [], 
+                    justInitializer(
+                      exprInitializer(
+                        lengthVector(
+                        declRefExpr(name("vec1", location=builtin), location=builtin),
+                        location=builtin)))), 
+                  nilDeclarator()))),
+            declStmt( 
+              variableDecls(
+                [], [],
+                typedefTypeExpr([], name("size_t", location=builtin)),
+                consDeclarator( 
+                  declarator(
+                    name("i", location=builtin),
+                    baseTypeExpr(),
+                    [], 
+                    nothingInitializer()) , 
+                  nilDeclarator()))),
+            forStmt(
+              justExpr(
+                binaryOpExpr(
+                  declRefExpr(name("i", location=builtin), location=builtin),
+                  assignOp(eqOp(location=builtin), location=builtin),
+                  mkIntConst(0, builtin),
+                  location=builtin)),
+              justExpr(
+                binaryOpExpr(
+                  declRefExpr(name("i", location=builtin), location=builtin),
+                  compareOp(ltOp(location=builtin), location=builtin),
+                  lengthVector(
+                    declRefExpr(name("vec2", location=builtin), location=builtin),
+                    location=builtin),
+                  location=builtin)),
+              justExpr(
+                unaryOpExpr(
+                  postIncOp(location=builtin),
+                  declRefExpr(name("i", location=builtin), location=builtin),
+                  location=builtin)),
+              exprStmt(
+                subscriptAssignVector(
+                  declRefExpr(name("vec1", location=builtin), location=builtin),
+                  mkAdd(
+                    declRefExpr(name("i", location=builtin), location=builtin),
+                    declRefExpr(name("vec1_length", location=builtin), location=builtin),
+                    builtin),
+                  eqOp(location=builtin),
+                  subscriptVector(
+                    declRefExpr(name("vec2", location=builtin), location=builtin),
+                    declRefExpr(name("i", location=builtin), location=builtin),
+                    location=builtin),
+                  location=builtin))),
+            returnStmt(
+              justExpr(declRefExpr(name("vec1", location=builtin), location=builtin)))]))))];
+
   forwards to
-    directCallExpr(
-      name("_append_update_vector", location=builtin),
-      consExpr(
-        e1,
-        consExpr(
-          e2,
-          nilExpr())),
-      location=top.location);
+    injectGlobalDecls(
+      globalDecls,
+      directCallExpr(
+        name(funName, location=builtin),
+        consExpr(e1, consExpr(e2, nilExpr())),
+        location=builtin),
+      location=builtin);
 }
 
 abstract production eqVector
