@@ -56,7 +56,7 @@ top::BaseTypeExpr ::= sub::TypeName
 abstract production vectorType
 top::Type ::= qs::[Qualifier] sub::Type
 {
-  top.lpp = pp"${ppImplode(space(), map((.pp), qs))} vector(${sub.lpp}${sub.rpp})";
+  top.lpp = pp"${ppImplode(space(), map((.pp), qs))}vector<${sub.lpp}${sub.rpp}>";
   top.rpp = pp"";
 
   top.ovrld:lBinaryPlusProd =

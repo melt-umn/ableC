@@ -79,24 +79,28 @@ Stmt ::= n::String sub::Type size::Expr
 abstract production initVector
 top::Expr ::= sub::TypeName size::Expr
 {
-  forwards to
+  local fwrd::Expr =
     stmtExpr(
       mkInitVectorStmt("_vec", sub.typerep, size),
       declRefExpr(name("_vec", location=builtin), location=builtin),
       location=top.location);
+  
+  forwards to mkErrorCheck(checkVectorHeaderDef("_init_vector", top.location, top.env), fwrd);
 }
 
 abstract production constructVector
 top::Expr ::= sub::TypeName e::Exprs
 {
   e.argumentPosition = 0;
-  forwards to 
+  local fwrd::Expr =
     stmtExpr(
       seqStmt(
         mkInitVectorStmt("_vec", sub.typerep, mkIntConst(e.count, builtin)),
         e.vectorInitTrans),
       declRefExpr(name("_vec", location=builtin), location=top.location),
       location=top.location);
+  
+  forwards to mkErrorCheck(checkVectorHeaderDef("_init_vector", top.location, top.env), fwrd);
 }
 
 synthesized attribute vectorInitTrans::Stmt occurs on Exprs;
@@ -207,7 +211,7 @@ top::Expr ::= e::Expr
             returnStmt(
               justExpr(declRefExpr(name("result", location=builtin), location=builtin)))]))))];
 
-  forwards to
+  local fwrd::Expr =
     injectGlobalDecls(
       globalDecls,
       directCallExpr(
@@ -215,6 +219,8 @@ top::Expr ::= e::Expr
         consExpr(e, nilExpr()),
         location=builtin),
       location=builtin);
+  
+  forwards to mkErrorCheck(checkVectorHeaderDef("_init_vector", top.location, top.env), fwrd);
 }
 
 -- Vector append
@@ -229,7 +235,7 @@ top::Expr ::= e1::Expr e2::Expr
     
   local vecTempName::String = "_vec_" ++ toString(genInt());
   
-  forwards to
+  local fwrd::Expr =
     stmtExpr(
       mkDecl(vecTempName, vectorType([], subType), copyVector(e1, location=builtin), builtin),
       appendAssignVector(
@@ -237,6 +243,8 @@ top::Expr ::= e1::Expr e2::Expr
         e2,
         location=builtin),
       location=builtin);
+  
+  forwards to mkErrorCheck(checkVectorHeaderDef("_init_vector", top.location, top.env), fwrd);
 }
 
 abstract production appendAssignVector
@@ -342,7 +350,7 @@ top::Expr ::= e1::Expr e2::Expr
             returnStmt(
               justExpr(declRefExpr(name("vec1", location=builtin), location=builtin)))]))))];
 
-  forwards to
+  local fwrd::Expr =
     injectGlobalDecls(
       globalDecls,
       directCallExpr(
@@ -350,6 +358,8 @@ top::Expr ::= e1::Expr e2::Expr
         consExpr(e1, consExpr(e2, nilExpr())),
         location=builtin),
       location=builtin);
+  
+  forwards to mkErrorCheck(checkVectorHeaderDef("_init_vector", top.location, top.env), fwrd);
 }
 
 abstract production eqVector
@@ -450,7 +460,7 @@ top::Expr ::= e1::Expr e2::Expr
                 returnStmt(justExpr(mkIntConst(0, builtin))))),
             returnStmt(justExpr(mkIntConst(1, builtin)))]))))];
 
-  forwards to
+  local fwrd::Expr =
     injectGlobalDecls(
       globalDecls,
       directCallExpr(
@@ -458,6 +468,8 @@ top::Expr ::= e1::Expr e2::Expr
         consExpr(e1, consExpr(e2, nilExpr())),
         location=builtin),
       location=builtin);
+  
+  forwards to mkErrorCheck(checkVectorHeaderDef("_init_vector", top.location, top.env), fwrd);
 }
 
 abstract production lengthVector
@@ -469,7 +481,7 @@ top::Expr ::= e::Expr
     | _ -> error("lengthVector where lhs is non-vector")
     end;
     
-  forwards to 
+  local fwrd::Expr =
     injectGlobalDecls(
       vectorTypedefGlobalDecls(subType),
       memberExpr(
@@ -478,6 +490,8 @@ top::Expr ::= e::Expr
         name("length", location=builtin),
         location=builtin),
       location=top.location);
+  
+  forwards to mkErrorCheck(checkVectorHeaderDef("_init_vector", top.location, top.env), fwrd);
 }
 
 abstract production capacityVector
@@ -489,7 +503,7 @@ top::Expr ::= e::Expr
     | _ -> error("capacityVector where lhs is non-vector")
     end;
     
-  forwards to 
+  local fwrd::Expr =
     injectGlobalDecls(
       vectorTypedefGlobalDecls(subType),
       memberExpr(
@@ -498,6 +512,8 @@ top::Expr ::= e::Expr
         name("capacity", location=builtin),
         location=builtin),
       location=top.location);
+  
+  forwards to mkErrorCheck(checkVectorHeaderDef("_init_vector", top.location, top.env), fwrd);
 }
 
 abstract production elemSizeVector
@@ -509,7 +525,7 @@ top::Expr ::= e::Expr
     | _ -> error("elemSizeVector where lhs is non-vector")
     end;
     
-  forwards to 
+  local fwrd::Expr =
     injectGlobalDecls(
       vectorTypedefGlobalDecls(subType),
       memberExpr(
@@ -518,6 +534,8 @@ top::Expr ::= e::Expr
         name("elem_size", location=builtin),
         location=builtin),
       location=top.location);
+  
+  forwards to mkErrorCheck(checkVectorHeaderDef("_init_vector", top.location, top.env), fwrd);
 }
 
 abstract production subscriptVector
@@ -532,7 +550,7 @@ top::Expr ::= e1::Expr e2::Expr
   local vecTempName::String = "_vec_" ++ toString(genInt());
   local indexTempName::String = "_index_" ++ toString(genInt());
 
-  forwards to
+  local fwrd::Expr =
     injectGlobalDecls(
       vectorTypedefGlobalDecls(subType),
         stmtExpr(
@@ -568,6 +586,8 @@ top::Expr ::= e1::Expr e2::Expr
             location=builtin),
           location=top.location),
         location=top.location);
+  
+  forwards to mkErrorCheck(checkVectorHeaderDef("_check_index_vector", top.location, top.env), fwrd);
 }
 
 abstract production subscriptAssignVector
@@ -582,7 +602,7 @@ top::Expr ::= lhs::Expr index::Expr op::AssignOp rhs::Expr
   local vecTempName::String = "_vec_" ++ toString(genInt());
   local indexTempName::String = "_index_" ++ toString(genInt());
   
-  forwards to
+  local fwrd::Expr =
     injectGlobalDecls(
       vectorTypedefGlobalDecls(subType),
         stmtExpr(
@@ -631,6 +651,8 @@ top::Expr ::= lhs::Expr index::Expr op::AssignOp rhs::Expr
               location=builtin),
           location=top.location),
         location=top.location);
+  
+  forwards to mkErrorCheck(checkVectorHeaderDef("_maybe_grow_vector_by_one", top.location, top.env), fwrd);
 }
 
 abstract production showVector
@@ -745,7 +767,7 @@ top::Expr ::= e::Expr
                   stringLiteral("\"]\"", location=builtin),
                   location=builtin)))]))))];
   
-  forwards to
+  local fwrd::Expr =
     injectGlobalDecls(
       globalDecls,
       directCallExpr(
@@ -753,4 +775,16 @@ top::Expr ::= e::Expr
         consExpr(e, nilExpr()),
         location=builtin),
       location=builtin);
+  
+  forwards to mkErrorCheck(checkVectorHeaderDef("_init_vector", top.location, top.env), fwrd);
+}
+
+-- Check the given env for the given function name
+function checkVectorHeaderDef
+[Message] ::= n::String loc::Location env::Decorated Env
+{
+  return
+    if !null(lookupValue(n, env))
+    then []
+    else [err(loc, "Missing include of vector.xh")];
 }
