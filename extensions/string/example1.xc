@@ -71,8 +71,18 @@ int main(int argc, char **argv) {
 
   string k = str("abcd");
   printf("k: %s\n", k);
-  if (k != "\"abcd\"")
+  if (k != "abcd")
     return 12;
+
+  string l = show("abcd");
+  printf("l: %s\n", l);
+  if (l != "\"abcd\"")
+    return 13;
+
+  string m = show(show("abcd\n\n\\"));
+  printf("m: %s\n", m);
+  if (m != "\"\\\"abcd\\\\n\\\\n\\\\\\\\\\\"\"")
+    return 14;
 
   return 0;
 }
