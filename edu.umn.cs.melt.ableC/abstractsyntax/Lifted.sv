@@ -79,6 +79,44 @@ top::Expr ::= globalDecls::[Pair<String Decl>] lifted::Expr
   with {env = lifted.env;};
 }
 
+-- Same as injectGlobalDecls, but on Stmt
+abstract production injectGlobalDeclsStmt
+top::Stmt ::= globalDecls::[Pair<String Decl>] lifted::Stmt
+{
+  top.pp = pp"injectGlobalDeclsStmt {${ppImplode(pp"\n", decls.pps)}} (${lifted.pp})";
+  top.host = injectGlobalDeclsStmt(zipWith(pair, names, unfoldDecl(decls.host)), lifted.host);
+  
+  -- Remove the globalDecls that are already in the env (i.e. this is already part of a lifted ast)
+  local newGlobalDecls::[Pair<String Decl>] = removeEnvGlobalDeclPairs(globalDecls, top.env);
+ 
+  local decls::Decls = foldDecl(map(snd, newGlobalDecls));
+  local names::[String] = map(fst, newGlobalDecls);
+
+  decls.globalDeclEnv = error("Demanded globalDeclEnv by consDecl");
+  decls.env = globalEnv(top.env);
+  decls.isTopLevel = true;
+  decls.returnType = top.returnType;
+
+  top.errors <- decls.errors;
+
+ -- Note that the invariant over `globalDecls` and `lifted` is maintained.
+  top.globalDecls :=
+    decls.globalDecls ++
+    zipWith(pair, names, unfoldDecl(decls.lifted)) ++ 
+    lifted.globalDecls;
+  -- It should hold that names and unfoldDecl(decls.lifted) are the same length and
+  -- correctly correspond to one another.
+  top.lifted = lifted.lifted;
+  
+  -- TODO: We are adding the new env elements to the current scope, when they should really be global
+  -- Shouldn't be a problem unless there are name conflicts, doing this the right way would be less
+  -- efficent. 
+  lifted.env = addEnv(decls.defs, top.env);
+ 
+  forwards to lifted
+  with {env = lifted.env;};
+}
+
 -- Same as injectGlobalDecls, but on BaseTypeExpr
 abstract production injectGlobalDeclsTypeExpr
 top::BaseTypeExpr ::= globalDecls::[Pair<String Decl>] lifted::BaseTypeExpr
