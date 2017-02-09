@@ -223,10 +223,15 @@ top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
       errorType()
     else if null(valueitems) then
       errorType()
-    else head(valueitems).typerep;
-  
-  -- TODO Add qualifiers from quals_refid.fst to the type!
-  -- TODO: error checking!! Type checking
+    else addQualifiers(quals_refid.fst, head(valueitems).typerep);
+  top.errors <-
+    if null(refids) then 
+      [err(lhs.location, "expression does not have defined fields (got " ++ showType(lhs.typerep) ++ ")")]
+    else if null(valueitems) then
+      if deref
+      then [err(lhs.location, "expression does not have pointer to struct or union type (got " ++ showType(lhs.typerep) ++ ")")]
+      else [err(lhs.location, "expression does not have struct or union type (got " ++ showType(lhs.typerep) ++ ")")]
+    else [];
 }
 abstract production binaryOpExpr
 top::Expr ::= lhs::Expr  op::BinOp  rhs::Expr
