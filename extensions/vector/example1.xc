@@ -19,10 +19,10 @@ int main(int argc, char **argv) {
   b[1] += 7;
   b[3] = 6;
   //printf("b: %s\n", show(b));
-  //if (a != c)
-  //  return 1;
-  //if (a == b)
-  //  return 2;
+  if (a != c)
+    return 1;
+  if (a == b)
+    return 2;
   if (b[1] != 12)
     return 3;
   if (b[3] != 6)

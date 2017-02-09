@@ -77,7 +77,6 @@ top::Type ::= qs::[Qualifier] sub::Type
     | _ -> nothing()
     end;
   
-  -- TODO
   top.ovrld:lBinaryEqProd =
     case top.ovrld:otherType of
       vectorType(_, s) ->

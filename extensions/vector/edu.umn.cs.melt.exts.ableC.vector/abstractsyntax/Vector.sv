@@ -147,7 +147,7 @@ top::Expr ::= e::Expr
             consParameters(
               parameterDecl(
                 [],
-                vectorTypeExpr(typeName(directTypeExpr(subType), baseTypeExpr())),
+                directTypeExpr(e.typerep),
                 baseTypeExpr(),
                 justName(name("vec", location=builtin)),
                 []),
@@ -263,14 +263,14 @@ top::Expr ::= e1::Expr e2::Expr
             consParameters(
               parameterDecl(
                 [],
-                vectorTypeExpr(typeName(directTypeExpr(subType), baseTypeExpr())),
+                directTypeExpr(e1.typerep),
                 baseTypeExpr(),
                 justName(name("vec1", location=builtin)),
                 []),
               consParameters(
                 parameterDecl(
                   [],
-                  vectorTypeExpr(typeName(directTypeExpr(subType), baseTypeExpr())),
+                  directTypeExpr(e2.typerep),
                   baseTypeExpr(),
                   justName(name("vec2", location=builtin)),
                   []),
@@ -355,92 +355,110 @@ top::Expr ::= e1::Expr e2::Expr
 abstract production eqVector
 top::Expr ::= e1::Expr e2::Expr
 {
-  local subType1::Type = 
+  local subType::Type = 
     case e1.typerep of
-      vectorType(_, t) -> t
-    | _ -> error("eqVector on non-vector")
+      vectorType(_, s) -> s
+    | _ -> error("eqVector where lhs is non-vector")
     end;
-
-  local subType2::Type = 
-    case e1.typerep of
-      vectorType(_, t) -> t
-    | _ -> error("eqVector on non-vector")
-    end;
-
-  local param1Name::Name = name("elem1", location=builtin);
-  local param2Name::Name = name("elem2", location=builtin);
-  local fnName::Name = name("eq_fn", location=builtin);
-
-  local fnDecl::FunctionDecl =
-    functionDecl(
-      [],
-      [],
-      directTypeExpr(builtinType([], boolType())),
-      functionTypeExprWithArgs(
-        baseTypeExpr(),
-        consParameters(
-          parameterDecl(
-            [],
-            directTypeExpr(builtinType([], voidType())),
-            pointerTypeExpr([], baseTypeExpr()),
-            justName(param1Name),
-            []),
-          consParameters(
-            parameterDecl(
-              [],
-              directTypeExpr(builtinType([], voidType())),
-              pointerTypeExpr([], baseTypeExpr()),
-              justName(param2Name),
-              []),
-            nilParameters())),
-        false),
-      fnName,
-      [],
-      nilDecl(),
-      returnStmt(
-        justExpr(
-          binaryOpExpr(
-            unaryOpExpr(
-              dereferenceOp(location=builtin),
-              explicitCastExpr(
-                typeName(
-                  directTypeExpr(subType1),
-                  pointerTypeExpr([], baseTypeExpr())),
-                declRefExpr(
-                  param1Name,
-                  location=builtin),
-                location=builtin),
-              location=builtin),
-            compareOp(equalsOp(location=builtin), location=builtin),
-            unaryOpExpr(
-              dereferenceOp(location=builtin),
-              explicitCastExpr(
-                typeName(
-                  directTypeExpr(subType2),
-                  pointerTypeExpr([], baseTypeExpr())),
-                declRefExpr(
-                  param1Name,
-                  location=builtin),
-                location=builtin),
-              location=builtin),
-            location=builtin))));
   
-  forwards to
-    stmtExpr(
-      declStmt(functionDeclaration(fnDecl)),
-      directCallExpr(
-        name("_equal_vectors", location=builtin),
-        consExpr(
-          e1,
-          consExpr(
-            e2,
-            consExpr(
-              declRefExpr(
-                fnName,
+  local funName::String = "_eq_vector_" ++ subType.mangledName;
+
+  local globalDecls::[Pair<String Decl>] = -- TODO: Template this instead, someday
+    vectorTypedefGlobalDecls(subType) ++
+    [pair(
+      funName,
+      functionDeclaration(
+        functionDecl(
+          [staticStorageClass()],
+          [],
+          directTypeExpr(builtinType([], boolType())),
+          functionTypeExprWithArgs(
+            baseTypeExpr(),
+            consParameters(
+              parameterDecl(
+                [],
+                directTypeExpr(e1.typerep),
+                baseTypeExpr(),
+                justName(name("vec1", location=builtin)),
+                []),
+              consParameters(
+                parameterDecl(
+                  [],
+                  directTypeExpr(e2.typerep),
+                  baseTypeExpr(),
+                  justName(name("vec2", location=builtin)),
+                  []),
+                nilParameters())),
+            false),
+          name(funName, location=builtin),
+          [],
+          nilDecl(),
+          foldStmt([
+            ifStmtNoElse(
+              binaryOpExpr(
+                lengthVector(
+                  declRefExpr(name("vec1", location=builtin), location=builtin),
+                  location=builtin),
+                compareOp(notEqualsOp(location=builtin), location=builtin),
+                lengthVector(
+                  declRefExpr(name("vec2", location=builtin), location=builtin),
+                  location=builtin),
                 location=builtin),
-            nilExpr()))),
-        location=top.location),
-      location=top.location);
+              returnStmt(justExpr(mkIntConst(0, builtin)))),
+            declStmt(
+              variableDecls(
+                [], [],
+                typedefTypeExpr([], name("size_t", location=builtin)),
+                consDeclarator( 
+                  declarator(
+                    name("i", location=builtin),
+                    baseTypeExpr(),
+                    [], 
+                    nothingInitializer()) , 
+                  nilDeclarator()))),
+            forStmt(
+              justExpr(
+                binaryOpExpr(
+                  declRefExpr(name("i", location=builtin), location=builtin),
+                  assignOp(eqOp(location=builtin), location=builtin),
+                  mkIntConst(0, builtin),
+                  location=builtin)),
+              justExpr(
+                binaryOpExpr(
+                  declRefExpr(name("i", location=builtin), location=builtin),
+                  compareOp(ltOp(location=builtin), location=builtin),
+                  lengthVector(
+                    declRefExpr(name("vec1", location=builtin), location=builtin),
+                    location=builtin),
+                  location=builtin)),
+              justExpr(
+                unaryOpExpr(
+                  postIncOp(location=builtin),
+                  declRefExpr(name("i", location=builtin), location=builtin),
+                  location=builtin)),
+              ifStmtNoElse(
+                binaryOpExpr(
+                  subscriptVector(
+                    declRefExpr(name("vec1", location=builtin), location=builtin),
+                    declRefExpr(name("i", location=builtin), location=builtin),
+                    location=builtin),
+                  compareOp(notEqualsOp(location=builtin), location=builtin),
+                  subscriptVector(
+                    declRefExpr(name("vec2", location=builtin), location=builtin),
+                    declRefExpr(name("i", location=builtin), location=builtin),
+                    location=builtin),
+                  location=builtin),
+                returnStmt(justExpr(mkIntConst(0, builtin))))),
+            returnStmt(justExpr(mkIntConst(1, builtin)))]))))];
+
+  forwards to
+    injectGlobalDecls(
+      globalDecls,
+      directCallExpr(
+        name(funName, location=builtin),
+        consExpr(e1, consExpr(e2, nilExpr())),
+        location=builtin),
+      location=builtin);
 }
 
 abstract production lengthVector
