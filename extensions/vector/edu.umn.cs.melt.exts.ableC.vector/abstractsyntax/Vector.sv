@@ -6,7 +6,7 @@ imports silver:langutil:pp with implode as ppImplode;
 imports edu:umn:cs:melt:ableC:abstractsyntax hiding vectorType;
 imports edu:umn:cs:melt:ableC:abstractsyntax:construction;
 imports edu:umn:cs:melt:ableC:abstractsyntax:env;
-imports edu:umn:cs:melt:ableC:abstractsyntax:overload;
+imports edu:umn:cs:melt:ableC:abstractsyntax:overload as ovrld;
 --imports edu:umn:cs:melt:ableC:abstractsyntax:debug;
 
 imports edu:umn:cs:melt:exts:ableC:string;
@@ -18,72 +18,65 @@ abstract production initVector
 top::Expr ::= sub::TypeName size::Expr
 {
   forwards to
-    stmtExpr(
-      seqStmt(
-        declStmt( 
-          variableDecls(
-            [], [],
-            vectorTypeExpr(sub),
-            consDeclarator( 
-              declarator(
-                name("_vec", location=builtin),
-                baseTypeExpr(),
-                [], 
-                justInitializer(
-                  exprInitializer(
-                    directCallExpr(
-                      name("GC_malloc", location=builtin),
-                      consExpr(
-                        unaryExprOrTypeTraitExpr(
-                          sizeofOp(location=builtin),
-                          typeNameExpr(
-                            typeName(
-                              injectGlobalDeclsTypeExpr(
-                                vectorTypedefGlobalDecls(sub.typerep),
-                                directTypeExpr(
-                                  tagType(
-                                    [],
-                                    refIdTagType(
-                                      structSEU(),
-                                      "_vector_" ++ sub.typerep.mangledName ++ "_s",
-                                      "edu:umn:cs:melt:exts:ableC:vector:_vector_" ++ sub.typerep.mangledName ++ "_s")))),
-                              baseTypeExpr())),
-                          location=builtin),
-                        nilExpr()),
-                      location=builtin)))) , 
-              nilDeclarator()))),
-        exprStmt(
-          directCallExpr(
-            name("_init_vector", location=builtin),
-            consExpr(
-              mkAddressOf(
-                memberExpr(
-                  declRefExpr(name("_vec", location=builtin), location=builtin),
-                  true,
-                  name("_info", location=builtin),
-                  location=builtin),
-                builtin),
+    injectGlobalDecls(
+      vectorTypedefGlobalDecls(sub.typerep),
+      stmtExpr(
+        seqStmt(
+          mkDecl(
+            "_vec",
+            vectorType([], sub.typerep),
+            directCallExpr(
+              name("GC_malloc", location=builtin),
               consExpr(
-                explicitCastExpr(
-                  typeName(
-                    directTypeExpr(builtinType([], voidType())),
-                    pointerTypeExpr([], pointerTypeExpr([], baseTypeExpr()))),
-                  mkAddressOf(
-                    memberExpr(
-                      declRefExpr(name("_vec", location=builtin), location=builtin),
-                      true,
-                      name("_contents", location=builtin),
-                      location=builtin),
-                    builtin),
+                unaryExprOrTypeTraitExpr(
+                  sizeofOp(location=builtin),
+                  typeNameExpr(
+                    typeName(
+                      directTypeExpr(
+                        tagType(
+                          [],
+                          refIdTagType(
+                            structSEU(),
+                            "_vector_" ++ sub.typerep.mangledName ++ "_s",
+                            "edu:umn:cs:melt:exts:ableC:vector:_vector_" ++ sub.typerep.mangledName ++ "_s"))),
+                      baseTypeExpr())),
                   location=builtin),
+                nilExpr()),
+              location=builtin),
+            builtin),
+          exprStmt(
+            directCallExpr(
+              name("_init_vector", location=builtin),
+              consExpr(
+                mkAddressOf(
+                  memberExpr(
+                    declRefExpr(name("_vec", location=builtin), location=builtin),
+                    true,
+                    name("_info", location=builtin),
+                    location=builtin),
+                  builtin),
                 consExpr(
-                  unaryExprOrTypeTraitExpr(
-                    sizeofOp(location=builtin),
-                    typeNameExpr(sub),
-                    location=top.location),
-                  consExpr(size, nilExpr())))),
-          location=top.location))),
-      declRefExpr(name("_vec", location=builtin), location=builtin),
+                  explicitCastExpr(
+                    typeName(
+                      directTypeExpr(builtinType([], voidType())),
+                      pointerTypeExpr([], pointerTypeExpr([], baseTypeExpr()))),
+                    mkAddressOf(
+                      memberExpr(
+                        declRefExpr(name("_vec", location=builtin), location=builtin),
+                        true,
+                        name("_contents", location=builtin),
+                        location=builtin),
+                      builtin),
+                    location=builtin),
+                  consExpr(
+                    unaryExprOrTypeTraitExpr(
+                      sizeofOp(location=builtin),
+                      typeNameExpr(sub),
+                      location=top.location),
+                    consExpr(size, nilExpr())))),
+            location=top.location))),
+        declRefExpr(name("_vec", location=builtin), location=builtin),
+        location=top.location),
       location=top.location);
 }
 
@@ -112,8 +105,8 @@ top::Exprs ::= h::Expr t::Exprs
   top.vectorInitTrans =
     seqStmt(
       exprStmt(
-        binaryOpExpr(
-          arraySubscriptExpr(
+        ovrld:binaryOpExpr(
+          ovrld:arraySubscriptExpr(
             declRefExpr(name("_vec", location=builtin), location=builtin),
             mkIntConst(top.argumentPosition, builtin),
             location=builtin),
@@ -254,77 +247,117 @@ top::Expr ::= e1::Expr e2::Expr
 abstract production subscriptVector
 top::Expr ::= e1::Expr e2::Expr
 {
+  local subType::Type = 
+    case e1.typerep of
+      vectorType(_, s) -> s
+    | _ -> error("subscriptVector where lhs is non-vector")
+    end;
+    
+  local subscriptFunName::String = "_index_vector_" ++ subType.mangledName;
+
+  local globalDecls::[Pair<String Decl>] =
+    vectorTypedefGlobalDecls(subType) ++
+    [pair(
+       subscriptFunName,
+       functionDeclaration(
+         functionDecl(
+           [staticStorageClass()],
+           [],
+           directTypeExpr(subType),--
+           functionTypeExprWithArgs(
+             baseTypeExpr(),
+             consParameters(
+               parameterDecl(
+                 [],
+                 vectorTypeExpr(typeName(directTypeExpr(subType), baseTypeExpr())),
+                 baseTypeExpr(),
+                 justName(name("vec", location=builtin)),
+                 []),
+               consParameters(
+                 parameterDecl(
+                   [],
+                   typedefTypeExpr([], name("size_t", location=builtin)),
+                   baseTypeExpr(),
+                   justName(name("i", location=builtin)),
+                   []),
+                 nilParameters())),
+             false),
+           name(subscriptFunName, location=builtin),
+           [],
+           nilDecl(),
+           seqStmt(
+             exprStmt(
+               directCallExpr(
+                 name("_check_index_vector", location=builtin),
+                 consExpr(
+                   memberExpr(
+                     declRefExpr(name("vec", location=builtin), location=builtin),
+                     true,
+                     name("_info", location=builtin),
+                     location=builtin),
+                   consExpr(
+                     memberExpr(
+                       declRefExpr(name("vec", location=builtin), location=builtin),
+                       true,
+                       name("_contents", location=builtin),
+                       location=builtin),
+                     consExpr(
+                       declRefExpr(name("i", location=builtin), location=builtin),
+                       nilExpr()))),
+                 location=builtin)),
+             returnStmt(
+               justExpr(
+                 arraySubscriptExpr(
+                   memberExpr(
+                     declRefExpr(name("vec", location=builtin), location=builtin),
+                     true,
+                     name("_contents", location=builtin),
+                     location=builtin),
+                   declRefExpr(name("i", location=builtin), location=builtin),
+                   location=builtin)))))))];
+
   forwards to
-    unaryOpExpr(
-      dereferenceOp(location=builtin),
-        explicitCastExpr(
-          case e1.typerep of
-            vectorType(_, s) -> typeName(directTypeExpr(s), pointerTypeExpr([], baseTypeExpr()))
-          | _ -> error("subscriptVector where lhs is non-vector")
-          end,
-          directCallExpr(
-            name("_index_vector", location=builtin),
-            consExpr(e1, consExpr(e2, nilExpr())),
-            location=top.location),
-          location=top.location),
-      location=top.location);
+    injectGlobalDecls(
+      globalDecls,
+      directCallExpr(
+        name(subscriptFunName, location=builtin),
+        consExpr(e1, consExpr(e2, nilExpr())),
+        location=builtin),
+      location=builtin);
 }
 
 abstract production subscriptAssignVector
 top::Expr ::= lhs::Expr index::Expr op::AssignOp rhs::Expr
 {
+  local subType::Type = 
+    case lhs.typerep of
+      vectorType(_, s) -> s
+    | _ -> error("subscriptAssignVector where lhs is non-vector")
+    end;
+  
   forwards to
-    case op of
-      eqOp() -> 
-        directCallExpr(
-          name("_update_index_vector", location=builtin),
-          consExpr(
-            lhs,
-            consExpr(
-              index,
-              consExpr(
-                stmtExpr(
-                  basicVarDeclStmt(rhs.typerep, name("_item", location=builtin), rhs),
-                  unaryOpExpr(
-                    addressOfOp(location=builtin),
-                    declRefExpr(
-                      name("_item", location=builtin),
-                      location=builtin),
-                    location=builtin),
-                  location=builtin),
-                consExpr(
-                  unaryExprOrTypeTraitExpr(
-                    sizeofOp(location=builtin),
-                    typeNameExpr(typeName(directTypeExpr(rhs.typerep), baseTypeExpr())),
-                    location=builtin),
-                  nilExpr())))),
-          location=top.location)
-    | _ ->
+    injectGlobalDecls(
+      vectorTypedefGlobalDecls(subType),
         stmtExpr(
           exprStmt(
             directCallExpr(
               name("_check_index_vector", location=builtin),
-              consExpr(lhs, consExpr(index, nilExpr())),
+              consExpr(
+                memberExpr(lhs, true, name("_info", location=builtin), location=builtin),
+                consExpr(
+                  memberExpr(lhs, true, name("_contents", location=builtin), location=builtin),
+                  consExpr(index, nilExpr()))),
               location=top.location)),
             binaryOpExpr(
-              unaryOpExpr(
-                dereferenceOp(location=builtin),
-                explicitCastExpr(
-                  case lhs.typerep of
-                    vectorType(_, s) -> typeName(directTypeExpr(s), pointerTypeExpr([], baseTypeExpr()))
-                  | _ -> error("subscriptAssignVector where lhs is non-vector")
-                  end,
-                  arraySubscriptExpr(
-                    memberExpr(lhs, true, name("contents", location=builtin), location=builtin),
-                    index,
-                    location=builtin),
-                  location=builtin),
+              arraySubscriptExpr(
+                memberExpr(lhs, true, name("_contents", location=builtin), location=builtin),
+                index,
                 location=builtin),
               assignOp(op, location=builtin),
               rhs,
               location=builtin),
-          location=top.location)
-    end;
+          location=top.location),
+        location=top.location);
 }
 
 abstract production showVector

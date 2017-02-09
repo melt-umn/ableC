@@ -21,7 +21,7 @@ struct _vector_info {
 // Check whether an index is valid for given vector info
 static void _check_index_vector(struct _vector_info info, void *contents, size_t i) {
   if (i >= info.length || i < 0) {
-    fprintf(stderr, "Vector index out of bounds: length %lud, index %lud\n", info.length, i);
+    fprintf(stderr, "Vector index out of bounds: length %lu, index %lu\n", info.length, i);
     exit(1);
   }
   if (contents == NULL) {
@@ -42,7 +42,7 @@ static void _resize_vector(struct _vector_info *info, void **contents, size_t ne
 // If the index is equal to the vector size, expand the vector by one
 static void _maybe_grow_vector_by_one(struct _vector_info *info, void **contents, size_t i) {
   if (i > info->length || i < 0) {
-    fprintf(stderr, "Vector index out of bounds: length %lud, index %lud\n", info->length, i);
+    fprintf(stderr, "Vector index out of bounds: length %lu, index %lu\n", info->length, i);
     exit(1);
   }
   if (i == info->length) {

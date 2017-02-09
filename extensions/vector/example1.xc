@@ -5,7 +5,10 @@
 
 int main(int argc, char **argv) {
   //init_vector(int) (2);
-  vector(int) a = new_vector(int) []; //[1, 2, 3];
+  vector(int) a = new_vector(int) [1, 2, 3];
+  printf("%d\n", a[2]);
+
+  /* vector(int) a = new_vector(int) [1, 2, 3]; */
   /* printf("a: %s\n", show(a)); */
   /* vector(int) b = new_vector(int) [4, 5, 6]; */
   /* printf("b: %s\n", show(b)); */
