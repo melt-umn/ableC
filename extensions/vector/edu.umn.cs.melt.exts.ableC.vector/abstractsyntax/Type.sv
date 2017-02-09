@@ -1,5 +1,6 @@
 grammar edu:umn:cs:melt:exts:ableC:vector:abstractsyntax;
 
+ -- TODO: Template this instead, someday
 function vectorTypedefGlobalDecls
 [Pair<String Decl>] ::= sub::Type
 {
@@ -88,12 +89,12 @@ top::Type ::= qs::[Qualifier] sub::Type
     | _ -> nothing()
     end;
   
-  -- TODO
   top.ovrld:memberProd =
     case top.ovrld:otherName of
-      "length"   -> just(memberExpr(_, true, name("length", location=builtin), location=_))
-    | "size"     -> just(memberExpr(_, true, name("length", location=builtin), location=_))
-    | "capacity" -> just(memberExpr(_, true, name("capacity", location=builtin), location=_))
+      "length"   -> just(lengthVector(_, location=_))
+    | "size"     -> just(lengthVector(_, location=_))
+    | "capacity" -> just(capacityVector(_, location=_))
+    | "elem_size" -> just(elemSizeVector(_, location=_))
     | _ -> nothing()
     end;
   
