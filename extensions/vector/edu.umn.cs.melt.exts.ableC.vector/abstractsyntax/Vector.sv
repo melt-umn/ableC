@@ -14,69 +14,75 @@ imports edu:umn:cs:melt:exts:ableC:string;
 global builtin::Location = builtinLoc("vector");
 
 -- Vector initialization
+function initVectorStmts
+Stmt ::= sub::TypeName size::Expr
+{
+  return
+    injectGlobalDeclsStmt(
+      vectorTypedefGlobalDecls(sub.typerep),
+      seqStmt(
+        mkDecl(
+          "_vec",
+          vectorType([], sub.typerep),
+          directCallExpr(
+            name("GC_malloc", location=builtin),
+            consExpr(
+              unaryExprOrTypeTraitExpr(
+                sizeofOp(location=builtin),
+                typeNameExpr(
+                  typeName(
+                    directTypeExpr(
+                      tagType(
+                        [],
+                        refIdTagType(
+                          structSEU(),
+                          "_vector_" ++ sub.typerep.mangledName ++ "_s",
+                          "edu:umn:cs:melt:exts:ableC:vector:_vector_" ++ sub.typerep.mangledName ++ "_s"))),
+                    baseTypeExpr())),
+                location=builtin),
+              nilExpr()),
+            location=builtin),
+          builtin),
+        exprStmt(
+          directCallExpr(
+            name("_init_vector", location=builtin),
+            consExpr(
+              mkAddressOf(
+                memberExpr(
+                  declRefExpr(name("_vec", location=builtin), location=builtin),
+                  true,
+                  name("_info", location=builtin),
+                  location=builtin),
+                builtin),
+              consExpr(
+                explicitCastExpr(
+                  typeName(
+                    directTypeExpr(builtinType([], voidType())),
+                    pointerTypeExpr([], pointerTypeExpr([], baseTypeExpr()))),
+                  mkAddressOf(
+                    memberExpr(
+                      declRefExpr(name("_vec", location=builtin), location=builtin),
+                      true,
+                      name("_contents", location=builtin),
+                      location=builtin),
+                    builtin),
+                  location=builtin),
+                consExpr(
+                  unaryExprOrTypeTraitExpr(
+                    sizeofOp(location=builtin),
+                    typeNameExpr(sub),
+                    location=builtin),
+                  consExpr(size, nilExpr())))),
+          location=builtin))));
+}
+
 abstract production initVector
 top::Expr ::= sub::TypeName size::Expr
 {
   forwards to
-    injectGlobalDecls(
-      vectorTypedefGlobalDecls(sub.typerep),
-      stmtExpr(
-        seqStmt(
-          mkDecl(
-            "_vec",
-            vectorType([], sub.typerep),
-            directCallExpr(
-              name("GC_malloc", location=builtin),
-              consExpr(
-                unaryExprOrTypeTraitExpr(
-                  sizeofOp(location=builtin),
-                  typeNameExpr(
-                    typeName(
-                      directTypeExpr(
-                        tagType(
-                          [],
-                          refIdTagType(
-                            structSEU(),
-                            "_vector_" ++ sub.typerep.mangledName ++ "_s",
-                            "edu:umn:cs:melt:exts:ableC:vector:_vector_" ++ sub.typerep.mangledName ++ "_s"))),
-                      baseTypeExpr())),
-                  location=builtin),
-                nilExpr()),
-              location=builtin),
-            builtin),
-          exprStmt(
-            directCallExpr(
-              name("_init_vector", location=builtin),
-              consExpr(
-                mkAddressOf(
-                  memberExpr(
-                    declRefExpr(name("_vec", location=builtin), location=builtin),
-                    true,
-                    name("_info", location=builtin),
-                    location=builtin),
-                  builtin),
-                consExpr(
-                  explicitCastExpr(
-                    typeName(
-                      directTypeExpr(builtinType([], voidType())),
-                      pointerTypeExpr([], pointerTypeExpr([], baseTypeExpr()))),
-                    mkAddressOf(
-                      memberExpr(
-                        declRefExpr(name("_vec", location=builtin), location=builtin),
-                        true,
-                        name("_contents", location=builtin),
-                        location=builtin),
-                      builtin),
-                    location=builtin),
-                  consExpr(
-                    unaryExprOrTypeTraitExpr(
-                      sizeofOp(location=builtin),
-                      typeNameExpr(sub),
-                      location=top.location),
-                    consExpr(size, nilExpr())))),
-            location=top.location))),
-        declRefExpr(name("_vec", location=builtin), location=builtin),
-        location=top.location),
+    stmtExpr(
+      initVectorStmts(sub, size),
+      declRefExpr(name("_vec", location=builtin), location=builtin),
       location=top.location);
 }
 
@@ -87,11 +93,7 @@ top::Expr ::= sub::TypeName e::Exprs
   forwards to 
     stmtExpr(
       seqStmt(
-        mkDecl(
-          "_vec",
-          vectorType([], sub.typerep),
-          initVector(sub, mkIntConst(e.count, builtin), location=builtin),
-          builtin),
+        initVectorStmts(sub, mkIntConst(e.count, builtin)),
         e.vectorInitTrans),
       declRefExpr(name("_vec", location=builtin), location=top.location),
       location=top.location);
