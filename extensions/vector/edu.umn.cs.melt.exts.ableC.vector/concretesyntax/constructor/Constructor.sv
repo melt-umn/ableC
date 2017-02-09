@@ -13,19 +13,30 @@ import edu:umn:cs:melt:exts:ableC:vector;
 -- Spurious import, to trigger the tests on build.
 import edu:umn:cs:melt:exts:ableC:vector:mda_test;
 
-marking terminal NewVector_t 'new_vector' lexer classes {Ckeyword};
-marking terminal InitVector_t 'init_vector' lexer classes {Ckeyword};
+marking terminal Vec_t 'vec' lexer classes {Ckeyword};
 
 concrete productions top::PrimaryExpr_c
-| 'new_vector' '(' sub::TypeName_c ')' elems::VectorConstructorList_c
-  { top.ast = constructVector(sub.ast, elems.ast, location=top.location); }
-| 'init_vector' '(' sub::TypeName_c ')' '(' size::AssignExpr_c ')'
-  { top.ast = initVector(sub.ast, size.ast, location=top.location); }
+| 'vec' '<' sub::TypeName_c '>' init::VectorInitializer_c
+  { top.ast = init.ast;
+    init.subTypeIn = sub.ast; }
 
-nonterminal VectorConstructorList_c with location, ast<Exprs>;
+inherited attribute subTypeIn::TypeName;
 
-concrete productions top::VectorConstructorList_c
-|'[' elems::ArgumentExprList_c ']'
-  { top.ast = foldExpr(elems.ast); }
+nonterminal VectorInitializer_c with location, ast<Expr>, subTypeIn;
+
+concrete productions top::VectorInitializer_c
+|'[' elems::VectorConstructorExprList_c ']'
+  { top.ast = constructVector(top.subTypeIn, foldExpr(elems.ast), location=top.location); }
 |'[' ']'
-  { top.ast = nilExpr(); }
+  { top.ast = constructVector(top.subTypeIn, nilExpr(), location=top.location); }
+|'(' size::AssignExpr_c ')'
+  { top.ast = initVector(top.subTypeIn, size.ast, location=top.location); }
+  
+-- Can't use ArgumentExprList due to failing mda
+closed nonterminal VectorConstructorExprList_c with location, ast<[Expr]>;
+
+concrete productions top::VectorConstructorExprList_c
+| e::AssignExpr_c
+    { top.ast = [e.ast]; }
+| h::VectorConstructorExprList_c ',' t::AssignExpr_c
+    { top.ast = h.ast ++ [t.ast];  }
