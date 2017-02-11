@@ -84,5 +84,17 @@ int main(int argc, char **argv) {
   if (m != "\"\\\"abcd\\\\n\\\\n\\\\\\\\\\\"\"")
     return 14;
 
+  int x;
+  int *y = &x;
+  
+  string n = show(y);
+  printf("n: %s\n", n);
+  string o = str(y);
+  printf("o: %s\n", o);
+  string p = show(&y);
+  printf("p: %s\n", p);
+  string q = str(&y);
+  printf("q: %s\n", q);
+
   return 0;
 }

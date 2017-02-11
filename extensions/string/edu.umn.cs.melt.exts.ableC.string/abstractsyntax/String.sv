@@ -10,15 +10,18 @@ imports edu:umn:cs:melt:ableC:abstractsyntax:env;
 
 --imports edu:umn:cs:melt:exts:ableC:gc;
 
+global builtin::Location = builtinLoc("string");
+
 abstract production showExpr
 top::Expr ::= e::Expr
 {
-  top.typerep = stringType();
-  forwards to
+  local localErrors::[Message] = e.errors;
+  local fwrd::Expr =
     case e.typerep.showProd of
       just(p) -> p(e, top.location)
-    | nothing() -> errorExpr([err(e.location, s"show representation of ${showType(e.typerep)} not defined")], location=top.location)
+    | nothing() -> errorExpr([err(e.location, s"show of ${showType(e.typerep)} not defined")], location=top.location)
     end;
+  forwards to mkErrorCheck(localErrors, fwrd);
 }
 
 abstract production showString
@@ -28,9 +31,9 @@ top::Expr ::= e::Expr
     checkStringHeaderDef("showString", top.location, top.env);
   local fwrd::Expr =
     directCallExpr(
-      name("showString", location=builtIn()),
+      name("showString", location=builtin),
       consExpr(e, nilExpr()),
-      location=top.location);
+      location=builtin);
   forwards to mkErrorCheck(localErrors, fwrd);
 }
 
@@ -41,9 +44,9 @@ top::Expr ::= e::Expr
     checkStringHeaderDef("showChar", top.location, top.env);
   local fwrd::Expr =
     directCallExpr(
-      name("showChar", location=builtIn()),
+      name("showChar", location=builtin),
       consExpr(e, nilExpr()),
-      location=top.location);
+      location=builtin);
   forwards to mkErrorCheck(localErrors, fwrd);
 }
 
@@ -54,9 +57,9 @@ top::Expr ::= e::Expr
     checkStringHeaderDef("showInt", top.location, top.env);
   local fwrd::Expr =
     directCallExpr(
-      name("showInt", location=builtIn()),
+      name("showInt", location=builtin),
       consExpr(e, nilExpr()),
-      location=top.location);
+      location=builtin);
   forwards to mkErrorCheck(localErrors, fwrd);
 }
 
@@ -67,9 +70,9 @@ top::Expr ::= e::Expr
     checkStringHeaderDef("showFloat", top.location, top.env);
   local fwrd::Expr =
     directCallExpr(
-      name("showFloat", location=builtIn()),
+      name("showFloat", location=builtin),
       consExpr(e, nilExpr()),
-      location=top.location);
+      location=builtin);
   forwards to mkErrorCheck(localErrors, fwrd);
 }
 
@@ -80,32 +83,37 @@ top::Expr ::= e::Expr
     checkStringHeaderDef("_showPointer", top.location, top.env);
   local fwrd::Expr =
     directCallExpr(
-      name("_showPointer", location=builtIn()),
+      name("_showPointer", location=builtin),
       consExpr(
-        stringLiteral(s"\"${showType(e.typerep)}\"", location=top.location),
+        stringLiteral(s"\"${showType(e.typerep)}\"", location=builtin),
         consExpr(
           e,
           nilExpr())),
-      location=top.location);
+      location=builtin);
   forwards to mkErrorCheck(localErrors, fwrd);
 }
 
 abstract production strExpr
 top::Expr ::= e::Expr
 {
-  top.typerep = stringType();
-  forwards to
+  local localErrors::[Message] = e.errors;
+  local fwrd::Expr =
     case e.typerep.strProd of
       just(p) -> p(e, top.location)
     | nothing() -> errorExpr([err(e.location, s"str of ${showType(e.typerep)} not defined")], location=top.location)
     end;
+  forwards to mkErrorCheck(localErrors, fwrd);
 }
 
 abstract production strString
 top::Expr ::= e::Expr
 {
-  top.typerep = stringType();
-  forwards to e;
+  forwards to
+    -- Cast for if a char* is passed in and needs to be converted to overloaded stringType()
+    explicitCastExpr(
+      typeName(directTypeExpr(stringType()), baseTypeExpr()),
+      e,
+      location=builtin);
 }
 
 abstract production strChar
@@ -115,9 +123,22 @@ top::Expr ::= e::Expr
     checkStringHeaderDef("strChar", top.location, top.env);
   local fwrd::Expr =
     directCallExpr(
-      name("strChar", location=builtIn()),
+      name("strChar", location=builtin),
       consExpr(e, nilExpr()),
-      location=top.location);
+      location=builtin);
+  forwards to mkErrorCheck(localErrors, fwrd);
+}
+
+abstract production strPointer
+top::Expr ::= e::Expr
+{
+  local localErrors::[Message] =
+    checkStringHeaderDef("strPointer", top.location, top.env);
+  local fwrd::Expr =
+    directCallExpr(
+      name("strPointer", location=builtin),
+      consExpr(e, nilExpr()),
+      location=builtin);
   forwards to mkErrorCheck(localErrors, fwrd);
 }
 
@@ -127,9 +148,9 @@ top::Expr ::= lhs::Expr rhs::Expr
   forwards to
     binaryOpExpr(
       lhs,
-      assignOp(eqOp(location=builtIn()), location=builtIn()),
-      strExpr(rhs, location=builtIn()),
-      location=builtIn());
+      assignOp(eqOp(location=builtin), location=builtin),
+      strExpr(rhs, location=builtin),
+      location=builtin);
 }
 
 abstract production appendString
@@ -139,13 +160,13 @@ top::Expr ::= e1::Expr e2::Expr
     checkStringHeaderDef("_append_string", top.location, top.env);
   local fwrd::Expr =
     directCallExpr(
-      name("_append_string", location=builtIn()),
+      name("_append_string", location=builtin),
       consExpr(
-        strExpr(e1, location=builtIn()),
+        strExpr(e1, location=builtin),
         consExpr(
-          strExpr(e2, location=builtIn()),
+          strExpr(e2, location=builtin),
           nilExpr())),
-      location=top.location);
+      location=builtin);
   forwards to mkErrorCheck(localErrors, fwrd);
 }
 
@@ -156,13 +177,13 @@ top::Expr ::= e1::Expr e2::Expr
     checkStringHeaderDef("_remove_string", top.location, top.env);
   local fwrd::Expr =
     directCallExpr(
-      name("_remove_string", location=builtIn()),
+      name("_remove_string", location=builtin),
       consExpr(
-        strExpr(e1, location=builtIn()),
+        strExpr(e1, location=builtin),
         consExpr(
-          strExpr(e2, location=builtIn()),
+          strExpr(e2, location=builtin),
           nilExpr())),
-      location=top.location);
+      location=builtin);
   forwards to mkErrorCheck(localErrors, fwrd);
 }
 
@@ -173,9 +194,9 @@ top::Expr ::= e1::Expr e2::Expr
     checkStringHeaderDef("_repeat_string", top.location, top.env);
   local fwrd::Expr =
     directCallExpr(
-      name("_repeat_string", location=builtIn()),
+      name("_repeat_string", location=builtin),
       consExpr(e1, consExpr(e2, nilExpr())),
-      location=top.location);
+      location=builtin);
   forwards to mkErrorCheck(localErrors, fwrd);
 }
 
@@ -186,9 +207,9 @@ top::Expr ::= e1::Expr e2::Expr
     checkStringHeaderDef("_eq_string", top.location, top.env);
   local fwrd::Expr =
     directCallExpr(
-      name("_eq_string", location=builtIn()),
+      name("_eq_string", location=builtin),
       consExpr(e1, consExpr(e2, nilExpr())),
-      location=top.location);
+      location=builtin);
   forwards to mkErrorCheck(localErrors, fwrd);
 }
 
@@ -199,9 +220,9 @@ top::Expr ::= e1::Expr e2::Expr
     checkStringHeaderDef("_index_string", top.location, top.env);
   local fwrd::Expr =
     directCallExpr(
-      name("_index_string", location=builtIn()),
+      name("_index_string", location=builtin),
       consExpr(e1, consExpr(e2, nilExpr())),
-      location=top.location);
+      location=builtin);
   forwards to mkErrorCheck(localErrors, fwrd);
 }
 
@@ -214,34 +235,37 @@ top::Expr ::= e1::Expr e2::Expr op::AssignOp e3::Expr
     stmtExpr(
       exprStmt(
         directCallExpr(
-          name("_check_index_string", location=builtIn()),
+          name("_check_index_string", location=builtin),
           consExpr(e1, consExpr(e2, nilExpr())),
-          location=top.location)),
+          location=builtin)),
         binaryOpExpr(
           arraySubscriptExpr(
             e1, e2,
-            location=builtIn()),
-          assignOp(op, location=builtIn()),
+            location=builtin),
+          assignOp(op, location=builtin),
           e3,
-          location=builtIn()),
-      location=top.location);
+          location=builtin),
+      location=builtin);
   forwards to mkErrorCheck(localErrors, fwrd);
 }
 
 abstract production substringString
 top::Expr ::= e1::Expr a::Exprs
 {
-  -- TODO: check arg types
+  a.expectedTypes = -- size_t
+    [builtinType([], unsignedType(longType())),
+     builtinType([], unsignedType(longType()))];
+  a.argumentPosition = 1;
+  a.callExpr = top; -- Doesn't really matter, just needs location
+  a.callVariadic = false;
   local localErrors::[Message] =
     checkStringHeaderDef("_substring", top.location, top.env) ++
-    if a.count != 2
-    then [err(top.location, s"Invalid number of arguments to substring: expected 2, got ${toString(a.count)}")]
-    else [];
+    a.argumentErrors;
   local fwrd::Expr =
     directCallExpr(
-      name("_substring", location=builtIn()),
+      name("_substring", location=builtin),
       consExpr(e1, a),
-      location=top.location);
+      location=builtin);
   forwards to mkErrorCheck(localErrors, fwrd);
 }
 
@@ -252,9 +276,9 @@ top::Expr ::= e1::Expr
     checkStringHeaderDef("strlen", top.location, top.env);
   local fwrd::Expr =
     directCallExpr(
-      name("strlen", location=builtIn()),
+      name("strlen", location=builtin),
       consExpr(e1, nilExpr()),
-      location=top.location);
+      location=builtin);
   forwards to mkErrorCheck(localErrors, fwrd);
 }
 
