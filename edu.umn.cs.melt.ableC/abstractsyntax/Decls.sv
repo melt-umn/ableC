@@ -474,7 +474,7 @@ Maybe<String> ::= attrs::[Attribute]
 {
   return
     case attrs of
-      gccAttribute(ats) :: rest -> orElse(getRefIdFromAttribs(ats), getRefIdFromAttributes(attrs))
+      gccAttribute(ats) :: rest -> orElse(getRefIdFromAttribs(ats), getRefIdFromAttributes(rest))
     | _ :: rest -> getRefIdFromAttributes(rest)
     | [] -> nothing()
     end;
