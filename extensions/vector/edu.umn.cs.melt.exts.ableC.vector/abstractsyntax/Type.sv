@@ -50,7 +50,12 @@ function vectorTypedefGlobalDecls
 abstract production vectorTypeExpr 
 top::BaseTypeExpr ::= sub::TypeName
 {
-  forwards to directTypeExpr(vectorType([], sub.typerep));
+  sub.env = globalEnv(top.env);
+  
+  forwards to
+    if !null(sub.errors)
+    then errorTypeExpr(sub.errors)
+    else directTypeExpr(vectorType([], sub.typerep));
 }
 
 abstract production vectorType

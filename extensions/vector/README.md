@@ -2,7 +2,7 @@ Vector extension
 ================
 
 This extension provides a nice vector list representation, similar to vectors in C++.  
-Vectors are implemented as a garbage-collected pointer to a templated struct, containing a garbage-collected array of elements.
+Vectors are implemented as a garbage-collected pointer to a templated struct, containing a garbage-collected array of elements.  Due to our current implementation of lifting/templating, typedef'ed template parameters must be declared globally.  
 Operator overloading is provided for basic operations such as append.  
 Integration with the string extension is also provided to implement show for vectors that have showable sub types.
 
