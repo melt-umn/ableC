@@ -74,6 +74,7 @@ top::Stmt ::= d::Decl
 }
 
 -- Most common use case, makes things easier for extensions
+-- TODO: Remove this, duplicate of DeclHelpers.sv
 abstract production basicVarDeclStmt
 top::Stmt ::= t::Type n::Name init::Expr
 {

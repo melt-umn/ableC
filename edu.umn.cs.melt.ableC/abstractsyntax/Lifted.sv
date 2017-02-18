@@ -74,9 +74,12 @@ top::Expr ::= globalDecls::[Pair<String Decl>] lifted::Expr
   -- Shouldn't be a problem unless there are name conflicts, doing this the right way would be less
   -- efficent. 
   lifted.env = addEnv(decls.defs, top.env);
- 
-  forwards to lifted
-  with {env = lifted.env;};
+  
+  -- Define other attributes to be the same as on lifted
+  top.errors := lifted.errors;
+  top.defs = lifted.defs;
+  top.freeVariables = lifted.freeVariables;
+  top.typerep = lifted.typerep;
 }
 
 -- Same as injectGlobalDecls, but on Stmt
@@ -112,9 +115,12 @@ top::Stmt ::= globalDecls::[Pair<String Decl>] lifted::Stmt
   -- Shouldn't be a problem unless there are name conflicts, doing this the right way would be less
   -- efficent. 
   lifted.env = addEnv(decls.defs, top.env);
- 
-  forwards to lifted
-  with {env = lifted.env;};
+  
+  -- Define other attributes to be the same as on lifted
+  top.errors := lifted.errors;
+  top.functiondefs = lifted.functiondefs;
+  top.defs = lifted.defs;
+  top.freeVariables = lifted.freeVariables;
 }
 
 -- Same as injectGlobalDecls, but on BaseTypeExpr
@@ -152,8 +158,11 @@ top::BaseTypeExpr ::= globalDecls::[Pair<String Decl>] lifted::BaseTypeExpr
   -- doing this the right way would be less efficent.  
   lifted.env = addEnv(decls.defs, top.env);
   
-  forwards to lifted
-  with {env = lifted.env;};
+  -- Define other attributes to be the same as on lifted
+  top.errors := lifted.errors;
+  top.typeModifiers = lifted.typeModifiers;
+  top.defs = lifted.defs;
+  top.freeVariables = lifted.freeVariables;
 }
 
 {--
@@ -174,6 +183,7 @@ top::NoncanonicalType ::= globalDecls::[Pair<String Decl>] lifted::Type
 
 -- Inserted globalDecls before h. Should only ever get used by top-level 
 -- foldGlobalDecl in concrete syntax.
+-- TODO: This should really be a seperate nonterminal from Decls
 abstract production consGlobalDecl
 top::Decls ::= h::Decl  t::Decls
 {
