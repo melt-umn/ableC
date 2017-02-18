@@ -78,18 +78,50 @@ top::BaseTypeExpr ::= msg::[Message]  ty::BaseTypeExpr
   top.freeVariables = ty.freeVariables;
 }
 
-{-- A TypeExpr that simply yields a type directly, no interpretation necessary.
- - e.g. builtin types. 
- - This should be the only place in the AST where a type is used directly in a host production, in
- - order for special handling of refId freshening and lifting to work correctly
- - Handling of host, lifted and globalDecls is defined in Lifted.sv
+{-- A TypeExpr that converts a Type back into a TypeExpr
+ - This production is NOT considered part of the host, since Type should not occur in the host tree.
+ - Instead we transform the parameter type into a TypeExpr and forward to that.
+ - Note that directTypeExpr(te.typerep) is not necessarily equivalent to te, since TypeNames can
+ - contain extra information relavent only to the declaration, not to the meaning of the type.  
+ - However, directTypeExpr(ty).typerep should be the same as ty, and
+ - directTypeExpr(te.typerep).host.pp should be the same as te.typerep.pp
  -}
 abstract production directTypeExpr
 top::BaseTypeExpr ::= result::Type
 {
-  top.pp = cat(result.lpp, result.rpp);
+  top.pp = parens(cat(result.lpp, result.rpp));
   top.typerep = result;
+  
+  forwards to
+    case result.typeModifierExpr of
+      baseTypeExpr() -> result.baseTypeExpr
+    | _ -> wrappedTypeExpr(typeName(result.baseTypeExpr, result.typeModifierExpr))
+    end;
+}
+
+{-- The result of converting a directTypeExpr -}
+abstract production wrappedTypeExpr
+top::BaseTypeExpr ::= result::TypeName
+{
+  propagate host, lifted;
+  top.pp = result.pp;
+  top.typerep = result.typerep;
+  top.errors := result.errors;
+  top.globalDecls := result.globalDecls;
+  top.defs = result.defs;
+  top.freeVariables = result.freeVariables;
+}
+
+{-- Builtin C types: void, unsigned int, signed char, float, bool, etc.
+ - also includes complex numbers e.g. 'float _Complex' -}
+abstract production builtinTypeExpr
+top::BaseTypeExpr ::= q::[Qualifier]  result::BuiltinType
+{
+  propagate host, lifted;
+  top.pp = result.pp;
+  top.typerep = builtinType(q, result);
   top.errors := [];
+  top.globalDecls := [];
   top.defs = [];
   top.freeVariables = [];
 }

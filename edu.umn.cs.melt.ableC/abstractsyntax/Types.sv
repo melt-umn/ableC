@@ -9,8 +9,13 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax;
  - Variants: builtin, pointer, array, function, tagged, noncanonical.
  - Noncanonical forwards, and so doesn't need any attributes, etc attached to it.
  -}
-nonterminal Type with lpp, rpp, host<Type>, globalDecls, mangledName, integerPromotions, defaultArgumentPromotions, defaultLvalueConversion, defaultFunctionArrayLvalueConversion, isIntegerType, isScalarType, isArithmeticType, withoutTypeQualifiers, withTypeQualifiers, addedTypeQualifiers;
+nonterminal Type with lpp, rpp, host<Type>, baseTypeExpr, typeModifierExpr, mangledName, integerPromotions, defaultArgumentPromotions, defaultLvalueConversion, defaultFunctionArrayLvalueConversion, isIntegerType, isScalarType, isArithmeticType, withoutTypeQualifiers, withTypeQualifiers, addedTypeQualifiers;
 
+-- Used to turn a Type back into a TypeName
+synthesized attribute baseTypeExpr :: BaseTypeExpr;
+synthesized attribute typeModifierExpr :: TypeModifierExpr;
+
+-- Compute a unique name for a type that is a valid C identifier
 synthesized attribute mangledName :: String;
 
 -- char -> int and stuff in operations
@@ -51,7 +56,8 @@ top::Type ::=
   propagate host;
   top.lpp = text("/*err*/");
   top.rpp = text("");
-  top.globalDecls := [];
+  top.baseTypeExpr = errorTypeExpr([]);
+  top.typeModifierExpr = baseTypeExpr();
   top.mangledName = "error";
   top.integerPromotions = top;
   top.defaultArgumentPromotions = top;
@@ -79,7 +85,8 @@ top::Type ::= q::[Qualifier]  bt::BuiltinType
     concat([terminate(space(), map((.pp), q)),
             bt.pp]);
   top.rpp = notext();
-  top.globalDecls := [];
+  top.baseTypeExpr = builtinTypeExpr(q, bt);
+  top.typeModifierExpr = baseTypeExpr();
   top.mangledName = s"builtin_${implode("_", map((.qualname), q))}_${bt.mangledName}_";
   top.integerPromotions = builtinType(q, bt.integerPromotionsBuiltin);
   top.defaultArgumentPromotions = builtinType(q, bt.defaultArgumentPromotionsBuiltin);
@@ -105,7 +112,8 @@ top::Type ::= q::[Qualifier]  target::Type
   top.lpp = concat([ target.lpp, space(), ppImplode( space(), map( (.pp), q ) ),
                      text("*") ]);
   top.rpp = target.rpp;
-  top.globalDecls := target.globalDecls;
+  top.baseTypeExpr = target.baseTypeExpr;
+  top.typeModifierExpr = pointerTypeExpr(q, target.typeModifierExpr);
   top.mangledName = s"pointer_${implode("_", map((.qualname), q))}_${target.mangledName}_";
   top.integerPromotions = top;
   top.defaultArgumentPromotions = top;
@@ -148,7 +156,27 @@ top::Type ::= element::Type  indexQualifiers::[Qualifier]  sizeModifier::ArraySi
     terminate(space(), map((.pp), indexQualifiers) ++ sizeModifier.pps),
     sub.pp
     ])), element.rpp);
-  top.globalDecls := element.globalDecls;
+  top.baseTypeExpr = element.baseTypeExpr;
+  top.typeModifierExpr =
+    case sub of
+      constantArrayType(size) ->
+        arrayTypeExprWithExpr(
+          element.typeModifierExpr,
+          indexQualifiers,
+          sizeModifier,
+          mkIntConst(size, bogusLoc())) -- TODO: location
+    | incompleteArrayType() ->
+        arrayTypeExprWithoutExpr(
+          element.typeModifierExpr,
+          indexQualifiers,
+          sizeModifier)
+    | variableArrayType(size) ->
+        arrayTypeExprWithExpr(
+          element.typeModifierExpr,
+          indexQualifiers,
+          sizeModifier,
+          new(size))
+    end;
   top.mangledName = top.defaultFunctionArrayLvalueConversion.mangledName; -- TODO?
   top.integerPromotions = top;
   top.defaultArgumentPromotions = top;
@@ -208,7 +236,14 @@ top::Type ::= result::Type  sub::FunctionType
   --TODO should this space be here? also TODO: ordering? result lpp before sub.lpp maybe? TODO: actually sub.lpp is always nothing. FIXME
   top.lpp = concat([ sub.lpp, space(), result.lpp ]);
   top.rpp = cat(sub.rpp, result.rpp);
-  top.globalDecls := result.globalDecls ++ sub.globalDecls;
+  top.baseTypeExpr = result.baseTypeExpr;
+  top.typeModifierExpr =
+    case sub of
+      protoFunctionType(args, variadic) ->
+        functionTypeExprWithArgs(result.typeModifierExpr, argTypesToParameters(args), variadic)
+    | noProtoFunctionType() ->
+        functionTypeExprWithoutArgs(result.typeModifierExpr, [])
+    end;
   top.mangledName = s"function_${result.mangledName}_${sub.mangledName}_";
   top.integerPromotions = top;
   top.defaultArgumentPromotions = top;
@@ -219,7 +254,7 @@ top::Type ::= result::Type  sub::FunctionType
 }
 
 {-- The subtypes of functions -}
-nonterminal FunctionType with lpp, rpp, host<FunctionType>, globalDecls, mangledName;
+nonterminal FunctionType with lpp, rpp, host<FunctionType>, mangledName;
 -- clang has an 'extinfo' structure with calling convention, noreturn, 'produces'?, regparam
 
 abstract production protoFunctionType
@@ -237,7 +272,6 @@ top::FunctionType ::= args::[Type]  variadic::Boolean
     zipWith(cat,
       map((.lpp), args),
       map((.rpp), args)) ++ if variadic then [text("...")] else [];
-  top.globalDecls := foldl(append, [], map((.globalDecls), args));
   top.mangledName = implode("_", map((.mangledName), args)) ++ if variadic then "_variadic" else "";
 }
 -- Evidently, old K&R C functions don't have args as part of function type
@@ -247,8 +281,20 @@ top::FunctionType ::=
   propagate host;
   top.lpp = notext();
   top.rpp = text("()");
-  top.globalDecls := [];
   top.mangledName = "noproto";
+}
+
+function argTypesToParameters
+Parameters ::= args::[Type]
+{
+  return
+    case args of
+      h :: t ->
+        consParameters(
+          parameterDecl([], h.baseTypeExpr, h.typeModifierExpr, nothingName(), []),
+          argTypesToParameters(t))
+    | [] -> nilParameters()
+    end;
 }
 
 
@@ -261,7 +307,13 @@ top::Type ::= q::[Qualifier]  sub::TagType
   propagate host;
   top.lpp = concat([ terminate( space(), map( (.pp), q ) ), sub.pp ]);
   top.rpp = notext();
-  top.globalDecls := sub.globalDecls;
+  top.baseTypeExpr =
+    case sub of
+      enumTagType(ref) -> enumTypeExpr(q, new(ref))
+    | refIdTagType(kwd, n, refId) ->
+      tagReferenceTypeExpr(q, kwd, name(n, location=builtinLoc("host")))
+    end;
+  top.typeModifierExpr = baseTypeExpr();
   top.mangledName = s"tag_${implode("_", map((.qualname), q))}_${sub.mangledName}_";
   top.integerPromotions = top;
   top.defaultArgumentPromotions = top;
@@ -276,7 +328,7 @@ top::Type ::= q::[Qualifier]  sub::TagType
 }
 
 {-- Structs, unions and enums -}
-nonterminal TagType with pp, host<TagType>, globalDecls, mangledName, isIntegerType;
+nonterminal TagType with pp, host<TagType>, mangledName, isIntegerType;
 
 abstract production enumTagType
 top::TagType ::= ref::Decorated EnumDecl
@@ -293,7 +345,6 @@ top::TagType ::= ref::Decorated EnumDecl
     | just(n) -> n.name
     | nothing() -> "anon"
     end;
-  top.globalDecls := [];
     
   top.isIntegerType = true;
 }
@@ -309,7 +360,6 @@ top::TagType ::= kwd::StructOrEnumOrUnion  name::String  refId::String
   propagate host;
   top.pp = concat([kwd.pp, space(), text(name)]);
   top.mangledName = s"${kwd.mangledName}_${name}_${substitute(":", "_", refId)}";
-  top.globalDecls := [];
   top.isIntegerType = false;
 }
 
@@ -333,7 +383,8 @@ top::Type ::= q::[Qualifier]  bt::Type
                      text("_Atomic"), parens(cat(bt.lpp, bt.rpp))]);
   top.rpp = notext();
   top.mangledName = s"atomic_${implode("_", map((.qualname), q))}_${bt.mangledName}_";
-  top.globalDecls := bt.globalDecls;
+  top.baseTypeExpr = atomicTypeExpr(q, typeName(bt.baseTypeExpr, bt.typeModifierExpr));
+  top.typeModifierExpr = baseTypeExpr();
   top.integerPromotions = top;
   top.defaultArgumentPromotions = top;
   -- discarding qualifiers in lvalue conversion discards atomic qualifier, too.
@@ -353,7 +404,9 @@ top::Type ::= bt::Type  bytes::Integer
   top.lpp = concat([ text("__attribute__((__vector_size__(" ++ toString(bytes) ++ "))) "), bt.lpp]);
   top.rpp = bt.rpp;
   top.mangledName = s"vector_${bt.mangledName}_${toString(bytes)}_";
-  top.globalDecls := bt.globalDecls;
+  -- TODO: pp doesn't match type expression.  Should involve attributedTypeExpr which isn't a thing
+  top.baseTypeExpr = directTypeExpr(bt);
+  top.typeModifierExpr = baseTypeExpr();
   -- You know, who knows what these rules are: TODO
   top.integerPromotions = top;
   top.defaultArgumentPromotions = top;
@@ -375,7 +428,8 @@ top::Type ::= sub::NoncanonicalType
   propagate host;
   top.lpp = sub.lpp;
   top.rpp = sub.rpp;
-  top.globalDecls := sub.globalDecls;
+  top.baseTypeExpr = sub.baseTypeExpr;
+  top.typeModifierExpr = sub.typeModifierExpr;
 
   -- behavior? maybe it should be pushed down? TODO
   --top.mangledName = ;
@@ -389,7 +443,7 @@ top::Type ::= sub::NoncanonicalType
 }
 
 {-- Types that resolve to other types. -}
-nonterminal NoncanonicalType with canonicalType, lpp, rpp, host<NoncanonicalType>, globalDecls;
+nonterminal NoncanonicalType with canonicalType, lpp, rpp, host<NoncanonicalType>, baseTypeExpr, typeModifierExpr;
 
 synthesized attribute canonicalType :: Type;
 
@@ -412,7 +466,8 @@ top::NoncanonicalType ::= wrapped::Type
   propagate host;
   top.lpp = concat([ wrapped.lpp, space(), text("(") ]);
   top.rpp = cat( text(")"), wrapped.rpp );
-  top.globalDecls := wrapped.globalDecls;
+  top.baseTypeExpr = wrapped.baseTypeExpr;
+  top.typeModifierExpr = parenTypeExpr(wrapped.typeModifierExpr);
 
   top.canonicalType = wrapped;
 }
@@ -439,7 +494,8 @@ top::NoncanonicalType ::= original::Type  pointer::Type
   propagate host;
   top.lpp = original.lpp;
   top.rpp = original.rpp;
-  top.globalDecls := original.globalDecls ++ pointer.globalDecls;
+  top.baseTypeExpr = original.baseTypeExpr;
+  top.typeModifierExpr = original.typeModifierExpr;
 
   top.canonicalType = pointer;
 }
@@ -454,12 +510,13 @@ top::NoncanonicalType ::= original::Type  pointer::Type
  - e.g. given: typedef volatile struct foo { } Foo;
  -    'const Foo' will have 'const' in q, and 'resolved' will have const and volatile. -}
 abstract production typedefType
-top::NoncanonicalType ::= q::[Qualifier]  name::String  resolved::Type
+top::NoncanonicalType ::= q::[Qualifier]  n::String  resolved::Type
 {
   propagate host;
-  top.lpp = concat([ terminate( space(), map( (.pp), q ) ), text(name) ]);
+  top.lpp = concat([ terminate( space(), map( (.pp), q ) ), text(n) ]);
   top.rpp = notext();
-  top.globalDecls := resolved.globalDecls;
+  top.baseTypeExpr = typedefTypeExpr(q, name(n, location=builtinLoc("host")));
+  top.typeModifierExpr = baseTypeExpr();
 
   top.canonicalType = resolved;
 }
@@ -472,7 +529,9 @@ top::NoncanonicalType ::= q::[Qualifier]  resolved::Type
   top.canonicalType = resolved;-- todo: some sort of discipline of what to do with qualifiers here
   top.lpp = concat([text("__typeof__"), parens(cat(resolved.lpp, resolved.rpp))]);
   top.rpp = notext();
-  top.globalDecls := resolved.globalDecls;
+  top.baseTypeExpr =
+    typeofTypeExpr(q, typeNameExpr(typeName(resolved.baseTypeExpr, resolved.typeModifierExpr)));
+  top.typeModifierExpr = baseTypeExpr();
 }
 
 

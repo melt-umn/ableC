@@ -123,6 +123,7 @@ top::BaseTypeExpr ::= globalDecls::[Pair<String Decl>] lifted::BaseTypeExpr
 {
   top.pp = pp"injectGlobalDeclsTypeExpr {${ppImplode(pp"\n", decls.pps)}} (${lifted.pp})";
   top.host = injectGlobalDeclsTypeExpr(zipWith(pair, names, unfoldDecl(decls.host)), lifted.host);
+  top.typerep = noncanonicalType(injectGlobalDeclsType(globalDecls, lifted.typerep));
   
   -- Remove the globalDecls that are already in the env (i.e. this is already part of a lifted ast)
   local newGlobalDecls::[Pair<String Decl>] = removeEnvGlobalDeclPairs(globalDecls, top.env);
@@ -157,83 +158,18 @@ top::BaseTypeExpr ::= globalDecls::[Pair<String Decl>] lifted::BaseTypeExpr
 
 {--
  - Lifting mechanism for types
- - Note that the invariant must be changed here, since we don't have access to an environment.  
- - This means that we can't define host to simply reproduce injectGlobalDeclsType with the host
- - version of globalDecls, since we have no way of decorating the decls here.  
- - Instead, we do away with lifted on types and simply have the host transformation replace all
- - instances of injectGlobalDeclsType with liftedType, and then the production that is performing
- - the host transformation must decorate the globalDecls and transform to a lifting production
- - 
+ - Since we don't have access to the environment, and Type doesn't occur in the host tree, this just gets
+ - turned into injectGlobalDeclsTypeExpr in the host tree
  -}
 abstract production injectGlobalDeclsType
 top::NoncanonicalType ::= globalDecls::[Pair<String Decl>] lifted::Type
 {
+  propagate host;
   top.canonicalType = lifted;
   top.lpp = pp"injectGlobalDeclsType {<not shown>} (${lifted.lpp})";
   top.rpp = lifted.rpp;
-   
-  top.host = liftedType(lifted.host);
-  top.globalDecls := globalDecls ++ lifted.globalDecls;
-}
-
--- A noncanonical type that is really just a normal type, after the lifting transformation has happened
-abstract production liftedType
-top::NoncanonicalType ::= lifted::Type
-{
-  propagate host;
-  top.canonicalType = lifted;
-  top.lpp = lifted.lpp;
-  top.rpp = lifted.rpp;
-  top.globalDecls := lifted.globalDecls;
-}
-
-{--
- - directTypeExpr now functions similarly to injectGlobalDecls, except that the decls to be lifted
- - are provided only via result.globalDecls
- - Also, the host transformation must lift globalDecls to thist point, so that they can be
- - decorated and host-transformed.  This means that the host Type tree shouldn't actually contain
- - any unlifted decls, so the lifted and globalDecls equations aren't strictly needed assuming that
- - lifted is only accessed after a host transformation, but they are included anyway for the sake
- - of completness.
- -}  
-aspect production directTypeExpr
-top::BaseTypeExpr ::= result::Type
-{
-  top.host = 
-    if !null(newGlobalDecls)
-    then
-      injectGlobalDeclsTypeExpr(
-        zipWith(pair, names, unfoldDecl(decls.host)),
-        freshenDirectTypeExpr(result.host))
-    else freshenDirectTypeExpr(result.host);
-  top.lifted = freshenDirectTypeExpr(result.host);
-  
-  -- Remove the globalDecls that are already in the env (i.e. this is already part of a lifted ast)
-  local newGlobalDecls::[Pair<String Decl>] =
-    removeEnvGlobalDeclPairs(result.globalDecls, top.env);
- 
-  local decls::Decls = foldDecl(map(snd, newGlobalDecls));
-  local names::[String] = map(fst, newGlobalDecls);
-
-  decls.globalDeclEnv = error("Demanded globalDeclEnv by consDecl");
-  decls.env = globalEnv(top.env);
-  decls.isTopLevel = true;
-  decls.returnType = top.returnType;
-  
-  top.errors <- decls.errors;
-
-  -- Note that the invariant over `globalDecls` and `lifted` is maintained.
-  top.globalDecls :=
-    decls.globalDecls ++ 
-    zipWith(pair, names, unfoldDecl(decls.lifted));
-}
-
-{-- When applying a functor attribute, we need to update the refIds in any types in directTypeExprs
- - to point to the new refIds defined in the new tags -}
-abstract production freshenDirectTypeExpr
-top::BaseTypeExpr ::= result::Type
-{
-  forwards to directTypeExpr(freshenRefIds(top.env, result));
+  top.baseTypeExpr = injectGlobalDeclsTypeExpr(globalDecls, lifted.baseTypeExpr);
+  top.typeModifierExpr = lifted.typeModifierExpr;
 }
 
 -- Inserted globalDecls before h. Should only ever get used by top-level 
