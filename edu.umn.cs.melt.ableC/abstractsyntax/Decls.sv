@@ -75,6 +75,7 @@ top::Decl ::= storage::[StorageClass]  attrs::[Attribute]  ty::BaseTypeExpr  dcl
   top.freeVariables = ty.freeVariables ++ dcls.freeVariables;
   
   dcls.baseType = ty.typerep;
+  dcls.typeModifiersIn = ty.typeModifiers;
   dcls.isTypedef = false;
   dcls.givenAttributes = attrs;
 }
@@ -101,6 +102,7 @@ top::Decl ::= attrs::[Attribute]  ty::BaseTypeExpr  dcls::Declarators
   top.freeVariables = ty.freeVariables ++ dcls.freeVariables;
   
   dcls.baseType = ty.typerep;
+  dcls.typeModifiersIn = ty.typeModifiers;
   dcls.isTypedef = true;
   dcls.givenAttributes = attrs;
 }
@@ -165,7 +167,7 @@ top::Decl ::= s::String
   -- but used to be the way to put c functions and such in custom sections.
 }
 
-nonterminal Declarators with pps, host<Declarators>, lifted<Declarators>, errors, globalDecls, defs, env, baseType, isTopLevel, isTypedef, givenAttributes, returnType, freeVariables;
+nonterminal Declarators with pps, host<Declarators>, lifted<Declarators>, errors, globalDecls, defs, env, baseType, typeModifiersIn, isTopLevel, isTypedef, givenAttributes, returnType, freeVariables;
 
 abstract production consDeclarator
 top::Declarators ::= h::Declarator  t::Declarators
@@ -192,7 +194,7 @@ top::Declarators ::=
   top.freeVariables = [];
 }
 
-nonterminal Declarator with pps, host<Declarator>, lifted<Declarator>, errors, globalDecls, defs, env, baseType, typerep, sourceLocation, isTopLevel, isTypedef, givenAttributes, returnType, freeVariables;
+nonterminal Declarator with pps, host<Declarator>, lifted<Declarator>, errors, globalDecls, defs, env, baseType, typeModifiersIn, typerep, sourceLocation, isTopLevel, isTypedef, givenAttributes, returnType, freeVariables;
 
 autocopy attribute isTypedef :: Boolean;
 
@@ -286,6 +288,7 @@ top::FunctionDecl ::= storage::[StorageClass]  fnquals::[SpecialSpecifier]  bty:
   top.sourceLocation = name.location;
   
   mty.baseType = bty.typerep;
+  mty.typeModifiersIn = bty.typeModifiers;
   
   body.returnType =
     case mty of
@@ -405,6 +408,7 @@ top::ParameterDecl ::= storage::[StorageClass]  bty::BaseTypeExpr  mty::TypeModi
   top.freeVariables = bty.freeVariables ++ mty.freeVariables;
   
   mty.baseType = bty.typerep;
+  mty.typeModifiersIn = bty.typeModifiers;
   
   top.errors <- name.valueRedeclarationCheckNoCompatible;
 }
@@ -638,6 +642,7 @@ top::StructItem ::= attrs::[Attribute]  ty::BaseTypeExpr  dcls::StructDeclarator
   top.localdefs = dcls.localdefs;
   
   dcls.baseType = ty.typerep;
+  dcls.typeModifiersIn = ty.typeModifiers;
   dcls.givenAttributes = attrs;
 }
 abstract production warnStructItem
@@ -653,7 +658,7 @@ top::StructItem ::= msg::[Message]
 }
 
 
-nonterminal StructDeclarators with pps, host<StructDeclarators>, lifted<StructDeclarators>, errors, globalDecls, localdefs, env, baseType, givenAttributes, returnType, freeVariables;
+nonterminal StructDeclarators with pps, host<StructDeclarators>, lifted<StructDeclarators>, errors, globalDecls, localdefs, env, baseType, typeModifiersIn, givenAttributes, returnType, freeVariables;
 
 abstract production consStructDeclarator
 top::StructDeclarators ::= h::StructDeclarator  t::StructDeclarators
@@ -680,7 +685,7 @@ top::StructDeclarators ::=
   top.freeVariables = [];
 }
 
-nonterminal StructDeclarator with pps, host<StructDeclarator>, lifted<StructDeclarator>, errors, globalDecls, localdefs, env, typerep, sourceLocation, baseType, givenAttributes, returnType, freeVariables;
+nonterminal StructDeclarator with pps, host<StructDeclarator>, lifted<StructDeclarator>, errors, globalDecls, localdefs, env, typerep, sourceLocation, baseType, typeModifiersIn, givenAttributes, returnType, freeVariables;
 
 abstract production structField
 top::StructDeclarator ::= name::Name  ty::TypeModifierExpr  attrs::[Attribute]

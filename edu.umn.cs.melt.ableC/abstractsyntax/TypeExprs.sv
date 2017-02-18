@@ -33,6 +33,10 @@ synthesized attribute rpp :: Document;
 synthesized attribute typerep :: Type;
 synthesized attribute typereps :: [Type];
 
+{-- Used to transform away typeModiferTypeExpr -}
+synthesized attribute typeModifiers :: [TypeModifierExpr];
+autocopy attribute typeModifiersIn :: [TypeModifierExpr];
+
 {- Util attributes -}
 synthesized attribute bty :: BaseTypeExpr;
 synthesized attribute mty :: TypeModifierExpr;
@@ -48,6 +52,7 @@ top::TypeName ::= bty::BaseTypeExpr  mty::TypeModifierExpr
   top.bty = bty;
   top.mty = mty;
   mty.baseType = bty.typerep;
+  mty.typeModifiersIn = bty.typeModifiers;
   top.errors := bty.errors ++ mty.errors;
   top.globalDecls := bty.globalDecls ++ mty.globalDecls;
   top.defs = bty.defs;
@@ -58,7 +63,7 @@ top::TypeName ::= bty::BaseTypeExpr  mty::TypeModifierExpr
 {--
  - Corresponds to types obtainable from a TypeSpecifiers.
  -}
-nonterminal BaseTypeExpr with env, typerep, pp, host<BaseTypeExpr>, lifted<BaseTypeExpr>, errors, globalDecls, defs, returnType, freeVariables;
+nonterminal BaseTypeExpr with env, typerep, pp, host<BaseTypeExpr>, lifted<BaseTypeExpr>, errors, globalDecls, typeModifiers, defs, returnType, freeVariables;
 
 function errorTypeExpr
 BaseTypeExpr ::= msg::[Message]
@@ -74,6 +79,7 @@ top::BaseTypeExpr ::= msg::[Message]  ty::BaseTypeExpr
   top.typerep = ty.typerep;
   top.errors := msg ++ ty.errors;
   top.globalDecls := ty.globalDecls;
+  top.typeModifiers = ty.typeModifiers;
   top.defs = ty.defs;
   top.freeVariables = ty.freeVariables;
 }
@@ -95,21 +101,26 @@ top::BaseTypeExpr ::= result::Type
   forwards to
     case result.typeModifierExpr of
       baseTypeExpr() -> result.baseTypeExpr
-    | _ -> wrappedTypeExpr(typeName(result.baseTypeExpr, result.typeModifierExpr))
+    | _ -> typeModiferTypeExpr(result.baseTypeExpr, result.typeModifierExpr)
     end;
 }
 
-{-- The result of converting a directTypeExpr -}
-abstract production wrappedTypeExpr
-top::BaseTypeExpr ::= result::TypeName
+{-- A TypeExpr that contains a type modifer which must be lifted out
+ - This production should not occur in the host AST
+ -}
+abstract production typeModiferTypeExpr
+top::BaseTypeExpr ::= bty::BaseTypeExpr  mty::TypeModifierExpr
 {
-  propagate host, lifted;
-  top.pp = result.pp;
-  top.typerep = result.typerep;
-  top.errors := result.errors;
-  top.globalDecls := result.globalDecls;
-  top.defs = result.defs;
-  top.freeVariables = result.freeVariables;
+  top.pp = parens(concat([bty.pp, mty.lpp, mty.rpp]));
+  top.host = bty.host;
+  top.lifted = bty.lifted;
+  top.typerep = mty.typerep;
+  mty.baseType = bty.typerep;
+  top.errors := bty.errors ++ mty.errors;
+  top.globalDecls := bty.globalDecls ++ mty.globalDecls;
+  top.typeModifiers = mty :: bty.typeModifiers;
+  top.defs = bty.defs;
+  top.freeVariables = bty.freeVariables ++ mty.freeVariables;
 }
 
 {-- Builtin C types: void, unsigned int, signed char, float, bool, etc.
@@ -122,6 +133,7 @@ top::BaseTypeExpr ::= q::[Qualifier]  result::BuiltinType
   top.typerep = builtinType(q, result);
   top.errors := [];
   top.globalDecls := [];
+  top.typeModifiers = [];
   top.defs = [];
   top.freeVariables = [];
 }
@@ -184,6 +196,7 @@ top::BaseTypeExpr ::= q::[Qualifier]  kwd::StructOrEnumOrUnion  name::Name
     end;
   
   top.globalDecls := [];
+  top.typeModifiers = [];
   
   top.defs =
     case kwd, tags of
@@ -216,6 +229,7 @@ top::BaseTypeExpr ::= q::[Qualifier]  def::StructDecl
   top.typerep = tagType(q, refIdTagType(structSEU(), name, def.refId));
   top.errors := def.errors;
   top.globalDecls := def.globalDecls;
+  top.typeModifiers = [];
   top.defs = def.defs;
   top.freeVariables = [];
 }
@@ -234,6 +248,7 @@ top::BaseTypeExpr ::= q::[Qualifier]  def::UnionDecl
   top.typerep = tagType(q, refIdTagType(unionSEU(), name, def.refId));
   top.errors := def.errors;
   top.globalDecls := def.globalDecls;
+  top.typeModifiers = [];
   top.defs = def.defs;
   top.freeVariables = [];
 }
@@ -247,6 +262,7 @@ top::BaseTypeExpr ::= q::[Qualifier]  def::EnumDecl
   top.typerep = tagType(q, enumTagType(def));
   top.errors := def.errors;
   top.globalDecls := def.globalDecls;
+  top.typeModifiers = [];
   top.defs = def.defs;
   top.freeVariables = [];
 }
@@ -263,6 +279,7 @@ top::BaseTypeExpr ::= q::[Qualifier]  name::Name
     else noncanonicalType(typedefType(q, name.name, name.valueItem.typerep)); -- TODO bug: we are discarding qualifiers here!
   top.errors := [];
   top.globalDecls := [];
+  top.typeModifiers = [];
   top.defs = [];
   top.freeVariables = [];
 
@@ -281,6 +298,7 @@ top::BaseTypeExpr ::= q::[Qualifier]  wrapped::TypeName
                      text("_Atomic"), parens(wrapped.pp)]);
   top.errors := wrapped.errors;
   top.globalDecls := wrapped.globalDecls;
+  top.typeModifiers = [];
   top.defs = wrapped.defs;
   top.freeVariables = wrapped.freeVariables;
 }
@@ -293,6 +311,7 @@ top::BaseTypeExpr ::=
   top.pp = text("__builtin_va_list");
   top.errors := [];
   top.globalDecls := [];
+  top.typeModifiers = [];
   top.defs = [];
   top.freeVariables = [];
   
@@ -306,6 +325,7 @@ top::BaseTypeExpr ::= q::[Qualifier]  e::ExprOrTypeName
   top.pp = concat([text("__typeof__"), parens(e.pp)]);
   top.errors := e.errors;
   top.globalDecls := e.globalDecls;
+  top.typeModifiers = [];
   top.defs = e.defs;
   top.freeVariables = e.freeVariables;
 }
@@ -317,15 +337,21 @@ top::BaseTypeExpr ::= q::[Qualifier]  e::ExprOrTypeName
  - Typically, these are just anchored somewhere to obtain the env,
  - and then turn into an environment-independent Type.
  -}
-nonterminal TypeModifierExpr with env, typerep, lpp, rpp, host<TypeModifierExpr>, lifted<TypeModifierExpr>, baseType, errors, globalDecls, returnType, freeVariables;
+nonterminal TypeModifierExpr with env, typerep, lpp, rpp, host<TypeModifierExpr>, lifted<TypeModifierExpr>, baseType, typeModifiersIn, errors, globalDecls, returnType, freeVariables;
 
 
 abstract production baseTypeExpr
 top::TypeModifierExpr ::=
 {
-  propagate host, lifted;
   top.lpp = notext();
   top.rpp = notext();
+  top.host = if !null(top.typeModifiersIn) then mty.host else baseTypeExpr();
+  top.lifted = if !null(top.typeModifiersIn) then mty.lifted else baseTypeExpr();
+  
+  local mty::TypeModifierExpr = head(top.typeModifiersIn);
+  mty.typeModifiersIn = tail(top.typeModifiersIn);
+  mty.env = top.env;
+  mty.returnType = top.returnType;
   
   top.typerep = top.baseType; 
   top.errors := [];
