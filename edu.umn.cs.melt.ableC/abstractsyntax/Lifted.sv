@@ -1,7 +1,7 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax;
 
 {- 
-Expressions that want to specify declartions to lift to a global scope
+Extensions that want to specify declartions to lift to a global scope
 do so by forwarding to the host production `injectGlobalDecls` (or one
 of the corresponding ones for Type or BaseTypeExpr.)  
 
@@ -12,7 +12,8 @@ A pair of synthesized attributes can be used for this.
 - `globalDecls`: the list of declarations to lift up
 - `lifted`: the lifted tree.
 An invariant here is that all Decl nodes in the `host` tree appear in
-either `globalDecls` or in `lifted`.
+either `globalDecls` or in `lifted`.  Also, the 'injection' productions
+defined here should not occur in the lifted tree.  
 
 Another invariant is that declarations in globalDecls with the same name
 refer to an identical declaration, so that any duplicates can be safely

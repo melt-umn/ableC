@@ -106,14 +106,13 @@ top::BaseTypeExpr ::= result::Type
 }
 
 {-- A TypeExpr that contains a type modifer which must be lifted out
- - This production should not occur in the host AST
- - TODO: Should this transformation happen with host or lifted?
+ - This production should not occur in the lifted AST
  -}
 abstract production typeModiferTypeExpr
 top::BaseTypeExpr ::= bty::BaseTypeExpr  mty::TypeModifierExpr
 {
+  propagate host;
   top.pp = parens(concat([bty.pp, mty.lpp, mty.rpp]));
-  top.host = bty.host;
   top.lifted = bty.lifted;
   top.typerep = mty.typerep;
   mty.baseType = bty.typerep;
@@ -342,16 +341,15 @@ nonterminal TypeModifierExpr with env, typerep, lpp, rpp, host<TypeModifierExpr>
 
 {--
  - A TypeModifierExpr that corresponds to whatever the base TypeExpr was.  
- - This gets transformed to include type modifiers that were included in the base TypeExpr
- - via typeModifierTypeExpr.  
- - TODO: Should this transformation happen with host or lifted?
+ - This gets transformed via lifted to include type modifiers that were included in the base
+ - TypeExpr via typeModifierTypeExpr.  
  -}
 abstract production baseTypeExpr
 top::TypeModifierExpr ::=
 {
+  propagate host;
   top.lpp = notext();
   top.rpp = notext();
-  top.host = if !null(top.typeModifiersIn) then mty.host else baseTypeExpr();
   top.lifted = if !null(top.typeModifiersIn) then mty.lifted else baseTypeExpr();
   
   local mty::TypeModifierExpr = head(top.typeModifiersIn);
