@@ -54,7 +54,6 @@ top::Expr ::= globalDecls::[Pair<String Decl>] lifted::Expr
   local decls::Decls = foldDecl(map(snd, newGlobalDecls));
   local names::[String] = map(fst, newGlobalDecls);
 
-  decls.globalDeclEnv = error("Demanded globalDeclEnv by consDecl");
   decls.env = globalEnv(top.env);
   decls.isTopLevel = true;
   decls.returnType = top.returnType;
@@ -95,7 +94,6 @@ top::Stmt ::= globalDecls::[Pair<String Decl>] lifted::Stmt
   local decls::Decls = foldDecl(map(snd, newGlobalDecls));
   local names::[String] = map(fst, newGlobalDecls);
 
-  decls.globalDeclEnv = error("Demanded globalDeclEnv by consDecl");
   decls.env = globalEnv(top.env);
   decls.isTopLevel = true;
   decls.returnType = top.returnType;
@@ -137,7 +135,6 @@ top::BaseTypeExpr ::= globalDecls::[Pair<String Decl>] lifted::BaseTypeExpr
   local decls::Decls = foldDecl(map(snd, newGlobalDecls));
   local names::[String] = map(fst, newGlobalDecls);
 
-  decls.globalDeclEnv = error("Demanded globalDeclEnv by consDecl");
   decls.env = globalEnv(top.env);
   decls.isTopLevel = true;
   decls.returnType = top.returnType;
@@ -181,11 +178,11 @@ top::NoncanonicalType ::= globalDecls::[Pair<String Decl>] lifted::Type
   top.typeModifierExpr = lifted.typeModifierExpr;
 }
 
--- Inserted globalDecls before h. Should only ever get used by top-level 
--- foldGlobalDecl in concrete syntax.
--- TODO: This should really be a seperate nonterminal from Decls
-abstract production consGlobalDecl
-top::Decls ::= h::Decl  t::Decls
+{--
+ - Inserts globalDecls before h
+ -}
+aspect production consGlobalDecl
+top::GlobalDecls ::= h::Decl  t::GlobalDecls
 {
   propagate host;
  
@@ -197,17 +194,14 @@ top::Decls ::= h::Decl  t::Decls
   top.lifted =
     if !null(t.globalDecls)
     then error("consGlobalDecl tail has global decls!")
-    else consDecl( 
+    else consGlobalDecl( 
            decls(newDecls),
-           consDecl(
+           consGlobalDecl(
              h.lifted,
              t.lifted));
   
   t.globalDeclEnv = top.globalDeclEnv ++ map(fst, newGlobalDeclPairs);
   t.env = addEnv(h.defs, top.env);
-  
-  -- define pp, env, defs, etc.
-  forwards to consDecl(h, t);
 }
 
 -- Removes duplicate global decls before inserting them

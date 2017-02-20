@@ -8,7 +8,7 @@ global fullErrorCheck::Boolean = true;
 nonterminal Root with pp, host<Root>, lifted<Root>, errors, globalDecls, env;
 
 abstract production root
-top::Root ::= d::Decls
+top::Root ::= d::GlobalDecls
 {
   propagate host, lifted;
   
@@ -19,7 +19,6 @@ top::Root ::= d::Decls
   d.globalDeclEnv = [];
 --  d.env = addEnv(builtinfunctions:initialEnv;
   d.env = addEnv(builtinfunctions:getInitialEnvDefs(), top.env);
-  d.isTopLevel = true;
   d.returnType = nothing();
 }
 

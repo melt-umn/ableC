@@ -28,9 +28,9 @@ function unfoldDecl
 }
 
 function foldGlobalDecl
-Decls ::= l::[Decl]
+GlobalDecls ::= l::[Decl]
 {
-  return foldr(consGlobalDecl, nilDecl(), l);
+  return foldr(consGlobalDecl, nilGlobalDecl(), l);
 }
 
 function foldInit

@@ -5,7 +5,36 @@
 -- Declaration is rooted in External, but also in stmts. Either a variableDecl or a typedefDecl.
 -- ParameterDecl should probably be something special, distinct from variableDecl.
 
-nonterminal Decls with pps, host<Decls>, lifted<Decls>, errors, globalDecls, defs, globalDeclEnv, env, isTopLevel, returnType, freeVariables;
+nonterminal GlobalDecls with pps, host<GlobalDecls>, lifted<GlobalDecls>, errors, globalDecls, defs, globalDeclEnv, env, returnType, freeVariables;
+
+{-- Mirrors Decls, used for lifting mechanism to insert new Decls at top level -}
+abstract production consGlobalDecl
+top::GlobalDecls ::= h::Decl  t::GlobalDecls
+{
+  top.pps = h.pp :: t.pps;
+  top.errors := h.errors ++ t.errors;
+  top.defs = h.defs ++ t.defs;
+  top.freeVariables =
+    h.freeVariables ++
+    removeDefsFromNames(h.defs, t.freeVariables);
+  
+  -- host, lifted, globalDecls, globalDeclEnv defined in Lifted.sv
+    
+  h.isTopLevel = true;
+}
+
+abstract production nilGlobalDecl
+top::GlobalDecls ::=
+{
+  propagate host, lifted;
+  top.pps = [];
+  top.errors := [];
+  top.globalDecls := [];
+  top.defs = [];
+  top.freeVariables = [];
+}
+
+nonterminal Decls with pps, host<Decls>, lifted<Decls>, errors, globalDecls, defs, env, isTopLevel, returnType, freeVariables;
 
 autocopy attribute isTopLevel :: Boolean;
 
@@ -21,7 +50,6 @@ top::Decls ::= h::Decl  t::Decls
     h.freeVariables ++
     removeDefsFromNames(h.defs, t.freeVariables);
   
-  t.globalDeclEnv = error("Demanded globalDeclEnv in consDecl");
   t.env = addEnv(h.defs, top.env);
 }
 
@@ -57,8 +85,6 @@ top::Decl ::= d::Decls
   top.globalDecls := d.globalDecls;
   top.defs = d.defs;
   top.freeVariables = d.freeVariables;
-  
-  d.globalDeclEnv = error("Demanded globalDeclEnv by consDecl");
 }
 
 abstract production variableDecls
@@ -310,7 +336,6 @@ top::FunctionDecl ::= storage::[StorageClass]  fnquals::[SpecialSpecifier]  bty:
   body.env = addEnv(top.defs ++ parameters.defs ++ decls.defs ++ body.functiondefs, 
                     openScope(addEnv(bty.defs, top.env)));
   
-  decls.globalDeclEnv = error("Demanded globalDeclEnv by consDecl");
   decls.isTopLevel = false;
   
   
