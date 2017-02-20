@@ -5,7 +5,7 @@
 -- Declaration is rooted in External, but also in stmts. Either a variableDecl or a typedefDecl.
 -- ParameterDecl should probably be something special, distinct from variableDecl.
 
-nonterminal GlobalDecls with pps, host<GlobalDecls>, lifted<GlobalDecls>, errors, globalDecls, defs, globalDeclEnv, env, returnType, freeVariables;
+nonterminal GlobalDecls with pps, host<GlobalDecls>, lifted<GlobalDecls>, errors, defs, globalDeclEnv, env, returnType, freeVariables;
 
 {-- Mirrors Decls, used for lifting mechanism to insert new Decls at top level -}
 abstract production consGlobalDecl
@@ -18,7 +18,7 @@ top::GlobalDecls ::= h::Decl  t::GlobalDecls
     h.freeVariables ++
     removeDefsFromNames(h.defs, t.freeVariables);
   
-  -- host, lifted, globalDecls, globalDeclEnv defined in Lifted.sv
+  -- host, lifted, globalDeclEnv defined in Lifted.sv
     
   h.isTopLevel = true;
 }
@@ -29,7 +29,6 @@ top::GlobalDecls ::=
   propagate host, lifted;
   top.pps = [];
   top.errors := [];
-  top.globalDecls := [];
   top.defs = [];
   top.freeVariables = [];
 }

@@ -107,6 +107,7 @@ top::BaseTypeExpr ::= result::Type
 
 {-- A TypeExpr that contains a type modifer which must be lifted out
  - This production should not occur in the host AST
+ - TODO: Should this transformation happen with host or lifted?
  -}
 abstract production typeModiferTypeExpr
 top::BaseTypeExpr ::= bty::BaseTypeExpr  mty::TypeModifierExpr
@@ -339,7 +340,12 @@ top::BaseTypeExpr ::= q::[Qualifier]  e::ExprOrTypeName
  -}
 nonterminal TypeModifierExpr with env, typerep, lpp, rpp, host<TypeModifierExpr>, lifted<TypeModifierExpr>, baseType, typeModifiersIn, errors, globalDecls, returnType, freeVariables;
 
-
+{--
+ - A TypeModifierExpr that corresponds to whatever the base TypeExpr was.  
+ - This gets transformed to include type modifiers that were included in the base TypeExpr
+ - via typeModifierTypeExpr.  
+ - TODO: Should this transformation happen with host or lifted?
+ -}
 abstract production baseTypeExpr
 top::TypeModifierExpr ::=
 {

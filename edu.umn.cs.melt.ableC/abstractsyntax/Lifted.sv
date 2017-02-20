@@ -13,10 +13,6 @@ A pair of synthesized attributes can be used for this.
 - `lifted`: the lifted tree.
 An invariant here is that all Decl nodes in the `host` tree appear in
 either `globalDecls` or in `lifted`.
-- On `Decls` nonterminals at the global level, `globalDecls` is empty
-  and all the `Decl` trees to be lifted (were in `globalDecls`) are now
-  put into `lifted`.
-- On all other nonterminals, `globalDecls` need not be empty.
 
 Another invariant is that declarations in globalDecls with the same name
 refer to an identical declaration, so that any duplicates can be safely
@@ -190,15 +186,12 @@ top::GlobalDecls ::= h::Decl  t::GlobalDecls
     removeDuplicateGlobalDeclPairs(h.globalDecls, top.globalDeclEnv);
   local newDecls::Decls = foldDecl(map(snd, newGlobalDeclPairs));
 
-  top.globalDecls := [];
   top.lifted =
-    if !null(t.globalDecls)
-    then error("consGlobalDecl tail has global decls!")
-    else consGlobalDecl( 
-           decls(newDecls),
-           consGlobalDecl(
-             h.lifted,
-             t.lifted));
+    consGlobalDecl( 
+      decls(newDecls),
+      consGlobalDecl(
+        h.lifted,
+        t.lifted));
   
   t.globalDeclEnv = top.globalDeclEnv ++ map(fst, newGlobalDeclPairs);
   t.env = addEnv(h.defs, top.env);
