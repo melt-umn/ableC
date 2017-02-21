@@ -33,7 +33,7 @@ synthesized attribute rpp :: Document;
 synthesized attribute typerep :: Type;
 synthesized attribute typereps :: [Type];
 
-{-- Used to transform away typeModiferTypeExpr -}
+{-- Used to transform away typeModifierTypeExpr -}
 synthesized attribute typeModifiers :: [TypeModifierExpr];
 autocopy attribute typeModifiersIn :: [TypeModifierExpr];
 
@@ -101,14 +101,14 @@ top::BaseTypeExpr ::= result::Type
   forwards to
     case result.typeModifierExpr of
       baseTypeExpr() -> result.baseTypeExpr
-    | _ -> typeModiferTypeExpr(result.baseTypeExpr, result.typeModifierExpr)
+    | _ -> typeModifierTypeExpr(result.baseTypeExpr, result.typeModifierExpr)
     end;
 }
 
-{-- A TypeExpr that contains a type modifer which must be lifted out
+{-- A TypeExpr that contains a type modifier which must be lifted out
  - This production should not occur in the lifted AST
  -}
-abstract production typeModiferTypeExpr
+abstract production typeModifierTypeExpr
 top::BaseTypeExpr ::= bty::BaseTypeExpr  mty::TypeModifierExpr
 {
   propagate host;
