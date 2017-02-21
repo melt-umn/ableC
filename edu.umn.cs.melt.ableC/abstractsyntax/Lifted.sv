@@ -1,34 +1,34 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax;
 
 {- 
-Extensions that want to specify declartions to lift to a global scope
-do so by forwarding to the host production `injectGlobalDecls` (or one
-of the corresponding ones for Type or BaseTypeExpr.)  
-
-After extracting the `host` tree, there are no extension constructs,
-but declarations need to be lifted to the proper place. 
-
-A pair of synthesized attributes can be used for this.
-- `globalDecls`: the list of declarations to lift up
-- `lifted`: the lifted tree.
-An invariant here is that all Decl nodes in the `host` tree appear in
-either `globalDecls` or in `lifted`.  Also, the 'injection' productions
-defined here should not occur in the lifted tree.  
-
-Another invariant is that declarations in globalDecls with the same name
-refer to an identical declaration, so that any duplicates can be safely
-removed.  This is left up to the extension writer for now, but there may
-a better solution.  
-
-TODO:
-Right now we assume the name in any globalDecls pairs corresponds to a
-ValueItem that is being defined.  We should find a way to generalize this,
-possibly leveraging some of the current env stuff, to allow things like
-non-typedef'ed structs to be lifted.  
-
-It would be nice to move all of this to its own grammar, but aspecting
-everything for lifted and globalDecls would be kind of a pain
--}
+ - Extensions that want to specify declartions to lift to a global scope
+ - do so by forwarding to the host production `injectGlobalDecls` (or one
+ - of the corresponding ones for Type or BaseTypeExpr.)  
+ - 
+ - After extracting the `host` tree, there are no extension constructs,
+ - but declarations need to be lifted to the proper place. 
+ - 
+ - A pair of synthesized attributes can be used for this.
+ - * `globalDecls`: the list of declarations to lift up
+ - * `lifted`: the lifted tree.
+ - An invariant here is that all Decl nodes in the `host` tree appear in
+ - either `globalDecls` or in `lifted`.  Also, the 'injection' productions
+ - defined here should not occur in the lifted tree.  
+ - 
+ - Another invariant is that declarations in globalDecls with the same name
+ - refer to an identical declaration, so that any duplicates can be safely
+ - removed.  This is left up to the extension writer for now, but there may
+ - a better solution.  
+ - 
+ - TODO:
+ - Right now we assume the name in any globalDecls pairs corresponds to a
+ - ValueItem that is being defined.  We should find a way to generalize this,
+ - possibly leveraging some of the current env stuff, to allow things like
+ - non-typedef'ed structs to be lifted.  
+ - 
+ - It would be nice to move all of this to its own grammar, but aspecting
+ - everything for lifted and globalDecls would be kind of a pain
+ -}
 
 synthesized attribute lifted<a>::a;
 

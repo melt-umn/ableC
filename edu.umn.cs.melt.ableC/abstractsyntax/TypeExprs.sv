@@ -1,27 +1,31 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax;
 
--- In order to accomodate C's odd-ball syntax when it comes to type declarations
--- (with specifiers separate from declarators) we have a divided Type Expressions
--- abstract syntax.
-
--- BaseTypeExpr represents specifiers: structs, typedefs, ints, etc
--- TypeModifierExpr represents declarators: pointers, arrays, functions, etc.
-
--- We can't merge these into one TypeExpr because a BaseTypeExpr might be
--- used as part of several declarators.
--- For example, "struct { ... } bar, *baz;"
--- Here, we declare two variables: bar and baz. one of the anonymous struct
--- type, the other a pointer to it. However, we must NOT duplicate the
--- declaration of the struct!
--- That is, we cannot represent it as "struct { ... } bar; struct { ... } *baz;"
--- because that redeclares the type.
-
--- Our solution is to have a BaseTypeExprs for a declarations, followed by
--- several identifiers each with their own TypeModifiersExpr.
--- This way, the struct appears once in the abstract syntax.
-
--- TypeModifiersExpr are terminated by "baseTypeExpr" which provides a typerep
--- value that is equal to the Type obtained from the corresponding BaseTypeExpr.
+{-- In order to accomodate C's odd-ball syntax when it comes to type declarations
+ - (with specifiers separate from declarators) we have a divided Type Expressions
+ - abstract syntax.
+ -
+ - BaseTypeExpr represents specifiers: structs, typedefs, ints, etc
+ - TypeModifierExpr represents declarators: pointers, arrays, functions, etc.
+ -
+ - We can't merge these into one TypeExpr because a BaseTypeExpr might be
+ - used as part of several declarators.
+ - For example, "struct { ... } bar, *baz;"
+ - Here, we declare two variables: bar and baz. one of the anonymous struct
+ - type, the other a pointer to it. However, we must NOT duplicate the
+ - declaration of the struct!
+ - That is, we cannot represent it as "struct { ... } bar; struct { ... } *baz;"
+ - because that redeclares the type.
+ -
+ - Our solution is to have a BaseTypeExprs for a declarations, followed by
+ - several identifiers each with their own TypeModifiersExpr.
+ - This way, the struct appears once in the abstract syntax.
+ -
+ - TypeModifiersExpr are terminated by "baseTypeExpr" which provides a typerep
+ - value that is equal to the Type obtained from the corresponding BaseTypeExpr.
+ - 
+ - Invariant: a BaseTypeExpr and its corresponding TypeModifierExpr should have
+ - the same environment
+ -}
 
 autocopy attribute baseType :: Type;
 
