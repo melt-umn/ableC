@@ -5,7 +5,7 @@
 -- Declaration is rooted in External, but also in stmts. Either a variableDecl or a typedefDecl.
 -- ParameterDecl should probably be something special, distinct from variableDecl.
 
-nonterminal Decls with pps, host<Decls>, lifted<Decls>, errors, globalDecls, defs, env, isTopLevel, returnType, freeVariables;
+nonterminal Decls with pps, host<Decls>, lifted<Decls>, errors, globalDecls, defs, globalDeclEnv, env, isTopLevel, returnType, freeVariables;
 
 autocopy attribute isTopLevel :: Boolean;
 
@@ -21,6 +21,7 @@ top::Decls ::= h::Decl  t::Decls
     h.freeVariables ++
     removeDefsFromNames(h.defs, t.freeVariables);
   
+  t.globalDeclEnv = error("Demanded globalDeclEnv in consDecl");
   t.env = addEnv(h.defs, top.env);
 }
 
@@ -56,6 +57,8 @@ top::Decl ::= d::Decls
   top.globalDecls := d.globalDecls;
   top.defs = d.defs;
   top.freeVariables = d.freeVariables;
+  
+  d.globalDeclEnv = error("Demanded globalDeclEnv by consDecl");
 }
 
 abstract production variableDecls
@@ -67,7 +70,7 @@ top::Decl ::= storage::[StorageClass]  attrs::[Attribute]  ty::BaseTypeExpr  dcl
       ppAttributes(attrs) ::
       [ty.pp, space(), ppImplode(text(", "), dcls.pps), semi()]);
   top.errors := ty.errors ++ dcls.errors;
-  top.globalDecls := dcls.globalDecls;
+  top.globalDecls := ty.globalDecls ++ dcls.globalDecls;
   top.defs = ty.defs ++ dcls.defs;
   top.freeVariables = ty.freeVariables ++ dcls.freeVariables;
   
@@ -303,6 +306,8 @@ top::FunctionDecl ::= storage::[StorageClass]  fnquals::[SpecialSpecifier]  bty:
 
   body.env = addEnv(top.defs ++ parameters.defs ++ decls.defs ++ body.functiondefs, 
                     openScope(addEnv(bty.defs, top.env)));
+  
+  decls.globalDeclEnv = error("Demanded globalDeclEnv by consDecl");
   decls.isTopLevel = false;
   
   
@@ -469,7 +474,7 @@ Maybe<String> ::= attrs::[Attribute]
 {
   return
     case attrs of
-      gccAttribute(ats) :: rest -> orElse(getRefIdFromAttribs(ats), getRefIdFromAttributes(attrs))
+      gccAttribute(ats) :: rest -> orElse(getRefIdFromAttribs(ats), getRefIdFromAttributes(rest))
     | _ :: rest -> getRefIdFromAttributes(rest)
     | [] -> nothing()
     end;

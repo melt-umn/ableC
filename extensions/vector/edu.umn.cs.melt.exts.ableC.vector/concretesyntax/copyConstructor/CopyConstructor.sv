@@ -1,4 +1,4 @@
-grammar edu:umn:cs:melt:exts:ableC:vector:concretesyntax:typeExpr;
+grammar edu:umn:cs:melt:exts:ableC:vector:concretesyntax:copyConstructor;
 
 imports edu:umn:cs:melt:ableC:concretesyntax;
 imports silver:langutil only ast;
@@ -13,9 +13,8 @@ import edu:umn:cs:melt:exts:ableC:vector;
 -- Spurious import, to trigger the tests on build.
 import edu:umn:cs:melt:exts:ableC:vector:mda_test;
 
-marking terminal Vector_t 'vector' lexer classes {Ckeyword};
+marking terminal CopyVector_t 'copy_vector' lexer classes {Ckeyword};
 
-concrete productions top::TypeSpecifier_c
-| 'vector' '<' sub::TypeName_c '>'
-    { top.realTypeSpecifiers = [vectorTypeExpr(sub.ast)];
-      top.preTypeSpecifiers = []; }
+concrete productions top::PrimaryExpr_c
+| 'copy_vector' '(' e::AssignExpr_c ')'
+  { top.ast = copyVector(e.ast, location=top.location); }

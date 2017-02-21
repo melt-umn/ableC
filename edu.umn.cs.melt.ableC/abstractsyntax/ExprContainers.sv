@@ -66,6 +66,7 @@ top::Exprs ::= h::Expr  t::Exprs
     if null(top.expectedTypes) then
       if top.callVariadic then []
       else
+        -- TODO: These indices are broken, maybe backwards?
         [err(top.callExpr.location, s"call expected ${toString(top.argumentPosition)} arguments, got ${toString(top.argumentPosition + t.count - 1)}")]
     else
       if !typeAssignableTo(head(top.expectedTypes).withoutTypeQualifiers, h.typerep) then
@@ -94,7 +95,7 @@ top::Exprs ::=
   top.argumentErrors =
     if null(top.expectedTypes) then []
     else
-      [err(top.callExpr.location, s"call expected ${toString(top.argumentPosition + length(top.expectedTypes))} arguments, got only ${toString(top.argumentPosition)}")];
+      [err(top.callExpr.location, s"call expected ${toString(top.argumentPosition + length(top.expectedTypes) - 1)} arguments, got only ${toString(top.argumentPosition - 1)}")];
 }
 
 function appendExprs

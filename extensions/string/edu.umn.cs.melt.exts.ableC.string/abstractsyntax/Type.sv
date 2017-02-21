@@ -85,17 +85,6 @@ top::Type ::=
   top.rBinaryEqProd = top.lBinaryEqProd;
   
   top.lAssignProd = just(assignString(_, _, location=_));
-  top.rAssignProd = 
-    case top.otherType of
-      pointerType(_, builtinType(_, signedType(charType()))) ->
-        just(
-          binaryOpExpr(
-            _,
-            assignOp(eqOp(location=builtIn()), location=builtIn()),
-            _,
-            location=_))
-    | _ -> nothing()
-    end;
     
   top.subscriptProd = just(subscriptString(_, _, location=_));
   top.subscriptAssignProd = just(subscriptAssignString(_, _, _, _, location=_));
@@ -129,7 +118,7 @@ top::Type ::= quals::[Qualifier] sub::Type
   top.strProd =
     case sub.pointerStrProd of
       just(prod) -> just(prod)
-    | nothing() -> just(showPointer(_, location=_))
+    | nothing() -> just(strPointer(_, location=_))
     end;
 }
 
@@ -202,8 +191,8 @@ top::BuiltinType ::= sub::IntegerType
 aspect production errorType
 top::Type ::=
 {
-  top.showProd = just(\e::Expr l::Location -> errorExpr([], location=l));
-  top.pointerShowProd = just(\e::Expr l::Location -> errorExpr([], location=l));
-  top.strProd = just(\e::Expr l::Location -> errorExpr([], location=l));
-  top.pointerStrProd = just(\e::Expr l::Location -> errorExpr([], location=l));
+  top.showProd = just(\e::Expr l::Location -> errorExpr([err(builtin, "show on errorType")], location=l));
+  top.pointerShowProd = just(\e::Expr l::Location -> errorExpr([err(builtin, "pointer show on errorType")], location=l));
+  top.strProd = just(\e::Expr l::Location -> errorExpr([err(builtin, "str on errorType")], location=l));
+  top.pointerStrProd = just(\e::Expr l::Location -> errorExpr([err(builtin, "pointer str on errorType")], location=l));
 }

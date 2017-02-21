@@ -4,11 +4,11 @@
 #include <stdlib.h>
 
 int main(int argc, char **argv) {
-  vector(int) a = new_vector(float) [1, 2, 3]; // TODO, fix this, no sub type checking
+  vector<int> a = vec<float> [1, 2, 3];
   printf("a: %s\n", show(a));
-  vector(int) b = new_vector(int) [4, 5, 6];
+  vector<int> b = vec<int> [4, 5, 6];
   printf("b: %s\n", show(b));
-  vector(int) c = a + b;
+  vector<int> c = a + b;
   printf("c: %s\n", show(c));
   a += b;
   printf("a: %s\n", show(a));

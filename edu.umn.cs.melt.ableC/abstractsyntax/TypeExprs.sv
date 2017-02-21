@@ -79,26 +79,19 @@ top::BaseTypeExpr ::= msg::[Message]  ty::BaseTypeExpr
 }
 
 {-- A TypeExpr that simply yields a type directly, no interpretation necessary.
- - e.g. builtin types. -}
+ - e.g. builtin types. 
+ - This should be the only place in the AST where a type is used directly in a host production, in
+ - order for special handling of refId freshening and lifting to work correctly
+ - Handling of host, lifted and globalDecls is defined in Lifted.sv
+ -}
 abstract production directTypeExpr
 top::BaseTypeExpr ::= result::Type
 {
-  top.host = freshenDirectTypeExpr(result);
-  top.lifted = freshenDirectTypeExpr(result);
   top.pp = cat(result.lpp, result.rpp);
   top.typerep = result;
   top.errors := [];
-  top.globalDecls := [];
   top.defs = [];
   top.freeVariables = [];
-}
-
-{-- When applying a functor attribute, we need to update the refIds in any types in directTypeExprs
- - to point to the new refIds defined in the new tags -}
-abstract production freshenDirectTypeExpr
-top::BaseTypeExpr ::= result::Type
-{
-  forwards to directTypeExpr(freshenRefIds(top.env, result));
 }
 
 {-- A reference to a tag type. e.g. 'struct foo' not 'struct foo {...}' -}

@@ -15,6 +15,8 @@ top::Root ::= d::Decls
   top.pp = terminate(line(), d.pps);
   top.errors := d.errors;
   top.globalDecls := d.globalDecls;
+  
+  d.globalDeclEnv = [];
 --  d.env = addEnv(builtinfunctions:initialEnv;
   d.env = addEnv(builtinfunctions:getInitialEnvDefs(), top.env);
   d.isTopLevel = true;

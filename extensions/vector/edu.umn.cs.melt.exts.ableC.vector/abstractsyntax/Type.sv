@@ -1,22 +1,71 @@
 grammar edu:umn:cs:melt:exts:ableC:vector:abstractsyntax;
 
-import edu:umn:cs:melt:ableC:abstractsyntax:overload;
+ -- TODO: Template this instead, someday
+function vectorTypedefGlobalDecls
+[Pair<String Decl>] ::= sub::Type
+{
+  return
+    [pair(
+      "_vector_" ++ sub.mangledName,
+      typedefDecls(
+        [],
+        structTypeExpr(
+          [],
+          structDecl(
+            [gccAttribute(
+               consAttrib(
+                 appliedAttrib(
+                   attribName(name("refId", location=builtin)),
+                   consExpr(
+                     stringLiteral(
+                       s"\"edu:umn:cs:melt:exts:ableC:vector:_vector_${sub.mangledName}_s\"",
+                       location=builtin),
+                     nilExpr())),
+                 nilAttrib()))],
+            justName(name("_vector_" ++ sub.mangledName ++ "_s", location=builtin)),
+            consStructItem(
+              structItem(
+                [],
+                tagReferenceTypeExpr([], structSEU(), name("_vector_info", location=builtin)),
+                consStructDeclarator(
+                  structField(name("_info", location=builtin), baseTypeExpr(), []),
+                  nilStructDeclarator())),
+              consStructItem(
+                structItem(
+                  [], directTypeExpr(sub),
+                  consStructDeclarator(
+                    structField(name("_contents", location=builtin), pointerTypeExpr([], baseTypeExpr()), []),
+                    nilStructDeclarator())),
+                nilStructItem())),
+            location=builtin)),
+        consDeclarator(
+          declarator(
+            name("_vector_" ++ sub.mangledName, location=builtin),
+            pointerTypeExpr([], baseTypeExpr()),
+            [],
+            nothingInitializer()),
+          nilDeclarator())))];
+}
 
 abstract production vectorTypeExpr 
 top::BaseTypeExpr ::= sub::TypeName
 {
-  top.typerep = vectorType([], sub.typerep);
-  forwards to typedefTypeExpr([], name("_vector", location=builtIn()));
+  sub.env = globalEnv(top.env);
+  
+  forwards to
+    if !null(sub.errors)
+    then errorTypeExpr(sub.errors)
+    else directTypeExpr(vectorType([], sub.typerep));
 }
 
 abstract production vectorType
 top::Type ::= qs::[Qualifier] sub::Type
 {
-  top.lpp = pp"${ppImplode(space(), map((.pp), qs))} vector(${sub.lpp}${sub.rpp})";
+  top.lpp = pp"${ppImplode(space(), map((.pp), qs))}vector<${sub.lpp}${sub.rpp}>";
   top.rpp = pp"";
 
-  top.lBinaryPlusProd =
-    case top.otherType of
+  top.ovrld:lBinaryPlusProd =
+    case top.ovrld:otherType of
       vectorType(_, s) ->
         if compatibleTypes(sub, s, true)
         then just(appendVector(_, _, location=_))
@@ -24,8 +73,8 @@ top::Type ::= qs::[Qualifier] sub::Type
     | _ -> nothing()
     end;
     
-  top.lAssignPlusProd =
-    case top.otherType of
+  top.ovrld:lAssignPlusProd =
+    case top.ovrld:otherType of
       vectorType(_, s) ->
         if compatibleTypes(sub, s, true)
         then just(appendAssignVector(_, _, location=_))
@@ -33,8 +82,8 @@ top::Type ::= qs::[Qualifier] sub::Type
     | _ -> nothing()
     end;
   
-  top.lBinaryEqProd =
-    case top.otherType of
+  top.ovrld:lBinaryEqProd =
+    case top.ovrld:otherType of
       vectorType(_, s) ->
         if compatibleTypes(sub, s, true)
         then just(eqVector(_, _, location=_))
@@ -42,23 +91,24 @@ top::Type ::= qs::[Qualifier] sub::Type
     | _ -> nothing()
     end;
   
-  top.memberProd =
-    case top.otherName of
-      "length"   -> just(memberExpr(_, true, name("length", location=builtIn()), location=_))
-    | "size"     -> just(memberExpr(_, true, name("length", location=builtIn()), location=_))
-    | "capacity" -> just(memberExpr(_, true, name("capacity", location=builtIn()), location=_))
+  top.ovrld:memberProd =
+    case top.ovrld:otherName of
+      "length"   -> just(lengthVector(_, location=_))
+    | "size"     -> just(lengthVector(_, location=_))
+    | "capacity" -> just(capacityVector(_, location=_))
+    | "elem_size" -> just(elemSizeVector(_, location=_))
     | _ -> nothing()
     end;
-    
-  top.subscriptProd =
-    case top.otherType of
+  
+  top.ovrld:subscriptProd =
+    case top.ovrld:otherType of
       builtinType(_, signedType(_)) -> just(subscriptVector(_, _, location=_))
     | builtinType(_, unsignedType(_)) -> just(subscriptVector(_, _, location=_))
     | _ -> nothing()
     end;
-    
-  top.subscriptAssignProd =
-    case top.otherType, top.otherType2 of
+  
+  top.ovrld:subscriptAssignProd =
+    case top.ovrld:otherType, top.ovrld:otherType2 of
       builtinType(_, signedType(_)), s ->
         if compatibleTypes(sub, s, true)
         then just(subscriptAssignVector(_, _, _, _, location=_))
@@ -78,15 +128,18 @@ top::Type ::= qs::[Qualifier] sub::Type
 
   forwards to
     noncanonicalType(
-      typedefType(
-        qs,
-        "_vector",
-        pointerType(
-          [],
-          tagType(
-            [],
-            refIdTagType(
-              structSEU(),
-              "_vector_s",
-              "edu:umn:cs:melt:exts:ableC:vector:_vector_s")))));
+      injectGlobalDeclsType(
+        vectorTypedefGlobalDecls(sub),
+        noncanonicalType(
+          typedefType(
+            qs,
+            "_vector_" ++ sub.mangledName,
+            pointerType(
+              [],
+              tagType(
+                [],
+                refIdTagType(
+                  structSEU(),
+                  "_vector_" ++ sub.mangledName ++ "_s",
+                  "edu:umn:cs:melt:exts:ableC:vector:_vector_" ++ sub.mangledName ++ "_s")))))));
 }

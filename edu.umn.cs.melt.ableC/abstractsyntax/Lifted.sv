@@ -2,7 +2,8 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax;
 
 {- 
 Expressions that want to specify declartions to lift to a global scope
-do so by forwarding to the host production `injectGlobalDecls`.  
+do so by forwarding to the host production `injectGlobalDecls` (or one
+of the corresponding ones for Type or BaseTypeExpr.)  
 
 After extracting the `host` tree, there are no extension constructs,
 but declarations need to be lifted to the proper place. 
@@ -17,9 +18,19 @@ either `globalDecls` or in `lifted`.
   put into `lifted`.
 - On all other nonterminals, `globalDecls` need not be empty.
 
-Another invariant is that declarations in globalDecls declare unique
-names.  Thus no fear of name clashes.  This is unrealistic, but we can
-address this later.
+Another invariant is that declarations in globalDecls with the same name
+refer to an identical declaration, so that any duplicates can be safely
+removed.  This is left up to the extension writer for now, but there may
+a better solution.  
+
+TODO:
+Right now we assume the name in any globalDecls pairs corresponds to a
+ValueItem that is being defined.  We should find a way to generalize this,
+possibly leveraging some of the current env stuff, to allow things like
+non-typedef'ed structs to be lifted.  
+
+It would be nice to move all of this to its own grammar, but aspecting
+everything for lifted and globalDecls would be kind of a pain
 -}
 
 synthesized attribute lifted<a>::a;
@@ -27,37 +38,202 @@ synthesized attribute lifted<a>::a;
 -- String is name of decl, could be used to remove duplicates
 synthesized attribute globalDecls::[Pair<String Decl>] with ++;
 
+-- List of names of global decls that have already been inserted, to avoid lifting and inserting
+-- the same decl at different locations
+inherited attribute globalDeclEnv::[String];
+
 abstract production injectGlobalDecls
 top::Expr ::= globalDecls::[Pair<String Decl>] lifted::Expr
 {
- top.pp = pp"injectGlobalDecls {${ppImplode(pp"\n", decls.pps)}} (${lifted.pp})";
- top.host = injectGlobalDecls(zipWith(pair, names, unfoldDecl(decls.host)), lifted.host, location=top.location);
+  top.pp = pp"injectGlobalDecls {${ppImplode(pp"\n", decls.pps)}} (${lifted.pp})";
+  top.host = injectGlobalDecls(zipWith(pair, names, unfoldDecl(decls.host)), lifted.host, location=top.location);
+  
+  -- Remove the globalDecls that are already in the env (i.e. this is already part of a lifted ast)
+  local newGlobalDecls::[Pair<String Decl>] = removeEnvGlobalDeclPairs(globalDecls, top.env);
  
- local decls::Decls = foldDecl(map(snd, globalDecls));
- local names::[String] = map(fst, globalDecls);
+  local decls::Decls = foldDecl(map(snd, newGlobalDecls));
+  local names::[String] = map(fst, newGlobalDecls);
 
- decls.env = globalEnv(top.env);
- decls.isTopLevel = true;
- decls.returnType = top.returnType;
+  decls.globalDeclEnv = error("Demanded globalDeclEnv by consDecl");
+  decls.env = globalEnv(top.env);
+  decls.isTopLevel = true;
+  decls.returnType = top.returnType;
 
- top.errors := decls.errors;
+  top.errors <- decls.errors;
 
  -- Note that the invariant over `globalDecls` and `lifted` is maintained.
- top.globalDecls :=
-   decls.globalDecls ++ 
-   zipWith(pair, names, unfoldDecl(decls.lifted)) ++
-   lifted.globalDecls;
- -- It should hold that names and unfoldDecl(decls.lifted) are the same length and
- -- correctly correspond to one another.
- top.lifted = lifted.lifted;
+  top.globalDecls :=
+    decls.globalDecls ++
+    zipWith(pair, names, unfoldDecl(decls.lifted)) ++ 
+    lifted.globalDecls;
+  -- It should hold that names and unfoldDecl(decls.lifted) are the same length and
+  -- correctly correspond to one another.
+  top.lifted = lifted.lifted;
+  
+  -- TODO: We are adding the new env elements to the current scope, when they should really be global
+  -- Shouldn't be a problem unless there are name conflicts, doing this the right way would be less
+  -- efficent. 
+  lifted.env = addEnv(decls.defs, top.env);
  
- lifted.env = addEnv(decls.defs, top.env);
+  forwards to lifted
+  with {env = lifted.env;};
+}
+
+-- Same as injectGlobalDecls, but on Stmt
+abstract production injectGlobalDeclsStmt
+top::Stmt ::= globalDecls::[Pair<String Decl>] lifted::Stmt
+{
+  top.pp = pp"injectGlobalDeclsStmt {${ppImplode(pp"\n", decls.pps)}} (${lifted.pp})";
+  top.host = injectGlobalDeclsStmt(zipWith(pair, names, unfoldDecl(decls.host)), lifted.host);
+  
+  -- Remove the globalDecls that are already in the env (i.e. this is already part of a lifted ast)
+  local newGlobalDecls::[Pair<String Decl>] = removeEnvGlobalDeclPairs(globalDecls, top.env);
  
- -- TODO: We are adding the new env elements to the current scope, when they should really be global
- -- Shouldn't be a problem unless there are name conflicts, doing this the right way would be less
- -- efficent.  
- forwards to lifted
- with {env = lifted.env;};
+  local decls::Decls = foldDecl(map(snd, newGlobalDecls));
+  local names::[String] = map(fst, newGlobalDecls);
+
+  decls.globalDeclEnv = error("Demanded globalDeclEnv by consDecl");
+  decls.env = globalEnv(top.env);
+  decls.isTopLevel = true;
+  decls.returnType = top.returnType;
+
+  top.errors <- decls.errors;
+
+ -- Note that the invariant over `globalDecls` and `lifted` is maintained.
+  top.globalDecls :=
+    decls.globalDecls ++
+    zipWith(pair, names, unfoldDecl(decls.lifted)) ++ 
+    lifted.globalDecls;
+  -- It should hold that names and unfoldDecl(decls.lifted) are the same length and
+  -- correctly correspond to one another.
+  top.lifted = lifted.lifted;
+  
+  -- TODO: We are adding the new env elements to the current scope, when they should really be global
+  -- Shouldn't be a problem unless there are name conflicts, doing this the right way would be less
+  -- efficent. 
+  lifted.env = addEnv(decls.defs, top.env);
+ 
+  forwards to lifted
+  with {env = lifted.env;};
+}
+
+-- Same as injectGlobalDecls, but on BaseTypeExpr
+abstract production injectGlobalDeclsTypeExpr
+top::BaseTypeExpr ::= globalDecls::[Pair<String Decl>] lifted::BaseTypeExpr
+{
+  top.pp = pp"injectGlobalDeclsTypeExpr {${ppImplode(pp"\n", decls.pps)}} (${lifted.pp})";
+  top.host = injectGlobalDeclsTypeExpr(zipWith(pair, names, unfoldDecl(decls.host)), lifted.host);
+  
+  -- Remove the globalDecls that are already in the env (i.e. this is already part of a lifted ast)
+  local newGlobalDecls::[Pair<String Decl>] = removeEnvGlobalDeclPairs(globalDecls, top.env);
+ 
+  local decls::Decls = foldDecl(map(snd, newGlobalDecls));
+  local names::[String] = map(fst, newGlobalDecls);
+
+  decls.globalDeclEnv = error("Demanded globalDeclEnv by consDecl");
+  decls.env = globalEnv(top.env);
+  decls.isTopLevel = true;
+  decls.returnType = top.returnType;
+
+  top.errors <- decls.errors;
+
+  -- Note that the invariant over `globalDecls` and `lifted` is maintained.
+  top.globalDecls :=
+    decls.globalDecls ++
+    zipWith(pair, names, unfoldDecl(decls.lifted)) ++ 
+    lifted.globalDecls;
+  -- It should hold that names and unfoldDecl(decls.lifted) are the same length and
+  -- correctly correspond to one another.
+  top.lifted = lifted.lifted;
+ 
+  -- TODO: We are adding the new env elements to the innermost scope, when they should really be global
+  -- Shouldn't be a problem unless there are name conflicts with variables at in-between scopes,
+  -- doing this the right way would be less efficent.  
+  lifted.env = addEnv(decls.defs, top.env);
+  
+  forwards to lifted
+  with {env = lifted.env;};
+}
+
+{--
+ - Lifting mechanism for types
+ - Note that the invariant must be changed here, since we don't have access to an environment.  
+ - This means that we can't define host to simply reproduce injectGlobalDeclsType with the host
+ - version of globalDecls, since we have no way of decorating the decls here.  
+ - Instead, we do away with lifted on types and simply have the host transformation replace all
+ - instances of injectGlobalDeclsType with liftedType, and then the production that is performing
+ - the host transformation must decorate the globalDecls and transform to a lifting production
+ - 
+ -}
+abstract production injectGlobalDeclsType
+top::NoncanonicalType ::= globalDecls::[Pair<String Decl>] lifted::Type
+{
+  top.canonicalType = lifted;
+  top.lpp = pp"injectGlobalDeclsType {<not shown>} (${lifted.lpp})";
+  top.rpp = lifted.rpp;
+   
+  top.host = liftedType(lifted.host);
+  top.globalDecls := globalDecls ++ lifted.globalDecls;
+}
+
+-- A noncanonical type that is really just a normal type, after the lifting transformation has happened
+abstract production liftedType
+top::NoncanonicalType ::= lifted::Type
+{
+  propagate host;
+  top.canonicalType = lifted;
+  top.lpp = lifted.lpp;
+  top.rpp = lifted.rpp;
+  top.globalDecls := lifted.globalDecls;
+}
+
+{--
+ - directTypeExpr now functions similarly to injectGlobalDecls, except that the decls to be lifted
+ - are provided only via result.globalDecls
+ - Also, the host transformation must lift globalDecls to thist point, so that they can be
+ - decorated and host-transformed.  This means that the host Type tree shouldn't actually contain
+ - any unlifted decls, so the lifted and globalDecls equations aren't strictly needed assuming that
+ - lifted is only accessed after a host transformation, but they are included anyway for the sake
+ - of completness.
+ -}  
+aspect production directTypeExpr
+top::BaseTypeExpr ::= result::Type
+{
+  top.host = 
+    if !null(newGlobalDecls)
+    then
+      injectGlobalDeclsTypeExpr(
+        zipWith(pair, names, unfoldDecl(decls.host)),
+        freshenDirectTypeExpr(result.host))
+    else freshenDirectTypeExpr(result.host);
+  top.lifted = freshenDirectTypeExpr(result.host);
+  
+  -- Remove the globalDecls that are already in the env (i.e. this is already part of a lifted ast)
+  local newGlobalDecls::[Pair<String Decl>] =
+    removeEnvGlobalDeclPairs(result.globalDecls, top.env);
+ 
+  local decls::Decls = foldDecl(map(snd, newGlobalDecls));
+  local names::[String] = map(fst, newGlobalDecls);
+
+  decls.globalDeclEnv = error("Demanded globalDeclEnv by consDecl");
+  decls.env = globalEnv(top.env);
+  decls.isTopLevel = true;
+  decls.returnType = top.returnType;
+  
+  top.errors <- decls.errors;
+
+  -- Note that the invariant over `globalDecls` and `lifted` is maintained.
+  top.globalDecls :=
+    decls.globalDecls ++ 
+    zipWith(pair, names, unfoldDecl(decls.lifted));
+}
+
+{-- When applying a functor attribute, we need to update the refIds in any types in directTypeExprs
+ - to point to the new refIds defined in the new tags -}
+abstract production freshenDirectTypeExpr
+top::BaseTypeExpr ::= result::Type
+{
+  forwards to directTypeExpr(freshenRefIds(top.env, result));
 }
 
 -- Inserted globalDecls before h. Should only ever get used by top-level 
@@ -65,28 +241,31 @@ top::Expr ::= globalDecls::[Pair<String Decl>] lifted::Expr
 abstract production consGlobalDecl
 top::Decls ::= h::Decl  t::Decls
 {
- propagate host;
+  propagate host;
  
- local newDecls::Decls =
-   foldDecl(map(snd, removeDuplicateGlobalDeclPairs(h.globalDecls, [])));
+  local newGlobalDeclPairs::[Pair<String Decl>] =
+    removeDuplicateGlobalDeclPairs(h.globalDecls, top.globalDeclEnv);
+  local newDecls::Decls = foldDecl(map(snd, newGlobalDeclPairs));
 
- top.globalDecls := [];
- top.lifted =
-   if !null(t.globalDecls)
-   then error("consGlobalDecl tail has global decls!")
-   else consDecl( 
-          decls(newDecls),
-          consDecl(
-            h.lifted,
-            t.lifted));
+  top.globalDecls := [];
+  top.lifted =
+    if !null(t.globalDecls)
+    then error("consGlobalDecl tail has global decls!")
+    else consDecl( 
+           decls(newDecls),
+           consDecl(
+             h.lifted,
+             t.lifted));
   
+  t.globalDeclEnv = top.globalDeclEnv ++ map(fst, newGlobalDeclPairs);
   t.env = addEnv(h.defs, top.env);
   
   -- define pp, env, defs, etc.
   forwards to consDecl(h, t);
 }
 
--- not used here, call with sofar as [] initially.
+-- Removes duplicate global decls before inserting them
+-- sofar is the list of names that have already been inserted, passed in to globalDecls via globalDeclEnv
 function removeDuplicateGlobalDeclPairs
 [Pair<String Decl>] ::= ds::[Pair<String Decl>]  sofar::[String]
 {
@@ -97,5 +276,19 @@ function removeDuplicateGlobalDeclPairs
         if containsBy(stringEq, n, sofar)
         then removeDuplicateGlobalDeclPairs(t, sofar)
         else pair(n, d) :: removeDuplicateGlobalDeclPairs(t, n::sofar)
+    end;
+}
+
+-- Removes global decls that already are in the env before inserting them
+function removeEnvGlobalDeclPairs
+[Pair<String Decl>] ::= ds::[Pair<String Decl>]  env::Decorated Env
+{
+  return
+    case ds of
+      [] -> []
+    | pair(n, d) :: t ->
+        if !null(lookupValue(n, env))
+        then removeEnvGlobalDeclPairs(t, env)
+        else pair(n, d) :: removeEnvGlobalDeclPairs(t, env)
     end;
 }

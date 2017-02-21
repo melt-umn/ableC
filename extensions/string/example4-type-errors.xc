@@ -9,5 +9,9 @@ int main(int argc, char **argv) {
   string a = str((t){4});
   string b = 4 * "q";
 
+  b.substring("a");
+
+  char *b = a;
+
   return 0;
 }
