@@ -50,6 +50,7 @@ function vectorTypedefGlobalDecls
 abstract production vectorTypeExpr 
 top::BaseTypeExpr ::= sub::TypeName
 {
+  propagate substituted;
   sub.env = globalEnv(top.env);
   
   forwards to

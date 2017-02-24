@@ -79,6 +79,8 @@ Stmt ::= n::String sub::Type size::Expr
 abstract production initVector
 top::Expr ::= sub::TypeName size::Expr
 {
+  propagate substituted;
+  
   local fwrd::Expr =
     stmtExpr(
       mkInitVectorStmt("_vec", sub.typerep, size),
@@ -91,6 +93,8 @@ top::Expr ::= sub::TypeName size::Expr
 abstract production constructVector
 top::Expr ::= sub::TypeName e::Exprs
 {
+  propagate substituted;
+  
   e.argumentPosition = 0;
   local fwrd::Expr =
     stmtExpr(
@@ -129,6 +133,8 @@ top::Exprs ::=
 abstract production copyVector
 top::Expr ::= e::Expr
 {
+  propagate substituted;
+  
   local subType::Type = 
     case e.typerep of
       vectorType(_, s) -> s
@@ -227,6 +233,8 @@ top::Expr ::= e::Expr
 abstract production appendVector
 top::Expr ::= e1::Expr e2::Expr
 {
+  propagate substituted;
+  
   local subType::Type = 
     case e1.typerep of
       vectorType(_, s) -> s
@@ -250,6 +258,8 @@ top::Expr ::= e1::Expr e2::Expr
 abstract production appendAssignVector
 top::Expr ::= e1::Expr e2::Expr
 {
+  propagate substituted;
+  
   local subType::Type = 
     case e1.typerep of
       vectorType(_, s) -> s
@@ -365,6 +375,8 @@ top::Expr ::= e1::Expr e2::Expr
 abstract production eqVector
 top::Expr ::= e1::Expr e2::Expr
 {
+  propagate substituted;
+  
   local subType::Type = 
     case e1.typerep of
       vectorType(_, s) -> s
@@ -475,6 +487,8 @@ top::Expr ::= e1::Expr e2::Expr
 abstract production lengthVector
 top::Expr ::= e::Expr
 {
+  propagate substituted;
+  
   local subType::Type = 
     case e.typerep of
       vectorType(_, s) -> s
@@ -497,6 +511,8 @@ top::Expr ::= e::Expr
 abstract production capacityVector
 top::Expr ::= e::Expr
 {
+  propagate substituted;
+  
   local subType::Type = 
     case e.typerep of
       vectorType(_, s) -> s
@@ -519,6 +535,8 @@ top::Expr ::= e::Expr
 abstract production elemSizeVector
 top::Expr ::= e::Expr
 {
+  propagate substituted;
+  
   local subType::Type = 
     case e.typerep of
       vectorType(_, s) -> s
@@ -541,6 +559,8 @@ top::Expr ::= e::Expr
 abstract production subscriptVector
 top::Expr ::= e1::Expr e2::Expr
 {
+  propagate substituted;
+  
   local subType::Type = 
     case e1.typerep of
       vectorType(_, s) -> s
@@ -593,6 +613,8 @@ top::Expr ::= e1::Expr e2::Expr
 abstract production subscriptAssignVector
 top::Expr ::= lhs::Expr index::Expr op::AssignOp rhs::Expr
 {
+  propagate substituted;
+  
   local subType::Type = 
     case lhs.typerep of
       vectorType(_, s) -> s
@@ -658,6 +680,8 @@ top::Expr ::= lhs::Expr index::Expr op::AssignOp rhs::Expr
 abstract production showVector
 top::Expr ::= e::Expr
 {
+  propagate substituted;
+  
   local subType::Type = 
     case e.typerep of
       vectorType(_, s) -> s
