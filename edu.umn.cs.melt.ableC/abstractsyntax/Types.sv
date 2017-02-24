@@ -551,6 +551,8 @@ top::BaseTypeExpr ::=
 {
   -- pp doesn't depend on env
   top.pp = text("hack");
+  -- substituted doesn't depend on env
+  top.substituted = error("hack");
   -- Forwarding based on env and returnType.
   forwards to if false then error(hackUnparse(top.env) ++ hackUnparse(top.returnType)) else hackUnusedType();
 }

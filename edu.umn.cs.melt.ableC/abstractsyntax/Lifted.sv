@@ -1,12 +1,13 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax;
 
-{- 
+{--
  - Extensions that want to specify declartions to lift to a global scope
  - do so by forwarding to the host production `injectGlobalDecls` (or one
  - of the corresponding ones for Type or BaseTypeExpr.)  
  - 
- - After extracting the `host` tree, there are no extension constructs,
- - but declarations need to be lifted to the proper place. 
+ - After extracting the `host` tree, there are no extension constructs, but
+ - the AST contains constructs that cannot be directly translated into C, for
+ - example declarations need to be lifted to the proper place. 
  - 
  - A pair of synthesized attributes can be used for this.
  - * `globalDecls`: the list of declarations to lift up
@@ -29,7 +30,6 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax;
  - It would be nice to move all of this to its own grammar, but aspecting
  - everything for lifted and globalDecls would be kind of a pain
  -}
-
 synthesized attribute lifted<a>::a;
 
 -- String is name of decl, could be used to remove duplicates
@@ -42,6 +42,8 @@ inherited attribute globalDeclEnv::[String];
 abstract production injectGlobalDecls
 top::Expr ::= globalDecls::[Pair<String Decl>] lifted::Expr
 {
+  propagate substituted;
+
   top.pp = pp"injectGlobalDecls {${ppImplode(pp"\n", decls.pps)}} (${lifted.pp})";
   top.host = injectGlobalDecls(zipWith(pair, names, unfoldDecl(decls.host)), lifted.host, location=top.location);
   
@@ -82,6 +84,8 @@ top::Expr ::= globalDecls::[Pair<String Decl>] lifted::Expr
 abstract production injectGlobalDeclsStmt
 top::Stmt ::= globalDecls::[Pair<String Decl>] lifted::Stmt
 {
+  propagate substituted;
+
   top.pp = pp"injectGlobalDeclsStmt {${ppImplode(pp"\n", decls.pps)}} (${lifted.pp})";
   top.host = injectGlobalDeclsStmt(zipWith(pair, names, unfoldDecl(decls.host)), lifted.host);
   
@@ -122,6 +126,8 @@ top::Stmt ::= globalDecls::[Pair<String Decl>] lifted::Stmt
 abstract production injectGlobalDeclsTypeExpr
 top::BaseTypeExpr ::= globalDecls::[Pair<String Decl>] lifted::BaseTypeExpr
 {
+  propagate substituted;
+
   top.pp = pp"injectGlobalDeclsTypeExpr {${ppImplode(pp"\n", decls.pps)}} (${lifted.pp})";
   top.host = injectGlobalDeclsTypeExpr(zipWith(pair, names, unfoldDecl(decls.host)), lifted.host);
   top.typerep = noncanonicalType(injectGlobalDeclsType(globalDecls, lifted.typerep));
