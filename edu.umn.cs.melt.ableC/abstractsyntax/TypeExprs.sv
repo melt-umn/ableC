@@ -69,11 +69,19 @@ top::TypeName ::= bty::BaseTypeExpr  mty::TypeModifierExpr
  -}
 nonterminal BaseTypeExpr with env, typerep, pp, host<BaseTypeExpr>, lifted<BaseTypeExpr>, errors, globalDecls, typeModifiers, defs, returnType, freeVariables;
 
-function errorTypeExpr
-BaseTypeExpr ::= msg::[Message]
+abstract production errorTypeExpr
+top::BaseTypeExpr ::= msg::[Message]
 {
-  return warnTypeExpr(msg, directTypeExpr(errorType()));
+  propagate host, lifted;
+  top.pp = pp"/*err*/";
+  top.typerep = errorType();
+  top.errors := msg;
+  top.globalDecls := [];
+  top.typeModifiers = [];
+  top.defs = [];
+  top.freeVariables = [];
 }
+
 {-- Raise messages about something syntactic but return ty as the reported type. -}
 abstract production warnTypeExpr
 top::BaseTypeExpr ::= msg::[Message]  ty::BaseTypeExpr

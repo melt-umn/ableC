@@ -5,6 +5,7 @@ imports silver:langutil:pp with implode as ppImplode;
 
 imports edu:umn:cs:melt:ableC:abstractsyntax;
 imports edu:umn:cs:melt:ableC:abstractsyntax:env;
+imports edu:umn:cs:melt:ableC:abstractsyntax:construction;
 imports edu:umn:cs:melt:ableC:abstractsyntax:overload as ovrld;
 
 {--
@@ -15,10 +16,9 @@ imports edu:umn:cs:melt:ableC:abstractsyntax:overload as ovrld;
  - which each can recive inherited attributes to see what is being substituted, and synthesised
  - attributes corresponding to the result of performing a substitution.  
  -
- - In every production that would potenitally want to perform a substitution, the incomming
- - subsitutions are folded into a Substitutions, decorated with the relavent parameters, and the
- - corresponding Maybe attribute is accessed, to possibly find a value for substituted different
- - than the current node.  
+ - In every production that would potenitally want to perform a substitution, the incoming
+ - subsitutions are decorated with the relavent parameters and the corresponding Maybe attribute
+ - is accessed, to possibly find a value for substituted different than the current node.  
  -
  - Since this transformation is env-independant, productions that forward based on the env must
  - propagate substituted.  It is recommended, however, that all productions do this anyway, similar
@@ -30,11 +30,11 @@ imports edu:umn:cs:melt:ableC:abstractsyntax:overload as ovrld;
  - substituted attribute on a host production.   
  -}
 
-autocopy attribute substitutions::[Substitution];
+autocopy attribute substitutions::Substitutions;
 synthesized attribute substituted<a>::a;
 
 autocopy attribute nameIn::String;
-synthesized attribute typedefNameSub::Maybe<BaseTypeExpr>;
+synthesized attribute typedefNameSub::Maybe<Type>;
 
 nonterminal Substitutions with nameIn, typedefNameSub;
 
@@ -59,15 +59,9 @@ top::Substitution ::=
 }
 
 abstract production typedefNameSubstitution
-top::Substitution ::= n::String bty::BaseTypeExpr
+top::Substitution ::= name::String type::Type
 {
-  top.typedefNameSub = if top.nameIn == n then just(bty) else nothing();
-}
-
-function foldSubstitution
-Substitutions ::= l::[Substitution]
-{
-  return foldr(consSubstitution, nilSubstitution(), l);
+  top.typedefNameSub = if top.nameIn == name then just(type) else nothing();
 }
 
 -- 'occurs on' definitions for every nonterminal
@@ -88,6 +82,7 @@ attribute substitutions occurs on
   Stmt,
   TypeName, BaseTypeExpr, TypeModifierExpr, TypeNames,
   Qualifier, SpecialSpecifier,
+  Type, ArrayType, FunctionType, TagType, NoncanonicalType,
   BuiltinType, RealType, IntegerType;
 
 attribute substituted<AsmStatement> occurs on AsmStatement;
@@ -145,6 +140,11 @@ attribute substituted<TypeModifierExpr> occurs on TypeModifierExpr;
 attribute substituted<TypeNames> occurs on TypeNames;
 attribute substituted<Qualifier> occurs on Qualifier;
 attribute substituted<SpecialSpecifier> occurs on SpecialSpecifier;
+attribute substituted<Type> occurs on Type;
+attribute substituted<ArrayType> occurs on ArrayType;
+attribute substituted<FunctionType> occurs on FunctionType;
+attribute substituted<TagType> occurs on TagType;
+attribute substituted<NoncanonicalType> occurs on NoncanonicalType;
 attribute substituted<BuiltinType> occurs on BuiltinType;
 attribute substituted<RealType> occurs on RealType;
 attribute substituted<IntegerType> occurs on IntegerType;
