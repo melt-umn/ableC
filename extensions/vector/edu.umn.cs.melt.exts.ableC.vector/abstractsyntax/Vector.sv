@@ -5,6 +5,7 @@ imports silver:langutil:pp with implode as ppImplode;
 
 imports edu:umn:cs:melt:ableC:abstractsyntax hiding vectorType;
 imports edu:umn:cs:melt:ableC:abstractsyntax:construction;
+imports edu:umn:cs:melt:ableC:abstractsyntax:construction:parsing;
 imports edu:umn:cs:melt:ableC:abstractsyntax:env;
 imports edu:umn:cs:melt:ableC:abstractsyntax:substitution;
 imports edu:umn:cs:melt:ableC:abstractsyntax:overload as ovrld;
@@ -20,7 +21,7 @@ Stmt ::= n::String sub::Type size::Expr
 {
   return
     injectGlobalDeclsStmt(
-      vectorTypedefGlobalDecls(sub),
+      mkVectorTypedefGlobalDecls(sub),
       seqStmt(
         mkDecl(
           n,
@@ -498,7 +499,7 @@ top::Expr ::= e::Expr
     
   local fwrd::Expr =
     injectGlobalDecls(
-      vectorTypedefGlobalDecls(subType),
+      mkVectorTypedefGlobalDecls(subType),
       memberExpr(
         memberExpr(e, true, name("_info", location=builtin), location=builtin),
         false,
@@ -522,7 +523,7 @@ top::Expr ::= e::Expr
     
   local fwrd::Expr =
     injectGlobalDecls(
-      vectorTypedefGlobalDecls(subType),
+      mkVectorTypedefGlobalDecls(subType),
       memberExpr(
         memberExpr(e, true, name("_info", location=builtin), location=builtin),
         false,
@@ -546,7 +547,7 @@ top::Expr ::= e::Expr
     
   local fwrd::Expr =
     injectGlobalDecls(
-      vectorTypedefGlobalDecls(subType),
+      mkVectorTypedefGlobalDecls(subType),
       memberExpr(
         memberExpr(e, true, name("_info", location=builtin), location=builtin),
         false,
@@ -573,7 +574,7 @@ top::Expr ::= e1::Expr e2::Expr
 
   local fwrd::Expr =
     injectGlobalDecls(
-      vectorTypedefGlobalDecls(subType),
+      mkVectorTypedefGlobalDecls(subType),
         stmtExpr(
           foldStmt([
             mkDecl(vecTempName, e1.typerep, e1, builtin),
@@ -627,7 +628,7 @@ top::Expr ::= lhs::Expr index::Expr op::AssignOp rhs::Expr
   
   local fwrd::Expr =
     injectGlobalDecls(
-      vectorTypedefGlobalDecls(subType),
+      mkVectorTypedefGlobalDecls(subType),
         stmtExpr(
           foldStmt([
             mkDecl(vecTempName, lhs.typerep, lhs, builtin),

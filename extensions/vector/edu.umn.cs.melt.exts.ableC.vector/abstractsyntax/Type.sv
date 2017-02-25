@@ -1,50 +1,19 @@
 grammar edu:umn:cs:melt:exts:ableC:vector:abstractsyntax;
 
- -- TODO: Template this instead, someday
-function vectorTypedefGlobalDecls
+function mkVectorTypedefGlobalDecls
 [Pair<String Decl>] ::= sub::Type
 {
+  local vectorTypedefDecl::Decl = parseDecl(s"""
+typedef struct __attribute__((refId("edu:umn:cs:melt:exts:ableC:vector:_vector_${sub.mangledName}_s"))) _vector_${sub.mangledName}_s {
+  struct _vector_info _info;
+  a *_contents;
+} *_vector_${sub.mangledName};
+""");
+
   return
     [pair(
       "_vector_" ++ sub.mangledName,
-      typedefDecls(
-        [],
-        structTypeExpr(
-          [],
-          structDecl(
-            [gccAttribute(
-               consAttrib(
-                 appliedAttrib(
-                   attribName(name("refId", location=builtin)),
-                   consExpr(
-                     stringLiteral(
-                       s"\"edu:umn:cs:melt:exts:ableC:vector:_vector_${sub.mangledName}_s\"",
-                       location=builtin),
-                     nilExpr())),
-                 nilAttrib()))],
-            justName(name("_vector_" ++ sub.mangledName ++ "_s", location=builtin)),
-            consStructItem(
-              structItem(
-                [],
-                tagReferenceTypeExpr([], structSEU(), name("_vector_info", location=builtin)),
-                consStructDeclarator(
-                  structField(name("_info", location=builtin), baseTypeExpr(), []),
-                  nilStructDeclarator())),
-              consStructItem(
-                structItem(
-                  [], directTypeExpr(sub),
-                  consStructDeclarator(
-                    structField(name("_contents", location=builtin), pointerTypeExpr([], baseTypeExpr()), []),
-                    nilStructDeclarator())),
-                nilStructItem())),
-            location=builtin)),
-        consDeclarator(
-          declarator(
-            name("_vector_" ++ sub.mangledName, location=builtin),
-            pointerTypeExpr([], baseTypeExpr()),
-            [],
-            nothingInitializer()),
-          nilDeclarator())))];
+      subTypedefDecl(["a"], [sub], vectorTypedefDecl))];
 }
 
 abstract production vectorTypeExpr 
@@ -130,7 +99,7 @@ top::Type ::= qs::[Qualifier] sub::Type
   forwards to
     noncanonicalType(
       injectGlobalDeclsType(
-        vectorTypedefGlobalDecls(sub),
+        mkVectorTypedefGlobalDecls(sub),
         noncanonicalType(
           typedefType(
             qs,
