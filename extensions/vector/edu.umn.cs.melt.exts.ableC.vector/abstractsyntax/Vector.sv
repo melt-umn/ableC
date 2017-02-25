@@ -17,65 +17,25 @@ global builtin::Location = builtinLoc("vector");
 
 -- Vector initialization
 function mkInitVectorStmt
-Stmt ::= n::String sub::Type size::Expr
+Stmt ::= n::String subType::Type size::Expr
 {
+  -- TODO: Making this global and substituting for n and the struct name would be more efficient
+  -- but less readable.  
+  local initVectorStmt::Stmt = parseStmt(s"""
+proto_typedef vec_type;
+proto_typedef sub_type;
+vec_type ${n} = GC_malloc(sizeof(struct _vector_${subType.mangledName}_s));
+_init_vector(&(${n}->_info), (void**)&(${n}->_contents), sizeof(sub_type), size);
+""");
+
   return
     injectGlobalDeclsStmt(
-      mkVectorTypedefGlobalDecls(sub),
-      seqStmt(
-        mkDecl(
-          n,
-          vectorType([], sub),
-          directCallExpr(
-            name("GC_malloc", location=builtin),
-            consExpr(
-              unaryExprOrTypeTraitExpr(
-                sizeofOp(location=builtin),
-                typeNameExpr(
-                  typeName(
-                    directTypeExpr(
-                      tagType(
-                        [],
-                        refIdTagType(
-                          structSEU(),
-                          "_vector_" ++ sub.mangledName ++ "_s",
-                          "edu:umn:cs:melt:exts:ableC:vector:_vector_" ++ sub.mangledName ++ "_s"))),
-                    baseTypeExpr())),
-                location=builtin),
-              nilExpr()),
-            location=builtin),
-          builtin),
-        exprStmt(
-          directCallExpr(
-            name("_init_vector", location=builtin),
-            consExpr(
-              mkAddressOf(
-                memberExpr(
-                  declRefExpr(name(n, location=builtin), location=builtin),
-                  true,
-                  name("_info", location=builtin),
-                  location=builtin),
-                builtin),
-              consExpr(
-                explicitCastExpr(
-                  typeName(
-                    directTypeExpr(builtinType([], voidType())),
-                    pointerTypeExpr([], pointerTypeExpr([], baseTypeExpr()))),
-                  mkAddressOf(
-                    memberExpr(
-                      declRefExpr(name(n, location=builtin), location=builtin),
-                      true,
-                      name("_contents", location=builtin),
-                      location=builtin),
-                    builtin),
-                  location=builtin),
-                consExpr(
-                  unaryExprOrTypeTraitExpr(
-                    sizeofOp(location=builtin),
-                    typeNameExpr(typeName(directTypeExpr(sub), baseTypeExpr())),
-                    location=builtin),
-                  consExpr(size, nilExpr())))),
-          location=builtin))));
+      mkVectorTypedefGlobalDecls(subType),
+      subStmt(
+        [typedefSubstitution("vec_type", vectorType([], subType)),
+         typedefSubstitution("sub_type", subType),
+         declRefSubstitution("size", size)],
+        initVectorStmt));
 }
 
 abstract production initVector
@@ -132,6 +92,22 @@ top::Exprs ::=
   top.vectorInitTrans = nullStmt();
 }
 
+global copyVectorFunDecl::Decls = parseDecls(s"""
+proto_typedef size_t;
+proto_typedef vec_type;
+proto_typedef sub_type;
+static vec_type fun_name(vec_type vec) {
+  vec_type result = GC_malloc(sizeof(struct struct_name));
+  _init_vector(&(result->_info), (void**)&(result->_contents), sizeof(sub_type), vec.length);
+  
+  for (size_t i = 0; i < vec.length; i++) {
+    result[i] = vec[i];
+  }
+  
+  return result;
+}
+""");
+
 abstract production copyVector
 top::Expr ::= e::Expr
 {
@@ -143,85 +119,19 @@ top::Expr ::= e::Expr
     | _ -> error("copyVector where lhs is non-vector")
     end;
   
+  -- TODO: Use a templated function in the header file to do this instead
   local funName::String = "_copy_vector_" ++ subType.mangledName;
-
-  local globalDecls::[Pair<String Decl>] = -- TODO: Template this instead, someday
-    [pair(
-      funName,
-      functionDeclaration(
-        functionDecl(
-          [staticStorageClass()],
-          [],
-          directTypeExpr(vectorType([], subType)),
-          functionTypeExprWithArgs(
-            baseTypeExpr(),
-            consParameters(
-              parameterDecl(
-                [],
-                directTypeExpr(e.typerep),
-                baseTypeExpr(),
-                justName(name("vec", location=builtin)),
-                []),
-              nilParameters()),
-            false),
-          name(funName, location=builtin),
-          [],
-          nilDecl(),
-          foldStmt([
-            mkInitVectorStmt(
-              "result",
-              subType,
-              lengthVector(
-                declRefExpr(name("vec", location=builtin), location=builtin),
-                location=builtin)),
-            seqStmt(
-              declStmt( 
-                variableDecls(
-                  [], [],
-                  typedefTypeExpr([], name("size_t", location=builtin)),
-                  consDeclarator( 
-                    declarator(
-                      name("i", location=builtin),
-                      baseTypeExpr(),
-                      [], 
-                      nothingInitializer()) , 
-                    nilDeclarator()))),
-              forStmt(
-                justExpr(
-                  binaryOpExpr(
-                    declRefExpr(name("i", location=builtin), location=builtin),
-                    assignOp(eqOp(location=builtin), location=builtin),
-                    mkIntConst(0, builtin),
-                    location=builtin)),
-                justExpr(
-                  binaryOpExpr(
-                    declRefExpr(name("i", location=builtin), location=builtin),
-                    compareOp(ltOp(location=builtin), location=builtin),
-                    lengthVector(
-                      declRefExpr(name("vec", location=builtin), location=builtin),
-                      location=builtin),
-                    location=builtin)),
-                justExpr(
-                  unaryOpExpr(
-                    postIncOp(location=builtin),
-                    declRefExpr(name("i", location=builtin), location=builtin),
-                    location=builtin)),
-                exprStmt(
-                  subscriptAssignVector(
-                    declRefExpr(name("result", location=builtin), location=builtin),
-                    declRefExpr(name("i", location=builtin), location=builtin),
-                    eqOp(location=builtin),
-                    subscriptVector(
-                      declRefExpr(name("vec", location=builtin), location=builtin),
-                      declRefExpr(name("i", location=builtin), location=builtin),
-                      location=builtin),
-                    location=builtin)))),
-            returnStmt(
-              justExpr(declRefExpr(name("result", location=builtin), location=builtin)))]))))];
 
   local fwrd::Expr =
     injectGlobalDecls(
-      globalDecls,
+      [pair(
+        funName,
+        subDecl(
+          [nameSubstitution("fun_name", name(funName, location=builtin)),
+           nameSubstitution("struct_name", name(s"_vector_${subType.mangledName}_s", location=builtin)),
+           typedefSubstitution("vec_type", vectorType([], subType)),
+           typedefSubstitution("sub_type", subType)],
+          decls(copyVectorFunDecl)))],
       directCallExpr(
         name(funName, location=builtin),
         consExpr(e, nilExpr()),
@@ -231,7 +141,6 @@ top::Expr ::= e::Expr
   forwards to mkErrorCheck(checkVectorHeaderDef("_init_vector", top.location, top.env), fwrd);
 }
 
--- Vector append
 abstract production appendVector
 top::Expr ::= e1::Expr e2::Expr
 {
@@ -245,7 +154,7 @@ top::Expr ::= e1::Expr e2::Expr
     
   local vecTempName::String = "_vec_" ++ toString(genInt());
   
-  local fwrd::Expr =
+  forwards to 
     stmtExpr(
       mkDecl(vecTempName, vectorType([], subType), copyVector(e1, location=builtin), builtin),
       appendAssignVector(
@@ -253,9 +162,21 @@ top::Expr ::= e1::Expr e2::Expr
         e2,
         location=builtin),
       location=builtin);
-  
-  forwards to mkErrorCheck(checkVectorHeaderDef("_init_vector", top.location, top.env), fwrd);
 }
+
+global appendAssignVectorFunDecl::Decls = parseDecls(s"""
+proto_typedef size_t;
+proto_typedef vec_type;
+static vec_type fun_name(vec_type vec1, vec_type vec2) {
+  size_t vec1_length = vec1.length;
+
+  for (size_t i = 0; i < vec2.length; i++) {
+    vec1[i + vec1_length] = vec2[i];
+  }
+  
+  return vec1;
+}
+""");
 
 abstract production appendAssignVector
 top::Expr ::= e1::Expr e2::Expr
@@ -270,109 +191,36 @@ top::Expr ::= e1::Expr e2::Expr
   
   local funName::String = "_append_to_vector_" ++ subType.mangledName;
 
-  local globalDecls::[Pair<String Decl>] = -- TODO: Template this instead, someday
-    [pair(
-      funName,
-      functionDeclaration(
-        functionDecl(
-          [staticStorageClass()],
-          [],
-          directTypeExpr(vectorType([], subType)),
-          functionTypeExprWithArgs(
-            baseTypeExpr(),
-            consParameters(
-              parameterDecl(
-                [],
-                directTypeExpr(e1.typerep),
-                baseTypeExpr(),
-                justName(name("vec1", location=builtin)),
-                []),
-              consParameters(
-                parameterDecl(
-                  [],
-                  directTypeExpr(e2.typerep),
-                  baseTypeExpr(),
-                  justName(name("vec2", location=builtin)),
-                  []),
-                nilParameters())),
-            false),
-          name(funName, location=builtin),
-          [],
-          nilDecl(),
-          foldStmt([
-            declStmt( 
-              variableDecls(
-                [], [],
-                typedefTypeExpr([], name("size_t", location=builtin)),
-                consDeclarator( 
-                  declarator(
-                    name("vec1_length", location=builtin),
-                    baseTypeExpr(),
-                    [], 
-                    justInitializer(
-                      exprInitializer(
-                        lengthVector(
-                        declRefExpr(name("vec1", location=builtin), location=builtin),
-                        location=builtin)))), 
-                  nilDeclarator()))),
-            declStmt( 
-              variableDecls(
-                [], [],
-                typedefTypeExpr([], name("size_t", location=builtin)),
-                consDeclarator( 
-                  declarator(
-                    name("i", location=builtin),
-                    baseTypeExpr(),
-                    [], 
-                    nothingInitializer()) , 
-                  nilDeclarator()))),
-            forStmt(
-              justExpr(
-                binaryOpExpr(
-                  declRefExpr(name("i", location=builtin), location=builtin),
-                  assignOp(eqOp(location=builtin), location=builtin),
-                  mkIntConst(0, builtin),
-                  location=builtin)),
-              justExpr(
-                binaryOpExpr(
-                  declRefExpr(name("i", location=builtin), location=builtin),
-                  compareOp(ltOp(location=builtin), location=builtin),
-                  lengthVector(
-                    declRefExpr(name("vec2", location=builtin), location=builtin),
-                    location=builtin),
-                  location=builtin)),
-              justExpr(
-                unaryOpExpr(
-                  postIncOp(location=builtin),
-                  declRefExpr(name("i", location=builtin), location=builtin),
-                  location=builtin)),
-              exprStmt(
-                subscriptAssignVector(
-                  declRefExpr(name("vec1", location=builtin), location=builtin),
-                  mkAdd(
-                    declRefExpr(name("i", location=builtin), location=builtin),
-                    declRefExpr(name("vec1_length", location=builtin), location=builtin),
-                    builtin),
-                  eqOp(location=builtin),
-                  subscriptVector(
-                    declRefExpr(name("vec2", location=builtin), location=builtin),
-                    declRefExpr(name("i", location=builtin), location=builtin),
-                    location=builtin),
-                  location=builtin))),
-            returnStmt(
-              justExpr(declRefExpr(name("vec1", location=builtin), location=builtin)))]))))];
-
-  local fwrd::Expr =
+  forwards to
     injectGlobalDecls(
-      globalDecls,
+      [pair(
+        funName,
+        subDecl(
+          [nameSubstitution("fun_name", name(funName, location=builtin)),
+           typedefSubstitution("vec_type", vectorType([], subType))],
+          decls(appendAssignVectorFunDecl)))],
       directCallExpr(
         name(funName, location=builtin),
         consExpr(e1, consExpr(e2, nilExpr())),
         location=builtin),
       location=builtin);
-  
-  forwards to mkErrorCheck(checkVectorHeaderDef("_init_vector", top.location, top.env), fwrd);
 }
+
+global eqVectorFunDecl::Decls = parseDecls(s"""
+proto_typedef size_t;
+proto_typedef vec_type;
+static _Bool fun_name(vec_type vec1, vec_type vec2) {
+  if (vec1.length != vec2.length)
+    return 0;
+
+  for (size_t i = 0; i < vec1.length; i++) {
+    if (vec1[i] != vec2[i])
+      return 0;
+  }
+  
+  return 1;
+}
+""");
 
 abstract production eqVector
 top::Expr ::= e1::Expr e2::Expr
@@ -386,104 +234,20 @@ top::Expr ::= e1::Expr e2::Expr
     end;
   
   local funName::String = "_eq_vector_" ++ subType.mangledName;
-
-  local globalDecls::[Pair<String Decl>] = -- TODO: Template this instead, someday
-    [pair(
-      funName,
-      functionDeclaration(
-        functionDecl(
-          [staticStorageClass()],
-          [],
-          directTypeExpr(builtinType([], boolType())),
-          functionTypeExprWithArgs(
-            baseTypeExpr(),
-            consParameters(
-              parameterDecl(
-                [],
-                directTypeExpr(e1.typerep),
-                baseTypeExpr(),
-                justName(name("vec1", location=builtin)),
-                []),
-              consParameters(
-                parameterDecl(
-                  [],
-                  directTypeExpr(e2.typerep),
-                  baseTypeExpr(),
-                  justName(name("vec2", location=builtin)),
-                  []),
-                nilParameters())),
-            false),
-          name(funName, location=builtin),
-          [],
-          nilDecl(),
-          foldStmt([
-            ifStmtNoElse(
-              binaryOpExpr(
-                lengthVector(
-                  declRefExpr(name("vec1", location=builtin), location=builtin),
-                  location=builtin),
-                compareOp(notEqualsOp(location=builtin), location=builtin),
-                lengthVector(
-                  declRefExpr(name("vec2", location=builtin), location=builtin),
-                  location=builtin),
-                location=builtin),
-              returnStmt(justExpr(mkIntConst(0, builtin)))),
-            declStmt(
-              variableDecls(
-                [], [],
-                typedefTypeExpr([], name("size_t", location=builtin)),
-                consDeclarator( 
-                  declarator(
-                    name("i", location=builtin),
-                    baseTypeExpr(),
-                    [], 
-                    nothingInitializer()) , 
-                  nilDeclarator()))),
-            forStmt(
-              justExpr(
-                binaryOpExpr(
-                  declRefExpr(name("i", location=builtin), location=builtin),
-                  assignOp(eqOp(location=builtin), location=builtin),
-                  mkIntConst(0, builtin),
-                  location=builtin)),
-              justExpr(
-                binaryOpExpr(
-                  declRefExpr(name("i", location=builtin), location=builtin),
-                  compareOp(ltOp(location=builtin), location=builtin),
-                  lengthVector(
-                    declRefExpr(name("vec1", location=builtin), location=builtin),
-                    location=builtin),
-                  location=builtin)),
-              justExpr(
-                unaryOpExpr(
-                  postIncOp(location=builtin),
-                  declRefExpr(name("i", location=builtin), location=builtin),
-                  location=builtin)),
-              ifStmtNoElse(
-                binaryOpExpr(
-                  subscriptVector(
-                    declRefExpr(name("vec1", location=builtin), location=builtin),
-                    declRefExpr(name("i", location=builtin), location=builtin),
-                    location=builtin),
-                  compareOp(notEqualsOp(location=builtin), location=builtin),
-                  subscriptVector(
-                    declRefExpr(name("vec2", location=builtin), location=builtin),
-                    declRefExpr(name("i", location=builtin), location=builtin),
-                    location=builtin),
-                  location=builtin),
-                returnStmt(justExpr(mkIntConst(0, builtin))))),
-            returnStmt(justExpr(mkIntConst(1, builtin)))]))))];
-
-  local fwrd::Expr =
+  
+  forwards to
     injectGlobalDecls(
-      globalDecls,
+      [pair(
+        funName,
+        subDecl(
+          [nameSubstitution("fun_name", name(funName, location=builtin)),
+           typedefSubstitution("vec_type", vectorType([], subType))],
+          decls(eqVectorFunDecl)))],
       directCallExpr(
         name(funName, location=builtin),
         consExpr(e1, consExpr(e2, nilExpr())),
         location=builtin),
       location=builtin);
-  
-  forwards to mkErrorCheck(checkVectorHeaderDef("_init_vector", top.location, top.env), fwrd);
 }
 
 abstract production lengthVector
@@ -558,6 +322,15 @@ top::Expr ::= e::Expr
   forwards to mkErrorCheck(checkVectorHeaderDef("_init_vector", top.location, top.env), fwrd);
 }
 
+global subscriptVectorExpr::Expr = parseExpr(s"""
+({proto_typedef vec_type;
+  proto_typedef size_t;
+  vec_type temp_vec = vec;
+  size_t temp_index = index;
+  _check_index_vector(temp_vec->_info, (void*)temp_vec->_contents, temp_index);
+  temp_vec->_contents[temp_index];})
+""");
+
 abstract production subscriptVector
 top::Expr ::= e1::Expr e2::Expr
 {
@@ -575,42 +348,26 @@ top::Expr ::= e1::Expr e2::Expr
   local fwrd::Expr =
     injectGlobalDecls(
       mkVectorTypedefGlobalDecls(subType),
-        stmtExpr(
-          foldStmt([
-            mkDecl(vecTempName, e1.typerep, e1, builtin),
-            mkDecl("_index_", e2.typerep, e2, builtin),
-            exprStmt(
-              directCallExpr(
-                name("_check_index_vector", location=builtin),
-                consExpr(
-                  memberExpr(
-                    declRefExpr(name(vecTempName, location=builtin), location=builtin),
-                    true,
-                    name("_info", location=builtin),
-                    location=builtin),
-                  consExpr(
-                    memberExpr(
-                      declRefExpr(name(vecTempName, location=builtin), location=builtin),
-                      true,
-                      name("_contents", location=builtin),
-                      location=builtin),
-                    consExpr(
-                      declRefExpr(name("_index_", location=builtin), location=builtin),
-                      nilExpr()))),
-                location=top.location))]),
-          arraySubscriptExpr(
-            memberExpr(
-              declRefExpr(name(vecTempName, location=builtin), location=builtin),
-              true,
-              name("_contents", location=builtin),
-              location=builtin),
-            declRefExpr(name("_index_", location=builtin), location=builtin),
-            location=builtin),
-          location=top.location),
-        location=top.location);
+      subExpr(
+        [typedefSubstitution("vec_type", vectorType([], subType)),
+         nameSubstitution("temp_vec", name(vecTempName, location=builtin)),
+         nameSubstitution("temp_index", name(indexTempName, location=builtin)),
+         declRefSubstitution("vec", e1),
+         declRefSubstitution("index", e2)],
+        subscriptVectorExpr),
+      location=top.location);
   
   forwards to mkErrorCheck(checkVectorHeaderDef("_check_index_vector", top.location, top.env), fwrd);
 }
+
+global subscriptAssignVectorExpr::Expr = parseExpr(s"""
+({proto_typedef vec_type;
+  proto_typedef size_t;
+  vec_type temp_vec = vec;
+  size_t temp_index = index;
+  _maybe_grow_vector_by_one(&temp_vec->_info, (void**)&temp_vec->_contents, temp_index);
+  subscript_assign_contents_index;})
+""");
 
 abstract production subscriptAssignVector
 top::Expr ::= lhs::Expr index::Expr op::AssignOp rhs::Expr
@@ -625,59 +382,53 @@ top::Expr ::= lhs::Expr index::Expr op::AssignOp rhs::Expr
     
   local vecTempName::String = "_vec_" ++ toString(genInt());
   local indexTempName::String = "_index_" ++ toString(genInt());
-  
+
   local fwrd::Expr =
     injectGlobalDecls(
       mkVectorTypedefGlobalDecls(subType),
-        stmtExpr(
-          foldStmt([
-            mkDecl(vecTempName, lhs.typerep, lhs, builtin),
-            mkDecl(indexTempName, index.typerep, index, builtin),
-            exprStmt(
-              directCallExpr(
-                name("_maybe_grow_vector_by_one", location=builtin),
-                consExpr(
-                  mkAddressOf(
-                    memberExpr(
-                      declRefExpr(name(vecTempName, location=builtin), location=builtin),
-                      true,
-                      name("_info", location=builtin),
-                      location=builtin),
-                    builtin),
-                  consExpr(
-                    explicitCastExpr(
-                      typeName(
-                        directTypeExpr(builtinType([], voidType())),
-                        pointerTypeExpr([], pointerTypeExpr([], baseTypeExpr()))),
-                      mkAddressOf(
-                        memberExpr(
-                          declRefExpr(name(vecTempName, location=builtin), location=builtin),
-                          true,
-                          name("_contents", location=builtin),
-                        location=builtin),
-                        builtin),
-                      location=builtin),
-                    consExpr(
-                      declRefExpr(name(indexTempName, location=builtin), location=builtin),
-                      nilExpr()))),
-                location=top.location))]),
-            binaryOpExpr(
-              arraySubscriptExpr(
-                memberExpr(
-                  declRefExpr(name(vecTempName, location=builtin), location=builtin),
-                  true,
-                  name("_contents", location=builtin),
-                  location=builtin),
-                declRefExpr(name(indexTempName, location=builtin), location=builtin),
-                location=builtin),
-              assignOp(op, location=builtin),
-              rhs,
-              location=builtin),
-          location=top.location),
-        location=top.location);
+      subExpr(
+        [typedefSubstitution("vec_type", vectorType([], subType)),
+         nameSubstitution("temp_vec", name(vecTempName, location=builtin)),
+         nameSubstitution("temp_index", name(indexTempName, location=builtin)),
+         declRefSubstitution("vec", lhs),
+         declRefSubstitution("index", index),
+         declRefSubstitution(
+           "subscript_assign_contents_index",
+           binaryOpExpr(
+             arraySubscriptExpr(
+               memberExpr(
+                 declRefExpr(name(vecTempName, location=builtin), location=builtin),
+                 true,
+                 name("_contents", location=builtin),
+                 location=builtin),
+               declRefExpr(name(indexTempName, location=builtin), location=builtin),
+               location=builtin),
+             assignOp(op, location=builtin),
+             rhs,
+             location=builtin))],
+        subscriptAssignVectorExpr),
+      location=top.location);
   
   forwards to mkErrorCheck(checkVectorHeaderDef("_maybe_grow_vector_by_one", top.location, top.env), fwrd);
 }
+
+global showVectorFunDecl::Decls = parseDecls(s"""
+proto_typedef size_t;
+proto_typedef vec_type;
+proto_typedef str_type;
+static str_type fun_name(vec_type vec) {
+  if (vec.length == 0)
+    return "[]";
+    
+  str_type result = "[" + show_vec_0;
+  
+  for (size_t i = 1; i < vec.length; i++) {
+    result += ", " + show_vec_i;
+  }
+  
+  return result + "]";
+}
+""");
 
 abstract production showVector
 top::Expr ::= e::Expr
@@ -691,118 +442,37 @@ top::Expr ::= e::Expr
     end;
   
   local funName::String = "_show_vector_" ++ subType.mangledName;
-
-  local globalDecls::[Pair<String Decl>] = -- TODO: Template this instead, someday
-    [pair(
-      funName,
-      functionDeclaration(
-        functionDecl(
-          [staticStorageClass()],
-          [],
-          directTypeExpr(stringType()),
-          functionTypeExprWithArgs(
-            baseTypeExpr(),
-            consParameters(
-              parameterDecl(
-                [],
-                directTypeExpr(e.typerep),
-                baseTypeExpr(),
-                justName(name("vec", location=builtin)),
-                []),
-              nilParameters()),
-            false),
-          name(funName, location=builtin),
-          [],
-          nilDecl(),
-          foldStmt([
-            ifStmtNoElse(
-              binaryOpExpr(
-                lengthVector(
-                  declRefExpr(name("vec", location=builtin), location=builtin),
-                  location=builtin),
-                compareOp(equalsOp(location=builtin), location=builtin),
-                mkIntConst(0, builtin),
-                location=builtin),
-              returnStmt(justExpr(stringLiteral("\"[]\"", location=builtin)))),
-            mkDecl(
-              "result",
-              stringType(),
-              appendString(
-                stringLiteral("\"[\"", location=builtin),
-                showExpr(
-                  subscriptVector(
-                    declRefExpr(name("vec", location=builtin), location=builtin),
-                    mkIntConst(0, builtin),
-                    location=builtin),
-                  location=builtin),
-                location=builtin),
-              builtin),
-            seqStmt(
-              declStmt( 
-                variableDecls(
-                  [], [],
-                  typedefTypeExpr([], name("size_t", location=builtin)),
-                  consDeclarator( 
-                    declarator(
-                      name("i", location=builtin),
-                      baseTypeExpr(),
-                      [],
-                      nothingInitializer()), 
-                    nilDeclarator()))),
-              forStmt(
-                justExpr(
-                  binaryOpExpr(
-                    declRefExpr(name("i", location=builtin), location=builtin),
-                    assignOp(eqOp(location=builtin), location=builtin),
-                    mkIntConst(1, builtin),
-                    location=builtin)),
-                justExpr(
-                  binaryOpExpr(
-                    declRefExpr(name("i", location=builtin), location=builtin),
-                    compareOp(ltOp(location=builtin), location=builtin),
-                    lengthVector(
-                      declRefExpr(name("vec", location=builtin), location=builtin),
-                      location=builtin),
-                    location=builtin)),
-                justExpr(
-                  unaryOpExpr(
-                    postIncOp(location=builtin),
-                    declRefExpr(name("i", location=builtin), location=builtin),
-                    location=builtin)),
-                exprStmt(
-                  binaryOpExpr(
-                    declRefExpr(name("result", location=builtin), location=builtin),
-                    assignOp(eqOp(location=builtin), location=builtin),
-                    appendString(
-                      declRefExpr(name("result", location=builtin), location=builtin),
-                      appendString(
-                        stringLiteral("\", \"", location=builtin),
-                        showExpr(
-                          subscriptVector(
-                            declRefExpr(name("vec", location=builtin), location=builtin),
-                            declRefExpr(name("i", location=builtin), location=builtin),
-                            location=builtin),
-                          location=builtin),
-                        location=builtin),
-                      location=builtin),
-                    location=builtin)))),
-            returnStmt(
-              justExpr(
-                appendString(
-                  declRefExpr(name("result", location=builtin), location=builtin),
-                  stringLiteral("\"]\"", location=builtin),
-                  location=builtin)))]))))];
   
-  local fwrd::Expr =
+  forwards to 
     injectGlobalDecls(
-      globalDecls,
+      [pair(
+        funName,
+        subDecl(
+          [nameSubstitution("fun_name", name(funName, location=builtin)),
+           typedefSubstitution("vec_type", vectorType([], subType)),
+           typedefSubstitution("str_type", stringType()),
+           declRefSubstitution(
+             "show_vec_0",
+             showExpr(
+               subscriptVector(
+                 declRefExpr(name("vec", location=builtin), location=builtin),
+                 mkIntConst(0, builtin),
+                 location=builtin),
+               location=builtin)),
+           declRefSubstitution(
+             "show_vec_i",
+             showExpr(
+               subscriptVector(
+                 declRefExpr(name("vec", location=builtin), location=builtin),
+                 declRefExpr(name("i", location=builtin), location=builtin),
+                 location=builtin),
+               location=builtin))],
+          decls(showVectorFunDecl)))],
       directCallExpr(
         name(funName, location=builtin),
         consExpr(e, nilExpr()),
         location=builtin),
       location=builtin);
-  
-  forwards to mkErrorCheck(checkVectorHeaderDef("_init_vector", top.location, top.env), fwrd);
 }
 
 -- Check the given env for the given function name
