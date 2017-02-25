@@ -143,7 +143,7 @@ abstract production builtinTypeExpr
 top::BaseTypeExpr ::= q::[Qualifier]  result::BuiltinType
 {
   propagate host, lifted;
-  top.pp = result.pp;
+  top.pp = cat(terminate( space(), map( (.pp), q ) ), result.pp);
   top.typerep = builtinType(q, result);
   top.errors := [];
   top.globalDecls := [];
