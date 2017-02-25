@@ -1,0 +1,150 @@
+grammar edu:umn:cs:melt:ableC:abstractsyntax:substitution;
+
+imports silver:langutil;
+imports silver:langutil:pp with implode as ppImplode;
+
+imports edu:umn:cs:melt:ableC:abstractsyntax;
+imports edu:umn:cs:melt:ableC:abstractsyntax:env;
+imports edu:umn:cs:melt:ableC:abstractsyntax:overload as ovrld;
+
+{--
+ - Framework for performin substitutions on ASTs
+ -
+ - The functor attribute 'substituted' computes a transformation to generate a tree with the
+ - rewrites specified by the 'substitutions' attribute.  substitutions is a list of Substitutions,
+ - which each can recive inherited attributes to see what is being substituted, and synthesised
+ - attributes corresponding to the result of performing a substitution.  
+ -
+ - In every production that would potenitally want to perform a substitution, the incomming
+ - subsitutions are folded into a Substitutions, decorated with the relavent parameters, and the
+ - corresponding Maybe attribute is accessed, to possibly find a value for substituted different
+ - than the current node.  
+ -
+ - Since this transformation is env-independant, productions that forward based on the env must
+ - propagate substituted.  It is recommended, however, that all productions do this anyway, similar
+ - to pp.  
+ - 
+ - Substitution is a closed nonterminal in the same way as Def, as extensions may wish to specify
+ - new substitutions to perform on extension prodctions.  However, extensions cannot specify a new
+ - substitution for a host production, since there is no way of specifying a new equation for the
+ - substituted attribute on a host production.   
+ -}
+
+autocopy attribute substitutions::[Substitution];
+synthesized attribute substituted<a>::a;
+
+autocopy attribute nameIn::String;
+synthesized attribute typedefNameSub::Maybe<BaseTypeExpr>;
+
+nonterminal Substitutions with nameIn, typedefNameSub;
+
+abstract production consSubstitution
+top::Substitutions ::= h::Substitution t::Substitutions
+{
+  top.typedefNameSub = orElse(h.typedefNameSub, t.typedefNameSub);
+}
+
+abstract production nilSubstitution
+top::Substitutions ::= 
+{
+  top.typedefNameSub = nothing();
+}
+
+closed nonterminal Substitution with nameIn, typedefNameSub;
+
+aspect default production
+top::Substitution ::= 
+{
+  top.typedefNameSub = nothing();
+}
+
+abstract production typedefNameSubstitution
+top::Substitution ::= n::String bty::BaseTypeExpr
+{
+  top.typedefNameSub = if top.nameIn == n then just(bty) else nothing();
+}
+
+function foldSubstitution
+Substitutions ::= l::[Substitution]
+{
+  return foldr(consSubstitution, nilSubstitution(), l);
+}
+
+-- 'occurs on' definitions for every nonterminal
+attribute substitutions occurs on
+  AsmStatement, AsmArgument, AsmClobbers, AsmOperands, AsmOperand,
+  Attribute, Attribs, Attrib, AttribName,
+  Decls, Decl, Declarators, Declarator, FunctionDecl, Parameters, ParameterDecl,
+    StructDecl, UnionDecl, EnumDecl, StructItemList, EnumItemList,
+    StructItem, StructDeclarators, StructDeclarator, EnumItem,
+  Expr, GenericAssocs, GenericAssoc,
+  BinOp, AssignOp, BoolOp, BitOp, CompareOp, NumOp,
+  MemberDesignator,
+  NumericConstant,
+  MaybeExpr, Exprs, ExprOrTypeName,
+  UnaryOp, UnaryTypeOp,
+  MaybeInitializer, Initializer, InitList, Init, Designator,
+  Name, MaybeName,
+  Stmt,
+  TypeName, BaseTypeExpr, TypeModifierExpr, TypeNames,
+  Qualifier, SpecialSpecifier,
+  BuiltinType, RealType, IntegerType;
+
+attribute substituted<AsmStatement> occurs on AsmStatement;
+attribute substituted<AsmArgument> occurs on AsmArgument;
+attribute substituted<AsmClobbers> occurs on AsmClobbers;
+attribute substituted<AsmOperands> occurs on AsmOperands;
+attribute substituted<AsmOperand> occurs on AsmOperand;
+attribute substituted<Attribute> occurs on Attribute;
+attribute substituted<Attribs> occurs on Attribs;
+attribute substituted<Attrib> occurs on Attrib;
+attribute substituted<AttribName> occurs on AttribName;
+attribute substituted<Decls> occurs on Decls;
+attribute substituted<Decl> occurs on Decl;
+attribute substituted<Declarators> occurs on Declarators;
+attribute substituted<Declarator> occurs on Declarator;
+attribute substituted<FunctionDecl> occurs on FunctionDecl;
+attribute substituted<Parameters> occurs on Parameters;
+attribute substituted<ParameterDecl> occurs on ParameterDecl;
+attribute substituted<StructDecl> occurs on StructDecl;
+attribute substituted<UnionDecl> occurs on UnionDecl;
+attribute substituted<EnumDecl> occurs on EnumDecl;
+attribute substituted<StructItemList> occurs on StructItemList;
+attribute substituted<EnumItemList> occurs on EnumItemList;
+attribute substituted<StructItem> occurs on StructItem;
+attribute substituted<StructDeclarators> occurs on StructDeclarators;
+attribute substituted<StructDeclarator> occurs on StructDeclarator;
+attribute substituted<EnumItem> occurs on EnumItem;
+attribute substituted<Expr> occurs on Expr;
+attribute substituted<GenericAssocs> occurs on GenericAssocs;
+attribute substituted<GenericAssoc> occurs on GenericAssoc;
+attribute substituted<BinOp> occurs on BinOp;
+attribute substituted<AssignOp> occurs on AssignOp;
+attribute substituted<BoolOp> occurs on BoolOp;
+attribute substituted<BitOp> occurs on BitOp;
+attribute substituted<CompareOp> occurs on CompareOp;
+attribute substituted<NumOp> occurs on NumOp;
+attribute substituted<MemberDesignator> occurs on MemberDesignator;
+attribute substituted<NumericConstant> occurs on NumericConstant;
+attribute substituted<MaybeExpr> occurs on MaybeExpr;
+attribute substituted<Exprs> occurs on Exprs;
+attribute substituted<ExprOrTypeName> occurs on ExprOrTypeName;
+attribute substituted<UnaryOp> occurs on UnaryOp;
+attribute substituted<UnaryTypeOp> occurs on UnaryTypeOp;
+attribute substituted<MaybeInitializer> occurs on MaybeInitializer;
+attribute substituted<Initializer> occurs on Initializer;
+attribute substituted<InitList> occurs on InitList;
+attribute substituted<Init> occurs on Init;
+attribute substituted<Designator> occurs on Designator;
+attribute substituted<Name> occurs on Name;
+attribute substituted<MaybeName> occurs on MaybeName;
+attribute substituted<Stmt> occurs on Stmt;
+attribute substituted<TypeName> occurs on TypeName;
+attribute substituted<BaseTypeExpr> occurs on BaseTypeExpr;
+attribute substituted<TypeModifierExpr> occurs on TypeModifierExpr;
+attribute substituted<TypeNames> occurs on TypeNames;
+attribute substituted<Qualifier> occurs on Qualifier;
+attribute substituted<SpecialSpecifier> occurs on SpecialSpecifier;
+attribute substituted<BuiltinType> occurs on BuiltinType;
+attribute substituted<RealType> occurs on RealType;
+attribute substituted<IntegerType> occurs on IntegerType;

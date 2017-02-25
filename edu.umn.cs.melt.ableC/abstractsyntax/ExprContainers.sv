@@ -1,6 +1,6 @@
 
 
-nonterminal MaybeExpr with pp, host<MaybeExpr>, lifted<MaybeExpr>, substituted<MaybeExpr>, isJust, errors, globalDecls, defs, env, substitutions, maybeTyperep, returnType, freeVariables, justTheExpr;
+nonterminal MaybeExpr with pp, host<MaybeExpr>, lifted<MaybeExpr>, isJust, errors, globalDecls, defs, env, maybeTyperep, returnType, freeVariables, justTheExpr;
 
 synthesized attribute maybeTyperep :: Maybe<Type>;
 synthesized attribute justTheExpr :: Maybe<Expr>;
@@ -8,7 +8,7 @@ synthesized attribute justTheExpr :: Maybe<Expr>;
 abstract production justExpr
 top::MaybeExpr ::= e::Expr
 {
-  propagate host, lifted, substituted;
+  propagate host, lifted;
   top.pp = e.pp;
   top.isJust = true;
   top.justTheExpr = just(e);
@@ -21,7 +21,7 @@ top::MaybeExpr ::= e::Expr
 abstract production nothingExpr
 top::MaybeExpr ::=
 {
-  propagate host, lifted, substituted;
+  propagate host, lifted;
   top.pp = notext();
   top.isJust = false;
   top.justTheExpr = nothing();
@@ -35,7 +35,7 @@ top::MaybeExpr ::=
 
 synthesized attribute pps :: [Document];
 
-nonterminal Exprs with pps, host<Exprs>, lifted<Exprs>, substituted<Exprs>, errors, globalDecls, defs, env, substitutions, expectedTypes, argumentPosition, callExpr, argumentErrors, typereps, count, callVariadic, returnType, freeVariables, appendedExprs, appendedRes;
+nonterminal Exprs with pps, host<Exprs>, lifted<Exprs>, errors, globalDecls, defs, env, expectedTypes, argumentPosition, callExpr, argumentErrors, typereps, count, callVariadic, returnType, freeVariables, appendedExprs, appendedRes;
 
 inherited attribute expectedTypes :: [Type];
 {-- Initially 1. -}
@@ -52,7 +52,7 @@ synthesized attribute appendedRes :: Exprs;
 abstract production consExpr
 top::Exprs ::= h::Expr  t::Exprs
 {
-  propagate host, lifted, substituted;
+  propagate host, lifted;
   top.pps = h.pp :: t.pps;
   top.errors := h.errors ++ t.errors;
   top.globalDecls := h.globalDecls ++ t.globalDecls;
@@ -82,7 +82,7 @@ top::Exprs ::= h::Expr  t::Exprs
 abstract production nilExpr
 top::Exprs ::=
 {
-  propagate host, lifted, substituted;
+  propagate host, lifted;
   top.pps = [];
   top.errors := [];
   top.globalDecls := [];
@@ -105,12 +105,12 @@ Exprs ::= e1::Exprs e2::Exprs
   return e1.appendedRes;
 }
 
-nonterminal ExprOrTypeName with pp, host<ExprOrTypeName>, lifted<ExprOrTypeName>, substituted<ExprOrTypeName>, errors, globalDecls, defs, env, substitutions, typerep, returnType, freeVariables;
+nonterminal ExprOrTypeName with pp, host<ExprOrTypeName>, lifted<ExprOrTypeName>, errors, globalDecls, defs, env, typerep, returnType, freeVariables;
 
 abstract production exprExpr
 top::ExprOrTypeName ::= e::Expr
 {
-  propagate host, lifted, substituted;
+  propagate host, lifted;
   top.pp = e.pp;
   top.errors := e.errors;
   top.globalDecls := e.globalDecls;
@@ -121,7 +121,7 @@ top::ExprOrTypeName ::= e::Expr
 abstract production typeNameExpr
 top::ExprOrTypeName ::= ty::TypeName
 {
-  propagate host, lifted, substituted;
+  propagate host, lifted;
   top.pp = ty.pp;
   top.errors := ty.errors;
   top.globalDecls := ty.globalDecls;

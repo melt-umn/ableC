@@ -20,7 +20,7 @@ synthesized attribute valueItem :: Decorated ValueItem;
 synthesized attribute labelItem :: Decorated LabelItem;
 synthesized attribute tagItem :: Decorated TagItem;
 
-nonterminal Name with location, name, pp, host<Name>, lifted<Name>, env, substitutions, valueLocalLookup, labelRedeclarationCheck, valueLookupCheck, labelLookupCheck, tagLookupCheck, valueItem, labelItem, tagItem, tagLocalLookup, tagHasForwardDcl, tagRefId, valueRedeclarationCheck, valueRedeclarationCheckNoCompatible;--, substituted<Name>
+nonterminal Name with location, name, pp, host<Name>, lifted<Name>, env, valueLocalLookup, labelRedeclarationCheck, valueLookupCheck, labelLookupCheck, tagLookupCheck, valueItem, labelItem, tagItem, tagLocalLookup, tagHasForwardDcl, tagRefId, valueRedeclarationCheck, valueRedeclarationCheckNoCompatible;--
 
 abstract production name
 top::Name ::= n::String
@@ -82,12 +82,12 @@ top::Name ::= n::String
 synthesized attribute maybename :: Maybe<Name>;
 synthesized attribute hasName :: Boolean;
 
-nonterminal MaybeName with maybename, pp, host<MaybeName>, lifted<MaybeName>, substituted<MaybeName>, env, substitutions, valueLocalLookup, tagLocalLookup, tagHasForwardDcl, tagRefId, hasName, valueRedeclarationCheckNoCompatible, valueRedeclarationCheck;
+nonterminal MaybeName with maybename, pp, host<MaybeName>, lifted<MaybeName>, env, valueLocalLookup, tagLocalLookup, tagHasForwardDcl, tagRefId, hasName, valueRedeclarationCheckNoCompatible, valueRedeclarationCheck;
 
 abstract production justName
 top::MaybeName ::= n::Name
 {
-  propagate host, lifted, substituted;
+  propagate host, lifted;
   top.pp = n.pp;
   top.maybename = just(n);
   top.hasName = true;
@@ -102,7 +102,7 @@ top::MaybeName ::= n::Name
 abstract production nothingName
 top::MaybeName ::=
 {
-  propagate host, lifted, substituted;
+  propagate host, lifted;
   top.pp = notext();
   top.maybename = nothing();
   top.hasName = false;
