@@ -1,5 +1,7 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax:substitution;
 
+-- TODO: TypeExprs with qualifiers lists should get .sustituted mapped over them - propagate doesn't do this by default
+
 aspect production typeName
 top::TypeName ::= bty::BaseTypeExpr  mty::TypeModifierExpr
 {
@@ -57,9 +59,9 @@ top::BaseTypeExpr ::= q::[Qualifier]  name::Name
   local substitutions::Substitutions = top.substitutions;
   substitutions.nameIn = name.name;
   top.substituted =
-    case substitutions.typedefNameSub of
+    case substitutions.typedefSub of
       just(sub) -> directTypeExpr(sub)
-    | nothing() -> top
+    | nothing() -> typedefTypeExpr(q, name.substituted)
     end;
 }
 aspect production atomicTypeExpr
@@ -107,7 +109,8 @@ top::TypeModifierExpr ::= result::TypeModifierExpr  args::Parameters  variadic::
 aspect production functionTypeExprWithoutArgs
 top::TypeModifierExpr ::= result::TypeModifierExpr  ids::[Name]
 {
-  propagate substituted;
+  top.substituted =
+    functionTypeExprWithoutArgs(result.substituted, map(\n::Name -> n.substituted, ids));
 }
 aspect production parenTypeExpr
 top::TypeModifierExpr ::= wrapped::TypeModifierExpr

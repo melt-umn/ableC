@@ -1,5 +1,8 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax:substitution;
 
+ -- TODO: Should we really bother performing substitutions on Types?  
+ -- Not possible in host AST anyway, can't think of why someone would want to do this.  
+
 aspect production errorType
 top::Type ::=
 {
@@ -108,9 +111,9 @@ top::NoncanonicalType ::= q::[Qualifier]  n::String  resolved::Type
   local substitutions::Substitutions = top.substitutions;
   substitutions.nameIn = n;
   top.substituted =
-    case substitutions.typedefNameSub of
+    case substitutions.typedefSub of
       just(sub) -> resolvedType(sub)
-    | nothing() -> top
+    | nothing() -> typedefType(q, n, resolved.substituted) -- TODO: handle nameSub
     end;
 }
 
