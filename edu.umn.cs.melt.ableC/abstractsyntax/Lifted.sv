@@ -42,8 +42,6 @@ inherited attribute globalDeclEnv::[String];
 abstract production injectGlobalDecls
 top::Expr ::= globalDecls::[Pair<String Decl>] lifted::Expr
 {
-  propagate substituted;
-
   top.pp = pp"injectGlobalDecls {${ppImplode(pp"\n", decls.pps)}} (${lifted.pp})";
   top.host = injectGlobalDecls(zipWith(pair, names, unfoldDecl(decls.host)), lifted.host, location=top.location);
   
@@ -84,8 +82,6 @@ top::Expr ::= globalDecls::[Pair<String Decl>] lifted::Expr
 abstract production injectGlobalDeclsStmt
 top::Stmt ::= globalDecls::[Pair<String Decl>] lifted::Stmt
 {
-  propagate substituted;
-
   top.pp = pp"injectGlobalDeclsStmt {${ppImplode(pp"\n", decls.pps)}} (${lifted.pp})";
   top.host = injectGlobalDeclsStmt(zipWith(pair, names, unfoldDecl(decls.host)), lifted.host);
   
@@ -126,8 +122,6 @@ top::Stmt ::= globalDecls::[Pair<String Decl>] lifted::Stmt
 abstract production injectGlobalDeclsTypeExpr
 top::BaseTypeExpr ::= globalDecls::[Pair<String Decl>] lifted::BaseTypeExpr
 {
-  propagate substituted;
-
   top.pp = pp"injectGlobalDeclsTypeExpr {${ppImplode(pp"\n", decls.pps)}} (${lifted.pp})";
   top.host = injectGlobalDeclsTypeExpr(zipWith(pair, names, unfoldDecl(decls.host)), lifted.host);
   top.typerep = noncanonicalType(injectGlobalDeclsType(globalDecls, lifted.typerep));
