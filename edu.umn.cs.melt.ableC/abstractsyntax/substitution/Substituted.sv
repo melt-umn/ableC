@@ -9,7 +9,7 @@ imports edu:umn:cs:melt:ableC:abstractsyntax:construction;
 imports edu:umn:cs:melt:ableC:abstractsyntax:overload as ovrld;
 
 {--
- - Framework for performin substitutions on ASTs
+ - Framework for performing substitutions on ASTs
  -
  - The functor attribute 'substituted' computes a transformation to generate a tree with the
  - rewrites specified by the 'substitutions' attribute.  substitutions is a list of Substitutions,
@@ -34,34 +34,57 @@ autocopy attribute substitutions::Substitutions;
 synthesized attribute substituted<a>::a;
 
 autocopy attribute nameIn::String;
-synthesized attribute typedefNameSub::Maybe<Type>;
+synthesized attribute nameSub::Maybe<Name>;
+synthesized attribute typedefSub::Maybe<Type>;
+synthesized attribute declRefSub::Maybe<Expr>;
 
-nonterminal Substitutions with nameIn, typedefNameSub;
+nonterminal Substitutions with nameIn, nameSub, typedefSub, declRefSub;
 
 abstract production consSubstitution
 top::Substitutions ::= h::Substitution t::Substitutions
 {
-  top.typedefNameSub = orElse(h.typedefNameSub, t.typedefNameSub);
+  top.nameSub = orElse(h.nameSub, t.nameSub);
+  top.typedefSub = orElse(h.typedefSub, t.typedefSub);
+  top.declRefSub = orElse(h.declRefSub, t.declRefSub);
 }
 
 abstract production nilSubstitution
 top::Substitutions ::= 
 {
-  top.typedefNameSub = nothing();
+  top.nameSub = nothing();
+  top.typedefSub = nothing();
+  top.declRefSub = nothing();
 }
 
-closed nonterminal Substitution with nameIn, typedefNameSub;
+closed nonterminal Substitution with nameIn, nameSub, typedefSub, declRefSub;
 
 aspect default production
 top::Substitution ::= 
 {
-  top.typedefNameSub = nothing();
+  top.nameSub = nothing();
+  top.typedefSub = nothing();
+  top.declRefSub = nothing();
 }
 
-abstract production typedefNameSubstitution
+-- Substitutes a name for another name in all places
+abstract production nameSubstitution
+top::Substitution ::= name::String sub::Name
+{
+  top.nameSub = if top.nameIn == name then just(sub) else nothing();
+}
+
+-- Substitutes a typedef name for a type
+abstract production typedefSubstitution
 top::Substitution ::= name::String type::Type
 {
-  top.typedefNameSub = if top.nameIn == name then just(type) else nothing();
+  top.typedefSub = if top.nameIn == name then just(type) else nothing();
+}
+
+-- Substitutes a value name for an expression
+abstract production declRefSubstitution
+top::Substitution ::= name::String sub::Expr
+{
+  top.declRefSub = if top.nameIn == name then just(sub) else nothing();
 }
 
 -- 'occurs on' definitions for every nonterminal

@@ -20,7 +20,13 @@ top::Expr ::= msg::[Message] e::Expr
 aspect production declRefExpr
 top::Expr ::= id::Name
 {
-  propagate substituted;
+  local substitutions::Substitutions = top.substitutions;
+  substitutions.nameIn = id.name;
+  top.substituted =
+    case substitutions.declRefSub of
+      just(sub) -> sub
+    | nothing() -> declRefExpr(id.substituted, location=top.location)
+    end;
 }
 aspect production stringLiteral
 top::Expr ::= l::String
@@ -52,7 +58,6 @@ top::Expr ::= f::Name  a::Exprs
 {
   propagate substituted;
 }
-
 aspect production callExpr
 top::Expr ::= f::Expr  a::Exprs
 {
@@ -93,7 +98,6 @@ top::Expr ::=
 {
   propagate substituted;
 }
-
 aspect production genericSelectionExpr
 top::Expr ::= e::Expr  gl::GenericAssocs  def::MaybeExpr
 {

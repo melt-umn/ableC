@@ -3,7 +3,13 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax:substitution;
 aspect production name
 top::Name ::= n::String
 {
-  propagate substituted;
+  local substitutions::Substitutions = top.substitutions;
+  substitutions.nameIn = n;
+  top.substituted =
+    case substitutions.nameSub of
+      just(sub) -> sub
+    | nothing() -> top
+    end;
 }
 
 aspect production justName

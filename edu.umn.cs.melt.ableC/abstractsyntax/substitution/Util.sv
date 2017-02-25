@@ -6,30 +6,30 @@ Substitutions ::= l::[Substitution]
   return foldr(consSubstitution, nilSubstitution(), l);
 }
 
-function subTypedefDecls
-Decls ::= names::[String] subs::[Type] base::Decls
+function subDecls
+Decls ::= subs::[Substitution] base::Decls
 {
-  base.substitutions = foldSubstitution(zipWith(typedefNameSubstitution, names, subs));
+  base.substitutions = foldSubstitution(subs);
   return base.substituted;
 }
 
-function subTypedefDecl
-Decl ::= names::[String] subs::[Type] base::Decl
+function subDecl
+Decl ::= subs::[Substitution] base::Decl
 {
-  base.substitutions = foldSubstitution(zipWith(typedefNameSubstitution, names, subs));
+  base.substitutions = foldSubstitution(subs);
   return base.substituted;
 }
 
-function subTypedefStmt
-Stmt ::= names::[String] subs::[Type] base::Stmt
+function subStmt
+Stmt ::= subs::[Substitution] base::Stmt
 {
-  base.substitutions = foldSubstitution(zipWith(typedefNameSubstitution, names, subs));
+  base.substitutions = foldSubstitution(subs);
   return base.substituted;
 }
 
-function subTypedefExpr
-Expr ::= names::[String] subs::[Type] base::Expr
+function subExpr
+Expr ::= subs::[Substitution] base::Expr
 {
-  base.substitutions = foldSubstitution(zipWith(typedefNameSubstitution, names, subs));
+  base.substitutions = foldSubstitution(subs);
   return base.substituted;
 }
