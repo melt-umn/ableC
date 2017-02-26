@@ -86,6 +86,17 @@ top::Decl ::= d::Decls
   top.freeVariables = d.freeVariables;
 }
 
+abstract production defsDecl
+top::Decl ::= d::[Def]
+{
+  propagate host, lifted; -- TODO: Should this production get removed by host or lifted?
+  top.pp = notext();
+  top.errors := [];
+  top.globalDecls := [];
+  top.defs = d;
+  top.freeVariables = [];
+}
+
 abstract production variableDecls
 top::Decl ::= storage::[StorageClass]  attrs::[Attribute]  ty::BaseTypeExpr  dcls::Declarators
 {

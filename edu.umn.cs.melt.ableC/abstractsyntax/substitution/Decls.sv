@@ -18,6 +18,12 @@ top::Decl ::= d::Decls
   propagate substituted;
 }
 
+aspect production defsDecl
+top::Decl ::= d::[Def]
+{
+  propagate substituted;
+}
+
 aspect production variableDecls
 top::Decl ::= storage::[StorageClass]  attrs::[Attribute]  ty::BaseTypeExpr  dcls::Declarators
 {
