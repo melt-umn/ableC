@@ -110,7 +110,9 @@ aspect production functionTypeExprWithoutArgs
 top::TypeModifierExpr ::= result::TypeModifierExpr  ids::[Name]
 {
   top.substituted =
-    functionTypeExprWithoutArgs(result.substituted, map(\n::Name -> n.substituted, ids));
+    functionTypeExprWithoutArgs(
+      result.substituted,
+      map(subName(unfoldSubstitution(top.substitutions), _), ids));
 }
 aspect production parenTypeExpr
 top::TypeModifierExpr ::= wrapped::TypeModifierExpr

@@ -6,6 +6,16 @@ Substitutions ::= l::[Substitution]
   return foldr(consSubstitution, nilSubstitution(), l);
 }
 
+function unfoldSubstitution
+[Substitution] ::= l::Substitutions
+{
+  return
+    case l of
+      consSubstitution(h, t) -> h :: unfoldSubstitution(t)
+    | nilSubstitution() -> []
+    end;
+}
+
 function subDecls
 Decls ::= subs::[Substitution] base::Decls
 {
@@ -29,6 +39,13 @@ Stmt ::= subs::[Substitution] base::Stmt
 
 function subExpr
 Expr ::= subs::[Substitution] base::Expr
+{
+  base.substitutions = foldSubstitution(subs);
+  return base.substituted;
+}
+
+function subName
+Name ::= subs::[Substitution] base::Name
 {
   base.substitutions = foldSubstitution(subs);
   return base.substituted;
