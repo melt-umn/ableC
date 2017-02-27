@@ -34,6 +34,60 @@ top::Decl ::= params::[Name] d::FunctionDecl
     end;
 }
 
+abstract production templateVariableDecl
+top::Decl ::= params::[Name]  storage::[StorageClass]  attrs::[Attribute]  ty::BaseTypeExpr  dcl::Declarator
+{
+  -- TODO: Do we substitute the template parameters, or remove them from the substitutions? Right now
+  -- we are doing neither
+  propagate substituted;
+  top.pp = concat([pp"template<", ppImplode(text(", "), map((.pp), params)), pp">", line(),
+                   ppAttributes(attrs), ty.pp, space(), ppImplode(text(", "), dcl.pps), semi()]);
+  top.errors := -- TODO: check for duplicate parameters
+    if top.isTopLevel
+    then []
+    else [err(dcl.sourceLocation, "Template declarations must be global")];
+  
+  forwards to
+    case dcl of
+      declarator(n, _, _, _) -> 
+        defsDecl([
+          templateDef(
+            n.name,
+            templateItem(
+              params, false,
+              dcl.sourceLocation,
+              typedefDecls(attrs, ty, consDeclarator(dcl, nilDeclarator()))))])
+    | errorDeclarator(msg) -> decls(nilDecl())
+    end;
+}
+
+abstract production templateTypedefDecl
+top::Decl ::= params::[Name]  attrs::[Attribute]  ty::BaseTypeExpr  dcl::Declarator
+{
+  -- TODO: Do we substitute the template parameters, or remove them from the substitutions? Right now
+  -- we are doing neither
+  propagate substituted;
+  top.pp = concat([pp"template<", ppImplode(text(", "), map((.pp), params)), pp">", line(),
+                   pp"typedef ", ppAttributes(attrs), ty.pp, space(), ppImplode(text(", "), dcl.pps), semi()]);
+  top.errors := -- TODO: check for duplicate parameters
+    if top.isTopLevel
+    then []
+    else [err(dcl.sourceLocation, "Template declarations must be global")];
+  
+  forwards to
+    case dcl of
+      declarator(n, _, _, _) -> 
+        defsDecl([
+          templateDef(
+            n.name,
+            templateItem(
+              params, true,
+              dcl.sourceLocation,
+              typedefDecls(attrs, ty, consDeclarator(dcl, nilDeclarator()))))])
+    | errorDeclarator(msg) -> decls(nilDecl())
+    end;
+}
+
 {-
 aspect production variableDecls
 top::Decl ::= storage::[StorageClass]  attrs::[Attribute]  ty::BaseTypeExpr  dcls::Declarators

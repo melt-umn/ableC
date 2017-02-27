@@ -169,8 +169,8 @@ top::NoncanonicalType ::= globalDecls::[Pair<String Decl>] lifted::Type
 {
   propagate host;
   top.canonicalType = lifted;
-  top.lpp = pp"injectGlobalDeclsType {<not shown>} (${lifted.lpp})";
-  top.rpp = lifted.rpp;
+  top.lpp = pp"injectGlobalDeclsType {<not shown>} (${lifted.lpp}${lifted.rpp})";
+  top.rpp = notext();
   top.baseTypeExpr = injectGlobalDeclsTypeExpr(globalDecls, lifted.baseTypeExpr);
   top.typeModifierExpr = lifted.typeModifierExpr;
 }

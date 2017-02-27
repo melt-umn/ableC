@@ -21,6 +21,6 @@ Name ::= n::TemplateTypeName_t
 concrete production templateTypedef_c
 top::TypeSpecifier_c ::= id::TemplateTypeName_t params::TypeNames_c '>'
 {
-  top.realTypeSpecifiers = error("not implemented");
+  top.realTypeSpecifiers = [templateTypedefTypeExpr(top.givenQualifiers, fromTemplateTypeName(id), params.ast)];
   top.preTypeSpecifiers = []; 
 }

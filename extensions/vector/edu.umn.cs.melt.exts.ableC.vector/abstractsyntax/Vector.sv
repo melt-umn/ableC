@@ -11,6 +11,7 @@ imports edu:umn:cs:melt:ableC:abstractsyntax:substitution;
 imports edu:umn:cs:melt:ableC:abstractsyntax:overload as ovrld;
 --imports edu:umn:cs:melt:ableC:abstractsyntax:debug;
 
+imports edu:umn:cs:melt:exts:ableC:templating;
 imports edu:umn:cs:melt:exts:ableC:string;
 
 global builtin::Location = builtinLoc("vector");
