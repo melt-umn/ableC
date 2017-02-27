@@ -196,7 +196,7 @@ concrete productions top::StorageClassSpecifier_c
 closed nonterminal TypeSpecifier_c with location, preTypeSpecifiers, realTypeSpecifiers, givenQualifiers; 
 concrete productions top::TypeSpecifier_c
 | 'void'
-    { top.realTypeSpecifiers = [ast:directTypeExpr(ast:builtinType(top.givenQualifiers, ast:voidType()))];
+    { top.realTypeSpecifiers = [ast:builtinTypeExpr(top.givenQualifiers, ast:voidType())];
       top.preTypeSpecifiers = []; }
 | 'char'
     { top.realTypeSpecifiers = [];
@@ -223,7 +223,7 @@ concrete productions top::TypeSpecifier_c
     { top.realTypeSpecifiers = [];
       top.preTypeSpecifiers = ["unsigned"]; }
 | '_Bool'
-    { top.realTypeSpecifiers = [ast:directTypeExpr(ast:builtinType(top.givenQualifiers, ast:boolType()))];
+    { top.realTypeSpecifiers = [ast:builtinTypeExpr(top.givenQualifiers, ast:boolType())];
       top.preTypeSpecifiers = []; }
 | '_Imaginary'
     { top.realTypeSpecifiers = [];

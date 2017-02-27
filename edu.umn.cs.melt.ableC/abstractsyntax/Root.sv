@@ -5,21 +5,19 @@ import edu:umn:cs:melt:ableC:abstractsyntax:builtins as builtinfunctions;
 
 global fullErrorCheck::Boolean = true;
 
-nonterminal Root with pp, host<Root>, lifted<Root>, errors, globalDecls, env;
+nonterminal Root with pp, host<Root>, lifted<Root>, errors, env;
 
 abstract production root
-top::Root ::= d::Decls
+top::Root ::= d::GlobalDecls
 {
   propagate host, lifted;
   
   top.pp = terminate(line(), d.pps);
   top.errors := d.errors;
-  top.globalDecls := d.globalDecls;
   
   d.globalDeclEnv = [];
 --  d.env = addEnv(builtinfunctions:initialEnv;
   d.env = addEnv(builtinfunctions:getInitialEnvDefs(), top.env);
-  d.isTopLevel = true;
   d.returnType = nothing();
 }
 
@@ -50,9 +48,6 @@ top::Compilation ::= srcAst::Root
     then wrn(loc("", -1, -1, -1, -1, -1, -1), "Errors in host tree:") :: hostAst.errors
     else if !null(liftedAst.errors)
     then wrn(loc("", -1, -1, -1, -1, -1, -1), "Errors in lifted tree:") :: liftedAst.errors
-    else if !null(liftedAst.globalDecls)
-    then [wrn(loc("Top level", -1, -1, -1, -1, -1, -1),
-              "globalDecls at top level in lifted tree: " ++ implode(", ", map(fst, liftedAst.globalDecls)))]
     else [];
   
   top.srcAst = srcAst;

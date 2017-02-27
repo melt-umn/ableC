@@ -28,9 +28,9 @@ function unfoldDecl
 }
 
 function foldGlobalDecl
-Decls ::= l::[Decl]
+GlobalDecls ::= l::[Decl]
 {
-  return foldr(consGlobalDecl, nilDecl(), l);
+  return foldr(consGlobalDecl, nilGlobalDecl(), l);
 }
 
 function foldInit
@@ -74,7 +74,7 @@ Parameters ::= l::[ParameterDecl]
 {
   return case l of
   -- A special case.  "type name(void)"  means no parameters.
-  | parameterDecl([], directTypeExpr(builtinType([], voidType())), baseTypeExpr(), nothingName(), []) :: [] -> nilParameters()
+  | parameterDecl([], builtinTypeExpr([], voidType()), baseTypeExpr(), nothingName(), []) :: [] -> nilParameters()
   | _ -> foldr(consParameters, nilParameters(), l)
   end;
 }
