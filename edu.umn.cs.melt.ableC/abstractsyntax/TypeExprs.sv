@@ -490,7 +490,7 @@ top::TypeModifierExpr ::= wrapped::TypeModifierExpr
 --  top.typerep = original.typerep; -- {-TODO-};
 --}
 
-nonterminal TypeNames with pps, host<TypeNames>, lifted<TypeNames>, env, typereps, errors, globalDecls, defs, returnType, freeVariables;
+nonterminal TypeNames with pps, host<TypeNames>, lifted<TypeNames>, env, typereps, count, errors, globalDecls, defs, returnType, freeVariables;
 
 abstract production consTypeName
 top::TypeNames ::= h::TypeName t::TypeNames
@@ -498,6 +498,7 @@ top::TypeNames ::= h::TypeName t::TypeNames
   propagate host, lifted;
   top.pps = h.pp :: t.pps;
   top.typereps = h.typerep :: t.typereps;
+  top.count = t.count + 1;
   top.globalDecls := h.globalDecls ++ t.globalDecls;
   top.errors := h.errors ++ t.errors;
   top.defs = h.defs ++ t.defs;
@@ -510,6 +511,7 @@ top::TypeNames ::=
   propagate host, lifted;
   top.pps = [];
   top.typereps = [];
+  top.count = 0;
   top.globalDecls := [];
   top.errors := [];
   top.defs = [];
