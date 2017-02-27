@@ -17,7 +17,7 @@ typedef struct __attribute__((refId("edu:umn:cs:melt:exts:ableC:vector:_vector_$
 }
 
 abstract production vectorTypeExpr 
-top::BaseTypeExpr ::= sub::TypeName
+top::BaseTypeExpr ::= q::[Qualifier] sub::TypeName
 {
   propagate substituted;
   sub.env = globalEnv(top.env);
@@ -25,13 +25,13 @@ top::BaseTypeExpr ::= sub::TypeName
   forwards to
     if !null(sub.errors)
     then errorTypeExpr(sub.errors)
-    else directTypeExpr(vectorType([], sub.typerep));
+    else directTypeExpr(vectorType(q, sub.typerep));
 }
 
 abstract production vectorType
-top::Type ::= qs::[Qualifier] sub::Type
+top::Type ::= q::[Qualifier] sub::Type
 {
-  top.lpp = pp"${ppImplode(space(), map((.pp), qs))}vector<${sub.lpp}${sub.rpp}>";
+  top.lpp = pp"${ppImplode(space(), map((.pp), q))}vector<${sub.lpp}${sub.rpp}>";
   top.rpp = pp"";
 
   top.ovrld:lBinaryPlusProd =
@@ -102,7 +102,7 @@ top::Type ::= qs::[Qualifier] sub::Type
         mkVectorTypedefGlobalDecls(sub),
         noncanonicalType(
           typedefType(
-            qs,
+            q,
             "_vector_" ++ sub.mangledName,
             pointerType(
               [],
