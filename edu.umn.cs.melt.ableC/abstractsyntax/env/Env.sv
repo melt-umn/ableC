@@ -25,7 +25,7 @@ closed nonterminal Def
  - An attribute on abstract syntax trees that represents the definitions
  - that escape the scope of the corresponding subtree.
  -}
-synthesized attribute defs :: [Def];
+synthesized attribute defs :: [Def] with ++;
 {--
  - For Function-Scope definitions (e.g. Labels in functions)
  - @see defs for normal definitions

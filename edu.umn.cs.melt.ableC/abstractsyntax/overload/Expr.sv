@@ -4,7 +4,7 @@ abstract production unaryOpExpr
 top::Expr ::= op::UnaryOp  e::Expr
 {
   top.globalDecls := e.globalDecls;
-  top.defs = e.defs;
+  top.defs := e.defs;
   top.freeVariables = e.freeVariables;
   
   op.op = e;
@@ -19,7 +19,7 @@ abstract production arraySubscriptExpr
 top::Expr ::= lhs::Expr  rhs::Expr
 {
   top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
-  top.defs = lhs.defs ++ rhs.defs;
+  top.defs := lhs.defs ++ rhs.defs;
   top.freeVariables = lhs.freeVariables ++ removeDefsFromNames(rhs.defs, rhs.freeVariables);
   
   rhs.env = addEnv(lhs.defs, lhs.env);
@@ -37,7 +37,7 @@ abstract production callExpr
 top::Expr ::= f::Expr  a::Exprs
 {
   top.globalDecls := f.globalDecls ++ a.globalDecls;
-  top.defs = f.defs ++ a.defs;
+  top.defs := f.defs ++ a.defs;
   top.freeVariables = f.freeVariables ++ removeDefsFromNames(f.defs, a.freeVariables);
   
   a.env = addEnv(f.defs, f.env);
@@ -78,7 +78,7 @@ abstract production memberExpr
 top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
 {
   top.globalDecls := lhs.globalDecls;
-  top.defs = lhs.defs;
+  top.defs := lhs.defs;
   top.freeVariables = lhs.freeVariables;
   
   local lType::Type = lhs.typerep;
@@ -99,7 +99,7 @@ abstract production binaryOpExpr
 top::Expr ::= lhs::Expr  op::BinOp  rhs::Expr
 {
   top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
-  top.defs = lhs.defs ++ rhs.defs;
+  top.defs := lhs.defs ++ rhs.defs;
   top.freeVariables =
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);

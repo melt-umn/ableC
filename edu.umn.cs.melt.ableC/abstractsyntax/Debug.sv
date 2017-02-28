@@ -18,7 +18,7 @@ e::Expr ::= txt::String
   e.pp = text(txt);
   e.errors := [];
   e.globalDecls := [];
-  e.defs = [];
+  e.defs := [];
   e.freeVariables = [];
   e.typerep = errorType(); -- error("Need a type on txtExpr"); 
 }
@@ -29,7 +29,7 @@ s::Stmt ::= txt::String
   s.pp = text(txt);
   s.errors := [];
   s.globalDecls := [];
-  s.defs = [];
+  s.defs := [];
   s.freeVariables = [];
   s.functiondefs = [];
 }
@@ -41,7 +41,7 @@ d::Decl ::= txt::String
   d.pp = text(txt);
   d.errors := [ ];
   d.globalDecls := [];
-  d.defs = [ ];
+  d.defs := [ ];
   d.freeVariables = [];
 }
 
@@ -59,7 +59,7 @@ e::Expr ::=
 {
   e.errors := [];
   e.globalDecls := [];
-  e.defs = [];
+  e.defs := [];
   e.pp =
     decorate comment("printEnv pp should be demanded through host pp", location=e.location)
     with {env = e.env;

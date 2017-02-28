@@ -50,7 +50,7 @@ top::TypeName ::= bty::BaseTypeExpr  mty::TypeModifierExpr
   mty.baseType = bty.typerep;
   top.errors := bty.errors ++ mty.errors;
   top.globalDecls := bty.globalDecls ++ mty.globalDecls;
-  top.defs = bty.defs;
+  top.defs := bty.defs;
   top.freeVariables = bty.freeVariables ++ mty.freeVariables;
 }
 
@@ -74,7 +74,7 @@ top::BaseTypeExpr ::= msg::[Message]  ty::BaseTypeExpr
   top.typerep = ty.typerep;
   top.errors := msg ++ ty.errors;
   top.globalDecls := ty.globalDecls;
-  top.defs = ty.defs;
+  top.defs := ty.defs;
   top.freeVariables = ty.freeVariables;
 }
 
@@ -90,7 +90,7 @@ top::BaseTypeExpr ::= result::Type
   top.pp = cat(result.lpp, result.rpp);
   top.typerep = result;
   top.errors := [];
-  top.defs = [];
+  top.defs := [];
   top.freeVariables = [];
 }
 
@@ -153,7 +153,7 @@ top::BaseTypeExpr ::= q::[Qualifier]  kwd::StructOrEnumOrUnion  name::Name
   
   top.globalDecls := [];
   
-  top.defs =
+  top.defs :=
     case kwd, tags of
     -- It's an enum and we see the declaration.
     | enumSEU(), enumTagItem(d) :: _ -> []
@@ -184,7 +184,7 @@ top::BaseTypeExpr ::= q::[Qualifier]  def::StructDecl
   top.typerep = tagType(q, refIdTagType(structSEU(), name, def.refId));
   top.errors := def.errors;
   top.globalDecls := def.globalDecls;
-  top.defs = def.defs;
+  top.defs := def.defs;
   top.freeVariables = [];
 }
 
@@ -202,7 +202,7 @@ top::BaseTypeExpr ::= q::[Qualifier]  def::UnionDecl
   top.typerep = tagType(q, refIdTagType(unionSEU(), name, def.refId));
   top.errors := def.errors;
   top.globalDecls := def.globalDecls;
-  top.defs = def.defs;
+  top.defs := def.defs;
   top.freeVariables = [];
 }
 
@@ -215,7 +215,7 @@ top::BaseTypeExpr ::= q::[Qualifier]  def::EnumDecl
   top.typerep = tagType(q, enumTagType(def));
   top.errors := def.errors;
   top.globalDecls := def.globalDecls;
-  top.defs = def.defs;
+  top.defs := def.defs;
   top.freeVariables = [];
 }
 
@@ -231,7 +231,7 @@ top::BaseTypeExpr ::= q::[Qualifier]  name::Name
     else noncanonicalType(typedefType(q, name.name, name.valueItem.typerep)); -- TODO bug: we are discarding qualifiers here!
   top.errors := [];
   top.globalDecls := [];
-  top.defs = [];
+  top.defs := [];
   top.freeVariables = [];
 
   top.errors <- name.valueLookupCheck;
@@ -249,7 +249,7 @@ top::BaseTypeExpr ::= q::[Qualifier]  wrapped::TypeName
                      text("_Atomic"), parens(wrapped.pp)]);
   top.errors := wrapped.errors;
   top.globalDecls := wrapped.globalDecls;
-  top.defs = wrapped.defs;
+  top.defs := wrapped.defs;
   top.freeVariables = wrapped.freeVariables;
 }
 {-- GCC builtin type -}
@@ -261,7 +261,7 @@ top::BaseTypeExpr ::=
   top.pp = text("__builtin_va_list");
   top.errors := [];
   top.globalDecls := [];
-  top.defs = [];
+  top.defs := [];
   top.freeVariables = [];
   
 }
@@ -274,7 +274,7 @@ top::BaseTypeExpr ::= q::[Qualifier]  e::ExprOrTypeName
   top.pp = concat([text("__typeof__"), parens(e.pp)]);
   top.errors := e.errors;
   top.globalDecls := e.globalDecls;
-  top.defs = e.defs;
+  top.defs := e.defs;
   top.freeVariables = e.freeVariables;
 }
 
@@ -424,7 +424,7 @@ top::TypeNames ::= h::TypeName t::TypeNames
   top.typereps = h.typerep :: t.typereps;
   top.globalDecls := h.globalDecls ++ t.globalDecls;
   top.errors := h.errors ++ t.errors;
-  top.defs = h.defs ++ t.defs;
+  top.defs := h.defs ++ t.defs;
   top.freeVariables = h.freeVariables ++ t.freeVariables;
 }
 
@@ -436,7 +436,7 @@ top::TypeNames ::=
   top.typereps = [];
   top.globalDecls := [];
   top.errors := [];
-  top.defs = [];
+  top.defs := [];
   top.freeVariables = [];
 }
 

@@ -11,7 +11,7 @@ top::Stmt ::=
   top.pp = notext();
   top.errors := [];
   top.globalDecls := [];
-  top.defs = [];
+  top.defs := [];
   top.freeVariables = [];
   top.functiondefs = [];
 }
@@ -23,7 +23,7 @@ top::Stmt ::= h::Stmt  t::Stmt
   top.pp = concat([ h.pp, line(), t.pp ]);
   top.errors := h.errors ++ t.errors;
   top.globalDecls := h.globalDecls ++ t.globalDecls;
-  top.defs = h.defs ++ t.defs;
+  top.defs := h.defs ++ t.defs;
   top.freeVariables =
     h.freeVariables ++
     removeDefsFromNames(h.defs, t.freeVariables);
@@ -39,7 +39,7 @@ top::Stmt ::= s::Stmt
   top.pp = braces(nestlines(2, s.pp));
   top.errors := s.errors;
   top.globalDecls := s.globalDecls;
-  top.defs = []; -- compound prevents declarations from bubbling up
+  top.defs := []; -- compound prevents declarations from bubbling up
   top.freeVariables = s.freeVariables;
   top.functiondefs = s.functiondefs;
 
@@ -55,7 +55,7 @@ top::Stmt ::= msg::[Message]
   top.pp = text("/*err*/");
   top.errors := msg;
   top.globalDecls := [];
-  top.defs = [];
+  top.defs := [];
   top.freeVariables = [];
   top.functiondefs = [];
 }
@@ -67,7 +67,7 @@ top::Stmt ::= d::Decl
   top.pp = cat( d.pp, semi() );
   top.errors := d.errors;
   top.globalDecls := d.globalDecls;
-  top.defs = d.defs;
+  top.defs := d.defs;
   top.freeVariables = d.freeVariables;
   top.functiondefs = [];
   d.isTopLevel = false;
@@ -99,7 +99,7 @@ top::Stmt ::= d::Expr
   top.pp = cat( d.pp, semi() );
   top.errors := d.errors;
   top.globalDecls := d.globalDecls;
-  top.defs = d.defs;
+  top.defs := d.defs;
   top.freeVariables = d.freeVariables;
   top.functiondefs = [];
 }
@@ -119,7 +119,7 @@ top::Stmt ::= c::Expr  t::Stmt  e::Stmt
   -- A selection statement is a block whose scope is a strict subset of the scope of its
   -- enclosing block. Each associated substatement is also a block whose scope is a strict
   -- subset of the scope of the selection statement.
-  top.defs = [];
+  top.defs := [];
   top.freeVariables =
     c.freeVariables ++
     removeDefsFromNames(c.defs, t.freeVariables) ++
@@ -157,7 +157,7 @@ top::Stmt ::= e::Expr  b::Stmt
   -- An iteration statement is a block whose scope is a strict subset of the scope of its
   -- enclosing block. The loop body is also a block whose scope is a strict subset of the scope
   -- of the iteration statement.
-  top.defs = [];
+  top.defs := [];
   top.freeVariables =
     e.freeVariables ++
     removeDefsFromNames(e.defs, b.freeVariables);
@@ -184,7 +184,7 @@ top::Stmt ::= b::Stmt  e::Expr
   -- An iteration statement is a block whose scope is a strict subset of the scope of its
   -- enclosing block. The loop body is also a block whose scope is a strict subset of the scope
   -- of the iteration statement.
-  top.defs = [];
+  top.defs := [];
   top.freeVariables =
     b.freeVariables ++
     removeDefsFromNames(b.defs, e.freeVariables);
@@ -211,7 +211,7 @@ top::Stmt ::= i::MaybeExpr  c::MaybeExpr  s::MaybeExpr  b::Stmt
   -- An iteration statement is a block whose scope is a strict subset of the scope of its
   -- enclosing block. The loop body is also a block whose scope is a strict subset of the scope
   -- of the iteration statement.
-  top.defs = [];
+  top.defs := [];
   top.freeVariables =
     i.freeVariables ++
     removeDefsFromNames(i.defs, c.freeVariables) ++
@@ -242,7 +242,7 @@ top::Stmt ::= i::Decl  c::MaybeExpr  s::MaybeExpr  b::Stmt
   -- An iteration statement is a block whose scope is a strict subset of the scope of its
   -- enclosing block. The loop body is also a block whose scope is a strict subset of the scope
   -- of the iteration statement.
-  top.defs = [];
+  top.defs := [];
   top.freeVariables =
     i.freeVariables ++
     removeDefsFromNames(i.defs, c.freeVariables) ++
@@ -277,7 +277,7 @@ top::Stmt ::= e::MaybeExpr
                 | just(expected), nothing() -> [err(loc("TODOreturn",-1,-1,-1,-1,-1,-1), "Expected return value, but found valueless return")] -- TODO: location
                 end ++ e.errors;
   top.globalDecls := e.globalDecls;
-  top.defs = e.defs;
+  top.defs := e.defs;
   top.freeVariables = e.freeVariables;
   top.functiondefs = [];
   -- TODO: this needs to follow the same rules as assignment. We should try to factor that out.
@@ -296,7 +296,7 @@ top::Stmt ::= e::Expr  b::Stmt
   -- A selection statement is a block whose scope is a strict subset of the scope of its
   -- enclosing block. Each associated substatement is also a block whose scope is a strict
   -- subset of the scope of the selection statement.
-  top.defs = [];
+  top.defs := [];
   top.freeVariables =
     e.freeVariables ++
     removeDefsFromNames(e.defs, b.freeVariables);
@@ -316,7 +316,7 @@ top::Stmt ::= l::Name
   top.pp = concat([ text("goto"), space(), l.pp, semi() ]);
   top.errors := [];
   top.globalDecls := [];
-  top.defs = [];
+  top.defs := [];
   top.freeVariables = [];
   top.functiondefs = [];
   
@@ -330,7 +330,7 @@ top::Stmt ::=
   top.pp = cat( text("continue"), semi() );
   top.errors := [];
   top.globalDecls := [];
-  top.defs = [];
+  top.defs := [];
   top.freeVariables = [];
   top.functiondefs = [];
 }
@@ -342,7 +342,7 @@ top::Stmt ::=
   top.pp = concat([ text("break"), semi()  ]);
   top.errors := [];
   top.globalDecls := [];
-  top.defs = [];
+  top.defs := [];
   top.freeVariables = [];
   top.functiondefs = [];
 }
@@ -354,7 +354,7 @@ top::Stmt ::= l::Name  s::Stmt
   top.pp = concat([ l.pp, text(":"), space(), s.pp]);
   top.errors := s.errors;
   top.globalDecls := s.globalDecls;
-  top.defs = s.defs;
+  top.defs := s.defs;
   top.freeVariables = s.freeVariables;
   top.functiondefs = [labelDef(l.name, labelItem(top))] ++ s.functiondefs;
   
@@ -368,7 +368,7 @@ top::Stmt ::= v::Expr  s::Stmt
   top.pp = concat([text("case"), space(), v.pp, text(":"), nestlines(2,s.pp)]); 
   top.errors := v.errors ++ s.errors;
   top.globalDecls := v.globalDecls ++ s.globalDecls;
-  top.defs = v.defs ++ s.defs;
+  top.defs := v.defs ++ s.defs;
   top.freeVariables =
     v.freeVariables ++
     removeDefsFromNames(v.defs, s.freeVariables);
@@ -384,7 +384,7 @@ top::Stmt ::= s::Stmt
   top.pp = concat([ text("default"), text(":"), nestlines(2,s.pp)]);
   top.errors := s.errors;
   top.globalDecls := s.globalDecls;
-  top.defs = s.defs;
+  top.defs := s.defs;
   top.freeVariables = s.freeVariables;
   top.functiondefs = s.functiondefs; -- ??
 }
@@ -397,7 +397,7 @@ top::Stmt ::= d::FunctionDecl
   top.pp = d.pp;
   top.errors := d.errors;
   top.globalDecls := d.globalDecls;
-  top.defs = d.defs;
+  top.defs := d.defs;
   top.freeVariables = d.freeVariables;
   top.functiondefs = [];
 }
@@ -410,7 +410,7 @@ top::Stmt ::= l::Expr  u::Expr  s::Stmt
   top.pp = concat([text("case"), space(), l.pp, text("..."), u.pp, text(":"), space(),s.pp]); 
   top.errors := l.errors ++ u.errors ++ s.errors;
   top.globalDecls := l.globalDecls ++ u.globalDecls ++ s.globalDecls;
-  top.defs = l.defs ++ u.defs ++ s.defs;
+  top.defs := l.defs ++ u.defs ++ s.defs;
   top.freeVariables = l.freeVariables ++ u.freeVariables ++ s.freeVariables;
   top.functiondefs = s.functiondefs;
 }
@@ -422,7 +422,7 @@ top::Stmt ::= asm::AsmStatement
   top.pp = asm.pp;
   top.errors := [];
   top.globalDecls := [];
-  top.defs = [];
+  top.defs := [];
   top.freeVariables = asm.freeVariables;
   top.functiondefs = [];
 }
@@ -448,7 +448,7 @@ top::Stmt ::= c::Document
 {
   top.pp = concat([ text("/* "), c, text(" */") ]);
   top.errors := [];
-  top.defs = [];
+  top.defs := [];
   top.functiondefs = [];
 }-}
 

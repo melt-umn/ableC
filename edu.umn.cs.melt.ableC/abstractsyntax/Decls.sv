@@ -15,7 +15,7 @@ top::Decls ::= h::Decl  t::Decls
   propagate host, lifted;
   top.pps = h.pp :: t.pps;
   top.errors := h.errors ++ t.errors;
-  top.defs = h.defs ++ t.defs;
+  top.defs := h.defs ++ t.defs;
   top.globalDecls := h.globalDecls ++ t.globalDecls;
   top.freeVariables =
     h.freeVariables ++
@@ -32,7 +32,7 @@ top::Decls ::=
   top.pps = [];
   top.errors := [];
   top.globalDecls := [];
-  top.defs = [];
+  top.defs := [];
   top.freeVariables = [];
 }
 
@@ -55,7 +55,7 @@ top::Decl ::= d::Decls
   top.pp = terminate( line(), d.pps );
   top.errors := d.errors;
   top.globalDecls := d.globalDecls;
-  top.defs = d.defs;
+  top.defs := d.defs;
   top.freeVariables = d.freeVariables;
   
   d.globalDeclEnv = error("Demanded globalDeclEnv by consDecl");
@@ -71,7 +71,7 @@ top::Decl ::= storage::[StorageClass]  attrs::[Attribute]  ty::BaseTypeExpr  dcl
       [ty.pp, space(), ppImplode(text(", "), dcls.pps), semi()]);
   top.errors := ty.errors ++ dcls.errors;
   top.globalDecls := ty.globalDecls ++ dcls.globalDecls;
-  top.defs = ty.defs ++ dcls.defs;
+  top.defs := ty.defs ++ dcls.defs;
   top.freeVariables = ty.freeVariables ++ dcls.freeVariables;
   
   dcls.baseType = ty.typerep;
@@ -86,7 +86,7 @@ top::Decl ::= attrs::[Attribute] ty::BaseTypeExpr
   top.pp = cat( ty.pp, semi() );
   top.errors := ty.errors;
   top.globalDecls := ty.globalDecls;
-  top.defs = ty.defs;
+  top.defs := ty.defs;
   top.freeVariables = ty.freeVariables;
 }
 
@@ -97,7 +97,7 @@ top::Decl ::= attrs::[Attribute]  ty::BaseTypeExpr  dcls::Declarators
   top.pp = concat([text("typedef "), ppAttributes(attrs), ty.pp, space(), ppImplode(text(", "), dcls.pps), semi()]);
   top.errors := ty.errors ++ dcls.errors;
   top.globalDecls := ty.globalDecls ++ dcls.globalDecls;
-  top.defs = ty.defs ++ dcls.defs;
+  top.defs := ty.defs ++ dcls.defs;
   top.freeVariables = ty.freeVariables ++ dcls.freeVariables;
   
   dcls.baseType = ty.typerep;
@@ -112,7 +112,7 @@ top::Decl ::= f::FunctionDecl
   top.pp = f.pp;
   top.errors := f.errors;
   top.globalDecls := f.globalDecls;
-  top.defs = f.defs;
+  top.defs := f.defs;
   top.freeVariables = f.freeVariables;
 }
 
@@ -134,7 +134,7 @@ top::Decl ::= msg::[Message]
     text("*/")]);
   top.errors := msg;
   top.globalDecls := [];
-  top.defs = [];
+  top.defs := [];
   top.freeVariables = [];
 }
 
@@ -146,7 +146,7 @@ top::Decl ::= e::Expr  s::String
   top.pp = concat([text("_Static_assert("), e.pp, text(", "), text(s), text(");")]);
   top.errors := e.errors;
   top.globalDecls := e.globalDecls;
-  top.defs = e.defs;
+  top.defs := e.defs;
   top.freeVariables = e.freeVariables;
 }
 
@@ -157,7 +157,7 @@ top::Decl ::= s::String
   top.pp = concat([text("asm"), parens(text(s))]);
   top.errors := [];
   top.globalDecls := [];
-  top.defs = [];
+  top.defs := [];
   top.freeVariables = [];
   -- TODO: should be file-scope only.
   -- Semantics note: just puts the string into the assembly file being created
@@ -173,7 +173,7 @@ top::Declarators ::= h::Declarator  t::Declarators
   propagate host, lifted;
   top.pps = h.pps ++ t.pps;
   top.errors := h.errors ++ t.errors;
-  top.defs = h.defs ++ t.defs;
+  top.defs := h.defs ++ t.defs;
   top.globalDecls := h.globalDecls ++ t.globalDecls;
   top.freeVariables =
     h.freeVariables ++
@@ -188,7 +188,7 @@ top::Declarators ::=
   top.pps = [];
   top.errors := [];
   top.globalDecls := [];
-  top.defs = [];
+  top.defs := [];
   top.freeVariables = [];
 }
 
@@ -230,7 +230,7 @@ top::Declarator ::= name::Name  ty::TypeModifierExpr  attrs::[Attribute]  initia
     | _ -> []
     end ++ ty.errors ++ initializer.errors;
   top.globalDecls := ty.globalDecls ++ initializer.globalDecls;
-  top.defs = [valueDef(name.name, declaratorValueItem(top))];
+  top.defs := [valueDef(name.name, declaratorValueItem(top))];
   top.freeVariables = ty.freeVariables ++ initializer.freeVariables;
   top.typerep = animateAttributeOnType(allAttrs, ty.typerep);
   top.sourceLocation = name.location;
@@ -250,7 +250,7 @@ top::Declarator ::= msg::[Message]
   top.pps = [];
   top.errors := msg;
   top.globalDecls := [];
-  top.defs = [];
+  top.defs := [];
   top.freeVariables = [];
   top.typerep = errorType();
   top.sourceLocation = loc("nowhere", -1, -1, -1, -1, -1, -1); -- TODO fix this? add locaiton maybe?
@@ -276,7 +276,7 @@ top::FunctionDecl ::= storage::[StorageClass]  fnquals::[SpecialSpecifier]  bty:
   top.errors := bty.errors ++ mty.errors ++ body.errors;
   top.globalDecls := bty.globalDecls ++ mty.globalDecls ++ decls.globalDecls ++ 
                      body.globalDecls;
-  top.defs = bty.defs ++ [valueDef(name.name, functionValueItem(top))];
+  top.defs := bty.defs ++ [valueDef(name.name, functionValueItem(top))];
   top.freeVariables =
     bty.freeVariables ++
     removeDefsFromNames([thisFuncDef], mty.freeVariables) ++
@@ -325,7 +325,7 @@ top::FunctionDecl ::= storage::[StorageClass]  fnquals::[SpecialSpecifier]  bty:
 abstract production nestedFunctionDecl
 top::FunctionDecl ::= storage::[StorageClass]  fnquals::[SpecialSpecifier]  bty::BaseTypeExpr mty::TypeModifierExpr  name::Name  attrs::[Attribute]  decls::Decls  body::Stmt
 {
-  top.defs = bty.defs ++ [valueDef(name.name, functionValueItem(top))];
+  top.defs := bty.defs ++ [valueDef(name.name, functionValueItem(top))];
   
   decls.isTopLevel = false;
   
@@ -341,7 +341,7 @@ top::FunctionDecl ::= msg::[Message]
     text("*/")]);
   top.errors := msg;
   top.globalDecls := [];
-  top.defs = [];
+  top.defs := [];
   top.freeVariables = [];
   top.typerep = errorType();
   top.sourceLocation = loc("nowhere", -1, -1, -1, -1, -1, -1); -- TODO fix this? add locaiton maybe?
@@ -357,7 +357,7 @@ top::Parameters ::= h::ParameterDecl  t::Parameters
   top.typereps = h.typerep :: t.typereps;
   top.errors := h.errors ++ t.errors;
   top.globalDecls := h.globalDecls ++ t.globalDecls;
-  top.defs = h.defs ++ t.defs;
+  top.defs := h.defs ++ t.defs;
   top.freeVariables =
     h.freeVariables ++
     removeDefsFromNames(h.defs, t.freeVariables);
@@ -373,7 +373,7 @@ top::Parameters ::=
   top.typereps = [];
   top.errors := [];
   top.globalDecls := [];
-  top.defs = [];
+  top.defs := [];
   top.freeVariables = [];
 }
 
@@ -397,7 +397,7 @@ top::ParameterDecl ::= storage::[StorageClass]  bty::BaseTypeExpr  mty::TypeModi
     end;
   top.errors := bty.errors ++ mty.errors;
   top.globalDecls := bty.globalDecls ++ mty.globalDecls;
-  top.defs = bty.defs ++
+  top.defs := bty.defs ++
     case name.maybename of
     | just(n) -> [valueDef(n.name, parameterValueItem(top))]
     | _ -> []
@@ -457,7 +457,7 @@ top::StructDecl ::= attrs::[Attribute]  name::MaybeName  dcls::StructItemList
   local postDefs :: [Def] =
     [refIdDef(top.refId, structRefIdItem(top))];
 
-  top.defs = preDefs ++ dcls.defs ++ postDefs;
+  top.defs := preDefs ++ dcls.defs ++ postDefs;
   top.freeVariables = dcls.freeVariables;
   
   dcls.env = openScope(addEnv(preDefs, top.env));
@@ -520,7 +520,7 @@ top::UnionDecl ::= attrs::[Attribute]  name::MaybeName  dcls::StructItemList
   local postDefs :: [Def] =
     [refIdDef(top.refId, unionRefIdItem(top))];
 
-  top.defs = preDefs ++ dcls.defs ++ postDefs;
+  top.defs := preDefs ++ dcls.defs ++ postDefs;
   top.freeVariables = dcls.freeVariables;
   
   dcls.env = openScope(addEnv(preDefs, top.env));
@@ -550,7 +550,7 @@ top::EnumDecl ::= name::MaybeName  dcls::EnumItemList
     | just(n) -> [tagDef(n.name, enumTagItem(top))]
     | _ -> []
     end;
-  top.defs = thisdcl ++ dcls.defs;
+  top.defs := thisdcl ++ dcls.defs;
   top.freeVariables = dcls.freeVariables;
   
   dcls.env = addEnv(thisdcl, top.env);
@@ -573,7 +573,7 @@ top::StructItemList ::= h::StructItem  t::StructItemList
   top.pps = h.pp :: t.pps;
   top.errors := h.errors ++ t.errors;
   top.globalDecls := h.globalDecls ++ t.globalDecls;
-  top.defs = h.defs ++ t.defs;
+  top.defs := h.defs ++ t.defs;
   top.freeVariables =
     h.freeVariables ++
     removeDefsFromNames(h.defs, t.freeVariables);
@@ -589,7 +589,7 @@ top::StructItemList ::=
   top.pps = [];
   top.errors := [];
   top.globalDecls := [];
-  top.defs = [];
+  top.defs := [];
   top.freeVariables = [];
   top.localdefs = [];
 }
@@ -605,7 +605,7 @@ top::EnumItemList ::= h::EnumItem  t::EnumItemList
   top.pps = h.pp :: t.pps;
   top.errors := h.errors ++ t.errors;
   top.globalDecls := h.globalDecls ++ t.globalDecls;
-  top.defs = h.defs ++ t.defs;
+  top.defs := h.defs ++ t.defs;
   top.freeVariables =
     h.freeVariables ++
     removeDefsFromNames(h.defs, t.freeVariables);
@@ -620,7 +620,7 @@ top::EnumItemList ::=
   top.pps = [];
   top.errors := [];
   top.globalDecls := [];
-  top.defs = [];
+  top.defs := [];
   top.freeVariables = [];
 }
 
@@ -633,7 +633,7 @@ top::StructItem ::= attrs::[Attribute]  ty::BaseTypeExpr  dcls::StructDeclarator
   top.pp = concat([ppAttributes(attrs), ty.pp, space(), ppImplode(text(", "), dcls.pps)]);
   top.errors := ty.errors ++ dcls.errors;
   top.globalDecls := ty.globalDecls ++ dcls.globalDecls;
-  top.defs = ty.defs;
+  top.defs := ty.defs;
   top.freeVariables = ty.freeVariables ++ dcls.freeVariables;
   top.localdefs = dcls.localdefs;
   
@@ -647,7 +647,7 @@ top::StructItem ::= msg::[Message]
   top.pp = notext();
   top.errors := msg;
   top.globalDecls := [];
-  top.defs = [];
+  top.defs := [];
   top.freeVariables = [];
   top.localdefs = [];
 }
@@ -749,7 +749,7 @@ top::EnumItem ::= name::Name  e::MaybeExpr
   top.pp = concat([name.pp] ++ if e.isJust then [text(" = "), e.pp] else []);
   top.errors := e.errors;
   top.globalDecls := e.globalDecls;
-  top.defs = [valueDef(name.name, enumValueItem(top))];
+  top.defs := [valueDef(name.name, enumValueItem(top))];
   top.freeVariables = e.freeVariables;
   top.typerep = top.containingEnum;
   top.sourceLocation = name.location;
