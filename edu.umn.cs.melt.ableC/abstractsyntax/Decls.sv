@@ -5,7 +5,35 @@
 -- Declaration is rooted in External, but also in stmts. Either a variableDecl or a typedefDecl.
 -- ParameterDecl should probably be something special, distinct from variableDecl.
 
-nonterminal Decls with pps, host<Decls>, lifted<Decls>, errors, globalDecls, defs, globalDeclEnv, env, isTopLevel, returnType, freeVariables;
+nonterminal GlobalDecls with pps, host<GlobalDecls>, lifted<GlobalDecls>, errors, defs, globalDeclEnv, env, returnType, freeVariables;
+
+{-- Mirrors Decls, used for lifting mechanism to insert new Decls at top level -}
+abstract production consGlobalDecl
+top::GlobalDecls ::= h::Decl  t::GlobalDecls
+{
+  top.pps = h.pp :: t.pps;
+  top.errors := h.errors ++ t.errors;
+  top.defs := h.defs ++ t.defs;
+  top.freeVariables =
+    h.freeVariables ++
+    removeDefsFromNames(h.defs, t.freeVariables);
+  
+  -- host, lifted, globalDeclEnv defined in Lifted.sv
+    
+  h.isTopLevel = true;
+}
+
+abstract production nilGlobalDecl
+top::GlobalDecls ::=
+{
+  propagate host, lifted;
+  top.pps = [];
+  top.errors := [];
+  top.defs := [];
+  top.freeVariables = [];
+}
+
+nonterminal Decls with pps, host<Decls>, lifted<Decls>, errors, globalDecls, defs, env, isTopLevel, returnType, freeVariables;
 
 autocopy attribute isTopLevel :: Boolean;
 
@@ -21,7 +49,6 @@ top::Decls ::= h::Decl  t::Decls
     h.freeVariables ++
     removeDefsFromNames(h.defs, t.freeVariables);
   
-  t.globalDeclEnv = error("Demanded globalDeclEnv in consDecl");
   t.env = addEnv(h.defs, top.env);
 }
 
@@ -57,8 +84,6 @@ top::Decl ::= d::Decls
   top.globalDecls := d.globalDecls;
   top.defs := d.defs;
   top.freeVariables = d.freeVariables;
-  
-  d.globalDeclEnv = error("Demanded globalDeclEnv by consDecl");
 }
 
 abstract production variableDecls
@@ -75,6 +100,7 @@ top::Decl ::= storage::[StorageClass]  attrs::[Attribute]  ty::BaseTypeExpr  dcl
   top.freeVariables = ty.freeVariables ++ dcls.freeVariables;
   
   dcls.baseType = ty.typerep;
+  dcls.typeModifiersIn = ty.typeModifiers;
   dcls.isTypedef = false;
   dcls.givenAttributes = attrs;
 }
@@ -101,6 +127,7 @@ top::Decl ::= attrs::[Attribute]  ty::BaseTypeExpr  dcls::Declarators
   top.freeVariables = ty.freeVariables ++ dcls.freeVariables;
   
   dcls.baseType = ty.typerep;
+  dcls.typeModifiersIn = ty.typeModifiers;
   dcls.isTypedef = true;
   dcls.givenAttributes = attrs;
 }
@@ -165,7 +192,7 @@ top::Decl ::= s::String
   -- but used to be the way to put c functions and such in custom sections.
 }
 
-nonterminal Declarators with pps, host<Declarators>, lifted<Declarators>, errors, globalDecls, defs, env, baseType, isTopLevel, isTypedef, givenAttributes, returnType, freeVariables;
+nonterminal Declarators with pps, host<Declarators>, lifted<Declarators>, errors, globalDecls, defs, env, baseType, typeModifiersIn, isTopLevel, isTypedef, givenAttributes, returnType, freeVariables;
 
 abstract production consDeclarator
 top::Declarators ::= h::Declarator  t::Declarators
@@ -192,7 +219,7 @@ top::Declarators ::=
   top.freeVariables = [];
 }
 
-nonterminal Declarator with pps, host<Declarator>, lifted<Declarator>, errors, globalDecls, defs, env, baseType, typerep, sourceLocation, isTopLevel, isTypedef, givenAttributes, returnType, freeVariables;
+nonterminal Declarator with pps, host<Declarator>, lifted<Declarator>, errors, globalDecls, defs, env, baseType, typeModifiersIn, typerep, sourceLocation, isTopLevel, isTypedef, givenAttributes, returnType, freeVariables;
 
 autocopy attribute isTypedef :: Boolean;
 
@@ -286,6 +313,7 @@ top::FunctionDecl ::= storage::[StorageClass]  fnquals::[SpecialSpecifier]  bty:
   top.sourceLocation = name.location;
   
   mty.baseType = bty.typerep;
+  mty.typeModifiersIn = bty.typeModifiers;
   
   body.returnType =
     case mty of
@@ -307,7 +335,6 @@ top::FunctionDecl ::= storage::[StorageClass]  fnquals::[SpecialSpecifier]  bty:
   body.env = addEnv(top.defs ++ parameters.defs ++ decls.defs ++ body.functiondefs, 
                     openScope(addEnv(bty.defs, top.env)));
   
-  decls.globalDeclEnv = error("Demanded globalDeclEnv by consDecl");
   decls.isTopLevel = false;
   
   
@@ -405,6 +432,7 @@ top::ParameterDecl ::= storage::[StorageClass]  bty::BaseTypeExpr  mty::TypeModi
   top.freeVariables = bty.freeVariables ++ mty.freeVariables;
   
   mty.baseType = bty.typerep;
+  mty.typeModifiersIn = bty.typeModifiers;
   
   top.errors <- name.valueRedeclarationCheckNoCompatible;
 }
@@ -638,6 +666,7 @@ top::StructItem ::= attrs::[Attribute]  ty::BaseTypeExpr  dcls::StructDeclarator
   top.localdefs = dcls.localdefs;
   
   dcls.baseType = ty.typerep;
+  dcls.typeModifiersIn = ty.typeModifiers;
   dcls.givenAttributes = attrs;
 }
 abstract production warnStructItem
@@ -653,7 +682,7 @@ top::StructItem ::= msg::[Message]
 }
 
 
-nonterminal StructDeclarators with pps, host<StructDeclarators>, lifted<StructDeclarators>, errors, globalDecls, localdefs, env, baseType, givenAttributes, returnType, freeVariables;
+nonterminal StructDeclarators with pps, host<StructDeclarators>, lifted<StructDeclarators>, errors, globalDecls, localdefs, env, baseType, typeModifiersIn, givenAttributes, returnType, freeVariables;
 
 abstract production consStructDeclarator
 top::StructDeclarators ::= h::StructDeclarator  t::StructDeclarators
@@ -680,7 +709,7 @@ top::StructDeclarators ::=
   top.freeVariables = [];
 }
 
-nonterminal StructDeclarator with pps, host<StructDeclarator>, lifted<StructDeclarator>, errors, globalDecls, localdefs, env, typerep, sourceLocation, baseType, givenAttributes, returnType, freeVariables;
+nonterminal StructDeclarator with pps, host<StructDeclarator>, lifted<StructDeclarator>, errors, globalDecls, localdefs, env, typerep, sourceLocation, baseType, typeModifiersIn, givenAttributes, returnType, freeVariables;
 
 abstract production structField
 top::StructDeclarator ::= name::Name  ty::TypeModifierExpr  attrs::[Attribute]

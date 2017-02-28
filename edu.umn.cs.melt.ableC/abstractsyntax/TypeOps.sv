@@ -319,32 +319,3 @@ Type ::= qs::[Qualifier] base::Type
   base.addedTypeQualifiers = qs;
   return base.withTypeQualifiers;
 }
-
-function freshenRefIds
-Type ::= newEnv::Decorated Env t::Type
-{
-  return case t of
-    tagType(q, refIdTagType(k, n, r)) ->
-      case lookupTag(n, newEnv) of
-        refIdTagItem(tag, refId) :: _ -> tagType(q, refIdTagType(k, n, refId))
-      | _ -> error(s"ref id for tag ${n} not found in new env") --${show(80, showEnv(newEnv))}
-      end
-  | tagType(q, enumTagType(d)) -> tagType(q, enumTagType(d))
-  | atomicType(q, t) -> atomicType(q, freshenRefIds(newEnv, t))
-  | pointerType(q, t)  -> pointerType(q, freshenRefIds(newEnv, t))
-  | arrayType(t, q, sm, sub) -> arrayType(freshenRefIds(newEnv, t), q, sm, sub)
-  | functionType(t, noProtoFunctionType()) ->
-    functionType(freshenRefIds(newEnv, t), noProtoFunctionType())
-  | functionType(t, protoFunctionType(ts, v)) ->
-    functionType(freshenRefIds(newEnv, t), protoFunctionType(map(freshenRefIds(newEnv, _), ts), v))
-  | vectorType(t, s) -> vectorType(freshenRefIds(newEnv, t), s)
-  | noncanonicalType(parenType(t)) -> noncanonicalType(parenType(freshenRefIds(newEnv, t)))
-  | noncanonicalType(decayedType(t1, t2)) ->
-    noncanonicalType(decayedType(freshenRefIds(newEnv, t1), freshenRefIds(newEnv, t2)))
-  | noncanonicalType(typedefType(q, n, t)) ->
-    noncanonicalType(typedefType(q, n, freshenRefIds(newEnv, t)))
-  | noncanonicalType(typeofType(q, t)) ->
-    noncanonicalType(typeofType(q, freshenRefIds(newEnv, t)))
-  | _ -> t
-  end;
-}
