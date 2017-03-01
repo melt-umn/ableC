@@ -18,124 +18,67 @@ top::Decl ::= params::[Name] d::FunctionDecl
   -- we are doing neither
   propagate substituted;
   top.pp = concat([pp"template<", ppImplode(text(", "), map((.pp), params)), pp">", line(), d.pp]);
-  top.errors := -- TODO: check for duplicate parameters
+  
+  local localErrors::[Message] = -- TODO: check for duplicate parameters
     if top.isTopLevel
     then []
     else [err(d.sourceLocation, "Template declarations must be global")];
   
   forwards to
-    case d of
-      functionDecl(_, _, _, _, n, _, _, _) -> 
-        defsDecl([
-          templateDef(
-            n.name,
-            templateItem(params, false, d.sourceLocation, functionDeclaration(d)))])
-    | badFunctionDecl(msg) -> decls(nilDecl())
-    end;
+    if null(localErrors)
+    then
+      case d of
+        functionDecl(_, _, _, _, n, _, _, _) -> 
+          defsDecl([
+            templateDef(
+              n.name,
+              templateItem(params, false, d.sourceLocation, functionDeclaration(d)))])
+      | badFunctionDecl(msg) -> decls(nilDecl())
+      end
+    else warnDecl(localErrors);
 }
 
-abstract production templateVariableDecl
-top::Decl ::= params::[Name]  storage::[StorageClass]  attrs::[Attribute]  ty::BaseTypeExpr  dcl::Declarator
+abstract production templateStructDecl
+top::Decl ::= params::[Name] attrs::[Attribute] n::Name dcls::StructItemList
 {
   -- TODO: Do we substitute the template parameters, or remove them from the substitutions? Right now
   -- we are doing neither
   propagate substituted;
   top.pp = concat([pp"template<", ppImplode(text(", "), map((.pp), params)), pp">", line(),
-                   ppAttributes(attrs), ty.pp, space(), ppImplode(text(", "), dcl.pps), semi()]);
-  top.errors := -- TODO: check for duplicate parameters
+                   pp"struct ", ppAttributes(attrs), text(n.name), space(),
+                   braces(nestlines(2, terminate(cat(semi(),line()), dcls.pps))), semi()]);
+  
+  local localErrors::[Message] = -- TODO: check for duplicate parameters
     if top.isTopLevel
     then []
-    else [err(dcl.sourceLocation, "Template declarations must be global")];
+    else [err(n.location, "Template declarations must be global")];
   
   forwards to
-    case dcl of
-      declarator(n, _, _, _) -> 
-        defsDecl([
-          templateDef(
-            n.name,
-            templateItem(
-              params, false,
-              dcl.sourceLocation,
-              typedefDecls(attrs, ty, consDeclarator(dcl, nilDeclarator()))))])
-    | errorDeclarator(msg) -> decls(nilDecl())
-    end;
+    if null(localErrors)
+    then
+      defsDecl([
+        templateDef(
+          n.name,
+          templateItem(
+            params, true, n.location,
+            typedefDecls(
+              [],
+              structTypeExpr(
+                [],
+                structDecl(
+                  gccAttribute(
+                    consAttrib(
+                      appliedAttrib(
+                        attribName(name("refId", location=builtin)),
+                        consExpr(
+                          stringLiteral(s"\"edu:umn:cs:melt:exts:ableC:templating:${n.name}\"", location=builtin),
+                          nilExpr())),
+                      nilAttrib())) :: attrs,
+                  justName(n),
+                  dcls,
+                  location=n.location)),
+              consDeclarator(
+                declarator(n, baseTypeExpr(), [], nothingInitializer()),
+                nilDeclarator()))))])
+    else warnDecl(localErrors);
 }
-
-abstract production templateTypedefDecl
-top::Decl ::= params::[Name]  attrs::[Attribute]  ty::BaseTypeExpr  dcl::Declarator
-{
-  -- TODO: Do we substitute the template parameters, or remove them from the substitutions? Right now
-  -- we are doing neither
-  propagate substituted;
-  top.pp = concat([pp"template<", ppImplode(text(", "), map((.pp), params)), pp">", line(),
-                   pp"typedef ", ppAttributes(attrs), ty.pp, space(), ppImplode(text(", "), dcl.pps), semi()]);
-  top.errors := -- TODO: check for duplicate parameters
-    if top.isTopLevel
-    then []
-    else [err(dcl.sourceLocation, "Template declarations must be global")];
-  
-  forwards to
-    case dcl of
-      declarator(n, _, _, _) -> 
-        defsDecl([
-          templateDef(
-            n.name,
-            templateItem(
-              params, true,
-              dcl.sourceLocation,
-              typedefDecls(attrs, ty, consDeclarator(dcl, nilDeclarator()))))])
-    | errorDeclarator(msg) -> decls(nilDecl())
-    end;
-}
-
-{-
-aspect production variableDecls
-top::Decl ::= storage::[StorageClass]  attrs::[Attribute]  ty::BaseTypeExpr  dcls::Declarators
-{
-  top.templateErrors =
-    case dcls of
-      nilDeclarator() -> []
-    | consDeclarator(errorDeclarator(msg), nilDeclarator()) -> msg
-    | consDeclarator(dcl, nilDeclarator()) -> []
-    | consDeclarator(dcl, consDeclarator(dcl1, _)) ->
-        [err(dcl1.sourceLocation, "Template declarations can define no more than one name")]
-    end;
-  
-  top.templateDefs =
-    ty.defs ++
-    case dcls of
-      nilDeclarator() -> []
-    | consDeclarator(dcl, _) ->
-      case dcl of
-        declarator(n, _, _, _) ->
-          [templateDef(n.name, templateItem(top.templateParamsIn, false, dcl.sourceLocation, top))]
-      | errorDeclarator(_) -> []
-      end
-    end;
-}
-
-aspect production typedefDecls
-top::Decl ::= attrs::[Attribute]  ty::BaseTypeExpr  dcls::Declarators
-{
-  top.templateErrors =
-    case dcls of
-      nilDeclarator() -> []
-    | consDeclarator(errorDeclarator(msg), nilDeclarator()) -> msg
-    | consDeclarator(dcl, nilDeclarator()) -> []
-    | consDeclarator(dcl, consDeclarator(dcl1, _)) ->
-        [err(dcl1.sourceLocation, "Template declarations can define no more than one name")]
-    end;
-  
-  top.templateDefs =
-    ty.defs ++
-    case dcls of
-      nilDeclarator() -> []
-    | consDeclarator(dcl, _) ->
-      case dcl of
-        declarator(n, _, _, _) ->
-          [templateDef(n.name, templateItem(top.templateParamsIn, true, dcl.sourceLocation, top))]
-      | errorDeclarator(_) -> []
-      end
-    end;
-}
--}

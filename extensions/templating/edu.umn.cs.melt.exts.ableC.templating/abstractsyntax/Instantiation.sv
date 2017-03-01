@@ -67,6 +67,9 @@ top::BaseTypeExpr ::= q::[Qualifier]  n::Name ts::TypeNames
     [pair(
        mangledName,
        subDecl(
+         refIdSubstitution(
+           s"edu:umn:cs:melt:exts:ableC:templating:${n.name}",
+           s"edu:umn:cs:melt:exts:ableC:templating:${mangledName}") ::
          nameSubstitution(n.name, name(mangledName, location=builtin)) ::
            zipWith(typedefSubstitution, map((.name), templateItem.templateParams), ts.typereps),
          templateItem.decl))];

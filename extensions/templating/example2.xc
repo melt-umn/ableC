@@ -2,10 +2,10 @@
 #include <math.h>
 
 template<a>
-typedef struct __attribute__((refId("_loc_example_"))) loc {
+struct loc {
   a x;
   a y;
-} loc;
+};
 
 template<a>
 a distance(loc<a> p, loc<a> q) {

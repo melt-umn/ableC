@@ -14,6 +14,11 @@ imports edu:umn:cs:melt:exts:ableC:templating:abstractsyntax;
 import edu:umn:cs:melt:exts:ableC:templating:mda_test;
 
 marking terminal Template_t /template[\ ]*</ lexer classes {Ckeyword};
+terminal TemplateStruct_t 'struct' lexer classes {Ckeyword};
+
+disambiguate STRUCT, TemplateStruct_t {
+  pluck TemplateStruct_t;
+}
 
 concrete production templateDeclaration_c
 top::ExternalDeclaration_c ::= Template_t params::TemplateParams_c '>' decl::TemplateDecl_c
@@ -46,39 +51,21 @@ autocopy attribute params::[ast:Name];
 closed nonterminal TemplateDecl_c with location, params, ast<ast:Decl>, isTypedef, declaredIdents;
 
 concrete production templateFunctionDecl_c
-top::TemplateDecl_c ::= decl::FunctionDefinition_c
+top::TemplateDecl_c ::= dcl::FunctionDefinition_c
 {
-  top.ast = templateFunctionDecl(top.params, decl.ast);
+  top.ast = templateFunctionDecl(top.params, dcl.ast);
   top.isTypedef = false;
   top.declaredIdents = [];
 }
 
 -- Typedef or variable decl with exactly 1 declarator
-concrete production templateDecl_c
-top::TemplateDecl_c ::= ds::DeclarationSpecifiers_c idcl::InitDeclarator_c  ';'
-{
-  ds.givenQualifiers = ds.typeQualifiers;
+concrete production templateStructDecl_c
+top::TemplateDecl_c ::= TemplateStruct_t id::Identifier_t '{' ss::StructDeclarationList_c '}'  ';'
+{ 
+  top.ast = templateStructDecl(top.params, [], ast:fromId(id), ast:foldStructItem(ss.ast));
   
-  local bt::ast:BaseTypeExpr =
-    ast:figureOutTypeFromSpecifiers(ds.location, ds.typeQualifiers, ds.preTypeSpecifiers, ds.realTypeSpecifiers, ds.mutateTypeSpecifiers);
-  
-  top.ast = 
-    if ds.isTypedef then
-      if !null(ds.storageClass) then
-        templateTypedefDecl(
-          top.params,
-          ds.attributes, 
-          ast:warnTypeExpr(
-            [err(ds.location, "Typedef declaration also claims another storage class")],
-            bt),
-          head(idcl.ast))
-      else
-        templateTypedefDecl(top.params, ds.attributes, bt, head(idcl.ast))
-    else
-      templateVariableDecl(top.params, ds.storageClass, ds.attributes, bt, head(idcl.ast));
-  
-  top.isTypedef = ds.isTypedef;
-  top.declaredIdents = [idcl.declaredIdent];
+  top.isTypedef = true;
+  top.declaredIdents = [ast:fromId(id)];
 }
 
 closed nonterminal Names_c with location, ast<[ast:Name]>;

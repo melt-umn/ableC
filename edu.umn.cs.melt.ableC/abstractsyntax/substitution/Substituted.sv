@@ -37,8 +37,9 @@ autocopy attribute nameIn::String;
 synthesized attribute nameSub::Maybe<Name>;
 synthesized attribute typedefSub::Maybe<Type>;
 synthesized attribute declRefSub::Maybe<Expr>;
+synthesized attribute refIdSub::Maybe<String>;
 
-nonterminal Substitutions with nameIn, nameSub, typedefSub, declRefSub;
+nonterminal Substitutions with nameIn, nameSub, typedefSub, declRefSub, refIdSub;
 
 abstract production consSubstitution
 top::Substitutions ::= h::Substitution t::Substitutions
@@ -46,6 +47,7 @@ top::Substitutions ::= h::Substitution t::Substitutions
   top.nameSub = orElse(h.nameSub, t.nameSub);
   top.typedefSub = orElse(h.typedefSub, t.typedefSub);
   top.declRefSub = orElse(h.declRefSub, t.declRefSub);
+  top.refIdSub = orElse(h.refIdSub, t.refIdSub);
 }
 
 abstract production nilSubstitution
@@ -54,9 +56,10 @@ top::Substitutions ::=
   top.nameSub = nothing();
   top.typedefSub = nothing();
   top.declRefSub = nothing();
+  top.refIdSub = nothing();
 }
 
-closed nonterminal Substitution with nameIn, nameSub, typedefSub, declRefSub;
+closed nonterminal Substitution with nameIn, nameSub, typedefSub, declRefSub, refIdSub;
 
 aspect default production
 top::Substitution ::= 
@@ -64,6 +67,7 @@ top::Substitution ::=
   top.nameSub = nothing();
   top.typedefSub = nothing();
   top.declRefSub = nothing();
+  top.refIdSub = nothing();
 }
 
 -- Substitutes a name for another name in all places
@@ -85,6 +89,13 @@ abstract production declRefSubstitution
 top::Substitution ::= name::String sub::Expr
 {
   top.declRefSub = if top.nameIn == name then just(sub) else nothing();
+}
+
+-- Substitutes the 'refId' attribute on a struct (ableC host extension) for a new refId
+abstract production refIdSubstitution
+top::Substitution ::= refId::String sub::String
+{
+  top.refIdSub = if top.nameIn == refId then just(sub) else nothing();
 }
 
 -- 'occurs on' definitions for every nonterminal
