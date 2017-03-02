@@ -47,6 +47,7 @@ top::RealType ::=
 abstract production stringTypeExpr 
 top::BaseTypeExpr ::= 
 {
+  propagate substituted;
   forwards to directTypeExpr(stringType());
 }
 

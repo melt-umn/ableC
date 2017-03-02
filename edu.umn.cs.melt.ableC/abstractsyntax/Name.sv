@@ -20,14 +20,15 @@ synthesized attribute valueItem :: Decorated ValueItem;
 synthesized attribute labelItem :: Decorated LabelItem;
 synthesized attribute tagItem :: Decorated TagItem;
 
-nonterminal Name with location, name, pp, host<Name>, lifted<Name>, env, valueLocalLookup, labelRedeclarationCheck, valueLookupCheck, labelLookupCheck, tagLookupCheck, valueItem, labelItem, tagItem, tagLocalLookup, tagHasForwardDcl, tagRefId, valueRedeclarationCheck, valueRedeclarationCheckNoCompatible;
+nonterminal Name with location, name, pp, host<Name>, lifted<Name>, env, valueLocalLookup, labelRedeclarationCheck, valueLookupCheck, labelLookupCheck, tagLookupCheck, valueItem, labelItem, tagItem, tagLocalLookup, tagHasForwardDcl, tagRefId, valueRedeclarationCheck, valueRedeclarationCheckNoCompatible;--
 
 abstract production name
 top::Name ::= n::String
 {
+  propagate host, lifted;
+  
   top.name = n;
   top.pp = text(n);
-  propagate host, lifted;
   
   top.valueLocalLookup = lookupValueInLocalScope(n, top.env);
   top.valueRedeclarationCheck = doValueRedeclarationCheck(_, top);
