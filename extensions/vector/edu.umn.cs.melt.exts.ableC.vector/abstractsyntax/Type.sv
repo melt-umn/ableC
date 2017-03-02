@@ -3,7 +3,7 @@ grammar edu:umn:cs:melt:exts:ableC:vector:abstractsyntax;
 function mkVectorTypedefGlobalDecls
 [Pair<String Decl>] ::= sub::Type
 {
-  local vectorTypedefDecl::Decl = parseDecl(s"""
+  local vectorTypedefDecl::Decl = parseDecl([], s"""
 typedef struct __attribute__((refId("edu:umn:cs:melt:exts:ableC:vector:_vector_${sub.mangledName}_s"))) _vector_${sub.mangledName}_s {
   struct _vector_info _info;
   sub_type *_contents;

@@ -1,5 +1,15 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax:construction:parsing;
 
+function mkProtoTypedefs
+String ::= names::[String]
+{
+  return
+    case names of
+      h::t -> s"proto_typedef ${head(names)}; ${mkProtoTypedefs(tail(names))}"
+    | [] -> ""
+    end;
+}
+
 -- TODO: Maybe these belong in core or langutil?
 function padRight
 String ::= len::Integer s::String
