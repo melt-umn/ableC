@@ -19,7 +19,7 @@ top::Stmt ::=
   iter::Expr
   body::Stmt
 {
-  top.functiondefs = []; -- We need to close a circularity here
+  top.functiondefs := []; -- We need to close a circularity here
 
 -- We have the variable declaration here, so we can use that just fine.
 -- We need to decomposed 'cond' to determine if its < or <=

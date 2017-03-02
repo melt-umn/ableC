@@ -605,7 +605,7 @@ top::StructItemList ::= h::StructItem  t::StructItemList
   top.freeVariables =
     h.freeVariables ++
     removeDefsFromNames(h.defs, t.freeVariables);
-  top.localdefs = h.localdefs ++ t.localdefs;
+  top.localdefs := h.localdefs ++ t.localdefs;
   
   t.env = addEnv(h.defs ++ h.localdefs, h.env);
 }
@@ -619,7 +619,7 @@ top::StructItemList ::=
   top.globalDecls := [];
   top.defs := [];
   top.freeVariables = [];
-  top.localdefs = [];
+  top.localdefs := [];
 }
 
 nonterminal EnumItemList with pps, host<EnumItemList>, lifted<EnumItemList>, errors, globalDecls, defs, env, containingEnum, returnType, freeVariables;
@@ -663,7 +663,7 @@ top::StructItem ::= attrs::[Attribute]  ty::BaseTypeExpr  dcls::StructDeclarator
   top.globalDecls := ty.globalDecls ++ dcls.globalDecls;
   top.defs := ty.defs;
   top.freeVariables = ty.freeVariables ++ dcls.freeVariables;
-  top.localdefs = dcls.localdefs;
+  top.localdefs := dcls.localdefs;
   
   dcls.baseType = ty.typerep;
   dcls.typeModifiersIn = ty.typeModifiers;
@@ -678,7 +678,7 @@ top::StructItem ::= msg::[Message]
   top.globalDecls := [];
   top.defs := [];
   top.freeVariables = [];
-  top.localdefs = [];
+  top.localdefs := [];
 }
 
 
@@ -691,7 +691,7 @@ top::StructDeclarators ::= h::StructDeclarator  t::StructDeclarators
   top.pps = h.pps ++ t.pps;
   top.errors := h.errors ++ t.errors;
   top.globalDecls := h.globalDecls ++ t.globalDecls;
-  top.localdefs = h.localdefs ++ t.localdefs;
+  top.localdefs := h.localdefs ++ t.localdefs;
   top.freeVariables =
     h.freeVariables ++
     removeDefsFromNames(h.localdefs, t.freeVariables);
@@ -705,7 +705,7 @@ top::StructDeclarators ::=
   top.pps = [];
   top.errors := [];
   top.globalDecls := [];
-  top.localdefs = [];
+  top.localdefs := [];
   top.freeVariables = [];
 }
 
@@ -718,7 +718,7 @@ top::StructDeclarator ::= name::Name  ty::TypeModifierExpr  attrs::[Attribute]
   top.pps = [concat([ty.lpp, name.pp, ty.rpp, ppAttributesRHS(attrs)])];
   top.errors := ty.errors;
   top.globalDecls := ty.globalDecls;
-  top.localdefs = [valueDef(name.name, fieldValueItem(top))];
+  top.localdefs := [valueDef(name.name, fieldValueItem(top))];
   top.freeVariables = ty.freeVariables;
   top.typerep = ty.typerep;
   top.sourceLocation = name.location;
@@ -741,7 +741,7 @@ top::StructDeclarator ::= name::MaybeName  ty::TypeModifierExpr  e::Expr  attrs:
     | just(n) -> [valueDef(n.name, fieldValueItem(top))]
     | _ -> []
     end;
-  top.localdefs = thisdcl;
+  top.localdefs := thisdcl;
   top.freeVariables = ty.freeVariables ++ e.freeVariables;
   top.typerep = ty.typerep;
   top.sourceLocation = 
@@ -763,7 +763,7 @@ top::StructDeclarator ::= msg::[Message]
   top.pps = [];
   top.errors := msg;
   top.globalDecls := [];
-  top.localdefs = [];
+  top.localdefs := [];
   top.freeVariables = [];
   top.typerep = errorType();
   top.sourceLocation = loc("nowhere", -1, -1, -1, -1, -1, -1); -- TODO fix this? add locaiton maybe?

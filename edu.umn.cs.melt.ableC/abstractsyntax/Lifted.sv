@@ -113,7 +113,7 @@ top::Stmt ::= globalDecls::[Pair<String Decl>] lifted::Stmt
   
   -- Define other attributes to be the same as on lifted
   top.errors := lifted.errors;
-  top.functiondefs = lifted.functiondefs;
+  top.functiondefs := lifted.functiondefs;
   top.defs := lifted.defs;
   top.freeVariables = lifted.freeVariables;
 }

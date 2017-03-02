@@ -30,7 +30,7 @@ synthesized attribute defs :: [Def] with ++;
  - For Function-Scope definitions (e.g. Labels in functions)
  - @see defs for normal definitions
  -}
-synthesized attribute functiondefs :: [Def];
+synthesized attribute functiondefs :: [Def] with ++;
 {--
  - For local-scope only definitions (e.g. struct and union fields)
  - Used in conjunction with 'tagEnv'.
@@ -40,7 +40,7 @@ synthesized attribute functiondefs :: [Def];
  -
  - @see defs for normal definitions
  -}
-synthesized attribute localdefs :: [Def];
+synthesized attribute localdefs :: [Def] with ++;
 {--
  - The environment, on which all lookups are performed.
  -}

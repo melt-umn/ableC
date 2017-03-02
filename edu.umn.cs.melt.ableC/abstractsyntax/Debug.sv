@@ -31,7 +31,7 @@ s::Stmt ::= txt::String
   s.globalDecls := [];
   s.defs := [];
   s.freeVariables = [];
-  s.functiondefs = [];
+  s.functiondefs := [];
 }
 
 abstract production txtDecl
