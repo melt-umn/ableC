@@ -30,11 +30,10 @@ parser exprParser :: cst:Expr_c {
 
 -- Wrapper functions to call parsers and return asts
 function parseDecls
-Decls ::= typeNames::[String] text::String
+Decls ::= text::String
 {
-  local protoText::String = s"${mkProtoTypedefs(typeNames)}\n${text}";
   local result::ParseResult<cst:TranslationUnit_c> =
-    declsParser(protoText, s"parseDecls(\"\"\"\n${foldLineNums(protoText)}\n\"\"\")");
+    declsParser(text, s"parseDecls(\"\"\"\n${foldLineNums(text)}\n\"\"\")");
   return
     if result.parseSuccess
     then foldDecl(result.parseTree.ast)
@@ -42,11 +41,10 @@ Decls ::= typeNames::[String] text::String
 }
 
 function parseDecl
-Decl ::= typeNames::[String] text::String
+Decl ::= text::String
 {
-  local protoText::String = s"${mkProtoTypedefs(typeNames)}\n${text}";
   local result::ParseResult<cst:ExternalDeclaration_c> =
-    declParser(protoText, s"parseDecl(\"\"\"\n${foldLineNums(protoText)}\n\"\"\")");
+ declParser(text, s"parseDecl(\"\"\"\n${foldLineNums(text)}\n\"\"\")");
   return
     if result.parseSuccess
     then result.parseTree.ast
@@ -54,11 +52,10 @@ Decl ::= typeNames::[String] text::String
 }
 
 function parseStmt
-Stmt ::= typeNames::[String] text::String
+Stmt ::= text::String
 {
-  local protoText::String = s"${mkProtoTypedefs(typeNames)}\n${text}";
   local result::ParseResult<cst:BlockItemList_c> =
-    stmtParser(protoText, s"parseStmt(\"\"\"\n${foldLineNums(protoText)}\n\"\"\")");
+    stmtParser(text, s"parseStmt(\"\"\"\n${foldLineNums(text)}\n\"\"\")");
   return
     if result.parseSuccess
     then foldStmt(result.parseTree.ast)
@@ -66,14 +63,10 @@ Stmt ::= typeNames::[String] text::String
 }
 
 function parseExpr
-Expr ::= typeNames::[String] text::String
+Expr ::= text::String
 {
-  local protoText::String =
-    if !null(typeNames)
-    then s"({${mkProtoTypedefs(typeNames)}\n${text}\n;})"
-    else text;
   local result::ParseResult<cst:Expr_c> =
-    exprParser(protoText, s"parseExpr(\"\"\"\n${foldLineNums(protoText)}\n\"\"\")");
+    exprParser(text, s"parseExpr(\"\"\"\n${foldLineNums(text)}\n\"\"\")");
   return
     if result.parseSuccess
     then result.parseTree.ast
