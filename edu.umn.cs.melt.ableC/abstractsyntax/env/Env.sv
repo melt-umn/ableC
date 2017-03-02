@@ -24,6 +24,12 @@ closed nonterminal Def
 {--
  - An attribute on abstract syntax trees that represents the definitions
  - that escape the scope of the corresponding subtree.
+ - There may be cases where an extension writer may wish to add additional defs for a new namespace to a host production,
+ - for example, putting a unique identifier for every name that is declared in the environment. For this to be possible, we
+ - make defs a collection attribute so that extensions can aspect host productions and add new defs. To avoid interference,
+ - we have the invariant that any new defs added must only contain Defs that affect the namespace being defined - that is,
+ - we can only make use of this 'shortcut' of adding new defs to the environment when the same thing could be implemented
+ - in a more complex way by mirroring defs and env with another pair of synthesized and inherited attributes.
  -}
 synthesized attribute defs :: [Def] with ++;
 {--
