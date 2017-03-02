@@ -22,8 +22,7 @@ Stmt ::= n::String subType::Type size::Expr
   -- TODO: Making this global and substituting for n and the struct name would be more efficient
   -- but less readable.  
   local initVectorStmt::Stmt = parseStmt(s"""
-proto_typedef vec_type;
-proto_typedef sub_type;
+proto_typedef vec_type, sub_type;
 vec_type ${n} = GC_malloc(sizeof(struct _vector_${subType.mangledName}_s));
 _init_vector(&(${n}->_info), (void**)&(${n}->_contents), sizeof(sub_type), size);
 """);
@@ -93,9 +92,7 @@ top::Exprs ::=
 }
 
 global copyVectorFunDecl::Decls = parseDecls(s"""
-proto_typedef size_t;
-proto_typedef vec_type;
-proto_typedef sub_type;
+proto_typedef size_t, vec_type, sub_type;
 static vec_type fun_name(vec_type vec) {
   vec_type result = GC_malloc(sizeof(struct struct_name));
   _init_vector(&(result->_info), (void**)&(result->_contents), sizeof(sub_type), vec.length);
@@ -165,8 +162,7 @@ top::Expr ::= e1::Expr e2::Expr
 }
 
 global appendAssignVectorFunDecl::Decls = parseDecls(s"""
-proto_typedef size_t;
-proto_typedef vec_type;
+proto_typedef size_t, vec_type;
 static vec_type fun_name(vec_type vec1, vec_type vec2) {
   size_t vec1_length = vec1.length;
 
@@ -207,8 +203,7 @@ top::Expr ::= e1::Expr e2::Expr
 }
 
 global eqVectorFunDecl::Decls = parseDecls(s"""
-proto_typedef size_t;
-proto_typedef vec_type;
+proto_typedef size_t, vec_type;
 static _Bool fun_name(vec_type vec1, vec_type vec2) {
   if (vec1.length != vec2.length)
     return 0;
@@ -323,8 +318,7 @@ top::Expr ::= e::Expr
 }
 
 global subscriptVectorExpr::Expr = parseExpr(s"""
-({proto_typedef vec_type;
-  proto_typedef size_t;
+({proto_typedef size_t, vec_type;
   vec_type temp_vec = vec;
   size_t temp_index = index;
   _check_index_vector(temp_vec->_info, (void*)temp_vec->_contents, temp_index);
@@ -361,8 +355,7 @@ top::Expr ::= e1::Expr e2::Expr
 }
 
 global subscriptAssignVectorExpr::Expr = parseExpr(s"""
-({proto_typedef vec_type;
-  proto_typedef size_t;
+({proto_typedef size_t, vec_type;
   vec_type temp_vec = vec;
   size_t temp_index = index;
   _maybe_grow_vector_by_one(&temp_vec->_info, (void**)&temp_vec->_contents, temp_index);
@@ -413,9 +406,7 @@ top::Expr ::= lhs::Expr index::Expr op::AssignOp rhs::Expr
 }
 
 global showVectorFunDecl::Decls = parseDecls(s"""
-proto_typedef size_t;
-proto_typedef vec_type;
-proto_typedef str_type;
+proto_typedef size_t, vec_type, str_type;
 static str_type fun_name(vec_type vec) {
   if (vec.length == 0)
     return "[]";
