@@ -11,10 +11,18 @@ imports edu:umn:cs:melt:ableC:abstractsyntax;
 marking terminal LexerHackTypedefProto_t 'proto_typedef' lexer classes {Ckeyword};
 
 concrete production lexerHackTypedefProto
-top::Declaration_c ::= 'proto_typedef' id::Identifier_t ';'
+top::Declaration_c ::= 'proto_typedef' ids::IdentifierList_c ';'
 {
   top.ast = decls(nilDecl());
 }
 action {
-  context = lh:addTypenamesToScope([fromId(id)], context);
+  context = lh:addTypenamesToScope(ids.declaredIdents, context);
 }
+
+nonterminal IdentifierList_c with declaredIdents;
+
+concrete productions top::IdentifierList_c
+| id::Identifier_t
+    { top.declaredIdents = [fromId(id)]; }
+| h::IdentifierList_c ',' t::Identifier_t
+    { top.declaredIdents = fromId(t) :: h.declaredIdents; }
