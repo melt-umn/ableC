@@ -30,10 +30,11 @@ parser exprParser :: cst:Expr_c {
 
 -- Wrapper functions to call parsers and return asts
 function parseDecls
-Decls ::= text::String
+Decls ::= typeNames::[String] text::String
 {
+  local protoText::String = s"${mkProtoTypedefs(typeNames)}\n${text}";
   local result::ParseResult<cst:TranslationUnit_c> =
-    declsParser(text, s"parseDecls(\"\"\"\n${foldLineNums(text)}\n\"\"\")");
+    declsParser(protoText, s"parseDecls(\"\"\"\n${foldLineNums(protoText)}\n\"\"\")");
   return
     if result.parseSuccess
     then foldDecl(result.parseTree.ast)
@@ -41,10 +42,11 @@ Decls ::= text::String
 }
 
 function parseDecl
-Decl ::= text::String
+Decl ::= typeNames::[String] text::String
 {
+  local protoText::String = s"${mkProtoTypedefs(typeNames)}\n${text}";
   local result::ParseResult<cst:ExternalDeclaration_c> =
- declParser(text, s"parseDecl(\"\"\"\n${foldLineNums(text)}\n\"\"\")");
+    declParser(protoText, s"parseDecl(\"\"\"\n${foldLineNums(protoText)}\n\"\"\")");
   return
     if result.parseSuccess
     then result.parseTree.ast
@@ -52,10 +54,11 @@ Decl ::= text::String
 }
 
 function parseStmt
-Stmt ::= text::String
+Stmt ::= typeNames::[String] text::String
 {
+  local protoText::String = s"${mkProtoTypedefs(typeNames)}\n${text}";
   local result::ParseResult<cst:BlockItemList_c> =
-    stmtParser(text, s"parseStmt(\"\"\"\n${foldLineNums(text)}\n\"\"\")");
+    stmtParser(protoText, s"parseStmt(\"\"\"\n${foldLineNums(protoText)}\n\"\"\")");
   return
     if result.parseSuccess
     then foldStmt(result.parseTree.ast)
@@ -63,10 +66,14 @@ Stmt ::= text::String
 }
 
 function parseExpr
-Expr ::= text::String
+Expr ::= typeNames::[String] text::String
 {
+  local protoText::String =
+    if !null(typeNames)
+    then s"({${mkProtoTypedefs(typeNames)}\n${text}\n;})"
+    else text;
   local result::ParseResult<cst:Expr_c> =
-    exprParser(text, s"parseExpr(\"\"\"\n${foldLineNums(text)}\n\"\"\")");
+    exprParser(protoText, s"parseExpr(\"\"\"\n${foldLineNums(protoText)}\n\"\"\")");
   return
     if result.parseSuccess
     then result.parseTree.ast
