@@ -21,7 +21,9 @@ Stmt ::= n::String subType::Type size::Expr
 {
   -- TODO: Making this global and substituting for n and the struct name would be more efficient
   -- but less readable.  
-  local initVectorStmt::Stmt = parseStmt(["vec_type", "sub_type"], s"""
+  local initVectorStmt::Stmt = parseStmt(s"""
+proto_typedef vec_type;
+proto_typedef sub_type;
 vec_type ${n} = GC_malloc(sizeof(struct _vector_${subType.mangledName}_s));
 _init_vector(&(${n}->_info), (void**)&(${n}->_contents), sizeof(sub_type), size);
 """);
@@ -90,7 +92,10 @@ top::Exprs ::=
   top.vectorInitTrans = nullStmt();
 }
 
-global copyVectorFunDecl::Decls = parseDecls(["size_t", "vec_type", "sub_type"], s"""
+global copyVectorFunDecl::Decls = parseDecls(s"""
+proto_typedef size_t;
+proto_typedef vec_type;
+proto_typedef sub_type;
 static vec_type fun_name(vec_type vec) {
   vec_type result = GC_malloc(sizeof(struct struct_name));
   _init_vector(&(result->_info), (void**)&(result->_contents), sizeof(sub_type), vec.length);
@@ -159,7 +164,9 @@ top::Expr ::= e1::Expr e2::Expr
       location=builtin);
 }
 
-global appendAssignVectorFunDecl::Decls = parseDecls(["size_t", "vec_type"], s"""
+global appendAssignVectorFunDecl::Decls = parseDecls(s"""
+proto_typedef size_t;
+proto_typedef vec_type;
 static vec_type fun_name(vec_type vec1, vec_type vec2) {
   size_t vec1_length = vec1.length;
 
@@ -199,7 +206,9 @@ top::Expr ::= e1::Expr e2::Expr
       location=builtin);
 }
 
-global eqVectorFunDecl::Decls = parseDecls(["size_t", "vec_type"], s"""
+global eqVectorFunDecl::Decls = parseDecls(s"""
+proto_typedef size_t;
+proto_typedef vec_type;
 static _Bool fun_name(vec_type vec1, vec_type vec2) {
   if (vec1.length != vec2.length)
     return 0;
@@ -313,8 +322,10 @@ top::Expr ::= e::Expr
   forwards to mkErrorCheck(checkVectorHeaderDef("_init_vector", top.location, top.env), fwrd);
 }
 
-global subscriptVectorExpr::Expr = parseExpr(["size_t", "vec_type"], s"""
-({vec_type temp_vec = vec;
+global subscriptVectorExpr::Expr = parseExpr(s"""
+({proto_typedef vec_type;
+  proto_typedef size_t;
+  vec_type temp_vec = vec;
   size_t temp_index = index;
   _check_index_vector(temp_vec->_info, (void*)temp_vec->_contents, temp_index);
   temp_vec->_contents[temp_index];})
@@ -349,8 +360,10 @@ top::Expr ::= e1::Expr e2::Expr
   forwards to mkErrorCheck(checkVectorHeaderDef("_check_index_vector", top.location, top.env), fwrd);
 }
 
-global subscriptAssignVectorExpr::Expr = parseExpr(["size_t", "vec_type"], s"""
-({vec_type temp_vec = vec;
+global subscriptAssignVectorExpr::Expr = parseExpr(s"""
+({proto_typedef vec_type;
+  proto_typedef size_t;
+  vec_type temp_vec = vec;
   size_t temp_index = index;
   _maybe_grow_vector_by_one(&temp_vec->_info, (void**)&temp_vec->_contents, temp_index);
   subscript_assign_contents_index;})
@@ -399,7 +412,7 @@ top::Expr ::= lhs::Expr index::Expr op::AssignOp rhs::Expr
   forwards to mkErrorCheck(checkVectorHeaderDef("_maybe_grow_vector_by_one", top.location, top.env), fwrd);
 }
 
-global showVectorFunDecl::Decls = parseDecls(["size_t", "vec_type", "str_type"], s"""
+global showVectorFunDecl::Decls = parseDecls(s"""
 proto_typedef size_t;
 proto_typedef vec_type;
 proto_typedef str_type;
