@@ -1,9 +1,9 @@
 grammar edu:umn:cs:melt:exts:ableC:closure:abstractsyntax;
 
 abstract production applyExpr
-e::Expr ::= fn::Expr args::Exprs
+top::Expr ::= fn::Expr args::Exprs
 {
-  e.pp = parens(concat([fn.pp, parens(ppImplode(cat(comma(), space()), args.pps))]));
+  top.pp = parens(concat([fn.pp, parens(ppImplode(cat(comma(), space()), args.pps))]));
   
   local localErrors :: [Message] =
     case fn.typerep of
@@ -13,7 +13,7 @@ e::Expr ::= fn::Expr args::Exprs
     end ++
     fn.errors ++ args.errors;
   
-  e.typerep =
+  top.typerep =
     case fn.typerep of
       closureType(_, param, res) -> res
     | _ -> errorType()
@@ -34,16 +34,16 @@ e::Expr ::= fn::Expr args::Exprs
     stmtExpr(
       declStmt(
         variableDecls([], [],
-          typedefTypeExpr([], name("_closure", location=builtIn())),
+          typedefTypeExpr([], name("_closure", location=builtin)),
           consDeclarator(
             declarator(
-              name("_temp_closure", location=builtIn()),
+              name("_temp_closure", location=builtin),
               baseTypeExpr(),
               [],
               justInitializer(exprInitializer(fn))),
             nilDeclarator()))),
        call,
-       location=builtIn());
+       location=builtin);
   
   local call::Expr =
     callExpr(
@@ -69,22 +69,22 @@ e::Expr ::= fn::Expr args::Exprs
         end,
         memberExpr(
           declRefExpr(
-            name("_temp_closure", location=builtIn()),
-            location=builtIn()),
+            name("_temp_closure", location=builtin),
+            location=builtin),
           true,
-          name("fn", location=builtIn()),
-          location=builtIn()),
-        location=builtIn()),
+          name("fn", location=builtin),
+          location=builtin),
+        location=builtin),
       consExpr(
         memberExpr(
           declRefExpr(
-            name("_temp_closure", location=builtIn()),
-            location=builtIn()),
+            name("_temp_closure", location=builtin),
+            location=builtin),
           true,
-          name("env", location=builtIn()),
-          location=builtIn()),
+          name("env", location=builtin),
+          location=builtin),
         args),
-      location=builtIn());
+      location=builtin);
 }
 
 function getParams
