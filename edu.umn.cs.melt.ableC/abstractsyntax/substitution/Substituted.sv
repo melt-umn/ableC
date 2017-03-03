@@ -37,8 +37,9 @@ autocopy attribute nameIn::String;
 synthesized attribute nameSub::Maybe<Name>;
 synthesized attribute typedefSub::Maybe<Type>;
 synthesized attribute declRefSub::Maybe<Expr>;
+synthesized attribute stmtSub::Maybe<Stmt>;
 
-nonterminal Substitutions with nameIn, nameSub, typedefSub, declRefSub;
+nonterminal Substitutions with nameIn, nameSub, typedefSub, declRefSub, stmtSub;
 
 abstract production consSubstitution
 top::Substitutions ::= h::Substitution t::Substitutions
@@ -46,6 +47,7 @@ top::Substitutions ::= h::Substitution t::Substitutions
   top.nameSub = orElse(h.nameSub, t.nameSub);
   top.typedefSub = orElse(h.typedefSub, t.typedefSub);
   top.declRefSub = orElse(h.declRefSub, t.declRefSub);
+  top.stmtSub = orElse(h.stmtSub, t.stmtSub);
 }
 
 abstract production nilSubstitution
@@ -54,9 +56,10 @@ top::Substitutions ::=
   top.nameSub = nothing();
   top.typedefSub = nothing();
   top.declRefSub = nothing();
+  top.stmtSub = nothing();
 }
 
-closed nonterminal Substitution with nameIn, nameSub, typedefSub, declRefSub;
+closed nonterminal Substitution with nameIn, nameSub, typedefSub, declRefSub, stmtSub;
 
 aspect default production
 top::Substitution ::= 
@@ -64,6 +67,7 @@ top::Substitution ::=
   top.nameSub = nothing();
   top.typedefSub = nothing();
   top.declRefSub = nothing();
+  top.stmtSub = nothing();
 }
 
 -- Substitutes a name for another name in all places
@@ -85,6 +89,13 @@ abstract production declRefSubstitution
 top::Substitution ::= name::String sub::Expr
 {
   top.declRefSub = if top.nameIn == name then just(sub) else nothing();
+}
+
+-- Substitutes an exprStmt that is a declRefExpr for another statment
+abstract production stmtSubstitution
+top::Substitution ::= name::String sub::Stmt
+{
+  top.stmtSub = if top.nameIn == name then just(sub) else nothing();
 }
 
 -- 'occurs on' definitions for every nonterminal
