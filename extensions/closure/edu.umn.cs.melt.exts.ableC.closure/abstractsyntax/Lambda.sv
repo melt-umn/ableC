@@ -13,27 +13,29 @@ imports edu:umn:cs:melt:exts:ableC:gc;
 
 import silver:util:raw:treemap as tm;
 
+global builtin::Location = builtinLoc("closure");
+
 abstract production lambdaExpr
-e::Expr ::= captured::EnvNameList params::Parameters res::Expr
+top::Expr ::= captured::EnvNameList params::Parameters res::Expr
 {
-  e.pp = pp"lambda {${captured.pp}} (${ppImplode(text(", "), params.pps)}) . (${res.pp})";
+  top.pp = pp"lambda {${captured.pp}} (${ppImplode(text(", "), params.pps)}) . (${res.pp})";
 
   local localErrors::[Message] =
-    (if !null(lookupValue("_closure", e.env)) then []
-     else [err(e.location, "Closures require closure.h to be included.")]) ++
+    (if !null(lookupValue("_closure", top.env)) then []
+     else [err(top.location, "Closures require closure.h to be included.")]) ++
     captured.errors ++ params.errors ++ res.errors;
   
-  e.typerep = closureType([], params.typereps, res.typerep);
+  top.typerep = closureType([], params.typereps, res.typerep);
   
-  local paramNames::[Name] = map(name(_, location=builtIn()), map(fst, foldr(append, [], map((.valueContribs), params.defs))));
+  local paramNames::[Name] = map(name(_, location=builtin), map(fst, foldr(append, [], map((.valueContribs), params.defs))));
   captured.freeVariablesIn = removeAllBy(nameEq, paramNames, removeDuplicateNames(res.freeVariables));
   
-  res.env = addEnv(params.defs, e.env);
+  res.env = addEnv(params.defs, top.env);
   
   res.returnType = just(res.typerep);
   
   local theName::String = "_fn_" ++ toString(genInt()); 
-  local fnName::Name = name(theName, location=builtIn());
+  local fnName::Name = name(theName, location=builtin);
   
   local fnDecl::FunctionDecl =
     functionDecl(
@@ -47,7 +49,7 @@ e::Expr ::= captured::EnvNameList params::Parameters res::Expr
             [],
             directTypeExpr(builtinType([], voidType())),
             pointerTypeExpr([], pointerTypeExpr([], baseTypeExpr())),
-            justName(name("_env", location=builtIn())),
+            justName(name("_env", location=builtin)),
             []),
           params),
         false),
@@ -63,7 +65,7 @@ e::Expr ::= captured::EnvNameList params::Parameters res::Expr
              directTypeExpr(res.typerep),
              consDeclarator(
                declarator(
-                 name("_result", location=builtIn()),
+                 name("_result", location=builtin),
                  baseTypeExpr(),
                  [],
                  justInitializer(exprInitializer(res))),
@@ -72,8 +74,8 @@ e::Expr ::= captured::EnvNameList params::Parameters res::Expr
         returnStmt(
           justExpr(
             declRefExpr(
-              name("_result", location=builtIn()),
-              location=builtIn())))]));
+              name("_result", location=builtin),
+              location=builtin)))]));
   
   local globalDecls::[Pair<String Decl>] = [pair(theName, functionDeclaration(fnDecl))];
 
@@ -87,14 +89,14 @@ e::Expr ::= captured::EnvNameList params::Parameters res::Expr
             directTypeExpr(builtinType([], voidType())),
             consDeclarator(
               declarator(
-                name("_env", location=builtIn()),
+                name("_env", location=builtin),
                 pointerTypeExpr([], pointerTypeExpr([], baseTypeExpr())),
                 [],
                 justInitializer(
                   exprInitializer(
                     txtExpr(
                       "(void **)GC_malloc(sizeof(void *) * " ++ toString(captured.len) ++ ")", --TODO
-                      location=builtIn())))),
+                      location=builtin)))),
               nilDeclarator()))),
         captured.envAllocTrans,
         captured.envCopyInTrans,
@@ -104,27 +106,27 @@ e::Expr ::= captured::EnvNameList params::Parameters res::Expr
             [],
             typedefTypeExpr(
               [],
-              name("_closure", location=builtIn())),
+              name("_closure", location=builtin)),
             consDeclarator(
               declarator(
-                name("_result", location=builtIn()),
+                name("_result", location=builtin),
                 baseTypeExpr(),
                 [],
                 justInitializer(
                   exprInitializer(
                     txtExpr(
                       "(_closure)GC_malloc(sizeof(struct _closure_s))", --TODO
-                      location=builtIn())))),
+                      location=builtin)))),
               nilDeclarator()))),
         txtStmt("_result->env = _env;"), --TODO
         txtStmt(s"_result->fn = ${theName};"), -- TODO
         txtStmt(s"_result->fn_name = \"${theName}\";")]), --TODO
       declRefExpr(
-        name("_result", location=builtIn()),
-        location=builtIn()),
-      location=builtIn());
+        name("_result", location=builtin),
+        location=builtin),
+      location=builtin);
   
-  forwards to mkErrorCheck(localErrors, injectGlobalDecls(globalDecls, fwrd, location=e.location));
+  forwards to mkErrorCheck(localErrors, injectGlobalDecls(globalDecls, fwrd, location=top.location));
 }
 
 nonterminal EnvNameList with env, pp, errors;
@@ -208,7 +210,7 @@ top::EnvNameList ::= n::Name rest::EnvNameList
   
   local envAccess::Expr =
     unaryOpExpr(
-      dereferenceOp(location=builtIn()),
+      dereferenceOp(location=builtin),
       explicitCastExpr(
         typeName(
           varBaseTypeExpr,
@@ -217,18 +219,18 @@ top::EnvNameList ::= n::Name rest::EnvNameList
             baseTypeExpr())),
         arraySubscriptExpr(
           declRefExpr(
-            name("_env", location=builtIn()),
-            location=builtIn()),
+            name("_env", location=builtin),
+            location=builtin),
           realConstant(
             integerConstant(
               toString(rest.len),
               false,
               noIntSuffix(),
-              location=builtIn()),
-            location=builtIn()),
-          location=builtIn()),
-        location=builtIn()),
-      location=builtIn());
+              location=builtin),
+            location=builtin),
+          location=builtin),
+        location=builtin),
+      location=builtin);
 
   local varDecl::Declarator =
     declarator(
@@ -251,10 +253,10 @@ top::EnvNameList ::= n::Name rest::EnvNameList
           binaryOpExpr(
             envAccess,
             assignOp(
-              eqOp(location=builtIn()),
-              location=builtIn()),
-            declRefExpr(n, location=builtIn()),
-          location=builtIn())));
+              eqOp(location=builtin),
+              location=builtin),
+            declRefExpr(n, location=builtin),
+          location=builtin)));
   
   top.envCopyOutTrans =
     if skip then rest.envCopyOutTrans else
@@ -288,25 +290,4 @@ top::EnvNameList ::=
   local contents::[Name] = removeDuplicateNames(top.freeVariablesIn);
   
   forwards to foldr(consEnvNameList, nilEnvNameList(), contents);
-}
-
-function isItemTypedef
-Boolean ::= i::Pair<String ValueItem>
-{
-  return i.snd.isItemTypedef;
-}
-
-function isNotItemTypedef
-Boolean ::= i::Pair<String ValueItem>
-{
-  return !i.snd.isItemTypedef;
-}
-
-{-
- - New location for expressions which don't have real locations
- -}
-abstract production builtIn
-top::Location ::=
-{
-  forwards to loc("Built In", 0, 0, 0, 0, 0, 0);
 }
