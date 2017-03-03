@@ -22,18 +22,18 @@ Stmt ::= n::String subType::Type size::Expr
   -- TODO: Making this global and substituting for n and the struct name would be more efficient
   -- but less readable.  
   local initVectorStmt::Stmt = parseStmt(s"""
-proto_typedef vec_type, sub_type;
-vec_type ${n} = GC_malloc(sizeof(struct _vector_${subType.mangledName}_s));
-_init_vector(&(${n}->_info), (void**)&(${n}->_contents), sizeof(sub_type), size);
+proto_typedef __vec_type__, __sub_type__;
+__vec_type__ ${n} = GC_malloc(sizeof(struct _vector_${subType.mangledName}_s));
+_init_vector(&(${n}->_info), (void**)&(${n}->_contents), sizeof(__sub_type__), __size__);
 """);
 
   return
     injectGlobalDeclsStmt(
       mkVectorTypedefGlobalDecls(subType),
       subStmt(
-        [typedefSubstitution("vec_type", vectorType([], subType)),
-         typedefSubstitution("sub_type", subType),
-         declRefSubstitution("size", size)],
+        [typedefSubstitution("__vec_type__", vectorType([], subType)),
+         typedefSubstitution("__sub_type__", subType),
+         declRefSubstitution("__size__", size)],
         initVectorStmt));
 }
 
@@ -92,10 +92,10 @@ top::Exprs ::=
 }
 
 global copyVectorFunDecl::Decls = parseDecls(s"""
-proto_typedef size_t, vec_type, sub_type;
-static vec_type fun_name(vec_type vec) {
-  vec_type result = GC_malloc(sizeof(struct struct_name));
-  _init_vector(&(result->_info), (void**)&(result->_contents), sizeof(sub_type), vec.length);
+proto_typedef size_t, __vec_type__, __sub_type__;
+static __vec_type__ __fun_name__(__vec_type__ vec) {
+  __vec_type__ result = GC_malloc(sizeof(struct struct_name));
+  _init_vector(&(result->_info), (void**)&(result->_contents), sizeof(__sub_type__), vec.length);
   
   for (size_t i = 0; i < vec.length; i++) {
     result[i] = vec[i];
@@ -124,10 +124,10 @@ top::Expr ::= e::Expr
       [pair(
         funName,
         subDecl(
-          [nameSubstitution("fun_name", name(funName, location=builtin)),
+          [nameSubstitution("__fun_name__", name(funName, location=builtin)),
            nameSubstitution("struct_name", name(s"_vector_${subType.mangledName}_s", location=builtin)),
-           typedefSubstitution("vec_type", vectorType([], subType)),
-           typedefSubstitution("sub_type", subType)],
+           typedefSubstitution("__vec_type__", vectorType([], subType)),
+           typedefSubstitution("__sub_type__", subType)],
           decls(copyVectorFunDecl)))],
       directCallExpr(
         name(funName, location=builtin),
@@ -162,8 +162,8 @@ top::Expr ::= e1::Expr e2::Expr
 }
 
 global appendAssignVectorFunDecl::Decls = parseDecls(s"""
-proto_typedef size_t, vec_type;
-static vec_type fun_name(vec_type vec1, vec_type vec2) {
+proto_typedef size_t, __vec_type__;
+static __vec_type__ __fun_name__(__vec_type__ vec1, __vec_type__ vec2) {
   size_t vec1_length = vec1.length;
 
   for (size_t i = 0; i < vec2.length; i++) {
@@ -192,8 +192,8 @@ top::Expr ::= e1::Expr e2::Expr
       [pair(
         funName,
         subDecl(
-          [nameSubstitution("fun_name", name(funName, location=builtin)),
-           typedefSubstitution("vec_type", vectorType([], subType))],
+          [nameSubstitution("__fun_name__", name(funName, location=builtin)),
+           typedefSubstitution("__vec_type__", vectorType([], subType))],
           decls(appendAssignVectorFunDecl)))],
       directCallExpr(
         name(funName, location=builtin),
@@ -203,8 +203,8 @@ top::Expr ::= e1::Expr e2::Expr
 }
 
 global eqVectorFunDecl::Decls = parseDecls(s"""
-proto_typedef size_t, vec_type;
-static _Bool fun_name(vec_type vec1, vec_type vec2) {
+proto_typedef size_t, __vec_type__;
+static _Bool __fun_name__(__vec_type__ vec1, __vec_type__ vec2) {
   if (vec1.length != vec2.length)
     return 0;
 
@@ -235,8 +235,8 @@ top::Expr ::= e1::Expr e2::Expr
       [pair(
         funName,
         subDecl(
-          [nameSubstitution("fun_name", name(funName, location=builtin)),
-           typedefSubstitution("vec_type", vectorType([], subType))],
+          [nameSubstitution("__fun_name__", name(funName, location=builtin)),
+           typedefSubstitution("__vec_type__", vectorType([], subType))],
           decls(eqVectorFunDecl)))],
       directCallExpr(
         name(funName, location=builtin),
@@ -318,11 +318,11 @@ top::Expr ::= e::Expr
 }
 
 global subscriptVectorExpr::Expr = parseExpr(s"""
-({proto_typedef size_t, vec_type;
-  vec_type temp_vec = vec;
-  size_t temp_index = index;
-  _check_index_vector(temp_vec->_info, (void*)temp_vec->_contents, temp_index);
-  temp_vec->_contents[temp_index];})
+({proto_typedef size_t, __vec_type__;
+  __vec_type__ __temp_vec__ = __vec__;
+  size_t __temp_index__ = index;
+  _check_index_vector(__temp_vec__->_info, (void*)__temp_vec__->_contents, __temp_index__);
+  __temp_vec__->_contents[__temp_index__];})
 """);
 
 abstract production subscriptVector
@@ -343,10 +343,10 @@ top::Expr ::= e1::Expr e2::Expr
     injectGlobalDecls(
       mkVectorTypedefGlobalDecls(subType),
       subExpr(
-        [typedefSubstitution("vec_type", vectorType([], subType)),
-         nameSubstitution("temp_vec", name(vecTempName, location=builtin)),
-         nameSubstitution("temp_index", name(indexTempName, location=builtin)),
-         declRefSubstitution("vec", e1),
+        [typedefSubstitution("__vec_type__", vectorType([], subType)),
+         nameSubstitution("__temp_vec__", name(vecTempName, location=builtin)),
+         nameSubstitution("__temp_index__", name(indexTempName, location=builtin)),
+         declRefSubstitution("__vec__", e1),
          declRefSubstitution("index", e2)],
         subscriptVectorExpr),
       location=top.location);
@@ -355,11 +355,11 @@ top::Expr ::= e1::Expr e2::Expr
 }
 
 global subscriptAssignVectorExpr::Expr = parseExpr(s"""
-({proto_typedef size_t, vec_type;
-  vec_type temp_vec = vec;
-  size_t temp_index = index;
-  _maybe_grow_vector_by_one(&temp_vec->_info, (void**)&temp_vec->_contents, temp_index);
-  subscript_assign_contents_index;})
+({proto_typedef size_t, __vec_type__;
+  __vec_type__ __temp_vec__ = __vec__;
+  size_t __temp_index__ = __index__;
+  _maybe_grow_vector_by_one(&__temp_vec__->_info, (void**)&__temp_vec__->_contents, __temp_index__);
+  __subscript_assign_contents_index__;})
 """);
 
 abstract production subscriptAssignVector
@@ -380,13 +380,13 @@ top::Expr ::= lhs::Expr index::Expr op::AssignOp rhs::Expr
     injectGlobalDecls(
       mkVectorTypedefGlobalDecls(subType),
       subExpr(
-        [typedefSubstitution("vec_type", vectorType([], subType)),
-         nameSubstitution("temp_vec", name(vecTempName, location=builtin)),
-         nameSubstitution("temp_index", name(indexTempName, location=builtin)),
-         declRefSubstitution("vec", lhs),
-         declRefSubstitution("index", index),
+        [typedefSubstitution("__vec_type__", vectorType([], subType)),
+         nameSubstitution("__temp_vec__", name(vecTempName, location=builtin)),
+         nameSubstitution("__temp_index__", name(indexTempName, location=builtin)),
+         declRefSubstitution("__vec__", lhs),
+         declRefSubstitution("__index__", index),
          declRefSubstitution(
-           "subscript_assign_contents_index",
+           "__subscript_assign_contents_index__",
            binaryOpExpr(
              arraySubscriptExpr(
                memberExpr(
@@ -406,15 +406,15 @@ top::Expr ::= lhs::Expr index::Expr op::AssignOp rhs::Expr
 }
 
 global showVectorFunDecl::Decls = parseDecls(s"""
-proto_typedef size_t, vec_type, str_type;
-static str_type fun_name(vec_type vec) {
+proto_typedef size_t, __vec_type__, __str_type__;
+static __str_type__ __fun_name__(__vec_type__ vec) {
   if (vec.length == 0)
     return "[]";
     
-  str_type result = "[" + show_vec_0;
+  __str_type__ result = "[" + __show_vec_0__;
   
   for (size_t i = 1; i < vec.length; i++) {
-    result += ", " + show_vec_i;
+    result += ", " + __show_vec_i__;
   }
   
   return result + "]";
@@ -439,11 +439,11 @@ top::Expr ::= e::Expr
       [pair(
         funName,
         subDecl(
-          [nameSubstitution("fun_name", name(funName, location=builtin)),
-           typedefSubstitution("vec_type", vectorType([], subType)),
-           typedefSubstitution("str_type", stringType()),
+          [nameSubstitution("__fun_name__", name(funName, location=builtin)),
+           typedefSubstitution("__vec_type__", vectorType([], subType)),
+           typedefSubstitution("__str_type__", stringType()),
            declRefSubstitution(
-             "show_vec_0",
+             "__show_vec_0__",
              showExpr(
                subscriptVector(
                  declRefExpr(name("vec", location=builtin), location=builtin),
@@ -451,7 +451,7 @@ top::Expr ::= e::Expr
                  location=builtin),
                location=builtin)),
            declRefSubstitution(
-             "show_vec_i",
+             "__show_vec_i__",
              showExpr(
                subscriptVector(
                  declRefExpr(name("vec", location=builtin), location=builtin),

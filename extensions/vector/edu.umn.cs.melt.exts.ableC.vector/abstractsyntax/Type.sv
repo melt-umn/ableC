@@ -6,14 +6,14 @@ function mkVectorTypedefGlobalDecls
   local vectorTypedefDecl::Decl = parseDecl(s"""
 typedef struct __attribute__((refId("edu:umn:cs:melt:exts:ableC:vector:_vector_${sub.mangledName}_s"))) _vector_${sub.mangledName}_s {
   struct _vector_info _info;
-  sub_type *_contents;
+  __sub_type__ *_contents;
 } *_vector_${sub.mangledName};
 """);
 
   return
     [pair(
       "_vector_" ++ sub.mangledName,
-      subDecl([typedefSubstitution("sub_type", sub)], vectorTypedefDecl))];
+      subDecl([typedefSubstitution("__sub_type__", sub)], vectorTypedefDecl))];
 }
 
 abstract production vectorTypeExpr 
