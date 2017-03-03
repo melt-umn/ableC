@@ -1,10 +1,5 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax;
 
-{--
- - Primitive C types.
- - Design note: signed and unsigned having 'IntegerType' is ableC's own idiosyntactic design.
- - This can be changed if it turns out that's an annoying choice somehow.
- -}
 nonterminal BuiltinType with pp, host<BuiltinType>, mangledName, integerPromotionsBuiltin, defaultArgumentPromotionsBuiltin, isIntegerType, isArithmeticType;
 
 synthesized attribute integerPromotionsBuiltin :: BuiltinType;

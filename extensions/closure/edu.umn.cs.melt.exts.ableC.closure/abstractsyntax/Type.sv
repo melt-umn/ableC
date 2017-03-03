@@ -1,24 +1,22 @@
 grammar edu:umn:cs:melt:exts:ableC:closure:abstractsyntax;
 
 abstract production closureTypeExpr
-b::BaseTypeExpr ::= params::TypeNames res::TypeName
+top::BaseTypeExpr ::= q::[Qualifier] params::TypeNames res::TypeName
 {
-  b.typerep = closureType([], params.typereps, res.typerep);
-  
-  forwards to typedefTypeExpr([], name("_closure", location=builtIn()));
+  forwards to directTypeExpr(closureType(q, params.typereps, res.typerep));
 }
 
 abstract production closureType
-t::Type ::= qs::[Qualifier] params::[Type] res::Type
+top::Type ::= q::[Qualifier] params::[Type] res::Type
 {
-  t.withTypeQualifiers = closureType(t.addedTypeQualifiers ++ qs, params, res);
+  top.withTypeQualifiers = closureType(top.addedTypeQualifiers ++ q, params, res);
   
-  t.callProd = just(applyExpr(_, _, location=_));
+  top.callProd = just(applyExpr(_, _, location=_));
   
   forwards to
     noncanonicalType(
       typedefType(
-        qs,
+        q,
         "_closure",
         pointerType(
           [],
