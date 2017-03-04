@@ -37,9 +37,13 @@ autocopy attribute nameIn::String;
 synthesized attribute nameSub::Maybe<Name>;
 synthesized attribute typedefSub::Maybe<Type>;
 synthesized attribute declRefSub::Maybe<Expr>;
-synthesized attribute stmtSub::Maybe<Stmt>;
 
-nonterminal Substitutions with nameIn, nameSub, typedefSub, declRefSub, stmtSub;
+-- 'Non-canonical' substitutions - these substitute something that wrap a name indirectly
+synthesized attribute stmtSub::Maybe<Stmt>;
+synthesized attribute exprsSub::Maybe<Exprs>;
+synthesized attribute parametersSub::Maybe<Parameters>;
+
+nonterminal Substitutions with nameIn, nameSub, typedefSub, declRefSub, stmtSub, exprsSub, parametersSub;
 
 abstract production consSubstitution
 top::Substitutions ::= h::Substitution t::Substitutions
@@ -48,6 +52,8 @@ top::Substitutions ::= h::Substitution t::Substitutions
   top.typedefSub = orElse(h.typedefSub, t.typedefSub);
   top.declRefSub = orElse(h.declRefSub, t.declRefSub);
   top.stmtSub = orElse(h.stmtSub, t.stmtSub);
+  top.exprsSub = orElse(h.exprsSub, t.exprsSub);
+  top.parametersSub = orElse(h.parametersSub, t.parametersSub);
 }
 
 abstract production nilSubstitution
@@ -57,9 +63,11 @@ top::Substitutions ::=
   top.typedefSub = nothing();
   top.declRefSub = nothing();
   top.stmtSub = nothing();
+  top.exprsSub = nothing();
+  top.parametersSub = nothing();
 }
 
-closed nonterminal Substitution with nameIn, nameSub, typedefSub, declRefSub, stmtSub;
+closed nonterminal Substitution with nameIn, nameSub, typedefSub, declRefSub, stmtSub, exprsSub, parametersSub;
 
 aspect default production
 top::Substitution ::= 
@@ -68,6 +76,8 @@ top::Substitution ::=
   top.typedefSub = nothing();
   top.declRefSub = nothing();
   top.stmtSub = nothing();
+  top.exprsSub = nothing();
+  top.parametersSub = nothing();
 }
 
 -- Substitutes a name for another name in all places
@@ -96,6 +106,20 @@ abstract production stmtSubstitution
 top::Substitution ::= name::String sub::Stmt
 {
   top.stmtSub = if top.nameIn == name then just(sub) else nothing();
+}
+
+-- Substitutes consExpr where the first element is a declRefExpr
+abstract production exprsSubstitution
+top::Substitution ::= name::String sub::Exprs
+{
+  top.exprsSub = if top.nameIn == name then just(sub) else nothing();
+}
+
+-- Substitutes consExpr where the first element is a declRefExpr
+abstract production parametersSubstitution
+top::Substitution ::= name::String sub::Parameters
+{
+  top.parametersSub = if top.nameIn == name then just(sub) else nothing();
 }
 
 -- 'occurs on' definitions for every nonterminal

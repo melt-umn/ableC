@@ -101,7 +101,23 @@ top::FunctionDecl ::= msg::[Message]
 aspect production consParameters
 top::Parameters ::= h::ParameterDecl  t::Parameters
 {
-  propagate substituted;
+  -- Since we pattern match on h, we need to supply its forward dependancies
+  -- We don't really care about these, since all we want to know is whether d is a typedefTypeExpr.
+  local h1::ParameterDecl = h;
+  h1.env = emptyEnv();
+  h1.returnType = nothing();
+  
+  local substitutions::Substitutions = top.substitutions;
+  substitutions.nameIn =
+    case h1 of
+      parameterDecl([], typedefTypeExpr([], id), baseTypeExpr(), nothingName(), []) -> id.name
+    | _ -> ""
+    end;
+  top.substituted =
+    case substitutions.parametersSub of
+      just(sub) -> sub
+    | nothing() -> consParameters(h.substituted, t.substituted)
+    end;
 }
 aspect production nilParameters
 top::Parameters ::=
