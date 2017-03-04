@@ -16,13 +16,10 @@ import edu:umn:cs:melt:exts:ableC:closure:mda_test;
 marking terminal Closure_t 'closure' lexer classes {Ckeyword};
 
 concrete productions top::TypeSpecifier_c
-| 'closure' '(' te::ClosureTypeExpr_c ')'
+| 'closure' '<' te::ClosureTypeExpr_c '>'
     { top.realTypeSpecifiers = [te.ast];
       top.preTypeSpecifiers = [];
       te.givenQualifiers = top.givenQualifiers; }
-{-| 'closure' '(' res::TypeName_c '(' params::TypeNames_c ')' ')'
-    { top.realTypeSpecifiers = [closureTypeExpr(params.ast, res.ast)];
-      top.preTypeSpecifiers = []; } -}
 
 nonterminal ClosureTypeExpr_c with ast<BaseTypeExpr>, givenQualifiers;
 

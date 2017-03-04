@@ -23,20 +23,20 @@ nonterminal Lambda_c with ast<Expr>, location;
 
 concrete productions top::Lambda_c
 | '{' captured::CaptureList_c '}' '(' params::ParameterList_c ')'
-  '.' '(' res::Expr_c ')'
+  '->' '(' res::Expr_c ')'
     { top.ast = lambdaExpr(captured.ast, foldParameterDecl(params.ast), res.ast,
                   location=top.location); }
 
-| '(' params::ParameterList_c ')' '.' '(' res::Expr_c ')'
+| '(' params::ParameterList_c ')' '->' '(' res::Expr_c ')'
     { top.ast = lambdaExpr(exprFreeVariables(), foldParameterDecl(params.ast), res.ast,
                   location=top.location); 
     }
 | '{' captured::CaptureList_c '}' '(' ')'
-  '.' '(' res::Expr_c ')'
+  '->' '(' res::Expr_c ')'
     { top.ast = lambdaExpr(captured.ast, nilParameters(), res.ast,
                   location=top.location); }
 
-| '(' ')' '.' '(' res::Expr_c ')'
+| '(' ')' '->' '(' res::Expr_c ')'
     { top.ast = lambdaExpr(exprFreeVariables(), nilParameters(), res.ast,
                   location=top.location); 
     }

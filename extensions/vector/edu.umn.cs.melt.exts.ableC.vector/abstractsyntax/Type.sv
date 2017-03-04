@@ -29,10 +29,13 @@ top::BaseTypeExpr ::= sub::TypeName
 }
 
 abstract production vectorType
-top::Type ::= qs::[Qualifier] sub::Type
+top::Type ::= q::[Qualifier] sub::Type
 {
-  top.lpp = pp"${ppImplode(space(), map((.pp), qs))}vector<${sub.lpp}${sub.rpp}>";
+  top.lpp = pp"${ppImplode(space(), map((.pp), q))}vector<${sub.lpp}${sub.rpp}>";
   top.rpp = pp"";
+  
+  top.withoutTypeQualifiers = vectorType([], sub);
+  top.withTypeQualifiers = vectorType(top.addedTypeQualifiers ++ q, sub);
 
   top.ovrld:lBinaryPlusProd =
     case top.ovrld:otherType of
@@ -102,7 +105,7 @@ top::Type ::= qs::[Qualifier] sub::Type
         mkVectorTypedefGlobalDecls(sub),
         noncanonicalType(
           typedefType(
-            qs,
+            q,
             "_vector_" ++ sub.mangledName,
             pointerType(
               [],
