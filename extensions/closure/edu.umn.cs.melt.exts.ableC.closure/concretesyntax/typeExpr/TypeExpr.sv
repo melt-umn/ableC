@@ -27,11 +27,15 @@ concrete productions top::TypeSpecifier_c
 nonterminal ClosureTypeExpr_c with ast<BaseTypeExpr>, givenQualifiers;
 
 concrete productions top::ClosureTypeExpr_c
-| '(' params::TypeNames_c ')' '->' rest::ClosureTypeExpr_c
-    { top.ast = closureTypeExpr(top.givenQualifiers, params.ast, typeName(rest.ast, baseTypeExpr())); }
-| '(' params::TypeNames_c ')' '->' ret::TypeName_c
-    { top.ast = closureTypeExpr(top.givenQualifiers, params.ast, ret.ast); }
 | '(' param::ClosureTypeExpr_c ')' '->' ret::TypeName_c
-    { top.ast = closureTypeExpr(top.givenQualifiers, consTypeName(typeName(param.ast, baseTypeExpr()), nilTypeName()), ret.ast); }
+    { top.ast = closureTypeExpr(top.givenQualifiers, consParameters(parameterDecl([], param.ast, baseTypeExpr(), nothingName(), []), nilParameters()), ret.ast); }
 | '(' param::ClosureTypeExpr_c ')' '->' rest::ClosureTypeExpr_c
-    { top.ast = closureTypeExpr(top.givenQualifiers, consTypeName(typeName(param.ast, baseTypeExpr()), nilTypeName()), typeName(rest.ast, baseTypeExpr())); }
+    { top.ast = closureTypeExpr(top.givenQualifiers, consParameters(parameterDecl([], param.ast, baseTypeExpr(), nothingName(), []), nilParameters()), typeName(rest.ast, baseTypeExpr())); }
+| '(' params::ParameterList_c ')' '->' rest::ClosureTypeExpr_c
+    { top.ast = closureTypeExpr(top.givenQualifiers, foldParameterDecl(params.ast), typeName(rest.ast, baseTypeExpr())); }
+| '(' params::ParameterList_c ')' '->' ret::TypeName_c
+    { top.ast = closureTypeExpr(top.givenQualifiers, foldParameterDecl(params.ast), ret.ast); }
+| '(' ')' '->' rest::ClosureTypeExpr_c
+    { top.ast = closureTypeExpr(top.givenQualifiers, nilParameters(), typeName(rest.ast, baseTypeExpr())); }
+| '(' ')' '->' ret::TypeName_c
+    { top.ast = closureTypeExpr(top.givenQualifiers, nilParameters(), ret.ast); }

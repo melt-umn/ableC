@@ -3,6 +3,7 @@ grammar edu:umn:cs:melt:exts:ableC:closure:abstractsyntax;
 abstract production applyExpr
 top::Expr ::= fn::Expr args::Exprs
 {
+  propagate substituted;
   top.pp = parens(concat([fn.pp, parens(ppImplode(cat(comma(), space()), args.pps))]));
   
   local localErrors :: [Message] =
@@ -27,80 +28,17 @@ top::Expr ::= fn::Expr args::Exprs
       closureType(_, params, _) -> params
     | _ -> error("expectedTypes demanded by args when call expression has non-closure type")
     end;
-
-  forwards to mkErrorCheck(localErrors, fwrd);
   
   local fwrd::Expr =
-    stmtExpr(
-      declStmt(
-        variableDecls([], [],
-          typedefTypeExpr([], name("_closure", location=builtin)),
-          consDeclarator(
-            declarator(
-              name("_temp_closure", location=builtin),
-              baseTypeExpr(),
-              [],
-              justInitializer(exprInitializer(fn))),
-            nilDeclarator()))),
-       call,
-       location=builtin);
-  
-  local call::Expr =
-    callExpr(
-      explicitCastExpr(
-        case fn.typerep of
-          closureType(_, params, res) -> 
-            typeName(
-              directTypeExpr(res),
-              pointerTypeExpr(
-                [],
-                functionTypeExprWithArgs(
-                  baseTypeExpr(),
-                  consParameters(
-                    parameterDecl(
-                      [],
-                      directTypeExpr(builtinType([], voidType())),
-                      pointerTypeExpr([], baseTypeExpr()),
-                      nothingName(),
-                      []),
-                    getParams(params)),
-                false)))
-        | _ -> typeName(errorTypeExpr(localErrors), baseTypeExpr())
-        end,
-        memberExpr(
-          declRefExpr(
-            name("_temp_closure", location=builtin),
-            location=builtin),
-          true,
-          name("fn", location=builtin),
-          location=builtin),
-        location=builtin),
-      consExpr(
-        memberExpr(
-          declRefExpr(
-            name("_temp_closure", location=builtin),
-            location=builtin),
-          true,
-          name("env", location=builtin),
-          location=builtin),
-        args),
-      location=builtin);
-}
+    subExpr(
+      [declRefSubstitution("__fn__", fn),
+       typedefSubstitution("__return_type__", top.typerep),
+       parametersSubstitution("__params__", argTypesToParameters(args.typereps)),
+       exprsSubstitution("__args__", args)],
+      parseExpr(s"""
+({proto_typedef __return_type__, __params__;
+  struct _closure_s _temp_closure = __fn__;
+  ((__return_type__ (*)(void*, __params__))_temp_closure.fn)(_temp_closure.env, __args__);})"""));
 
-function getParams
-Parameters ::= ts::[Type]
-{
-  return
-    case ts of
-      h :: t ->
-        consParameters(
-          parameterDecl(
-            [],
-            directTypeExpr(h),
-            baseTypeExpr(),
-            nothingName(),
-            []),
-          getParams(t))
-    | [] -> nilParameters()
-    end;
+  forwards to mkErrorCheck(localErrors, fwrd);
 }

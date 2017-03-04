@@ -22,7 +22,7 @@ concrete productions top::PostfixExpr_c
 nonterminal Lambda_c with ast<Expr>, location;
 
 concrete productions top::Lambda_c
-| '{' captured::EnvNameList_c '}' '(' params::ParameterList_c ')'
+| '{' captured::CaptureList_c '}' '(' params::ParameterList_c ')'
   '.' '(' res::Expr_c ')'
     { top.ast = lambdaExpr(captured.ast, foldParameterDecl(params.ast), res.ast,
                   location=top.location); }
@@ -31,13 +31,22 @@ concrete productions top::Lambda_c
     { top.ast = lambdaExpr(exprFreeVariables(), foldParameterDecl(params.ast), res.ast,
                   location=top.location); 
     }
+| '{' captured::CaptureList_c '}' '(' ')'
+  '.' '(' res::Expr_c ')'
+    { top.ast = lambdaExpr(captured.ast, nilParameters(), res.ast,
+                  location=top.location); }
 
-nonterminal EnvNameList_c with ast<EnvNameList>;
+| '(' ')' '.' '(' res::Expr_c ')'
+    { top.ast = lambdaExpr(exprFreeVariables(), nilParameters(), res.ast,
+                  location=top.location); 
+    }
 
-concrete productions top::EnvNameList_c
-| id::Identifier_t ',' rest::EnvNameList_c
-    { top.ast = consEnvNameList(fromId(id), rest.ast); }
+nonterminal CaptureList_c with ast<CaptureList>;
+
+concrete productions top::CaptureList_c
+| id::Identifier_t ',' rest::CaptureList_c
+    { top.ast = consCaptureList(fromId(id), rest.ast); }
 | id::Identifier_t
-    { top.ast = consEnvNameList(fromId(id), nilEnvNameList()); }
+    { top.ast = consCaptureList(fromId(id), nilCaptureList()); }
 |
-    { top.ast = nilEnvNameList(); }
+    { top.ast = nilCaptureList(); }
