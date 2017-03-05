@@ -1,5 +1,10 @@
 grammar edu:umn:cs:melt:exts:ableC:closure:abstractsyntax;
 
+global applyExprFwrd::Expr = parseExpr(s"""
+({proto_typedef __closure_type__;
+  __closure_type__ _temp_closure = __fn__;
+  _temp_closure.fn(_temp_closure.env, __args__);})""");
+
 abstract production applyExpr
 top::Expr ::= fn::Expr args::Exprs
 {
@@ -30,15 +35,14 @@ top::Expr ::= fn::Expr args::Exprs
     end;
   
   local fwrd::Expr =
-    subExpr(
-      [declRefSubstitution("__fn__", fn),
-       typedefSubstitution("__return_type__", top.typerep),
-       parametersSubstitution("__params__", argTypesToParameters(args.typereps)),
-       exprsSubstitution("__args__", args)],
-      parseExpr(s"""
-({proto_typedef __return_type__, __params__;
-  struct _closure_s _temp_closure = __fn__;
-  ((__return_type__ (*)(void*, __params__))_temp_closure.fn)(_temp_closure.env, __args__);})"""));
+    injectGlobalDeclsExpr(
+      mkClosureStructGlobalDecls(args.typereps, top.typerep),
+      subExpr(
+        [typedefSubstitution("__closure_type__", fn.typerep),
+         declRefSubstitution("__fn__", fn),
+         exprsSubstitution("__args__", args)],
+        applyExprFwrd),
+      location=builtin);
 
   forwards to mkErrorCheck(localErrors, fwrd);
 }

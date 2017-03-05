@@ -1,4 +1,4 @@
-#include <closure.h>
+#include <gc.h>
 
 int main() {
   closure<(int) -> int> fn() {

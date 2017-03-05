@@ -24,8 +24,8 @@ top::Expr ::= captured::CaptureList params::Parameters res::Expr
   top.pp = pp"lambda {${captured.pp}} (${ppImplode(text(", "), params.pps)}) . (${res.pp})";
 
   local localErrors::[Message] =
-    (if !null(lookupTag("_closure_s", top.env)) then []
-     else [err(top.location, "Closures require closure.h to be included.")]) ++
+    (if !null(lookupValue("GC_malloc", top.env)) then []
+     else [err(top.location, "Closures require <gc.h> to be included.")]) ++
     captured.errors ++ params.errors ++ res.errors;
   
   top.typerep = closureType([], params.typereps, res.typerep);
@@ -34,43 +34,45 @@ top::Expr ::= captured::CaptureList params::Parameters res::Expr
   captured.freeVariablesIn = removeAllBy(nameEq, paramNames, removeDuplicateNames(res.freeVariables));
   captured.globalEnv = addEnv(params.defs, globalEnv(top.env));
   
-  res.env = addEnv(params.defs, top.env);
+  res.env = addEnv(params.defs, openScope(top.env));
   res.returnType = just(res.typerep);
   
   local id::String = toString(genInt()); 
+  local envStructName::String = s"_lambda_env_${id}_s";
   local funName::String = s"_lambda_fn_${id}";
-  local structName::String = s"_lambda_env_${id}_s";
   
-  captured.structNameIn = structName;
+  captured.structNameIn = envStructName;
   
-  local structDcl::Decl =
+  local envStructDcl::Decl =
     typeExprDecl(
       [],
       structTypeExpr(
         [],
         structDecl(
           [],
-          justName(name(structName, location=builtin)),
+          justName(name(envStructName, location=builtin)),
           captured.envStructTrans,
           location=builtin)));
   
   local funDcl::Decl =
     subDecl(
-      [typedefSubstitution("__result_type__", res.typerep),
+      [typedefSubstitution("__res_type__", res.typerep),
        parametersSubstitution("__params__", params),
        stmtSubstitution("__env_copy__", captured.envCopyOutTrans),
        declRefSubstitution("__result__", res)],
       decls(
         parseDecls(s"""
-proto_typedef __result_type__, __params__;
-static __result_type__ ${funName}(void *_env_ptr, __params__) {
-  struct ${structName} _env = *(struct ${structName}*)_env_ptr;
+proto_typedef __res_type__, __params__;
+static __res_type__ ${funName}(void *_env_ptr, __params__) {
+  struct ${envStructName} _env = *(struct ${envStructName}*)_env_ptr;
   __env_copy__;
   return __result__;
 }
 """)));
   
-  local globalDecls::[Pair<String Decl>] = [pair(structName, structDcl), pair(funName, funDcl)];
+  local globalDecls::[Pair<String Decl>] =
+    mkClosureStructGlobalDecls(params.typereps, res.typerep) ++
+    [pair(envStructName, envStructDcl), pair(funName, funDcl)];
 
   local fwrd::Expr =
     subExpr(
@@ -78,10 +80,10 @@ static __result_type__ ${funName}(void *_env_ptr, __params__) {
        stmtSubstitution("__env_copy__", captured.envCopyInTrans)],
       parseExpr(s"""
 ({proto_typedef __closure_type__;
-  struct ${structName} _env;
+  struct ${envStructName} _env;
   __env_copy__;
   
-  struct ${structName} *_env_ptr = GC_malloc(sizeof(struct ${structName}));
+  struct ${envStructName} *_env_ptr = GC_malloc(sizeof(struct ${envStructName}));
   *_env_ptr = _env;
   
   __closure_type__ _result;
@@ -91,7 +93,7 @@ static __result_type__ ${funName}(void *_env_ptr, __params__) {
   _result;})
 """));
   
-  forwards to mkErrorCheck(localErrors, injectGlobalDecls(globalDecls, fwrd, location=top.location));
+  forwards to mkErrorCheck(localErrors, injectGlobalDeclsExpr(globalDecls, fwrd, location=top.location));
 }
 
 nonterminal CaptureList with env, pp, errors;
@@ -104,9 +106,6 @@ autocopy attribute globalEnv::Decorated Env occurs on CaptureList;
 autocopy attribute freeVariablesIn::[Name] occurs on CaptureList;
 autocopy attribute structNameIn::String occurs on CaptureList;
 
--- TODO: Update capture rules:
--- Capture everything that isn't a function, generate load/store code for anything not in the
--- global env
 abstract production consCaptureList
 top::CaptureList ::= n::Name rest::CaptureList
 {
@@ -133,7 +132,7 @@ top::CaptureList ::= n::Name rest::CaptureList
   local capturable::Boolean = 
     case varType of
       functionType(_, _) -> false
-    | tagType(_, refIdTagType(_, _, refId)) -> !null(lookupRefId(refId, top.env)) -- Capture only structs that have been defined
+    | tagType(_, refIdTagType(_, _, refId)) -> true --!null(lookupRefId(refId, top.env)) -- Capture only structs that have been defined
     --| noncanonicalType(_) -> true -- TODO
     --| pointerType(_, functionType(_, _)) -> false -- Temporary hack until pp for function pointer variable defs is fixed
     | _ -> true
