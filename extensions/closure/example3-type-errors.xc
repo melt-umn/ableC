@@ -3,7 +3,7 @@
 #include <stdlib.h>
 
 int f(closure<(int) -> int> fun, int a) {
-  return a(f); // Applying non-closure
+  return fun(a);
 }
 
 int main(int argc, char **argv) {

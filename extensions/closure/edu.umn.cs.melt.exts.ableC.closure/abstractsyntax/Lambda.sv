@@ -116,32 +116,21 @@ top::CaptureList ::= n::Name rest::CaptureList
     end;
   
   top.errors := n.valueLookupCheck ++ rest.errors;
-  top.errors <-
-    if capturable || isGlobal
-    then []
-    else [err(n.location, n.name ++ " cannot be captured")];
 
-  -- Strip qualifiers and convert arrays to pointers
+  -- Strip qualifiers and convert arrays and functions to pointers
   local varType::Type =
     case n.valueItem.typerep.withoutTypeQualifiers of
       arrayType(elem, _, _, _) -> pointerType([], elem)
+    | functionType(res, sub) ->
+        pointerType([], noncanonicalType(parenType(functionType(res, sub))))
     | t -> t
     end;
-    
-  -- If true, then don't capture this variable, even if though it is in the capture list
-  local capturable::Boolean = 
-    case varType of
-      functionType(_, _) -> false
-    | tagType(_, refIdTagType(_, _, refId)) -> true --!null(lookupRefId(refId, top.env)) -- Capture only structs that have been defined
-    --| noncanonicalType(_) -> true -- TODO
-    --| pointerType(_, functionType(_, _)) -> false -- Temporary hack until pp for function pointer variable defs is fixed
-    | _ -> true
-    end;
-    
+  
+  -- If true, then this variable is in scope for the lifted function and doesn't need to be captured
   local isGlobal::Boolean = !null(lookupValue(n.name, top.globalEnv));
   
   top.envStructTrans =
-    if !capturable || isGlobal then rest.envStructTrans else
+    if isGlobal then rest.envStructTrans else
       consStructItem(
         structItem(
           [],
@@ -150,7 +139,7 @@ top::CaptureList ::= n::Name rest::CaptureList
         rest.envStructTrans);
   
   top.envCopyInTrans =
-    if !capturable || isGlobal then rest.envCopyInTrans else
+    if isGlobal then rest.envCopyInTrans else
       seqStmt(
         rest.envCopyInTrans,
         exprStmt(
@@ -167,13 +156,13 @@ top::CaptureList ::= n::Name rest::CaptureList
           location=builtin)));
   
   top.envCopyOutTrans =
-    if !capturable || isGlobal then rest.envCopyOutTrans else
+    if isGlobal then rest.envCopyOutTrans else
       seqStmt(
         rest.envCopyOutTrans,
         declStmt(
           variableDecls(
             [], [],
-            directTypeExpr(varType),
+            directTypeExpr(addQualifiers([constQualifier()], varType)),
             consDeclarator(
               declarator(
                 n,
