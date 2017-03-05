@@ -1,6 +1,6 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax:substitution;
 
-aspect production injectGlobalDecls
+aspect production injectGlobalDeclsExpr
 top::Expr ::= globalDecls::[Pair<String Decl>] lifted::Expr
 {
   local allDecls::Decls = foldDecl(map(snd, globalDecls));
@@ -8,7 +8,7 @@ top::Expr ::= globalDecls::[Pair<String Decl>] lifted::Expr
   
   allDecls.substitutions = top.substitutions;
   top.substituted =
-    injectGlobalDecls(
+    injectGlobalDeclsExpr(
       zipWith(pair, allNames, unfoldDecl(allDecls.substituted)),
       lifted.substituted,
       location=top.location);

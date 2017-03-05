@@ -121,7 +121,7 @@ top::Expr ::= e::Expr
   local funName::String = "_copy_vector_" ++ subType.mangledName;
 
   local fwrd::Expr =
-    injectGlobalDecls(
+    injectGlobalDeclsExpr(
       [pair(
         funName,
         subDecl(
@@ -189,7 +189,7 @@ top::Expr ::= e1::Expr e2::Expr
   local funName::String = "_append_to_vector_" ++ subType.mangledName;
 
   forwards to
-    injectGlobalDecls(
+    injectGlobalDeclsExpr(
       [pair(
         funName,
         subDecl(
@@ -232,7 +232,7 @@ top::Expr ::= e1::Expr e2::Expr
   local funName::String = "_eq_vector_" ++ subType.mangledName;
   
   forwards to
-    injectGlobalDecls(
+    injectGlobalDeclsExpr(
       [pair(
         funName,
         subDecl(
@@ -258,7 +258,7 @@ top::Expr ::= e::Expr
     end;
     
   local fwrd::Expr =
-    injectGlobalDecls(
+    injectGlobalDeclsExpr(
       mkVectorTypedefGlobalDecls(subType),
       memberExpr(
         memberExpr(e, true, name("_info", location=builtin), location=builtin),
@@ -282,7 +282,7 @@ top::Expr ::= e::Expr
     end;
     
   local fwrd::Expr =
-    injectGlobalDecls(
+    injectGlobalDeclsExpr(
       mkVectorTypedefGlobalDecls(subType),
       memberExpr(
         memberExpr(e, true, name("_info", location=builtin), location=builtin),
@@ -306,7 +306,7 @@ top::Expr ::= e::Expr
     end;
     
   local fwrd::Expr =
-    injectGlobalDecls(
+    injectGlobalDeclsExpr(
       mkVectorTypedefGlobalDecls(subType),
       memberExpr(
         memberExpr(e, true, name("_info", location=builtin), location=builtin),
@@ -341,7 +341,7 @@ top::Expr ::= e1::Expr e2::Expr
   local indexTempName::String = "_index_" ++ toString(genInt());
 
   local fwrd::Expr =
-    injectGlobalDecls(
+    injectGlobalDeclsExpr(
       mkVectorTypedefGlobalDecls(subType),
       subExpr(
         [typedefSubstitution("__vec_type__", vectorType([], subType)),
@@ -378,7 +378,7 @@ top::Expr ::= lhs::Expr index::Expr op::AssignOp rhs::Expr
   local indexTempName::String = "_index_" ++ toString(genInt());
 
   local fwrd::Expr =
-    injectGlobalDecls(
+    injectGlobalDeclsExpr(
       mkVectorTypedefGlobalDecls(subType),
       subExpr(
         [typedefSubstitution("__vec_type__", vectorType([], subType)),
@@ -436,7 +436,7 @@ top::Expr ::= e::Expr
   local funName::String = "_show_vector_" ++ subType.mangledName;
   
   forwards to 
-    injectGlobalDecls(
+    injectGlobalDeclsExpr(
       [pair(
         funName,
         subDecl(

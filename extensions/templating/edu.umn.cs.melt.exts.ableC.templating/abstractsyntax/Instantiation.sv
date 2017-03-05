@@ -33,7 +33,7 @@ top::Expr ::= n::Name ts::TypeNames
   forwards to
     mkErrorCheck(
       localErrors,
-      injectGlobalDecls(
+      injectGlobalDeclsExpr(
         globalDecls,
         declRefExpr(
           name(mangledName, location=builtin),

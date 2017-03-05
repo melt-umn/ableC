@@ -39,11 +39,11 @@ synthesized attribute globalDecls::[Pair<String Decl>] with ++;
 -- the same decl at different locations
 inherited attribute globalDeclEnv::[String];
 
-abstract production injectGlobalDecls
+abstract production injectGlobalDeclsExpr
 top::Expr ::= globalDecls::[Pair<String Decl>] lifted::Expr
 {
-  top.pp = pp"injectGlobalDecls {${ppImplode(pp"\n", decls.pps)}} (${lifted.pp})";
-  top.host = injectGlobalDecls(zipWith(pair, names, unfoldDecl(decls.host)), lifted.host, location=top.location);
+  top.pp = pp"injectGlobalDeclsExpr {${ppImplode(pp"\n", decls.pps)}} (${lifted.pp})";
+  top.host = injectGlobalDeclsExpr(zipWith(pair, names, unfoldDecl(decls.host)), lifted.host, location=top.location);
   
   -- Remove the globalDecls that are already in the env (i.e. this is already part of a lifted ast)
   local newGlobalDecls::[Pair<String Decl>] = removeEnvGlobalDeclPairs(globalDecls, top.env);
@@ -78,7 +78,7 @@ top::Expr ::= globalDecls::[Pair<String Decl>] lifted::Expr
   top.typerep = lifted.typerep;
 }
 
--- Same as injectGlobalDecls, but on Stmt
+-- Same as injectGlobalDeclsExpr, but on Stmt
 abstract production injectGlobalDeclsStmt
 top::Stmt ::= globalDecls::[Pair<String Decl>] lifted::Stmt
 {
@@ -118,7 +118,7 @@ top::Stmt ::= globalDecls::[Pair<String Decl>] lifted::Stmt
   top.freeVariables = lifted.freeVariables;
 }
 
--- Same as injectGlobalDecls, but on BaseTypeExpr
+-- Same as injectGlobalDeclsExpr, but on BaseTypeExpr
 abstract production injectGlobalDeclsTypeExpr
 top::BaseTypeExpr ::= globalDecls::[Pair<String Decl>] lifted::BaseTypeExpr
 {
@@ -169,10 +169,16 @@ top::NoncanonicalType ::= globalDecls::[Pair<String Decl>] lifted::Type
 {
   propagate host;
   top.canonicalType = lifted;
-  top.lpp = pp"injectGlobalDeclsType {<not shown>} (${lifted.lpp}${lifted.rpp})";
-  top.rpp = notext();
+  top.lpp = pp"injectGlobalDeclsType {${ppImplode(pp"\n", decls.pps)}} (${lifted.lpp}${lifted.rpp})";
+  top.rpp = lifted.rpp;
   top.baseTypeExpr = injectGlobalDeclsTypeExpr(globalDecls, lifted.baseTypeExpr);
   top.typeModifierExpr = lifted.typeModifierExpr;
+ 
+  -- Only used for pp, so attributes don't really matter
+  local decls::Decls = foldDecl(map(snd, globalDecls));
+  decls.env = emptyEnv();
+  decls.isTopLevel = true;
+  decls.returnType = nothing();
 }
 
 {--
@@ -221,7 +227,7 @@ function removeEnvGlobalDeclPairs
     case ds of
       [] -> []
     | pair(n, d) :: t ->
-        if !null(lookupValue(n, env))
+        if !null(lookupValue(n, env)) || !null(lookupTag(n, env))
         then removeEnvGlobalDeclPairs(t, env)
         else pair(n, d) :: removeEnvGlobalDeclPairs(t, env)
     end;
