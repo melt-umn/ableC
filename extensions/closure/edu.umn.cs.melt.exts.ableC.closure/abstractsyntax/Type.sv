@@ -1,31 +1,35 @@
 grammar edu:umn:cs:melt:exts:ableC:closure:abstractsyntax;
 
 abstract production closureTypeExpr
-b::BaseTypeExpr ::= params::TypeNames res::TypeName
+top::BaseTypeExpr ::= q::[Qualifier] params::Parameters res::TypeName
 {
-  b.typerep = closureType([], params.typereps, res.typerep);
-  
-  forwards to typedefTypeExpr([], name("_closure", location=builtIn()));
+  propagate substituted;
+  forwards to directTypeExpr(closureType(q, params.typereps, res.typerep));
 }
 
 abstract production closureType
-t::Type ::= qs::[Qualifier] params::[Type] res::Type
+top::Type ::= q::[Qualifier] params::[Type] res::Type
 {
-  t.withTypeQualifiers = closureType(t.addedTypeQualifiers ++ qs, params, res);
+  top.lpp = pp"${terminate(space(), map((.pp), q))}closure<(${
+    ppImplode(
+      pp", ",
+      zipWith(cat,
+        map((.lpp), params),
+        map((.rpp), params)))}) -> ${res.lpp}${res.rpp}>";
+  top.rpp = notext();
   
-  t.callProd = just(applyExpr(_, _, location=_));
+  top.withoutTypeQualifiers = closureType([], params, res);
+  top.withTypeQualifiers = closureType(top.addedTypeQualifiers ++ q, params, res);
+  top.callProd = just(applyExpr(_, _, location=_));
+  
+  {-top.baseTypeExpr =
+    closureTypeExpr(
+      q,
+      argTypesToParameters(params),
+      typeName(res.baseTypeExpr, res.typeModifierExpr));
+  
+  top.typeModifierExpr = baseTypeExpr();-}
   
   forwards to
-    noncanonicalType(
-      typedefType(
-        qs,
-        "_closure",
-        pointerType(
-          [],
-          tagType(
-            [],
-            refIdTagType(
-              structSEU(),
-              "_closure_s",
-              "edu:umn:cs:melt:exts:ableC:closure:_closure_s")))));
+    tagType(q, refIdTagType(structSEU(), "_closure_s", "edu:umn:cs:melt:exts:ableC:closure:_closure_s"));
 }

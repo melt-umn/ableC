@@ -37,9 +37,14 @@ autocopy attribute nameIn::String;
 synthesized attribute nameSub::Maybe<Name>;
 synthesized attribute typedefSub::Maybe<Type>;
 synthesized attribute declRefSub::Maybe<Expr>;
+
+-- 'Non-canonical' substitutions that substitute something other than a production directly wrapping a name
+synthesized attribute stmtSub::Maybe<Stmt>;
+synthesized attribute exprsSub::Maybe<Exprs>;
+synthesized attribute parametersSub::Maybe<Parameters>;
 synthesized attribute refIdSub::Maybe<String>;
 
-nonterminal Substitutions with nameIn, nameSub, typedefSub, declRefSub, refIdSub;
+nonterminal Substitutions with nameIn, nameSub, typedefSub, declRefSub, stmtSub, exprsSub, parametersSub, refIdSub;
 
 abstract production consSubstitution
 top::Substitutions ::= h::Substitution t::Substitutions
@@ -47,6 +52,9 @@ top::Substitutions ::= h::Substitution t::Substitutions
   top.nameSub = orElse(h.nameSub, t.nameSub);
   top.typedefSub = orElse(h.typedefSub, t.typedefSub);
   top.declRefSub = orElse(h.declRefSub, t.declRefSub);
+  top.stmtSub = orElse(h.stmtSub, t.stmtSub);
+  top.exprsSub = orElse(h.exprsSub, t.exprsSub);
+  top.parametersSub = orElse(h.parametersSub, t.parametersSub);
   top.refIdSub = orElse(h.refIdSub, t.refIdSub);
 }
 
@@ -56,10 +64,13 @@ top::Substitutions ::=
   top.nameSub = nothing();
   top.typedefSub = nothing();
   top.declRefSub = nothing();
+  top.stmtSub = nothing();
+  top.exprsSub = nothing();
+  top.parametersSub = nothing();
   top.refIdSub = nothing();
 }
 
-closed nonterminal Substitution with nameIn, nameSub, typedefSub, declRefSub, refIdSub;
+closed nonterminal Substitution with nameIn, nameSub, typedefSub, declRefSub, stmtSub, exprsSub, parametersSub, refIdSub;
 
 aspect default production
 top::Substitution ::= 
@@ -67,6 +78,9 @@ top::Substitution ::=
   top.nameSub = nothing();
   top.typedefSub = nothing();
   top.declRefSub = nothing();
+  top.stmtSub = nothing();
+  top.exprsSub = nothing();
+  top.parametersSub = nothing();
   top.refIdSub = nothing();
 }
 
@@ -89,6 +103,27 @@ abstract production declRefSubstitution
 top::Substitution ::= name::String sub::Expr
 {
   top.declRefSub = if top.nameIn == name then just(sub) else nothing();
+}
+
+-- Substitutes an exprStmt that is a declRefExpr for another statment
+abstract production stmtSubstitution
+top::Substitution ::= name::String sub::Stmt
+{
+  top.stmtSub = if top.nameIn == name then just(sub) else nothing();
+}
+
+-- Substitutes consExpr where the first element is a declRefExpr
+abstract production exprsSubstitution
+top::Substitution ::= name::String sub::Exprs
+{
+  top.exprsSub = if top.nameIn == name then just(sub) else nothing();
+}
+
+-- Substitutes consExpr where the first element is a declRefExpr
+abstract production parametersSubstitution
+top::Substitution ::= name::String sub::Parameters
+{
+  top.parametersSub = if top.nameIn == name then just(sub) else nothing();
 }
 
 -- Substitutes the 'refId' attribute on a struct (ableC host extension) for a new refId

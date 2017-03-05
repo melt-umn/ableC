@@ -32,16 +32,33 @@ top::Stmt ::= d::Decl
   propagate substituted;
 }
 
+-- TODO: remove this
 aspect production basicVarDeclStmt
 top::Stmt ::= t::Type n::Name init::Expr
 {
-  propagate substituted;
+  --propagate substituted;
 }
 
 aspect production exprStmt
 top::Stmt ::= d::Expr
 {
-  propagate substituted;
+  -- Since we pattern match on d, we need to supply its forward dependancies
+  -- We don't really care about these, since all we want to know is whether d is a declRefExpr.
+  local d1::Expr = d;
+  d1.env = emptyEnv();
+  d1.returnType = nothing();
+
+  local substitutions::Substitutions = top.substitutions;
+  substitutions.nameIn =
+    case d1 of
+      declRefExpr(id) -> id.name
+    | _ -> ""
+    end;
+  top.substituted =
+    case substitutions.stmtSub of
+      just(sub) -> sub
+    | nothing() -> exprStmt(d.substituted)
+    end;
 }
 
 aspect production ifStmt
