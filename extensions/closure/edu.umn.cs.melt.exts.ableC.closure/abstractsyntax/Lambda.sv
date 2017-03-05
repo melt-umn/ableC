@@ -94,6 +94,7 @@ static __res_type__ ${funName}(void *_env_ptr, __params__) {
 """));
   
   forwards to mkErrorCheck(localErrors, injectGlobalDeclsExpr(globalDecls, fwrd, location=top.location));
+
 }
 
 nonterminal CaptureList with env, pp, errors;
