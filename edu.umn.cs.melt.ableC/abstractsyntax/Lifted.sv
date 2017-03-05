@@ -42,7 +42,7 @@ inherited attribute globalDeclEnv::[String];
 abstract production injectGlobalDeclsExpr
 top::Expr ::= globalDecls::[Pair<String Decl>] lifted::Expr
 {
-  top.pp = pp"injectGlobalDeclsExpr {${ppImplode(pp"\n", decls.pps)}} (${lifted.pp})";
+  top.pp = pp"injectGlobalDeclsExpr {${ppImplode(pp"\n", foldDecl(map(snd, globalDecls)).pps)}} (${lifted.pp})";
   top.host = injectGlobalDeclsExpr(zipWith(pair, names, unfoldDecl(decls.host)), lifted.host, location=top.location);
   
   -- Remove the globalDecls that are already in the env (i.e. this is already part of a lifted ast)
@@ -82,7 +82,7 @@ top::Expr ::= globalDecls::[Pair<String Decl>] lifted::Expr
 abstract production injectGlobalDeclsStmt
 top::Stmt ::= globalDecls::[Pair<String Decl>] lifted::Stmt
 {
-  top.pp = pp"injectGlobalDeclsStmt {${ppImplode(pp"\n", decls.pps)}} (${lifted.pp})";
+  top.pp = pp"injectGlobalDeclsStmt {${ppImplode(pp"\n", foldDecl(map(snd, globalDecls)).pps)}} (${lifted.pp})";
   top.host = injectGlobalDeclsStmt(zipWith(pair, names, unfoldDecl(decls.host)), lifted.host);
   
   -- Remove the globalDecls that are already in the env (i.e. this is already part of a lifted ast)
@@ -122,7 +122,7 @@ top::Stmt ::= globalDecls::[Pair<String Decl>] lifted::Stmt
 abstract production injectGlobalDeclsTypeExpr
 top::BaseTypeExpr ::= globalDecls::[Pair<String Decl>] lifted::BaseTypeExpr
 {
-  top.pp = pp"injectGlobalDeclsTypeExpr {${ppImplode(pp"\n", decls.pps)}} (${lifted.pp})";
+  top.pp = pp"injectGlobalDeclsTypeExpr {${ppImplode(pp"\n", foldDecl(map(snd, globalDecls)).pps)}} (${lifted.pp})";
   top.host = injectGlobalDeclsTypeExpr(zipWith(pair, names, unfoldDecl(decls.host)), lifted.host);
   top.typerep = noncanonicalType(injectGlobalDeclsType(globalDecls, lifted.typerep));
   
@@ -169,16 +169,10 @@ top::NoncanonicalType ::= globalDecls::[Pair<String Decl>] lifted::Type
 {
   propagate host;
   top.canonicalType = lifted;
-  top.lpp = pp"injectGlobalDeclsType {${ppImplode(pp"\n", decls.pps)}} (${lifted.lpp}${lifted.rpp})";
+  top.lpp = pp"injectGlobalDeclsType {${ppImplode(pp"\n", foldDecl(map(snd, globalDecls)).pps)}} (${lifted.lpp}${lifted.rpp})";
   top.rpp = lifted.rpp;
   top.baseTypeExpr = injectGlobalDeclsTypeExpr(globalDecls, lifted.baseTypeExpr);
   top.typeModifierExpr = lifted.typeModifierExpr;
- 
-  -- Only used for pp, so attributes don't really matter
-  local decls::Decls = foldDecl(map(snd, globalDecls));
-  decls.env = emptyEnv();
-  decls.isTopLevel = true;
-  decls.returnType = nothing();
 }
 
 {--

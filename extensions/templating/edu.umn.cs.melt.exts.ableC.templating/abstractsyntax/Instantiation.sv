@@ -3,6 +3,7 @@ grammar edu:umn:cs:melt:exts:ableC:templating:abstractsyntax;
 abstract production templateDeclRefExpr
 top::Expr ::= n::Name ts::TypeNames
 {
+  top.pp = pp"${n.pp}<${ppImplode(pp", ", ts.pps)}>";
   -- Don't substitute n
   top.substituted = templateDeclRefExpr(n, ts.substituted, location=top.location);
   
@@ -44,6 +45,7 @@ top::Expr ::= n::Name ts::TypeNames
 abstract production templateTypedefTypeExpr
 top::BaseTypeExpr ::= q::[Qualifier]  n::Name ts::TypeNames
 {
+  top.pp = pp"${terminate(space(), map((.pp), q))}${n.pp}<${ppImplode(pp", ", ts.pps)}>";
   -- Don't substitute n
   top.substituted = templateTypedefTypeExpr(q, n, ts.substituted);
   
