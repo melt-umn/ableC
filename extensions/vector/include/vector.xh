@@ -3,11 +3,9 @@
 
 #include <string.h>
 #include <stdbool.h>
-//#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdarg.h>
-#include <limits.h>
+//#include <limits.h>
 
 #ifndef _VECTOR_XH
 #define _VECTOR_XH
@@ -18,42 +16,105 @@ struct _vector_info {
   size_t elem_size;
 };
 
+template<a>
+struct _vector_s {
+  struct _vector_info _info;
+  a *_contents;
+};
+
+//using vector<a> = _vector_s<a>*;
+
 // Check whether an index is valid for given vector info
-static void _check_index_vector(struct _vector_info info, void *contents, size_t i) {
-  if (i >= info.length || i < 0) {
-    fprintf(stderr, "Vector index out of bounds: length %lu, index %lu\n", info.length, i);
+template<a>
+static void _check_index_vector(vector<a> vec, size_t i) {
+  if (i >= vec->_info.length || i < 0) {
+    fprintf(stderr, "Vector index out of bounds: length %lu, index %lu\n", vec->_info.length, i);
     exit(1);
   }
-  if (contents == NULL) {
+  if (vec->_contents == NULL) {
     fprintf(stderr, "Cannot access uninitialized vector\n");
     exit(1);
   }
 }
 
 // Increase the length of a vector to new_size, updating the given info and contents pointers
-static void _resize_vector(struct _vector_info *info, void **contents, size_t new_length) {
-  info->length = new_length;
-  if (new_length > info->capacity) {
-    info->capacity = new_length * 2;
-    *contents = GC_realloc(*contents, info->elem_size * info->capacity);
+template<a>
+static void _resize_vector(vector<a> vec, size_t new_length) {
+  vec->_info.length = new_length;
+  if (new_length > vec->_info.capacity) {
+    vec->_info.capacity = new_length * 2;
+    vec->_contents = GC_realloc(vec->_contents, vec->_info.elem_size * vec->_info.capacity);
   }
 }
 
 // If the index is equal to the vector size, expand the vector by one
-static void _maybe_grow_vector_by_one(struct _vector_info *info, void **contents, size_t i) {
-  if (i > info->length || i < 0) {
-    fprintf(stderr, "Vector index out of bounds: length %lu, index %lu\n", info->length, i);
+template<a>
+static void _maybe_grow_vector_by_one(vector<a> vec, size_t i) {
+  if (i > vec->_info.length || i < 0) {
+    fprintf(stderr, "Vector index out of bounds: length %lu, index %lu\n", vec->_info.length, i);
     exit(1);
   }
-  if (i == info->length) {
-    _resize_vector(info, contents, info->length + 1);
+  if (i == vec->_info.length) {
+    _resize_vector<a>(vec, vec->_info.length + 1);
   }
 }
 
-// Initialize a vector to have a given size
-static void _init_vector(struct _vector_info *info, void **contents, size_t elem_size, size_t length) {
-  *info = (struct _vector_info){length, length * 2, elem_size};
-  *contents = GC_malloc(elem_size * info->capacity);
+template<a>
+static vector<a> _new_vector(size_t length) {
+  vector<a> result = GC_malloc(sizeof(_vector_s<a>));
+  result->_info = (struct _vector_info){length, length * 2, sizeof(a)};
+  result->_contents = GC_malloc(sizeof(a) * result->_info.capacity);
+}
+
+template<a>
+static vector<a> _copy_vector(vector<a> vec) {
+  vector<a> result = GC_malloc(sizeof(_vector_s<a>));
+  result->_info = (struct _vector_info){vec.length, vec.capacity, vec.elem_size};
+  result->_contents = GC_malloc(vec.elem_size * vec.capacity);
+  
+  for (size_t i = 0; i < vec.length; i++) {
+    result[i] = vec[i];
+  }
+  
+  return result;
+}
+
+template<a>
+static vector<a> _append_to_vector(vector<a> vec1, vector<a> vec2) {
+  size_t vec1_length = vec1.length;
+
+  for (size_t i = 0; i < vec2.length; i++) {
+    vec1[i + vec1_length] = vec2[i];
+  }
+  
+  return vec1;
+}
+
+template<a>
+static bool _eq_vector(vector<a> vec1, vector<a> vec2) {
+  if (vec1.length != vec2.length)
+    return 0;
+
+  for (size_t i = 0; i < vec1.length; i++) {
+    if (vec1[i] != vec2[i])
+      return 0;
+  }
+  
+  return 1;
+}
+
+template<a>
+static string _show_vector(vector<a> vec) {
+  if (vec.length == 0)
+    return "[]";
+    
+  string result = "[" + show(vec[0]);
+  
+  for (size_t i = 1; i < vec.length; i++) {
+    result += ", " + show(vec[i]);
+  }
+  
+  return result + "]";
 }
 
 #endif

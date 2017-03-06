@@ -1,45 +1,43 @@
 grammar edu:umn:cs:melt:exts:ableC:vector:abstractsyntax;
 
-function mkVectorTypedefGlobalDecls
-[Pair<String Decl>] ::= sub::Type
-{
-  local vectorTypedefDecl::Decl = parseDecl(s"""
-typedef struct __attribute__((refId("edu:umn:cs:melt:exts:ableC:vector:_vector_${sub.mangledName}_s"))) _vector_${sub.mangledName}_s {
-  struct _vector_info _info;
-  __sub_type__ *_contents;
-} *_vector_${sub.mangledName};
-""");
-
-  return
-    [pair(
-      "_vector_" ++ sub.mangledName,
-      subDecl([typedefSubstitution("__sub_type__", sub)], vectorTypedefDecl))];
-}
-
 abstract production vectorTypeExpr 
 top::BaseTypeExpr ::= q::[Qualifier] sub::TypeName
 {
   propagate substituted;
   sub.env = globalEnv(top.env);
   
+  local localErrors::[Message] =
+    sub.errors ++ checkVectorHeaderDef("_vector_s", builtin, top.env); -- TODO: location
+  
+  local result::TypeName =
+    typeName(
+      templateTypedefTypeExpr(
+        q,
+        name("_vector_s", location=builtin),
+        consTypeName(sub, nilTypeName())),
+      pointerTypeExpr(q, baseTypeExpr()));
+  result.env = top.env;
+  result.returnType = top.returnType;
+  
   forwards to
-    if !null(sub.errors)
-    then errorTypeExpr(sub.errors)
-    else directTypeExpr(vectorType(q, sub.typerep));
+    if !null(localErrors)
+    then errorTypeExpr(localErrors)
+    else directTypeExpr(vectorType(q, sub.typerep, result.typerep));
 }
 
 abstract production vectorType
-top::Type ::= q::[Qualifier] sub::Type
+top::Type ::= q::[Qualifier] sub::Type resolved::Type
 {
   top.lpp = pp"${ppImplode(space(), map((.pp), q))}vector<${sub.lpp}${sub.rpp}>";
   top.rpp = pp"";
   
-  top.withoutTypeQualifiers = vectorType([], sub);
-  top.withTypeQualifiers = vectorType(top.addedTypeQualifiers ++ q, sub);
+  top.withoutTypeQualifiers = vectorType([], sub, resolved.withoutTypeQualifiers);
+  top.withTypeQualifiers = vectorType(top.addedTypeQualifiers ++ q, sub, resolved.withTypeQualifiers);
+  resolved.addedTypeQualifiers = top.addedTypeQualifiers;
 
   top.ovrld:lBinaryPlusProd =
     case top.ovrld:otherType of
-      vectorType(_, s) ->
+      vectorType(_, s, _) ->
         if compatibleTypes(sub, s, true)
         then just(appendVector(_, _, location=_))
         else nothing()
@@ -48,7 +46,7 @@ top::Type ::= q::[Qualifier] sub::Type
     
   top.ovrld:lAssignPlusProd =
     case top.ovrld:otherType of
-      vectorType(_, s) ->
+      vectorType(_, s, _) ->
         if compatibleTypes(sub, s, true)
         then just(appendAssignVector(_, _, location=_))
         else nothing()
@@ -57,7 +55,7 @@ top::Type ::= q::[Qualifier] sub::Type
   
   top.ovrld:lBinaryEqProd =
     case top.ovrld:otherType of
-      vectorType(_, s) ->
+      vectorType(_, s, _) ->
         if compatibleTypes(sub, s, true)
         then just(eqVector(_, _, location=_))
         else nothing()
@@ -99,20 +97,15 @@ top::Type ::= q::[Qualifier] sub::Type
     | nothing() -> nothing()
     end;
 
-  forwards to
-    noncanonicalType(
-      injectGlobalDeclsType(
-        mkVectorTypedefGlobalDecls(sub),
-        noncanonicalType(
-          typedefType(
-            q,
-            "_vector_" ++ sub.mangledName,
-            pointerType(
-              [],
-              tagType(
-                [],
-                refIdTagType(
-                  structSEU(),
-                  "_vector_" ++ sub.mangledName ++ "_s",
-                  "edu:umn:cs:melt:exts:ableC:vector:_vector_" ++ sub.mangledName ++ "_s")))))));
+  forwards to resolved;
+}
+
+function mkVectorType
+Type ::= q::[Qualifier] sub::Type env::Decorated Env
+{
+  local result::BaseTypeExpr = vectorTypeExpr(q, typeName(directTypeExpr(sub), baseTypeExpr()));
+  result.env = env;
+  result.returnType = nothing();
+  
+  return result.typerep;
 }
