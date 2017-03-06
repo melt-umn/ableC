@@ -4,8 +4,9 @@ imports silver:util:raw:treemap as tm;
 
 synthesized attribute templateParams::[Name];
 synthesized attribute decl::Decl;
+synthesized attribute isItemValue::Boolean;
 
-nonterminal TemplateItem with templateParams, decl, sourceLocation, isItemTypedef;
+nonterminal TemplateItem with templateParams, decl, sourceLocation, isItemValue, isItemTypedef;
 
 abstract production templateItem
 top::TemplateItem ::= params::[Name] isItemTypedef::Boolean sourceLocation::Location decl::Decl
@@ -13,6 +14,7 @@ top::TemplateItem ::= params::[Name] isItemTypedef::Boolean sourceLocation::Loca
   top.templateParams = params;
   top.decl = decl;
   top.sourceLocation = sourceLocation;
+  top.isItemValue = !isItemTypedef;
   top.isItemTypedef = isItemTypedef;
 }
 
@@ -22,6 +24,7 @@ top::TemplateItem ::=
   top.templateParams = [];
   top.decl = decls(nilDecl());
   top.sourceLocation = builtin;
+  top.isItemValue = false;
   top.isItemTypedef = false;
 }
 

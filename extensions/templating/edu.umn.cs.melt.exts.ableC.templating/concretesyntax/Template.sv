@@ -4,6 +4,7 @@ imports edu:umn:cs:melt:ableC:concretesyntax;
 imports edu:umn:cs:melt:ableC:concretesyntax:lexerHack as lh;
 
 exports edu:umn:cs:melt:exts:ableC:templating:concretesyntax:templateDecl;
+exports edu:umn:cs:melt:exts:ableC:templating:concretesyntax:usingDecl;
 exports edu:umn:cs:melt:exts:ableC:templating:concretesyntax:instantiationTypeExpr;
 exports edu:umn:cs:melt:exts:ableC:templating:concretesyntax:instantiationExpr;
 

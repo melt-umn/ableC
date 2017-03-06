@@ -27,7 +27,7 @@ top::ExternalDeclaration_c ::= Template_t params::TemplateParams_c '>' decl::Tem
   decl.params = params.ast;
 }
 action {
-  context = lh:closeScope(context); -- Opened by TemplateDecl_c
+  context = lh:closeScope(context); -- Opened by TemplateParams_c
   context =
     if decl.isTypedef
     then lh:addTypenamesToScope(decl.declaredIdents, context)

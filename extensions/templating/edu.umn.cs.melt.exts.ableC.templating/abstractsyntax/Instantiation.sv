@@ -10,16 +10,19 @@ top::Expr ::= n::Name ts::TypeNames
   local templateItem::Decorated TemplateItem = n.templateItem;
 
   local localErrors::[Message] =
-    n.templateLookupCheck ++ ts.errors ++
-    (if ts.count != length(templateItem.templateParams)
-     then [err(
-       top.location,
-       s"Wrong number of template parameters for ${n.name}, " ++
-       s"expected ${toString(length(templateItem.templateParams))} but got ${toString(ts.count)}")]
-     else []) ++
-    (if templateItem.isItemTypedef
-     then [err(n.location, s"${n.name} is a type, not an expression")]
-     else []);
+    ts.errors ++
+    if !null(n.templateLookupCheck)
+    then n.templateLookupCheck
+    else if !templateItem.isItemValue
+    then [err(n.location, s"${n.name} is not a value")]
+    else if ts.count != length(templateItem.templateParams)
+    then [err(
+            top.location,
+            s"Wrong number of template parameters for ${n.name}, " ++
+            s"expected ${toString(length(templateItem.templateParams))} but got ${toString(ts.count)}")]
+    else if !null(fwrd.errors)
+    then wrn(n.templateItem.sourceLocation, s"In instantiation of ${n.name} at ${top.location.unparse}") :: fwrd.errors
+    else [];
     
   local mangledName::String = templateMangledName(n.name, ts.typereps);
     
@@ -30,16 +33,18 @@ top::Expr ::= n::Name ts::TypeNames
          nameSubstitution(n.name, name(mangledName, location=builtin)) ::
            zipWith(typedefSubstitution, map((.name), templateItem.templateParams), ts.typereps),
          templateItem.decl))];
+         
+  local fwrd::Expr =
+    injectGlobalDeclsExpr(
+      globalDecls,
+      declRefExpr(
+        name(mangledName, location=builtin),
+        location=builtin),
+      location=top.location);
+  fwrd.env = top.env;
+  fwrd.returnType = top.returnType;
 
-  forwards to
-    mkErrorCheck(
-      localErrors,
-      injectGlobalDeclsExpr(
-        globalDecls,
-        declRefExpr(
-          name(mangledName, location=builtin),
-          location=builtin),
-        location=top.location));
+  forwards to mkErrorCheck(localErrors, fwrd);
 }
 
 abstract production templateTypedefTypeExpr
@@ -52,16 +57,19 @@ top::BaseTypeExpr ::= q::[Qualifier]  n::Name ts::TypeNames
   local templateItem::Decorated TemplateItem = n.templateItem;
 
   local localErrors::[Message] =
-    n.templateLookupCheck ++ ts.errors ++
-    (if ts.count != length(templateItem.templateParams)
-     then [err(
-       n.location,
-       s"Wrong number of template parameters for ${n.name}, " ++
-       s"expected ${toString(length(templateItem.templateParams))} but got ${toString(ts.count)}")]
-     else []) ++
-    (if !templateItem.isItemTypedef
-     then [err(n.location, s"${n.name} is a expression, not a type")]
-     else []);
+    ts.errors ++
+    if !null(n.templateLookupCheck)
+    then n.templateLookupCheck
+    else if !templateItem.isItemTypedef
+    then [err(n.location, s"${n.name} is not a type")]
+    else if ts.count != length(templateItem.templateParams)
+    then [err(
+            n.location,
+            s"Wrong number of template parameters for ${n.name}, " ++
+            s"expected ${toString(length(templateItem.templateParams))} but got ${toString(ts.count)}")]
+    else if !null(result.errors)
+    then wrn(n.templateItem.sourceLocation, s"In instantiation of ${n.name} at ${n.location.unparse}") :: result.errors
+    else [];
   
   local mangledName::String = templateMangledName(n.name, ts.typereps);
     
@@ -77,7 +85,7 @@ top::BaseTypeExpr ::= q::[Qualifier]  n::Name ts::TypeNames
          templateItem.decl))];
   
   -- To avoid needing an explicit equation for typerep, decorate what would otherwise be the
-  -- forward, and wrap that up in 
+  -- forward, and wrap that up in a directTypeExpr
   local result::BaseTypeExpr =
     injectGlobalDeclsTypeExpr(
       globalDecls,
