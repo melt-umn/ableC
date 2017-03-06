@@ -96,17 +96,17 @@ top::BaseTypeExpr ::= q::[Qualifier]  n::Name ts::TypeNames
   forwards to
     if !null(localErrors)
     then errorTypeExpr(localErrors)
-    else directTypeExpr(noncanonicalType(templatedType(q, n.name, ts.typereps, result.typerep)));
+    else directTypeExpr(templatedType(q, n.name, ts.typereps, result.typerep));
 }
 
 -- Type of an instantiated template
 abstract production templatedType
-top::NoncanonicalType ::= q::[Qualifier]  n::String  args::[Type]  resolved::Type
+top::Type ::= q::[Qualifier]  n::String  args::[Type]  resolved::Type
 {
   top.lpp = pp"${terminate(space(), map((.pp), q))}${text(n)}<${ppImplode(pp", ", map(\t::Type -> cat(t.lpp, t.rpp), args))}>";
   top.rpp = notext();
   
-  forwards to resolvedType(resolved);
+  forwards to resolved;
 }
 
 function templateMangledName
