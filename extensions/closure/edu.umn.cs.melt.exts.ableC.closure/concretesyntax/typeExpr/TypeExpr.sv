@@ -28,11 +28,23 @@ concrete productions top::ClosureTypeExpr_c
     { top.ast = closureTypeExpr(top.givenQualifiers, consParameters(parameterDecl([], param.ast, baseTypeExpr(), nothingName(), []), nilParameters()), ret.ast); }
 | '(' param::ClosureTypeExpr_c ')' '->' rest::ClosureTypeExpr_c
     { top.ast = closureTypeExpr(top.givenQualifiers, consParameters(parameterDecl([], param.ast, baseTypeExpr(), nothingName(), []), nilParameters()), typeName(rest.ast, baseTypeExpr())); }
-| '(' params::ParameterList_c ')' '->' rest::ClosureTypeExpr_c
+| '(' params::ClosureParameterList_c ')' '->' rest::ClosureTypeExpr_c
     { top.ast = closureTypeExpr(top.givenQualifiers, foldParameterDecl(params.ast), typeName(rest.ast, baseTypeExpr())); }
-| '(' params::ParameterList_c ')' '->' ret::TypeName_c
+| '(' params::ClosureParameterList_c ')' '->' ret::TypeName_c
     { top.ast = closureTypeExpr(top.givenQualifiers, foldParameterDecl(params.ast), ret.ast); }
 | '(' ')' '->' rest::ClosureTypeExpr_c
     { top.ast = closureTypeExpr(top.givenQualifiers, nilParameters(), typeName(rest.ast, baseTypeExpr())); }
 | '(' ')' '->' ret::TypeName_c
     { top.ast = closureTypeExpr(top.givenQualifiers, nilParameters(), ret.ast); }
+
+-- Duplicate of ParameterList_c so MDA doesn't complain
+closed nonterminal ClosureParameterList_c with location, declaredIdents, ast<[ParameterDecl]>;
+concrete productions top::ClosureParameterList_c
+| h::ParameterDeclaration_c 
+    { top.declaredIdents = h.declaredIdents;
+      top.ast = [h.ast];
+    }
+| h::ClosureParameterList_c ',' t::ParameterDeclaration_c
+    { top.declaredIdents = h.declaredIdents ++ t.declaredIdents;
+      top.ast = h.ast ++ [t.ast];
+    }
