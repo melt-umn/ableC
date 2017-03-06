@@ -48,7 +48,7 @@ top::Expr ::= n::Name ts::TypeNames
 }
 
 abstract production templateTypedefTypeExpr
-top::BaseTypeExpr ::= q::[Qualifier]  n::Name ts::TypeNames
+top::BaseTypeExpr ::= q::[Qualifier] n::Name ts::TypeNames
 {
   top.pp = pp"${terminate(space(), map((.pp), q))}${n.pp}<${ppImplode(pp", ", ts.pps)}>";
   -- Don't substitute n
@@ -77,6 +77,7 @@ top::BaseTypeExpr ::= q::[Qualifier]  n::Name ts::TypeNames
     [pair(
        mangledName,
        subDecl(
+         -- Set the refId so that two identical template instantiations maintain type equality
          refIdSubstitution(
            s"edu:umn:cs:melt:exts:ableC:templating:${n.name}",
            s"edu:umn:cs:melt:exts:ableC:templating:${mangledName}") ::
@@ -97,16 +98,6 @@ top::BaseTypeExpr ::= q::[Qualifier]  n::Name ts::TypeNames
     if !null(localErrors)
     then errorTypeExpr(localErrors)
     else directTypeExpr(templatedType(q, n.name, ts.typereps, result.typerep));
-}
-
--- Type of an instantiated template
-abstract production templatedType
-top::Type ::= q::[Qualifier]  n::String  args::[Type]  resolved::Type
-{
-  top.lpp = pp"${terminate(space(), map((.pp), q))}${text(n)}<${ppImplode(pp", ", map(\t::Type -> cat(t.lpp, t.rpp), args))}>";
-  top.rpp = notext();
-  
-  forwards to resolved;
 }
 
 function templateMangledName
