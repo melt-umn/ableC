@@ -68,7 +68,7 @@ top::Expr ::= e::Expr
 {
   propagate host, lifted;
   top.pp = parens( e.pp );
-  top.errors := [];
+  top.errors := e.errors;
   top.globalDecls := e.globalDecls;
   top.defs = e.defs;
   top.freeVariables = e.freeVariables;
