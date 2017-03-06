@@ -90,7 +90,7 @@ abstract production defsDecl
 top::Decl ::= d::[Def]
 {
   propagate host, lifted; -- TODO: Should this production get removed by host or lifted?
-  top.pp = notext();
+  top.pp = concat([pp"/* defsDecl", showEnv(addEnv(d, emptyEnv())), pp"*/"]);
   top.errors := [];
   top.globalDecls := [];
   top.defs = d;
