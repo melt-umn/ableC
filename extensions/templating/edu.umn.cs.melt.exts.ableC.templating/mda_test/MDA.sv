@@ -1,15 +1,18 @@
 grammar edu:umn:cs:melt:exts:ableC:templating:mda_test;
 
 import edu:umn:cs:melt:ableC:host;
-{- TODO: FIX
-copper_mda testTemplateDecl(ablecParser) {
-  edu:umn:cs:melt:exts:ableC:templating:concretesyntax:templateDecl;
+
+copper_mda testTemplateStructDecl(ablecParser) {
+  edu:umn:cs:melt:exts:ableC:templating:concretesyntax:templateStructDecl;
+}
+
+copper_mda testTemplateFunctionDecl(ablecParser) {
+  edu:umn:cs:melt:exts:ableC:templating:concretesyntax:templateFunctionDecl;
 }
 
 copper_mda testUsingDecl(ablecParser) {
-  edu:umn:cs:melt:exts:ableC:templating:concretesyntax:templateDecl;
+  edu:umn:cs:melt:exts:ableC:templating:concretesyntax:usingDecl;
 }
--}
 
 copper_mda testInstExpr(ablecParser) {
   edu:umn:cs:melt:exts:ableC:templating:concretesyntax:instantiationExpr;

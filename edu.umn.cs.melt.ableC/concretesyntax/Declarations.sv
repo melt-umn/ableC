@@ -126,7 +126,8 @@ concrete productions top::TypeNames_c
 | 
     { top.ast = ast:nilTypeName(); }
 
--- Ugly hack to allow a close paren or greater than sign after TypeNames_c
+-- Ugly hack to add things to the follow set TypeNames_c
+-- We set this to match what is allowed by C++ for extensions to use
 terminal TypeNames_NEVER_t 'TypeNames_NEVER_t!!!nevernever1234567890' ;
 concrete productions top::Expr_c
 | 'TypeNames_NEVER_t!!!nevernever1234567890' TypeNames_c ')'
@@ -134,6 +135,10 @@ concrete productions top::Expr_c
         "Placeholder for TypeNames_c should not appear in the tree.") ],
         location=top.location ) ; }
 | 'TypeNames_NEVER_t!!!nevernever1234567890' TypeNames_c '>'
+    { top.ast = ast:errorExpr ( [ err (top.location, "Internal Error. " ++
+        "Placeholder for TypeNames_c should not appear in the tree.") ],
+        location=top.location ) ; }
+| 'TypeNames_NEVER_t!!!nevernever1234567890' TypeNames_c ';'
     { top.ast = ast:errorExpr ( [ err (top.location, "Internal Error. " ++
         "Placeholder for TypeNames_c should not appear in the tree.") ],
         location=top.location ) ; }

@@ -9,7 +9,8 @@ imports edu:umn:cs:melt:ableC:abstractsyntax as ast;
 imports edu:umn:cs:melt:ableC:abstractsyntax:construction as ast;
 
 imports edu:umn:cs:melt:exts:ableC:templating:abstractsyntax;
-imports edu:umn:cs:melt:exts:ableC:templating:concretesyntax:templateDecl;
+
+exports edu:umn:cs:melt:exts:ableC:templating:concretesyntax:templateParameters;
 
 -- Spurious import, to trigger the tests on build.
 import edu:umn:cs:melt:exts:ableC:templating:mda_test;
@@ -17,7 +18,7 @@ import edu:umn:cs:melt:exts:ableC:templating:mda_test;
 marking terminal Using_t 'using' lexer classes {Ckeyword};
 
 concrete production usingDeclaration_c
-top::ExternalDeclaration_c ::= 'using' id::Identifier_t '<' params::TemplateParams_c '>' '=' ty::TypeName_c ';'
+top::ExternalDeclaration_c ::= 'using' id::Identifier_t '<' params::TemplateParameters_c '>' '=' ty::TypeName_c ';'
 {
   top.ast = templateTypeDecl(params.ast, ast:fromId(id), ty.ast);
 }
