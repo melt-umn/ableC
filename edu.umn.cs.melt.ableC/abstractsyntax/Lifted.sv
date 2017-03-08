@@ -72,7 +72,7 @@ top::Expr ::= globalDecls::[Pair<String Decl>] lifted::Expr
   lifted.env = addEnv(decls.defs, top.env);
   
   -- defs include things that were lifted, so things in the same scope don't need to be lifted twice
-  top.defs = decls.defs ++ lifted.defs;
+  top.defs := decls.defs ++ lifted.defs;
   
   -- Define other attributes to be the same as on lifted
   top.errors := lifted.errors;
@@ -114,11 +114,11 @@ top::Stmt ::= globalDecls::[Pair<String Decl>] lifted::Stmt
   lifted.env = addEnv(decls.defs, top.env);
   
   -- defs include things that were lifted, so things in the same scope don't need to be lifted twice
-  top.defs = decls.defs ++ lifted.defs;
+  top.defs := decls.defs ++ lifted.defs;
   
   -- Define other attributes to be the same as on lifted
   top.errors := lifted.errors;
-  top.functiondefs = lifted.functiondefs;
+  top.functiondefs := lifted.functiondefs;
   top.freeVariables = lifted.freeVariables;
 }
 
@@ -157,7 +157,7 @@ top::BaseTypeExpr ::= globalDecls::[Pair<String Decl>] lifted::BaseTypeExpr
   lifted.env = addEnv(decls.defs, top.env);
   
   -- defs include things that were lifted, so things in the same scope don't need to be lifted twice
-  top.defs = decls.defs ++ lifted.defs;
+  top.defs := decls.defs ++ lifted.defs;
   
   -- Define other attributes to be the same as on lifted
   top.errors := lifted.errors;

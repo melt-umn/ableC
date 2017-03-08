@@ -207,7 +207,7 @@ abstract production constructorPattern
 p::Pattern ::= id::String ps::PatternList
 {
   p.pp = cat( text(id), parens( ppImplode(text(","), ps.pps) ) );
-  p.defs = ps.defs;
+  p.defs := ps.defs;
 
   -- Type checking
   p.errors :=
@@ -337,7 +337,7 @@ abstract production patternNot
 p::Pattern ::= p1::Pattern
 {
   p.pp = cat(text("!"), p1.pp);
-  p.defs = [];
+  p.defs := [];
   p.errors := p1.errors;
   
   p1.expectedType = p.expectedType;
@@ -385,7 +385,7 @@ abstract production patternVariable
 p::Pattern ::= id::String
 {
   p.pp = text(id);
-  p.defs = d.defs;
+  p.defs := d.defs;
   local d :: Decl
     = variableDecls( [], [], directTypeExpr(p.expectedType), 
         consDeclarator(
@@ -411,7 +411,7 @@ abstract production patternBoth
 p::Pattern ::= p1::Pattern p2::Pattern
 {
   p.pp = cat(p1.pp, cat(text("@"), p2.pp));
-  p.defs = p1.defs ++ p2.defs;
+  p.defs := p1.defs ++ p2.defs;
   p.decls = p1.decls ++ p2.decls;
   p.errors := p1.errors ++ p2.errors;
   
@@ -433,7 +433,7 @@ abstract production patternWildcard
 p::Pattern ::=
 {
   p.pp = text("_");
-  p.defs = [];
+  p.defs := [];
   p.errors := [];
   p.transform = p.transformIn;
   p.decls = [];
@@ -443,7 +443,7 @@ abstract production patternConst
 p::Pattern ::= constExpr::Expr
 {
   p.pp = constExpr.pp;
-  p.defs = [];
+  p.defs := [];
   p.errors := (if compatibleTypes(p.expectedType, constExpr.typerep, false) then [] else
                   [err(p.location, "Unexpected constant in pattern")]);
   p.transform =
@@ -465,7 +465,7 @@ abstract production patternStringLiteral
 p::Pattern ::= s::String
 {
   p.pp = text(s);
-  p.defs = [];
+  p.defs := [];
   p.errors := (if compatibleTypes(
                     p.expectedType,
                     pointerType(
@@ -503,7 +503,7 @@ abstract production consPattern
 ps::PatternList ::= p::Pattern rest::PatternList
 {
   ps.pps = p.pp :: rest.pps;
-  ps.defs = p.defs ++ rest.defs;
+  ps.defs := p.defs ++ rest.defs;
   ps.errors := p.errors ++ rest.errors;
 
   ps.pslength = 1 + rest.pslength;
@@ -533,7 +533,7 @@ abstract production nilPattern
 ps::PatternList ::= {-empty-}
 {
   ps.pps = [];
-  ps.defs = [];
+  ps.defs := [];
   ps.errors := [];
   ps.pslength = 0;
   ps.decls = [ ];

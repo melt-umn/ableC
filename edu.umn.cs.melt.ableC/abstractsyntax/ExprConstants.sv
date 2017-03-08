@@ -10,7 +10,7 @@ top::Expr ::= c::NumericConstant
   top.pp = c.pp;
   top.errors := [];
   top.globalDecls := [];
-  top.defs = [];
+  top.defs := [];
   top.freeVariables = [];
   top.typerep = builtinType([], c.constanttyperep);
 }
@@ -21,7 +21,7 @@ top::Expr ::= c::NumericConstant
   top.pp = c.pp;
   top.errors := [];
   top.globalDecls := [];
-  top.defs = [];
+  top.defs := [];
   top.freeVariables = [];
   top.typerep = builtinType([], case c.constanttyperep of
     | realType(rt) -> complexType(rt)
@@ -36,7 +36,7 @@ top::Expr ::= num::String  c::CharPrefix
   top.pp = text(num);
   top.errors := [];
   top.globalDecls := [];
-  top.defs = [];
+  top.defs := [];
   top.freeVariables = [];
   top.typerep = builtinType([], signedType(charType())); -- TODO: no idea
 }

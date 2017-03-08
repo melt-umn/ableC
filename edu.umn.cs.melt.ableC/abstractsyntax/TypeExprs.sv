@@ -59,7 +59,7 @@ top::TypeName ::= bty::BaseTypeExpr  mty::TypeModifierExpr
   mty.typeModifiersIn = bty.typeModifiers;
   top.errors := bty.errors ++ mty.errors;
   top.globalDecls := bty.globalDecls ++ mty.globalDecls;
-  top.defs = bty.defs;
+  top.defs := bty.defs;
   top.freeVariables = bty.freeVariables ++ mty.freeVariables;
 }
 
@@ -78,7 +78,7 @@ top::BaseTypeExpr ::= msg::[Message]
   top.errors := msg;
   top.globalDecls := [];
   top.typeModifiers = [];
-  top.defs = [];
+  top.defs := [];
   top.freeVariables = [];
 }
 
@@ -92,7 +92,7 @@ top::BaseTypeExpr ::= msg::[Message]  ty::BaseTypeExpr
   top.errors := msg ++ ty.errors;
   top.globalDecls := ty.globalDecls;
   top.typeModifiers = ty.typeModifiers;
-  top.defs = ty.defs;
+  top.defs := ty.defs;
   top.freeVariables = ty.freeVariables;
 }
 
@@ -133,7 +133,7 @@ top::BaseTypeExpr ::= bty::BaseTypeExpr  mty::TypeModifierExpr
   top.errors := bty.errors ++ mty.errors;
   top.globalDecls := bty.globalDecls ++ mty.globalDecls;
   top.typeModifiers = mty :: bty.typeModifiers;
-  top.defs = bty.defs;
+  top.defs := bty.defs;
   top.freeVariables = bty.freeVariables ++ mty.freeVariables;
 }
 
@@ -148,7 +148,7 @@ top::BaseTypeExpr ::= q::[Qualifier]  result::BuiltinType
   top.errors := [];
   top.globalDecls := [];
   top.typeModifiers = [];
-  top.defs = [];
+  top.defs := [];
   top.freeVariables = [];
 }
 
@@ -212,7 +212,7 @@ top::BaseTypeExpr ::= q::[Qualifier]  kwd::StructOrEnumOrUnion  name::Name
   top.globalDecls := [];
   top.typeModifiers = [];
   
-  top.defs =
+  top.defs :=
     case kwd, tags of
     -- It's an enum and we see the declaration.
     | enumSEU(), enumTagItem(d) :: _ -> []
@@ -244,7 +244,7 @@ top::BaseTypeExpr ::= q::[Qualifier]  def::StructDecl
   top.errors := def.errors;
   top.globalDecls := def.globalDecls;
   top.typeModifiers = [];
-  top.defs = def.defs;
+  top.defs := def.defs;
   top.freeVariables = [];
 }
 
@@ -263,7 +263,7 @@ top::BaseTypeExpr ::= q::[Qualifier]  def::UnionDecl
   top.errors := def.errors;
   top.globalDecls := def.globalDecls;
   top.typeModifiers = [];
-  top.defs = def.defs;
+  top.defs := def.defs;
   top.freeVariables = [];
 }
 
@@ -277,7 +277,7 @@ top::BaseTypeExpr ::= q::[Qualifier]  def::EnumDecl
   top.errors := def.errors;
   top.globalDecls := def.globalDecls;
   top.typeModifiers = [];
-  top.defs = def.defs;
+  top.defs := def.defs;
   top.freeVariables = [];
 }
 
@@ -294,7 +294,7 @@ top::BaseTypeExpr ::= q::[Qualifier]  name::Name
   top.errors := [];
   top.globalDecls := [];
   top.typeModifiers = [];
-  top.defs = [];
+  top.defs := [];
   top.freeVariables = [];
 
   top.errors <- name.valueLookupCheck;
@@ -313,7 +313,7 @@ top::BaseTypeExpr ::= q::[Qualifier]  wrapped::TypeName
   top.errors := wrapped.errors;
   top.globalDecls := wrapped.globalDecls;
   top.typeModifiers = [];
-  top.defs = wrapped.defs;
+  top.defs := wrapped.defs;
   top.freeVariables = wrapped.freeVariables;
 }
 {-- GCC builtin type -}
@@ -326,7 +326,7 @@ top::BaseTypeExpr ::=
   top.errors := [];
   top.globalDecls := [];
   top.typeModifiers = [];
-  top.defs = [];
+  top.defs := [];
   top.freeVariables = [];
   
 }
@@ -340,7 +340,7 @@ top::BaseTypeExpr ::= q::[Qualifier]  e::ExprOrTypeName
   top.errors := e.errors;
   top.globalDecls := e.globalDecls;
   top.typeModifiers = [];
-  top.defs = e.defs;
+  top.defs := e.defs;
   top.freeVariables = e.freeVariables;
 }
 
@@ -501,7 +501,7 @@ top::TypeNames ::= h::TypeName t::TypeNames
   top.count = t.count + 1;
   top.globalDecls := h.globalDecls ++ t.globalDecls;
   top.errors := h.errors ++ t.errors;
-  top.defs = h.defs ++ t.defs;
+  top.defs := h.defs ++ t.defs;
   top.freeVariables = h.freeVariables ++ t.freeVariables;
 }
 
@@ -514,7 +514,7 @@ top::TypeNames ::=
   top.count = 0;
   top.globalDecls := [];
   top.errors := [];
-  top.defs = [];
+  top.defs := [];
   top.freeVariables = [];
 }
 

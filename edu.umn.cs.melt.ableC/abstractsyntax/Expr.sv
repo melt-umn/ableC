@@ -27,7 +27,7 @@ top::Expr ::= msg::[Message]
   top.pp = concat([ text("/*"), text(messagesToString(msg)), text("*/") ]);
   top.errors := msg;
   top.globalDecls := [];
-  top.defs = [];
+  top.defs := [];
   top.freeVariables = [];
   top.typerep = errorType();
 }
@@ -46,7 +46,7 @@ top::Expr ::= id::Name
   top.pp = parens( id.pp );
   top.errors := [];
   top.globalDecls := [];
-  top.defs = [];
+  top.defs := [];
   top.typerep = id.valueItem.typerep;
   top.freeVariables = [id];
   
@@ -59,7 +59,7 @@ top::Expr ::= l::String
   top.pp = text(l);
   top.errors := [];
   top.globalDecls := [];
-  top.defs = [];
+  top.defs := [];
   top.freeVariables = [];
   top.typerep = pointerType([], builtinType([constQualifier()], signedType(charType())));
 }
@@ -70,7 +70,7 @@ top::Expr ::= e::Expr
   top.pp = parens( e.pp );
   top.errors := e.errors;
   top.globalDecls := e.globalDecls;
-  top.defs = e.defs;
+  top.defs := e.defs;
   top.freeVariables = e.freeVariables;
   top.typerep = e.typerep;
 }
@@ -83,7 +83,7 @@ top::Expr ::= op::UnaryOp  e::Expr
            else parens( cat( e.pp, op.pp ) );
   top.errors := op.errors ++ e.errors;
   top.globalDecls := e.globalDecls;
-  top.defs = e.defs;
+  top.defs := e.defs;
   top.freeVariables = e.freeVariables;
   top.typerep = op.typerep;
   
@@ -96,7 +96,7 @@ top::Expr ::= op::UnaryTypeOp  e::ExprOrTypeName
   top.pp = parens( concat([op.pp,parens(e.pp)]) );
   top.errors := op.errors ++ e.errors;
   top.globalDecls := e.globalDecls;
-  top.defs = e.defs;
+  top.defs := e.defs;
   top.freeVariables = e.freeVariables;
   top.typerep = builtinType([], signedType(intType())); -- TODO sizeof / alignof result type
 }
@@ -107,7 +107,7 @@ top::Expr ::= lhs::Expr  rhs::Expr
   top.pp = parens( concat([ lhs.pp, brackets( rhs.pp )]) );
   top.errors := lhs.errors ++ rhs.errors;
   top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
-  top.defs = lhs.defs ++ rhs.defs;
+  top.defs := lhs.defs ++ rhs.defs;
   top.freeVariables = lhs.freeVariables ++ removeDefsFromNames(rhs.defs, rhs.freeVariables);
   
   local subtype :: Either<Type [Message]> =
@@ -158,7 +158,7 @@ top::Expr ::= f::Expr  a::Exprs
   top.pp = parens( concat([ f.pp, parens( ppImplode( cat( comma(), space() ), a.pps ))]) );
   top.errors := f.errors ++ a.errors;
   top.globalDecls := f.globalDecls ++ a.globalDecls;
-  top.defs = f.defs ++ a.defs;
+  top.defs := f.defs ++ a.defs;
   top.freeVariables = f.freeVariables ++ removeDefsFromNames(f.defs, a.freeVariables);
   
   local subtype :: Either<Pair<Type FunctionType> [Message]> =
@@ -202,7 +202,7 @@ top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
   top.pp = parens(concat([lhs.pp, text(if deref then "->" else "."), rhs.pp]));
   top.errors := lhs.errors;
   top.globalDecls := lhs.globalDecls;
-  top.defs = lhs.defs;
+  top.defs := lhs.defs;
   top.freeVariables = lhs.freeVariables;
   
   local isPointer::Boolean =
@@ -255,7 +255,7 @@ top::Expr ::= lhs::Expr  op::BinOp  rhs::Expr
     end-} lhs.pp, space(), op.pp, space(), rhs.pp ]) );
   top.errors := lhs.errors ++ op.errors ++ rhs.errors;
   top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
-  top.defs = lhs.defs ++ rhs.defs;
+  top.defs := lhs.defs ++ rhs.defs;
   top.freeVariables =
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
@@ -273,7 +273,7 @@ top::Expr ::= cond::Expr  t::Expr  e::Expr
   top.pp = parens( concat([ cond.pp, space(), text("?"), space(), t.pp, space(), text(":"),  space(), e.pp]) );
   top.errors := cond.errors ++ t.errors ++ e.errors;
   top.globalDecls := cond.globalDecls ++ t.globalDecls ++ e.globalDecls;
-  top.defs = cond.defs ++ t.defs ++ e.defs;
+  top.defs := cond.defs ++ t.defs ++ e.defs;
   top.freeVariables =
     cond.freeVariables ++
     removeDefsFromNames(cond.defs, t.freeVariables) ++
@@ -293,7 +293,7 @@ top::Expr ::= cond::Expr  e::Expr
   top.pp = concat([ cond.pp, space(), text("?:"), space(), e.pp]);
   top.errors := cond.errors ++ e.errors;
   top.globalDecls := cond.globalDecls ++ e.globalDecls;
-  top.defs = cond.defs ++ e.defs;
+  top.defs := cond.defs ++ e.defs;
   top.freeVariables = cond.freeVariables ++ e.freeVariables;
   
   top.typerep = e.typerep; -- TODO: not even sure what this should be
@@ -307,7 +307,7 @@ top::Expr ::= ty::TypeName  e::Expr
   top.pp = parens( concat([parens(ty.pp), e.pp]) );
   top.errors := ty.errors ++ e.errors;
   top.globalDecls := ty.globalDecls ++ e.globalDecls;
-  top.defs = ty.defs ++ e.defs;
+  top.defs := ty.defs ++ e.defs;
   top.freeVariables = ty.freeVariables ++ removeDefsFromNames(ty.defs, e.freeVariables);
   top.typerep = ty.typerep;
   
@@ -322,7 +322,7 @@ top::Expr ::= ty::TypeName  init::InitList
   top.pp = parens( concat([parens(ty.pp), text("{"), ppImplode(text(", "), init.pps), text("}")]) );
   top.errors := ty.errors ++ init.errors;
   top.globalDecls := ty.globalDecls ++ init.globalDecls;
-  top.defs = ty.defs ++ init.defs;
+  top.defs := ty.defs ++ init.defs;
   top.freeVariables = ty.freeVariables ++ removeDefsFromNames(ty.defs, init.freeVariables);
   top.typerep = ty.typerep; -- TODO: actually may involve learning from the initializer e.g. the length of the array.
   
@@ -337,7 +337,7 @@ top::Expr ::=
   top.pp = parens( text("__func__") );
   top.errors := [];
   top.globalDecls := [];
-  top.defs = [];
+  top.defs := [];
   top.freeVariables = [];
   top.typerep = pointerType([], builtinType([constQualifier()], signedType(charType()))); -- const char *
 }
@@ -356,7 +356,7 @@ top::Expr ::= e::Expr  gl::GenericAssocs  def::MaybeExpr
       ))]);
   top.errors := e.errors ++ gl.errors ++ def.errors;
   top.globalDecls := e.globalDecls ++ gl.globalDecls ++ def.globalDecls;
-  top.defs = e.defs ++ gl.defs ++ def.defs;
+  top.defs := e.defs ++ gl.defs ++ def.defs;
   top.freeVariables = e.freeVariables ++ gl.freeVariables ++ def.freeVariables;
   top.typerep = 
     if null(gl.compatibleSelections) then
@@ -384,7 +384,7 @@ top::GenericAssocs ::= h::GenericAssoc  t::GenericAssocs
   top.pps = h.pp :: t.pps;
   top.errors := h.errors ++ t.errors;
   top.globalDecls := h.globalDecls ++ t.globalDecls;
-  top.defs = h.defs ++ t.defs;
+  top.defs := h.defs ++ t.defs;
   top.freeVariables = h.freeVariables ++ t.freeVariables;
   top.compatibleSelections = h.compatibleSelections ++ t.compatibleSelections;
 }
@@ -395,7 +395,7 @@ top::GenericAssocs ::=
   top.pps = [];
   top.errors := [];
   top.globalDecls := [];
-  top.defs = [];
+  top.defs := [];
   top.freeVariables = [];
   top.compatibleSelections = [];
 }
@@ -409,7 +409,7 @@ top::GenericAssoc ::= ty::TypeName  fun::Expr
   top.pp = concat([ty.pp, text(": "), fun.pp]);
   top.errors := ty.errors ++ fun.errors;
   top.globalDecls := ty.globalDecls ++ fun.globalDecls;
-  top.defs = ty.defs ++ fun.defs;
+  top.defs := ty.defs ++ fun.defs;
   top.freeVariables = ty.freeVariables ++ fun.freeVariables;
   top.compatibleSelections =
     if compatibleTypes(top.selectionType, ty.typerep, true) then [fun] else [];
@@ -423,7 +423,7 @@ top::Expr ::= body::Stmt result::Expr
   top.pp = concat([text("({"), nestlines(2, concat([body.pp, line(), result.pp, text("; })")]))]);
   top.errors := body.errors ++ result.errors;
   top.globalDecls := body.globalDecls ++ result.globalDecls;
-  top.defs = []; -- defs are *not* propagated up. This is beginning of a scope.
+  top.defs := []; -- defs are *not* propagated up. This is beginning of a scope.
   top.freeVariables = body.freeVariables ++ removeDefsFromNames(body.defs, result.freeVariables);
   top.typerep = result.typerep;
   
@@ -439,7 +439,7 @@ top::Expr ::= s::String
   top.pp = concat([ text("/* "), text(s), text(" */") ]);
   top.errors := [];
   top.globalDecls := [];
-  top.defs = [];
+  top.defs := [];
   top.freeVariables = [];
   top.typerep = errorType();
 }
