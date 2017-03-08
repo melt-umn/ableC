@@ -3,9 +3,7 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax:overload;
 abstract production unaryOpExpr
 top::Expr ::= op::UnaryOp  e::Expr
 {
-  top.globalDecls := e.globalDecls;
-  top.defs := e.defs;
-  top.freeVariables = e.freeVariables;
+  propagate substituted;
   
   op.op = e;
   
@@ -18,9 +16,7 @@ top::Expr ::= op::UnaryOp  e::Expr
 abstract production arraySubscriptExpr
 top::Expr ::= lhs::Expr  rhs::Expr
 {
-  top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
-  top.defs := lhs.defs ++ rhs.defs;
-  top.freeVariables = lhs.freeVariables ++ removeDefsFromNames(rhs.defs, rhs.freeVariables);
+  propagate substituted;
   
   rhs.env = addEnv(lhs.defs, lhs.env);
   
@@ -36,9 +32,7 @@ top::Expr ::= lhs::Expr  rhs::Expr
 abstract production callExpr
 top::Expr ::= f::Expr  a::Exprs
 {
-  top.globalDecls := f.globalDecls ++ a.globalDecls;
-  top.defs := f.defs ++ a.defs;
-  top.freeVariables = f.freeVariables ++ removeDefsFromNames(f.defs, a.freeVariables);
+  propagate substituted;
   
   a.env = addEnv(f.defs, f.env);
   
@@ -77,9 +71,7 @@ top::Expr ::= f::Expr  a::Exprs
 abstract production memberExpr
 top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
 {
-  top.globalDecls := lhs.globalDecls;
-  top.defs := lhs.defs;
-  top.freeVariables = lhs.freeVariables;
+  propagate substituted;
   
   local lType::Type = lhs.typerep;
   lType.otherName = rhs.name;
@@ -98,11 +90,7 @@ top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
 abstract production binaryOpExpr
 top::Expr ::= lhs::Expr  op::BinOp  rhs::Expr
 {
-  top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
-  top.defs := lhs.defs ++ rhs.defs;
-  top.freeVariables =
-    lhs.freeVariables ++
-    removeDefsFromNames(lhs.defs, rhs.freeVariables);
+  propagate substituted;
   
   rhs.env = addEnv(lhs.defs, lhs.env);
   op.lop = lhs;

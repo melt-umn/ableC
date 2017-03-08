@@ -447,6 +447,21 @@ nonterminal NoncanonicalType with canonicalType, lpp, rpp, host<NoncanonicalType
 
 synthesized attribute canonicalType :: Type;
 
+{-- A NoncanonicalType that is really just a normal Type
+ - e.g. the result of performing a substitution for a typedef
+ -}
+abstract production resolvedType
+top::NoncanonicalType ::= resolved::Type
+{
+  propagate host;
+  top.lpp = resolved.lpp;
+  top.rpp = resolved.rpp;
+  top.baseTypeExpr = resolved.baseTypeExpr;
+  top.typeModifierExpr = resolved.typeModifierExpr;
+
+  top.canonicalType = resolved;
+}
+
 {-- Parens. 
  - No qualifiers, as it's not even syntactically possible. This exists for no
  - reason but to mirror the type exactly as the programmer wrote it.
