@@ -8,7 +8,7 @@ top::MaybeInitializer ::=
   top.pp = notext();
   top.errors := [];
   top.globalDecls := [];
-  top.defs = [];
+  top.defs := [];
   top.freeVariables = [];
 }
 abstract production justInitializer
@@ -18,7 +18,7 @@ top::MaybeInitializer ::= i::Initializer
   top.pp = concat([ text(" = "), i.pp ]);
   top.errors := i.errors;
   top.globalDecls := i.globalDecls;
-  top.defs = i.defs;
+  top.defs := i.defs;
   top.freeVariables = i.freeVariables;
 }
 
@@ -31,7 +31,7 @@ top::Initializer ::= e::Expr
   top.pp = e.pp;
   top.errors := e.errors;
   top.globalDecls := e.globalDecls;
-  top.defs = e.defs;
+  top.defs := e.defs;
   top.freeVariables = e.freeVariables;
 }
 
@@ -42,7 +42,7 @@ top::Initializer ::= l::InitList
   top.pp = concat([text("{"), ppImplode(text(", "), l.pps), text("}")]);
   top.errors := l.errors;
   top.globalDecls := l.globalDecls;
-  top.defs = l.defs;
+  top.defs := l.defs;
   top.freeVariables = l.freeVariables;
 }
 
@@ -55,7 +55,7 @@ top::InitList ::= h::Init  t::InitList
   top.pps = h.pp :: t.pps;
   top.errors := h.errors ++ t.errors;
   top.globalDecls := h.globalDecls ++ t.globalDecls;
-  top.defs = h.defs ++ t.defs;
+  top.defs := h.defs ++ t.defs;
   top.freeVariables = h.freeVariables ++ removeDefsFromNames(h.defs, t.freeVariables);
   
   t.env = addEnv(h.defs, h.env);
@@ -68,7 +68,7 @@ top::InitList ::=
   top.pps = [];
   top.errors := [];
   top.globalDecls := [];
-  top.defs = [];
+  top.defs := [];
   top.freeVariables = [];
 }
 
@@ -81,7 +81,7 @@ top::Init ::= i::Initializer
   top.pp = i.pp;
   top.errors := i.errors;
   top.globalDecls := i.globalDecls;
-  top.defs = i.defs;
+  top.defs := i.defs;
   top.freeVariables = i.freeVariables;
 }
 
@@ -92,7 +92,7 @@ top::Init ::= d::Designator  i::Initializer
   top.pp = concat([d.pp, text(" = "), i.pp]);
   top.errors := d.errors ++ i.errors;
   top.globalDecls := d.globalDecls ++ i.globalDecls;
-  top.defs = d.defs ++ i.defs;
+  top.defs := d.defs ++ i.defs;
   top.freeVariables = d.freeVariables ++ i.freeVariables;
   
   i.env = addEnv(d.defs, d.env);
@@ -111,7 +111,7 @@ top::Designator ::=
   top.pp = notext();
   top.errors := [];
   top.globalDecls := [];
-  top.defs = [];
+  top.defs := [];
   top.freeVariables = [];
 }
 
@@ -122,7 +122,7 @@ top::Designator ::= d::Designator  f::Name
   top.pp = concat([d.pp, text("."), f.pp]);
   top.errors := d.errors;
   top.globalDecls := d.globalDecls;
-  top.defs = d.defs;
+  top.defs := d.defs;
   top.freeVariables = d.freeVariables;
 }
 
@@ -133,7 +133,7 @@ top::Designator ::= d::Designator  e::Expr
   top.pp = concat([d.pp, text("["), e.pp, text("]")]);
   top.errors := d.errors ++ e.errors;
   top.globalDecls := d.globalDecls ++ e.globalDecls;
-  top.defs = d.defs ++ e.defs; -- Yep...
+  top.defs := d.defs ++ e.defs; -- Yep...
   top.freeVariables = d.freeVariables ++ e.freeVariables;
   
   e.env = addEnv(d.defs, d.env);
@@ -147,7 +147,7 @@ top::Designator ::= d::Designator  l::Expr  u::Expr
   top.pp = concat([d.pp, text("["), l.pp, text("..."), u.pp, text("]")]);
   top.errors := d.errors ++ l.errors ++ u.errors;
   top.globalDecls := d.globalDecls ++ l.globalDecls ++ u.globalDecls;
-  top.defs = d.defs ++ l.defs ++ u.defs;
+  top.defs := d.defs ++ l.defs ++ u.defs;
   top.freeVariables = d.freeVariables ++ l.freeVariables ++ u.freeVariables;
 }
 

@@ -87,7 +87,7 @@ top::abs:Stmt ::= id::abs:Name  e::MatrixExpr  doFree::Boolean
 
   e.givenStorage = just(id);
   
-  top.abs:functiondefs = [];
+  top.abs:functiondefs := [];
   forwards to
     if null(localErrs) then
       fwdTree
@@ -118,7 +118,7 @@ top::abs:Stmt ::= id::abs:Name  e::MatrixExpr
      else
       [err(id.location, "Matrix indexing requires \"matrix.h\" to be included.")]);
 
-  top.abs:functiondefs = [];
+  top.abs:functiondefs := [];
   forwards to
     if null(localErrs) then
       fwdTree

@@ -43,7 +43,7 @@ top::Decl ::= adt::ADTDecl
       | _ -> error( "struct decl not found")
       end;
 
-  top.defs = adt.defs ++
+  top.defs := adt.defs ++
     -- We don't really want all of these.
     -- We want the functions for constructing values,
     -- but not the 'struct ADT' defs.
@@ -83,7 +83,7 @@ top::ADTDecl ::= n::Name cs::ConstructorList
 
   cs.env = addEnv(preDefs, top.env);
 
-  top.defs = preDefs ++
+  top.defs := preDefs ++
     [ adtRefIdDef( name_tagRefId_workaround, adtRefIdItem(top, top.structDcl) ) ] ;
 
   local name_refIdIfOld_workaround :: Maybe<String>

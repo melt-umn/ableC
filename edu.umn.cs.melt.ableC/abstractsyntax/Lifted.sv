@@ -73,7 +73,7 @@ top::Expr ::= globalDecls::[Pair<String Decl>] lifted::Expr
   
   -- Define other attributes to be the same as on lifted
   top.errors := lifted.errors;
-  top.defs = lifted.defs;
+  top.defs := lifted.defs;
   top.freeVariables = lifted.freeVariables;
   top.typerep = lifted.typerep;
 }
@@ -113,8 +113,8 @@ top::Stmt ::= globalDecls::[Pair<String Decl>] lifted::Stmt
   
   -- Define other attributes to be the same as on lifted
   top.errors := lifted.errors;
-  top.functiondefs = lifted.functiondefs;
-  top.defs = lifted.defs;
+  top.functiondefs := lifted.functiondefs;
+  top.defs := lifted.defs;
   top.freeVariables = lifted.freeVariables;
 }
 
@@ -155,7 +155,7 @@ top::BaseTypeExpr ::= globalDecls::[Pair<String Decl>] lifted::BaseTypeExpr
   -- Define other attributes to be the same as on lifted
   top.errors := lifted.errors;
   top.typeModifiers = lifted.typeModifiers;
-  top.defs = lifted.defs;
+  top.defs := lifted.defs;
   top.freeVariables = lifted.freeVariables;
 }
 
