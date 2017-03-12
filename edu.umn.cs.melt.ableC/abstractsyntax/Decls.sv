@@ -5,7 +5,7 @@
 -- Declaration is rooted in External, but also in stmts. Either a variableDecl or a typedefDecl.
 -- ParameterDecl should probably be something special, distinct from variableDecl.
 
-nonterminal GlobalDecls with pps, host<GlobalDecls>, lifted<GlobalDecls>, errors, defs, globalDeclEnv, env, returnType, freeVariables;
+nonterminal GlobalDecls with pps, host<GlobalDecls>, lifted<GlobalDecls>, errors, env, returnType, freeVariables;
 
 {-- Mirrors Decls, used for lifting mechanism to insert new Decls at top level -}
 abstract production consGlobalDecl
@@ -13,7 +13,6 @@ top::GlobalDecls ::= h::Decl  t::GlobalDecls
 {
   top.pps = h.pp :: t.pps;
   top.errors := h.errors ++ t.errors;
-  top.defs := h.defs ++ t.defs;
   top.freeVariables =
     h.freeVariables ++
     removeDefsFromNames(h.defs, t.freeVariables);
@@ -29,7 +28,6 @@ top::GlobalDecls ::=
   propagate host, lifted;
   top.pps = [];
   top.errors := [];
-  top.defs := [];
   top.freeVariables = [];
 }
 
@@ -110,6 +108,7 @@ top::Decl ::= storage::[StorageClass]  attrs::[Attribute]  ty::BaseTypeExpr  dcl
   top.defs := ty.defs ++ dcls.defs;
   top.freeVariables = ty.freeVariables ++ dcls.freeVariables;
   
+  dcls.env = addEnv(ty.defs, ty.env);
   dcls.baseType = ty.typerep;
   dcls.typeModifiersIn = ty.typeModifiers;
   dcls.isTypedef = false;
@@ -137,6 +136,7 @@ top::Decl ::= attrs::[Attribute]  ty::BaseTypeExpr  dcls::Declarators
   top.defs := ty.defs ++ dcls.defs;
   top.freeVariables = ty.freeVariables ++ dcls.freeVariables;
   
+  dcls.env = addEnv(ty.defs, ty.env);
   dcls.baseType = ty.typerep;
   dcls.typeModifiersIn = ty.typeModifiers;
   dcls.isTypedef = true;
@@ -311,10 +311,12 @@ top::FunctionDecl ::= storage::[StorageClass]  fnquals::[SpecialSpecifier]  bty:
     | _ -> decorate nilParameters() with { env = top.env; returnType = top.returnType; }
     end;
   
+  local funcDefs::[Def] = bty.defs ++ [valueDef(name.name, functionValueItem(top))];
+  
   top.errors := bty.errors ++ mty.errors ++ body.errors;
   top.globalDecls := bty.globalDecls ++ mty.globalDecls ++ decls.globalDecls ++ 
                      body.globalDecls;
-  top.defs := bty.defs ++ [valueDef(name.name, functionValueItem(top))];
+  top.defs := funcDefs;
   top.freeVariables =
     bty.freeVariables ++
     removeDefsFromNames([thisFuncDef], mty.freeVariables) ++
@@ -343,11 +345,10 @@ top::FunctionDecl ::= storage::[StorageClass]  fnquals::[SpecialSpecifier]  bty:
   local thisFuncDef :: Def = miscDef("this_func", currentFunctionItem(name, top));
   mty.env = addEnv ([thisFuncDef], top.env);  -- TODO: extend this to decls, body, etc.
 
-  body.env = addEnv(top.defs ++ parameters.defs ++ decls.defs ++ body.functiondefs, 
-                    openScope(addEnv(bty.defs, top.env)));
+  body.env = addEnv(parameters.defs ++ decls.defs ++ body.functiondefs, 
+                    openScope(addEnv(funcDefs, top.env)));
   
   decls.isTopLevel = false;
-  
   
   -- TODO: so long as the original wasn't also a definition
   top.errors <- name.valueRedeclarationCheck(top.typerep); 
@@ -360,10 +361,11 @@ top::FunctionDecl ::= storage::[StorageClass]  fnquals::[SpecialSpecifier]  bty:
 }
 
 -- Allows extensions to handle nested functions differently
+-- TODO: is this needed?  Should this be forwarding?  
 abstract production nestedFunctionDecl
 top::FunctionDecl ::= storage::[StorageClass]  fnquals::[SpecialSpecifier]  bty::BaseTypeExpr mty::TypeModifierExpr  name::Name  attrs::[Attribute]  decls::Decls  body::Stmt
 {
-  top.defs := bty.defs ++ [valueDef(name.name, functionValueItem(top))];
+  --top.defs := bty.defs ++ [valueDef(name.name, functionValueItem(top))];
   
   decls.isTopLevel = false;
   
@@ -676,6 +678,7 @@ top::StructItem ::= attrs::[Attribute]  ty::BaseTypeExpr  dcls::StructDeclarator
   top.freeVariables = ty.freeVariables ++ dcls.freeVariables;
   top.localdefs := dcls.localdefs;
   
+  dcls.env = addEnv(ty.defs, ty.env);
   dcls.baseType = ty.typerep;
   dcls.typeModifiersIn = ty.typeModifiers;
   dcls.givenAttributes = attrs;
