@@ -15,6 +15,22 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax;
  - An invariant here is that all Decl nodes in the `host` tree appear in
  - either `globalDecls` or in `lifted`.  Also, the 'injection' productions
  - defined here should not occur in the lifted tree.  
+ -
+ - One issue with this is how to generate the correct environment for the
+ - 'lifted' tree passed to an injection production.  The behaviour we *want* is
+ - to lift the decls to the global level, then add them to the env for the rest
+ - of the tree, including the decl which emitted the globalDecls in the first
+ - place.  This unfortunately doesn't work, because of a cyclical dependancy in
+ - that the env is needed in the first place to figure out the names of the
+ - items being injected, which are then used to generate the env.  
+ -
+ - Instead, we decorate the new decls at the level of the injection production
+ - with an environment only containing the outermost scope in the current env,
+ - and pass these new decls up the tree in the decorated form.  The defs from
+ - these decls then get passed back up the tree wrapped in 'globalDefsDef',
+ - which inserts them in the outermost scope of the environment.  To ensure
+ - that these defs are in scope for the rest of the tree, we must re-add the
+ - defs from the globalDecls being passed upward wherever a new scope is opened.
  - 
  - Some extensions may want to use the same global decl with the same name in
  - multiple places.  To avoid inserting the decl more than once, the new decl
@@ -23,14 +39,19 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax;
  - extension may use the production 'maybeDecl', which takes a function to look
  - at the env and return true or false, determining whether the given decl is
  - to be kept.  
- - To allow this to work, the new decl must be present in the entire rest of
- - the env, even after a scope is closed.  This is implemented by inserting the
- - defs from the list of globalDecls being passed up the tree in the defs for
- - the production defining the enclosing scope.  
+ -
+ - If there are ever errors reported about something being redefined in the
+ - lifted tree, then there is a bug in the host where something that 
  - 
  - TODO:
- - Decorate lifted decls with global env instead of current env
- -
+ - injectGlobalDeclsType currently forwards to get the correct type-checking
+ - behavior, when it really shouldn't since it is a part of the host.  It
+ - shouldn't be a NoncanonicalType, since we aren't OK with it getting
+ - transformed away.  This could potentially be fixed by adding a
+ - transformation for a type to a base type that is used for structural
+ - equivalence, stripping injection productions and noncanonical types.  Or
+ - maybe there is a better solution.  
+ - 
  - It would be nice to move all of this to its own grammar, but aspecting
  - everything for lifted and globalDecls would be kind of a pain
  -}
@@ -53,6 +74,7 @@ top::Decl ::= include::(Boolean ::= Decorated Env) decl::Decl
     else decls(nilDecl());
 }
 
+-- Injection production for Expr
 abstract production injectGlobalDeclsExpr
 top::Expr ::= decls::Decls lifted::Expr
 {
@@ -60,8 +82,8 @@ top::Expr ::= decls::Decls lifted::Expr
   top.errors := decls.errors ++ lifted.errors;
   top.pp = pp"injectGlobalDeclsExpr {${ppImplode(line(), decls.pps)}} (${lifted.pp})";
   
-  -- defs include things that were lifted, so things in the same scope don't need to be lifted twice
-  top.defs := decls.defs ++ lifted.defs;
+  -- Insert defs from decls at the global scope
+  top.defs := globalDefsDef(decls.defs) :: lifted.defs;
 
   -- Note that the invariant over `globalDecls` and `lifted` is maintained.
   top.globalDecls := decls.globalDecls ++ unfoldDecoratedDecl(decls) ++ lifted.globalDecls;
@@ -71,14 +93,11 @@ top::Expr ::= decls::Decls lifted::Expr
   top.typerep = lifted.typerep;
   top.freeVariables = lifted.freeVariables;
   
-  --decls.env = globalEnv(top.env);
+  decls.env = globalEnv(top.env);
   decls.isTopLevel = true;
   decls.returnType = nothing();
-  
-  -- TODO(?): We are adding the new env elements to the current scope, when they should really be global
-  -- Shouldn't be a problem unless there are name conflicts, doing this the 'right' way would be much
-  -- less efficent. 
-  lifted.env = addEnv(decls.defs, top.env);
+
+  lifted.env = addEnv([globalDefsDef(decls.defs)], top.env);
 }
 
 -- Same as injectGlobalDeclsExpr, but on Stmt
@@ -89,8 +108,8 @@ top::Stmt ::= decls::Decls lifted::Stmt
   top.errors := decls.errors ++ lifted.errors;
   top.pp = pp"injectGlobalDeclsStmt {${ppImplode(line(), decls.pps)}} (${lifted.pp})";
   
-  -- defs include things that were lifted, so things in the same scope don't need to be lifted twice
-  top.defs := decls.defs ++ lifted.defs;
+  -- Insert defs from decls at the global scope
+  top.defs := globalDefsDef(decls.defs) :: lifted.defs;
 
   -- Note that the invariant over `globalDecls` and `lifted` is maintained.
   top.globalDecls := decls.globalDecls ++ unfoldDecoratedDecl(decls) ++ lifted.globalDecls;
@@ -100,14 +119,11 @@ top::Stmt ::= decls::Decls lifted::Stmt
   top.functiondefs := lifted.functiondefs;
   top.freeVariables = lifted.freeVariables;
   
-  --decls.env = globalEnv(top.env);
+  decls.env = globalEnv(top.env);
   decls.isTopLevel = true;
   decls.returnType = nothing();
   
-  -- TODO(?): We are adding the new env elements to the current scope, when they should really be global
-  -- Shouldn't be a problem unless there are name conflicts, doing this the 'right' way would be much
-  -- less efficent. 
-  lifted.env = addEnv(decls.defs, top.env);
+  lifted.env = addEnv([globalDefsDef(decls.defs)], top.env);
 }
 
 -- Same as injectGlobalDeclsExpr, but on BaseTypeExpr
@@ -119,8 +135,8 @@ top::BaseTypeExpr ::= decls::Decls lifted::BaseTypeExpr
   top.errors := decls.errors ++ lifted.errors;
   top.typerep = injectGlobalDeclsType(decls, lifted.typerep);
   
-  -- defs include things that were lifted, so things in the same scope don't need to be lifted twice
-  top.defs := decls.defs ++ lifted.defs;
+  -- Insert defs from decls at the global scope
+  top.defs := globalDefsDef(decls.defs) :: lifted.defs;
 
   -- Note that the invariant over `globalDecls` and `lifted` is maintained.
   top.globalDecls := decls.globalDecls ++ unfoldDecoratedDecl(decls) ++ lifted.globalDecls;
@@ -130,14 +146,11 @@ top::BaseTypeExpr ::= decls::Decls lifted::BaseTypeExpr
   top.typeModifiers = lifted.typeModifiers;
   top.freeVariables = lifted.freeVariables;
   
-  --decls.env = globalEnv(top.env);
+  decls.env = globalEnv(top.env);
   decls.isTopLevel = true;
   decls.returnType = nothing();
-  
-  -- TODO(?): We are adding the new env elements to the current scope, when they should really be global
-  -- Shouldn't be a problem unless there are name conflicts, doing this the 'right' way would be much
-  -- less efficent. 
-  lifted.env = addEnv(decls.defs, top.env);
+
+  lifted.env = addEnv([globalDefsDef(decls.defs)], top.env);
 }
 
 {--
@@ -186,85 +199,92 @@ top::GlobalDecls ::= h::Decl  t::GlobalDecls
 aspect production functionDecl
 top::FunctionDecl ::= storage::[StorageClass]  fnquals::[SpecialSpecifier]  bty::BaseTypeExpr mty::TypeModifierExpr  name::Name  attrs::[Attribute]  decls::Decls  body::Stmt
 {
-  top.defs <- foldr(append, [], map((.defs), mty.globalDecls));
-  top.defs <- foldr(append, [], map((.defs), decls.globalDecls));
-  top.defs <- foldr(append, [], map((.defs), body.globalDecls));
+  top.defs <- globalDeclsDefs(mty.globalDecls);
+  top.defs <- globalDeclsDefs(decls.globalDecls);
+  top.defs <- globalDeclsDefs(body.globalDecls);
 }
 {-
 aspect production nestedFunctionDecl
 top::FunctionDecl ::= storage::[StorageClass]  fnquals::[SpecialSpecifier]  bty::BaseTypeExpr mty::TypeModifierExpr  name::Name  attrs::[Attribute]  decls::Decls  body::Stmt
 {
-  top.defs <- foldr(append, [], map((.defs), mty.globalDecls));
-  top.defs <- foldr(append, [], map((.defs), decls.globalDecls));
-  top.defs <- foldr(append, [], map((.defs), body.globalDecls));
+  top.defs <- globalDeclsDefs(mty.globalDecls);
+  top.defs <- globalDeclsDefs(decls.globalDecls);
+  top.defs <- globalDeclsDefs(body.globalDecls);
 }-}
 
 aspect production compoundStmt
 top::Stmt ::= s::Stmt
 {
-  top.defs <- foldr(append, [], map((.defs), s.globalDecls));
+  top.defs <- globalDeclsDefs(s.globalDecls);
 }
 
 aspect production ifStmt
 top::Stmt ::= c::Expr  t::Stmt  e::Stmt
 {
-  top.defs <- foldr(append, [], map((.defs), c.globalDecls));
-  top.defs <- foldr(append, [], map((.defs), t.globalDecls));
-  top.defs <- foldr(append, [], map((.defs), e.globalDecls));
+  top.defs <- globalDeclsDefs(c.globalDecls);
+  top.defs <- globalDeclsDefs(t.globalDecls);
+  top.defs <- globalDeclsDefs(e.globalDecls);
 }
 
 aspect production whileStmt
 top::Stmt ::= e::Expr  b::Stmt
 {
-  top.defs <- foldr(append, [], map((.defs), e.globalDecls));
-  top.defs <- foldr(append, [], map((.defs), b.globalDecls));
+  top.defs <- globalDeclsDefs(e.globalDecls);
+  top.defs <- globalDeclsDefs(b.globalDecls);
 }
 
 aspect production doStmt
 top::Stmt ::= b::Stmt  e::Expr
 {
-  top.defs <- foldr(append, [], map((.defs), b.globalDecls));
-  top.defs <- foldr(append, [], map((.defs), e.globalDecls));
+  top.defs <- globalDeclsDefs(b.globalDecls);
+  top.defs <- globalDeclsDefs(e.globalDecls);
 }
 
 aspect production forStmt
 top::Stmt ::= i::MaybeExpr  c::MaybeExpr  s::MaybeExpr  b::Stmt
 {
-  top.defs <- foldr(append, [], map((.defs), i.globalDecls));
-  top.defs <- foldr(append, [], map((.defs), c.globalDecls));
-  top.defs <- foldr(append, [], map((.defs), s.globalDecls));
-  top.defs <- foldr(append, [], map((.defs), b.globalDecls));
+  top.defs <- globalDeclsDefs(i.globalDecls);
+  top.defs <- globalDeclsDefs(c.globalDecls);
+  top.defs <- globalDeclsDefs(s.globalDecls);
+  top.defs <- globalDeclsDefs(b.globalDecls);
 }
 
 aspect production forDeclStmt
 top::Stmt ::= i::Decl  c::MaybeExpr  s::MaybeExpr  b::Stmt
 {
-  top.defs <- foldr(append, [], map((.defs), i.globalDecls));
-  top.defs <- foldr(append, [], map((.defs), c.globalDecls));
-  top.defs <- foldr(append, [], map((.defs), s.globalDecls));
-  top.defs <- foldr(append, [], map((.defs), b.globalDecls));
+  top.defs <- globalDeclsDefs(i.globalDecls);
+  top.defs <- globalDeclsDefs(c.globalDecls);
+  top.defs <- globalDeclsDefs(s.globalDecls);
+  top.defs <- globalDeclsDefs(b.globalDecls);
 }
 
 aspect production switchStmt
 top::Stmt ::= e::Expr  b::Stmt
 {
-  top.defs <- foldr(append, [], map((.defs), e.globalDecls));
-  top.defs <- foldr(append, [], map((.defs), b.globalDecls));
+  top.defs <- globalDeclsDefs(e.globalDecls);
+  top.defs <- globalDeclsDefs(b.globalDecls);
 }
 
 aspect production stmtExpr
 top::Expr ::= body::Stmt result::Expr
 {
-  top.defs <- foldr(append, [], map((.defs), body.globalDecls));
-  top.defs <- foldr(append, [], map((.defs), result.globalDecls));
+  top.defs <- globalDeclsDefs(body.globalDecls);
+  top.defs <- globalDeclsDefs(result.globalDecls);
 }
 
 function unfoldDecoratedDecl
 [Decorated Decl] ::= decl::Decorated Decls
 {
-  return case decl of
-           nilDecl() -> []
-         | consDecl(d,ds) -> d :: unfoldDecoratedDecl(ds)
-         | _ -> error ("Incorrect application of unfoldDecl.")
-         end;
+  return
+    case decl of
+      nilDecl() -> []
+    | consDecl(d,ds) -> d :: unfoldDecoratedDecl(ds)
+    | _ -> error ("Incorrect application of unfoldDecl.")
+    end;
+}
+
+function globalDeclsDefs
+[Def] ::= d::[Decorated Decl]
+{
+  return [globalDefsDef(foldr(append, [], map((.defs), d)))];
 }

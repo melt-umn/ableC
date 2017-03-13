@@ -17,18 +17,30 @@ synthesized attribute tags :: Scope<TagItem>;
 synthesized attribute values :: Scope<ValueItem>;
 synthesized attribute refIds :: Scope<RefIdItem>;
 synthesized attribute misc :: Scope<MiscItem>;
+synthesized attribute globalEnv :: Decorated Env;
 
 synthesized attribute labelContribs :: Contribs<LabelItem>;
 synthesized attribute tagContribs :: Contribs<TagItem>;
 synthesized attribute valueContribs :: Contribs<ValueItem>;
 synthesized attribute refIdContribs :: Contribs<RefIdItem>;
 synthesized attribute miscContribs :: Contribs<MiscItem>;
+synthesized attribute globalDefs :: [Def];
 
-{-- Adds contributions to an existing scope -}
+{-- Adds contributions to the innermost scope -}
 function augmentScope_i
 Scope<a> ::= d::Contribs<a>  s::Scope<a>
 {
   return tm:add(d, head(s)) :: tail(s);
+}
+{-- Adds contributions to the outermost scope -}
+function augmentGlobalScope_i
+Scope<a> ::= d::Contribs<a>  s::Scope<a>
+{
+  return case d, s of
+    | [], _ -> s
+    | _, [_] -> augmentScope_i(d, s)
+    | _, h :: t -> h :: augmentGlobalScope_i(d, t)
+    end;
 }
 {-- Looks up an identifier in the closest scope that has a match -}
 function readScope_i
@@ -43,7 +55,7 @@ function readScope_i
 
 {- Environment representation productions provide implementations for env functions
  - emptyEnv_i creates the basic environment with empty global scopes
- - addEnv_i adds provided defs to the current (first on list) scope
+ - addEnv_i adds provided defs to the current (first on list) scope, and global defs to the global (last on list) scope
  - openScope_i adds a new scope to the scope lists to which new elements will be added by default
  - globalEnv_i gets the last (global) scope from the scope lists
  -}
@@ -60,11 +72,13 @@ top::Env ::=
 abstract production addEnv_i
 top::Env ::= d::Defs  e::Decorated Env
 {
-  top.labels = augmentScope_i(d.labelContribs, e.labels);
-  top.tags = augmentScope_i(d.tagContribs, e.tags);
-  top.values = augmentScope_i(d.valueContribs, e.values);
-  top.refIds = augmentScope_i(d.refIdContribs, e.refIds);
-  top.misc = augmentScope_i(d.miscContribs, e.misc);
+  local gd::Defs = foldr(consDefs, nilDefs(), d.globalDefs);
+
+  top.labels = augmentGlobalScope_i(gd.labelContribs, augmentScope_i(d.labelContribs, e.labels));
+  top.tags = augmentGlobalScope_i(gd.tagContribs, augmentScope_i(d.tagContribs, e.tags));
+  top.values = augmentGlobalScope_i(gd.valueContribs, augmentScope_i(d.valueContribs, e.values));
+  top.refIds = augmentGlobalScope_i(gd.refIdContribs, augmentScope_i(d.refIdContribs, e.refIds));
+  top.misc = augmentGlobalScope_i(gd.miscContribs, augmentScope_i(d.miscContribs, e.misc));
 }
 abstract production openScope_i
 top::Env ::= e::Decorated Env
@@ -75,7 +89,7 @@ top::Env ::= e::Decorated Env
   top.refIds = tm:empty(compareString) :: e.refIds;
   top.misc = tm:empty(compareString) :: e.misc;
 }
-{-
+
 abstract production globalEnv_i
 top::Env ::= e::Decorated Env
 {
@@ -85,7 +99,7 @@ top::Env ::= e::Decorated Env
   top.refIds = [last(e.refIds)];
   top.misc = [last(e.misc)];
 }
--}
+
 {- Definition list productions provide a way of folding up defs into Contribs lists
  -}
 
@@ -97,6 +111,7 @@ top::Defs ::=
   top.valueContribs = [];
   top.refIdContribs = [];
   top.miscContribs = [];
+  top.globalDefs = [];
 }
 
 abstract production consDefs
@@ -107,6 +122,7 @@ top::Defs ::= h::Def  t::Defs
   top.valueContribs = h.valueContribs ++ t.valueContribs;
   top.refIdContribs = h.refIdContribs ++ t.refIdContribs;
   top.miscContribs = h.miscContribs ++ t.miscContribs;
+  top.globalDefs = h.globalDefs ++ t.globalDefs;
 }
 
 -- Defaults for Def
@@ -119,5 +135,6 @@ top::Def ::=
   top.valueContribs = [];
   top.refIdContribs = [];
   top.miscContribs = [];
+  top.globalDefs = [];
 }
 
