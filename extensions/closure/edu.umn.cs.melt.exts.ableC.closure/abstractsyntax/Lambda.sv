@@ -11,8 +11,6 @@ imports edu:umn:cs:melt:ableC:abstractsyntax:env;
 imports edu:umn:cs:melt:ableC:abstractsyntax:overload;
 --imports edu:umn:cs:melt:ableC:abstractsyntax:debug;
 
-imports edu:umn:cs:melt:exts:ableC:gc;
-
 import silver:util:raw:treemap as tm;
 
 global builtin::Location = builtinLoc("closure");
