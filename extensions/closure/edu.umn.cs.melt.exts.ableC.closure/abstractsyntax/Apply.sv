@@ -14,7 +14,7 @@ top::Expr ::= fn::Expr args::Exprs
   
   local localErrors :: [Message] =
     case fn.typerep of
-      closureType(_, _, _, _) -> args.argumentErrors
+      closureType(_, _, _) -> args.argumentErrors
     | errorType() -> []
     | _ -> [err(fn.location, s"Cannot apply non-closure (got ${showType(fn.typerep)})")]
     end ++
@@ -22,7 +22,7 @@ top::Expr ::= fn::Expr args::Exprs
   
   top.typerep =
     case fn.typerep of
-      closureType(_, param, res, _) -> res
+      closureType(_, param, res) -> res
     | _ -> errorType()
     end;
   
@@ -31,7 +31,7 @@ top::Expr ::= fn::Expr args::Exprs
   args.callVariadic = false;
   args.expectedTypes = 
     case fn.typerep of
-      closureType(_, params, _, _) -> params
+      closureType(_, params, _) -> params
     | _ -> error("expectedTypes demanded by args when call expression has non-closure type")
     end;
   

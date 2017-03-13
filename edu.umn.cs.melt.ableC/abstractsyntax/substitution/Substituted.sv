@@ -38,7 +38,7 @@ synthesized attribute nameSub::Maybe<Name>;
 synthesized attribute typedefSub::Maybe<Type>;
 synthesized attribute declRefSub::Maybe<Expr>;
 
--- 'Non-canonical' substitutions that substitute something other than a production directly wrapping a name
+-- 'Indirect' substitutions that substitute something other than a production directly wrapping a name
 synthesized attribute stmtSub::Maybe<Stmt>;
 synthesized attribute exprsSub::Maybe<Exprs>;
 synthesized attribute parametersSub::Maybe<Parameters>;
@@ -93,9 +93,9 @@ top::Substitution ::= name::String sub::Name
 
 -- Substitutes a typedef name for a type
 abstract production typedefSubstitution
-top::Substitution ::= name::String type::Type
+top::Substitution ::= name::String sub::Type
 {
-  top.typedefSub = if top.nameIn == name then just(type) else nothing();
+  top.typedefSub = if top.nameIn == name then just(sub) else nothing();
 }
 
 -- Substitutes a value name for an expression

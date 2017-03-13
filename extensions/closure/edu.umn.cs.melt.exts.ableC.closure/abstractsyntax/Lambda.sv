@@ -72,7 +72,7 @@ static __res_type__ ${funName}(void *_env_ptr, __params__) {
 
   local fwrd::Expr =
     subExpr(
-      [typedefSubstitution("__closure_type__", mkClosureType([], params.typereps, res.typerep, top.env)),
+      [typedefSubstitution("__closure_type__", closureType([], params.typereps, res.typerep)),
        stmtSubstitution("__env_copy__", captured.envCopyInTrans)],
       parseExpr(s"""
 ({proto_typedef __closure_type__;
