@@ -107,7 +107,7 @@ top::BaseTypeExpr ::= msg::[Message]  ty::BaseTypeExpr
 abstract production directTypeExpr
 top::BaseTypeExpr ::= result::Type
 {
-  propagate host;
+  ---propagate host;
   
   top.pp = parens(cat(result.lpp, result.rpp));
   top.typerep = result;
@@ -503,6 +503,8 @@ top::TypeNames ::= h::TypeName t::TypeNames
   top.errors := h.errors ++ t.errors;
   top.defs := h.defs ++ t.defs;
   top.freeVariables = h.freeVariables ++ t.freeVariables;
+  
+  t.env = addEnv(h.defs, h.env);
 }
 
 abstract production nilTypeName

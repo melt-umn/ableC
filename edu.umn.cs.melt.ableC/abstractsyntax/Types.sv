@@ -291,7 +291,7 @@ Parameters ::= args::[Type]
     case args of
       h :: t ->
         consParameters(
-          parameterDecl([], h.baseTypeExpr, h.typeModifierExpr, nothingName(), []),
+          parameterDecl([], directTypeExpr(h), baseTypeExpr(), nothingName(), []),
           argTypesToParameters(t))
     | [] -> nilParameters()
     end;
