@@ -106,11 +106,7 @@ autocopy attribute structNameIn::String occurs on CaptureList;
 abstract production consCaptureList
 top::CaptureList ::= n::Name rest::CaptureList
 {
-  top.pp =
-    case rest of
-      nilCaptureList() -> pp"${n.pp}"
-    | _ -> pp"${n.pp}, ${rest.pp}"
-    end;
+  top.pp = pp"${n.pp}, ${rest.pp}";
   
   top.errors := n.valueLookupCheck ++ rest.errors;
 

@@ -4,6 +4,8 @@ abstract production closureTypeExpr
 top::BaseTypeExpr ::= q::[Qualifier] params::Parameters res::TypeName
 {
   propagate substituted;
+  top.pp = pp"${terminate(space(), map((.pp), q))}closure<(${
+    if null(params.pps) then pp"void" else ppImplode(pp", ", params.pps)}) -> ${res.pp}>";
   
   res.env = addEnv(params.defs, top.env);
   
@@ -19,11 +21,12 @@ top::Type ::= q::[Qualifier] params::[Type] res::Type
   propagate substituted;
   
   top.lpp = pp"${terminate(space(), map((.pp), q))}closure<(${
-    ppImplode(
-      pp", ",
-      zipWith(cat,
-        map((.lpp), params),
-        map((.rpp), params)))}) -> ${res.lpp}${res.rpp}>";
+    if null(params)then pp"void" else
+      ppImplode(
+        pp", ",
+        zipWith(cat,
+          map((.lpp), params),
+          map((.rpp), params)))}) -> ${res.lpp}${res.rpp}>";
   top.rpp = notext();
   
   top.withoutTypeQualifiers = closureType([], params, res);
