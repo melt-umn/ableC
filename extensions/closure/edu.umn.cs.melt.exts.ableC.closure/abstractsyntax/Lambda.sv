@@ -28,8 +28,6 @@ top::Expr ::= captured::CaptureList params::Parameters res::Expr
      else [err(top.location, "Closures require <gc.h> to be included.")]) ++
     captured.errors ++ params.errors ++ res.errors;
   
-  top.typerep = closureType([], params.typereps, res.typerep);
-  
   local paramNames::[Name] = map(name(_, location=builtin), map(fst, foldr(append, [], map((.valueContribs), params.defs))));
   captured.freeVariablesIn = removeAllBy(nameEq, paramNames, removeDuplicateNames(res.freeVariables));
   captured.globalEnv = addEnv(params.defs, globalEnv(top.env));
@@ -70,13 +68,11 @@ static __res_type__ ${funName}(void *_env_ptr, __params__) {
 }
 """)));
   
-  local globalDecls::[Pair<String Decl>] =
-    mkClosureStructGlobalDecls(params.typereps, res.typerep) ++
-    [pair(envStructName, envStructDcl), pair(funName, funDcl)];
+  local globalDecls::Decls = foldDecl([envStructDcl, funDcl]);
 
   local fwrd::Expr =
     subExpr(
-      [typedefSubstitution("__closure_type__", top.typerep),
+      [typedefSubstitution("__closure_type__", mkClosureType([], params.typereps, res.typerep, top.env)),
        stmtSubstitution("__env_copy__", captured.envCopyInTrans)],
       parseExpr(s"""
 ({proto_typedef __closure_type__;
@@ -93,8 +89,8 @@ static __res_type__ ${funName}(void *_env_ptr, __params__) {
   _result;})
 """));
   
-  forwards to mkErrorCheck(localErrors, injectGlobalDeclsExpr(globalDecls, fwrd, location=top.location));
-
+  forwards to
+    mkErrorCheck(localErrors, injectGlobalDeclsExpr(globalDecls, fwrd, location=top.location));
 }
 
 nonterminal CaptureList with env, pp, errors;

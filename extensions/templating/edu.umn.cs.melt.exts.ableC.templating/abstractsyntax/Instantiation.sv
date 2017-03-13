@@ -26,17 +26,17 @@ top::Expr ::= n::Name ts::TypeNames
     
   local mangledName::String = templateMangledName(n.name, ts.typereps);
     
-  local globalDecls::[Pair<String Decl>] =
-    [pair(
-       mangledName,
-       subDecl(
-         nameSubstitution(n.name, name(mangledName, location=builtin)) ::
-           zipWith(typedefSubstitution, map((.name), templateItem.templateParams), ts.typereps),
-         templateItem.decl))];
+  local globalDecl::Decl =
+    subDecl(
+      nameSubstitution(n.name, name(mangledName, location=builtin)) ::
+        zipWith(typedefSubstitution, map((.name), templateItem.templateParams), ts.typereps),
+      templateItem.decl);
          
   local fwrd::Expr =
     injectGlobalDeclsExpr(
-      globalDecls,
+      if null(lookupValue(mangledName, top.env))
+      then consDecl(globalDecl, nilDecl())
+      else nilDecl(),
       declRefExpr(
         name(mangledName, location=builtin),
         location=builtin),
@@ -73,23 +73,23 @@ top::BaseTypeExpr ::= q::[Qualifier] n::Name ts::TypeNames
   
   local mangledName::String = templateMangledName(n.name, ts.typereps);
     
-  local globalDecls::[Pair<String Decl>] =
-    [pair(
-       mangledName,
-       subDecl(
-         -- Set the refId so that two identical template instantiations maintain type equality
-         refIdSubstitution(
-           s"edu:umn:cs:melt:exts:ableC:templating:${n.name}",
-           s"edu:umn:cs:melt:exts:ableC:templating:${mangledName}") ::
-         nameSubstitution(n.name, name(mangledName, location=builtin)) ::
-           zipWith(typedefSubstitution, map((.name), templateItem.templateParams), ts.typereps),
-         templateItem.decl))];
+  local globalDecl::Decl =
+    subDecl(
+      -- Set the refId so that two identical template instantiations maintain type equality
+      {-refIdSubstitution(
+        s"edu:umn:cs:melt:exts:ableC:templating:${n.name}",
+        s"edu:umn:cs:melt:exts:ableC:templating:${mangledName}") ::-}
+      nameSubstitution(n.name, name(mangledName, location=builtin)) ::
+        zipWith(typedefSubstitution, map((.name), templateItem.templateParams), ts.typereps),
+      templateItem.decl);
   
   -- To avoid needing an explicit equation for typerep, decorate what would otherwise be the
   -- forward, and wrap that up in a directTypeExpr
   local result::BaseTypeExpr =
     injectGlobalDeclsTypeExpr(
-      globalDecls,
+      if null(lookupValue(mangledName, top.env))
+      then consDecl(globalDecl, nilDecl())
+      else nilDecl(),
       typedefTypeExpr(q, name(mangledName, location=builtin)));
   result.env = top.env;
   result.returnType = top.returnType;

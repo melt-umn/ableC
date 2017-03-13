@@ -19,16 +19,6 @@ Decls ::= l::[Decl]
   return foldr(consDecl, nilDecl(), l);
 }
 
-function unfoldDecl
-[Decl] ::= decl::Decls
-{
-  return case decl of
-           nilDecl() -> []
-         | consDecl(d,ds) -> d :: unfoldDecl(ds)
-         | _ -> error ("Incorrect application of unfoldDecl.")
-         end;
-}
-
 function foldGlobalDecl
 GlobalDecls ::= l::[Decl]
 {

@@ -1,54 +1,31 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax:substitution;
 
 aspect production injectGlobalDeclsExpr
-top::Expr ::= globalDecls::[Pair<String Decl>] lifted::Expr
+top::Expr ::= decls::Decls lifted::Expr
 {
-  local allDecls::Decls = foldDecl(map(snd, globalDecls));
-  local allNames::[String] = map(fst, globalDecls);
-  
-  allDecls.substitutions = top.substitutions;
-  top.substituted =
-    injectGlobalDeclsExpr(
-      zipWith(pair, allNames, unfoldDecl(allDecls.substituted)),
-      lifted.substituted,
-      location=top.location);
+  propagate substituted;
 }
 
 aspect production injectGlobalDeclsStmt
-top::Stmt ::= globalDecls::[Pair<String Decl>] lifted::Stmt
+top::Stmt ::= decls::Decls lifted::Stmt
 {
-  local allDecls::Decls = foldDecl(map(snd, globalDecls));
-  local allNames::[String] = map(fst, globalDecls);
-  
-  allDecls.substitutions = top.substitutions;
-  top.substituted =
-    injectGlobalDeclsStmt(
-      zipWith(pair, allNames, unfoldDecl(allDecls.substituted)),
-      lifted.substituted);
+  propagate substituted;
 }
 
 aspect production injectGlobalDeclsTypeExpr
-top::BaseTypeExpr ::= globalDecls::[Pair<String Decl>] lifted::BaseTypeExpr
+top::BaseTypeExpr ::= decls::Decls lifted::BaseTypeExpr
 {
-  local allDecls::Decls = foldDecl(map(snd, globalDecls));
-  local allNames::[String] = map(fst, globalDecls);
-  
-  allDecls.substitutions = top.substitutions;
-  top.substituted =
-    injectGlobalDeclsTypeExpr(
-      zipWith(pair, allNames, unfoldDecl(allDecls.substituted)),
-      lifted.substituted);
+  propagate substituted;
 }
 
 aspect production injectGlobalDeclsType
-top::NoncanonicalType ::= globalDecls::[Pair<String Decl>] lifted::Type
+top::Type ::= decls::Decls lifted::Type
 {
-  local allDecls::Decls = foldDecl(map(snd, globalDecls));
-  local allNames::[String] = map(fst, globalDecls);
-  
-  allDecls.substitutions = top.substitutions;
-  top.substituted =
-    injectGlobalDeclsType(
-      zipWith(pair, allNames, unfoldDecl(allDecls.substituted)),
-      lifted.substituted);
+  propagate substituted;
+}
+
+aspect production maybeDecl
+top::Decl ::= include::(Boolean ::= Decorated Env) decl::Decl
+{
+  propagate substituted;
 }
