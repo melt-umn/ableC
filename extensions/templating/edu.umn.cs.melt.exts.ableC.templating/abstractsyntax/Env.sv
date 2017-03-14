@@ -39,12 +39,17 @@ top::Env ::=
 aspect production addEnv_i
 top::Env ::= d::Defs  e::Decorated Env
 {
-  top.templates = augmentScope_i(d.templateContribs, e.templates);
+  top.templates = augmentGlobalScope_i(gd.templateContribs, augmentScope_i(d.templateContribs, e.templates));
 }
 aspect production openScope_i
 top::Env ::= e::Decorated Env
 {
   top.templates = tm:empty(compareString) :: e.templates;
+}
+aspect production globalEnv_i
+top::Env ::= e::Decorated Env
+{
+  top.templates = [last(e.templates)];
 }
 
 aspect production nilDefs
@@ -85,7 +90,7 @@ top::Name ::= n::String
   local templates::[TemplateItem] = lookupTemplate(n, top.env);
   top.templateLookupCheck =
     case templates of
-    | [] -> [err(top.location, "Undeclared templated value " ++ n)]
+    | [] -> [err(top.location, "Undeclared templated name " ++ n)]
     | _ :: _ -> []
     end;
   

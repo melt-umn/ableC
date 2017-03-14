@@ -34,15 +34,24 @@ top::Expr ::= n::Name ts::TypeNames
          
   local fwrd::Expr =
     injectGlobalDeclsExpr(
-      if null(lookupValue(mangledName, top.env))
-      then consDecl(globalDecl, nilDecl())
-      else nilDecl(),
+      consDecl(
+        maybeDecl(\ env::Decorated Env -> null(lookupValue(mangledName, env)), globalDecl),
+        nilDecl()),
       declRefExpr(
         name(mangledName, location=builtin),
         location=builtin),
       location=top.location);
   fwrd.env = top.env;
   fwrd.returnType = top.returnType;
+  
+  -- Tack on additional warning with info about the source of the errors if the instantiation has errors
+  top.errors <-
+    if null(localErrors) && !null(forward.errors)
+    then
+      [wrn(
+         n.templateItem.sourceLocation,
+         s"In instantiation ${n.name}<${show(80, ppImplode(pp", ", ts.pps))}> at ${n.location.unparse}")]
+    else [];
 
   forwards to mkErrorCheck(localErrors, fwrd);
 }
@@ -67,18 +76,19 @@ top::BaseTypeExpr ::= q::[Qualifier] n::Name ts::TypeNames
             n.location,
             s"Wrong number of template parameters for ${n.name}, " ++
             s"expected ${toString(length(templateItem.templateParams))} but got ${toString(ts.count)}")]
+    -- Tack on additional warning with info about the source of the errors if the instantiation has errors
     else if !null(result.errors)
-    then wrn(n.templateItem.sourceLocation, s"In instantiation of ${n.name} at ${n.location.unparse}") :: result.errors
+    then
+      wrn(
+        n.templateItem.sourceLocation,
+        s"In instantiation ${n.name}<${show(80, ppImplode(pp", ", ts.pps))}> at ${n.location.unparse}") ::
+      result.errors
     else [];
   
   local mangledName::String = templateMangledName(n.name, ts.typereps);
-    
+  
   local globalDecl::Decl =
     subDecl(
-      -- Set the refId so that two identical template instantiations maintain type equality
-      {-refIdSubstitution(
-        s"edu:umn:cs:melt:exts:ableC:templating:${n.name}",
-        s"edu:umn:cs:melt:exts:ableC:templating:${mangledName}") ::-}
       nameSubstitution(n.name, name(mangledName, location=builtin)) ::
         zipWith(typedefSubstitution, map((.name), templateItem.templateParams), ts.typereps),
       templateItem.decl);
@@ -87,9 +97,9 @@ top::BaseTypeExpr ::= q::[Qualifier] n::Name ts::TypeNames
   -- forward, and wrap that up in a directTypeExpr
   local result::BaseTypeExpr =
     injectGlobalDeclsTypeExpr(
-      if null(lookupValue(mangledName, top.env))
-      then consDecl(globalDecl, nilDecl())
-      else nilDecl(),
+      consDecl(
+        maybeDecl(\ env::Decorated Env -> null(lookupValue(mangledName, env)), globalDecl),
+        nilDecl()),
       typedefTypeExpr(q, name(mangledName, location=builtin)));
   result.env = top.env;
   result.returnType = top.returnType;

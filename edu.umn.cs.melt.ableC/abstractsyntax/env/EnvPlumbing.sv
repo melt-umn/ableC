@@ -72,7 +72,7 @@ top::Env ::=
 abstract production addEnv_i
 top::Env ::= d::Defs  e::Decorated Env
 {
-  local gd::Defs = foldr(consDefs, nilDefs(), d.globalDefs);
+  production gd::Defs = foldr(consDefs, nilDefs(), d.globalDefs);
 
   top.labels = augmentGlobalScope_i(gd.labelContribs, augmentScope_i(d.labelContribs, e.labels));
   top.tags = augmentGlobalScope_i(gd.tagContribs, augmentScope_i(d.tagContribs, e.tags));
@@ -89,7 +89,6 @@ top::Env ::= e::Decorated Env
   top.refIds = tm:empty(compareString) :: e.refIds;
   top.misc = tm:empty(compareString) :: e.misc;
 }
-
 abstract production globalEnv_i
 top::Env ::= e::Decorated Env
 {
