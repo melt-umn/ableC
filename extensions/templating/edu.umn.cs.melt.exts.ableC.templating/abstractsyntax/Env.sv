@@ -83,6 +83,7 @@ function lookupTemplate
 
 synthesized attribute templateItem::Decorated TemplateItem occurs on Name;
 synthesized attribute templateLookupCheck::[Message] occurs on Name;
+synthesized attribute templateRedeclarationCheck::[Message] occurs on Name;
 
 aspect production name
 top::Name ::= n::String
@@ -92,6 +93,15 @@ top::Name ::= n::String
     case templates of
     | [] -> [err(top.location, "Undeclared templated name " ++ n)]
     | _ :: _ -> []
+    end;
+    
+  top.templateRedeclarationCheck =
+    case templates of
+    | [] -> []
+    | v :: _ -> 
+        [err(top.location, 
+          "Redeclaration of " ++ n ++ ". Original (from line " ++
+          toString(v.sourceLocation.line) ++ ")")]
     end;
   
   local template::TemplateItem = if null(templates) then errorTemplateItem() else head(templates);
