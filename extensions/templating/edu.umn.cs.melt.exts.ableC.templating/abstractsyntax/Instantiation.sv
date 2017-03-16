@@ -29,15 +29,13 @@ top::Expr ::= n::Name ts::TypeNames
       nameSubstitution(n.name, name(mangledName, location=builtin)) ::
         zipWith(typedefSubstitution, map((.name), templateItem.templateParams), ts.typereps),
       templateItem.decl);
-         
+  
   local fwrd::Expr =
     injectGlobalDeclsExpr(
       consDecl(
         maybeDecl(\ env::Decorated Env -> null(lookupValue(mangledName, env)), globalDecl),
         nilDecl()),
-      declRefExpr(
-        name(mangledName, location=builtin),
-        location=builtin),
+      declRefExpr(name(mangledName, location=builtin), location=builtin),
       location=top.location);
   
   -- Tack on additional warning with info about the source of the errors if the instantiation has errors
@@ -72,13 +70,6 @@ top::BaseTypeExpr ::= q::[Qualifier] n::Name ts::TypeNames
             n.location,
             s"Wrong number of template parameters for ${n.name}, " ++
             s"expected ${toString(length(templateItem.templateParams))} but got ${toString(ts.count)}")]
-    -- Tack on additional warning with info about the source of the errors if the instantiation has errors
-    else if !null(result.errors)
-    then
-      wrn(
-        n.templateItem.sourceLocation,
-        s"In instantiation ${n.name}<${show(80, ppImplode(pp", ", ts.pps))}> at ${n.location.unparse}") ::
-      result.errors
     else [];
   
   local mangledName::String = templateMangledName(n.name, ts.typereps);
@@ -93,21 +84,29 @@ top::BaseTypeExpr ::= q::[Qualifier] n::Name ts::TypeNames
           zipWith(typedefSubstitution, map((.name), templateItem.templateParams), ts.typereps),
       templateItem.decl);
   
-  -- To avoid needing an explicit equation for typerep, decorate what would otherwise be the
-  -- forward, and wrap that up in a directTypeExpr
-  local result::BaseTypeExpr =
+  local fwrd::BaseTypeExpr =
     injectGlobalDeclsTypeExpr(
       consDecl(
         maybeDecl(\ env::Decorated Env -> null(lookupValue(mangledName, env)), globalDecl),
         nilDecl()),
       typedefTypeExpr(q, name(mangledName, location=builtin)));
-  result.env = top.env;
-  result.returnType = top.returnType;
+  
+  -- We could decorate fwrd and forward to directTypeExpr(templatedType(..., fwrd.typerep)), but
+  -- that would be less efficient since we would decorate fwrd twice, and would be effectively the
+  -- same since directTypeExpr overrides typerep when forwarding.
+  -- templatedType forwards to resolved (forward.typerep here), so no interference
+  top.typerep = templatedType(q, n.name, ts.typereps, forward.typerep);
+  
+  -- Tack on additional warning with info about the source of the errors if the instantiation has errors
+  top.errors <-
+    if null(localErrors) && !null(forward.errors)
+    then
+      [wrn(
+         n.templateItem.sourceLocation,
+         s"In instantiation ${n.name}<${show(80, ppImplode(pp", ", ts.pps))}> at ${n.location.unparse}")]
+    else [];
 
-  forwards to
-    if !null(localErrors)
-    then errorTypeExpr(localErrors)
-    else directTypeExpr(templatedType(q, n.name, ts.typereps, result.typerep));
+  forwards to if !null(localErrors) then errorTypeExpr(localErrors) else fwrd;
 }
 
 function templateMangledName
