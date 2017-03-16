@@ -91,32 +91,19 @@ top::Type ::= q::[Qualifier] sub::Type
   forwards to
     injectGlobalDeclsType(
       consDecl(
-        -- Perform a template instantiation of _vector_s to generate a global decl of the
-        -- instantiated struct.  
-        -- Useless typedef instead of typeExprDecl to avoid triggering "useless type name in empty
-        -- declaration" warnings in the generated code
-        typedefDecls(
-          [],
-          templateTypedefTypeExpr(
-            q,
-            name("_vector_s", location=builtin),
-            consTypeName(typeName(directTypeExpr(sub), baseTypeExpr()), nilTypeName())),
-          consDeclarator(
-            declarator(
-              name("_vector_s_" ++ toString(genInt()), location=builtin),
-              baseTypeExpr(),
-              [],
-              nothingInitializer()),
-            nilDeclarator())),
+        templateTypeExprInstDecl(
+          q,
+          name("_vector_s", location=builtin),
+          consTypeName(typeName(directTypeExpr(sub), baseTypeExpr()), nilTypeName())),
         nilDecl()),
-          pointerType(
-            q,
-            tagType(
-              [],
-              refIdTagType(
-                structSEU(),
-                mangledName,
-                s"edu:umn:cs:melt:exts:ableC:templating:${mangledName}"))));
+        pointerType(
+          q,
+          tagType(
+            [],
+            refIdTagType(
+              structSEU(),
+              mangledName,
+              s"edu:umn:cs:melt:exts:ableC:templating:${mangledName}"))));
 }
 
 function mkVectorType
