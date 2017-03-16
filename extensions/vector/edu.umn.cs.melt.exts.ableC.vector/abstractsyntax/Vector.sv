@@ -241,7 +241,7 @@ top::Expr ::= e1::Expr e2::Expr
       vectorType(_, s, _) -> s
     | _ -> errorType()
     end;
-    
+  
   local vecTempName::String = "_vec_" ++ toString(genInt());
   local indexTempName::String = "_index_" ++ toString(genInt());
 

@@ -64,6 +64,7 @@ static vector<a> _new_vector(size_t length) {
   vector<a> result = GC_malloc(sizeof(_vector_s<a>));
   result->_info = (struct _vector_info){length, length * 2, sizeof(a)};
   result->_contents = GC_malloc(sizeof(a) * result->_info.capacity);
+  return result;
 }
 
 template<a>
