@@ -440,7 +440,7 @@ top::TypeModifierExpr ::= result::TypeModifierExpr  args::Parameters  variadic::
   top.rpp = 
     cat(parens(
       if null(args.pps) 
-      then text("void") 
+      then text("void")
       else ppImplode(text(", "), 
             (if variadic then args.pps ++ [text("...")] else args.pps) 
            )

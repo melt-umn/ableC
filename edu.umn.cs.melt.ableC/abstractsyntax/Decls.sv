@@ -268,7 +268,7 @@ top::Declarator ::= name::Name  ty::TypeModifierExpr  attrs::[Attribute]  initia
     | _ -> []
     end ++ ty.errors ++ initializer.errors;
   top.globalDecls := ty.globalDecls ++ initializer.globalDecls;
-  top.defs := [valueDef(name.name, declaratorValueItem(top))];
+  top.defs := [valueDef(name.name, declaratorValueItem(top))] ++ initializer.defs;
   top.freeVariables = ty.freeVariables ++ initializer.freeVariables;
   top.typerep = animateAttributeOnType(allAttrs, ty.typerep);
   top.sourceLocation = name.location;
@@ -312,6 +312,7 @@ top::FunctionDecl ::= storage::[StorageClass]  fnquals::[SpecialSpecifier]  bty:
     end;
   
   local funcDefs::[Def] = bty.defs ++ [valueDef(name.name, functionValueItem(top))];
+  local thisFuncDef :: Def = miscDef("this_func", currentFunctionItem(name, top));
   
   top.errors := bty.errors ++ mty.errors ++ body.errors;
   top.globalDecls := bty.globalDecls ++ mty.globalDecls ++ decls.globalDecls ++ 
@@ -340,13 +341,10 @@ top::FunctionDecl ::= storage::[StorageClass]  fnquals::[SpecialSpecifier]  bty:
 
     | _ -> nothing() -- Don't error here, this is caught in type checking
     end;
-  
 
-  local thisFuncDef :: Def = miscDef("this_func", currentFunctionItem(name, top));
-  mty.env = addEnv ([thisFuncDef], top.env);  -- TODO: extend this to decls, body, etc.
-
-  body.env = addEnv(parameters.defs ++ decls.defs ++ body.functiondefs, 
-                    openScope(addEnv(funcDefs, top.env)));
+  mty.env = addEnv([thisFuncDef], openScope(addEnv(funcDefs, top.env)));
+  decls.env = addEnv(parameters.defs, mty.env);
+  body.env = addEnv(decls.defs ++ body.functiondefs, decls.env);
   
   decls.isTopLevel = false;
   
