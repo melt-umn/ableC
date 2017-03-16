@@ -9,35 +9,24 @@ top::BaseTypeExpr ::= q::[Qualifier] sub::TypeName
   local localErrors::[Message] =
     sub.errors ++ checkVectorHeaderDef("_vector_s", builtin, top.env); -- TODO: location
   
-  local result::TypeName =
-    typeName(
-      templateTypedefTypeExpr(
-        q,
-        name("_vector_s", location=builtin),
-        consTypeName(sub, nilTypeName())),
-      pointerTypeExpr(q, baseTypeExpr()));
-  result.env = top.env;
-  result.returnType = top.returnType;
-  
   forwards to
     if !null(localErrors)
     then errorTypeExpr(localErrors)
-    else directTypeExpr(vectorType(q, sub.typerep, result.typerep));
+    else directTypeExpr(vectorType(q, sub.typerep));
 }
 
 abstract production vectorType
-top::Type ::= q::[Qualifier] sub::Type resolved::Type
+top::Type ::= q::[Qualifier] sub::Type
 {
   top.lpp = pp"${ppImplode(space(), map((.pp), q))}vector<${sub.lpp}${sub.rpp}>";
   top.rpp = pp"";
   
-  top.withoutTypeQualifiers = vectorType([], sub, resolved.withoutTypeQualifiers);
-  top.withTypeQualifiers = vectorType(top.addedTypeQualifiers ++ q, sub, resolved.withTypeQualifiers);
-  resolved.addedTypeQualifiers = top.addedTypeQualifiers;
+  top.withoutTypeQualifiers = vectorType([], sub);
+  top.withTypeQualifiers = vectorType(top.addedTypeQualifiers ++ q, sub);
 
   top.ovrld:lBinaryPlusProd =
     case top.ovrld:otherType of
-      vectorType(_, s, _) ->
+      vectorType(_, s) ->
         if compatibleTypes(sub, s, true)
         then just(appendVector(_, _, location=_))
         else nothing()
@@ -46,7 +35,7 @@ top::Type ::= q::[Qualifier] sub::Type resolved::Type
     
   top.ovrld:lAssignPlusProd =
     case top.ovrld:otherType of
-      vectorType(_, s, _) ->
+      vectorType(_, s) ->
         if compatibleTypes(sub, s, true)
         then just(appendAssignVector(_, _, location=_))
         else nothing()
@@ -55,7 +44,7 @@ top::Type ::= q::[Qualifier] sub::Type resolved::Type
   
   top.ovrld:lBinaryEqProd =
     case top.ovrld:otherType of
-      vectorType(_, s, _) ->
+      vectorType(_, s) ->
         if compatibleTypes(sub, s, true)
         then just(eqVector(_, _, location=_))
         else nothing()
@@ -96,8 +85,38 @@ top::Type ::= q::[Qualifier] sub::Type resolved::Type
       just(_) -> just(showVector(_, location=_))
     | nothing() -> nothing()
     end;
+    
+  local mangledName::String = templateMangledName("_vector_s", [sub]);
 
-  forwards to resolved;
+  forwards to
+    injectGlobalDeclsType(
+      consDecl(
+        -- Perform a template instantiation of _vector_s to generate a global decl of the
+        -- instantiated struct.  
+        -- Useless typedef instead of typeExprDecl to avoid triggering "useless type name in empty
+        -- declaration" warnings in the generated code
+        typedefDecls(
+          [],
+          templateTypedefTypeExpr(
+            q,
+            name("_vector_s", location=builtin),
+            consTypeName(typeName(directTypeExpr(sub), baseTypeExpr()), nilTypeName())),
+          consDeclarator(
+            declarator(
+              name("_vector_s_" ++ toString(genInt()), location=builtin),
+              baseTypeExpr(),
+              [],
+              nothingInitializer()),
+            nilDeclarator())),
+        nilDecl()),
+          pointerType(
+            q,
+            tagType(
+              [],
+              refIdTagType(
+                structSEU(),
+                mangledName,
+                s"edu:umn:cs:melt:exts:ableC:templating:${mangledName}"))));
 }
 
 function mkVectorType

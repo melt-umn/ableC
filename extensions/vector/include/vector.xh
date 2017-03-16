@@ -22,7 +22,8 @@ struct _vector_s {
   a *_contents;
 };
 
-//using vector<a> = _vector_s<a>*;
+// Not used, right now vector<foo> translates directly to struct _vector_s_template_<mangled name> *
+// using _vector<a> = _vector_s<a>*;
 
 // Check whether an index is valid for given vector info
 template<a>

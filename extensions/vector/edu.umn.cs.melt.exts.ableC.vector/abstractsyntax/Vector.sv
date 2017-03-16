@@ -85,7 +85,7 @@ top::Expr ::= e::Expr
   
   local subType::Type = 
     case e.typerep of
-      vectorType(_, s, _) -> s
+      vectorType(_, s) -> s
     | _ -> errorType()
     end;
 
@@ -108,7 +108,7 @@ top::Expr ::= e1::Expr e2::Expr
   
   local subType::Type = 
     case e1.typerep of
-      vectorType(_, s, _) -> s
+      vectorType(_, s) -> s
     | _ -> errorType()
     end;
     
@@ -131,7 +131,7 @@ top::Expr ::= e1::Expr e2::Expr
   
   local subType::Type = 
     case e1.typerep of
-      vectorType(_, s, _) -> s
+      vectorType(_, s) -> s
     | _ -> errorType()
     end;
 
@@ -152,7 +152,7 @@ top::Expr ::= e1::Expr e2::Expr
   
   local subType::Type = 
     case e1.typerep of
-      vectorType(_, s, _) -> s
+      vectorType(_, s) -> s
     | _ -> errorType()
     end;
   
@@ -175,7 +175,7 @@ top::Expr ::= e::Expr
   
   local subType::Type = 
     case e.typerep of
-      vectorType(_, s, _) -> s
+      vectorType(_, s) -> s
     | _ -> errorType()
     end;
     
@@ -196,7 +196,7 @@ top::Expr ::= e::Expr
   
   local subType::Type = 
     case e.typerep of
-      vectorType(_, s, _) -> s
+      vectorType(_, s) -> s
     | _ -> errorType()
     end;
     
@@ -217,7 +217,7 @@ top::Expr ::= e::Expr
   
   local subType::Type = 
     case e.typerep of
-      vectorType(_, s, _) -> s
+      vectorType(_, s) -> s
     | _ -> errorType()
     end;
     
@@ -238,7 +238,7 @@ top::Expr ::= e1::Expr e2::Expr
   
   local subType::Type = 
     case e1.typerep of
-      vectorType(_, s, _) -> s
+      vectorType(_, s) -> s
     | _ -> errorType()
     end;
   
@@ -281,7 +281,7 @@ top::Expr ::= lhs::Expr index::Expr op::AssignOp rhs::Expr
   
   local subType::Type = 
     case lhs.typerep of
-      vectorType(_, s, _) -> s
+      vectorType(_, s) -> s
     | _ -> errorType()
     end;
     
@@ -329,7 +329,7 @@ top::Expr ::= e::Expr
   
   local subType::Type = 
     case e.typerep of
-      vectorType(_, s, _) -> s
+      vectorType(_, s) -> s
     | _ -> errorType()
     end;
   
