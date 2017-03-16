@@ -17,6 +17,7 @@ abstract production showExpr
 top::Expr ::= e::Expr
 {
   propagate substituted;
+  top.pp = pp"show(${e.pp})";
   
   local localErrors::[Message] = e.errors;
   local fwrd::Expr =
@@ -31,6 +32,7 @@ abstract production showString
 top::Expr ::= e::Expr
 {
   propagate substituted;
+  top.pp = pp"show(${e.pp})";
   
   local localErrors::[Message] =
     checkStringHeaderDef("showString", top.location, top.env);
@@ -46,6 +48,7 @@ abstract production showChar
 top::Expr ::= e::Expr
 {
   propagate substituted;
+  top.pp = pp"show(${e.pp})";
   
   local localErrors::[Message] =
     checkStringHeaderDef("showChar", top.location, top.env);
@@ -61,6 +64,7 @@ abstract production showInt
 top::Expr ::= e::Expr
 {
   propagate substituted;
+  top.pp = pp"show(${e.pp})";
   
   local localErrors::[Message] =
     checkStringHeaderDef("showInt", top.location, top.env);
@@ -76,6 +80,7 @@ abstract production showFloat
 top::Expr ::= e::Expr
 {
   propagate substituted;
+  top.pp = pp"show(${e.pp})";
   
   local localErrors::[Message] =
     checkStringHeaderDef("showFloat", top.location, top.env);
@@ -91,6 +96,7 @@ abstract production showPointer
 top::Expr ::= e::Expr
 {
   propagate substituted;
+  top.pp = pp"show(${e.pp})";
   
   local localErrors::[Message] =
     checkStringHeaderDef("_showPointer", top.location, top.env);
@@ -110,6 +116,7 @@ abstract production strExpr
 top::Expr ::= e::Expr
 {
   propagate substituted;
+  top.pp = pp"str(${e.pp})";
   
   local localErrors::[Message] = e.errors;
   local fwrd::Expr =
@@ -124,6 +131,7 @@ abstract production strString
 top::Expr ::= e::Expr
 {
   propagate substituted;
+  top.pp = pp"str(${e.pp})";
   
   forwards to
     -- Cast for if a char* is passed in and needs to be converted to overloaded stringType()
@@ -137,6 +145,7 @@ abstract production strChar
 top::Expr ::= e::Expr
 {
   propagate substituted;
+  top.pp = pp"str(${e.pp})";
   
   local localErrors::[Message] =
     checkStringHeaderDef("strChar", top.location, top.env);
@@ -152,6 +161,7 @@ abstract production strPointer
 top::Expr ::= e::Expr
 {
   propagate substituted;
+  top.pp = pp"str(${e.pp})";
   
   local localErrors::[Message] =
     checkStringHeaderDef("strPointer", top.location, top.env);
@@ -167,6 +177,7 @@ abstract production assignString
 top::Expr ::= lhs::Expr rhs::Expr
 {
   propagate substituted;
+  top.pp = pp"${lhs.pp} = ${rhs.pp}";
   
   forwards to
     binaryOpExpr(
@@ -180,6 +191,7 @@ abstract production appendString
 top::Expr ::= e1::Expr e2::Expr
 {
   propagate substituted;
+  top.pp = pp"${e1.pp} + ${e2.pp}";
   
   local localErrors::[Message] =
     checkStringHeaderDef("_append_string", top.location, top.env);
@@ -199,6 +211,7 @@ abstract production removeString
 top::Expr ::= e1::Expr e2::Expr
 {
   propagate substituted;
+  top.pp = pp"${e1.pp} - ${e2.pp}";
   
   local localErrors::[Message] =
     checkStringHeaderDef("_remove_string", top.location, top.env);
@@ -218,6 +231,7 @@ abstract production repeatString
 top::Expr ::= e1::Expr e2::Expr
 {
   propagate substituted;
+  top.pp = pp"${e1.pp} * ${e2.pp}";
   
   local localErrors::[Message] =
     checkStringHeaderDef("_repeat_string", top.location, top.env);
@@ -233,6 +247,7 @@ abstract production eqString
 top::Expr ::= e1::Expr e2::Expr
 {
   propagate substituted;
+  top.pp = pp"${e1.pp} == ${e2.pp}";
   
   local localErrors::[Message] =
     checkStringHeaderDef("_eq_string", top.location, top.env);
@@ -248,6 +263,7 @@ abstract production subscriptString
 top::Expr ::= e1::Expr e2::Expr
 {
   propagate substituted;
+  top.pp = pp"${e1.pp}[${e2.pp}]";
   
   local localErrors::[Message] =
     checkStringHeaderDef("_index_string", top.location, top.env);
@@ -263,6 +279,7 @@ abstract production subscriptAssignString
 top::Expr ::= e1::Expr e2::Expr op::AssignOp e3::Expr
 {
   propagate substituted;
+  top.pp = pp"${e1.pp}[${e2.pp}] ${op.pp} ${e3.pp}";
   
   local localErrors::[Message] =
     checkStringHeaderDef("_check_index_string", top.location, top.env);
@@ -288,6 +305,7 @@ abstract production substringString
 top::Expr ::= e1::Expr a::Exprs
 {
   propagate substituted;
+  top.pp = pp"${e1.pp}.substring(${ppImplode(pp", ", a.pps)}";
   
   a.expectedTypes = -- size_t
     [builtinType([], unsignedType(longType())),
@@ -310,6 +328,7 @@ abstract production lengthString
 top::Expr ::= e1::Expr
 {
   propagate substituted;
+  top.pp = pp"${e1.pp}.length";
   
   local localErrors::[Message] =
     checkStringHeaderDef("strlen", top.location, top.env);
@@ -329,13 +348,4 @@ function checkStringHeaderDef
     if !null(lookupValue(n, env))
     then []
     else [err(loc, "Missing include of string.xh")];
-}
-
-{-
- - New location for expressions which don't have real locations
- -}
-abstract production builtIn
-top::Location ::=
-{
-  forwards to loc("Built In", 0, 0, 0, 0, 0, 0);
 }

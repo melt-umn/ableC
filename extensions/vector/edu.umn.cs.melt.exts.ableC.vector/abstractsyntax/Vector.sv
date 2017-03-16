@@ -21,6 +21,7 @@ abstract production newVector
 top::Expr ::= sub::TypeName size::Expr
 {
   propagate substituted;
+  top.pp = pp"vec<${sub.pp}>(${size.pp})";
   
   local localErrors::[Message] =
     sub.errors ++ checkVectorHeaderDef("_new_vector", top.location, top.env);
@@ -43,6 +44,7 @@ abstract production constructVector
 top::Expr ::= sub::TypeName e::Exprs
 {
   propagate substituted;
+  top.pp = pp"vec<${sub.pp}> [${ppImplode(pp", ", e.pps)}]";
   
   local localErrors::[Message] =
     sub.errors ++ checkVectorHeaderDef("_new_vector", top.location, top.env);
@@ -92,6 +94,7 @@ abstract production copyVector
 top::Expr ::= e::Expr
 {
   propagate substituted;
+  top.pp = pp"copy_vector(${e.pp})";
   
   local subType::Type = 
     case e.typerep of
@@ -115,6 +118,7 @@ abstract production appendVector
 top::Expr ::= e1::Expr e2::Expr
 {
   propagate substituted;
+  top.pp = pp"${e1.pp} + ${e2.pp}";
   
   local subType::Type = 
     case e1.typerep of
@@ -138,6 +142,7 @@ abstract production appendAssignVector
 top::Expr ::= e1::Expr e2::Expr
 {
   propagate substituted;
+  top.pp = pp"${e1.pp} += ${e2.pp}";
   
   local subType::Type = 
     case e1.typerep of
@@ -159,6 +164,7 @@ abstract production eqVector
 top::Expr ::= e1::Expr e2::Expr
 {
   propagate substituted;
+  top.pp = pp"${e1.pp} == ${e2.pp}";
   
   local subType::Type = 
     case e1.typerep of
@@ -182,6 +188,7 @@ abstract production lengthVector
 top::Expr ::= e::Expr
 {
   propagate substituted;
+  top.pp = pp"${e.pp}.length";
   
   local subType::Type = 
     case e.typerep of
@@ -203,6 +210,7 @@ abstract production capacityVector
 top::Expr ::= e::Expr
 {
   propagate substituted;
+  top.pp = pp"${e.pp}.capacity";
   
   local subType::Type = 
     case e.typerep of
@@ -224,6 +232,7 @@ abstract production elemSizeVector
 top::Expr ::= e::Expr
 {
   propagate substituted;
+  top.pp = pp"${e.pp}.elem_size";
   
   local subType::Type = 
     case e.typerep of
@@ -245,6 +254,7 @@ abstract production subscriptVector
 top::Expr ::= e1::Expr e2::Expr
 {
   propagate substituted;
+  top.pp = pp"${e1.pp}[${e2.pp}]";
   
   local subType::Type = 
     case e1.typerep of
@@ -288,6 +298,7 @@ abstract production subscriptAssignVector
 top::Expr ::= lhs::Expr index::Expr op::AssignOp rhs::Expr
 {
   propagate substituted;
+  top.pp = pp"${lhs.pp}[${index.pp}] ${op.pp} ${rhs.pp}";
   
   local subType::Type = 
     case lhs.typerep of
@@ -336,6 +347,7 @@ abstract production showVector
 top::Expr ::= e::Expr
 {
   propagate substituted;
+  top.pp = pp"show(${e.pp})";
   
   local subType::Type = 
     case e.typerep of
