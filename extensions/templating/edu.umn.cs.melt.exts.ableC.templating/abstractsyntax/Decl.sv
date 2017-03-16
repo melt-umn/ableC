@@ -19,7 +19,7 @@ top::Decl ::= params::[Name] n::Name ty::TypeName
   propagate substituted;
   top.pp = pp"using ${n.pp}<${ppImplode(text(", "), map((.pp), params))}> = ${ty.pp};";
   
-  local localErrors::[Message] = -- TODO: check for duplicate parameters
+  local localErrors::[Message] = -- TODO: check for redeclaration or duplicate parameters
     if top.isTopLevel
     then []
     else [err(n.location, "Template declarations must be global")];
@@ -51,7 +51,7 @@ top::Decl ::= params::[Name] attrs::[Attribute] n::Name dcls::StructItemList
                    pp"struct ", ppAttributes(attrs), text(n.name), space(),
                    braces(nestlines(2, terminate(cat(semi(),line()), dcls.pps))), semi()]);
   
-  local localErrors::[Message] = -- TODO: check for duplicate parameters
+  local localErrors::[Message] = -- TODO: check for redeclaration or duplicate parameters
     if top.isTopLevel
     then []
     else [err(n.location, "Template declarations must be global")];
@@ -94,7 +94,7 @@ top::Decl ::= params::[Name] d::FunctionDecl
   propagate substituted;
   top.pp = concat([pp"template<", ppImplode(text(", "), map((.pp), params)), pp">", line(), d.pp]);
   
-  local localErrors::[Message] = -- TODO: check for duplicate parameters
+  local localErrors::[Message] = -- TODO: check for redeclaration or duplicate parameters
     if top.isTopLevel
     then []
     else [err(d.sourceLocation, "Template declarations must be global")];

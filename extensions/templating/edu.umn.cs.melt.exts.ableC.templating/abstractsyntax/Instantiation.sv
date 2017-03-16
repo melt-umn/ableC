@@ -20,8 +20,6 @@ top::Expr ::= n::Name ts::TypeNames
             top.location,
             s"Wrong number of template parameters for ${n.name}, " ++
             s"expected ${toString(length(templateItem.templateParams))} but got ${toString(ts.count)}")]
-    else if !null(fwrd.errors)
-    then wrn(n.templateItem.sourceLocation, s"In instantiation of ${n.name} at ${top.location.unparse}") :: fwrd.errors
     else [];
     
   local mangledName::String = templateMangledName(n.name, ts.typereps);
@@ -41,8 +39,6 @@ top::Expr ::= n::Name ts::TypeNames
         name(mangledName, location=builtin),
         location=builtin),
       location=top.location);
-  fwrd.env = top.env;
-  fwrd.returnType = top.returnType;
   
   -- Tack on additional warning with info about the source of the errors if the instantiation has errors
   top.errors <-
@@ -89,8 +85,12 @@ top::BaseTypeExpr ::= q::[Qualifier] n::Name ts::TypeNames
   
   local globalDecl::Decl =
     subDecl(
-      nameSubstitution(n.name, name(mangledName, location=builtin)) ::
-        zipWith(typedefSubstitution, map((.name), templateItem.templateParams), ts.typereps),
+      -- Set the refId so that two identical template instantiations maintain type equality
+      refIdSubstitution(
+        s"edu:umn:cs:melt:exts:ableC:templating:${n.name}",
+        s"edu:umn:cs:melt:exts:ableC:templating:${mangledName}") ::
+        nameSubstitution(n.name, name(mangledName, location=builtin)) ::
+          zipWith(typedefSubstitution, map((.name), templateItem.templateParams), ts.typereps),
       templateItem.decl);
   
   -- To avoid needing an explicit equation for typerep, decorate what would otherwise be the
