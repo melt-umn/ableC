@@ -22,6 +22,11 @@ top::Expr ::= sub::TypeName size::Expr
 {
   propagate substituted;
   
+  local localErrors::[Message] =
+    sub.errors ++ checkVectorHeaderDef("_new_vector", top.location, top.env);
+  
+  sub.env = globalEnv(top.env);
+  
   local fwrd::Expr =
     callExpr(
       templateDeclRefExpr(
@@ -31,13 +36,18 @@ top::Expr ::= sub::TypeName size::Expr
       consExpr(size, nilExpr()),
       location=builtin);
   
-  forwards to mkErrorCheck(checkVectorHeaderDef("_new_vector", top.location, top.env), fwrd);
+  forwards to mkErrorCheck(localErrors, fwrd);
 }
 
 abstract production constructVector
 top::Expr ::= sub::TypeName e::Exprs
 {
   propagate substituted;
+  
+  local localErrors::[Message] =
+    sub.errors ++ checkVectorHeaderDef("_new_vector", top.location, top.env);
+  
+  sub.env = globalEnv(top.env);
   
   e.argumentPosition = 0;
   local fwrd::Expr =
@@ -52,7 +62,7 @@ top::Expr ::= sub::TypeName e::Exprs
       declRefExpr(name("_vec", location=builtin), location=builtin),
       location=top.location);
   
-  forwards to mkErrorCheck(checkVectorHeaderDef("_new_vector", top.location, top.env), fwrd);
+  forwards to mkErrorCheck(localErrors, fwrd);
 }
 
 synthesized attribute vectorInitTrans::Stmt occurs on Exprs;

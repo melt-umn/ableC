@@ -6,8 +6,10 @@ top::Expr ::= n::Name ts::TypeNames
   top.pp = pp"${n.pp}<${ppImplode(pp", ", ts.pps)}>";
   -- Don't substitute n
   top.substituted = templateDeclRefExpr(n, ts.substituted, location=top.location);
+  
+  ts.env = globalEnv(top.env);
 
-  forwards to 
+  forwards to
     injectGlobalDeclsExpr(
       consDecl(templateExprInstDecl(n, ts), nilDecl()),
       declRefExpr(name(templateMangledName(n.name, ts.typereps), location=builtin), location=builtin),
@@ -26,6 +28,8 @@ top::BaseTypeExpr ::= q::[Qualifier] n::Name ts::TypeNames
   -- same since directTypeExpr overrides typerep when forwarding.
   -- templatedType forwards to resolved (forward.typerep here), so no interference
   top.typerep = templatedType(q, n.name, ts.typereps, forward.typerep);
+  
+  ts.env = globalEnv(top.env);
 
   forwards to
     injectGlobalDeclsTypeExpr(

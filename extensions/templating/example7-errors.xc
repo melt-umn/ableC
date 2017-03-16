@@ -1,12 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-template<a>
+template<a, b>
 struct ptr {
   a *contents;
 };
 
-template<a, b>
+template<a>
 struct ptr {
   a *contents;
 };
@@ -33,4 +33,8 @@ int main() {
   printf("%d\n", deref<int>(deref<ptr<int>>(x)));
   delete<int>(deref<ptr<int>>(x));
   delete<ptr<int>>(x);
+
+  typedef int foo;
+  ptr<foo> y;
+  delete<foo>(y);
 }
