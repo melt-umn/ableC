@@ -24,21 +24,23 @@ top::Decl ::= params::[Name] n::Name ty::TypeName
     then [err(n.location, "Template declarations must be global")]
     else n.templateRedeclarationCheck ++ duplicateParameterCheck(params, []);
   
+  local fwrd::Decl =
+    defsDecl([
+      templateDef(
+        n.name,
+        templateItem(
+          params, true, n.location,
+          typedefDecls(
+            [],
+            ty.bty,
+            consDeclarator(
+              declarator(n, ty.mty, [], nothingInitializer()),
+              nilDeclarator()))))]);
+  
   forwards to
-    if null(localErrors)
-    then
-      defsDecl([
-        templateDef(
-          n.name,
-          templateItem(
-            params, true, n.location,
-            typedefDecls(
-              [],
-              ty.bty,
-              consDeclarator(
-                declarator(n, ty.mty, [], nothingInitializer()),
-                nilDeclarator()))))])
-    else warnDecl(localErrors);
+    if !null(localErrors)
+    then decls(consDecl(warnDecl(localErrors), consDecl(fwrd, nilDecl())))
+    else fwrd;
 }
 
 abstract production templateStructDecl
@@ -56,34 +58,36 @@ top::Decl ::= params::[Name] attrs::[Attribute] n::Name dcls::StructItemList
     then [err(n.location, "Template declarations must be global")]
     else n.templateRedeclarationCheck ++ duplicateParameterCheck(params, []);
   
-  forwards to
-    if null(localErrors)
-    then
-      defsDecl([
-        templateDef(
-          n.name,
-          templateItem(
-            params, true, n.location,
-            typedefDecls(
+  local fwrd::Decl =
+    defsDecl([
+      templateDef(
+        n.name,
+        templateItem(
+          params, true, n.location,
+          typedefDecls(
+            [],
+            structTypeExpr(
               [],
-              structTypeExpr(
-                [],
-                structDecl(
-                  gccAttribute(
-                    consAttrib(
-                      appliedAttrib(
-                        attribName(name("refId", location=builtin)),
-                        consExpr(
-                          stringLiteral(s"\"edu:umn:cs:melt:exts:ableC:templating:${n.name}\"", location=builtin),
-                          nilExpr())),
-                      nilAttrib())) :: attrs,
-                  justName(n),
-                  dcls,
-                  location=n.location)),
-              consDeclarator(
-                declarator(n, baseTypeExpr(), [], nothingInitializer()),
-                nilDeclarator()))))])
-    else warnDecl(localErrors);
+              structDecl(
+                gccAttribute(
+                  consAttrib(
+                    appliedAttrib(
+                      attribName(name("refId", location=builtin)),
+                      consExpr(
+                        stringLiteral(s"\"edu:umn:cs:melt:exts:ableC:templating:${n.name}\"", location=builtin),
+                        nilExpr())),
+                    nilAttrib())) :: attrs,
+                justName(n),
+                dcls,
+                location=n.location)),
+            consDeclarator(
+              declarator(n, baseTypeExpr(), [], nothingInitializer()),
+              nilDeclarator()))))]);
+  
+  forwards to
+    if !null(localErrors)
+    then decls(consDecl(warnDecl(localErrors), consDecl(fwrd, nilDecl())))
+    else fwrd;
 }
 
 abstract production templateFunctionDecl
@@ -102,19 +106,21 @@ top::Decl ::= params::[Name] d::FunctionDecl
         else n.templateRedeclarationCheck ++ duplicateParameterCheck(params, [])
       | badFunctionDecl(msg) -> msg
       end;
+      
+  local fwrd::Decl =
+    case d of
+      functionDecl(_, _, _, _, n, _, _, _) -> 
+        defsDecl([
+          templateDef(
+            n.name,
+            templateItem(params, false, d.sourceLocation, functionDeclaration(d)))])
+    | badFunctionDecl(msg) -> decls(nilDecl())
+    end;
   
   forwards to
-    if null(localErrors)
-    then
-      case d of
-        functionDecl(_, _, _, _, n, _, _, _) -> 
-          defsDecl([
-            templateDef(
-              n.name,
-              templateItem(params, false, d.sourceLocation, functionDeclaration(d)))])
-      | badFunctionDecl(msg) -> decls(nilDecl())
-      end
-    else warnDecl(localErrors);
+    if !null(localErrors)
+    then decls(consDecl(warnDecl(localErrors), consDecl(fwrd, nilDecl())))
+    else fwrd;
 }
 
 function duplicateParameterCheck
