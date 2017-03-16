@@ -1,5 +1,11 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax:substitution;
 
+aspect production maybeDecl
+top::Decl ::= include::(Boolean ::= Decorated Env) decl::Decl
+{
+  propagate substituted;
+}
+
 aspect production injectGlobalDeclsExpr
 top::Expr ::= decls::Decls lifted::Expr
 {
@@ -20,12 +26,6 @@ top::BaseTypeExpr ::= decls::Decls lifted::BaseTypeExpr
 
 aspect production injectGlobalDeclsType
 top::Type ::= decls::Decls lifted::Type
-{
-  propagate substituted;
-}
-
-aspect production maybeDecl
-top::Decl ::= include::(Boolean ::= Decorated Env) decl::Decl
 {
   propagate substituted;
 }
