@@ -4,8 +4,7 @@ abstract production templateDeclRefExpr
 top::Expr ::= n::Name ts::TypeNames
 {
   top.pp = pp"${n.pp}<${ppImplode(pp", ", ts.pps)}>";
-  -- Don't substitute n
-  top.substituted = templateDeclRefExpr(n, ts.substituted, location=top.location);
+  top.substituted = templateDeclRefExpr(n, ts.substituted, location=top.location); -- Don't substitute n
   
   ts.env = globalEnv(top.env);
 
@@ -20,8 +19,7 @@ abstract production templateTypedefTypeExpr
 top::BaseTypeExpr ::= q::[Qualifier] n::Name ts::TypeNames
 {
   top.pp = pp"${terminate(space(), map((.pp), q))}${n.pp}<${ppImplode(pp", ", ts.pps)}>";
-  -- Don't substitute n
-  top.substituted = templateTypedefTypeExpr(q, n, ts.substituted);
+  top.substituted = templateTypedefTypeExpr(q, n, ts.substituted); -- Don't substitute n
   
   -- We could decorate fwrd and forward to directTypeExpr(templatedType(..., fwrd.typerep)), but
   -- that would be less efficient since we would decorate fwrd twice, and would be effectively the
@@ -41,8 +39,7 @@ abstract production templateExprInstDecl
 top::Decl ::= n::Name ts::TypeNames
 {
   top.pp = pp"${n.pp}<${ppImplode(pp", ", ts.pps)}>;";
-  -- Don't substitute n
-  top.substituted = templateExprInstDecl(n, ts.substituted);
+  top.substituted = templateExprInstDecl(n, ts.substituted); -- Don't substitute n
   
   local templateItem::Decorated TemplateItem = n.templateItem;
 
@@ -88,8 +85,7 @@ abstract production templateTypeExprInstDecl
 top::Decl ::= q::[Qualifier] n::Name ts::TypeNames
 {
   top.pp = pp"${terminate(space(), map((.pp), q))}${n.pp}<${ppImplode(pp", ", ts.pps)}>;";
-  -- Don't substitute n
-  top.substituted = templateTypeExprInstDecl(q, n, ts.substituted);
+  top.substituted = templateTypeExprInstDecl(q, n, ts.substituted); -- Don't substitute n
   
   local templateItem::Decorated TemplateItem = n.templateItem;
 

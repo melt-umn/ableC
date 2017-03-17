@@ -14,10 +14,12 @@ global builtin::Location = builtinLoc("templating");
 abstract production templateTypeDecl
 top::Decl ::= params::[Name] n::Name ty::TypeName
 {
-  -- TODO: Do we substitute the template parameters, or remove them from the substitutions? Right now
-  -- we are doing neither
-  propagate substituted;
   top.pp = pp"using ${n.pp}<${ppImplode(text(", "), map((.pp), params))}> = ${ty.pp};";
+  top.substituted =
+    templateTypeDecl(
+      map(\ n::Name -> decorate n with {substitutions = top.substitutions;}.substituted, params),
+      n.substituted,
+      ty.substituted);
   
   local localErrors::[Message] =
     if !top.isTopLevel
@@ -46,12 +48,15 @@ top::Decl ::= params::[Name] n::Name ty::TypeName
 abstract production templateStructDecl
 top::Decl ::= params::[Name] attrs::[Attribute] n::Name dcls::StructItemList
 {
-  -- TODO: Do we substitute the template parameters, or remove them from the substitutions? Right now
-  -- we are doing neither
-  propagate substituted;
   top.pp = concat([pp"template<", ppImplode(text(", "), map((.pp), params)), pp">", line(),
                    pp"struct ", ppAttributes(attrs), text(n.name), space(),
                    braces(nestlines(2, terminate(cat(semi(),line()), dcls.pps))), semi()]);
+  top.substituted =
+    templateStructDecl(
+      map(\ n::Name -> decorate n with {substitutions = top.substitutions;}.substituted, params),
+      map(\ a::Attribute -> decorate a with {substitutions = top.substitutions;}.substituted, attrs),
+      n.substituted,
+      dcls.substituted);
   
   local localErrors::[Message] =
     if !top.isTopLevel
@@ -93,10 +98,11 @@ top::Decl ::= params::[Name] attrs::[Attribute] n::Name dcls::StructItemList
 abstract production templateFunctionDecl
 top::Decl ::= params::[Name] d::FunctionDecl
 {
-  -- TODO: Do we substitute the template parameters, or remove them from the substitutions? Right now
-  -- we are doing neither
-  propagate substituted;
   top.pp = concat([pp"template<", ppImplode(text(", "), map((.pp), params)), pp">", line(), d.pp]);
+  top.substituted =
+    templateFunctionDecl(
+      map(\ n::Name -> decorate n with {substitutions = top.substitutions;}.substituted, params),
+      d.substituted);
   
   local localErrors::[Message] =
     case d of
@@ -106,14 +112,23 @@ top::Decl ::= params::[Name] d::FunctionDecl
         else n.templateRedeclarationCheck ++ duplicateParameterCheck(params, [])
       | badFunctionDecl(msg) -> msg
       end;
-      
+  
   local fwrd::Decl =
     case d of
-      functionDecl(_, _, _, _, n, _, _, _) -> 
+      functionDecl(storage, fnquals, bty, mty, n, attrs, ds, body) -> 
         defsDecl([
           templateDef(
             n.name,
-            templateItem(params, false, d.sourceLocation, functionDeclaration(d)))])
+            templateItem(
+              params,
+              false,
+              d.sourceLocation,
+              functionDeclaration(
+                functionDecl(
+                  if !containsBy(storageClassEq, staticStorageClass(), storage)
+                  then staticStorageClass() :: storage
+                  else storage,
+                  fnquals, bty, mty, n, attrs, ds, body))))])
     | badFunctionDecl(msg) -> decls(nilDecl())
     end;
   
@@ -135,5 +150,19 @@ function duplicateParameterCheck
         err(h.location, "Duplicate template parameter " ++ h.name) ::
           duplicateParameterCheck(t, seenNames)
       else duplicateParameterCheck(t, h.name :: seenNames)
+    end;
+}
+
+function storageClassEq
+Boolean ::= s1::StorageClass s2::StorageClass
+{
+  return
+    case s1, s2 of
+      externStorageClass(), externStorageClass() -> true
+    | staticStorageClass(), staticStorageClass() -> true
+    | autoStorageClass(), autoStorageClass() -> true
+    | registerStorageClass(), registerStorageClass() -> true
+    | threadLocalStorageClass(), threadLocalStorageClass() -> true
+    | _, _ -> false
     end;
 }
