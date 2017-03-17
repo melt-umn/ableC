@@ -27,4 +27,3 @@ Integration with the string extension is also provided to implement show for vec
 
 ### TODO items
 * Instead of allocating the contents pointer seperately, it could instead be set to point to itself so that the entire vector is stored in a single block of memory.  
-* Figure out a better way of doing templating to replace explicit ASTs of lifted functions
