@@ -43,7 +43,7 @@ top::Name ::= n::String
   top.tagHasForwardDcl = refIdIfOld.isJust;
   top.tagRefId = fromMaybe(toString(genInt()), refIdIfOld);
   
-  local labdcls :: [LabelItem] = lookupLabelInLocalScope(n, top.env);
+  local labdcls :: [LabelItem] = lookupLabel(n, top.env);
   top.labelRedeclarationCheck =
     case labdcls of
     | [] -> [err(top.location, "INTERNAL compiler error: expected to find label in function scope, was missing.")] -- TODO?
