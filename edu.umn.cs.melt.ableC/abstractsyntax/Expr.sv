@@ -423,7 +423,7 @@ top::Expr ::= body::Stmt result::Expr
   top.pp = concat([text("({"), nestlines(2, concat([body.pp, line(), result.pp, text("; })")]))]);
   top.errors := body.errors ++ result.errors;
   top.globalDecls := body.globalDecls ++ result.globalDecls;
-  top.defs := []; -- defs are *not* propagated up. This is beginning of a scope.
+  top.defs := globalDeclsDefs(body.globalDecls) ++ globalDeclsDefs(result.globalDecls); -- defs are *not* propagated up. This is beginning of a scope.
   top.freeVariables = body.freeVariables ++ removeDefsFromNames(body.defs, result.freeVariables);
   top.typerep = result.typerep;
   

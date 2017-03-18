@@ -321,7 +321,11 @@ top::FunctionDecl ::= storage::[StorageClass]  fnquals::[SpecialSpecifier]  bty:
   top.errors := bty.errors ++ mty.errors ++ body.errors;
   top.globalDecls := bty.globalDecls ++ mty.globalDecls ++ decls.globalDecls ++ 
                      body.globalDecls;
-  top.defs := funcDefs;
+  top.defs :=
+    funcDefs ++
+    globalDeclsDefs(mty.globalDecls) ++
+    globalDeclsDefs(decls.globalDecls) ++
+    globalDeclsDefs(body.globalDecls);
   top.freeVariables =
     bty.freeVariables ++
     removeDefsFromNames([thisFuncDef], mty.freeVariables) ++
