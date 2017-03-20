@@ -53,6 +53,9 @@ Templated definitions of types or values are placed in a new environment namespa
 instantiation is performed, the template item is looked up and the ableC substitution mechanism is
 used to construct the templated decl, with a mangled name based on the type arguments.  This is then
 lifted to the global scope via the ableC lifting mechanism.
+A templated decl is actually implemented as its own forwarding a production that does the duplicate
+check itself, so that other extensions that want to make use of a template instantiation within a type
+can lift templateTypeExprInstDecl and refer to the mangled struct name directly.  
 Note that this means that all instantation arguments must be defined globally; i.e. a typedef'ed type
 local to a function cannot be used as an argument in an instantiation.
 
