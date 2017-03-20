@@ -48,17 +48,6 @@ int x = max<int>(3, 4);
 Note that C++-style explicit instantiation and type inference is not supported, yet.  But this is
 both easy to implement for extension constructs which translate to template instantiations.  
 
-### Overloaded operators
-
-| Name                    | Example |
-| ----------------------- | ------- |
-| Append                  | v1 + v2 |
-| Update assign           | v1 += v2 |
-| Equality                | v1 == v2 |
-| Subscript               | v[i] |
-| Subscript assign        | v[i] = x |
-| Show operator           | show(x) |
-
 ## Implementation
 Templated definitions of types or values are placed in a new environment namespace.  When an
 instantiation is performed, the template item is looked up and the ableC substitution mechanism is
