@@ -19,46 +19,47 @@ String ::= t::Type
 }
 
 
+-- return true if a is a subtype of b; otherwise false
 function compatibleTypes
-Boolean ::= a::Type  b::Type  ignoreQualifiers::Boolean
+Boolean ::= a::Type  b::Type
 {
   return case a, b of
   -- Allow already raised errors to go by unbothered by more errors
   | errorType(), _ -> true
   | _, errorType() -> true
   -- Type specifiers
-  | builtinType(q1, b1), builtinType(q2, b2) -> builtinEq(b1, b2) && (ignoreQualifiers || qualifiersEq(q1, q2))
+  | builtinType(q1, b1), builtinType(q2, b2) -> builtinEq(b1, b2) && qualifiersSubtype(q1, q2)
   | tagType(q1, enumTagType(_)), tagType(q2, enumTagType(_)) -> true -- TODO: FIXME: enums should be handled the same as other tags
   | tagType(q1, refIdTagType(_, _, r1)), tagType(q2, refIdTagType(_, _, r2)) -> r1 == r2 -- :) TODO: qualifiers?
   -- Compound types
-  | atomicType(q1, t1), atomicType(q2, t2) -> compatibleTypes(t1, t2, ignoreQualifiers) && (ignoreQualifiers || qualifiersEq(q1, q2))
-  | pointerType(q1, p1), pointerType(q2, p2) -> compatibleTypes(p1, p2, ignoreQualifiers) && (ignoreQualifiers || qualifiersEq(q1, q2))
-  | arrayType(e1, q1, sm1, sub1), arrayType(e2, q2, sm2, sub2) -> compatibleTypes(e1, e2, ignoreQualifiers) && (ignoreQualifiers || qualifiersEq(q1, q2))
+  | atomicType(q1, t1), atomicType(q2, t2) -> compatibleTypes(t1, t2) && qualifiersSubtype(q1, q2)
+  | pointerType(q1, p1), pointerType(q2, p2) -> compatibleTypes(p1, p2) && qualifiersSubtype(q1, q2)
+  | arrayType(e1, q1, sm1, sub1), arrayType(e2, q2, sm2, sub2) -> compatibleTypes(e1, e2) && qualifiersSubtype(q1, q2)
       -- TODO: actually, should this include sub1/ sub2 at all? or those sm? maybe? probably. yeah, later, do that.
   | functionType(r1, noProtoFunctionType()),
     functionType(r2, noProtoFunctionType()) -> 
-      compatibleTypes(r1, r2, ignoreQualifiers)
+      compatibleTypes(r1, r2)
   | functionType(r1, protoFunctionType(a1, v1)),
     functionType(r2, protoFunctionType(a2, v2)) ->
-      compatibleTypes(r1, r2, ignoreQualifiers) &&
-        compatibleTypeList(a1, a2, ignoreQualifiers) &&
+      compatibleTypes(r1, r2) &&
+        compatibleTypeList(a1, a2) &&
         v1 == v2
   | functionType(r1, _), functionType(r2, _) -> 
-      compatibleTypes(r1, r2, ignoreQualifiers)
+      compatibleTypes(r1, r2)
   -- extensions
-  | vectorType(b1, s1), vectorType(b2, s2) -> s1 == s2 && compatibleTypes(b1, b2, ignoreQualifiers)
+  | vectorType(b1, s1), vectorType(b2, s2) -> s1 == s2 && compatibleTypes(b1, b2)
   -- otherwise
   | _, _ -> false
   end;
 }
 
 function compatibleTypeList
-Boolean ::= a::[Type]  b::[Type]  ignoreQualifiers::Boolean
+Boolean ::= a::[Type]  b::[Type]
 {
   return if null(a) && null(b) then true
   else if null(a) || null(b) then false -- different lengths
-  else compatibleTypes(head(a), head(b), ignoreQualifiers) &&
-         compatibleTypeList(tail(a), tail(b), ignoreQualifiers);
+  else compatibleTypes(head(a), head(b)) &&
+         compatibleTypeList(tail(a), tail(b));
 }
 
 function usualAdditiveConversionsOnTypes
@@ -75,7 +76,7 @@ Type ::= a::Type  b::Type
   | builtinType(_, _), pointerType(_, _) -> a
   -- extensions
   | vectorType(b1, s1), vectorType(b2, s2) ->
-      if compatibleTypes(b1, b2, false) && s1 == s2 then a else errorType() -- TODO: no idea
+      if compatibleTypes(b1, b2) && s1 == s2 then a else errorType() -- TODO: no idea
   | _, _ -> errorType()
   end;
 }
@@ -95,7 +96,7 @@ Type ::= a::Type  b::Type
   | pointerType(_, _), pointerType(_, _) -> builtinType([], signedType(intType()))
   -- extensions
   | vectorType(b1, s1), vectorType(b2, s2) ->
-      if compatibleTypes(b1, b2, false) && s1 == s2 then a else errorType() -- TODO: no idea
+      if compatibleTypes(b1, b2) && s1 == s2 then a else errorType() -- TODO: no idea
   | _, _ -> errorType()
   end;
 }
@@ -110,7 +111,7 @@ Type ::= a::Type  b::Type
       end
   -- extensions
   | vectorType(b1, s1), vectorType(b2, s2) ->
-      if compatibleTypes(b1, b2, false) && s1 == s2 then a else errorType() -- TODO: no idea
+      if compatibleTypes(b1, b2) && s1 == s2 then a else errorType() -- TODO: no idea
   | _, _ -> errorType()
   end;
 }
@@ -240,27 +241,47 @@ Boolean ::= a::IntegerType  b::IntegerType
   end;
 }
 
-function qualifiersEq
+function qualifiersSubtype
 Boolean ::= q1::[Qualifier]  q2::[Qualifier]
 {
-  return
-    qualifiersEqHelp(
-      sortBy(stringLte, map((.qualname), filter((.qualCheck), q1))),
-      sortBy(stringLte, map((.qualname), filter((.qualCheck), q2))));
+  local pq1 :: [String] = map((.qualname), filter((.qualIsPositive), q1));
+  local pq2 :: [String] = map((.qualname), filter((.qualIsPositive), q2));
+  local nq1 :: [String] = map((.qualname), filter((.qualIsNegative), q1));
+  local nq2 :: [String] = map((.qualname), filter((.qualIsNegative), q2));
+
+  return qualSubset(pq1, pq2) && qualSubset(nq1, nq2);
 }
 
--- this code is frankly horrible, but hey, something to improve in the future, I suppose.
-function qualifiersEqHelp
-Boolean ::= q1::[String]  q2::[String]
+function qualSubset
+Boolean ::= a::[String] b::[String]
 {
-  return case q1, q2 of
-  | "const" :: q1t, "const" :: q2t -> qualifiersEqHelp(q1t, q2t)
-  | "restrict" :: q1t, "restrict" :: q2t -> qualifiersEqHelp(q1t, q2t)
-  | "volatile" :: q1t, "volatile" :: q2t -> qualifiersEqHelp(q1t, q2t)
-  | [], [] -> true
-  | _, _ -> false
-  end;
+  return
+    if   null(a)
+    then true
+    else containsBy(stringEq, head(a), b) && qualSubset(tail(a), b);
 }
+
+--function qualifiersEq
+--Boolean ::= q1::[Qualifier]  q2::[Qualifier]
+--{
+--  return
+--    qualifiersEqHelp(
+--      sortBy(stringLte, map((.qualname), filter((.qualCheck), q1))),
+--      sortBy(stringLte, map((.qualname), filter((.qualCheck), q2))));
+--}
+
+-- this code is frankly horrible, but hey, something to improve in the future, I suppose.
+--function qualifiersEqHelp
+--Boolean ::= q1::[String]  q2::[String]
+--{
+--  return case q1, q2 of
+--  | "const" :: q1t, "const" :: q2t -> qualifiersEqHelp(q1t, q2t)
+--  | "restrict" :: q1t, "restrict" :: q2t -> qualifiersEqHelp(q1t, q2t)
+--  | "volatile" :: q1t, "volatile" :: q2t -> qualifiersEqHelp(q1t, q2t)
+--  | [], [] -> true
+--  | _, _ -> false
+--  end;
+--}
 
 
 {--
@@ -284,13 +305,13 @@ Boolean ::= lval::Type  rval::Type
     end ||
 -- the left operand has an atomic, qualified, or unqualified version of a structure or union type compatible with the type of the right;
     case lval.defaultFunctionArrayLvalueConversion of
-    | tagType(_, _) -> compatibleTypes(lval.defaultFunctionArrayLvalueConversion, rval.defaultFunctionArrayLvalueConversion, false)
+    | tagType(_, _) -> compatibleTypes(lval.defaultFunctionArrayLvalueConversion, rval.defaultFunctionArrayLvalueConversion)
 -- the left operand has atomic, qualified, or unqualified pointer type, and (considering the type the left operand would have after lvalue conversion) both operands are pointers to qualified or unqualified versions of compatible types, and the type pointed to by the left has all the qualifiers of the type pointed to by the right;
-    | pointerType(_, _) -> compatibleTypes(lval.defaultFunctionArrayLvalueConversion, rval.defaultFunctionArrayLvalueConversion, false) -- TODO: sounds like a subsetting relation here for qualifiers!
+    | pointerType(_, _) -> compatibleTypes(lval.defaultFunctionArrayLvalueConversion, rval.defaultFunctionArrayLvalueConversion) -- TODO: sounds like a subsetting relation here for qualifiers!
 -- the left operand is an atomic, qualified, or unqualified pointer, and the right is a null pointer constant; or
           || rval.defaultFunctionArrayLvalueConversion.isIntegerType -- TODO: well, accounting for zero here, I guess
 -- the left operand has atomic, qualified, or unqualified pointer type, and (considering the type the left operand would have after lvalue conversion) one operand is a pointer to an object type, and the other is a pointer to a qualified or unqualified version of void, and the type pointed to by the left has all the qualifiers of the type pointed to by the right;
-          || compatibleTypes(pointerType([], builtinType([], voidType())), rval.defaultFunctionArrayLvalueConversion, true)
+          || compatibleTypes(pointerType([], builtinType([], voidType())), rval.defaultFunctionArrayLvalueConversion)
     | pointerType(_, builtinType(_, voidType())) ->
         case rval.defaultFunctionArrayLvalueConversion of
         | pointerType(_, _) -> true
@@ -300,7 +321,7 @@ Boolean ::= lval::Type  rval::Type
     | vectorType(b1, s1) ->
         case rval of
         | vectorType(b2, s2) ->
-            compatibleTypes(b1, b2, false) && s1 == s2 -- TODO: no idea
+            compatibleTypes(b1, b2) && s1 == s2 -- TODO: no idea
         | _ -> false -- TODO also no idea
         end
 -- the left operand has type atomic, qualified, or unqualified _Bool, and the right is a pointer.

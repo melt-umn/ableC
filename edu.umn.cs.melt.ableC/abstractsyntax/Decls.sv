@@ -343,7 +343,7 @@ top::FunctionDecl ::= storage::[StorageClass]  fnquals::[SpecialSpecifier]  bty:
   
   top.errors <-
     if name.name == "main" && 
-      !compatibleTypes(bty.typerep, builtinType([], signedType(intType())), true)
+      !compatibleTypes(bty.typerep, builtinType([], signedType(intType())))
     then [wrn(name.location, "Main function should return 'int' not " ++ showType(bty.typerep))]
     else []; -- TODO: check the rest of the signature.
 }

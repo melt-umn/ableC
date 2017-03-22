@@ -1,10 +1,11 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax;
 
 {-- Type qualifiers (cv or cvr qualifiers) -}
-nonterminal Qualifier with pp, host<Qualifier>, lifted<Qualifier>, qualname, qualCheck;
+nonterminal Qualifier with pp, host<Qualifier>, lifted<Qualifier>, qualname, qualIsPositive, qualIsNegative;
 
 synthesized attribute qualname :: String;
-synthesized attribute qualCheck :: Boolean;
+synthesized attribute qualIsPositive :: Boolean;
+synthesized attribute qualIsNegative :: Boolean;
 
 abstract production constQualifier
 top::Qualifier ::=
@@ -12,7 +13,8 @@ top::Qualifier ::=
   propagate host, lifted;
   top.pp = text(top.qualname);
   top.qualname = "const";
-  top.qualCheck = true;
+  top.qualIsPositive = true;
+  top.qualIsNegative = false;
 }
 
 abstract production volatileQualifier
@@ -21,7 +23,8 @@ top::Qualifier ::=
   propagate host, lifted;
   top.pp = text(top.qualname);
   top.qualname = "volatile";
-  top.qualCheck = true;
+  top.qualIsPositive = true;
+  top.qualIsNegative = false;
 }
 
 abstract production restrictQualifier
@@ -30,7 +33,8 @@ top::Qualifier ::=
   propagate host, lifted;
   top.pp = text(top.qualname);
   top.qualname = "restrict";
-  top.qualCheck = false;
+  top.qualIsPositive = false;
+  top.qualIsNegative = false;
 }
 
 abstract production uuRestrictQualifier
@@ -39,7 +43,8 @@ top::Qualifier ::=
   propagate host, lifted;
   top.pp = text(top.qualname);
   top.qualname = "__restrict";
-  top.qualCheck = false;
+  top.qualIsPositive = false;
+  top.qualIsNegative = false;
 }
 
 {-- Specifiers that apply to specific types.
