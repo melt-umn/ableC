@@ -61,5 +61,8 @@ local to a function cannot be used as an argument in an instantiation.
 
 ## Future work
 * C++-style template parameter type inference would be nice.
-* Using a templated type to implement an extension parameteric type is currently a bit complicated,
-make this nicer somehow.  
+* Explicit global instantiations? Would be easy to implement, just need concrete syntx for
+templateExprInstDecl or templateTypeExprInstDecl.
+* Allow linking behavior of templated functions to be explicitly specified, if desired. Currently
+these are just static, to avoid redefinitions. Maybe allow an option to emit duplicates and use the
+C++ linker?
