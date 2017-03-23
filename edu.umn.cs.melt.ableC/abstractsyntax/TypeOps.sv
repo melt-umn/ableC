@@ -19,7 +19,7 @@ String ::= t::Type
 }
 
 
--- return true if a is a subtype of b; otherwise false
+-- return true if a is a supertype of b; otherwise false
 function compatibleTypes
 Boolean ::= a::Type  b::Type
 {
@@ -28,13 +28,13 @@ Boolean ::= a::Type  b::Type
   | errorType(), _ -> true
   | _, errorType() -> true
   -- Type specifiers
-  | builtinType(q1, b1), builtinType(q2, b2) -> builtinEq(b1, b2) && qualifiersSubtype(q1, q2)
+  | builtinType(q1, b1), builtinType(q2, b2) -> builtinEq(b1, b2) && qualifiersSubtype(q2, q1)
   | tagType(q1, enumTagType(_)), tagType(q2, enumTagType(_)) -> true -- TODO: FIXME: enums should be handled the same as other tags
   | tagType(q1, refIdTagType(_, _, r1)), tagType(q2, refIdTagType(_, _, r2)) -> r1 == r2 -- :) TODO: qualifiers?
   -- Compound types
-  | atomicType(q1, t1), atomicType(q2, t2) -> compatibleTypes(t1, t2) && qualifiersSubtype(q1, q2)
-  | pointerType(q1, p1), pointerType(q2, p2) -> compatibleTypes(p1, p2) && qualifiersSubtype(q1, q2)
-  | arrayType(e1, q1, sm1, sub1), arrayType(e2, q2, sm2, sub2) -> compatibleTypes(e1, e2) && qualifiersSubtype(q1, q2)
+  | atomicType(q1, t1), atomicType(q2, t2) -> compatibleTypes(t1, t2) && qualifiersSubtype(q2, q1)
+  | pointerType(q1, p1), pointerType(q2, p2) -> compatibleTypes(p1, p2) && qualifiersSubtype(q2, q1)
+  | arrayType(e1, q1, sm1, sub1), arrayType(e2, q2, sm2, sub2) -> compatibleTypes(e1, e2) && qualifiersSubtype(q2, q1)
       -- TODO: actually, should this include sub1/ sub2 at all? or those sm? maybe? probably. yeah, later, do that.
   | functionType(r1, noProtoFunctionType()),
     functionType(r2, noProtoFunctionType()) -> 
@@ -249,7 +249,7 @@ Boolean ::= q1::[Qualifier]  q2::[Qualifier]
   local nq1 :: [String] = map((.qualname), filter((.qualIsNegative), q1));
   local nq2 :: [String] = map((.qualname), filter((.qualIsNegative), q2));
 
-  return qualSubset(pq1, pq2) && qualSubset(nq1, nq2);
+  return qualSubset(pq1, pq2) && qualSubset(nq2, nq1);
 }
 
 function qualSubset
@@ -307,7 +307,7 @@ Boolean ::= lval::Type  rval::Type
     case lval.defaultFunctionArrayLvalueConversion of
     | tagType(_, _) -> compatibleTypes(lval.defaultFunctionArrayLvalueConversion, rval.defaultFunctionArrayLvalueConversion)
 -- the left operand has atomic, qualified, or unqualified pointer type, and (considering the type the left operand would have after lvalue conversion) both operands are pointers to qualified or unqualified versions of compatible types, and the type pointed to by the left has all the qualifiers of the type pointed to by the right;
-    | pointerType(_, _) -> compatibleTypes(lval.defaultFunctionArrayLvalueConversion, rval.defaultFunctionArrayLvalueConversion) -- TODO: sounds like a subsetting relation here for qualifiers!
+    | pointerType(_, _) -> compatibleTypes(lval, rval) -- TODO: sounds like a subsetting relation here for qualifiers!
 -- the left operand is an atomic, qualified, or unqualified pointer, and the right is a null pointer constant; or
           || rval.defaultFunctionArrayLvalueConversion.isIntegerType -- TODO: well, accounting for zero here, I guess
 -- the left operand has atomic, qualified, or unqualified pointer type, and (considering the type the left operand would have after lvalue conversion) one operand is a pointer to an object type, and the other is a pointer to a qualified or unqualified version of void, and the type pointed to by the left has all the qualifiers of the type pointed to by the right;
