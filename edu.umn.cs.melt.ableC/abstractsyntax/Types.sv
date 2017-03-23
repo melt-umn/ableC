@@ -24,7 +24,7 @@ synthesized attribute integerPromotions :: Type;
 synthesized attribute defaultArgumentPromotions :: Type;
 -- drop qualifiers
 synthesized attribute defaultLvalueConversion :: Type;
--- above PLUS conversion to pointers
+-- conversion to pointers
 synthesized attribute defaultFunctionArrayLvalueConversion :: Type;
 
 -- Strip top-level only of qualifiers from the type
@@ -91,7 +91,7 @@ top::Type ::= q::[Qualifier]  bt::BuiltinType
   top.integerPromotions = builtinType(q, bt.integerPromotionsBuiltin);
   top.defaultArgumentPromotions = builtinType(q, bt.defaultArgumentPromotionsBuiltin);
   top.defaultLvalueConversion = builtinType([], bt);
-  top.defaultFunctionArrayLvalueConversion = top.defaultLvalueConversion;
+  top.defaultFunctionArrayLvalueConversion = top;
   top.isIntegerType = bt.isIntegerType;
   top.isArithmeticType = bt.isArithmeticType;
   top.isScalarType = bt.isArithmeticType;
@@ -118,7 +118,7 @@ top::Type ::= q::[Qualifier]  target::Type
   top.integerPromotions = top;
   top.defaultArgumentPromotions = top;
   top.defaultLvalueConversion = pointerType([], target);
-  top.defaultFunctionArrayLvalueConversion = top.defaultLvalueConversion;
+  top.defaultFunctionArrayLvalueConversion = top;
   top.withoutTypeQualifiers = pointerType([], target);
   top.withTypeQualifiers = pointerType(top.addedTypeQualifiers ++ q, target);
   
@@ -183,9 +183,7 @@ top::Type ::= element::Type  indexQualifiers::[Qualifier]  sizeModifier::ArraySi
   top.defaultLvalueConversion = top;
   top.defaultFunctionArrayLvalueConversion = 
     noncanonicalType(decayedType(top,
-      -- possible bug: uncertain of this. discarding qualifiers because of lvalue conversion
-      -- but then when DO these qualifiers show up in the decayed type?
-      pointerType([], element)));
+      pointerType(indexQualifiers, element)));
 }
 
 {-- The subtypes of arrays -}
@@ -318,7 +316,7 @@ top::Type ::= q::[Qualifier]  sub::TagType
   top.integerPromotions = top;
   top.defaultArgumentPromotions = top;
   top.defaultLvalueConversion = tagType([], sub);
-  top.defaultFunctionArrayLvalueConversion = top.defaultLvalueConversion;
+  top.defaultFunctionArrayLvalueConversion = top;
   top.withoutTypeQualifiers = tagType([], sub);
   top.withTypeQualifiers = tagType(top.addedTypeQualifiers ++ q, sub);
   
@@ -389,7 +387,7 @@ top::Type ::= q::[Qualifier]  bt::Type
   top.defaultArgumentPromotions = top;
   -- discarding qualifiers in lvalue conversion discards atomic qualifier, too.
   top.defaultLvalueConversion = bt.defaultLvalueConversion;
-  top.defaultFunctionArrayLvalueConversion = top.defaultLvalueConversion;
+  top.defaultFunctionArrayLvalueConversion = top;
   top.withoutTypeQualifiers = atomicType([], bt);
   top.withTypeQualifiers = atomicType(top.addedTypeQualifiers ++ q, bt);
 }
