@@ -27,6 +27,12 @@ top::Qualifier ::=
   propagate substituted;
 }
 
+aspect production pluggableQualifier
+top::Qualifier ::=
+{
+  propagate substituted;
+}
+
 
 
 aspect production inlineQualifier

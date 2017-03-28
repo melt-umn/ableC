@@ -57,6 +57,17 @@ top::Qualifier ::=
   top.qualAppliesWithinRef = true;
 }
 
+abstract production pluggableQualifier
+top::Qualifier ::= n::String isPositive::Boolean appliesWithinRef::Boolean
+{
+  propagate host, lifted;
+  top.pp = text("");
+  top.qualname = n;
+  top.qualIsPositive = isPositive;
+  top.qualIsNegative = !isPositive;
+  top.qualAppliesWithinRef = appliesWithinRef;
+}
+
 {-- Specifiers that apply to specific types.
  - e.g. Function specifiers (inline, _Noreturn)
  -      Alignment specifiers (_Alignas)
