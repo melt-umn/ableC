@@ -403,7 +403,7 @@ top::GenericAssoc ::= ty::TypeName  fun::Expr
   top.defs := ty.defs ++ fun.defs;
   top.freeVariables = ty.freeVariables ++ fun.freeVariables;
   top.compatibleSelections =
-    if compatibleTypes(top.selectionType, ty.typerep) then [fun] else [];
+    if compatibleTypes(top.selectionType, ty.typerep, true, false) then [fun] else [];
 }
 
 -- GCC stmtExpr
