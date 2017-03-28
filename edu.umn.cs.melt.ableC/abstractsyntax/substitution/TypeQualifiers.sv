@@ -28,7 +28,7 @@ top::Qualifier ::=
 }
 
 aspect production pluggableQualifier
-top::Qualifier ::=
+top::Qualifier ::= n::String isPositive::Boolean appliesWithinRef::Boolean
 {
   propagate substituted;
 }
