@@ -109,7 +109,7 @@ top::Decl ::= q::[Qualifier] n::Name ts::TypeNames
       -- Set the refId so that two identical template instantiations maintain type equality
       refIdSubstitution(
         s"edu:umn:cs:melt:exts:ableC:templating:${n.name}",
-        s"edu:umn:cs:melt:exts:ableC:templating:${mangledName}") ::
+        templateMangledRefId(n.name, ts.typereps)) ::
         nameSubstitution(n.name, name(mangledName, location=builtin)) ::
           zipWith(typedefSubstitution, map((.name), templateItem.templateParams), ts.typereps),
       templateItem.decl);
@@ -135,4 +135,10 @@ function templateMangledName
 String ::= n::String params::[Type]
 {
   return s"_template_${n}_${implode("_", map((.mangledName), params))}";
+}
+
+function templateMangledRefId
+String ::= n::String params::[Type]
+{
+  return s"edu:umn:cs:melt:exts:ableC:templating:${templateMangledName(n, params)}";
 }

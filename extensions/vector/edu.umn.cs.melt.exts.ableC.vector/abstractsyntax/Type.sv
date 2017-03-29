@@ -87,8 +87,6 @@ top::Type ::= q::[Qualifier] sub::Type
       just(_) -> just(showVector(_, location=_))
     | nothing() -> nothing()
     end;
-    
-  local mangledName::String = templateMangledName("_vector_s", [sub]);
 
   forwards to
     injectGlobalDeclsType(
@@ -104,8 +102,8 @@ top::Type ::= q::[Qualifier] sub::Type
             [],
             refIdTagType(
               structSEU(),
-              mangledName,
-              s"edu:umn:cs:melt:exts:ableC:templating:${mangledName}"))));
+              templateMangledName("_vector_s", [sub]),
+              templateMangledRefId("_vector_s", [sub])))));
 }
 
 function mkVectorType
