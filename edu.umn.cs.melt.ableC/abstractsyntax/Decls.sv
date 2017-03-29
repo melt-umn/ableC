@@ -87,11 +87,11 @@ top::Decl ::= d::Decls
 abstract production defsDecl
 top::Decl ::= d::[Def]
 {
-  propagate host;
   top.pp = concat([pp"/* defsDecl", showEnv(addEnv(d, emptyEnv())), pp"*/"]);
-  -- This production goes away when lifting occurs. Seems like this should happen with host, but we
-  -- want to keep the invariant that host is simply propagated on all non-forwarding host
-  -- productions.  TODO, maybe?  
+  -- This production goes away when the transformation to host occurs, this is a special case in
+  -- host is not simply propagated, because Def is a closed 'collection' nonterminal with special
+  -- semantics
+  top.host = decls(nilDecl());
   top.lifted = decls(nilDecl());
   top.errors := [];
   top.globalDecls := [];
