@@ -46,8 +46,8 @@ struct __attribute__((refId("edu:umn:cs:melt:exts:ableC:closure:${structName}"))
   forwards to
     injectGlobalDeclsType(
       consDecl(
-        maybeDecl(
-          \ env::Decorated Env -> null(lookupTag(structName, env)),
+        maybeTagDecl(
+          structName,
           subDecl(
             [parametersSubstitution("__params__", argTypesToParameters(params)),
              typedefSubstitution("__res_type__", res)],

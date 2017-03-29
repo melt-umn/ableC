@@ -74,6 +74,29 @@ top::Decl ::= include::(Boolean ::= Decorated Env) decl::Decl
     else decls(nilDecl());
 }
 
+-- Helpers to construct maybeDecl that checks various namespaces
+abstract production maybeValueDecl
+top::Decl ::= name::String decl::Decl
+{
+  top.pp = cat(pp"maybeValue (${text(name)}", braces(decl.pp));
+  
+  forwards to maybeDecl(\ env::Decorated Env -> null(lookupValue(name, top.env)), decl);
+}
+abstract production maybeTagDecl
+top::Decl ::= name::String decl::Decl
+{
+  top.pp = cat(pp"maybeTag (${text(name)}", braces(decl.pp));
+  
+  forwards to maybeDecl(\ env::Decorated Env -> null(lookupTag(name, top.env)), decl);
+}
+abstract production maybeRefIdDecl
+top::Decl ::= name::String decl::Decl
+{
+  top.pp = cat(pp"maybeRefId (${text(name)}", braces(decl.pp));
+  
+  forwards to maybeDecl(\ env::Decorated Env -> null(lookupRefId(name, top.env)), decl);
+}
+
 -- Injection production for Expr
 abstract production injectGlobalDeclsExpr
 top::Expr ::= decls::Decls lifted::Expr
