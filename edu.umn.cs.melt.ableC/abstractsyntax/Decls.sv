@@ -252,7 +252,7 @@ top::Declarator ::= name::Name  ty::TypeModifierExpr  attrs::[Attribute]  initia
   top.errors :=
     case initializer of
       justInitializer(exprInitializer(e)) ->
-        if typeAssignableTo(e.typerep, top.typerep) then []
+        if typeAssignableTo(top.typerep, e.typerep) then []
         else [err(top.sourceLocation, s"Incompatible type in initialization, expected ${showType(top.typerep)} but found ${showType(e.typerep)}")]
     | _ -> []
     end ++ ty.errors ++ initializer.errors;

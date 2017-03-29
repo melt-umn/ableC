@@ -51,6 +51,8 @@ Boolean ::= a::Type  b::Type  allowSubtypes::Boolean  dropOuterQual::Boolean
   -- extensions
   | vectorType(b1, s1), vectorType(b2, s2) -> s1 == s2 && compatibleTypes(b1, b2, allowSubtypes, dropOuterQual)
   -- otherwise
+  | noncanonicalType(s1), _ -> compatibleTypes(s1.canonicalType, b, allowSubtypes, dropOuterQual)
+  | _, noncanonicalType(s2) -> compatibleTypes(a, s2.canonicalType, allowSubtypes, dropOuterQual)
   | _, _ -> false
   end;
 }
@@ -205,17 +207,19 @@ IntegerType ::= a::IntegerType  b::IntegerType
 function builtinEq
 Boolean ::= a::BuiltinType  b::BuiltinType
 {
-  return case a, b of
-  | voidType(), voidType() -> true
-  | boolType(), boolType() -> true
-  | realType(r1), realType(r2) -> realTypeEq(r1, r2)
-  | complexType(r1), complexType(r2) -> realTypeEq(r1, r2)
-  | imaginaryType(r1), imaginaryType(r2) -> realTypeEq(r1, r2)
-  | signedType(i1), signedType(i2) -> intTypeEq(i1, i2)
-  | unsignedType(i1), unsignedType(i2) -> intTypeEq(i1, i2)
-  | complexIntegerType(i1), complexIntegerType(i2) -> intTypeEq(i1, i2)
-  | _, _ -> false
-  end;
+  return
+    (a.isArithmeticType && b.isArithmeticType) ||
+    case a, b of
+    | voidType(), voidType() -> true
+    | boolType(), boolType() -> true
+    | realType(r1), realType(r2) -> realTypeEq(r1, r2)
+    | complexType(r1), complexType(r2) -> realTypeEq(r1, r2)
+    | imaginaryType(r1), imaginaryType(r2) -> realTypeEq(r1, r2)
+    | signedType(i1), signedType(i2) -> intTypeEq(i1, i2)
+    | unsignedType(i1), unsignedType(i2) -> intTypeEq(i1, i2)
+    | complexIntegerType(i1), complexIntegerType(i2) -> intTypeEq(i1, i2)
+    | _, _ -> false
+    end;
 }
 
 function realTypeEq
@@ -307,7 +311,17 @@ Boolean ::= lval::Type  rval::Type
     | tagType(_, _), _ -> compatibleTypes(lval.defaultFunctionArrayLvalueConversion, rval.defaultFunctionArrayLvalueConversion, true, true)
 -- the left operand has atomic, qualified, or unqualified pointer type, and (considering the type the left operand would have after lvalue conversion) both operands are pointers to qualified or unqualified versions of compatible types, and the type pointed to by the left has all the qualifiers of the type pointed to by the right;
     | pointerType(q1, p1), pointerType(q2, p2) ->
-        compatibleTypes(p1, p2, true, false) && compatibleQualifiers(q1, q2, true, true)
+        (compatibleTypes(p1, p2, true, false) ||
+          compatibleTypes(
+            pointerType([], builtinType([], voidType())),
+            rval.defaultFunctionArrayLvalueConversion,
+            true, true
+          ) ||
+          case p1 of
+          | builtinType(_, voidType()) -> true
+          | _ -> false
+          end
+        ) && compatibleQualifiers(q1, q2, true, true)
     | pointerType(q1, p1), _ ->
 -- the left operand is an atomic, qualified, or unqualified pointer, and the right is a null pointer constant; or
         -- TODO: well, accounting for zero here, I guess
