@@ -32,7 +32,7 @@ Boolean ::= a::Type  b::Type  allowSubtypes::Boolean  dropOuterQual::Boolean
   -- Type specifiers
   | builtinType(q1, b1), builtinType(q2, b2) -> builtinEq(b1, b2) && compatibleQualifiers(q1, q2, allowSubtypes, dropOuterQual)
   | tagType(q1, enumTagType(_)), tagType(q2, enumTagType(_)) -> true -- TODO: FIXME: enums should be handled the same as other tags
-  | tagType(q1, refIdTagType(_, _, r1)), tagType(q2, refIdTagType(_, _, r2)) -> r1 == r2 -- :) TODO: qualifiers?
+  | tagType(q1, refIdTagType(_, _, r1)), tagType(q2, refIdTagType(_, _, r2)) -> r1 == r2 && compatibleQualifiers(q1, q2, allowSubtypes, dropOuterQual)
   -- Compound types
   | atomicType(q1, t1), atomicType(q2, t2) -> compatibleTypes(t1, t2, allowSubtypes, dropOuterQual) && compatibleQualifiers(q1, q2, allowSubtypes, dropOuterQual)
   | pointerType(q1, p1), pointerType(q2, p2) -> compatibleTypes(p1, p2, false, false) && compatibleQualifiers(q1, q2, allowSubtypes, dropOuterQual)
