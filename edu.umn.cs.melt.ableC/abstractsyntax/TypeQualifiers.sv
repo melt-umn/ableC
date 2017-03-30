@@ -61,7 +61,7 @@ abstract production pluggableQualifier
 top::Qualifier ::= n::String isPositive::Boolean appliesWithinRef::Boolean
 {
   propagate host, lifted;
-  top.pp = text("");
+  top.pp = text(""); -- TODO: print qualifier name in error messages but not in generated code
   top.qualname = n;
   top.qualIsPositive = isPositive;
   top.qualIsNegative = !isPositive;
@@ -97,3 +97,26 @@ top::SpecialSpecifier ::= e::Expr
   top.pp = concat([text("_Alignas"), parens(e.pp)]);
 --  top.errors := e.errors;
 }
+
+function containsQualifier
+Boolean ::= n::String t::Type
+{
+  return containsBy(stringEq, n, map((.qualname), getQualifiers(t)));
+}
+
+function getQualifiers
+[Qualifier] ::= t::Type
+{
+  return
+    case t of
+    | errorType()           -> []
+    | builtinType(q, _)     -> q
+    | tagType(q, _)         -> q
+    | atomicType(q, _)      -> q
+    | pointerType(q, _)     -> q
+    | arrayType(_, q, _, _) -> q
+    | noncanonicalType(s)   -> getQualifiers(s.canonicalType)
+    | _ -> []
+    end;
+}
+
