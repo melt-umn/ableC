@@ -69,25 +69,21 @@ top::Decl ::= params::[Name] attrs::[Attribute] n::Name dcls::StructItemList
         n.name,
         templateItem(
           params, true, n.location,
-          typedefDecls(
-            [],
-            structTypeExpr(
-              [],
-              structDecl(
-                gccAttribute(
-                  consAttrib(
-                    appliedAttrib(
-                      attribName(name("refId", location=builtin)),
-                      consExpr(
-                        stringLiteral(s"\"edu:umn:cs:melt:exts:ableC:templating:${n.name}\"", location=builtin),
-                        nilExpr())),
-                    nilAttrib())) :: attrs,
-                justName(n),
-                dcls,
-                location=n.location)),
-            consDeclarator(
-              declarator(n, baseTypeExpr(), [], nothingInitializer()),
-              nilDeclarator()))))]);
+          decls(
+            foldDecl([
+              -- typedef struct __name__ __name__;
+              typedefDecls(
+                [],
+                tagReferenceTypeExpr([], structSEU(), n),
+                consDeclarator(
+                  declarator(n, baseTypeExpr(), [], nothingInitializer()),
+                  nilDeclarator())),
+              -- struct __name__ { ... };
+              typeExprDecl(
+                [],
+                structTypeExpr(
+                  [],
+                  structDecl(attrs, justName(n), dcls, location=n.location)))]))))]);
   
   forwards to
     if !null(localErrors)

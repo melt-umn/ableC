@@ -103,16 +103,16 @@ top::Decl ::= q::[Qualifier] n::Name ts::TypeNames
     else [];
   
   local mangledName::String = templateMangledName(n.name, ts.typereps);
+  local mangledRefId::String = templateMangledRefId(n.name, ts.typereps);
   
-  local fwrd::Decl =
-    subDecl(
-      -- Set the refId so that two identical template instantiations maintain type equality
-      refIdSubstitution(
-        s"edu:umn:cs:melt:exts:ableC:templating:${n.name}",
-        templateMangledRefId(n.name, ts.typereps)) ::
+  local fwrd::Decls =
+    foldDecl([
+      -- This is effectively the same as writting `struct __name__;`, but with a given refId 
+      defsDecl([tagDef(mangledName, refIdTagItem(structSEU(), mangledRefId))]),
+      subDecl(
         nameSubstitution(n.name, name(mangledName, location=builtin)) ::
           zipWith(typedefSubstitution, map((.name), templateItem.templateParams), ts.typereps),
-      templateItem.decl);
+        templateItem.decl)]);
   
   -- Tack on additional warning with info about the source of the errors if the instantiation has errors
   top.errors <-
@@ -127,8 +127,8 @@ top::Decl ::= q::[Qualifier] n::Name ts::TypeNames
     if !null(lookupValue(mangledName, top.env))
     then decls(nilDecl())
     else if !null(localErrors)
-    then decls(consDecl(warnDecl(localErrors), consDecl(fwrd, nilDecl())))
-    else fwrd;
+    then decls(consDecl(warnDecl(localErrors), fwrd))
+    else decls(fwrd);
 }
 
 function templateMangledName

@@ -69,7 +69,6 @@ C++ linker?
 
 ## TODO items before this is merged
 * Make injectGlobalDeclsType non-forwarding or get rid of it
-* Fix recursive instantiations with different types in struct templates
 * Use nested Message for reporting errors in recursive instantiations
 * Decide what to do about operator overloading
   * Fix now with attributes, or fix later?  
