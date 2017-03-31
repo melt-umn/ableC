@@ -57,7 +57,7 @@ top::Expr ::= sub::TypeName e::Exprs
       seqStmt(
         mkDecl(
           "_vec",
-          mkVectorType([], sub.typerep, top.env),
+          vectorType([], sub.typerep),
           newVector(sub, mkIntConst(e.count, builtin), location=builtin),
           builtin),
         e.vectorInitTrans),
@@ -96,12 +96,7 @@ top::Expr ::= e::Expr
   propagate substituted;
   top.pp = pp"copy_vector(${e.pp})";
   
-  local subType::Type = 
-    case e.typerep of
-      vectorType(_, s) -> s
-    | _ -> errorType()
-    end;
-
+  local subType::Type = vectorSubType(e.typerep, top.env);
   local fwrd::Expr =
     callExpr(
       templateDeclRefExpr(
@@ -120,17 +115,12 @@ top::Expr ::= e1::Expr e2::Expr
   propagate substituted;
   top.pp = pp"${e1.pp} + ${e2.pp}";
   
-  local subType::Type = 
-    case e1.typerep of
-      vectorType(_, s) -> s
-    | _ -> errorType()
-    end;
-    
+  local subType::Type = vectorSubType(e1.typerep, top.env);
   local vecTempName::String = "_vec_" ++ toString(genInt());
   
   forwards to 
     stmtExpr(
-      mkDecl(vecTempName, mkVectorType([], subType, top.env), copyVector(e1, location=builtin), builtin),
+      mkDecl(vecTempName, vectorType([], subType), copyVector(e1, location=builtin), builtin),
       appendAssignVector(
         declRefExpr(name(vecTempName, location=builtin), location=builtin),
         e2,
@@ -144,11 +134,7 @@ top::Expr ::= e1::Expr e2::Expr
   propagate substituted;
   top.pp = pp"${e1.pp} += ${e2.pp}";
   
-  local subType::Type = 
-    case e1.typerep of
-      vectorType(_, s) -> s
-    | _ -> errorType()
-    end;
+  local subType::Type = vectorSubType(e1.typerep, top.env);
 
   forwards to
     callExpr(
@@ -166,12 +152,7 @@ top::Expr ::= e1::Expr e2::Expr
   propagate substituted;
   top.pp = pp"${e1.pp} == ${e2.pp}";
   
-  local subType::Type = 
-    case e1.typerep of
-      vectorType(_, s) -> s
-    | _ -> errorType()
-    end;
-  
+  local subType::Type = vectorSubType(e1.typerep, top.env);
   local funName::String = "_eq_vector_" ++ subType.mangledName;
   
   forwards to
@@ -190,12 +171,7 @@ top::Expr ::= e::Expr
   propagate substituted;
   top.pp = pp"${e.pp}.length";
   
-  local subType::Type = 
-    case e.typerep of
-      vectorType(_, s) -> s
-    | _ -> errorType()
-    end;
-    
+  local subType::Type = vectorSubType(e.typerep, top.env);
   local fwrd::Expr =
     memberExpr(
       memberExpr(e, true, name("_info", location=builtin), location=builtin),
@@ -211,13 +187,8 @@ top::Expr ::= e::Expr
 {
   propagate substituted;
   top.pp = pp"${e.pp}.capacity";
-  
-  local subType::Type = 
-    case e.typerep of
-      vectorType(_, s) -> s
-    | _ -> errorType()
-    end;
-    
+
+  local subType::Type = vectorSubType(e.typerep, top.env);
   local fwrd::Expr =
     memberExpr(
       memberExpr(e, true, name("_info", location=builtin), location=builtin),
@@ -234,12 +205,7 @@ top::Expr ::= e::Expr
   propagate substituted;
   top.pp = pp"${e.pp}.elem_size";
   
-  local subType::Type = 
-    case e.typerep of
-      vectorType(_, s) -> s
-    | _ -> errorType()
-    end;
-    
+  local subType::Type = vectorSubType(e.typerep, top.env);
   local fwrd::Expr =
     memberExpr(
       memberExpr(e, true, name("_info", location=builtin), location=builtin),
@@ -256,12 +222,7 @@ top::Expr ::= e1::Expr e2::Expr
   propagate substituted;
   top.pp = pp"${e1.pp}[${e2.pp}]";
   
-  local subType::Type = 
-    case e1.typerep of
-      vectorType(_, s) -> s
-    | _ -> errorType()
-    end;
-  
+  local subType::Type = vectorSubType(e1.typerep, top.env);
   local vecTempName::String = "_vec_" ++ toString(genInt());
   local indexTempName::String = "_index_" ++ toString(genInt());
 
@@ -300,12 +261,7 @@ top::Expr ::= lhs::Expr index::Expr op::AssignOp rhs::Expr
   propagate substituted;
   top.pp = pp"${lhs.pp}[${index.pp}] ${op.pp} ${rhs.pp}";
   
-  local subType::Type = 
-    case lhs.typerep of
-      vectorType(_, s) -> s
-    | _ -> errorType()
-    end;
-    
+  local subType::Type = vectorSubType(lhs.typerep, top.env);
   local vecTempName::String = "_vec_" ++ toString(genInt());
   local indexTempName::String = "_index_" ++ toString(genInt());
 
@@ -349,11 +305,7 @@ top::Expr ::= e::Expr
   propagate substituted;
   top.pp = pp"show(${e.pp})";
   
-  local subType::Type = 
-    case e.typerep of
-      vectorType(_, s) -> s
-    | _ -> errorType()
-    end;
+  local subType::Type = vectorSubType(e.typerep, top.env);
   
   forwards to
     callExpr(

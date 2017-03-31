@@ -106,12 +106,24 @@ top::Type ::= q::[Qualifier] sub::Type
               templateMangledRefId("_vector_s", [sub])))));
 }
 
-function mkVectorType
-Type ::= q::[Qualifier] sub::Type env::Decorated Env
+-- Find the sub-type of a vector type in a non-interfering way
+function vectorSubType
+Type ::= t::Type env::Decorated Env
 {
-  local result::BaseTypeExpr = vectorTypeExpr(q, typeName(directTypeExpr(sub), baseTypeExpr()));
-  result.env = env;
-  result.returnType = nothing();
-  
-  return result.typerep;
+  local refId::String =
+    case t of
+      pointerType(_, tagType(_, refIdTagType(_, _, refId))) -> refId
+    | _ -> ""
+    end;
+  local refIds::[RefIdItem] = lookupRefId(refId, env);
+  local valueItems::[ValueItem] = lookupValue("_contents", head(refIds).tagEnv);
+  local ptrType::Type = head(valueItems).typerep;
+
+  return
+    case refIds, valueItems, ptrType of
+      [], _, _ -> errorType()
+    | _, [], _ -> errorType()
+    | _, _, pointerType(_, sub) -> sub
+    | _, _, _ -> errorType()
+    end;
 }
