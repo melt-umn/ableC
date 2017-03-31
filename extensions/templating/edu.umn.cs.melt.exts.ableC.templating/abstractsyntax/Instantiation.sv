@@ -65,12 +65,14 @@ top::Decl ::= n::Name ts::TypeNames
       templateItem.decl);
   
   -- Tack on additional warning with info about the source of the errors if the instantiation has errors
-  top.errors <-
-    if null(localErrors) && !null(forward.errors)
+  -- Could do via localErrors by decorating fwrd, but that results in exponential performance hit
+  top.errors :=
+    if !null(forward.errors)
     then
-      [wrn(
-         n.templateItem.sourceLocation,
-         s"In instantiation ${n.name}<${show(80, ppImplode(pp", ", ts.pps))}> at ${n.location.unparse}")]
+      [nested(
+         n.location,
+         s"In instantiation ${n.name}<${show(80, ppImplode(pp", ", ts.pps))}>",
+         forward.errors)]
     else [];
 
   forwards to
@@ -115,12 +117,14 @@ top::Decl ::= q::[Qualifier] n::Name ts::TypeNames
         templateItem.decl)]);
   
   -- Tack on additional warning with info about the source of the errors if the instantiation has errors
-  top.errors <-
-    if null(localErrors) && !null(forward.errors)
+  -- Could do via localErrors by decorating fwrd, but that results in exponential performance hit
+  top.errors :=
+    if !null(forward.errors)
     then
-      [wrn(
-         n.templateItem.sourceLocation,
-         s"In instantiation ${n.name}<${show(80, ppImplode(pp", ", ts.pps))}> at ${n.location.unparse}")]
+      [nested(
+         n.location,
+         s"In instantiation ${n.name}<${show(80, ppImplode(pp", ", ts.pps))}>",
+         forward.errors)]
     else [];
 
   forwards to
