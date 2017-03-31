@@ -81,7 +81,12 @@ top::UnaryOp ::=
     | pointerType(_, innerty) -> innerty
     | _ -> errorType()
     end;
-  top.errors := [];
+  top.errors :=
+    case top.op.typerep of
+    | pointerType(_, _) -> []
+    | _ -> [err(top.location, "invalid type argument of unary ‘*’ (have ‘" ++
+                               showType(top.op.typerep) ++ "’")]
+    end;
 }
 abstract production positiveOp
 top::UnaryOp ::=
