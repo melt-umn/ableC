@@ -66,3 +66,10 @@ templateExprInstDecl or templateTypeExprInstDecl.
 * Allow linking behavior of templated functions to be explicitly specified, if desired. Currently
 these are just static, to avoid redefinitions. Maybe allow an option to emit duplicates and use the
 C++ linker?
+
+## TODO items before this is merged
+* Make injectGlobalDeclsType non-forwarding or get rid of it
+* Fix recursive instantiations with different types in struct templates
+* Use nested Message for reporting errors in recursive instantiations
+* Decide what to do about operator overloading
+  * Fix now with attributes, or fix later?  
