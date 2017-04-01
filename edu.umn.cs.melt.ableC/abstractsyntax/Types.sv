@@ -9,7 +9,7 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax;
  - Variants: builtin, pointer, array, function, tagged, noncanonical.
  - Noncanonical forwards, and so doesn't need any attributes, etc attached to it.
  -}
-nonterminal Type with lpp, rpp, host<Type>, baseTypeExpr, typeModifierExpr, mangledName, integerPromotions, defaultArgumentPromotions, defaultLvalueConversion, defaultFunctionArrayLvalueConversion, isIntegerType, isScalarType, isArithmeticType, withoutTypeQualifiers, withTypeQualifiers, addedTypeQualifiers;
+nonterminal Type with lpp, rpp, host<Type>, baseTypeExpr, typeModifierExpr, mangledName, integerPromotions, defaultArgumentPromotions, defaultLvalueConversion, defaultFunctionArrayLvalueConversion, isIntegerType, isScalarType, isArithmeticType, withTypeQualifiers, addedTypeQualifiers;
 
 -- Used to turn a Type back into a TypeName
 synthesized attribute baseTypeExpr :: BaseTypeExpr;
@@ -27,9 +27,6 @@ synthesized attribute defaultLvalueConversion :: Type;
 -- conversion to pointers
 synthesized attribute defaultFunctionArrayLvalueConversion :: Type;
 
--- Strip top-level only of qualifiers from the type
-synthesized attribute withoutTypeQualifiers :: Type;
-
 -- Used in addQualifiers to add qualifiers to a type
 synthesized attribute withTypeQualifiers :: Type;
 inherited attribute addedTypeQualifiers :: [Qualifier];
@@ -37,7 +34,6 @@ inherited attribute addedTypeQualifiers :: [Qualifier];
 aspect default production
 top::Type ::=
 {
-  top.withoutTypeQualifiers = top;
   top.withTypeQualifiers = top;
   
   top.isIntegerType = false;
@@ -63,7 +59,6 @@ top::Type ::=
   top.defaultArgumentPromotions = top;
   top.defaultLvalueConversion = top;
   top.defaultFunctionArrayLvalueConversion = top;
-  top.withoutTypeQualifiers = top;
 
   -- The semantics for all flags is that they should be TRUE is no error is to be
   -- raised. Thus, all should be true here, to suppress errors.
@@ -95,7 +90,6 @@ top::Type ::= q::[Qualifier]  bt::BuiltinType
   top.isIntegerType = bt.isIntegerType;
   top.isArithmeticType = bt.isArithmeticType;
   top.isScalarType = bt.isArithmeticType;
-  top.withoutTypeQualifiers = builtinType([], bt);
   top.withTypeQualifiers = builtinType(top.addedTypeQualifiers ++ q, bt);
 }
 
@@ -119,7 +113,6 @@ top::Type ::= q::[Qualifier]  target::Type
   top.defaultArgumentPromotions = top;
   top.defaultLvalueConversion = pointerType([], target);
   top.defaultFunctionArrayLvalueConversion = top;
-  top.withoutTypeQualifiers = pointerType([], target);
   top.withTypeQualifiers = pointerType(top.addedTypeQualifiers ++ q, target);
   
   top.isScalarType = true;
@@ -317,7 +310,6 @@ top::Type ::= q::[Qualifier]  sub::TagType
   top.defaultArgumentPromotions = top;
   top.defaultLvalueConversion = tagType([], sub);
   top.defaultFunctionArrayLvalueConversion = top;
-  top.withoutTypeQualifiers = tagType([], sub);
   top.withTypeQualifiers = tagType(top.addedTypeQualifiers ++ q, sub);
   
   top.isIntegerType = sub.isIntegerType;
@@ -388,7 +380,6 @@ top::Type ::= q::[Qualifier]  bt::Type
   -- discarding qualifiers in lvalue conversion discards atomic qualifier, too.
   top.defaultLvalueConversion = bt.defaultLvalueConversion;
   top.defaultFunctionArrayLvalueConversion = top;
-  top.withoutTypeQualifiers = atomicType([], bt);
   top.withTypeQualifiers = atomicType(top.addedTypeQualifiers ++ q, bt);
 }
 
@@ -410,7 +401,6 @@ top::Type ::= bt::Type  bytes::Integer
   top.defaultArgumentPromotions = top;
   top.defaultLvalueConversion = top;
   top.defaultFunctionArrayLvalueConversion = top;
-  top.withoutTypeQualifiers = top;
   -- TODO: dunno? left here explicitly since... dunno what to do here.
   top.isIntegerType = false;
   top.isScalarType = false;
@@ -435,7 +425,6 @@ top::Type ::= sub::NoncanonicalType
   --top.defaultArgumentPromotions = ;
   --top.defaultLvalueConversion = ;
   --top.defaultFunctionArrayLvalueConversion = ;
-  --top.withoutTypeQualifiers = ;
   
   forwards to sub.canonicalType;
 }
