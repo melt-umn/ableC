@@ -11,7 +11,6 @@ aspect default production
 top::UnaryOp ::=
 {
   top.errors := []; -- TODO REMOVE
-  top.collectedTypeQualifiers := [];
   top.opName =
     case top.pp of
       text(opName) -> opName
@@ -27,7 +26,9 @@ top::UnaryOp ::=
   top.pp = text("++");
   top.preExpr = true;
   top.noLvalueConversion = false;
-  top.typerep = top.op.typerep.defaultLvalueConversion.integerPromotions;
+  top.typerep = addQualifiers(top.collectedTypeQualifiers,
+                              top.op.typerep.defaultLvalueConversion.integerPromotions);
+  top.collectedTypeQualifiers := [];
 }
 abstract production preDecOp
 top::UnaryOp ::= 
@@ -37,7 +38,9 @@ top::UnaryOp ::=
   top.pp = text("--");
   top.preExpr = true;
   top.noLvalueConversion = true;
-  top.typerep = top.op.typerep.integerPromotions;
+  top.typerep = addQualifiers(top.collectedTypeQualifiers,
+                              top.op.typerep.integerPromotions);
+  top.collectedTypeQualifiers := [];
 }
 abstract production postIncOp
 top::UnaryOp ::= 
@@ -47,7 +50,9 @@ top::UnaryOp ::=
   top.pp = text("++");
   top.preExpr = false;
   top.noLvalueConversion = true;
-  top.typerep = top.op.typerep.integerPromotions;
+  top.typerep = addQualifiers(top.collectedTypeQualifiers,
+                              top.op.typerep.integerPromotions);
+  top.collectedTypeQualifiers := [];
 }
 abstract production postDecOp
 top::UnaryOp ::= 
@@ -57,7 +62,9 @@ top::UnaryOp ::=
   top.pp = text("--");
   top.preExpr = false;
   top.noLvalueConversion = true;
-  top.typerep = top.op.typerep.integerPromotions;
+  top.typerep = addQualifiers(top.collectedTypeQualifiers,
+                              top.op.typerep.integerPromotions);
+  top.collectedTypeQualifiers := [];
 }
 abstract production addressOfOp
 top::UnaryOp ::=
@@ -78,7 +85,7 @@ top::UnaryOp ::=
   top.noLvalueConversion = false;
   top.typerep = 
     case top.op.typerep of
-    | pointerType(_, innerty) -> innerty
+    | pointerType(_, innerty) -> addQualifiers(top.collectedTypeQualifiers, innerty)
     | _ -> errorType()
     end;
   top.errors :=
@@ -87,6 +94,7 @@ top::UnaryOp ::=
     | _ -> [err(top.location, "invalid type argument of unary ‘*’ (have ‘" ++
                                showType(top.op.typerep) ++ "’")]
     end;
+  top.collectedTypeQualifiers := [];
 }
 abstract production positiveOp
 top::UnaryOp ::=
@@ -95,7 +103,9 @@ top::UnaryOp ::=
   top.pp = text("+");
   top.preExpr = true;
   top.noLvalueConversion = false;
-  top.typerep = top.op.typerep.defaultLvalueConversion.integerPromotions;
+  top.typerep = addQualifiers(top.collectedTypeQualifiers,
+                              top.op.typerep.defaultLvalueConversion.integerPromotions);
+  top.collectedTypeQualifiers := [];
 }
 abstract production negativeOp
 top::UnaryOp ::=
@@ -104,7 +114,9 @@ top::UnaryOp ::=
   top.pp = text("-");
   top.preExpr = true;
   top.noLvalueConversion = false;
-  top.typerep = top.op.typerep.defaultLvalueConversion.integerPromotions;
+  top.typerep = addQualifiers(top.collectedTypeQualifiers,
+                              top.op.typerep.defaultLvalueConversion.integerPromotions);
+  top.collectedTypeQualifiers := [];
 }
 abstract production bitNegateOp
 top::UnaryOp ::=
@@ -113,7 +125,9 @@ top::UnaryOp ::=
   top.pp = text("~");
   top.preExpr = true;
   top.noLvalueConversion = false;
-  top.typerep = top.op.typerep.defaultLvalueConversion.integerPromotions;
+  top.typerep = addQualifiers(top.collectedTypeQualifiers,
+                              top.op.typerep.defaultLvalueConversion.integerPromotions);
+  top.collectedTypeQualifiers := [];
 }
 abstract production notOp
 top::UnaryOp ::=
@@ -122,7 +136,9 @@ top::UnaryOp ::=
   top.pp = text("!");
   top.preExpr = true;
   top.noLvalueConversion = false;
-  top.typerep = top.op.typerep.defaultLvalueConversion.integerPromotions;
+  top.typerep = addQualifiers(top.collectedTypeQualifiers,
+                              top.op.typerep.defaultLvalueConversion.integerPromotions);
+  top.collectedTypeQualifiers := [];
 }
 
 abstract production warnNoOp
@@ -132,7 +148,9 @@ top::UnaryOp ::= msg::[Message]
   top.pp = text("");
   top.preExpr = true;
   top.noLvalueConversion = false;
-  top.typerep = top.op.typerep.defaultLvalueConversion.integerPromotions;
+  top.typerep = addQualifiers(top.collectedTypeQualifiers,
+                              top.op.typerep.defaultLvalueConversion.integerPromotions);
+  top.collectedTypeQualifiers := [];
 }
 
 -- GCC extension
@@ -143,7 +161,9 @@ top::UnaryOp ::=
   top.pp = text("__real__");
   top.preExpr = true;
   top.noLvalueConversion = false;
-  top.typerep = top.op.typerep.defaultLvalueConversion.integerPromotions;
+  top.typerep = addQualifiers(top.collectedTypeQualifiers,
+                              top.op.typerep.defaultLvalueConversion.integerPromotions);
+  top.collectedTypeQualifiers := [];
 }
 -- GCC extension
 abstract production imagOp
@@ -153,7 +173,9 @@ top::UnaryOp ::=
   top.pp = text("__imag__");
   top.preExpr = true;
   top.noLvalueConversion = false;
-  top.typerep = top.op.typerep.defaultLvalueConversion.integerPromotions;
+  top.typerep = addQualifiers(top.collectedTypeQualifiers,
+                              top.op.typerep.defaultLvalueConversion.integerPromotions);
+  top.collectedTypeQualifiers := [];
 }
 
 autocopy attribute typeop :: Type;
