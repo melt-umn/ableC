@@ -37,9 +37,9 @@ top::Type ::= q::[Qualifier] params::[Type] res::Type
   local structName::String = s"_closure_${implode("_", map((.mangledName), params))}_${res.mangledName}_s";
   local closureStructDecl::Decl = parseDecl(s"""
 struct __attribute__((refId("edu:umn:cs:melt:exts:ableC:closure:${structName}"))) ${structName} {
-  const char *fn_name; // For debugging
-  void *env; // Pointer to generated struct containing env
-  __res_type__ (*fn)(void *env, __params__); // First param is above env struct pointer
+  const char *_fn_name; // For debugging
+  void *_env; // Pointer to generated struct containing env
+  __res_type__ (*_fn)(void *env, __params__); // First param is above env struct pointer
 };
 """);
   
@@ -59,4 +59,60 @@ struct __attribute__((refId("edu:umn:cs:melt:exts:ableC:closure:${structName}"))
           structSEU(),
           structName,
           s"edu:umn:cs:melt:exts:ableC:closure:${structName}")));
+}
+
+-- Check if a type is a closure in a non-interfering way
+function isClosureType
+Boolean ::= t::Type
+{
+  return
+    case t of
+      tagType(_, refIdTagType(_, _, refId)) ->
+        startsWith("edu:umn:cs:melt:exts:ableC:closure:", refId)
+    | _ -> false
+    end;
+}
+
+-- Find the parameter types of a closure type in a non-interfering way
+function closureParamTypes
+[Type] ::= t::Type env::Decorated Env
+{
+  local refId::String =
+    case t of
+      tagType(_, refIdTagType(_, _, refId)) -> refId
+    | _ -> ""
+    end;
+  local refIds::[RefIdItem] = lookupRefId(refId, env);
+  local valueItems::[ValueItem] = lookupValue("_fn", head(refIds).tagEnv);
+  local fnPtrType::Type = head(valueItems).typerep;
+
+  return
+    case refIds, valueItems, fnPtrType of
+      [], _, _ -> []
+    | _, [], _ -> []
+    | _, _, pointerType(_, functionType(_, protoFunctionType(params, _))) -> tail(params)
+    | _, _, _ -> []
+    end;
+}
+
+-- Find the result type of a vector type in a non-interfering way
+function closureResultType
+Type ::= t::Type env::Decorated Env
+{
+  local refId::String =
+    case t of
+      tagType(_, refIdTagType(_, _, refId)) -> refId
+    | _ -> ""
+    end;
+  local refIds::[RefIdItem] = lookupRefId(refId, env);
+  local valueItems::[ValueItem] = lookupValue("_fn", head(refIds).tagEnv);
+  local fnPtrType::Type = head(valueItems).typerep;
+
+  return
+    case refIds, valueItems, fnPtrType of
+      [], _, _ -> errorType()
+    | _, [], _ -> errorType()
+    | _, _, pointerType(_, functionType(res, _)) -> res
+    | _, _, _ -> errorType()
+    end;
 }

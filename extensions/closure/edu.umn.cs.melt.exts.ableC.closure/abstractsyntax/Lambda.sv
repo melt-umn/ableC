@@ -81,9 +81,9 @@ static __res_type__ ${funName}(void *_env_ptr, __params__) {
   *_env_ptr = _env;
   
   __closure_type__ _result;
-  _result.fn_name = "${funName}";
-  _result.env = (void*)_env_ptr;
-  _result.fn = ${funName};
+  _result._fn_name = "${funName}";
+  _result._env = (void*)_env_ptr;
+  _result._fn = ${funName};
   _result;})
 """));
   

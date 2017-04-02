@@ -3,7 +3,7 @@ grammar edu:umn:cs:melt:exts:ableC:closure:abstractsyntax;
 global applyExprFwrd::Expr = parseExpr(s"""
 ({proto_typedef __closure_type__;
   __closure_type__ _temp_closure = __fn__;
-  _temp_closure.fn(_temp_closure.env, __args__);})""");
+  _temp_closure._fn(_temp_closure._env, __args__);})""");
 
 abstract production applyExpr
 top::Expr ::= fn::Expr args::Exprs
@@ -13,27 +13,17 @@ top::Expr ::= fn::Expr args::Exprs
   top.pp = parens(concat([fn.pp, parens(ppImplode(cat(comma(), space()), args.pps))]));
   
   local localErrors :: [Message] =
-    case fn.typerep of
-      closureType(_, _, _) -> args.argumentErrors
-    | errorType() -> []
-    | _ -> [err(fn.location, s"Cannot apply non-closure (got ${showType(fn.typerep)})")]
-    end ++
+    (if isClosureType(fn.typerep)
+     then args.argumentErrors
+     else [err(fn.location, s"Cannot apply non-closure (got ${showType(fn.typerep)})")]) ++
     fn.errors ++ args.errors;
   
-  top.typerep =
-    case fn.typerep of
-      closureType(_, param, res) -> res
-    | _ -> errorType()
-    end;
+  top.typerep = closureResultType(fn.typerep, top.env);
   
   args.argumentPosition = 1;
   args.callExpr = fn;
   args.callVariadic = false;
-  args.expectedTypes = 
-    case fn.typerep of
-      closureType(_, params, _) -> params
-    | _ -> error("expectedTypes demanded by args when call expression has non-closure type")
-    end;
+  args.expectedTypes = closureParamTypes(fn.typerep, top.env);
   
   local fwrd::Expr =
     subExpr(
