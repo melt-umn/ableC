@@ -54,6 +54,12 @@ top::Decl ::= n::Name ts::TypeNames
             n.location,
             s"Wrong number of template parameters for ${n.name}, " ++
             s"expected ${toString(length(templateItem.templateParams))} but got ${toString(ts.count)}")]
+    else if !null(fwrd.errors)
+    then
+      [nested(
+         n.location,
+         s"In instantiation ${n.name}<${show(80, ppImplode(pp", ", ts.pps))}>",
+         fwrd.errors)]
     else [];
   
   local mangledName::String = templateMangledName(n.name, ts.typereps);
@@ -63,17 +69,9 @@ top::Decl ::= n::Name ts::TypeNames
       nameSubstitution(n.name, name(mangledName, location=builtin)) ::
         zipWith(typedefSubstitution, map((.name), templateItem.templateParams), ts.typereps),
       templateItem.decl);
-  
-  -- Tack on additional warning with info about the source of the errors if the instantiation has errors
-  -- Could do via localErrors by decorating fwrd, but that results in exponential performance hit
-  top.errors :=
-    if !null(forward.errors)
-    then
-      [nested(
-         n.location,
-         s"In instantiation ${n.name}<${show(80, ppImplode(pp", ", ts.pps))}>",
-         forward.errors)]
-    else [];
+  fwrd.isTopLevel = true;
+  fwrd.env = top.env;
+  fwrd.returnType = nothing();
 
   forwards to
     if !null(lookupValue(mangledName, top.env))
@@ -102,6 +100,12 @@ top::Decl ::= q::[Qualifier] n::Name ts::TypeNames
             n.location,
             s"Wrong number of template parameters for ${n.name}, " ++
             s"expected ${toString(length(templateItem.templateParams))} but got ${toString(ts.count)}")]
+    else if !null(fwrd.errors)
+    then
+      [nested(
+         n.location,
+         s"In instantiation ${n.name}<${show(80, ppImplode(pp", ", ts.pps))}>",
+         fwrd.errors)]
     else [];
   
   local mangledName::String = templateMangledName(n.name, ts.typereps);
@@ -115,17 +119,9 @@ top::Decl ::= q::[Qualifier] n::Name ts::TypeNames
         nameSubstitution(n.name, name(mangledName, location=builtin)) ::
           zipWith(typedefSubstitution, map((.name), templateItem.templateParams), ts.typereps),
         templateItem.decl)]);
-  
-  -- Tack on additional warning with info about the source of the errors if the instantiation has errors
-  -- Could do via localErrors by decorating fwrd, but that results in exponential performance hit
-  top.errors :=
-    if !null(forward.errors)
-    then
-      [nested(
-         n.location,
-         s"In instantiation ${n.name}<${show(80, ppImplode(pp", ", ts.pps))}>",
-         forward.errors)]
-    else [];
+  fwrd.isTopLevel = true;
+  fwrd.env = top.env;
+  fwrd.returnType = nothing();
 
   forwards to
     if !null(lookupValue(mangledName, top.env))
