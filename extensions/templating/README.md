@@ -68,6 +68,5 @@ these are just static, to avoid redefinitions. Maybe allow an option to emit dup
 C++ linker?
 
 ## TODO items before this is merged
-* Make injectGlobalDeclsType non-forwarding or get rid of it
 * Decide what to do about operator overloading
   * Fix now with attributes, or fix later?  

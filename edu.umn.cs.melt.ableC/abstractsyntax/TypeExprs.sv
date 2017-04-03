@@ -25,6 +25,11 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax;
  - 
  - Invariant: a BaseTypeExpr and its corresponding TypeModifierExpr should have
  - the same environment
+ -
+ - Since BaseTypeExpr may contain new declarations, another invariant is that
+ - extension productions containing a BaseTypeExpr must forward to a tree
+ - containing that BaseTypeExpr exactly once.  However, they are free to use
+ - directTypeExpr(ty.typerep) as many times as needed.    
  -}
 
 autocopy attribute baseType :: Type;

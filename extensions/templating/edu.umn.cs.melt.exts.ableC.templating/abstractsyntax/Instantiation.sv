@@ -67,7 +67,7 @@ top::Decl ::= n::Name ts::TypeNames
   local fwrd::Decl =
     subDecl(
       nameSubstitution(n.name, name(mangledName, location=builtin)) ::
-        zipWith(typedefSubstitution, map((.name), templateItem.templateParams), ts.typereps),
+        zipWith(typedefSubstitution, map((.name), templateItem.templateParams), unfoldBaseTypeExpr(ts)),
       templateItem.decl);
   fwrd.isTopLevel = true;
   fwrd.env = top.env;
@@ -117,7 +117,7 @@ top::Decl ::= q::[Qualifier] n::Name ts::TypeNames
       defsDecl([tagDef(mangledName, refIdTagItem(structSEU(), mangledRefId))]),
       subDecl(
         nameSubstitution(n.name, name(mangledName, location=builtin)) ::
-          zipWith(typedefSubstitution, map((.name), templateItem.templateParams), ts.typereps),
+          zipWith(typedefSubstitution, map((.name), templateItem.templateParams), unfoldBaseTypeExpr(ts)),
         templateItem.decl)]);
   fwrd.isTopLevel = true;
   fwrd.env = top.env;
@@ -141,4 +141,14 @@ function templateMangledRefId
 String ::= n::String params::[Type]
 {
   return s"edu:umn:cs:melt:exts:ableC:templating:${templateMangledName(n, params)}";
+}
+
+function unfoldBaseTypeExpr
+[BaseTypeExpr] ::= ts::TypeNames
+{
+  return
+    case ts of
+      nilTypeName() -> []
+    | consTypeName(h, t) -> typeModifierTypeExpr(h.bty, h.mty) :: unfoldBaseTypeExpr(t)
+    end;
 }

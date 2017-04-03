@@ -18,11 +18,6 @@ top::BaseTypeExpr ::= msg::[Message]  ty::BaseTypeExpr
 {
   propagate substituted;
 }
-aspect production directTypeExpr
-top::BaseTypeExpr ::= result::Type
-{
-  propagate substituted;
-}
 aspect production typeModifierTypeExpr
 top::BaseTypeExpr ::= bty::BaseTypeExpr  mty::TypeModifierExpr
 {
@@ -60,7 +55,7 @@ top::BaseTypeExpr ::= q::[Qualifier]  name::Name
   substitutions.nameIn = name.name;
   top.substituted =
     case substitutions.typedefSub of
-      just(sub) -> directTypeExpr(sub)
+      just(sub) -> sub
     | nothing() -> typedefTypeExpr(q, name.substituted)
     end;
 }

@@ -23,9 +23,3 @@ top::BaseTypeExpr ::= decls::Decls lifted::BaseTypeExpr
 {
   propagate substituted;
 }
-
-aspect production injectGlobalDeclsType
-top::Type ::= decls::Decls lifted::Type
-{
-  propagate substituted;
-}

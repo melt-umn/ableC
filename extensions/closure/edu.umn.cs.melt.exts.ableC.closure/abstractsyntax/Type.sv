@@ -12,7 +12,10 @@ top::BaseTypeExpr ::= q::[Qualifier] params::Parameters res::TypeName
   forwards to 
     if !null(params.errors) || !null(res.errors)
     then errorTypeExpr(params.errors ++ res.errors)
-    else directTypeExpr(closureType(q, params.typereps, res.typerep));
+    else
+      injectGlobalDeclsTypeExpr(
+        consDecl(mkClosureTypeDecl(params, res), nilDecl()),
+        directTypeExpr(closureType(q, params.typereps, res.typerep)));
 }
 
 abstract production closureType
@@ -34,7 +37,21 @@ top::Type ::= q::[Qualifier] params::[Type] res::Type
   
   top.callProd = just(applyExpr(_, _, location=_));
   
-  local structName::String = s"_closure_${implode("_", map((.mangledName), params))}_${res.mangledName}_s";
+  local structName::String = closureStructName(params, res);
+  
+  forwards to
+    tagType(
+      q,
+      refIdTagType(
+        structSEU(),
+        structName,
+        s"edu:umn:cs:melt:exts:ableC:closure:${structName}"));
+}
+
+function mkClosureTypeDecl
+Decl ::= params::Parameters res::TypeName
+{
+  local structName::String = closureStructName(params.typereps, res.typerep);
   local closureStructDecl::Decl = parseDecl(s"""
 struct __attribute__((refId("edu:umn:cs:melt:exts:ableC:closure:${structName}"))) ${structName} {
   const char *_fn_name; // For debugging
@@ -42,23 +59,20 @@ struct __attribute__((refId("edu:umn:cs:melt:exts:ableC:closure:${structName}"))
   __res_type__ (*_fn)(void *env, __params__); // First param is above env struct pointer
 };
 """);
-  
-  forwards to
-    injectGlobalDeclsType(
-      consDecl(
-        maybeTagDecl(
-          structName,
-          subDecl(
-            [parametersSubstitution("__params__", argTypesToParameters(params)),
-             typedefSubstitution("__res_type__", res)],
-            closureStructDecl)),
-        nilDecl()),
-      tagType(
-        q,
-        refIdTagType(
-          structSEU(),
-          structName,
-          s"edu:umn:cs:melt:exts:ableC:closure:${structName}")));
+
+  return
+    maybeTagDecl(
+      structName,
+      subDecl(
+        [parametersSubstitution("__params__", params),
+         typedefSubstitution("__res_type__", typeModifierTypeExpr(res.bty, res.mty))],
+        closureStructDecl));
+}
+
+function closureStructName
+String ::= params::[Type] res::Type
+{
+  return s"_closure_${implode("_", map((.mangledName), params))}_${res.mangledName}_s";
 }
 
 -- Check if a type is a closure in a non-interfering way

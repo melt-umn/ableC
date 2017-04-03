@@ -35,7 +35,7 @@ synthesized attribute substituted<a>::a;
 
 autocopy attribute nameIn::String;
 synthesized attribute nameSub::Maybe<Name>;
-synthesized attribute typedefSub::Maybe<Type>;
+synthesized attribute typedefSub::Maybe<BaseTypeExpr>;
 synthesized attribute declRefSub::Maybe<Expr>;
 
 -- 'Indirect' substitutions that substitute something other than a production directly wrapping a name
@@ -93,7 +93,7 @@ top::Substitution ::= name::String sub::Name
 
 -- Substitutes a typedef name for a type
 abstract production typedefSubstitution
-top::Substitution ::= name::String sub::Type
+top::Substitution ::= name::String sub::BaseTypeExpr
 {
   top.typedefSub = if top.nameIn == name then just(sub) else nothing();
 }

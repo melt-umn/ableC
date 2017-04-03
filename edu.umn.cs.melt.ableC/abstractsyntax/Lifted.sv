@@ -44,14 +44,6 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax;
  - lifted tree, then there is a bug in the host where something that 
  - 
  - TODO:
- - injectGlobalDeclsType currently forwards to get the correct type-checking
- - behavior, when it really shouldn't since it is a part of the host.  It
- - shouldn't be a NoncanonicalType, since we aren't OK with it getting
- - transformed away.  This could potentially be fixed by adding a
- - transformation for a type to a base type that is used for structural
- - equivalence, stripping injection productions and noncanonical types.  Or
- - maybe there is a better solution.  
- - 
  - It would be nice to move all of this to its own grammar, but aspecting
  - everything for lifted and globalDecls would be kind of a pain
  -}
@@ -156,7 +148,7 @@ top::BaseTypeExpr ::= decls::Decls lifted::BaseTypeExpr
   propagate host;
   top.pp = pp"injectGlobalDeclsTypeExpr {${ppImplode(line(), decls.pps)}} (${lifted.pp})";
   top.errors := decls.errors ++ lifted.errors;
-  top.typerep = injectGlobalDeclsType(decls, lifted.typerep);
+  top.typerep = lifted.typerep;
   
   -- Insert defs from decls at the global scope
   top.defs := globalDefsDef(decls.defs) :: lifted.defs;
@@ -174,32 +166,6 @@ top::BaseTypeExpr ::= decls::Decls lifted::BaseTypeExpr
   decls.returnType = nothing();
 
   lifted.env = addEnv([globalDefsDef(decls.defs)], top.env);
-}
-
-{--
- - Lifting mechanism for types
- - Since we don't have access to the environment, and Type doesn't occur in the host tree, this just gets
- - turned into injectGlobalDeclsTypeExpr in the host tree
- -}
-abstract production injectGlobalDeclsType
-top::Type ::= decls::Decls lifted::Type
-{
-  top.host = injectGlobalDeclsType(decls, lifted.host); -- Can't actually compute host on decls here, TODO...
-  top.lpp = pp"injectGlobalDeclsType {${ppImplode(pp"\n", decls.pps)}} (${lifted.lpp}${lifted.rpp})";
-  top.rpp = lifted.rpp;
-  top.baseTypeExpr = injectGlobalDeclsTypeExpr(decls, lifted.baseTypeExpr);
-  top.typeModifierExpr = lifted.typeModifierExpr;
-  
-  top.integerPromotions = injectGlobalDeclsType(decls, lifted.integerPromotions);
-  top.defaultArgumentPromotions = injectGlobalDeclsType(decls, lifted.defaultArgumentPromotions);
-  top.defaultLvalueConversion = injectGlobalDeclsType(decls, lifted.defaultLvalueConversion);
-  top.defaultFunctionArrayLvalueConversion = injectGlobalDeclsType(decls, lifted.defaultFunctionArrayLvalueConversion);
-  top.withoutTypeQualifiers = injectGlobalDeclsType(decls, lifted.withoutTypeQualifiers);
-  top.withTypeQualifiers = injectGlobalDeclsType(decls, lifted.withTypeQualifiers);
-  lifted.addedTypeQualifiers = top.addedTypeQualifiers;
-  
-  -- TODO: This really shouldn't be forwarding, hack for now so that pattern matching is the same
-  forwards to lifted;
 }
 
 {--
@@ -226,7 +192,6 @@ function unfoldDecoratedDecl
     case decl of
       nilDecl() -> []
     | consDecl(d,ds) -> d :: unfoldDecoratedDecl(ds)
-    | _ -> error ("Incorrect application of unfoldDecl.")
     end;
 }
 

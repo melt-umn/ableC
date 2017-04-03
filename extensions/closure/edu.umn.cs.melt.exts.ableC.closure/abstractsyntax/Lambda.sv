@@ -52,7 +52,7 @@ top::Expr ::= captured::CaptureList params::Parameters res::Expr
   
   local funDcl::Decl =
     subDecl(
-      [typedefSubstitution("__res_type__", res.typerep),
+      [typedefSubstitution("__res_type__", directTypeExpr(res.typerep)),
        parametersSubstitution("__params__", params),
        stmtSubstitution("__env_copy__", captured.envCopyOutTrans),
        declRefSubstitution("__result__", res)],
@@ -70,7 +70,7 @@ static __res_type__ ${funName}(void *_env_ptr, __params__) {
 
   local fwrd::Expr =
     subExpr(
-      [typedefSubstitution("__closure_type__", closureType([], params.typereps, res.typerep)),
+      [typedefSubstitution("__closure_type__", directTypeExpr(closureType([], params.typereps, res.typerep))),
        stmtSubstitution("__env_copy__", captured.envCopyInTrans)],
       parseExpr(s"""
 ({proto_typedef __closure_type__;

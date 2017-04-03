@@ -14,7 +14,25 @@ top::BaseTypeExpr ::= q::[Qualifier] sub::TypeName
   forwards to
     if !null(localErrors)
     then errorTypeExpr(localErrors)
-    else directTypeExpr(vectorType(q, sub.typerep));
+    else
+      injectGlobalDeclsTypeExpr(
+        foldDecl([
+          -- sub should be included literally in the forward tree exactly once
+          -- Generate a phony typedef to avoid gcc warnings
+          typedefDecls(
+            [], sub.bty,
+            consDeclarator(
+              declarator(
+                name(s"_vector_sub_unused_${toString(genInt())}", location=builtin),
+                sub.mty,
+                [],
+                nothingInitializer()),
+              nilDeclarator())),
+          templateTypeExprInstDecl(
+            q,
+            name("_vector_s", location=builtin),
+            consTypeName(sub, nilTypeName()))]),
+        directTypeExpr(vectorType(q, sub.typerep)));
 }
 
 abstract production vectorType
@@ -89,21 +107,14 @@ top::Type ::= q::[Qualifier] sub::Type
     end;
 
   forwards to
-    injectGlobalDeclsType(
-      consDecl(
-        templateTypeExprInstDecl(
-          q,
-          name("_vector_s", location=builtin),
-          consTypeName(typeName(directTypeExpr(sub), baseTypeExpr()), nilTypeName())),
-        nilDecl()),
-        pointerType(
-          q,
-          tagType(
-            [],
-            refIdTagType(
-              structSEU(),
-              templateMangledName("_vector_s", [sub]),
-              templateMangledRefId("_vector_s", [sub])))));
+    pointerType(
+      q,
+      tagType(
+        [],
+        refIdTagType(
+          structSEU(),
+          templateMangledName("_vector_s", [sub]),
+          templateMangledRefId("_vector_s", [sub]))));
 }
 
 -- Find the sub-type of a vector type in a non-interfering way

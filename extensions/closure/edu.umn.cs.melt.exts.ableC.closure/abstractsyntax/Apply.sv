@@ -27,7 +27,7 @@ top::Expr ::= fn::Expr args::Exprs
   
   local fwrd::Expr =
     subExpr(
-      [typedefSubstitution("__closure_type__", fn.typerep),
+      [typedefSubstitution("__closure_type__", directTypeExpr(fn.typerep)),
        declRefSubstitution("__fn__", fn),
        exprsSubstitution("__args__", args)],
       applyExprFwrd);
