@@ -64,11 +64,16 @@ top::Decl ::= n::Name ts::TypeNames
   
   local mangledName::String = templateMangledName(n.name, ts.typereps);
   
-  local fwrd::Decl =
-    subDecl(
-      nameSubstitution(n.name, name(mangledName, location=builtin)) ::
-        zipWith(typedefSubstitution, map((.name), templateItem.templateParams), unfoldBaseTypeExpr(ts)),
-      templateItem.decl);
+  local fwrd::Decls =
+    foldDecl([
+      decls(ts.unusedTypedefTrans),
+      subDecl(
+        nameSubstitution(n.name, name(mangledName, location=builtin)) ::
+          zipWith(
+            typedefSubstitution,
+            map((.name), templateItem.templateParams),
+            map(directTypeExpr, ts.typereps)),
+        templateItem.decl)]);
   fwrd.isTopLevel = true;
   fwrd.env = top.env;
   fwrd.returnType = nothing();
@@ -77,8 +82,8 @@ top::Decl ::= n::Name ts::TypeNames
     if !null(lookupValue(mangledName, top.env))
     then decls(nilDecl())
     else if !null(localErrors)
-    then decls(consDecl(warnDecl(localErrors), consDecl(fwrd, nilDecl())))
-    else fwrd;
+    then decls(consDecl(warnDecl(localErrors), fwrd))
+    else decls(fwrd);
 }
 
 abstract production templateTypeExprInstDecl
@@ -115,9 +120,13 @@ top::Decl ::= q::[Qualifier] n::Name ts::TypeNames
     foldDecl([
       -- This is effectively the same as writting `struct __name__;`, but with a given refId 
       defsDecl([tagDef(mangledName, refIdTagItem(structSEU(), mangledRefId))]),
+      decls(ts.unusedTypedefTrans),
       subDecl(
         nameSubstitution(n.name, name(mangledName, location=builtin)) ::
-          zipWith(typedefSubstitution, map((.name), templateItem.templateParams), unfoldBaseTypeExpr(ts)),
+          zipWith(
+            typedefSubstitution,
+            map((.name), templateItem.templateParams),
+            map(directTypeExpr, ts.typereps)),
         templateItem.decl)]);
   fwrd.isTopLevel = true;
   fwrd.env = top.env;
@@ -131,6 +140,33 @@ top::Decl ::= q::[Qualifier] n::Name ts::TypeNames
     else decls(fwrd);
 }
 
+-- type parameters should be included literally in the forward tree exactly once
+-- Generate phony typedefs instead of typeExprDecls to avoid gcc warnings
+synthesized attribute unusedTypedefTrans::Decls occurs on TypeNames;
+
+aspect production consTypeName
+top::TypeNames ::= h::TypeName t::TypeNames
+{
+  top.unusedTypedefTrans =
+    consDecl(
+      typedefDecls(
+        [], h.bty,
+        consDeclarator(
+          declarator(
+            name(s"_template_param_unused_${toString(genInt())}", location=builtin),
+            h.mty,
+            [],
+            nothingInitializer()),
+          nilDeclarator())),
+      t.unusedTypedefTrans);
+}
+
+aspect production nilTypeName
+top::TypeNames ::=
+{
+  top.unusedTypedefTrans = nilDecl();
+}
+
 function templateMangledName
 String ::= n::String params::[Type]
 {
@@ -141,14 +177,4 @@ function templateMangledRefId
 String ::= n::String params::[Type]
 {
   return s"edu:umn:cs:melt:exts:ableC:templating:${templateMangledName(n, params)}";
-}
-
-function unfoldBaseTypeExpr
-[BaseTypeExpr] ::= ts::TypeNames
-{
-  return
-    case ts of
-      nilTypeName() -> []
-    | consTypeName(h, t) -> typeModifierTypeExpr(h.bty, h.mty) :: unfoldBaseTypeExpr(t)
-    end;
 }

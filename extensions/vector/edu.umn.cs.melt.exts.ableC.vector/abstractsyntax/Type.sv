@@ -17,17 +17,6 @@ top::BaseTypeExpr ::= q::[Qualifier] sub::TypeName
     else
       injectGlobalDeclsTypeExpr(
         foldDecl([
-          -- sub should be included literally in the forward tree exactly once
-          -- Generate a phony typedef to avoid gcc warnings
-          typedefDecls(
-            [], sub.bty,
-            consDeclarator(
-              declarator(
-                name(s"_vector_sub_unused_${toString(genInt())}", location=builtin),
-                sub.mty,
-                [],
-                nothingInitializer()),
-              nilDeclarator())),
           templateTypeExprInstDecl(
             q,
             name("_vector_s", location=builtin),
