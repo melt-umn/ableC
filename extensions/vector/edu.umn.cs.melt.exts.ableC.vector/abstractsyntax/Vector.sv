@@ -47,11 +47,14 @@ top::Expr ::= sub::TypeName e::Exprs
   top.pp = pp"vec<${sub.pp}> [${ppImplode(pp", ", e.pps)}]";
   
   local localErrors::[Message] =
-    sub.errors ++ checkVectorHeaderDef("_new_vector", top.location, top.env);
+    sub.errors ++ e.vectorInitErrors ++
+    checkVectorHeaderDef("_new_vector", top.location, top.env);
   
   sub.env = globalEnv(top.env);
   
   e.argumentPosition = 0;
+  e.vectorInitType = sub.typerep;
+  
   local fwrd::Expr =
     stmtExpr(
       seqStmt(
@@ -67,11 +70,18 @@ top::Expr ::= sub::TypeName e::Exprs
   forwards to mkErrorCheck(localErrors, fwrd);
 }
 
+autocopy attribute vectorInitType::Type occurs on Exprs;
+
+synthesized attribute vectorInitErrors::[Message] occurs on Exprs;
 synthesized attribute vectorInitTrans::Stmt occurs on Exprs;
 
 aspect production consExpr
 top::Exprs ::= h::Expr t::Exprs
 {
+  top.vectorInitErrors =
+    (if !typeAssignableTo(h.typerep, top.vectorInitType)
+     then [err(h.location, s"Invalid type to vector initializer: Expected ${showType(top.vectorInitType)}, got ${showType(h.typerep)}")]
+     else []) ++ t.vectorInitErrors;
   top.vectorInitTrans =
     seqStmt(
       exprStmt(
@@ -87,6 +97,7 @@ top::Exprs ::= h::Expr t::Exprs
 aspect production nilExpr
 top::Exprs ::= 
 {
+  top.vectorInitErrors = [];
   top.vectorInitTrans = nullStmt();
 }
 
