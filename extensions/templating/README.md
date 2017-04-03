@@ -61,7 +61,8 @@ local to a function cannot be used as an argument in an instantiation.
 
 ## Future work
 * C++-style template parameter type inference would be nice.
-* Explicit global instantiations? Would be easy to implement, just need concrete syntx for
+* Mutually recursive templated structs, potentially with or without a forward declaration
+* Explicit global instantiations? Would be easy to implement, just need concrete syntax for
 templateExprInstDecl or templateTypeExprInstDecl.
 * Allow linking behavior of templated functions to be explicitly specified, if desired. Currently
 these are just static, to avoid redefinitions. Maybe allow an option to emit duplicates and use the
