@@ -21,7 +21,7 @@ top::Type ::= q::[Qualifier] params::[Type] res::Type
   propagate substituted;
   
   top.lpp = pp"${terminate(space(), map((.pp), q))}closure<(${
-    if null(params)then pp"void" else
+    if null(params) then pp"void" else
       ppImplode(
         pp", ",
         zipWith(cat,

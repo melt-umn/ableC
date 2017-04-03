@@ -44,6 +44,22 @@ top::Expr ::= e::Expr
   forwards to mkErrorCheck(localErrors, fwrd);
 }
 
+abstract production showCharPointer
+top::Expr ::= e::Expr
+{
+  propagate substituted;
+  top.pp = pp"show(${e.pp})";
+  
+  local localErrors::[Message] =
+    checkStringHeaderDef("showCharPointer", top.location, top.env);
+  local fwrd::Expr =
+    directCallExpr(
+      name("showCharPointer", location=builtin),
+      consExpr(e, nilExpr()),
+      location=builtin);
+  forwards to mkErrorCheck(localErrors, fwrd);
+}
+
 abstract production showChar
 top::Expr ::= e::Expr
 {
@@ -133,12 +149,23 @@ top::Expr ::= e::Expr
   propagate substituted;
   top.pp = pp"str(${e.pp})";
   
-  forwards to
-    -- Cast for if a char* is passed in and needs to be converted to overloaded stringType()
-    explicitCastExpr(
-      typeName(directTypeExpr(stringType()), baseTypeExpr()),
-      e,
+  forwards to e;
+}
+
+abstract production strCharPointer
+top::Expr ::= e::Expr
+{
+  propagate substituted;
+  top.pp = pp"str(${e.pp})";
+  
+  local localErrors::[Message] =
+    checkStringHeaderDef("strCharPointer", top.location, top.env);
+  local fwrd::Expr =
+    directCallExpr(
+      name("strCharPointer", location=builtin),
+      consExpr(e, nilExpr()),
       location=builtin);
+  forwards to mkErrorCheck(localErrors, fwrd);
 }
 
 abstract production strChar
@@ -320,22 +347,6 @@ top::Expr ::= e1::Expr a::Exprs
     directCallExpr(
       name("_substring", location=builtin),
       consExpr(e1, a),
-      location=builtin);
-  forwards to mkErrorCheck(localErrors, fwrd);
-}
-
-abstract production lengthString
-top::Expr ::= e1::Expr
-{
-  propagate substituted;
-  top.pp = pp"${e1.pp}.length";
-  
-  local localErrors::[Message] =
-    checkStringHeaderDef("strlen", top.location, top.env);
-  local fwrd::Expr =
-    directCallExpr(
-      name("strlen", location=builtin),
-      consExpr(e1, nilExpr()),
       location=builtin);
   forwards to mkErrorCheck(localErrors, fwrd);
 }

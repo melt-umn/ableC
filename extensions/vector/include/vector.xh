@@ -108,7 +108,7 @@ static bool _eq_vector(vector<a> vec1, vector<a> vec2) {
 template<a>
 static string _show_vector(vector<a> vec) {
   if (vec.length == 0)
-    return "[]";
+    return str("[]");
     
   string result = "[" + show(vec[0]);
   
