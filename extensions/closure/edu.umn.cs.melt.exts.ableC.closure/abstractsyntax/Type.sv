@@ -35,8 +35,6 @@ top::Type ::= q::[Qualifier] params::[Type] res::Type
   top.withoutTypeQualifiers = closureType([], params, res);
   top.withTypeQualifiers = closureType(top.addedTypeQualifiers ++ q, params, res);
   
-  top.callProd = just(applyExpr(_, _, location=_));
-  
   local structName::String = closureStructName(params, res);
   
   forwards to

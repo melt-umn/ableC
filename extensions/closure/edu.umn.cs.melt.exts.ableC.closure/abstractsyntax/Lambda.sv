@@ -8,7 +8,7 @@ imports edu:umn:cs:melt:ableC:abstractsyntax:construction;
 imports edu:umn:cs:melt:ableC:abstractsyntax:construction:parsing;
 imports edu:umn:cs:melt:ableC:abstractsyntax:substitution;
 imports edu:umn:cs:melt:ableC:abstractsyntax:env;
-imports edu:umn:cs:melt:ableC:abstractsyntax:overload;
+imports edu:umn:cs:melt:ableC:abstractsyntax:overload as ovrld;
 --imports edu:umn:cs:melt:ableC:abstractsyntax:debug;
 
 import silver:util:raw:treemap as tm;

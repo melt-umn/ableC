@@ -16,6 +16,59 @@ imports edu:umn:cs:melt:exts:ableC:string;
 
 global builtin::Location = builtinLoc("vector");
 
+aspect production addOp
+top::NumOp ::=
+{
+  overloads <-
+    [pair(
+       pair(
+         "edu:umn:cs:melt:exts:ableC:vector:vector",
+         "edu:umn:cs:melt:exts:ableC:vector:vector"),
+       appendVector(_, _, location=_))];
+}
+
+aspect production addEqOp
+top::AssignOp ::=
+{
+  overloads <-
+    [pair(
+       pair(
+         "edu:umn:cs:melt:exts:ableC:vector:vector",
+         "edu:umn:cs:melt:exts:ableC:vector:vector"),
+       appendAssignVector(_, _, location=_))];
+}
+
+aspect production equalsOp
+top::CompareOp ::=
+{
+  overloads <-
+    [pair(
+       pair(
+         "edu:umn:cs:melt:exts:ableC:vector:vector",
+         "edu:umn:cs:melt:exts:ableC:vector:vector"),
+       eqVector(_, _, location=_))];
+}
+
+aspect production ovrld:memberExpr
+top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
+{
+  overloads <-
+    [pair("edu:umn:cs:melt:exts:ableC:vector:vector", memberVector(_, _, _, location=_))];
+}
+
+aspect production ovrld:callExpr
+top::Expr ::= f::Expr  a::Exprs
+{
+  memberOverloads <-
+    [pair("edu:umn:cs:melt:exts:ableC:vector:vector", memberCallVector(_, _, _, _, location=_))];
+}
+
+aspect production showExpr
+top::Expr ::= e::Expr
+{
+  overloads <- [pair("edu:umn:cs:melt:exts:ableC:vector:vector", showVector(_, location=_))];
+}
+
 -- Vector initialization
 abstract production newVector
 top::Expr ::= sub::TypeName size::Expr
@@ -108,6 +161,12 @@ top::Expr ::= e::Expr
   top.pp = pp"copy_vector(${e.pp})";
   
   local subType::Type = vectorSubType(e.typerep, top.env);
+  
+  local localErrors::[Message] =
+    checkVectorHeaderDef("_copy_vector", top.location, top.env) ++
+    if !isVectorType(e.typerep, top.env)
+    then [err(e.location, s"Vector copy expected vector type, got ${showType(e.typerep)}")]
+    else [];
   local fwrd::Expr =
     callExpr(
       templateDeclRefExpr(
@@ -117,7 +176,7 @@ top::Expr ::= e::Expr
       consExpr(e, nilExpr()),
       location=builtin);
   
-  forwards to mkErrorCheck(checkVectorHeaderDef("_copy_vector", top.location, top.env), fwrd);
+  forwards to mkErrorCheck(localErrors, fwrd);
 }
 
 abstract production appendVector
@@ -146,8 +205,14 @@ top::Expr ::= e1::Expr e2::Expr
   top.pp = pp"${e1.pp} += ${e2.pp}";
   
   local subType::Type = vectorSubType(e1.typerep, top.env);
+  
+  local localErrors::[Message] =
+    checkVectorHeaderDef("_append_to_vector", top.location, top.env) ++
+    if !compatibleTypes(subType, vectorSubType(e2.typerep, top.env), false)
+    then [err(top.location, s"Vector append sub-types must be the same, got ${showType(e1.typerep)} and ${showType(e2.typerep)}")]
+    else [];
 
-  forwards to
+  local fwrd::Expr =
     callExpr(
       templateDeclRefExpr(
         name("_append_to_vector", location=builtin),
@@ -155,6 +220,8 @@ top::Expr ::= e1::Expr e2::Expr
         location=builtin),
       consExpr(e1, consExpr(e2, nilExpr())),
       location=builtin);
+  
+  forwards to mkErrorCheck(localErrors, fwrd);
 }
 
 abstract production eqVector
@@ -166,7 +233,12 @@ top::Expr ::= e1::Expr e2::Expr
   local subType::Type = vectorSubType(e1.typerep, top.env);
   local funName::String = "_eq_vector_" ++ subType.mangledName;
   
-  forwards to
+  local localErrors::[Message] =
+    checkVectorHeaderDef("_eq_vector", top.location, top.env) ++
+    if !compatibleTypes(subType, vectorSubType(e2.typerep, top.env), false)
+    then [err(top.location, s"Vector equality sub-types must be the same, got ${showType(e1.typerep)} and ${showType(e2.typerep)}")]
+    else [];
+  local fwrd::Expr =
     callExpr(
       templateDeclRefExpr(
         name("_eq_vector", location=builtin),
@@ -174,6 +246,8 @@ top::Expr ::= e1::Expr e2::Expr
         location=builtin),
       consExpr(e1, consExpr(e2, nilExpr())),
       location=builtin);
+  
+  forwards to mkErrorCheck(localErrors, fwrd);
 }
 
 abstract production lengthVector
@@ -237,6 +311,11 @@ top::Expr ::= e1::Expr e2::Expr
   local vecTempName::String = "_vec_" ++ toString(genInt());
   local indexTempName::String = "_index_" ++ toString(genInt());
 
+  local localErrors::[Message] =
+    checkStringHeaderDef("_check_index_vector", top.location, top.env) ++
+    if e2.typerep.isIntegerType
+    then []
+    else [err(e2.location, s"Vector index must have integer type, but got ${showType(e2.typerep)}")];
   local fwrd::Expr =
     stmtExpr(
       foldStmt([
@@ -263,7 +342,7 @@ top::Expr ::= e1::Expr e2::Expr
           declRefExpr(name(indexTempName, location=builtin), location=builtin), location=builtin),
         location=builtin);
   
-  forwards to mkErrorCheck(checkVectorHeaderDef("_check_index_vector", top.location, top.env), fwrd);
+  forwards to mkErrorCheck(localErrors, fwrd);
 }
 
 abstract production subscriptAssignVector
@@ -276,6 +355,14 @@ top::Expr ::= lhs::Expr index::Expr op::AssignOp rhs::Expr
   local vecTempName::String = "_vec_" ++ toString(genInt());
   local indexTempName::String = "_index_" ++ toString(genInt());
 
+  local localErrors::[Message] =
+    checkStringHeaderDef("_maybe_grow_vector_by_one", top.location, top.env) ++
+    (if index.typerep.isIntegerType
+     then []
+     else [err(index.location, s"Vector index must have integer type, but got ${showType(index.typerep)}")]) ++
+    (if !compatibleTypes(subType, vectorSubType(rhs.typerep, top.env), false)
+     then [err(top.location, s"Vector index assign sub-type and rhs type must be the same, got ${showType(subType)} and ${showType(rhs.typerep)}")]
+     else []);
   local fwrd::Expr =
     stmtExpr(
       foldStmt([
@@ -305,9 +392,37 @@ top::Expr ::= lhs::Expr index::Expr op::AssignOp rhs::Expr
           rhs,
           location=builtin),
         location=builtin);
-            
   
-  forwards to mkErrorCheck(checkVectorHeaderDef("_maybe_grow_vector_by_one", top.location, top.env), fwrd);
+  forwards to mkErrorCheck(localErrors, fwrd);
+}
+
+abstract production memberVector
+top::Expr ::= lhs::Expr deref::Boolean rhs::Name
+{
+  propagate substituted;
+  
+  forwards to
+    case rhs.name of
+      "length"    -> lengthVector(lhs, location=top.location)
+    | "size"      -> lengthVector(lhs, location=top.location)
+    | "capacity"  -> capacityVector(lhs, location=top.location)
+    | "elem_size" -> elemSizeVector(lhs, location=top.location)
+    | n -> errorExpr([err(rhs.location, s"Vector does not have field ${n}")], location=top.location)
+    end;
+}
+
+abstract production memberCallVector
+top::Expr ::= lhs::Expr deref::Boolean rhs::Name a::Exprs
+{
+  propagate substituted;
+  
+  forwards to
+    case rhs.name of
+    -- TODO
+    --  "append" -> appendElemVector(lhs, a, location=top.location)
+    --| "insert" -> insertElemVector(lhs, a, location=top.location)
+    | n -> errorExpr([err(rhs.location, s"Vector does not have field ${n}")], location=top.location)
+    end;
 }
 
 abstract production showVector
@@ -317,8 +432,22 @@ top::Expr ::= e::Expr
   top.pp = pp"show(${e.pp})";
   
   local subType::Type = vectorSubType(e.typerep, top.env);
-  
-  forwards to
+
+  local localErrors::[Message] =
+    checkStringHeaderDef("_show_vector", top.location, top.env) ++
+    -- TODO: Make this check less aweful somehow
+    decorate
+      showExpr(
+        unaryOpExpr(
+          dereferenceOp(location=builtin),
+          memberExpr(
+            e, true,
+            name("_contents", location=builtin),
+            location=builtin),
+          location=builtin),
+        location=top.location)
+    with { env = top.env; returnType = top.returnType; }.errors;
+  local fwrd::Expr =
     callExpr(
       templateDeclRefExpr(
         name("_show_vector", location=builtin),
@@ -326,6 +455,8 @@ top::Expr ::= e::Expr
         location=builtin),
       consExpr(e, nilExpr()),
       location=builtin);
+  
+  forwards to mkErrorCheck(localErrors, fwrd);
 }
 
 -- Check the given env for the given function name
