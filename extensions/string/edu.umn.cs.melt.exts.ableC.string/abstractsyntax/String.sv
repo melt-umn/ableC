@@ -7,13 +7,105 @@ imports edu:umn:cs:melt:ableC:abstractsyntax;
 imports edu:umn:cs:melt:ableC:abstractsyntax:construction;
 imports edu:umn:cs:melt:ableC:abstractsyntax:env;
 imports edu:umn:cs:melt:ableC:abstractsyntax:substitution;
+imports edu:umn:cs:melt:ableC:abstractsyntax:overload as ovrld;
 --imports edu:umn:cs:melt:ableC:abstractsyntax:debug;
 
 --imports edu:umn:cs:melt:exts:ableC:gc;
 
 global builtin::Location = builtinLoc("string");
 
+aspect production addOp
+top::NumOp ::=
+{
+  lOverloads <-
+    [pair(
+       "edu:umn:cs:melt:exts:ableC:string:string",
+       \ e1::Expr e2::Expr l::Location -> appendString(e1, strExpr(e2, location=l), location=l))];
+  rOverloads <-
+    [pair(
+       "edu:umn:cs:melt:exts:ableC:string:string",
+       \ e1::Expr e2::Expr l::Location -> appendString(strExpr(e1, location=l), e2, location=l))];
+}
+
+aspect production subOp
+top::NumOp ::=
+{
+  lOverloads <-
+    [pair(
+       "edu:umn:cs:melt:exts:ableC:string:string",
+       \ e1::Expr e2::Expr l::Location -> removeString(e1, strExpr(e2, location=l), location=l))];
+}
+
+aspect production mulOp
+top::NumOp ::=
+{
+  lOverloads <- [pair("edu:umn:cs:melt:exts:ableC:string:string", repeatString(_, _, location=_))];
+}
+
+aspect production equalsOp
+top::CompareOp ::=
+{
+  lOverloads <-
+    [pair(
+       "edu:umn:cs:melt:exts:ableC:string:string",
+       \ e1::Expr e2::Expr l::Location -> eqString(e1, strExpr(e2, location=l), location=l))];
+  rOverloads <-
+    [pair(
+       "edu:umn:cs:melt:exts:ableC:string:string",
+       \ e1::Expr e2::Expr l::Location -> eqString(strExpr(e1, location=l), e2, location=l))];
+}
+
+aspect production eqOp
+top::AssignOp ::=
+{
+  lOverloads <-
+    [pair(
+       "edu:umn:cs:melt:exts:ableC:string:string",
+       \ e1::Expr e2::Expr l::Location -> assignString(e1, strExpr(e2, location=l), location=l))];
+}
+
+aspect production ovrld:callExpr
+top::Expr ::= f::Expr  a::Exprs
+{
+  memberOverloads <-
+    [pair("edu:umn:cs:melt:exts:ableC:string:string", memberCallString(_, _, _, _, location=_))];
+}
+
+aspect production ovrld:arraySubscriptExpr
+top::Expr ::= lhs::Expr  rhs::Expr
+{
+  overloads <-
+    [pair("edu:umn:cs:melt:exts:ableC:string:string", subscriptString(_, _, location=_))];
+}
+
+aspect production assignOp
+top::BinOp ::= op::AssignOp
+{
+  subscriptOverloads <-
+    [pair(
+       "edu:umn:cs:melt:exts:ableC:string:string",
+       subscriptAssignString(_, _, op, _, location=_))];
+}
+
 abstract production showExpr
+top::Expr ::= e::Expr
+{
+  propagate substituted;
+  top.pp = pp"show(${e.pp})";
+
+  production attribute overloads::[Pair<String (Expr ::= Expr Location)>] with ++;
+  overloads := [pair("edu:umn:cs:melt:exts:ableC:string:string", showString(_, location=_))];
+  
+  local localErrors::[Message] = e.errors;
+  local fwrd::Expr =
+    case lookupBy(stringEq, e.typerep.moduleName, overloads) of
+      just(prod) -> prod(e, top.location)
+    | nothing() -> showHost(e, location=top.location)
+    end;
+  forwards to mkErrorCheck(localErrors, fwrd);
+}
+
+abstract production showHost
 top::Expr ::= e::Expr
 {
   propagate substituted;
@@ -129,6 +221,24 @@ top::Expr ::= e::Expr
 }
 
 abstract production strExpr
+top::Expr ::= e::Expr
+{
+  propagate substituted;
+  top.pp = pp"str(${e.pp})";
+
+  production attribute overloads::[Pair<String (Expr ::= Expr Location)>] with ++;
+  overloads := [pair("edu:umn:cs:melt:exts:ableC:string:string", strString(_, location=_))];
+  
+  local localErrors::[Message] = e.errors;
+  local fwrd::Expr =
+    case lookupBy(stringEq, e.typerep.moduleName, overloads) of
+      just(prod) -> prod(e, top.location)
+    | nothing() -> strHost(e, location=top.location)
+    end;
+  forwards to mkErrorCheck(localErrors, fwrd);
+}
+
+abstract production strHost
 top::Expr ::= e::Expr
 {
   propagate substituted;
@@ -261,7 +371,10 @@ top::Expr ::= e1::Expr e2::Expr
   top.pp = pp"${e1.pp} * ${e2.pp}";
   
   local localErrors::[Message] =
-    checkStringHeaderDef("_repeat_string", top.location, top.env);
+    checkStringHeaderDef("_repeat_string", top.location, top.env) ++
+    if e2.typerep.isIntegerType
+    then []
+    else [err(e2.location, s"String repeat must have integer type, but got ${showType(e2.typerep)}")];
   local fwrd::Expr =
     directCallExpr(
       name("_repeat_string", location=builtin),
@@ -293,7 +406,10 @@ top::Expr ::= e1::Expr e2::Expr
   top.pp = pp"${e1.pp}[${e2.pp}]";
   
   local localErrors::[Message] =
-    checkStringHeaderDef("_index_string", top.location, top.env);
+    checkStringHeaderDef("_index_string", top.location, top.env) ++
+    if e2.typerep.isIntegerType
+    then []
+    else [err(e2.location, s"String index must have integer type, but got ${showType(e2.typerep)}")];
   local fwrd::Expr =
     directCallExpr(
       name("_index_string", location=builtin),
@@ -309,7 +425,10 @@ top::Expr ::= e1::Expr e2::Expr op::AssignOp e3::Expr
   top.pp = pp"${e1.pp}[${e2.pp}] ${op.pp} ${e3.pp}";
   
   local localErrors::[Message] =
-    checkStringHeaderDef("_check_index_string", top.location, top.env);
+    checkStringHeaderDef("_check_index_string", top.location, top.env) ++
+    if e2.typerep.isIntegerType
+    then []
+    else [err(e2.location, s"String index must have integer type, but got ${showType(e2.typerep)}")];
   local fwrd::Expr =
     stmtExpr(
       exprStmt(
@@ -326,6 +445,18 @@ top::Expr ::= e1::Expr e2::Expr op::AssignOp e3::Expr
           location=builtin),
       location=builtin);
   forwards to mkErrorCheck(localErrors, fwrd);
+}
+
+abstract production memberCallString
+top::Expr ::= lhs::Expr deref::Boolean rhs::Name a::Exprs
+{
+  propagate substituted;
+  
+  forwards to
+    case deref, rhs.name of
+      _, "substring" -> substringString(lhs, a, location=top.location)
+    | _, n -> errorExpr([err(rhs.location, s"String does not have field ${n}")], location=top.location)
+    end;
 }
 
 abstract production substringString
