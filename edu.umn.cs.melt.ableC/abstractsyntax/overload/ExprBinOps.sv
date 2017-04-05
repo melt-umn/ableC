@@ -1,44 +1,49 @@
-synthesized attribute binaryProd::Maybe<(Expr ::= Expr Expr Location)> occurs on BinOp, AssignOp, BoolOp, BitOp, CompareOp, NumOp;
 
 aspect default production
 top::BinOp ::=
 {
-  top.binaryProd = nothing();
+  top.resolved = nothing();
 }
-
---------------------------------------------------------------------------------
 
 aspect production assignOp
 top::BinOp ::= op::AssignOp
 {
-  local l::Expr = 
-    case top.lop of
-      arraySubscriptExpr(l, r) -> l
-    end;
-  l.env = top.lop.env;
-  l.returnType = top.lop.returnType;
-  local r::Expr = 
-    case top.lop of
-      arraySubscriptExpr(l, r) -> r
-    end;
-  r.env = top.lop.env;
-  r.returnType = top.lop.returnType;
-  local lType::Type = l.typerep;
-  lType.otherType = r.typerep;
-  lType.otherType2 = top.rop.typerep;
+  production attribute subscriptOverloads::[Pair<String (Expr ::= Expr Expr Expr Location)>] with ++;
+  production attribute memberOverloads::[Pair<String (Expr ::= Expr Boolean Name Expr Location)>] with ++;
+  subscriptOverloads := [];
+  memberOverloads := [];
 
-  local option1::Maybe<(Expr ::= Expr Expr Location)> = 
-    case top.lop, lType.subscriptAssignProd of
-      arraySubscriptExpr(_, _), just(prod) -> just(constructSubscriptAssignOp(_, _, _, op, prod))
-    | _, _ -> nothing()
+  local option1::Maybe<Expr> = 
+    case top.lop of
+      arraySubscriptExpr(l, r) ->
+        case lookupBy(stringEq, l.typerep.moduleName, subscriptOverloads) of
+          just(prod) -> just(prod(new(l), new(r), new(top.rop), top.location)) 
+        | nothing() -> nothing()
+        end
+    | _ -> nothing()
     end;
-  local option2::Maybe<(Expr ::= Expr Expr Location)> = op.binaryProd;
-  local option3::Maybe<(Expr ::= Expr Expr Location)> = 
+  local option2::Maybe<Expr> = 
+    case top.lop of
+      memberExpr(l, d, r) ->
+        case lookupBy(stringEq, l.typerep.moduleName, memberOverloads) of
+          just(prod) -> just(prod(new(l), d, new(r), new(top.rop), top.location)) 
+        | nothing() -> nothing()
+        end
+    | _ -> nothing()
+    end;
+  local option3::Maybe<Expr> = op.resolved;
+  local option4::Maybe<Expr> = 
     case op.baseOp of
-      just(baseOp) -> just(constructAssignOp(_, _, _, baseOp))
+      just(baseOp) ->
+        just(
+          binaryOpExpr(
+            new(top.lop),
+            assignOp(eqOp(location=top.location), location=top.location),
+            binaryOpExpr(new(top.lop), baseOp, new(top.rop), location=top.location),
+          location=top.location))
     | nothing() -> nothing()
     end;
-  top.binaryProd = orElse(option1, orElse(option2, option3));
+  top.resolved = orElse(option1, orElse(option2, orElse(option3, option4)));
 }
 
 synthesized attribute baseOp::Maybe<BinOp> occurs on AssignOp;
@@ -47,67 +52,210 @@ aspect production eqOp
 top::AssignOp ::=
 {
   top.baseOp = nothing();
-  top.binaryProd = getBinaryProd(top.lop.typerep, top.rop.typerep, (.lAssignProd), (.rAssignProd));
+  production attribute lOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
+  production attribute rOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
+  lOverloads := [];
+  rOverloads := [];
+  top.resolved =
+    orElse(
+      case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
+        just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+      | nothing() -> nothing()
+      end,
+      case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
+        just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+      | nothing() -> nothing()
+      end);
 }
 aspect production mulEqOp
 top::AssignOp ::=
 {
   top.baseOp = just(numOp(mulOp(location=top.location), location=top.location));
-  top.binaryProd = getBinaryProd(top.lop.typerep, top.rop.typerep, (.lAssignStarProd), (.rAssignStarProd));
+  production attribute lOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
+  production attribute rOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
+  lOverloads := [];
+  rOverloads := [];
+  top.resolved =
+    orElse(
+      case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
+        just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+      | nothing() -> nothing()
+      end,
+      case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
+        just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+      | nothing() -> nothing()
+      end);
 }
 aspect production divEqOp
 top::AssignOp ::=
 {
   top.baseOp = just(numOp(divOp(location=top.location), location=top.location));
-  top.binaryProd = getBinaryProd(top.lop.typerep, top.rop.typerep, (.lAssignSlashProd), (.rAssignSlashProd));
+  production attribute lOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
+  production attribute rOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
+  lOverloads := [];
+  rOverloads := [];
+  top.resolved =
+    orElse(
+      case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
+        just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+      | nothing() -> nothing()
+      end,
+      case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
+        just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+      | nothing() -> nothing()
+      end);
 }
 aspect production modEqOp
 top::AssignOp ::=
 {
   top.baseOp = just(numOp(modOp(location=top.location), location=top.location));
-  top.binaryProd = getBinaryProd(top.lop.typerep, top.rop.typerep, (.lAssignPercentProd), (.rAssignPercentProd));
+  production attribute lOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
+  production attribute rOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
+  lOverloads := [];
+  rOverloads := [];
+  top.resolved =
+    orElse(
+      case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
+        just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+      | nothing() -> nothing()
+      end,
+      case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
+        just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+      | nothing() -> nothing()
+      end);
 }
 aspect production addEqOp
 top::AssignOp ::=
 {
   top.baseOp = just(numOp(addOp(location=top.location), location=top.location));
-  top.binaryProd = getBinaryProd(top.lop.typerep, top.rop.typerep, (.lAssignPlusProd), (.rAssignPlusProd));
+  production attribute lOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
+  production attribute rOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
+  lOverloads := [];
+  rOverloads := [];
+  top.resolved =
+    orElse(
+      case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
+        just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+      | nothing() -> nothing()
+      end,
+      case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
+        just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+      | nothing() -> nothing()
+      end);
 }
 aspect production subEqOp
 top::AssignOp ::=
 {
   top.baseOp = just(numOp(subOp(location=top.location), location=top.location));
-  top.binaryProd = getBinaryProd(top.lop.typerep, top.rop.typerep, (.lAssignMinusProd), (.rAssignMinusProd));
+  production attribute lOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
+  production attribute rOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
+  lOverloads := [];
+  rOverloads := [];
+  top.resolved =
+    orElse(
+      case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
+        just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+      | nothing() -> nothing()
+      end,
+      case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
+        just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+      | nothing() -> nothing()
+      end);
 }
 aspect production lshEqOp
 top::AssignOp ::=
 {
   top.baseOp = just(bitOp(lshBitOp(location=top.location), location=top.location));
-  top.binaryProd = getBinaryProd(top.lop.typerep, top.rop.typerep, (.lAssignDoubleLtProd), (.rAssignDoubleLtProd));
+  production attribute lOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
+  production attribute rOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
+  lOverloads := [];
+  rOverloads := [];
+  top.resolved =
+    orElse(
+      case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
+        just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+      | nothing() -> nothing()
+      end,
+      case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
+        just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+      | nothing() -> nothing()
+      end);
 }
 aspect production rshEqOp
 top::AssignOp ::=
 {
   top.baseOp = just(bitOp(rshBitOp(location=top.location), location=top.location));
-  top.binaryProd = getBinaryProd(top.lop.typerep, top.rop.typerep, (.lAssignDoubleGtProd), (.rAssignDoubleGtProd));
+  production attribute lOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
+  production attribute rOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
+  lOverloads := [];
+  rOverloads := [];
+  top.resolved =
+    orElse(
+      case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
+        just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+      | nothing() -> nothing()
+      end,
+      case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
+        just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+      | nothing() -> nothing()
+      end);
 }
 aspect production andEqOp
 top::AssignOp ::=
 {
   top.baseOp = just(bitOp(andBitOp(location=top.location), location=top.location));
-  top.binaryProd = getBinaryProd(top.lop.typerep, top.rop.typerep, (.lAssignSingleAndProd), (.rAssignSingleAndProd));
+  production attribute lOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
+  production attribute rOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
+  lOverloads := [];
+  rOverloads := [];
+  top.resolved =
+    orElse(
+      case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
+        just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+      | nothing() -> nothing()
+      end,
+      case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
+        just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+      | nothing() -> nothing()
+      end);
 }
 aspect production orEqOp
 top::AssignOp ::=
 {
   top.baseOp = just(bitOp(orBitOp(location=top.location), location=top.location));
-  top.binaryProd = getBinaryProd(top.lop.typerep, top.rop.typerep, (.lAssignSingleOrProd), (.rAssignSingleOrProd));
+  production attribute lOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
+  production attribute rOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
+  lOverloads := [];
+  rOverloads := [];
+  top.resolved =
+    orElse(
+      case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
+        just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+      | nothing() -> nothing()
+      end,
+      case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
+        just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+      | nothing() -> nothing()
+      end);
 }
 aspect production xorEqOp
 top::AssignOp ::=
 {
   top.baseOp = just(bitOp(xorBitOp(location=top.location), location=top.location));
-  top.binaryProd = getBinaryProd(top.lop.typerep, top.rop.typerep, (.lAssignCaratProd), (.rAssignCaratProd));
+  production attribute lOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
+  production attribute rOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
+  lOverloads := [];
+  rOverloads := [];
+  top.resolved =
+    orElse(
+      case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
+        just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+      | nothing() -> nothing()
+      end,
+      case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
+        just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+      | nothing() -> nothing()
+      end);
 }
 
 --------------------------------------------------------------------------------
@@ -116,149 +264,297 @@ top::AssignOp ::=
 aspect production boolOp
 top::BinOp ::= op::BoolOp
 {
-  top.binaryProd = op.binaryProd;
+  top.resolved = op.resolved;
 }
 
 aspect production andBoolOp
 top::BoolOp ::=
 {
-  top.binaryProd = getBinaryProd(top.lop.typerep, top.rop.typerep, (.lBinaryDoubleOrProd), (.rBinaryDoubleOrProd));
+  production attribute lOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
+  production attribute rOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
+  lOverloads := [];
+  rOverloads := [];
+  top.resolved =
+    orElse(
+      case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
+        just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+      | nothing() -> nothing()
+      end,
+      case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
+        just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+      | nothing() -> nothing()
+      end);
 }
 aspect production orBoolOp
 top::BoolOp ::=
 {
-  top.binaryProd = getBinaryProd(top.lop.typerep, top.rop.typerep, (.lBinaryDoubleAndProd), (.rBinaryDoubleAndProd));
+  production attribute lOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
+  production attribute rOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
+  lOverloads := [];
+  rOverloads := [];
+  top.resolved =
+    orElse(
+      case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
+        just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+      | nothing() -> nothing()
+      end,
+      case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
+        just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+      | nothing() -> nothing()
+      end);
 }
 
 --------------------------------------------------------------------------------
 aspect production bitOp
 top::BinOp ::= op::BitOp
 {
-  top.binaryProd = op.binaryProd;
+  top.resolved = op.resolved;
 }
 
 aspect production andBitOp
 top::BitOp ::=
 {
-  top.binaryProd = getBinaryProd(top.lop.typerep, top.rop.typerep, (.lBinarySingleAndProd), (.rBinarySingleAndProd));
+  production attribute lOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
+  production attribute rOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
+  lOverloads := [];
+  rOverloads := [];
+  top.resolved =
+    orElse(
+      case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
+        just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+      | nothing() -> nothing()
+      end,
+      case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
+        just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+      | nothing() -> nothing()
+      end);
 }
 aspect production orBitOp
 top::BitOp ::=
 {
-  top.binaryProd = getBinaryProd(top.lop.typerep, top.rop.typerep, (.lBinarySingleOrProd), (.rBinarySingleOrProd));
+  production attribute lOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
+  production attribute rOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
+  lOverloads := [];
+  rOverloads := [];
+  top.resolved =
+    orElse(
+      case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
+        just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+      | nothing() -> nothing()
+      end,
+      case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
+        just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+      | nothing() -> nothing()
+      end);
 }
 aspect production xorBitOp
 top::BitOp ::=
 {
-  top.binaryProd = getBinaryProd(top.lop.typerep, top.rop.typerep, (.lBinaryCaratProd), (.rBinaryCaratProd));
+  production attribute lOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
+  production attribute rOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
+  lOverloads := [];
+  rOverloads := [];
+  top.resolved =
+    orElse(
+      case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
+        just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+      | nothing() -> nothing()
+      end,
+      case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
+        just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+      | nothing() -> nothing()
+      end);
 }
 aspect production lshBitOp
 top::BitOp ::=
 {
-  top.binaryProd = getBinaryProd(top.lop.typerep, top.rop.typerep, (.lBinaryDoubleLtProd), (.rBinaryDoubleLtProd));
+  production attribute lOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
+  production attribute rOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
+  lOverloads := [];
+  rOverloads := [];
+  top.resolved =
+    orElse(
+      case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
+        just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+      | nothing() -> nothing()
+      end,
+      case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
+        just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+      | nothing() -> nothing()
+      end);
 }
 aspect production rshBitOp
 top::BitOp ::=
 {
-  top.binaryProd = getBinaryProd(top.lop.typerep, top.rop.typerep, (.lBinaryDoubleGtProd), (.rBinaryDoubleGtProd));
+  production attribute lOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
+  production attribute rOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
+  lOverloads := [];
+  rOverloads := [];
+  top.resolved =
+    orElse(
+      case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
+        just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+      | nothing() -> nothing()
+      end,
+      case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
+        just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+      | nothing() -> nothing()
+      end);
 }
 
 --------------------------------------------------------------------------------
 aspect production compareOp
 top::BinOp ::= op::CompareOp
 {
-  top.binaryProd = op.binaryProd;
+  top.resolved = op.resolved;
 }
 
 aspect production equalsOp
 top::CompareOp ::=
 {
-  local option1::Maybe<(Expr ::= Expr Expr Location)> =
-    getBinaryProd(top.lop.typerep, top.rop.typerep, (.lBinaryEqProd), (.rBinaryEqProd));
-    
-  local complementProd::Maybe<(Expr ::= Expr Expr Location)> = 
-    getBinaryProd(top.lop.typerep, top.rop.typerep, (.lBinaryNeqProd), (.rBinaryNeqProd));
-  local option2::Maybe<(Expr ::= Expr Expr Location)> =
-    case complementProd of
-      just(prod) -> just(constructNot(_, _, _, prod))
-    | nothing() -> nothing()
-    end;
-  top.binaryProd = orElse(option1, option2);
+  production attribute lOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
+  production attribute rOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
+  lOverloads := [];
+  rOverloads := [];
+  top.resolved =
+    orElse(
+      case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
+        just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+      | nothing() -> nothing()
+      end,
+      case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
+        just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+      | nothing() -> nothing()
+      end);
 }
 aspect production notEqualsOp
 top::CompareOp ::=
 {
-  local option1::Maybe<(Expr ::= Expr Expr Location)> =
-    getBinaryProd(top.lop.typerep, top.rop.typerep, (.lBinaryNeqProd), (.rBinaryNeqProd));
-    
-  local complementProd::Maybe<(Expr ::= Expr Expr Location)> = 
-    getBinaryProd(top.lop.typerep, top.rop.typerep, (.lBinaryEqProd), (.rBinaryEqProd));
-  local option2::Maybe<(Expr ::= Expr Expr Location)> =
-    case complementProd of
-      just(prod) -> just(constructNot(_, _, _, prod))
+  production attribute lOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
+  production attribute rOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
+  lOverloads := [];
+  rOverloads := [];
+  
+  local option1::Maybe<Expr> =
+    case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
+      just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
     | nothing() -> nothing()
     end;
-  top.binaryProd = orElse(option1, option2);
+  local option2::Maybe<Expr> =
+    case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
+      just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+    | nothing() -> nothing()
+    end;
+  local option3::Maybe<Expr> =
+    just(
+      unaryOpExpr(
+        notOp(location=top.location),
+        binaryOpExpr(
+          new(top.lop),
+          compareOp(equalsOp(location=top.location), location=top.location),
+          new(top.rop),
+          location=top.location),
+        location=top.location)); 
+  
+  top.resolved = orElse(option1, orElse(option2, option3));
 }
 aspect production gtOp
 top::CompareOp ::=
 {
-  local option1::Maybe<(Expr ::= Expr Expr Location)> =
-    getBinaryProd(top.lop.typerep, top.rop.typerep, (.lBinaryGtProd), (.rBinaryGtProd));
-    
-  local complementProd::Maybe<(Expr ::= Expr Expr Location)> = 
-    getBinaryProd(top.lop.typerep, top.rop.typerep, (.lBinaryLteProd), (.rBinaryLteProd));
-  local option2::Maybe<(Expr ::= Expr Expr Location)> =
-    case complementProd of
-      just(prod) -> just(constructNot(_, _, _, prod))
-    | nothing() -> nothing()
-    end;
-  top.binaryProd = orElse(option1, option2);
+  production attribute lOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
+  production attribute rOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
+  lOverloads := [];
+  rOverloads := [];
+  top.resolved =
+    orElse(
+      case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
+        just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+      | nothing() -> nothing()
+      end,
+      case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
+        just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+      | nothing() -> nothing()
+      end);
 }
 aspect production ltOp
 top::CompareOp ::=
 {
-  local option1::Maybe<(Expr ::= Expr Expr Location)> =
-    getBinaryProd(top.lop.typerep, top.rop.typerep, (.lBinaryLtProd), (.rBinaryLtProd));
-    
-  local complementProd::Maybe<(Expr ::= Expr Expr Location)> = 
-    getBinaryProd(top.lop.typerep, top.rop.typerep, (.lBinaryGteProd), (.rBinaryGteProd));
-  local option2::Maybe<(Expr ::= Expr Expr Location)> =
-    case complementProd of
-      just(prod) -> just(constructNot(_, _, _, prod))
-    | nothing() -> nothing()
-    end;
-  top.binaryProd = orElse(option1, option2);
+  production attribute lOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
+  production attribute rOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
+  lOverloads := [];
+  rOverloads := [];
+  top.resolved =
+    orElse(
+      case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
+        just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+      | nothing() -> nothing()
+      end,
+      case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
+        just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+      | nothing() -> nothing()
+      end);
 }
 aspect production gteOp
 top::CompareOp ::=
 {
-  local option1::Maybe<(Expr ::= Expr Expr Location)> =
-    getBinaryProd(top.lop.typerep, top.rop.typerep, (.lBinaryGteProd), (.rBinaryGteProd));
-    
-  local complementProd::Maybe<(Expr ::= Expr Expr Location)> = 
-    getBinaryProd(top.lop.typerep, top.rop.typerep, (.lBinaryLtProd), (.rBinaryLtProd));
-  local option2::Maybe<(Expr ::= Expr Expr Location)> =
-    case complementProd of
-      just(prod) -> just(constructNot(_, _, _, prod))
+  production attribute lOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
+  production attribute rOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
+  lOverloads := [];
+  rOverloads := [];
+  
+  local option1::Maybe<Expr> =
+    case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
+      just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
     | nothing() -> nothing()
     end;
-  top.binaryProd = orElse(option1, option2);
+  local option2::Maybe<Expr> =
+    case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
+      just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+    | nothing() -> nothing()
+    end;
+  local option3::Maybe<Expr> =
+    just(
+      unaryOpExpr(
+        notOp(location=top.location),
+        binaryOpExpr(
+          new(top.lop),
+          compareOp(ltOp(location=top.location), location=top.location),
+          new(top.rop),
+          location=top.location),
+        location=top.location)); 
+  
+  top.resolved = orElse(option1, orElse(option2, option3));
 }
 aspect production lteOp
 top::CompareOp ::=
 {
-  local option1::Maybe<(Expr ::= Expr Expr Location)> =
-    getBinaryProd(top.lop.typerep, top.rop.typerep, (.lBinaryLtProd), (.rBinaryLtProd));
-    
-  local complementProd::Maybe<(Expr ::= Expr Expr Location)> = 
-    getBinaryProd(top.lop.typerep, top.rop.typerep, (.lBinaryGteProd), (.rBinaryGteProd));
-  local option2::Maybe<(Expr ::= Expr Expr Location)> =
-    case complementProd of
-      just(prod) -> just(constructNot(_, _, _, prod))
+  production attribute lOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
+  production attribute rOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
+  lOverloads := [];
+  rOverloads := [];
+  
+  local option1::Maybe<Expr> =
+    case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
+      just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
     | nothing() -> nothing()
     end;
-  top.binaryProd = orElse(option1, option2);
+  local option2::Maybe<Expr> =
+    case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
+      just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+    | nothing() -> nothing()
+    end;
+  local option3::Maybe<Expr> =
+    just(
+      unaryOpExpr(
+        notOp(location=top.location),
+        binaryOpExpr(
+          new(top.lop),
+          compareOp(gtOp(location=top.location), location=top.location),
+          new(top.rop),
+          location=top.location),
+        location=top.location)); 
+  
+  top.resolved = orElse(option1, orElse(option2, option3));
 }
 
 
@@ -266,80 +562,89 @@ top::CompareOp ::=
 aspect production numOp
 top::BinOp ::= op::NumOp
 {
-  top.binaryProd = op.binaryProd;
+  top.resolved = op.resolved;
 }
 
 aspect production addOp
 top::NumOp ::=
 {
-  top.binaryProd = getBinaryProd(top.lop.typerep, top.rop.typerep, (.lBinaryPlusProd), (.rBinaryPlusProd));
+  production attribute lOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
+  production attribute rOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
+  lOverloads := [];
+  rOverloads := [];
+  top.resolved =
+    orElse(
+      case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
+        just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+      | nothing() -> nothing()
+      end,
+      case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
+        just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+      | nothing() -> nothing()
+      end);
 }
 aspect production subOp
 top::NumOp ::=
 {
-  top.binaryProd = getBinaryProd(top.lop.typerep, top.rop.typerep, (.lBinaryMinusProd), (.rBinaryMinusProd));
+  production attribute lOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
+  production attribute rOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
+  lOverloads := [];
+  rOverloads := [];
+  top.resolved =
+    orElse(
+      case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
+        just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+      | nothing() -> nothing()
+      end,
+      case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
+        just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+      | nothing() -> nothing()
+      end);
 }
 aspect production mulOp
 top::NumOp ::=
 {
-  top.binaryProd = getBinaryProd(top.lop.typerep, top.rop.typerep, (.lBinaryStarProd), (.rBinaryStarProd));
+  production attribute lOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
+  production attribute rOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
+  lOverloads := [];
+  rOverloads := [];
+  top.resolved =
+    orElse(
+      case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
+        just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+      | nothing() -> nothing()
+      end,
+      case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
+        just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+      | nothing() -> nothing()
+      end);
 }
 aspect production divOp
 top::NumOp ::=
 {
-  top.binaryProd = getBinaryProd(top.lop.typerep, top.rop.typerep, (.lBinarySlashProd), (.rBinarySlashProd));
+  production attribute lOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
+  production attribute rOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
+  lOverloads := [];
+  rOverloads := [];
+  top.resolved =
+    orElse(
+      case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
+        just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+      | nothing() -> nothing()
+      end,
+      case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
+        just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+      | nothing() -> nothing()
+      end);
 }
 aspect production modOp
 top::NumOp ::=
 {
-  top.binaryProd = getBinaryProd(top.lop.typerep, top.rop.typerep, (.lBinaryPercentProd), (.rBinaryPercentProd));
-}
-
---------------------------------------------------------------------------------
-
-function getBinaryProd
-Maybe<(Expr ::= Expr Expr Location)> ::= l::Type r::Type lAccess::(Maybe<(Expr ::= Expr Expr Location)> ::= Decorated Type) rAccess::(Maybe<(Expr ::= Expr Expr Location)> ::= Decorated Type)
-{
-  l.otherType = r;
-  r.otherType = l;
-  
-  -- None of these should actually be needed, but Silver requires them because we don't have a type for partially decorated nonterminals, yet
-  l.otherType2 = error("otherType2 demanded in binary overload attribute access");
-  l.otherTypes = error("otherTypes demanded in binary overload attribute access");
-  l.addedTypeQualifiers = error("addedTypeQualifiers demanded in binary overload attribute access");
-  r.otherType2 = error("otherType2 demanded in binary overload attribute access");
-  r.otherTypes = error("otherTypes demanded in binary overload attribute access");
-  r.addedTypeQualifiers = error("addedTypeQualifiers demanded in binary overload attribute access");
-  
-  -- Warnings here shouldn't be an issue
-  return 
-    if lAccess(l).isJust
-    then lAccess(l)
-    else rAccess(r);
-}
-
-function constructAssignOp
-Expr ::= e1::Expr e2::Expr loc::Location op::BinOp
-{
-  return
-    binaryOpExprDefault(
-      e1,
-      assignOp(eqOp(location=loc), location=loc),
-      binaryOpExpr(e1, op, e2, location=loc),
-      location=loc);
-}
-
-function constructSubscriptAssignOp
-Expr ::= e1::Expr e2::Expr loc::Location op::AssignOp prod::(Expr ::= Expr Expr AssignOp Expr Location)
-{
-  return
-    case e1 of
-      arraySubscriptExpr(l, r) -> prod(l, r, op, e2, loc)
+  production attribute overloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
+  overloads := [];
+  top.resolved =
+    case lookupBy(stringEq, top.lop.typerep.moduleName ++ " " ++ top.rop.typerep.moduleName, overloads) of
+      just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+    | nothing() -> nothing()
     end;
-}
-
-function constructNot
-Expr ::= e1::Expr e2::Expr loc::Location prod::(Expr ::= Expr Expr Location)
-{
-  return unaryOpExpr(notOp(location=loc), prod(e1, e2, loc), location=loc);
 }

@@ -8,8 +8,8 @@ top::Expr ::= op::UnaryOp  e::Expr
   op.op = e;
   
   forwards to
-    case op.unaryProd of
-      just(prod) -> prod(e, top.location)
+    case op.resolved of
+      just(e) -> e
     | nothing() -> unaryOpExprDefault(op, e, location=top.location)
     end;
 }
@@ -19,12 +19,12 @@ top::Expr ::= lhs::Expr  rhs::Expr
   propagate substituted;
   
   rhs.env = addEnv(lhs.defs, lhs.env);
+
+  production attribute overloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
+  overloads := [];
   
-  local lType::Type = lhs.typerep;
-  lType.otherType = rhs.typerep;
-  
-  forwards to 
-    case lType.subscriptProd of
+  forwards to
+    case lookupBy(stringEq, lhs.typerep.moduleName, overloads) of
       just(prod) -> prod(lhs, rhs, top.location)
     | nothing() -> arraySubscriptExprDefault(lhs, rhs, location=top.location)
     end;
@@ -35,37 +35,30 @@ top::Expr ::= f::Expr  a::Exprs
   propagate substituted;
   
   a.env = addEnv(f.defs, f.env);
+
+  production attribute memberOverloads::[Pair<String (Expr ::= Expr Boolean Name Exprs Location)>] with ++;
+  production attribute overloads::[Pair<String (Expr ::= Expr Exprs Location)>] with ++;
+  memberOverloads := [];
+  overloads := [];
   
-  local lType::Type = f.typerep;
-  lType.otherTypes = a.typereps;
-  
-  local lType2::Type =
+  local option1::Maybe<Expr> = 
     case f of
-      memberExpr(lhs, _, _) -> lhs.typerep
-    end;
-  lType2.otherName =
-    case f of
-      memberExpr(_, _, rhs) -> rhs.name
-    end;
-  lType2.otherTypes = a.typereps;
-  
-  forwards to 
-    case f of
-      memberExpr(lhs, deref, _) ->
-        if deref
-        then case lType2.memberDerefCallProd of
-          just(prod) -> prod(lhs, a, top.location)
-        | nothing() -> callExprDefault(f, a, location=top.location)
+      memberExpr(l, d, r) ->
+        case lookupBy(stringEq, l.typerep.moduleName, memberOverloads) of
+          just(prod) -> just(prod(l, d, r, a, top.location)) 
+        | nothing() -> nothing()
         end
-        else case lType2.memberCallProd of
-          just(prod) -> prod(lhs, a, top.location)
-        | nothing() -> callExprDefault(f, a, location=top.location)
-        end
-    | _ ->
-      case lType.callProd of
-        just(prod) -> prod(f, a, top.location)
-      | nothing() -> callExprDefault(f, a, location=top.location)
-      end
+    | _ -> nothing()
+    end;
+  local option2::Maybe<Expr> =
+    case lookupBy(stringEq, f.typerep.moduleName, overloads) of
+      just(prod) -> just(prod(f, a, top.location))
+    | nothing() -> nothing()
+    end;
+  forwards to
+    case orElse(option1, option2) of
+      just(e) -> e
+    | nothing() -> callExprDefault(f, a, location=top.location)
     end;
 }
 abstract production memberExpr
@@ -73,17 +66,12 @@ top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
 {
   propagate substituted;
   
-  local lType::Type = lhs.typerep;
-  lType.otherName = rhs.name;
+  production attribute overloads::[Pair<String (Expr ::= Expr Boolean Name Location)>] with ++;
+  overloads := [];
   
-  forwards to 
-    if deref
-    then case lType.memberDerefProd of
-      just(prod) -> prod(lhs, top.location)
-    | nothing() -> memberExprDefault(lhs, deref, rhs, location=top.location)
-    end
-    else case lType.memberProd of
-      just(prod) -> prod(lhs, top.location)
+  forwards to
+    case lookupBy(stringEq, lhs.typerep.moduleName, overloads) of
+      just(prod) -> prod(lhs, deref, rhs, top.location)
     | nothing() -> memberExprDefault(lhs, deref, rhs, location=top.location)
     end;
 }
@@ -97,8 +85,8 @@ top::Expr ::= lhs::Expr  op::BinOp  rhs::Expr
   op.rop = rhs;
   
   forwards to
-    case op.binaryProd of
-      just(prod) -> prod(lhs, rhs, top.location)
+    case op.resolved of
+      just(e) -> e
     | nothing() -> binaryOpExprDefault(lhs, op, rhs, location=top.location)
     end;
 }
