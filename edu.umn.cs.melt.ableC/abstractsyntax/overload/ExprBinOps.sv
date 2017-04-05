@@ -52,210 +52,298 @@ aspect production eqOp
 top::AssignOp ::=
 {
   top.baseOp = nothing();
+  production attribute overloads::[Pair<Pair<String String> (Expr ::= Expr Expr Location)>] with ++;
   production attribute lOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
   production attribute rOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
+  overloads := [];
   lOverloads := [];
   rOverloads := [];
-  top.resolved =
-    orElse(
-      case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
-        just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
-      | nothing() -> nothing()
-      end,
-      case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
-        just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
-      | nothing() -> nothing()
-      end);
+  local option1::Maybe<Expr> =
+    case lookupBy(stringPairEq, pair(top.lop.typerep.moduleName, top.rop.typerep.moduleName), overloads) of
+      just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+    | nothing() -> nothing()
+    end;
+  local option2::Maybe<Expr> =
+    case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
+      just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+    | nothing() -> nothing()
+    end;
+  local option3::Maybe<Expr> =
+    case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
+      just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+    | nothing() -> nothing()
+    end;
+  top.resolved = orElse(option1, orElse(option2, option3));
 }
 aspect production mulEqOp
 top::AssignOp ::=
 {
   top.baseOp = just(numOp(mulOp(location=top.location), location=top.location));
+  production attribute overloads::[Pair<Pair<String String> (Expr ::= Expr Expr Location)>] with ++;
   production attribute lOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
   production attribute rOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
+  overloads := [];
   lOverloads := [];
   rOverloads := [];
-  top.resolved =
-    orElse(
-      case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
-        just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
-      | nothing() -> nothing()
-      end,
-      case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
-        just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
-      | nothing() -> nothing()
-      end);
+  local option1::Maybe<Expr> =
+    case lookupBy(stringPairEq, pair(top.lop.typerep.moduleName, top.rop.typerep.moduleName), overloads) of
+      just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+    | nothing() -> nothing()
+    end;
+  local option2::Maybe<Expr> =
+    case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
+      just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+    | nothing() -> nothing()
+    end;
+  local option3::Maybe<Expr> =
+    case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
+      just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+    | nothing() -> nothing()
+    end;
+  top.resolved = orElse(option1, orElse(option2, option3));
 }
 aspect production divEqOp
 top::AssignOp ::=
 {
   top.baseOp = just(numOp(divOp(location=top.location), location=top.location));
+  production attribute overloads::[Pair<Pair<String String> (Expr ::= Expr Expr Location)>] with ++;
   production attribute lOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
   production attribute rOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
+  overloads := [];
   lOverloads := [];
   rOverloads := [];
-  top.resolved =
-    orElse(
-      case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
-        just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
-      | nothing() -> nothing()
-      end,
-      case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
-        just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
-      | nothing() -> nothing()
-      end);
+  local option1::Maybe<Expr> =
+    case lookupBy(stringPairEq, pair(top.lop.typerep.moduleName, top.rop.typerep.moduleName), overloads) of
+      just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+    | nothing() -> nothing()
+    end;
+  local option2::Maybe<Expr> =
+    case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
+      just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+    | nothing() -> nothing()
+    end;
+  local option3::Maybe<Expr> =
+    case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
+      just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+    | nothing() -> nothing()
+    end;
+  top.resolved = orElse(option1, orElse(option2, option3));
 }
 aspect production modEqOp
 top::AssignOp ::=
 {
   top.baseOp = just(numOp(modOp(location=top.location), location=top.location));
+  production attribute overloads::[Pair<Pair<String String> (Expr ::= Expr Expr Location)>] with ++;
   production attribute lOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
   production attribute rOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
+  overloads := [];
   lOverloads := [];
   rOverloads := [];
-  top.resolved =
-    orElse(
-      case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
-        just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
-      | nothing() -> nothing()
-      end,
-      case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
-        just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
-      | nothing() -> nothing()
-      end);
+  local option1::Maybe<Expr> =
+    case lookupBy(stringPairEq, pair(top.lop.typerep.moduleName, top.rop.typerep.moduleName), overloads) of
+      just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+    | nothing() -> nothing()
+    end;
+  local option2::Maybe<Expr> =
+    case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
+      just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+    | nothing() -> nothing()
+    end;
+  local option3::Maybe<Expr> =
+    case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
+      just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+    | nothing() -> nothing()
+    end;
+  top.resolved = orElse(option1, orElse(option2, option3));
 }
 aspect production addEqOp
 top::AssignOp ::=
 {
   top.baseOp = just(numOp(addOp(location=top.location), location=top.location));
+  production attribute overloads::[Pair<Pair<String String> (Expr ::= Expr Expr Location)>] with ++;
   production attribute lOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
   production attribute rOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
+  overloads := [];
   lOverloads := [];
   rOverloads := [];
-  top.resolved =
-    orElse(
-      case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
-        just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
-      | nothing() -> nothing()
-      end,
-      case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
-        just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
-      | nothing() -> nothing()
-      end);
+  local option1::Maybe<Expr> =
+    case lookupBy(stringPairEq, pair(top.lop.typerep.moduleName, top.rop.typerep.moduleName), overloads) of
+      just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+    | nothing() -> nothing()
+    end;
+  local option2::Maybe<Expr> =
+    case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
+      just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+    | nothing() -> nothing()
+    end;
+  local option3::Maybe<Expr> =
+    case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
+      just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+    | nothing() -> nothing()
+    end;
+  top.resolved = orElse(option1, orElse(option2, option3));
 }
 aspect production subEqOp
 top::AssignOp ::=
 {
   top.baseOp = just(numOp(subOp(location=top.location), location=top.location));
+  production attribute overloads::[Pair<Pair<String String> (Expr ::= Expr Expr Location)>] with ++;
   production attribute lOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
   production attribute rOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
+  overloads := [];
   lOverloads := [];
   rOverloads := [];
-  top.resolved =
-    orElse(
-      case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
-        just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
-      | nothing() -> nothing()
-      end,
-      case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
-        just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
-      | nothing() -> nothing()
-      end);
+  local option1::Maybe<Expr> =
+    case lookupBy(stringPairEq, pair(top.lop.typerep.moduleName, top.rop.typerep.moduleName), overloads) of
+      just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+    | nothing() -> nothing()
+    end;
+  local option2::Maybe<Expr> =
+    case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
+      just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+    | nothing() -> nothing()
+    end;
+  local option3::Maybe<Expr> =
+    case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
+      just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+    | nothing() -> nothing()
+    end;
+  top.resolved = orElse(option1, orElse(option2, option3));
 }
 aspect production lshEqOp
 top::AssignOp ::=
 {
   top.baseOp = just(bitOp(lshBitOp(location=top.location), location=top.location));
+  production attribute overloads::[Pair<Pair<String String> (Expr ::= Expr Expr Location)>] with ++;
   production attribute lOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
   production attribute rOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
+  overloads := [];
   lOverloads := [];
   rOverloads := [];
-  top.resolved =
-    orElse(
-      case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
-        just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
-      | nothing() -> nothing()
-      end,
-      case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
-        just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
-      | nothing() -> nothing()
-      end);
+  local option1::Maybe<Expr> =
+    case lookupBy(stringPairEq, pair(top.lop.typerep.moduleName, top.rop.typerep.moduleName), overloads) of
+      just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+    | nothing() -> nothing()
+    end;
+  local option2::Maybe<Expr> =
+    case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
+      just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+    | nothing() -> nothing()
+    end;
+  local option3::Maybe<Expr> =
+    case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
+      just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+    | nothing() -> nothing()
+    end;
+  top.resolved = orElse(option1, orElse(option2, option3));
 }
 aspect production rshEqOp
 top::AssignOp ::=
 {
   top.baseOp = just(bitOp(rshBitOp(location=top.location), location=top.location));
+  production attribute overloads::[Pair<Pair<String String> (Expr ::= Expr Expr Location)>] with ++;
   production attribute lOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
   production attribute rOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
+  overloads := [];
   lOverloads := [];
   rOverloads := [];
-  top.resolved =
-    orElse(
-      case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
-        just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
-      | nothing() -> nothing()
-      end,
-      case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
-        just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
-      | nothing() -> nothing()
-      end);
+  local option1::Maybe<Expr> =
+    case lookupBy(stringPairEq, pair(top.lop.typerep.moduleName, top.rop.typerep.moduleName), overloads) of
+      just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+    | nothing() -> nothing()
+    end;
+  local option2::Maybe<Expr> =
+    case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
+      just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+    | nothing() -> nothing()
+    end;
+  local option3::Maybe<Expr> =
+    case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
+      just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+    | nothing() -> nothing()
+    end;
+  top.resolved = orElse(option1, orElse(option2, option3));
 }
 aspect production andEqOp
 top::AssignOp ::=
 {
   top.baseOp = just(bitOp(andBitOp(location=top.location), location=top.location));
+  production attribute overloads::[Pair<Pair<String String> (Expr ::= Expr Expr Location)>] with ++;
   production attribute lOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
   production attribute rOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
+  overloads := [];
   lOverloads := [];
   rOverloads := [];
-  top.resolved =
-    orElse(
-      case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
-        just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
-      | nothing() -> nothing()
-      end,
-      case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
-        just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
-      | nothing() -> nothing()
-      end);
+  local option1::Maybe<Expr> =
+    case lookupBy(stringPairEq, pair(top.lop.typerep.moduleName, top.rop.typerep.moduleName), overloads) of
+      just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+    | nothing() -> nothing()
+    end;
+  local option2::Maybe<Expr> =
+    case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
+      just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+    | nothing() -> nothing()
+    end;
+  local option3::Maybe<Expr> =
+    case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
+      just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+    | nothing() -> nothing()
+    end;
+  top.resolved = orElse(option1, orElse(option2, option3));
 }
 aspect production orEqOp
 top::AssignOp ::=
 {
   top.baseOp = just(bitOp(orBitOp(location=top.location), location=top.location));
+  production attribute overloads::[Pair<Pair<String String> (Expr ::= Expr Expr Location)>] with ++;
   production attribute lOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
   production attribute rOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
+  overloads := [];
   lOverloads := [];
   rOverloads := [];
-  top.resolved =
-    orElse(
-      case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
-        just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
-      | nothing() -> nothing()
-      end,
-      case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
-        just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
-      | nothing() -> nothing()
-      end);
+  local option1::Maybe<Expr> =
+    case lookupBy(stringPairEq, pair(top.lop.typerep.moduleName, top.rop.typerep.moduleName), overloads) of
+      just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+    | nothing() -> nothing()
+    end;
+  local option2::Maybe<Expr> =
+    case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
+      just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+    | nothing() -> nothing()
+    end;
+  local option3::Maybe<Expr> =
+    case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
+      just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+    | nothing() -> nothing()
+    end;
+  top.resolved = orElse(option1, orElse(option2, option3));
 }
 aspect production xorEqOp
 top::AssignOp ::=
 {
   top.baseOp = just(bitOp(xorBitOp(location=top.location), location=top.location));
+  production attribute overloads::[Pair<Pair<String String> (Expr ::= Expr Expr Location)>] with ++;
   production attribute lOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
   production attribute rOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
+  overloads := [];
   lOverloads := [];
   rOverloads := [];
-  top.resolved =
-    orElse(
-      case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
-        just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
-      | nothing() -> nothing()
-      end,
-      case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
-        just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
-      | nothing() -> nothing()
-      end);
+  local option1::Maybe<Expr> =
+    case lookupBy(stringPairEq, pair(top.lop.typerep.moduleName, top.rop.typerep.moduleName), overloads) of
+      just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+    | nothing() -> nothing()
+    end;
+  local option2::Maybe<Expr> =
+    case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
+      just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+    | nothing() -> nothing()
+    end;
+  local option3::Maybe<Expr> =
+    case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
+      just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+    | nothing() -> nothing()
+    end;
+  top.resolved = orElse(option1, orElse(option2, option3));
 }
 
 --------------------------------------------------------------------------------
@@ -270,38 +358,54 @@ top::BinOp ::= op::BoolOp
 aspect production andBoolOp
 top::BoolOp ::=
 {
+  production attribute overloads::[Pair<Pair<String String> (Expr ::= Expr Expr Location)>] with ++;
   production attribute lOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
   production attribute rOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
+  overloads := [];
   lOverloads := [];
   rOverloads := [];
-  top.resolved =
-    orElse(
-      case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
-        just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
-      | nothing() -> nothing()
-      end,
-      case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
-        just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
-      | nothing() -> nothing()
-      end);
+  local option1::Maybe<Expr> =
+    case lookupBy(stringPairEq, pair(top.lop.typerep.moduleName, top.rop.typerep.moduleName), overloads) of
+      just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+    | nothing() -> nothing()
+    end;
+  local option2::Maybe<Expr> =
+    case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
+      just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+    | nothing() -> nothing()
+    end;
+  local option3::Maybe<Expr> =
+    case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
+      just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+    | nothing() -> nothing()
+    end;
+  top.resolved = orElse(option1, orElse(option2, option3));
 }
 aspect production orBoolOp
 top::BoolOp ::=
 {
+  production attribute overloads::[Pair<Pair<String String> (Expr ::= Expr Expr Location)>] with ++;
   production attribute lOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
   production attribute rOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
+  overloads := [];
   lOverloads := [];
   rOverloads := [];
-  top.resolved =
-    orElse(
-      case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
-        just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
-      | nothing() -> nothing()
-      end,
-      case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
-        just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
-      | nothing() -> nothing()
-      end);
+  local option1::Maybe<Expr> =
+    case lookupBy(stringPairEq, pair(top.lop.typerep.moduleName, top.rop.typerep.moduleName), overloads) of
+      just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+    | nothing() -> nothing()
+    end;
+  local option2::Maybe<Expr> =
+    case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
+      just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+    | nothing() -> nothing()
+    end;
+  local option3::Maybe<Expr> =
+    case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
+      just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+    | nothing() -> nothing()
+    end;
+  top.resolved = orElse(option1, orElse(option2, option3));
 }
 
 --------------------------------------------------------------------------------
@@ -314,92 +418,132 @@ top::BinOp ::= op::BitOp
 aspect production andBitOp
 top::BitOp ::=
 {
+  production attribute overloads::[Pair<Pair<String String> (Expr ::= Expr Expr Location)>] with ++;
   production attribute lOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
   production attribute rOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
+  overloads := [];
   lOverloads := [];
   rOverloads := [];
-  top.resolved =
-    orElse(
-      case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
-        just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
-      | nothing() -> nothing()
-      end,
-      case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
-        just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
-      | nothing() -> nothing()
-      end);
+  local option1::Maybe<Expr> =
+    case lookupBy(stringPairEq, pair(top.lop.typerep.moduleName, top.rop.typerep.moduleName), overloads) of
+      just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+    | nothing() -> nothing()
+    end;
+  local option2::Maybe<Expr> =
+    case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
+      just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+    | nothing() -> nothing()
+    end;
+  local option3::Maybe<Expr> =
+    case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
+      just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+    | nothing() -> nothing()
+    end;
+  top.resolved = orElse(option1, orElse(option2, option3));
 }
 aspect production orBitOp
 top::BitOp ::=
 {
+  production attribute overloads::[Pair<Pair<String String> (Expr ::= Expr Expr Location)>] with ++;
   production attribute lOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
   production attribute rOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
+  overloads := [];
   lOverloads := [];
   rOverloads := [];
-  top.resolved =
-    orElse(
-      case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
-        just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
-      | nothing() -> nothing()
-      end,
-      case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
-        just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
-      | nothing() -> nothing()
-      end);
+  local option1::Maybe<Expr> =
+    case lookupBy(stringPairEq, pair(top.lop.typerep.moduleName, top.rop.typerep.moduleName), overloads) of
+      just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+    | nothing() -> nothing()
+    end;
+  local option2::Maybe<Expr> =
+    case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
+      just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+    | nothing() -> nothing()
+    end;
+  local option3::Maybe<Expr> =
+    case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
+      just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+    | nothing() -> nothing()
+    end;
+  top.resolved = orElse(option1, orElse(option2, option3));
 }
 aspect production xorBitOp
 top::BitOp ::=
 {
+  production attribute overloads::[Pair<Pair<String String> (Expr ::= Expr Expr Location)>] with ++;
   production attribute lOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
   production attribute rOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
+  overloads := [];
   lOverloads := [];
   rOverloads := [];
-  top.resolved =
-    orElse(
-      case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
-        just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
-      | nothing() -> nothing()
-      end,
-      case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
-        just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
-      | nothing() -> nothing()
-      end);
+  local option1::Maybe<Expr> =
+    case lookupBy(stringPairEq, pair(top.lop.typerep.moduleName, top.rop.typerep.moduleName), overloads) of
+      just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+    | nothing() -> nothing()
+    end;
+  local option2::Maybe<Expr> =
+    case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
+      just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+    | nothing() -> nothing()
+    end;
+  local option3::Maybe<Expr> =
+    case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
+      just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+    | nothing() -> nothing()
+    end;
+  top.resolved = orElse(option1, orElse(option2, option3));
 }
 aspect production lshBitOp
 top::BitOp ::=
 {
+  production attribute overloads::[Pair<Pair<String String> (Expr ::= Expr Expr Location)>] with ++;
   production attribute lOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
   production attribute rOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
+  overloads := [];
   lOverloads := [];
   rOverloads := [];
-  top.resolved =
-    orElse(
-      case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
-        just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
-      | nothing() -> nothing()
-      end,
-      case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
-        just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
-      | nothing() -> nothing()
-      end);
+  local option1::Maybe<Expr> =
+    case lookupBy(stringPairEq, pair(top.lop.typerep.moduleName, top.rop.typerep.moduleName), overloads) of
+      just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+    | nothing() -> nothing()
+    end;
+  local option2::Maybe<Expr> =
+    case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
+      just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+    | nothing() -> nothing()
+    end;
+  local option3::Maybe<Expr> =
+    case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
+      just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+    | nothing() -> nothing()
+    end;
+  top.resolved = orElse(option1, orElse(option2, option3));
 }
 aspect production rshBitOp
 top::BitOp ::=
 {
+  production attribute overloads::[Pair<Pair<String String> (Expr ::= Expr Expr Location)>] with ++;
   production attribute lOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
   production attribute rOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
+  overloads := [];
   lOverloads := [];
   rOverloads := [];
-  top.resolved =
-    orElse(
-      case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
-        just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
-      | nothing() -> nothing()
-      end,
-      case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
-        just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
-      | nothing() -> nothing()
-      end);
+  local option1::Maybe<Expr> =
+    case lookupBy(stringPairEq, pair(top.lop.typerep.moduleName, top.rop.typerep.moduleName), overloads) of
+      just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+    | nothing() -> nothing()
+    end;
+  local option2::Maybe<Expr> =
+    case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
+      just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+    | nothing() -> nothing()
+    end;
+  local option3::Maybe<Expr> =
+    case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
+      just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+    | nothing() -> nothing()
+    end;
+  top.resolved = orElse(option1, orElse(option2, option3));
 }
 
 --------------------------------------------------------------------------------
@@ -412,40 +556,55 @@ top::BinOp ::= op::CompareOp
 aspect production equalsOp
 top::CompareOp ::=
 {
+  production attribute overloads::[Pair<Pair<String String> (Expr ::= Expr Expr Location)>] with ++;
   production attribute lOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
   production attribute rOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
+  overloads := [];
   lOverloads := [];
   rOverloads := [];
-  top.resolved =
-    orElse(
-      case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
-        just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
-      | nothing() -> nothing()
-      end,
-      case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
-        just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
-      | nothing() -> nothing()
-      end);
-}
-aspect production notEqualsOp
-top::CompareOp ::=
-{
-  production attribute lOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
-  production attribute rOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
-  lOverloads := [];
-  rOverloads := [];
-  
   local option1::Maybe<Expr> =
-    case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
+    case lookupBy(stringPairEq, pair(top.lop.typerep.moduleName, top.rop.typerep.moduleName), overloads) of
       just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
     | nothing() -> nothing()
     end;
   local option2::Maybe<Expr> =
-    case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
+    case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
       just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
     | nothing() -> nothing()
     end;
   local option3::Maybe<Expr> =
+    case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
+      just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+    | nothing() -> nothing()
+    end;
+  top.resolved = orElse(option1, orElse(option2, option3));
+}
+aspect production notEqualsOp
+top::CompareOp ::=
+{
+  production attribute overloads::[Pair<Pair<String String> (Expr ::= Expr Expr Location)>] with ++;
+  production attribute lOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
+  production attribute rOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
+  overloads := [];
+  lOverloads := [];
+  rOverloads := [];
+  
+  local option1::Maybe<Expr> =
+    case lookupBy(stringPairEq, pair(top.lop.typerep.moduleName, top.rop.typerep.moduleName), overloads) of
+      just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+    | nothing() -> nothing()
+    end;
+  local option2::Maybe<Expr> =
+    case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
+      just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+    | nothing() -> nothing()
+    end;
+  local option3::Maybe<Expr> =
+    case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
+      just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+    | nothing() -> nothing()
+    end;
+  local option4::Maybe<Expr> =
     just(
       unaryOpExpr(
         notOp(location=top.location),
@@ -456,63 +615,86 @@ top::CompareOp ::=
           location=top.location),
         location=top.location)); 
   
-  top.resolved = orElse(option1, orElse(option2, option3));
+  top.resolved = orElse(option1, orElse(option2, orElse(option3, option4)));
 }
 aspect production gtOp
 top::CompareOp ::=
 {
+  production attribute overloads::[Pair<Pair<String String> (Expr ::= Expr Expr Location)>] with ++;
   production attribute lOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
   production attribute rOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
+  overloads := [];
   lOverloads := [];
   rOverloads := [];
-  top.resolved =
-    orElse(
-      case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
-        just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
-      | nothing() -> nothing()
-      end,
-      case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
-        just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
-      | nothing() -> nothing()
-      end);
-}
-aspect production ltOp
-top::CompareOp ::=
-{
-  production attribute lOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
-  production attribute rOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
-  lOverloads := [];
-  rOverloads := [];
-  top.resolved =
-    orElse(
-      case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
-        just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
-      | nothing() -> nothing()
-      end,
-      case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
-        just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
-      | nothing() -> nothing()
-      end);
-}
-aspect production gteOp
-top::CompareOp ::=
-{
-  production attribute lOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
-  production attribute rOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
-  lOverloads := [];
-  rOverloads := [];
-  
   local option1::Maybe<Expr> =
-    case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
+    case lookupBy(stringPairEq, pair(top.lop.typerep.moduleName, top.rop.typerep.moduleName), overloads) of
       just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
     | nothing() -> nothing()
     end;
   local option2::Maybe<Expr> =
-    case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
+    case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
       just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
     | nothing() -> nothing()
     end;
   local option3::Maybe<Expr> =
+    case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
+      just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+    | nothing() -> nothing()
+    end;
+  top.resolved = orElse(option1, orElse(option2, option3));
+}
+aspect production ltOp
+top::CompareOp ::=
+{
+  production attribute overloads::[Pair<Pair<String String> (Expr ::= Expr Expr Location)>] with ++;
+  production attribute lOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
+  production attribute rOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
+  overloads := [];
+  lOverloads := [];
+  rOverloads := [];
+  local option1::Maybe<Expr> =
+    case lookupBy(stringPairEq, pair(top.lop.typerep.moduleName, top.rop.typerep.moduleName), overloads) of
+      just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+    | nothing() -> nothing()
+    end;
+  local option2::Maybe<Expr> =
+    case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
+      just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+    | nothing() -> nothing()
+    end;
+  local option3::Maybe<Expr> =
+    case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
+      just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+    | nothing() -> nothing()
+    end;
+  top.resolved = orElse(option1, orElse(option2, option3));
+}
+aspect production gteOp
+top::CompareOp ::=
+{
+  production attribute overloads::[Pair<Pair<String String> (Expr ::= Expr Expr Location)>] with ++;
+  production attribute lOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
+  production attribute rOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
+  overloads := [];
+  lOverloads := [];
+  rOverloads := [];
+  
+  local option1::Maybe<Expr> =
+    case lookupBy(stringPairEq, pair(top.lop.typerep.moduleName, top.rop.typerep.moduleName), overloads) of
+      just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+    | nothing() -> nothing()
+    end;
+  local option2::Maybe<Expr> =
+    case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
+      just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+    | nothing() -> nothing()
+    end;
+  local option3::Maybe<Expr> =
+    case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
+      just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+    | nothing() -> nothing()
+    end;
+  local option4::Maybe<Expr> =
     just(
       unaryOpExpr(
         notOp(location=top.location),
@@ -523,27 +705,34 @@ top::CompareOp ::=
           location=top.location),
         location=top.location)); 
   
-  top.resolved = orElse(option1, orElse(option2, option3));
+  top.resolved = orElse(option1, orElse(option2, orElse(option3, option4)));
 }
 aspect production lteOp
 top::CompareOp ::=
 {
+  production attribute overloads::[Pair<Pair<String String> (Expr ::= Expr Expr Location)>] with ++;
   production attribute lOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
   production attribute rOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
+  overloads := [];
   lOverloads := [];
   rOverloads := [];
   
   local option1::Maybe<Expr> =
-    case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
+    case lookupBy(stringPairEq, pair(top.lop.typerep.moduleName, top.rop.typerep.moduleName), overloads) of
       just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
     | nothing() -> nothing()
     end;
   local option2::Maybe<Expr> =
-    case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
+    case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
       just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
     | nothing() -> nothing()
     end;
   local option3::Maybe<Expr> =
+    case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
+      just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+    | nothing() -> nothing()
+    end;
+  local option4::Maybe<Expr> =
     just(
       unaryOpExpr(
         notOp(location=top.location),
@@ -554,7 +743,7 @@ top::CompareOp ::=
           location=top.location),
         location=top.location)); 
   
-  top.resolved = orElse(option1, orElse(option2, option3));
+  top.resolved = orElse(option1, orElse(option2, orElse(option3, option4)));
 }
 
 
@@ -568,83 +757,138 @@ top::BinOp ::= op::NumOp
 aspect production addOp
 top::NumOp ::=
 {
+  production attribute overloads::[Pair<Pair<String String> (Expr ::= Expr Expr Location)>] with ++;
   production attribute lOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
   production attribute rOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
+  overloads := [];
   lOverloads := [];
   rOverloads := [];
-  top.resolved =
-    orElse(
-      case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
-        just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
-      | nothing() -> nothing()
-      end,
-      case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
-        just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
-      | nothing() -> nothing()
-      end);
+  local option1::Maybe<Expr> =
+    case lookupBy(stringPairEq, pair(top.lop.typerep.moduleName, top.rop.typerep.moduleName), overloads) of
+      just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+    | nothing() -> nothing()
+    end;
+  local option2::Maybe<Expr> =
+    case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
+      just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+    | nothing() -> nothing()
+    end;
+  local option3::Maybe<Expr> =
+    case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
+      just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+    | nothing() -> nothing()
+    end;
+  top.resolved = orElse(option1, orElse(option2, option3));
 }
 aspect production subOp
 top::NumOp ::=
 {
+  production attribute overloads::[Pair<Pair<String String> (Expr ::= Expr Expr Location)>] with ++;
   production attribute lOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
   production attribute rOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
+  overloads := [];
   lOverloads := [];
   rOverloads := [];
-  top.resolved =
-    orElse(
-      case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
-        just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
-      | nothing() -> nothing()
-      end,
-      case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
-        just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
-      | nothing() -> nothing()
-      end);
+  local option1::Maybe<Expr> =
+    case lookupBy(stringPairEq, pair(top.lop.typerep.moduleName, top.rop.typerep.moduleName), overloads) of
+      just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+    | nothing() -> nothing()
+    end;
+  local option2::Maybe<Expr> =
+    case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
+      just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+    | nothing() -> nothing()
+    end;
+  local option3::Maybe<Expr> =
+    case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
+      just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+    | nothing() -> nothing()
+    end;
+  top.resolved = orElse(option1, orElse(option2, option3));
 }
 aspect production mulOp
 top::NumOp ::=
 {
+  production attribute overloads::[Pair<Pair<String String> (Expr ::= Expr Expr Location)>] with ++;
   production attribute lOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
   production attribute rOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
+  overloads := [];
   lOverloads := [];
   rOverloads := [];
-  top.resolved =
-    orElse(
-      case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
-        just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
-      | nothing() -> nothing()
-      end,
-      case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
-        just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
-      | nothing() -> nothing()
-      end);
+  local option1::Maybe<Expr> =
+    case lookupBy(stringPairEq, pair(top.lop.typerep.moduleName, top.rop.typerep.moduleName), overloads) of
+      just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+    | nothing() -> nothing()
+    end;
+  local option2::Maybe<Expr> =
+    case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
+      just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+    | nothing() -> nothing()
+    end;
+  local option3::Maybe<Expr> =
+    case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
+      just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+    | nothing() -> nothing()
+    end;
+  top.resolved = orElse(option1, orElse(option2, option3));
 }
 aspect production divOp
 top::NumOp ::=
 {
+  production attribute overloads::[Pair<Pair<String String> (Expr ::= Expr Expr Location)>] with ++;
   production attribute lOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
   production attribute rOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
+  overloads := [];
   lOverloads := [];
   rOverloads := [];
-  top.resolved =
-    orElse(
-      case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
-        just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
-      | nothing() -> nothing()
-      end,
-      case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
-        just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
-      | nothing() -> nothing()
-      end);
+  local option1::Maybe<Expr> =
+    case lookupBy(stringPairEq, pair(top.lop.typerep.moduleName, top.rop.typerep.moduleName), overloads) of
+      just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+    | nothing() -> nothing()
+    end;
+  local option2::Maybe<Expr> =
+    case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
+      just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+    | nothing() -> nothing()
+    end;
+  local option3::Maybe<Expr> =
+    case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
+      just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+    | nothing() -> nothing()
+    end;
+  top.resolved = orElse(option1, orElse(option2, option3));
 }
 aspect production modOp
 top::NumOp ::=
 {
-  production attribute overloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
+  production attribute overloads::[Pair<Pair<String String> (Expr ::= Expr Expr Location)>] with ++;
+  production attribute lOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
+  production attribute rOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
   overloads := [];
-  top.resolved =
-    case lookupBy(stringEq, top.lop.typerep.moduleName ++ " " ++ top.rop.typerep.moduleName, overloads) of
+  lOverloads := [];
+  rOverloads := [];
+  local option1::Maybe<Expr> =
+    case lookupBy(stringPairEq, pair(top.lop.typerep.moduleName, top.rop.typerep.moduleName), overloads) of
       just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
     | nothing() -> nothing()
     end;
+  local option2::Maybe<Expr> =
+    case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
+      just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+    | nothing() -> nothing()
+    end;
+  local option3::Maybe<Expr> =
+    case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
+      just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
+    | nothing() -> nothing()
+    end;
+  top.resolved = orElse(option1, orElse(option2, option3));
+}
+
+
+--------------------------------------------------------------------------------
+function stringPairEq
+Boolean ::= p1::Pair<String String> p2::Pair<String String>
+{
+  return p1.fst == p2.fst && p1.snd == p2.snd;
 }
