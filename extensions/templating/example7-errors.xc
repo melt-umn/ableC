@@ -21,6 +21,8 @@ ptr<a> new(a x) {
 template<a>
 a deref(ptr<a> x) {
   return &(x.contents);
+  return &(x.contents);
+  return &(x.contents);
 }
 
 template<a>

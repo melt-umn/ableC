@@ -28,7 +28,10 @@ top::Expr ::= n::Name ts::TypeNames
       declRefExpr(name(templateMangledName(n.name, ts.typereps), location=builtin), location=builtin),
       location=top.location);
   
-  forwards to mkErrorCheck(localErrors, fwrd); 
+  forwards to
+    if containsErrorType(ts.typereps)
+    then errorExpr([], location=top.location)
+    else mkErrorCheck(localErrors, fwrd);
 }
 
 abstract production templateTypedefTypeExpr
@@ -64,7 +67,12 @@ top::BaseTypeExpr ::= q::[Qualifier] n::Name ts::TypeNames
       consDecl(decl, nilDecl()),
       typedefTypeExpr(q, name(templateMangledName(n.name, ts.typereps), location=builtin)));
   
-  forwards to if !null(localErrors) then errorTypeExpr(localErrors) else fwrd; 
+  forwards to
+    if containsErrorType(ts.typereps)
+    then errorTypeExpr([])
+    else if !null(localErrors)
+    then errorTypeExpr(localErrors)
+    else fwrd;
 }
 
 abstract production templateExprInstDecl
@@ -191,4 +199,13 @@ function templateMangledRefId
 String ::= n::String params::[Type]
 {
   return s"edu:umn:cs:melt:exts:ableC:templating:${templateMangledName(n, params)}";
+}
+
+function containsErrorType
+Boolean ::= ts::[Type]
+{
+  return
+    foldr(
+      \ a::Boolean b::Boolean -> a || b, false,
+      map(\ t::Type -> case t of errorType() -> true | _ -> false end, ts));
 }
