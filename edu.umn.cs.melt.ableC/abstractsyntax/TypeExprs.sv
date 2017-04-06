@@ -25,6 +25,11 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax;
  - 
  - Invariant: a BaseTypeExpr and its corresponding TypeModifierExpr should have
  - the same environment
+ -
+ - Since BaseTypeExpr may contain new declarations, another invariant is that
+ - extension productions containing a BaseTypeExpr must forward to a tree
+ - containing that BaseTypeExpr exactly once.  However, they are free to use
+ - directTypeExpr(ty.typerep) as many times as needed.    
  -}
 
 autocopy attribute baseType :: Type;
@@ -107,7 +112,7 @@ top::BaseTypeExpr ::= msg::[Message]  ty::BaseTypeExpr
 abstract production directTypeExpr
 top::BaseTypeExpr ::= result::Type
 {
-  propagate host;
+  ---propagate host;
   
   top.pp = parens(cat(result.lpp, result.rpp));
   top.typerep = result;
@@ -440,7 +445,7 @@ top::TypeModifierExpr ::= result::TypeModifierExpr  args::Parameters  variadic::
   top.rpp = 
     cat(parens(
       if null(args.pps) 
-      then text("void") 
+      then text("void")
       else ppImplode(text(", "), 
             (if variadic then args.pps ++ [text("...")] else args.pps) 
            )
@@ -490,7 +495,7 @@ top::TypeModifierExpr ::= wrapped::TypeModifierExpr
 --  top.typerep = original.typerep; -- {-TODO-};
 --}
 
-nonterminal TypeNames with pps, host<TypeNames>, lifted<TypeNames>, env, typereps, errors, globalDecls, defs, returnType, freeVariables;
+nonterminal TypeNames with pps, host<TypeNames>, lifted<TypeNames>, env, typereps, count, errors, globalDecls, defs, returnType, freeVariables;
 
 abstract production consTypeName
 top::TypeNames ::= h::TypeName t::TypeNames
@@ -498,10 +503,13 @@ top::TypeNames ::= h::TypeName t::TypeNames
   propagate host, lifted;
   top.pps = h.pp :: t.pps;
   top.typereps = h.typerep :: t.typereps;
+  top.count = t.count + 1;
   top.globalDecls := h.globalDecls ++ t.globalDecls;
   top.errors := h.errors ++ t.errors;
   top.defs := h.defs ++ t.defs;
   top.freeVariables = h.freeVariables ++ t.freeVariables;
+  
+  t.env = addEnv(h.defs, h.env);
 }
 
 abstract production nilTypeName
@@ -510,6 +518,7 @@ top::TypeNames ::=
   propagate host, lifted;
   top.pps = [];
   top.typereps = [];
+  top.count = 0;
   top.globalDecls := [];
   top.errors := [];
   top.defs := [];

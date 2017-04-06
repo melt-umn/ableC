@@ -108,13 +108,7 @@ top::NoncanonicalType ::= original::Type  pointer::Type
 aspect production typedefType
 top::NoncanonicalType ::= q::[Qualifier]  n::String  resolved::Type
 {
-  local substitutions::Substitutions = top.substitutions;
-  substitutions.nameIn = n;
-  top.substituted =
-    case substitutions.typedefSub of
-      just(sub) -> resolvedType(sub)
-    | nothing() -> typedefType(q, n, resolved.substituted) -- TODO: handle nameSub
-    end;
+  propagate substituted;
 }
 
 aspect production typeofType

@@ -39,7 +39,7 @@ top::Stmt ::= s::Stmt
   top.pp = braces(nestlines(2, s.pp));
   top.errors := s.errors;
   top.globalDecls := s.globalDecls;
-  top.defs := []; -- compound prevents declarations from bubbling up
+  top.defs := globalDeclsDefs(s.globalDecls); -- compound prevents defs from bubbling up
   top.freeVariables = s.freeVariables;
   top.functiondefs := s.functiondefs;
 
@@ -120,16 +120,15 @@ top::Stmt ::= c::Expr  t::Stmt  e::Stmt
   -- A selection statement is a block whose scope is a strict subset of the scope of its
   -- enclosing block. Each associated substatement is also a block whose scope is a strict
   -- subset of the scope of the selection statement.
-  top.defs := [];
+  top.defs := globalDeclsDefs(c.globalDecls) ++ globalDeclsDefs(t.globalDecls) ++ globalDeclsDefs(e.globalDecls);
   top.freeVariables =
     c.freeVariables ++
     removeDefsFromNames(c.defs, t.freeVariables) ++
     removeDefsFromNames(c.defs, e.freeVariables);
   
   c.env = openScope(top.env);
-  local newEnv :: Decorated Env = addEnv(c.defs, c.env);
-  t.env = newEnv;
-  e.env = newEnv;
+  t.env = addEnv(c.defs, c.env);
+  e.env = addEnv(globalDeclsDefs(t.globalDecls), t.env);
   
   top.errors <-
     if c.typerep.defaultFunctionArrayLvalueConversion.isScalarType then []
@@ -158,7 +157,7 @@ top::Stmt ::= e::Expr  b::Stmt
   -- An iteration statement is a block whose scope is a strict subset of the scope of its
   -- enclosing block. The loop body is also a block whose scope is a strict subset of the scope
   -- of the iteration statement.
-  top.defs := [];
+  top.defs := globalDeclsDefs(e.globalDecls) ++ globalDeclsDefs(b.globalDecls);
   top.freeVariables =
     e.freeVariables ++
     removeDefsFromNames(e.defs, b.freeVariables);
@@ -185,13 +184,13 @@ top::Stmt ::= b::Stmt  e::Expr
   -- An iteration statement is a block whose scope is a strict subset of the scope of its
   -- enclosing block. The loop body is also a block whose scope is a strict subset of the scope
   -- of the iteration statement.
-  top.defs := [];
+  top.defs := globalDeclsDefs(b.globalDecls) ++ globalDeclsDefs(e.globalDecls);
   top.freeVariables =
     b.freeVariables ++
     removeDefsFromNames(b.defs, e.freeVariables);
   
   b.env = openScope(top.env);
-  e.env = b.env;
+  e.env = addEnv(globalDeclsDefs(b.globalDecls), b.env);
 
   top.errors <-
     if e.typerep.defaultFunctionArrayLvalueConversion.isScalarType then []
@@ -212,7 +211,11 @@ top::Stmt ::= i::MaybeExpr  c::MaybeExpr  s::MaybeExpr  b::Stmt
   -- An iteration statement is a block whose scope is a strict subset of the scope of its
   -- enclosing block. The loop body is also a block whose scope is a strict subset of the scope
   -- of the iteration statement.
-  top.defs := [];
+  top.defs :=
+    globalDeclsDefs(i.globalDecls) ++
+    globalDeclsDefs(c.globalDecls) ++
+    globalDeclsDefs(s.globalDecls) ++
+    globalDeclsDefs(b.globalDecls);
   top.freeVariables =
     i.freeVariables ++
     removeDefsFromNames(i.defs, c.freeVariables) ++
@@ -243,7 +246,11 @@ top::Stmt ::= i::Decl  c::MaybeExpr  s::MaybeExpr  b::Stmt
   -- An iteration statement is a block whose scope is a strict subset of the scope of its
   -- enclosing block. The loop body is also a block whose scope is a strict subset of the scope
   -- of the iteration statement.
-  top.defs := [];
+  top.defs :=
+    globalDeclsDefs(i.globalDecls) ++
+    globalDeclsDefs(c.globalDecls) ++
+    globalDeclsDefs(s.globalDecls) ++
+    globalDeclsDefs(b.globalDecls);
   top.freeVariables =
     i.freeVariables ++
     removeDefsFromNames(i.defs, c.freeVariables) ++
@@ -297,7 +304,7 @@ top::Stmt ::= e::Expr  b::Stmt
   -- A selection statement is a block whose scope is a strict subset of the scope of its
   -- enclosing block. Each associated substatement is also a block whose scope is a strict
   -- subset of the scope of the selection statement.
-  top.defs := [];
+  top.defs := globalDeclsDefs(e.globalDecls) ++ globalDeclsDefs(b.globalDecls);
   top.freeVariables =
     e.freeVariables ++
     removeDefsFromNames(e.defs, b.freeVariables);

@@ -68,7 +68,7 @@ top::Expr ::= e::Expr
 {
   propagate host, lifted;
   top.pp = parens( e.pp );
-  top.errors := [];
+  top.errors := e.errors;
   top.globalDecls := e.globalDecls;
   top.defs := e.defs;
   top.freeVariables = e.freeVariables;
@@ -205,11 +205,18 @@ top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
   top.defs := lhs.defs;
   top.freeVariables = lhs.freeVariables;
   
+  local isPointer::Boolean =
+    case lhs.typerep of
+    | pointerType(_, tagType(q, refIdTagType(_, _, rid))) -> true
+    | tagType(q, refIdTagType(_, _, rid)) -> false
+    | _ -> false
+    end;
+  
   local quals_refid :: Pair<[Qualifier] String> =
-    case deref, lhs.typerep of
-    | true, pointerType(_, tagType(q, refIdTagType(_, _, rid))) -> pair(q, rid)
-    | false, tagType(q, refIdTagType(_, _, rid)) -> pair(q, rid)
-    | _, _ -> pair([], "")
+    case lhs.typerep of
+    | pointerType(_, tagType(q, refIdTagType(_, _, rid))) -> pair(q, rid)
+    | tagType(q, refIdTagType(_, _, rid)) -> pair(q, rid)
+    | _ -> pair([], "")
     end;
   
   local refids :: [RefIdItem] =
@@ -227,10 +234,12 @@ top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
   top.errors <-
     if null(refids) then 
       [err(lhs.location, "expression does not have defined fields (got " ++ showType(lhs.typerep) ++ ")")]
-    else if null(valueitems) then
+    else if isPointer != deref then 
       if deref
       then [err(lhs.location, "expression does not have pointer to struct or union type (got " ++ showType(lhs.typerep) ++ ")")]
-      else [err(lhs.location, "expression does not have struct or union type (got " ++ showType(lhs.typerep) ++ ")")]
+      else [err(lhs.location, "expression does not have struct or union type (got " ++ showType(lhs.typerep) ++ ", did you mean to use -> ?)")]
+    else if null(valueitems) then
+      [err(lhs.location, "expression does not field " ++ rhs.name)]
     else [];
 }
 abstract production binaryOpExpr
@@ -414,7 +423,7 @@ top::Expr ::= body::Stmt result::Expr
   top.pp = concat([text("({"), nestlines(2, concat([body.pp, line(), result.pp, text("; })")]))]);
   top.errors := body.errors ++ result.errors;
   top.globalDecls := body.globalDecls ++ result.globalDecls;
-  top.defs := []; -- defs are *not* propagated up. This is beginning of a scope.
+  top.defs := globalDeclsDefs(body.globalDecls) ++ globalDeclsDefs(result.globalDecls); -- defs are *not* propagated up. This is beginning of a scope.
   top.freeVariables = body.freeVariables ++ removeDefsFromNames(body.defs, result.freeVariables);
   top.typerep = result.typerep;
   

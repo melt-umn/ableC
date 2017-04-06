@@ -38,7 +38,21 @@ top::Attrib ::= n::AttribName
 aspect production appliedAttrib
 top::Attrib ::= n::AttribName  e::Exprs
 {
-  propagate substituted;
+  local substitutions::Substitutions = top.substitutions;
+  substitutions.nameIn =
+    case n, e of
+      attribName(n), consExpr(stringLiteral(s), nilExpr()) ->
+        if n.name == "refId" then substring(1, length(s) - 1, s) else ""
+    | _, _ -> ""
+    end;
+  top.substituted =
+    case substitutions.refIdSub of
+      just(sub) ->
+        appliedAttrib(
+          n,
+          consExpr(stringLiteral(s"\"${sub}\"", location=builtinLoc("substituted")), nilExpr()))
+    | nothing() -> appliedAttrib(n.substituted, e.substituted)
+    end;
 }
 aspect production idAppliedAttrib
 top::Attrib ::= n::AttribName  id::Name  e::Exprs

@@ -1,38 +1,37 @@
 grammar edu:umn:cs:melt:exts:ableC:vector:abstractsyntax;
 
-function mkVectorTypedefGlobalDecls
-[Pair<String Decl>] ::= sub::Type
-{
-  local vectorTypedefDecl::Decl = parseDecl(s"""
-typedef struct __attribute__((refId("edu:umn:cs:melt:exts:ableC:vector:_vector_${sub.mangledName}_s"))) _vector_${sub.mangledName}_s {
-  struct _vector_info _info;
-  __sub_type__ *_contents;
-} *_vector_${sub.mangledName};
-""");
-
-  return
-    [pair(
-      "_vector_" ++ sub.mangledName,
-      subDecl([typedefSubstitution("__sub_type__", sub)], vectorTypedefDecl))];
-}
-
 abstract production vectorTypeExpr 
-top::BaseTypeExpr ::= sub::TypeName
+top::BaseTypeExpr ::= q::[Qualifier] sub::TypeName
 {
   propagate substituted;
+  top.pp = pp"${terminate(space(), map((.pp), q))}vector<${sub.pp}>";
+  
   sub.env = globalEnv(top.env);
   
+  local localErrors::[Message] =
+    sub.errors ++ checkVectorHeaderDef("_vector_s", builtin, top.env); -- TODO: location
+  
   forwards to
-    if !null(sub.errors)
-    then errorTypeExpr(sub.errors)
-    else directTypeExpr(vectorType([], sub.typerep));
+    if !null(localErrors)
+    then errorTypeExpr(localErrors)
+    else
+      injectGlobalDeclsTypeExpr(
+        foldDecl([
+          templateTypeExprInstDecl(
+            q,
+            name("_vector_s", location=builtin),
+            consTypeName(sub, nilTypeName()))]),
+        directTypeExpr(vectorType(q, sub.typerep)));
 }
 
 abstract production vectorType
-top::Type ::= qs::[Qualifier] sub::Type
+top::Type ::= q::[Qualifier] sub::Type
 {
-  top.lpp = pp"${ppImplode(space(), map((.pp), qs))}vector<${sub.lpp}${sub.rpp}>";
+  top.lpp = pp"${terminate(space(), map((.pp), q))}vector<${sub.lpp}${sub.rpp}>";
   top.rpp = pp"";
+  
+  top.withoutTypeQualifiers = vectorType([], sub);
+  top.withTypeQualifiers = vectorType(top.addedTypeQualifiers ++ q, sub);
 
   top.ovrld:lBinaryPlusProd =
     case top.ovrld:otherType of
@@ -97,19 +96,34 @@ top::Type ::= qs::[Qualifier] sub::Type
     end;
 
   forwards to
-    noncanonicalType(
-      injectGlobalDeclsType(
-        mkVectorTypedefGlobalDecls(sub),
-        noncanonicalType(
-          typedefType(
-            qs,
-            "_vector_" ++ sub.mangledName,
-            pointerType(
-              [],
-              tagType(
-                [],
-                refIdTagType(
-                  structSEU(),
-                  "_vector_" ++ sub.mangledName ++ "_s",
-                  "edu:umn:cs:melt:exts:ableC:vector:_vector_" ++ sub.mangledName ++ "_s")))))));
+    pointerType(
+      q,
+      tagType(
+        [],
+        refIdTagType(
+          structSEU(),
+          templateMangledName("_vector_s", [sub]),
+          templateMangledRefId("_vector_s", [sub]))));
+}
+
+-- Find the sub-type of a vector type in a non-interfering way
+function vectorSubType
+Type ::= t::Type env::Decorated Env
+{
+  local refId::String =
+    case t of
+      pointerType(_, tagType(_, refIdTagType(_, _, refId))) -> refId
+    | _ -> ""
+    end;
+  local refIds::[RefIdItem] = lookupRefId(refId, env);
+  local valueItems::[ValueItem] = lookupValue("_contents", head(refIds).tagEnv);
+  local ptrType::Type = head(valueItems).typerep;
+
+  return
+    case refIds, valueItems, ptrType of
+      [], _, _ -> errorType()
+    | _, [], _ -> errorType()
+    | _, _, pointerType(_, sub) -> sub
+    | _, _, _ -> errorType()
+    end;
 }

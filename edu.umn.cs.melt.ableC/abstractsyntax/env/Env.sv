@@ -12,13 +12,13 @@ nonterminal Env with labels, tags, values, refIds, misc;
  - A list of definitions, only used in contributing new names to the environment.
  -}
 nonterminal Defs 
-  with labelContribs, tagContribs, valueContribs, refIdContribs, miscContribs;
+  with labelContribs, tagContribs, valueContribs, refIdContribs, miscContribs, globalDefs;
 
 {--
  - An individual definition of a name.
  -}
 closed nonterminal Def 
-  with labelContribs, tagContribs, valueContribs, refIdContribs, miscContribs;
+  with labelContribs, tagContribs, valueContribs, refIdContribs, miscContribs, globalDefs;
 
 
 {--
@@ -82,19 +82,7 @@ Decorated Env ::= e::Decorated Env
 function globalEnv
 Decorated Env ::= e::Decorated Env
 {
-  -- Two different methods of getting the global env
-  --return decorate globalEnv_i(e) with {};
-  return globalEnvHelp(e, []);
-}
-
-function globalEnvHelp
-Decorated Env ::= e::Decorated Env ds::[Defs]
-{
-  return case e of
-    emptyEnv_i() -> foldr(addEnvDefs, emptyEnv(), ds)
-  | addEnv_i(d, e) -> globalEnvHelp(e, d :: ds)
-  | openScope_i(e) -> globalEnvHelp(e, [])
-  end;
+  return decorate globalEnv_i(e) with {};
 }
 
 -- Environment lookup functions

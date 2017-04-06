@@ -1,4 +1,3 @@
-#include <closure.h>
 #include <gc.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -8,7 +7,7 @@ int f(int a) {
 }
 
 int main (int argc, char **argv) {
-  closure((int) -> int) fun = lambda (int x) . (({printf("%d\n", x); f(x);}));
+  closure<(int) -> int> fun = lambda (int x) -> (({printf("%d\n", x); f(x);}));
 
   int a = fun(1);
 

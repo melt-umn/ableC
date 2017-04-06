@@ -15,7 +15,6 @@ top::Root ::= d::GlobalDecls
   top.pp = terminate(line(), d.pps);
   top.errors := d.errors;
   
-  d.globalDeclEnv = [];
 --  d.env = addEnv(builtinfunctions:initialEnv;
   d.env = addEnv(builtinfunctions:getInitialEnvDefs(), top.env);
   d.returnType = nothing();
