@@ -27,11 +27,44 @@ disambiguate STRUCT, TemplateStruct_t {
 }
 
 concrete production templateStructDecl_c
-top::ExternalDeclaration_c ::= Template_t params::TemplateParameters_c '>' TemplateStruct_t id::Identifier_t '{' ss::StructDeclarationList_c '}'  ';'
+top::ExternalDeclaration_c ::= Template_t params::TemplateParameters_c '>' TemplateStruct_t maa::MaybeAttributes_c id::Identifier_t '{' ss::StructDeclarationList_c '}'  ';'
 { 
-  top.ast = templateStructDecl(params.ast, [], ast:fromId(id), ast:foldStructItem(ss.ast));
+  top.ast = templateStructDecl(params.ast, maa.ast, ast:fromId(id), ast:foldStructItem(ss.ast));
 }
 action {
   context = lh:closeScope(context); -- Opened by TemplateParams_c
   context = lh:addTypenamesToScope([ast:fromId(id)], context);
 }
+
+nonterminal MaybeAttributes_c with ast<[ast:Attribute]>;
+
+concrete productions top::MaybeAttributes_c
+| aa::Attributes_c
+  { top.ast = aa.ast; }
+| 
+  { top.ast = []; }
+
+{-
+concrete production templateStructDecl_c
+top::ExternalDeclaration_c ::= Template_t tsd::TemplateStructDecl_c
+{ 
+  top.ast = tsd.ast;
+}
+action {
+  context = lh:closeScope(context); -- Opened by TemplateParams_c
+  context = lh:addTypenamesToScope(tsd.declaredIdents, context);
+}
+
+nonterminal TemplateStructDecl_c with location, declaredIdents, ast<ast:Decl>;
+
+concrete productions top::TemplateStructDecl_c
+| params::TemplateParameters_c '>' TemplateStruct_t id::Identifier_t '{' ss::StructDeclarationList_c '}'  ';'
+  {
+    top.declaredIdents = [ast:fromId(id)];
+    top.ast = templateStructDecl(params.ast, [], ast:fromId(id), ast:foldStructItem(ss.ast));
+  }
+| params::TemplateParameters_c '>' TemplateStruct_t aa::Attributes_c id::Identifier_t '{' ss::StructDeclarationList_c '}'  ';'
+  {
+    top.declaredIdents = [ast:fromId(id)];
+    top.ast = templateStructDecl(params.ast, aa.ast, ast:fromId(id), ast:foldStructItem(ss.ast));
+  }-}
