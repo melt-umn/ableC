@@ -74,7 +74,7 @@ top::Qualifier ::= n::String isPositive::Boolean appliesWithinRef::Boolean
   top.qualIsPositive = isPositive;
   top.qualIsNegative = !isPositive;
   top.qualAppliesWithinRef = appliesWithinRef;
-  top.qualEq = false;
+  top.qualEq = top.qualToCompare.qualname == top.qualname;
 }
 
 {-- Specifiers that apply to specific types.
