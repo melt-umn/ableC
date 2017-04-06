@@ -269,21 +269,28 @@ Boolean ::= q1::[Qualifier]  q2::[Qualifier]  allowSubtypes::Boolean dropOuterQu
 function qualifiersSubtype
 Boolean ::= q1::[Qualifier]  q2::[Qualifier]
 {
-  local pq1 :: [String] = map((.qualname), filter((.qualIsPositive), q1));
-  local pq2 :: [String] = map((.qualname), filter((.qualIsPositive), q2));
-  local nq1 :: [String] = map((.qualname), filter((.qualIsNegative), q1));
-  local nq2 :: [String] = map((.qualname), filter((.qualIsNegative), q2));
+  local pq1 :: [Qualifier] = filter((.qualIsPositive), q1);
+  local pq2 :: [Qualifier] = filter((.qualIsPositive), q2);
+  local nq1 :: [Qualifier] = filter((.qualIsNegative), q1);
+  local nq2 :: [Qualifier] = filter((.qualIsNegative), q2);
 
   return qualSubset(pq1, pq2) && qualSubset(nq2, nq1);
 }
 
 function qualSubset
-Boolean ::= a::[String] b::[String]
+Boolean ::= a::[Qualifier] b::[Qualifier]
 {
   return
     if   null(a)
     then true
-    else containsBy(stringEq, head(a), b) && qualSubset(tail(a), b);
+    else containsBy(qualifierEq, head(a), b) && qualSubset(tail(a), b);
+}
+
+function qualifierEq
+Boolean ::= a::Qualifier b::Qualifier
+{
+  a.qualToCompare = b;
+  return a.qualEq;
 }
 
 {--

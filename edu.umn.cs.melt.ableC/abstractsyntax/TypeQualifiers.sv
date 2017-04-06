@@ -1,7 +1,7 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax;
 
 {-- Type qualifiers (cv or cvr qualifiers) -}
-nonterminal Qualifier with pp, host<Qualifier>, lifted<Qualifier>, qualname, qualIsPositive, qualIsNegative, qualAppliesWithinRef;
+nonterminal Qualifier with pp, host<Qualifier>, lifted<Qualifier>, qualname, qualIsPositive, qualIsNegative, qualAppliesWithinRef, qualEq, qualToCompare;
 
 synthesized attribute qualname :: String;
 synthesized attribute qualIsPositive :: Boolean;
@@ -13,6 +13,10 @@ synthesized attribute qualIsNegative :: Boolean;
 --   but `nonzero int' should be `ref(nonzero int)'.
 synthesized attribute qualAppliesWithinRef :: Boolean;
 
+inherited attribute qualToCompare :: Qualifier;
+-- TODO: rename qualEq, perhaps qualCompatible would be better?
+synthesized attribute qualEq :: Boolean;
+
 abstract production constQualifier
 top::Qualifier ::=
 {
@@ -22,6 +26,7 @@ top::Qualifier ::=
   top.qualIsPositive = true;
   top.qualIsNegative = false;
   top.qualAppliesWithinRef = false;
+  top.qualEq = case top.qualToCompare of constQualifier() -> true | _ -> false end;
 }
 
 abstract production volatileQualifier
@@ -33,6 +38,7 @@ top::Qualifier ::=
   top.qualIsPositive = true;
   top.qualIsNegative = false;
   top.qualAppliesWithinRef = true;
+  top.qualEq = case top.qualToCompare of volatileQualifier() -> true | _ -> false end;
 }
 
 abstract production restrictQualifier
@@ -44,6 +50,7 @@ top::Qualifier ::=
   top.qualIsPositive = false;
   top.qualIsNegative = false;
   top.qualAppliesWithinRef = true;
+  top.qualEq = case top.qualToCompare of restrictQualifier() -> true | _ -> false end;
 }
 
 abstract production uuRestrictQualifier
@@ -55,6 +62,7 @@ top::Qualifier ::=
   top.qualIsPositive = false;
   top.qualIsNegative = false;
   top.qualAppliesWithinRef = true;
+  top.qualEq = case top.qualToCompare of uuRestrictQualifier() -> true | _ -> false end;
 }
 
 abstract production pluggableQualifier
@@ -66,6 +74,7 @@ top::Qualifier ::= n::String isPositive::Boolean appliesWithinRef::Boolean
   top.qualIsPositive = isPositive;
   top.qualIsNegative = !isPositive;
   top.qualAppliesWithinRef = appliesWithinRef;
+  top.qualEq = false;
 }
 
 {-- Specifiers that apply to specific types.
