@@ -456,8 +456,9 @@ top::ParameterDecl ::= storage::[StorageClass]  bty::BaseTypeExpr  mty::TypeModi
 
 
 synthesized attribute refId :: String; -- TODO move this later?
+synthesized attribute moduleName :: String;
 
-nonterminal StructDecl with location, pp, host<StructDecl>, lifted<StructDecl>, maybename, errors, globalDecls, defs, env, tagEnv, refId, returnType, freeVariables;
+nonterminal StructDecl with location, pp, host<StructDecl>, lifted<StructDecl>, maybename, errors, globalDecls, defs, env, tagEnv, refId, moduleName, returnType, freeVariables;
 
 abstract production structDecl
 top::StructDecl ::= attrs::[Attribute]  name::MaybeName  dcls::StructItemList
@@ -492,6 +493,10 @@ top::StructDecl ::= attrs::[Attribute]  name::MaybeName  dcls::StructItemList
 
   local maybeAttribRefIdName::Maybe<String> = getRefIdFromAttributes(attrs);
   top.refId = fromMaybe(name.tagRefId, maybeAttribRefIdName);
+  
+  local maybeAttribModuleName::Maybe<String> = getModuleNameFromAttributes(attrs);
+  top.moduleName = fromMaybe("host", maybeAttribModuleName);
+  
   top.tagEnv = addEnv(dcls.localdefs, emptyEnv());
   
   -- If there is no forward declaration, and we have a name, then add a tag dcl for the refid.
@@ -512,6 +517,50 @@ top::StructDecl ::= attrs::[Attribute]  name::MaybeName  dcls::StructItemList
   top.errors <-
     if !name.tagHasForwardDcl || null(lookupRefId(top.refId, top.env)) then []
     else [err(top.location, "Redeclaration of struct " ++ name.maybename.fromJust.name)];
+}
+
+nonterminal UnionDecl with location, pp, host<UnionDecl>, lifted<UnionDecl>, maybename, errors, globalDecls, defs, env, tagEnv, refId, moduleName, returnType, freeVariables;
+
+abstract production unionDecl
+top::UnionDecl ::= attrs::[Attribute]  name::MaybeName  dcls::StructItemList
+{
+  propagate host, lifted;
+  top.maybename = name.maybename;
+  top.pp = concat([text("union "), ppAttributes(attrs), name.pp, 
+    -- DEBUGGING
+    --text("/*" ++ top.refId ++ "*/"),
+    -- END DEBUGGING
+    text(" {"), nestlines(2, terminate(cat(semi(),line()), dcls.pps)),
+    text("}")]);
+  top.errors := dcls.errors;
+  top.globalDecls := dcls.globalDecls;
+
+  local maybeAttribRefIdName::Maybe<String> = getRefIdFromAttributes(attrs);
+  top.refId = fromMaybe(name.tagRefId, maybeAttribRefIdName);
+  
+  local maybeAttribModuleName::Maybe<String> = getModuleNameFromAttributes(attrs);
+  top.moduleName = fromMaybe("host", maybeAttribModuleName);
+  
+  top.tagEnv = addEnv(dcls.localdefs, emptyEnv());
+  
+  -- If there is no forward declaration, and we have a name, then add a tag dcl for the refid.
+  local preDefs :: [Def] = 
+    if name.tagHasForwardDcl || !name.hasName then []
+    else [tagDef(name.maybename.fromJust.name, refIdTagItem(unionSEU(), top.refId))];
+  -- Always add the refid TODO: deal with C11-allowed redeclarations?
+  local postDefs :: [Def] =
+    [refIdDef(top.refId, unionRefIdItem(top))];
+
+  top.defs := preDefs ++ dcls.defs ++ postDefs;
+  top.freeVariables = dcls.freeVariables;
+  
+  dcls.env = openScope(addEnv(preDefs, top.env));
+  
+  
+  -- Redeclaration error if there IS a forward declaration AND an existing refid declaration.
+  top.errors <-
+    if !name.tagHasForwardDcl || null(lookupRefId(top.refId, top.env)) then []
+    else [err(top.location, "Redeclaration of union " ++ name.maybename.fromJust.name)];
 }
 
 function getRefIdFromAttributes
@@ -537,44 +586,27 @@ Maybe<String> ::= attrs::Attribs
     end;
 }
 
-nonterminal UnionDecl with location, pp, host<UnionDecl>, lifted<UnionDecl>, maybename, errors, globalDecls, defs, env, tagEnv, refId, returnType, freeVariables;
-
-abstract production unionDecl
-top::UnionDecl ::= attrs::[Attribute]  name::MaybeName  dcls::StructItemList
+function getModuleNameFromAttributes
+Maybe<String> ::= attrs::[Attribute]
 {
-  propagate host, lifted;
-  top.maybename = name.maybename;
-  top.pp = concat([text("union "), ppAttributes(attrs), name.pp, 
-    -- DEBUGGING
-    --text("/*" ++ top.refId ++ "*/"),
-    -- END DEBUGGING
-    text(" {"), nestlines(2, terminate(cat(semi(),line()), dcls.pps)),
-    text("}")]);
-  top.errors := dcls.errors;
-  top.globalDecls := dcls.globalDecls;
+  return
+    case attrs of
+      gccAttribute(ats) :: rest -> orElse(getModuleNameFromAttribs(ats), getModuleNameFromAttributes(rest))
+    | _ :: rest -> getModuleNameFromAttributes(rest)
+    | [] -> nothing()
+    end;
+}
 
-  local maybeAttribRefIdName::Maybe<String> = getRefIdFromAttributes(attrs);
-  top.refId = fromMaybe(name.tagRefId, maybeAttribRefIdName);
-  top.tagEnv = addEnv(dcls.localdefs, emptyEnv());
-  
-  -- If there is no forward declaration, and we have a name, then add a tag dcl for the refid.
-  local preDefs :: [Def] = 
-    if name.tagHasForwardDcl || !name.hasName then []
-    else [tagDef(name.maybename.fromJust.name, refIdTagItem(unionSEU(), top.refId))];
-  -- Always add the refid TODO: deal with C11-allowed redeclarations?
-  local postDefs :: [Def] =
-    [refIdDef(top.refId, unionRefIdItem(top))];
-
-  top.defs := preDefs ++ dcls.defs ++ postDefs;
-  top.freeVariables = dcls.freeVariables;
-  
-  dcls.env = openScope(addEnv(preDefs, top.env));
-  
-  
-  -- Redeclaration error if there IS a forward declaration AND an existing refid declaration.
-  top.errors <-
-    if !name.tagHasForwardDcl || null(lookupRefId(top.refId, top.env)) then []
-    else [err(top.location, "Redeclaration of union " ++ name.maybename.fromJust.name)];
+function getModuleNameFromAttribs
+Maybe<String> ::= attrs::Attribs
+{
+  return
+    case attrs of
+      consAttrib(appliedAttrib(attribName(name("module")), consExpr(stringLiteral(s), nilExpr())), _) ->
+        just(substring(1, length(s) - 1, s))
+    | consAttrib(_, rest) -> getModuleNameFromAttribs(rest)
+    | nilAttrib() -> nothing()
+    end;
 }
 
 nonterminal EnumDecl with location, pp, host<EnumDecl>, lifted<EnumDecl>, maybename, errors, globalDecls, defs, env, returnType, freeVariables;

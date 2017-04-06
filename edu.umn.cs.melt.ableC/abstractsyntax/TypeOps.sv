@@ -319,3 +319,25 @@ Type ::= qs::[Qualifier] base::Type
   base.addedTypeQualifiers = qs;
   return base.withTypeQualifiers;
 }
+
+{--
+ - Compute a unique identifier coresponding to the module (host or extension) that 'owns' this type
+ -}
+ function moduleName
+ String ::= env::Decorated Env a::Type
+ {
+   return
+     case a of
+     | pointerType(_, t) -> moduleName(env, t)
+     | arrayType(t, _, _, _) -> moduleName(env, t)
+     --| tagType(_, enumTagType(_)) -> ??? -- TODO: Implement 'claiming' enum types
+     | tagType(_, refIdTagType(_, _, refId)) ->
+         case lookupRefId(refId, env) of
+         | item :: _ -> item.moduleName
+         | _ -> error("Undefined refId " ++ refId)
+         end
+     | atomicType(_, t) -> moduleName(env, t)
+     | vectorType(t, _) -> moduleName(env, t)
+     | _ -> "host"
+     end;
+ }

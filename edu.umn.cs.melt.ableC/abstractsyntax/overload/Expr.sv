@@ -24,7 +24,7 @@ top::Expr ::= lhs::Expr  rhs::Expr
   overloads := [];
   
   forwards to
-    case lookupBy(stringEq, lhs.typerep.moduleName, overloads) of
+    case lookupBy(stringEq, moduleName(top.env, lhs.typerep), overloads) of
       just(prod) -> prod(lhs, rhs, top.location)
     | nothing() -> arraySubscriptExprDefault(lhs, rhs, location=top.location)
     end;
@@ -44,14 +44,14 @@ top::Expr ::= f::Expr  a::Exprs
   local option1::Maybe<Expr> = 
     case f of
       memberExpr(l, d, r) ->
-        case lookupBy(stringEq, l.typerep.moduleName, memberOverloads) of
+        case lookupBy(stringEq, moduleName(top.env, l.typerep), memberOverloads) of
           just(prod) -> just(prod(l, d, r, a, top.location)) 
         | nothing() -> nothing()
         end
     | _ -> nothing()
     end;
   local option2::Maybe<Expr> =
-    case lookupBy(stringEq, f.typerep.moduleName, overloads) of
+    case lookupBy(stringEq, moduleName(top.env, f.typerep), overloads) of
       just(prod) -> just(prod(f, a, top.location))
     | nothing() -> nothing()
     end;
@@ -70,7 +70,7 @@ top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
   overloads := [];
   
   forwards to
-    case lookupBy(stringEq, lhs.typerep.moduleName, overloads) of
+    case lookupBy(stringEq, moduleName(top.env, lhs.typerep), overloads) of
       just(prod) -> prod(lhs, deref, rhs, top.location)
     | nothing() -> memberExprDefault(lhs, deref, rhs, location=top.location)
     end;

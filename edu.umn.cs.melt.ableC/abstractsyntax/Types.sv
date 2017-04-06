@@ -9,7 +9,7 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax;
  - Variants: builtin, pointer, array, function, tagged, noncanonical.
  - Noncanonical forwards, and so doesn't need any attributes, etc attached to it.
  -}
-nonterminal Type with lpp, rpp, host<Type>, baseTypeExpr, typeModifierExpr, mangledName, moduleName, integerPromotions, defaultArgumentPromotions, defaultLvalueConversion, defaultFunctionArrayLvalueConversion, isIntegerType, isScalarType, isArithmeticType, withoutTypeQualifiers, withTypeQualifiers, addedTypeQualifiers;
+nonterminal Type with lpp, rpp, host<Type>, baseTypeExpr, typeModifierExpr, mangledName, integerPromotions, defaultArgumentPromotions, defaultLvalueConversion, defaultFunctionArrayLvalueConversion, isIntegerType, isScalarType, isArithmeticType, withoutTypeQualifiers, withTypeQualifiers, addedTypeQualifiers;
 
 -- Used to turn a Type back into a TypeName
 synthesized attribute baseTypeExpr :: BaseTypeExpr;
@@ -17,9 +17,6 @@ synthesized attribute typeModifierExpr :: TypeModifierExpr;
 
 -- Compute a unique name for a type that is a valid C identifier
 synthesized attribute mangledName :: String;
-
--- Compute a unique identifier coresponding to the module (host or extension) that 'owns' this type
-synthesized attribute moduleName :: String;
 
 -- char -> int and stuff in operations
 synthesized attribute integerPromotions :: Type;
@@ -62,7 +59,6 @@ top::Type ::=
   top.baseTypeExpr = errorTypeExpr([]);
   top.typeModifierExpr = baseTypeExpr();
   top.mangledName = "error";
-  top.moduleName = "host";
   top.integerPromotions = top;
   top.defaultArgumentPromotions = top;
   top.defaultLvalueConversion = top;
@@ -92,7 +88,6 @@ top::Type ::= q::[Qualifier]  bt::BuiltinType
   top.baseTypeExpr = builtinTypeExpr(q, bt);
   top.typeModifierExpr = baseTypeExpr();
   top.mangledName = s"builtin_${implode("_", map((.qualname), q))}_${bt.mangledName}_";
-  top.moduleName = "host";
   top.integerPromotions = builtinType(q, bt.integerPromotionsBuiltin);
   top.defaultArgumentPromotions = builtinType(q, bt.defaultArgumentPromotionsBuiltin);
   top.defaultLvalueConversion = builtinType([], bt);
@@ -120,7 +115,6 @@ top::Type ::= q::[Qualifier]  target::Type
   top.baseTypeExpr = target.baseTypeExpr;
   top.typeModifierExpr = pointerTypeExpr(q, target.typeModifierExpr);
   top.mangledName = s"pointer_${implode("_", map((.qualname), q))}_${target.mangledName}_";
-  top.moduleName = target.moduleName;
   top.integerPromotions = top;
   top.defaultArgumentPromotions = top;
   top.defaultLvalueConversion = pointerType([], target);
@@ -184,7 +178,6 @@ top::Type ::= element::Type  indexQualifiers::[Qualifier]  sizeModifier::ArraySi
           new(size))
     end;
   top.mangledName = top.defaultFunctionArrayLvalueConversion.mangledName; -- TODO?
-  top.moduleName = element.moduleName;
   top.integerPromotions = top;
   top.defaultArgumentPromotions = top;
   top.defaultLvalueConversion = top;
@@ -252,7 +245,6 @@ top::Type ::= result::Type  sub::FunctionType
         functionTypeExprWithoutArgs(result.typeModifierExpr, [])
     end;
   top.mangledName = s"function_${result.mangledName}_${sub.mangledName}_";
-  top.moduleName = "host"; -- Extensions can't 'claim' function types, need to wrap in struct
   top.integerPromotions = top;
   top.defaultArgumentPromotions = top;
   top.defaultLvalueConversion = top;
@@ -323,7 +315,6 @@ top::Type ::= q::[Qualifier]  sub::TagType
     end;
   top.typeModifierExpr = baseTypeExpr();
   top.mangledName = s"tag_${implode("_", map((.qualname), q))}_${sub.mangledName}_";
-  top.moduleName = sub.moduleName;
   top.integerPromotions = top;
   top.defaultArgumentPromotions = top;
   top.defaultLvalueConversion = tagType([], sub);
@@ -337,7 +328,7 @@ top::Type ::= q::[Qualifier]  sub::TagType
 }
 
 {-- Structs, unions and enums -}
-nonterminal TagType with pp, host<TagType>, mangledName, moduleName, isIntegerType;
+nonterminal TagType with pp, host<TagType>, mangledName, isIntegerType;
 
 abstract production enumTagType
 top::TagType ::= ref::Decorated EnumDecl
@@ -354,7 +345,6 @@ top::TagType ::= ref::Decorated EnumDecl
     | just(n) -> n.name
     | nothing() -> "anon"
     end;
-  top.moduleName = "host"; -- TODO: allow extensions to claim these?
     
   top.isIntegerType = true;
 }
@@ -370,8 +360,6 @@ top::TagType ::= kwd::StructOrEnumOrUnion  name::String  refId::String
   propagate host;
   top.pp = concat([kwd.pp, space(), text(name)]);
   top.mangledName = s"${kwd.mangledName}_${name}_${substitute(":", "_", refId)}";
-  -- TODO: overload module name should be specified seperate from refId
-  top.moduleName = if isDigit(refId) then "host" else refId;
   top.isIntegerType = false;
 }
 
@@ -395,7 +383,6 @@ top::Type ::= q::[Qualifier]  bt::Type
                      text("_Atomic"), parens(cat(bt.lpp, bt.rpp))]);
   top.rpp = notext();
   top.mangledName = s"atomic_${implode("_", map((.qualname), q))}_${bt.mangledName}_";
-  top.moduleName = bt.moduleName;
   top.baseTypeExpr = atomicTypeExpr(q, typeName(bt.baseTypeExpr, bt.typeModifierExpr));
   top.typeModifierExpr = baseTypeExpr();
   top.integerPromotions = top;
@@ -417,7 +404,6 @@ top::Type ::= bt::Type  bytes::Integer
   top.lpp = concat([ text("__attribute__((__vector_size__(" ++ toString(bytes) ++ "))) "), bt.lpp]);
   top.rpp = bt.rpp;
   top.mangledName = s"vector_${bt.mangledName}_${toString(bytes)}_";
-  top.moduleName = bt.moduleName;
   -- TODO: pp doesn't match type expression.  Should involve attributedTypeExpr which isn't a thing
   top.baseTypeExpr = directTypeExpr(bt);
   top.typeModifierExpr = baseTypeExpr();

@@ -12,7 +12,7 @@ top::UnaryOp ::=
   production attribute overloads::[Pair<String (Expr ::= Expr Location)>] with ++;
   overloads := [];
   top.resolved =
-    case lookupBy(stringEq, top.op.typerep.moduleName, overloads) of
+    case lookupBy(stringEq, moduleName(top.op.env, top.op.typerep), overloads) of
       just(prod) -> just(prod(new(top.op), top.location))
     | nothing() -> nothing()
     end;
@@ -23,7 +23,7 @@ top::UnaryOp ::=
   production attribute overloads::[Pair<String (Expr ::= Expr Location)>] with ++;
   overloads := [];
   top.resolved =
-    case lookupBy(stringEq, top.op.typerep.moduleName, overloads) of
+    case lookupBy(stringEq, moduleName(top.op.env, top.op.typerep), overloads) of
       just(prod) -> just(prod(new(top.op), top.location))
     | nothing() -> nothing()
     end;
@@ -34,7 +34,7 @@ top::UnaryOp ::=
   production attribute overloads::[Pair<String (Expr ::= Expr Location)>] with ++;
   overloads := [];
   top.resolved =
-    case lookupBy(stringEq, top.op.typerep.moduleName, overloads) of
+    case lookupBy(stringEq, moduleName(top.op.env, top.op.typerep), overloads) of
       just(prod) -> just(prod(new(top.op), top.location))
     | nothing() -> nothing()
     end;
@@ -45,7 +45,7 @@ top::UnaryOp ::=
   production attribute overloads::[Pair<String (Expr ::= Expr Location)>] with ++;
   overloads := [];
   top.resolved =
-    case lookupBy(stringEq, top.op.typerep.moduleName, overloads) of
+    case lookupBy(stringEq, moduleName(top.op.env, top.op.typerep), overloads) of
       just(prod) -> just(prod(new(top.op), top.location))
     | nothing() -> nothing()
     end;
@@ -56,7 +56,7 @@ top::UnaryOp ::=
   production attribute overloads::[Pair<String (Expr ::= Expr Location)>] with ++;
   overloads := [];
   top.resolved =
-    case lookupBy(stringEq, top.op.typerep.moduleName, overloads) of
+    case lookupBy(stringEq, moduleName(top.op.env, top.op.typerep), overloads) of
       just(prod) -> just(prod(new(top.op), top.location))
     | nothing() -> nothing()
     end;
@@ -67,7 +67,7 @@ top::UnaryOp ::=
   production attribute overloads::[Pair<String (Expr ::= Expr Location)>] with ++;
   overloads := [];
   top.resolved =
-    case lookupBy(stringEq, top.op.typerep.moduleName, overloads) of
+    case lookupBy(stringEq, moduleName(top.op.env, top.op.typerep), overloads) of
       just(prod) -> just(prod(new(top.op), top.location))
     | nothing() -> nothing()
     end;
@@ -78,7 +78,7 @@ top::UnaryOp ::=
   production attribute overloads::[Pair<String (Expr ::= Expr Location)>] with ++;
   overloads := [];
   top.resolved =
-    case lookupBy(stringEq, top.op.typerep.moduleName, overloads) of
+    case lookupBy(stringEq, moduleName(top.op.env, top.op.typerep), overloads) of
       just(prod) -> just(prod(new(top.op), top.location))
     | nothing() -> nothing()
     end;
@@ -89,7 +89,7 @@ top::UnaryOp ::=
   production attribute overloads::[Pair<String (Expr ::= Expr Location)>] with ++;
   overloads := [];
   top.resolved =
-    case lookupBy(stringEq, top.op.typerep.moduleName, overloads) of
+    case lookupBy(stringEq, moduleName(top.op.env, top.op.typerep), overloads) of
       just(prod) -> just(prod(new(top.op), top.location))
     | nothing() -> nothing()
     end;
@@ -100,7 +100,7 @@ top::UnaryOp ::=
   production attribute overloads::[Pair<String (Expr ::= Expr Location)>] with ++;
   overloads := [];
   top.resolved =
-    case lookupBy(stringEq, top.op.typerep.moduleName, overloads) of
+    case lookupBy(stringEq, moduleName(top.op.env, top.op.typerep), overloads) of
       just(prod) -> just(prod(new(top.op), top.location))
     | nothing() -> nothing()
     end;
@@ -111,7 +111,7 @@ top::UnaryOp ::=
   production attribute overloads::[Pair<String (Expr ::= Expr Location)>] with ++;
   overloads := [];
   top.resolved =
-    case lookupBy(stringEq, top.op.typerep.moduleName, overloads) of
+    case lookupBy(stringEq, moduleName(top.op.env, top.op.typerep), overloads) of
       just(prod) -> just(prod(new(top.op), top.location))
     | nothing() -> nothing()
     end;

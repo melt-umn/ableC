@@ -77,6 +77,7 @@ top::Attrib ::= n::AttribName  e::Exprs
   top.attribNeedsTrans =
     case n of
       attribName(name("refId")) -> false
+    | attribName(name("module")) -> false
     | _ -> true
     end;
 }

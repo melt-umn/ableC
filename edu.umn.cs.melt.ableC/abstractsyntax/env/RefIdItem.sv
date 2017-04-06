@@ -22,13 +22,14 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax:env;
  -
  - This unfortunately complicates the types a bit, since
  -}
-nonterminal RefIdItem with tagEnv;
+nonterminal RefIdItem with moduleName, tagEnv;
 
 
 {-- Name resolves to a full struct declaration -}
 abstract production structRefIdItem
 top::RefIdItem ::= s::Decorated StructDecl
 {
+  top.moduleName = s.moduleName;
   top.tagEnv = s.tagEnv;
 }
 
@@ -36,6 +37,7 @@ top::RefIdItem ::= s::Decorated StructDecl
 abstract production unionRefIdItem
 top::RefIdItem ::= s::Decorated UnionDecl
 {
+  top.moduleName = s.moduleName;
   top.tagEnv = s.tagEnv;
 }
 

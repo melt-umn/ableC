@@ -16,7 +16,7 @@ top::BinOp ::= op::AssignOp
   local option1::Maybe<Expr> = 
     case top.lop of
       arraySubscriptExpr(l, r) ->
-        case lookupBy(stringEq, l.typerep.moduleName, subscriptOverloads) of
+        case lookupBy(stringEq, moduleName(l.env, l.typerep), subscriptOverloads) of
           just(prod) -> just(prod(new(l), new(r), new(top.rop), top.location)) 
         | nothing() -> nothing()
         end
@@ -25,7 +25,7 @@ top::BinOp ::= op::AssignOp
   local option2::Maybe<Expr> = 
     case top.lop of
       memberExpr(l, d, r) ->
-        case lookupBy(stringEq, l.typerep.moduleName, memberOverloads) of
+        case lookupBy(stringEq, moduleName(l.env, l.typerep), memberOverloads) of
           just(prod) -> just(prod(new(l), d, new(r), new(top.rop), top.location)) 
         | nothing() -> nothing()
         end
@@ -59,17 +59,17 @@ top::AssignOp ::=
   lOverloads := [];
   rOverloads := [];
   local option1::Maybe<Expr> =
-    case lookupBy(stringPairEq, pair(top.lop.typerep.moduleName, top.rop.typerep.moduleName), overloads) of
+    case lookupBy(stringPairEq, pair(moduleName(top.lop.env, top.lop.typerep), moduleName(top.rop.env, top.rop.typerep)), overloads) of
       just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
     | nothing() -> nothing()
     end;
   local option2::Maybe<Expr> =
-    case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
+    case lookupBy(stringEq, moduleName(top.lop.env, top.lop.typerep), lOverloads) of
       just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
     | nothing() -> nothing()
     end;
   local option3::Maybe<Expr> =
-    case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
+    case lookupBy(stringEq, moduleName(top.rop.env, top.rop.typerep), rOverloads) of
       just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
     | nothing() -> nothing()
     end;
@@ -86,17 +86,17 @@ top::AssignOp ::=
   lOverloads := [];
   rOverloads := [];
   local option1::Maybe<Expr> =
-    case lookupBy(stringPairEq, pair(top.lop.typerep.moduleName, top.rop.typerep.moduleName), overloads) of
+    case lookupBy(stringPairEq, pair(moduleName(top.lop.env, top.lop.typerep), moduleName(top.rop.env, top.rop.typerep)), overloads) of
       just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
     | nothing() -> nothing()
     end;
   local option2::Maybe<Expr> =
-    case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
+    case lookupBy(stringEq, moduleName(top.lop.env, top.lop.typerep), lOverloads) of
       just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
     | nothing() -> nothing()
     end;
   local option3::Maybe<Expr> =
-    case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
+    case lookupBy(stringEq, moduleName(top.rop.env, top.rop.typerep), rOverloads) of
       just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
     | nothing() -> nothing()
     end;
@@ -113,17 +113,17 @@ top::AssignOp ::=
   lOverloads := [];
   rOverloads := [];
   local option1::Maybe<Expr> =
-    case lookupBy(stringPairEq, pair(top.lop.typerep.moduleName, top.rop.typerep.moduleName), overloads) of
+    case lookupBy(stringPairEq, pair(moduleName(top.lop.env, top.lop.typerep), moduleName(top.rop.env, top.rop.typerep)), overloads) of
       just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
     | nothing() -> nothing()
     end;
   local option2::Maybe<Expr> =
-    case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
+    case lookupBy(stringEq, moduleName(top.lop.env, top.lop.typerep), lOverloads) of
       just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
     | nothing() -> nothing()
     end;
   local option3::Maybe<Expr> =
-    case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
+    case lookupBy(stringEq, moduleName(top.rop.env, top.rop.typerep), rOverloads) of
       just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
     | nothing() -> nothing()
     end;
@@ -140,17 +140,17 @@ top::AssignOp ::=
   lOverloads := [];
   rOverloads := [];
   local option1::Maybe<Expr> =
-    case lookupBy(stringPairEq, pair(top.lop.typerep.moduleName, top.rop.typerep.moduleName), overloads) of
+    case lookupBy(stringPairEq, pair(moduleName(top.lop.env, top.lop.typerep), moduleName(top.rop.env, top.rop.typerep)), overloads) of
       just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
     | nothing() -> nothing()
     end;
   local option2::Maybe<Expr> =
-    case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
+    case lookupBy(stringEq, moduleName(top.lop.env, top.lop.typerep), lOverloads) of
       just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
     | nothing() -> nothing()
     end;
   local option3::Maybe<Expr> =
-    case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
+    case lookupBy(stringEq, moduleName(top.rop.env, top.rop.typerep), rOverloads) of
       just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
     | nothing() -> nothing()
     end;
@@ -167,17 +167,17 @@ top::AssignOp ::=
   lOverloads := [];
   rOverloads := [];
   local option1::Maybe<Expr> =
-    case lookupBy(stringPairEq, pair(top.lop.typerep.moduleName, top.rop.typerep.moduleName), overloads) of
+    case lookupBy(stringPairEq, pair(moduleName(top.lop.env, top.lop.typerep), moduleName(top.rop.env, top.rop.typerep)), overloads) of
       just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
     | nothing() -> nothing()
     end;
   local option2::Maybe<Expr> =
-    case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
+    case lookupBy(stringEq, moduleName(top.lop.env, top.lop.typerep), lOverloads) of
       just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
     | nothing() -> nothing()
     end;
   local option3::Maybe<Expr> =
-    case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
+    case lookupBy(stringEq, moduleName(top.rop.env, top.rop.typerep), rOverloads) of
       just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
     | nothing() -> nothing()
     end;
@@ -194,17 +194,17 @@ top::AssignOp ::=
   lOverloads := [];
   rOverloads := [];
   local option1::Maybe<Expr> =
-    case lookupBy(stringPairEq, pair(top.lop.typerep.moduleName, top.rop.typerep.moduleName), overloads) of
+    case lookupBy(stringPairEq, pair(moduleName(top.lop.env, top.lop.typerep), moduleName(top.rop.env, top.rop.typerep)), overloads) of
       just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
     | nothing() -> nothing()
     end;
   local option2::Maybe<Expr> =
-    case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
+    case lookupBy(stringEq, moduleName(top.lop.env, top.lop.typerep), lOverloads) of
       just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
     | nothing() -> nothing()
     end;
   local option3::Maybe<Expr> =
-    case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
+    case lookupBy(stringEq, moduleName(top.rop.env, top.rop.typerep), rOverloads) of
       just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
     | nothing() -> nothing()
     end;
@@ -221,17 +221,17 @@ top::AssignOp ::=
   lOverloads := [];
   rOverloads := [];
   local option1::Maybe<Expr> =
-    case lookupBy(stringPairEq, pair(top.lop.typerep.moduleName, top.rop.typerep.moduleName), overloads) of
+    case lookupBy(stringPairEq, pair(moduleName(top.lop.env, top.lop.typerep), moduleName(top.rop.env, top.rop.typerep)), overloads) of
       just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
     | nothing() -> nothing()
     end;
   local option2::Maybe<Expr> =
-    case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
+    case lookupBy(stringEq, moduleName(top.lop.env, top.lop.typerep), lOverloads) of
       just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
     | nothing() -> nothing()
     end;
   local option3::Maybe<Expr> =
-    case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
+    case lookupBy(stringEq, moduleName(top.rop.env, top.rop.typerep), rOverloads) of
       just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
     | nothing() -> nothing()
     end;
@@ -248,17 +248,17 @@ top::AssignOp ::=
   lOverloads := [];
   rOverloads := [];
   local option1::Maybe<Expr> =
-    case lookupBy(stringPairEq, pair(top.lop.typerep.moduleName, top.rop.typerep.moduleName), overloads) of
+    case lookupBy(stringPairEq, pair(moduleName(top.lop.env, top.lop.typerep), moduleName(top.rop.env, top.rop.typerep)), overloads) of
       just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
     | nothing() -> nothing()
     end;
   local option2::Maybe<Expr> =
-    case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
+    case lookupBy(stringEq, moduleName(top.lop.env, top.lop.typerep), lOverloads) of
       just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
     | nothing() -> nothing()
     end;
   local option3::Maybe<Expr> =
-    case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
+    case lookupBy(stringEq, moduleName(top.rop.env, top.rop.typerep), rOverloads) of
       just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
     | nothing() -> nothing()
     end;
@@ -275,17 +275,17 @@ top::AssignOp ::=
   lOverloads := [];
   rOverloads := [];
   local option1::Maybe<Expr> =
-    case lookupBy(stringPairEq, pair(top.lop.typerep.moduleName, top.rop.typerep.moduleName), overloads) of
+    case lookupBy(stringPairEq, pair(moduleName(top.lop.env, top.lop.typerep), moduleName(top.rop.env, top.rop.typerep)), overloads) of
       just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
     | nothing() -> nothing()
     end;
   local option2::Maybe<Expr> =
-    case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
+    case lookupBy(stringEq, moduleName(top.lop.env, top.lop.typerep), lOverloads) of
       just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
     | nothing() -> nothing()
     end;
   local option3::Maybe<Expr> =
-    case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
+    case lookupBy(stringEq, moduleName(top.rop.env, top.rop.typerep), rOverloads) of
       just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
     | nothing() -> nothing()
     end;
@@ -302,17 +302,17 @@ top::AssignOp ::=
   lOverloads := [];
   rOverloads := [];
   local option1::Maybe<Expr> =
-    case lookupBy(stringPairEq, pair(top.lop.typerep.moduleName, top.rop.typerep.moduleName), overloads) of
+    case lookupBy(stringPairEq, pair(moduleName(top.lop.env, top.lop.typerep), moduleName(top.rop.env, top.rop.typerep)), overloads) of
       just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
     | nothing() -> nothing()
     end;
   local option2::Maybe<Expr> =
-    case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
+    case lookupBy(stringEq, moduleName(top.lop.env, top.lop.typerep), lOverloads) of
       just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
     | nothing() -> nothing()
     end;
   local option3::Maybe<Expr> =
-    case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
+    case lookupBy(stringEq, moduleName(top.rop.env, top.rop.typerep), rOverloads) of
       just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
     | nothing() -> nothing()
     end;
@@ -329,17 +329,17 @@ top::AssignOp ::=
   lOverloads := [];
   rOverloads := [];
   local option1::Maybe<Expr> =
-    case lookupBy(stringPairEq, pair(top.lop.typerep.moduleName, top.rop.typerep.moduleName), overloads) of
+    case lookupBy(stringPairEq, pair(moduleName(top.lop.env, top.lop.typerep), moduleName(top.rop.env, top.rop.typerep)), overloads) of
       just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
     | nothing() -> nothing()
     end;
   local option2::Maybe<Expr> =
-    case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
+    case lookupBy(stringEq, moduleName(top.lop.env, top.lop.typerep), lOverloads) of
       just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
     | nothing() -> nothing()
     end;
   local option3::Maybe<Expr> =
-    case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
+    case lookupBy(stringEq, moduleName(top.rop.env, top.rop.typerep), rOverloads) of
       just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
     | nothing() -> nothing()
     end;
@@ -365,17 +365,17 @@ top::BoolOp ::=
   lOverloads := [];
   rOverloads := [];
   local option1::Maybe<Expr> =
-    case lookupBy(stringPairEq, pair(top.lop.typerep.moduleName, top.rop.typerep.moduleName), overloads) of
+    case lookupBy(stringPairEq, pair(moduleName(top.lop.env, top.lop.typerep), moduleName(top.rop.env, top.rop.typerep)), overloads) of
       just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
     | nothing() -> nothing()
     end;
   local option2::Maybe<Expr> =
-    case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
+    case lookupBy(stringEq, moduleName(top.lop.env, top.lop.typerep), lOverloads) of
       just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
     | nothing() -> nothing()
     end;
   local option3::Maybe<Expr> =
-    case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
+    case lookupBy(stringEq, moduleName(top.rop.env, top.rop.typerep), rOverloads) of
       just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
     | nothing() -> nothing()
     end;
@@ -391,17 +391,17 @@ top::BoolOp ::=
   lOverloads := [];
   rOverloads := [];
   local option1::Maybe<Expr> =
-    case lookupBy(stringPairEq, pair(top.lop.typerep.moduleName, top.rop.typerep.moduleName), overloads) of
+    case lookupBy(stringPairEq, pair(moduleName(top.lop.env, top.lop.typerep), moduleName(top.rop.env, top.rop.typerep)), overloads) of
       just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
     | nothing() -> nothing()
     end;
   local option2::Maybe<Expr> =
-    case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
+    case lookupBy(stringEq, moduleName(top.lop.env, top.lop.typerep), lOverloads) of
       just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
     | nothing() -> nothing()
     end;
   local option3::Maybe<Expr> =
-    case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
+    case lookupBy(stringEq, moduleName(top.rop.env, top.rop.typerep), rOverloads) of
       just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
     | nothing() -> nothing()
     end;
@@ -425,17 +425,17 @@ top::BitOp ::=
   lOverloads := [];
   rOverloads := [];
   local option1::Maybe<Expr> =
-    case lookupBy(stringPairEq, pair(top.lop.typerep.moduleName, top.rop.typerep.moduleName), overloads) of
+    case lookupBy(stringPairEq, pair(moduleName(top.lop.env, top.lop.typerep), moduleName(top.rop.env, top.rop.typerep)), overloads) of
       just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
     | nothing() -> nothing()
     end;
   local option2::Maybe<Expr> =
-    case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
+    case lookupBy(stringEq, moduleName(top.lop.env, top.lop.typerep), lOverloads) of
       just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
     | nothing() -> nothing()
     end;
   local option3::Maybe<Expr> =
-    case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
+    case lookupBy(stringEq, moduleName(top.rop.env, top.rop.typerep), rOverloads) of
       just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
     | nothing() -> nothing()
     end;
@@ -451,17 +451,17 @@ top::BitOp ::=
   lOverloads := [];
   rOverloads := [];
   local option1::Maybe<Expr> =
-    case lookupBy(stringPairEq, pair(top.lop.typerep.moduleName, top.rop.typerep.moduleName), overloads) of
+    case lookupBy(stringPairEq, pair(moduleName(top.lop.env, top.lop.typerep), moduleName(top.rop.env, top.rop.typerep)), overloads) of
       just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
     | nothing() -> nothing()
     end;
   local option2::Maybe<Expr> =
-    case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
+    case lookupBy(stringEq, moduleName(top.lop.env, top.lop.typerep), lOverloads) of
       just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
     | nothing() -> nothing()
     end;
   local option3::Maybe<Expr> =
-    case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
+    case lookupBy(stringEq, moduleName(top.rop.env, top.rop.typerep), rOverloads) of
       just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
     | nothing() -> nothing()
     end;
@@ -477,17 +477,17 @@ top::BitOp ::=
   lOverloads := [];
   rOverloads := [];
   local option1::Maybe<Expr> =
-    case lookupBy(stringPairEq, pair(top.lop.typerep.moduleName, top.rop.typerep.moduleName), overloads) of
+    case lookupBy(stringPairEq, pair(moduleName(top.lop.env, top.lop.typerep), moduleName(top.rop.env, top.rop.typerep)), overloads) of
       just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
     | nothing() -> nothing()
     end;
   local option2::Maybe<Expr> =
-    case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
+    case lookupBy(stringEq, moduleName(top.lop.env, top.lop.typerep), lOverloads) of
       just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
     | nothing() -> nothing()
     end;
   local option3::Maybe<Expr> =
-    case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
+    case lookupBy(stringEq, moduleName(top.rop.env, top.rop.typerep), rOverloads) of
       just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
     | nothing() -> nothing()
     end;
@@ -503,17 +503,17 @@ top::BitOp ::=
   lOverloads := [];
   rOverloads := [];
   local option1::Maybe<Expr> =
-    case lookupBy(stringPairEq, pair(top.lop.typerep.moduleName, top.rop.typerep.moduleName), overloads) of
+    case lookupBy(stringPairEq, pair(moduleName(top.lop.env, top.lop.typerep), moduleName(top.rop.env, top.rop.typerep)), overloads) of
       just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
     | nothing() -> nothing()
     end;
   local option2::Maybe<Expr> =
-    case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
+    case lookupBy(stringEq, moduleName(top.lop.env, top.lop.typerep), lOverloads) of
       just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
     | nothing() -> nothing()
     end;
   local option3::Maybe<Expr> =
-    case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
+    case lookupBy(stringEq, moduleName(top.rop.env, top.rop.typerep), rOverloads) of
       just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
     | nothing() -> nothing()
     end;
@@ -529,17 +529,17 @@ top::BitOp ::=
   lOverloads := [];
   rOverloads := [];
   local option1::Maybe<Expr> =
-    case lookupBy(stringPairEq, pair(top.lop.typerep.moduleName, top.rop.typerep.moduleName), overloads) of
+    case lookupBy(stringPairEq, pair(moduleName(top.lop.env, top.lop.typerep), moduleName(top.rop.env, top.rop.typerep)), overloads) of
       just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
     | nothing() -> nothing()
     end;
   local option2::Maybe<Expr> =
-    case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
+    case lookupBy(stringEq, moduleName(top.lop.env, top.lop.typerep), lOverloads) of
       just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
     | nothing() -> nothing()
     end;
   local option3::Maybe<Expr> =
-    case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
+    case lookupBy(stringEq, moduleName(top.rop.env, top.rop.typerep), rOverloads) of
       just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
     | nothing() -> nothing()
     end;
@@ -563,17 +563,17 @@ top::CompareOp ::=
   lOverloads := [];
   rOverloads := [];
   local option1::Maybe<Expr> =
-    case lookupBy(stringPairEq, pair(top.lop.typerep.moduleName, top.rop.typerep.moduleName), overloads) of
+    case lookupBy(stringPairEq, pair(moduleName(top.lop.env, top.lop.typerep), moduleName(top.rop.env, top.rop.typerep)), overloads) of
       just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
     | nothing() -> nothing()
     end;
   local option2::Maybe<Expr> =
-    case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
+    case lookupBy(stringEq, moduleName(top.lop.env, top.lop.typerep), lOverloads) of
       just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
     | nothing() -> nothing()
     end;
   local option3::Maybe<Expr> =
-    case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
+    case lookupBy(stringEq, moduleName(top.rop.env, top.rop.typerep), rOverloads) of
       just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
     | nothing() -> nothing()
     end;
@@ -590,17 +590,17 @@ top::CompareOp ::=
   rOverloads := [];
   
   local option1::Maybe<Expr> =
-    case lookupBy(stringPairEq, pair(top.lop.typerep.moduleName, top.rop.typerep.moduleName), overloads) of
+    case lookupBy(stringPairEq, pair(moduleName(top.lop.env, top.lop.typerep), moduleName(top.rop.env, top.rop.typerep)), overloads) of
       just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
     | nothing() -> nothing()
     end;
   local option2::Maybe<Expr> =
-    case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
+    case lookupBy(stringEq, moduleName(top.lop.env, top.lop.typerep), lOverloads) of
       just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
     | nothing() -> nothing()
     end;
   local option3::Maybe<Expr> =
-    case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
+    case lookupBy(stringEq, moduleName(top.rop.env, top.rop.typerep), rOverloads) of
       just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
     | nothing() -> nothing()
     end;
@@ -627,17 +627,17 @@ top::CompareOp ::=
   lOverloads := [];
   rOverloads := [];
   local option1::Maybe<Expr> =
-    case lookupBy(stringPairEq, pair(top.lop.typerep.moduleName, top.rop.typerep.moduleName), overloads) of
+    case lookupBy(stringPairEq, pair(moduleName(top.lop.env, top.lop.typerep), moduleName(top.rop.env, top.rop.typerep)), overloads) of
       just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
     | nothing() -> nothing()
     end;
   local option2::Maybe<Expr> =
-    case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
+    case lookupBy(stringEq, moduleName(top.lop.env, top.lop.typerep), lOverloads) of
       just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
     | nothing() -> nothing()
     end;
   local option3::Maybe<Expr> =
-    case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
+    case lookupBy(stringEq, moduleName(top.rop.env, top.rop.typerep), rOverloads) of
       just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
     | nothing() -> nothing()
     end;
@@ -653,17 +653,17 @@ top::CompareOp ::=
   lOverloads := [];
   rOverloads := [];
   local option1::Maybe<Expr> =
-    case lookupBy(stringPairEq, pair(top.lop.typerep.moduleName, top.rop.typerep.moduleName), overloads) of
+    case lookupBy(stringPairEq, pair(moduleName(top.lop.env, top.lop.typerep), moduleName(top.rop.env, top.rop.typerep)), overloads) of
       just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
     | nothing() -> nothing()
     end;
   local option2::Maybe<Expr> =
-    case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
+    case lookupBy(stringEq, moduleName(top.lop.env, top.lop.typerep), lOverloads) of
       just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
     | nothing() -> nothing()
     end;
   local option3::Maybe<Expr> =
-    case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
+    case lookupBy(stringEq, moduleName(top.rop.env, top.rop.typerep), rOverloads) of
       just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
     | nothing() -> nothing()
     end;
@@ -680,17 +680,17 @@ top::CompareOp ::=
   rOverloads := [];
   
   local option1::Maybe<Expr> =
-    case lookupBy(stringPairEq, pair(top.lop.typerep.moduleName, top.rop.typerep.moduleName), overloads) of
+    case lookupBy(stringPairEq, pair(moduleName(top.lop.env, top.lop.typerep), moduleName(top.rop.env, top.rop.typerep)), overloads) of
       just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
     | nothing() -> nothing()
     end;
   local option2::Maybe<Expr> =
-    case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
+    case lookupBy(stringEq, moduleName(top.lop.env, top.lop.typerep), lOverloads) of
       just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
     | nothing() -> nothing()
     end;
   local option3::Maybe<Expr> =
-    case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
+    case lookupBy(stringEq, moduleName(top.rop.env, top.rop.typerep), rOverloads) of
       just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
     | nothing() -> nothing()
     end;
@@ -718,17 +718,17 @@ top::CompareOp ::=
   rOverloads := [];
   
   local option1::Maybe<Expr> =
-    case lookupBy(stringPairEq, pair(top.lop.typerep.moduleName, top.rop.typerep.moduleName), overloads) of
+    case lookupBy(stringPairEq, pair(moduleName(top.lop.env, top.lop.typerep), moduleName(top.rop.env, top.rop.typerep)), overloads) of
       just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
     | nothing() -> nothing()
     end;
   local option2::Maybe<Expr> =
-    case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
+    case lookupBy(stringEq, moduleName(top.lop.env, top.lop.typerep), lOverloads) of
       just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
     | nothing() -> nothing()
     end;
   local option3::Maybe<Expr> =
-    case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
+    case lookupBy(stringEq, moduleName(top.rop.env, top.rop.typerep), rOverloads) of
       just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
     | nothing() -> nothing()
     end;
@@ -764,17 +764,17 @@ top::NumOp ::=
   lOverloads := [];
   rOverloads := [];
   local option1::Maybe<Expr> =
-    case lookupBy(stringPairEq, pair(top.lop.typerep.moduleName, top.rop.typerep.moduleName), overloads) of
+    case lookupBy(stringPairEq, pair(moduleName(top.lop.env, top.lop.typerep), moduleName(top.rop.env, top.rop.typerep)), overloads) of
       just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
     | nothing() -> nothing()
     end;
   local option2::Maybe<Expr> =
-    case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
+    case lookupBy(stringEq, moduleName(top.lop.env, top.lop.typerep), lOverloads) of
       just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
     | nothing() -> nothing()
     end;
   local option3::Maybe<Expr> =
-    case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
+    case lookupBy(stringEq, moduleName(top.rop.env, top.rop.typerep), rOverloads) of
       just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
     | nothing() -> nothing()
     end;
@@ -790,17 +790,17 @@ top::NumOp ::=
   lOverloads := [];
   rOverloads := [];
   local option1::Maybe<Expr> =
-    case lookupBy(stringPairEq, pair(top.lop.typerep.moduleName, top.rop.typerep.moduleName), overloads) of
+    case lookupBy(stringPairEq, pair(moduleName(top.lop.env, top.lop.typerep), moduleName(top.rop.env, top.rop.typerep)), overloads) of
       just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
     | nothing() -> nothing()
     end;
   local option2::Maybe<Expr> =
-    case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
+    case lookupBy(stringEq, moduleName(top.lop.env, top.lop.typerep), lOverloads) of
       just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
     | nothing() -> nothing()
     end;
   local option3::Maybe<Expr> =
-    case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
+    case lookupBy(stringEq, moduleName(top.rop.env, top.rop.typerep), rOverloads) of
       just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
     | nothing() -> nothing()
     end;
@@ -816,17 +816,17 @@ top::NumOp ::=
   lOverloads := [];
   rOverloads := [];
   local option1::Maybe<Expr> =
-    case lookupBy(stringPairEq, pair(top.lop.typerep.moduleName, top.rop.typerep.moduleName), overloads) of
+    case lookupBy(stringPairEq, pair(moduleName(top.lop.env, top.lop.typerep), moduleName(top.rop.env, top.rop.typerep)), overloads) of
       just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
     | nothing() -> nothing()
     end;
   local option2::Maybe<Expr> =
-    case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
+    case lookupBy(stringEq, moduleName(top.lop.env, top.lop.typerep), lOverloads) of
       just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
     | nothing() -> nothing()
     end;
   local option3::Maybe<Expr> =
-    case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
+    case lookupBy(stringEq, moduleName(top.rop.env, top.rop.typerep), rOverloads) of
       just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
     | nothing() -> nothing()
     end;
@@ -842,17 +842,17 @@ top::NumOp ::=
   lOverloads := [];
   rOverloads := [];
   local option1::Maybe<Expr> =
-    case lookupBy(stringPairEq, pair(top.lop.typerep.moduleName, top.rop.typerep.moduleName), overloads) of
+    case lookupBy(stringPairEq, pair(moduleName(top.lop.env, top.lop.typerep), moduleName(top.rop.env, top.rop.typerep)), overloads) of
       just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
     | nothing() -> nothing()
     end;
   local option2::Maybe<Expr> =
-    case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
+    case lookupBy(stringEq, moduleName(top.lop.env, top.lop.typerep), lOverloads) of
       just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
     | nothing() -> nothing()
     end;
   local option3::Maybe<Expr> =
-    case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
+    case lookupBy(stringEq, moduleName(top.rop.env, top.rop.typerep), rOverloads) of
       just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
     | nothing() -> nothing()
     end;
@@ -868,17 +868,17 @@ top::NumOp ::=
   lOverloads := [];
   rOverloads := [];
   local option1::Maybe<Expr> =
-    case lookupBy(stringPairEq, pair(top.lop.typerep.moduleName, top.rop.typerep.moduleName), overloads) of
+    case lookupBy(stringPairEq, pair(moduleName(top.lop.env, top.lop.typerep), moduleName(top.rop.env, top.rop.typerep)), overloads) of
       just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
     | nothing() -> nothing()
     end;
   local option2::Maybe<Expr> =
-    case lookupBy(stringEq, top.lop.typerep.moduleName, lOverloads) of
+    case lookupBy(stringEq, moduleName(top.lop.env, top.lop.typerep), lOverloads) of
       just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
     | nothing() -> nothing()
     end;
   local option3::Maybe<Expr> =
-    case lookupBy(stringEq, top.rop.typerep.moduleName, rOverloads) of
+    case lookupBy(stringEq, moduleName(top.rop.env, top.rop.typerep), rOverloads) of
       just(prod) -> just(prod(new(top.lop), new(top.rop), top.location))
     | nothing() -> nothing()
     end;
