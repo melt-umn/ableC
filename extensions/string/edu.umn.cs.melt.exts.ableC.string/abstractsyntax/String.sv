@@ -98,7 +98,7 @@ top::Expr ::= e::Expr
   
   local localErrors::[Message] = e.errors;
   local fwrd::Expr =
-    case lookupBy(stringEq, e.typerep.moduleName, overloads) of
+    case lookupBy(stringEq, moduleName(top.env, e.typerep), overloads) of
       just(prod) -> prod(e, top.location)
     | nothing() -> showHost(e, location=top.location)
     end;
@@ -231,7 +231,7 @@ top::Expr ::= e::Expr
   
   local localErrors::[Message] = e.errors;
   local fwrd::Expr =
-    case lookupBy(stringEq, e.typerep.moduleName, overloads) of
+    case lookupBy(stringEq, moduleName(top.env, e.typerep), overloads) of
       just(prod) -> prod(e, top.location)
     | nothing() -> strHost(e, location=top.location)
     end;

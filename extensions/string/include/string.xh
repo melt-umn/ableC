@@ -8,7 +8,8 @@
 #ifndef _STRING_XH
 #define _STRING_XH
 
-struct __attribute__((refId("edu:umn:cs:melt:exts:ableC:string:string"))) _string_s {
+struct __attribute__((refId("edu:umn:cs:melt:exts:ableC:string:string"),
+                      module("edu:umn:cs:melt:exts:ableC:string:string"))) _string_s {
   size_t length;
   const char *text;
 };
