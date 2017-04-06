@@ -51,7 +51,8 @@ Decl ::= params::Parameters res::TypeName
 {
   local structName::String = closureStructName(params.typereps, res.typerep);
   local closureStructDecl::Decl = parseDecl(s"""
-struct __attribute__((refId("edu:umn:cs:melt:exts:ableC:closure:${structName}"))) ${structName} {
+struct __attribute__((refId("edu:umn:cs:melt:exts:ableC:closure:${structName}"),
+                      module("edu:umn:cs:melt:exts:ableC:closure:closure"))) ${structName} {
   const char *_fn_name; // For debugging
   void *_env; // Pointer to generated struct containing env
   __res_type__ (*_fn)(void *env, __params__); // First param is above env struct pointer
