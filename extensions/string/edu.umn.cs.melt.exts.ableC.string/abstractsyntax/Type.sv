@@ -139,3 +139,37 @@ top::BuiltinType ::= sub::IntegerType
     | _ -> nothing()
     end;
 }
+
+-- Check if errors result from in applying the show() operator to a type 
+function checkShowErrors
+[Message] ::= t::Type env::Decorated Env
+{
+  local expr::Expr =
+    showExpr(
+      explicitCastExpr(
+        typeName(directTypeExpr(t), baseTypeExpr()),
+        mkIntConst(0, builtin),
+        location=builtin),
+      location=builtin);
+  expr.env = env;
+  expr.returnType = nothing();
+  
+  return expr.errors;
+}
+
+-- Check if errors result from in applying the str() operator to a type 
+function checkStrErrors
+[Message] ::= t::Type env::Decorated Env
+{
+  local expr::Expr =
+    strExpr(
+      explicitCastExpr(
+        typeName(directTypeExpr(t), baseTypeExpr()),
+        mkIntConst(0, builtin),
+        location=builtin),
+      location=builtin);
+  expr.env = env;
+  expr.returnType = nothing();
+  
+  return expr.errors;
+}
