@@ -328,16 +328,12 @@ Type ::= qs::[Qualifier] base::Type
  {
    return
      case a of
-     | pointerType(_, t) -> moduleName(env, t)
-     | arrayType(t, _, _, _) -> moduleName(env, t)
      --| tagType(_, enumTagType(_)) -> ??? -- TODO: Implement 'claiming' enum types
      | tagType(_, refIdTagType(_, _, refId)) ->
          case lookupRefId(refId, env) of
          | item :: _ -> item.moduleName
          | _ -> error("Undefined refId " ++ refId)
          end
-     | atomicType(_, t) -> moduleName(env, t)
-     | vectorType(t, _) -> moduleName(env, t)
      | _ -> "host"
      end;
  }
