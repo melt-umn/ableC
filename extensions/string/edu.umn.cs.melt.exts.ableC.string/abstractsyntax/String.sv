@@ -61,7 +61,7 @@ top::AssignOp ::=
   lOverloads <-
     [pair(
        "edu:umn:cs:melt:exts:ableC:string:string",
-       \ e1::Expr e2::Expr l::Location -> assignString(e1, strExpr(e2, location=l), location=l))];
+       \ e1::Expr e2::Expr l::Location -> assignString(e1, e2, location=l))];
 }
 
 aspect production ovrld:callExpr
