@@ -38,6 +38,19 @@ top::AssignOp ::=
        appendAssignVector(_, _, location=_))];
 }
 
+aspect production assignOp
+top::BinOp ::= op::AssignOp
+{
+  subscriptOverloads <-
+    [pair(
+       "edu:umn:cs:melt:exts:ableC:vector:vector",
+       subscriptAssignVector(_, _, op, _, location=_))];
+  memberOverloads <-
+    [pair(
+       "edu:umn:cs:melt:exts:ableC:vector:vector",
+       memberAssignVector(_, _, _, op, _, location=_))];
+}
+
 aspect production equalsOp
 top::CompareOp ::=
 {
@@ -47,6 +60,13 @@ top::CompareOp ::=
          "edu:umn:cs:melt:exts:ableC:vector:vector",
          "edu:umn:cs:melt:exts:ableC:vector:vector"),
        eqVector(_, _, location=_))];
+}
+
+aspect production ovrld:arraySubscriptExpr
+top::Expr ::= lhs::Expr  rhs::Expr
+{
+  overloads <-
+    [pair("edu:umn:cs:melt:exts:ableC:vector:vector", subscriptVector(_, _, location=_))];
 }
 
 aspect production ovrld:memberExpr
@@ -93,6 +113,12 @@ top::Expr ::= sub::TypeName size::Expr
   forwards to mkErrorCheck(localErrors, fwrd);
 }
 
+global constructVectorFwrd::Expr = parseExpr(s"""
+({proto_typedef __vector_type__;
+  __vector_type__ _vec = __new_vec__;
+  __init__;
+  _vec;})""");
+
 abstract production constructVector
 top::Expr ::= sub::TypeName e::Exprs
 {
@@ -109,16 +135,16 @@ top::Expr ::= sub::TypeName e::Exprs
   e.vectorInitType = sub.typerep;
   
   local fwrd::Expr =
-    stmtExpr(
-      seqStmt(
-        mkDecl(
-          "_vec",
-          vectorType([], sub.typerep),
-          newVector(sub, mkIntConst(e.count, builtin), location=builtin),
-          builtin),
-        e.vectorInitTrans),
-      declRefExpr(name("_vec", location=builtin), location=builtin),
-      location=top.location);
+    subExpr(
+      [typedefSubstitution("__vector_type__", vectorTypeExpr([], sub)),
+       declRefSubstitution(
+         "__new_vec__",
+         newVector(
+           typeName(directTypeExpr(sub.typerep), baseTypeExpr()),
+           mkIntConst(e.count, builtin),
+           location=builtin)),
+       stmtSubstitution("__init__", e.vectorInitTrans)],
+      constructVectorFwrd);
   
   forwards to mkErrorCheck(localErrors, fwrd);
 }
@@ -259,8 +285,8 @@ top::Expr ::= e::Expr
   local subType::Type = vectorSubType(e.typerep, top.env);
   local fwrd::Expr =
     memberExpr(
-      memberExpr(e, true, name("_info", location=builtin), location=builtin),
-      false,
+      memberExpr(e, false, name("_info", location=builtin), location=builtin),
+      true,
       name("length", location=builtin),
       location=builtin);
   
@@ -276,8 +302,8 @@ top::Expr ::= e::Expr
   local subType::Type = vectorSubType(e.typerep, top.env);
   local fwrd::Expr =
     memberExpr(
-      memberExpr(e, true, name("_info", location=builtin), location=builtin),
-      false,
+      memberExpr(e, false, name("_info", location=builtin), location=builtin),
+      true,
       name("capacity", location=builtin),
       location=builtin);
   
@@ -293,8 +319,8 @@ top::Expr ::= e::Expr
   local subType::Type = vectorSubType(e.typerep, top.env);
   local fwrd::Expr =
     memberExpr(
-      memberExpr(e, true, name("_info", location=builtin), location=builtin),
-      false,
+      memberExpr(e, false, name("_info", location=builtin), location=builtin),
+      true,
       name("elem_size", location=builtin),
       location=builtin);
   
@@ -312,7 +338,7 @@ top::Expr ::= e1::Expr e2::Expr
   local indexTempName::String = "_index_" ++ toString(genInt());
 
   local localErrors::[Message] =
-    checkStringHeaderDef("_check_index_vector", top.location, top.env) ++
+    checkVectorHeaderDef("_check_index_vector", top.location, top.env) ++
     if e2.typerep.isIntegerType
     then []
     else [err(e2.location, s"Vector index must have integer type, but got ${showType(e2.typerep)}")];
@@ -334,10 +360,13 @@ top::Expr ::= e1::Expr e2::Expr
                 nilExpr())),
             location=builtin))]),
         arraySubscriptExpr(
-          memberExpr(
-            declRefExpr(name(vecTempName, location=builtin), location=builtin),
-            true,
-            name("_contents", location=builtin),
+          unaryOpExpr(
+            dereferenceOp(location=builtin),
+            memberExpr(
+              declRefExpr(name(vecTempName, location=builtin), location=builtin),
+              false,
+              name("_contents", location=builtin),
+              location=builtin),
             location=builtin),
           declRefExpr(name(indexTempName, location=builtin), location=builtin), location=builtin),
         location=builtin);
@@ -356,11 +385,11 @@ top::Expr ::= lhs::Expr index::Expr op::AssignOp rhs::Expr
   local indexTempName::String = "_index_" ++ toString(genInt());
 
   local localErrors::[Message] =
-    checkStringHeaderDef("_maybe_grow_vector_by_one", top.location, top.env) ++
+    checkVectorHeaderDef("_maybe_grow_vector_by_one", top.location, top.env) ++
     (if index.typerep.isIntegerType
      then []
      else [err(index.location, s"Vector index must have integer type, but got ${showType(index.typerep)}")]) ++
-    (if !compatibleTypes(subType, vectorSubType(rhs.typerep, top.env), false)
+    (if !typeAssignableTo(subType, rhs.typerep)
      then [err(top.location, s"Vector index assign sub-type and rhs type must be the same, got ${showType(subType)} and ${showType(rhs.typerep)}")]
      else []);
   local fwrd::Expr =
@@ -382,10 +411,13 @@ top::Expr ::= lhs::Expr index::Expr op::AssignOp rhs::Expr
             location=builtin))]),
         binaryOpExpr(
           arraySubscriptExpr(
-            memberExpr(
-              declRefExpr(name(vecTempName, location=builtin), location=builtin),
-              true,
-              name("_contents", location=builtin),
+            unaryOpExpr(
+              dereferenceOp(location=builtin),
+              memberExpr(
+                declRefExpr(name(vecTempName, location=builtin), location=builtin),
+                false,
+                name("_contents", location=builtin),
+                location=builtin),
               location=builtin),
             declRefExpr(name(indexTempName, location=builtin), location=builtin), location=builtin),
           assignOp(op, location=builtin),
@@ -407,7 +439,22 @@ top::Expr ::= lhs::Expr deref::Boolean rhs::Name
     | "size"      -> lengthVector(lhs, location=top.location)
     | "capacity"  -> capacityVector(lhs, location=top.location)
     | "elem_size" -> elemSizeVector(lhs, location=top.location)
+    -- Needed for built-in functions
+    | "_info" -> memberExpr(lhs, deref, rhs, location=top.location)
+    | "_contents" -> memberExpr(lhs, deref, rhs, location=top.location)
+    
     | n -> errorExpr([err(rhs.location, s"Vector does not have field ${n}")], location=top.location)
+    end;
+}
+
+abstract production memberAssignVector
+top::Expr ::= lhs::Expr deref::Boolean rhs::Name op::AssignOp val::Expr
+{
+  propagate substituted;
+  
+  forwards to
+    case rhs.name of
+    | n -> errorExpr([err(rhs.location, s"Cannot assign to field ${n} of vector")], location=top.location)
     end;
 }
 
@@ -434,19 +481,8 @@ top::Expr ::= e::Expr
   local subType::Type = vectorSubType(e.typerep, top.env);
 
   local localErrors::[Message] =
-    checkStringHeaderDef("_show_vector", top.location, top.env) ++
-    -- TODO: Make this check less aweful somehow
-    decorate
-      showExpr(
-        unaryOpExpr(
-          dereferenceOp(location=builtin),
-          memberExpr(
-            e, true,
-            name("_contents", location=builtin),
-            location=builtin),
-          location=builtin),
-        location=top.location)
-    with { env = top.env; returnType = top.returnType; }.errors;
+    checkVectorHeaderDef("_show_vector", top.location, top.env) ++
+    checkShowErrors(subType, top.env);
   local fwrd::Expr =
     callExpr(
       templateDeclRefExpr(

@@ -17,22 +17,19 @@ struct _vector_info {
 };
 
 template<a>
-struct _vector_s {
-  struct _vector_info _info;
-  a *_contents;
+struct __attribute__((module("edu:umn:cs:melt:exts:ableC:vector:vector"))) _vector_s {
+  struct _vector_info *_info;
+  a **_contents;
 };
-
-// Not used, right now vector<foo> translates directly to struct _vector_s_template_<mangled name> *
-// using _vector<a> = _vector_s<a>*;
 
 // Check whether an index is valid for given vector info
 template<a>
 static void _check_index_vector(vector<a> vec, size_t i) {
-  if (i >= vec->_info.length || i < 0) {
-    fprintf(stderr, "Vector index out of bounds: length %lu, index %lu\n", vec->_info.length, i);
+  if (i >= vec.length || i < 0) {
+    fprintf(stderr, "Vector index out of bounds: length %lu, index %lu\n", vec.length, i);
     exit(1);
   }
-  if (vec->_contents == NULL) {
+  if (vec._contents == NULL) {
     fprintf(stderr, "Cannot access uninitialized vector\n");
     exit(1);
   }
@@ -41,44 +38,48 @@ static void _check_index_vector(vector<a> vec, size_t i) {
 // Increase the length of a vector to new_size, updating the given info and contents pointers
 template<a>
 static void _resize_vector(vector<a> vec, size_t new_length) {
-  vec->_info.length = new_length;
-  if (new_length > vec->_info.capacity) {
-    vec->_info.capacity = new_length * 2;
-    vec->_contents = GC_realloc(vec->_contents, vec->_info.elem_size * vec->_info.capacity);
+  vec._info->length = new_length;
+  if (new_length > vec.capacity) {
+    vec._info->capacity = new_length * 2;
+    *vec._contents = GC_realloc(*vec._contents, vec.elem_size * vec.capacity);
   }
 }
 
 // If the index is equal to the vector size, expand the vector by one
 template<a>
 static void _maybe_grow_vector_by_one(vector<a> vec, size_t i) {
-  if (i > vec->_info.length || i < 0) {
-    fprintf(stderr, "Vector index out of bounds: length %lu, index %lu\n", vec->_info.length, i);
+  if (i > vec.length || i < 0) {
+    fprintf(stderr, "Vector index out of bounds: length %lu, index %lu\n", vec.length, i);
     exit(1);
   }
-  if (i == vec->_info.length) {
-    _resize_vector<a>(vec, vec->_info.length + 1);
+  if (i == vec.length) {
+    _resize_vector<a>(vec, vec.length + 1);
   }
 }
 
 template<a>
 static vector<a> _new_vector(size_t length) {
-  vector<a> result = GC_malloc(sizeof(_vector_s<a>));
-  result->_info = (struct _vector_info){length, length * 2, sizeof(a)};
-  result->_contents = GC_malloc(sizeof(a) * result->_info.capacity);
-  return result;
+  struct _vector_info *info = GC_malloc(sizeof(struct _vector_info));
+  info->length = length;
+  info->capacity = length * 2;
+  info->elem_size = sizeof(a);
+  a **contents = GC_malloc(sizeof(a*));
+  *contents = GC_malloc(sizeof(a) * info->capacity);
+  return (vector<a>){info, contents};
 }
 
 template<a>
 static vector<a> _copy_vector(vector<a> vec) {
-  vector<a> result = GC_malloc(sizeof(_vector_s<a>));
-  result->_info = (struct _vector_info){vec.length, vec.capacity, vec.elem_size};
-  result->_contents = GC_malloc(vec.elem_size * vec.capacity);
+  struct _vector_info *info = GC_malloc(sizeof(struct _vector_info));
+  *info = *vec._info;
+  a **contents = GC_malloc(sizeof(a*));
+  *contents = GC_malloc(vec.elem_size * vec.capacity);
   
   for (size_t i = 0; i < vec.length; i++) {
-    result[i] = vec[i];
+    (*contents)[i] = vec[i];
   }
   
-  return result;
+  return (vector<a>){info, contents};
 }
 
 template<a>

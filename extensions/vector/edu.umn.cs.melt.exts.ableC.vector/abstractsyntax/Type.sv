@@ -40,14 +40,12 @@ top::Type ::= q::[Qualifier] sub::Type
     end;
 
   forwards to
-    pointerType(
+    tagType(
       q,
-      tagType(
-        [],
-        refIdTagType(
-          structSEU(),
-          templateMangledName("_vector_s", [sub]),
-          templateMangledRefId("_vector_s", [sub]))));
+      refIdTagType(
+        structSEU(),
+        templateMangledName("_vector_s", [sub]),
+        templateMangledRefId("_vector_s", [sub])));
 }
 
 -- Check if a type is a vector type in a non-interfering way
@@ -56,7 +54,7 @@ Boolean ::= t::Type env::Decorated Env
 {
   local refId::String =
     case t of
-      pointerType(_, tagType(_, refIdTagType(_, _, refId))) -> refId
+      tagType(_, refIdTagType(_, _, refId)) -> refId
     | _ -> ""
     end;
   local refIds::[RefIdItem] = lookupRefId(refId, env);
@@ -67,7 +65,7 @@ Boolean ::= t::Type env::Decorated Env
     case refIds, valueItems, ptrType of
       [], _, _ -> false
     | _, [], _ -> false
-    | _, _, pointerType(_, _) -> true
+    | _, _, pointerType(_, pointerType(_, _)) -> true
     | _, _, _ -> false
     end;
 }
@@ -78,7 +76,7 @@ Type ::= t::Type env::Decorated Env
 {
   local refId::String =
     case t of
-      pointerType(_, tagType(_, refIdTagType(_, _, refId))) -> refId
+      tagType(_, refIdTagType(_, _, refId)) -> refId
     | _ -> ""
     end;
   local refIds::[RefIdItem] = lookupRefId(refId, env);
@@ -89,7 +87,7 @@ Type ::= t::Type env::Decorated Env
     case refIds, valueItems, ptrType of
       [], _, _ -> errorType()
     | _, [], _ -> errorType()
-    | _, _, pointerType(_, sub) -> sub
+    | _, _, pointerType(_, pointerType(_, sub)) -> sub
     | _, _, _ -> errorType()
     end;
 }
