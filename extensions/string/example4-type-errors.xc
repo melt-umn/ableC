@@ -15,6 +15,8 @@ int main(int argc, char **argv) {
   char *d = a;
 
   a[2] = 'a';
+  a.length = 4;
+  a.text = "qwerty";
 
   return 0;
 }

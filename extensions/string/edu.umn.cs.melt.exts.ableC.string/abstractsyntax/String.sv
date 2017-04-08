@@ -86,6 +86,11 @@ top::BinOp ::= op::AssignOp
        "edu:umn:cs:melt:exts:ableC:string:string",
        \ e1::Expr e2::Expr e3::Expr l::Location ->
          errorExpr([err(l, "Strings are immutable, cannot assign to index")], location=l))];
+  memberOverloads <-
+    [pair(
+       "edu:umn:cs:melt:exts:ableC:string:string",
+       \ e1::Expr d::Boolean n::Name e2::Expr l::Location ->
+         errorExpr([err(l, s"Cannot assign to field ${n.name} of string")], location=l))];
 }
 
 abstract production showExpr
