@@ -55,18 +55,18 @@ int main(int argc, char **argv) {
   if (g != "xyzxyzxyzxyzxyzxyzxyz")
     return 8;
 
-  string i = show(3.14);
+  string i = show(3.141592);
   printf("i: %s\n", i.text);
 
-  if (i != "3.140000")
+  if (i != "3.14159")
     return 9;
 
-  if (i.length != 8)
+  if (i.length != 7)
     return 10;
 
   string j = i.substring(3, 6);
   printf("j: %s\n", j.text);
-  if (j != "400")
+  if (j != "415")
     return 11;
 
   string k = str("abcd");

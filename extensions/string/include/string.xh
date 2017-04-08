@@ -155,7 +155,7 @@ static inline string showInt(int i) {
 
 static inline string showFloat(double f) {
   char *result = GC_malloc((CHAR_BIT * sizeof(f) - 1) / 3 + 2);
-  sprintf((char*)result, "%f", f);
+  sprintf((char*)result, "%g", f);
   return (string){strlen(result), result};
 }
 
