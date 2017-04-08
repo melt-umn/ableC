@@ -84,7 +84,8 @@ top::BinOp ::= op::AssignOp
   subscriptOverloads <-
     [pair(
        "edu:umn:cs:melt:exts:ableC:string:string",
-       subscriptAssignString(_, _, op, _, location=_))];
+       \ e1::Expr e2::Expr e3::Expr l::Location ->
+         errorExpr([err(l, "Strings are immutable, cannot assign to index")], location=l))];
 }
 
 abstract production showExpr
@@ -414,35 +415,6 @@ top::Expr ::= e1::Expr e2::Expr
     directCallExpr(
       name("_index_string", location=builtin),
       consExpr(e1, consExpr(e2, nilExpr())),
-      location=builtin);
-  forwards to mkErrorCheck(localErrors, fwrd);
-}
-
-abstract production subscriptAssignString
-top::Expr ::= e1::Expr e2::Expr op::AssignOp e3::Expr
-{
-  propagate substituted;
-  top.pp = pp"${e1.pp}[${e2.pp}] ${op.pp} ${e3.pp}";
-  
-  local localErrors::[Message] =
-    checkStringHeaderDef("_check_index_string", top.location, top.env) ++
-    if e2.typerep.isIntegerType
-    then []
-    else [err(e2.location, s"String index must have integer type, but got ${showType(e2.typerep)}")];
-  local fwrd::Expr =
-    stmtExpr(
-      exprStmt(
-        directCallExpr(
-          name("_check_index_string", location=builtin),
-          consExpr(e1, consExpr(e2, nilExpr())),
-          location=builtin)),
-        binaryOpExpr(
-          arraySubscriptExpr(
-            e1, e2,
-            location=builtin),
-          assignOp(op, location=builtin),
-          e3,
-          location=builtin),
       location=builtin);
   forwards to mkErrorCheck(localErrors, fwrd);
 }
