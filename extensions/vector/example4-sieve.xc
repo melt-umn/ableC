@@ -10,13 +10,12 @@ vector<int> sieve(int n) {
     ints[i] = i;
 
   vector<int> results = vec<int>[];
-  int num_results = 0;
   for (int i = 2; i < n; i++) {
     if (ints[i] != -1) {
       for (int j = i * 2; j < n; j += i) {
         ints[j] = -1;
       }
-      results[num_results++] = i;
+      results.append(i);
     }
   }
 

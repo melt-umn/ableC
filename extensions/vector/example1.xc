@@ -14,12 +14,22 @@ int main(int argc, char **argv) {
   a += b;
   printf("a: %s\n", show(a).text);
   b[1] += 7;
-  b[3] = 6;
+  b.append(6);
   printf("b: %s\n", show(b).text);
   vector<int> d = copy_vector(b);
   b[2] = 7;
   printf("b: %s\n", show(b).text);
   printf("d: %s\n", show(d).text);
+  vector<int> e = b;
+  e += a;
+  printf("e: %s\n", show(e).text);
+  e.extend(a);
+  printf("e: %s\n", show(e).text);
+  e.append(42);
+  e.insert(2, 23);
+  printf("e: %s\n", show(e).text);
+  e.extend(e);
+  printf("e: %s\n", show(e).text);
   
   if (a != c)
     return 1;
@@ -33,6 +43,8 @@ int main(int argc, char **argv) {
     return 5;
   if (b == d)
     return 6;
+  if (e[20] != 23)
+    return 7;
 
   return 0;
 }
