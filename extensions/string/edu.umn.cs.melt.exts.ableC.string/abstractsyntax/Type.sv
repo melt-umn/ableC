@@ -59,6 +59,13 @@ top::Type ::= q::[Qualifier]
     tagType(q, refIdTagType(structSEU(), "_string_s", s"edu:umn:cs:melt:exts:ableC:string:string"));
 }
 
+aspect production errorType
+top::Type ::= 
+{
+  top.showProd = just(\ e::Expr l::Location -> errorExpr([], location=l));
+  top.strProd = just(\ e::Expr l::Location -> errorExpr([], location=l));
+}
+
 aspect production pointerType
 top::Type ::= quals::[Qualifier] sub::Type
 {
