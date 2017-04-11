@@ -24,7 +24,7 @@ top::NumOp ::=
        pair(
          "edu:umn:cs:melt:exts:ableC:vector:vector",
          "edu:umn:cs:melt:exts:ableC:vector:vector"),
-       concatVector(_, _, location=_))];
+       concatVector(_, _, location=top.location))];
 }
 
 aspect production assignOp
@@ -33,11 +33,11 @@ top::BinOp ::= op::AssignOp
   subscriptOverloads <-
     [pair(
        "edu:umn:cs:melt:exts:ableC:vector:vector",
-       subscriptAssignVector(_, _, op, _, location=_))];
+       subscriptAssignVector(_, _, op, _, location=top.location))];
   memberOverloads <-
     [pair(
        "edu:umn:cs:melt:exts:ableC:vector:vector",
-       memberAssignVector(_, _, _, op, _, location=_))];
+       memberAssignVector(_, _, _, op, _, location=top.location))];
 }
 
 aspect production equalsOp
@@ -48,34 +48,43 @@ top::CompareOp ::=
        pair(
          "edu:umn:cs:melt:exts:ableC:vector:vector",
          "edu:umn:cs:melt:exts:ableC:vector:vector"),
-       eqVector(_, _, location=_))];
+       eqVector(_, _, location=top.location))];
 }
 
 aspect production ovrld:arraySubscriptExpr
 top::Expr ::= lhs::Expr  rhs::Expr
 {
   overloads <-
-    [pair("edu:umn:cs:melt:exts:ableC:vector:vector", subscriptVector(_, _, location=_))];
+    [pair(
+       "edu:umn:cs:melt:exts:ableC:vector:vector",
+       subscriptVector(lhs, rhs, location=top.location))];
 }
 
 aspect production ovrld:memberExpr
 top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
 {
   overloads <-
-    [pair("edu:umn:cs:melt:exts:ableC:vector:vector", memberVector(_, _, _, location=_))];
+    [pair(
+       "edu:umn:cs:melt:exts:ableC:vector:vector",
+       memberVector(lhs, deref, rhs, location=top.location))];
 }
 
 aspect production ovrld:callExpr
 top::Expr ::= f::Expr  a::Exprs
 {
   memberOverloads <-
-    [pair("edu:umn:cs:melt:exts:ableC:vector:vector", memberCallVector(_, _, _, _, location=_))];
+    [pair(
+       "edu:umn:cs:melt:exts:ableC:vector:vector",
+       memberCallVector(_, _, _, a, location=top.location))];
 }
 
 aspect production showExpr
 top::Expr ::= e::Expr
 {
-  overloads <- [pair("edu:umn:cs:melt:exts:ableC:vector:vector", showVector(_, location=_))];
+  overloads <-
+    [pair(
+       "edu:umn:cs:melt:exts:ableC:vector:vector",
+       showVector(e, location=top.location))];
 }
 
 abstract production memberVector

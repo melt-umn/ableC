@@ -20,11 +20,13 @@ top::NumOp ::=
   lOverloads <-
     [pair(
        "edu:umn:cs:melt:exts:ableC:string:string",
-       \ e1::Expr e2::Expr l::Location -> appendString(e1, strExpr(e2, location=l), location=l))];
+       \ lhs::Expr rhs::Expr ->
+         appendString(lhs, strExpr(rhs, location=top.location), location=top.location))];
   rOverloads <-
     [pair(
        "edu:umn:cs:melt:exts:ableC:string:string",
-       \ e1::Expr e2::Expr l::Location -> appendString(strExpr(e1, location=l), e2, location=l))];
+       \ lhs::Expr rhs::Expr ->
+         appendString(strExpr(lhs, location=top.location), rhs, location=top.location))];
 }
 
 aspect production subOp
@@ -33,13 +35,17 @@ top::NumOp ::=
   lOverloads <-
     [pair(
        "edu:umn:cs:melt:exts:ableC:string:string",
-       \ e1::Expr e2::Expr l::Location -> removeString(e1, strExpr(e2, location=l), location=l))];
+       \ lhs::Expr rhs::Expr ->
+         removeString(lhs, strExpr(rhs, location=top.location), location=top.location))];
 }
 
 aspect production mulOp
 top::NumOp ::=
 {
-  lOverloads <- [pair("edu:umn:cs:melt:exts:ableC:string:string", repeatString(_, _, location=_))];
+  lOverloads <-
+    [pair(
+       "edu:umn:cs:melt:exts:ableC:string:string",
+       repeatString(_, _, location=top.location))];
 }
 
 aspect production equalsOp
@@ -48,11 +54,13 @@ top::CompareOp ::=
   lOverloads <-
     [pair(
        "edu:umn:cs:melt:exts:ableC:string:string",
-       \ e1::Expr e2::Expr l::Location -> eqString(e1, strExpr(e2, location=l), location=l))];
+       \ lhs::Expr rhs::Expr ->
+         eqString(lhs, strExpr(rhs, location=top.location), location=top.location))];
   rOverloads <-
     [pair(
        "edu:umn:cs:melt:exts:ableC:string:string",
-       \ e1::Expr e2::Expr l::Location -> eqString(strExpr(e1, location=l), e2, location=l))];
+       \ lhs::Expr rhs::Expr ->
+         eqString(strExpr(lhs, location=top.location), rhs, location=top.location))];
 }
 
 aspect production eqOp
@@ -61,21 +69,25 @@ top::AssignOp ::=
   lOverloads <-
     [pair(
        "edu:umn:cs:melt:exts:ableC:string:string",
-       \ e1::Expr e2::Expr l::Location -> assignString(e1, e2, location=l))];
+       assignString(_, _, location=top.location))];
 }
 
 aspect production ovrld:callExpr
 top::Expr ::= f::Expr  a::Exprs
 {
   memberOverloads <-
-    [pair("edu:umn:cs:melt:exts:ableC:string:string", memberCallString(_, _, _, _, location=_))];
+    [pair(
+       "edu:umn:cs:melt:exts:ableC:string:string",
+       memberCallString(_, _, _, a, location=top.location))];
 }
 
 aspect production ovrld:arraySubscriptExpr
 top::Expr ::= lhs::Expr  rhs::Expr
 {
   overloads <-
-    [pair("edu:umn:cs:melt:exts:ableC:string:string", subscriptString(_, _, location=_))];
+    [pair(
+       "edu:umn:cs:melt:exts:ableC:string:string",
+       subscriptString(lhs, rhs, location=top.location))];
 }
 
 aspect production assignOp
@@ -84,13 +96,17 @@ top::BinOp ::= op::AssignOp
   subscriptOverloads <-
     [pair(
        "edu:umn:cs:melt:exts:ableC:string:string",
-       \ e1::Expr e2::Expr e3::Expr l::Location ->
-         errorExpr([err(l, "Strings are immutable, cannot assign to index")], location=l))];
+       \ l::Expr i::Expr r::Expr ->
+         errorExpr(
+           [err(top.location, "Strings are immutable, cannot assign to index")],
+           location=top.location))];
   memberOverloads <-
     [pair(
        "edu:umn:cs:melt:exts:ableC:string:string",
-       \ e1::Expr d::Boolean n::Name e2::Expr l::Location ->
-         errorExpr([err(l, s"Cannot assign to field ${n.name} of string")], location=l))];
+       \ l::Expr d::Boolean m::Name r::Expr ->
+         errorExpr(
+           [err(top.location, s"Cannot assign to field ${m.name} of string")],
+           location=top.location))];
 }
 
 abstract production showExpr
@@ -99,13 +115,14 @@ top::Expr ::= e::Expr
   propagate substituted;
   top.pp = pp"show(${e.pp})";
 
-  production attribute overloads::[Pair<String (Expr ::= Expr Location)>] with ++;
-  overloads := [pair("edu:umn:cs:melt:exts:ableC:string:string", showString(_, location=_))];
+  production attribute overloads::[Pair<String Expr>] with ++;
+  overloads :=
+    [pair("edu:umn:cs:melt:exts:ableC:string:string", showString(e, location=top.location))];
   
   local localErrors::[Message] = e.errors;
   local fwrd::Expr =
     case lookupBy(stringEq, moduleName(top.env, e.typerep), overloads) of
-      just(prod) -> prod(e, top.location)
+      just(fwrd) -> fwrd
     | nothing() -> showHost(e, location=top.location)
     end;
   forwards to mkErrorCheck(localErrors, fwrd);
@@ -232,13 +249,14 @@ top::Expr ::= e::Expr
   propagate substituted;
   top.pp = pp"str(${e.pp})";
 
-  production attribute overloads::[Pair<String (Expr ::= Expr Location)>] with ++;
-  overloads := [pair("edu:umn:cs:melt:exts:ableC:string:string", strString(_, location=_))];
+  production attribute overloads::[Pair<String Expr>] with ++;
+  overloads :=
+    [pair("edu:umn:cs:melt:exts:ableC:string:string", strString(e, location=top.location))];
   
   local localErrors::[Message] = e.errors;
   local fwrd::Expr =
     case lookupBy(stringEq, moduleName(top.env, e.typerep), overloads) of
-      just(prod) -> prod(e, top.location)
+      just(fwrd) -> fwrd
     | nothing() -> strHost(e, location=top.location)
     end;
   forwards to mkErrorCheck(localErrors, fwrd);

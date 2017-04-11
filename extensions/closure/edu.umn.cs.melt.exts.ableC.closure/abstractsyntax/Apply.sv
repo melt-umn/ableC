@@ -3,7 +3,7 @@ grammar edu:umn:cs:melt:exts:ableC:closure:abstractsyntax;
 aspect production ovrld:callExpr
 top::Expr ::= f::Expr  a::Exprs
 {
-  overloads <- [pair("edu:umn:cs:melt:exts:ableC:closure:closure", applyExpr(_, _, location=_))];
+  overloads <- [pair("edu:umn:cs:melt:exts:ableC:closure:closure", applyExpr(f, a, location=top.location))];
 }
 
 global applyExprFwrd::Expr = parseExpr(s"""
