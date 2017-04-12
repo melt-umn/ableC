@@ -324,12 +324,12 @@ Type ::= qs::[Qualifier] base::Type
  - Compute a unique identifier coresponding to the module (host or extension) that 'owns' this type
  -}
  function moduleName
- String ::= env::Decorated Env a::Type
+ Maybe<String> ::= env::Decorated Env a::Type
  {
    return
      case a of
      -- TODO: Implement 'claiming' enum types
-   {-| tagType(_, enumTagType(d)) -> d.moduleName
+   {-| tagType(_, enumTagType(d)) -> just(d.moduleName)
      | tagType(_, refIdTagType(enumSEU(), n, _)) ->
          case lookupTag(n, env) of
          | enumTagItem(d) :: _ -> d.moduleName
@@ -340,6 +340,6 @@ Type ::= qs::[Qualifier] base::Type
          | item :: _ -> item.moduleName
          | _ -> error("Undefined refId " ++ refId)
          end
-     | _ -> "host"
+     | _ -> nothing()
      end;
  }

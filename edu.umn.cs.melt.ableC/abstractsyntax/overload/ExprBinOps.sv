@@ -1,4 +1,5 @@
 
+
 aspect default production
 top::BinOp ::=
 {
@@ -13,22 +14,24 @@ top::BinOp ::= op::AssignOp
   subscriptOverloads := [];
   memberOverloads := [];
 
-  local option1::Maybe<Expr> = 
+  local option1::Maybe<Expr> =
     case top.lop of
       arraySubscriptExpr(l, r) ->
-        case lookupBy(stringEq, moduleName(l.env, l.typerep), subscriptOverloads) of
-          just(prod) -> just(prod(new(l), new(r), new(top.rop))) 
-        | nothing() -> nothing()
-        end
+        do (bindMaybe, returnMaybe) {
+          n :: String <- moduleName(l.env, l.typerep);
+          prod :: (Expr ::= Expr Expr Expr) <- lookupBy(stringEq, n, subscriptOverloads);
+          return prod(l, r, new(top.rop));
+        }
     | _ -> nothing()
     end;
   local option2::Maybe<Expr> = 
     case top.lop of
       memberExpr(l, d, r) ->
-        case lookupBy(stringEq, moduleName(l.env, l.typerep), memberOverloads) of
-          just(prod) -> just(prod(new(l), d, new(r), new(top.rop))) 
-        | nothing() -> nothing()
-        end
+        do (bindMaybe, returnMaybe) {
+          n :: String <- moduleName(l.env, l.typerep);
+          prod :: (Expr ::= Expr Boolean Name Expr) <- lookupBy(stringEq, n, memberOverloads);
+          return prod(l, d, r, new(top.rop));
+        }
     | _ -> nothing()
     end;
   local option3::Maybe<Expr> = op.resolved;
@@ -60,22 +63,7 @@ top::AssignOp ::=
   lOverloads := [];
   rOverloads := [];
   
-  local option1::Maybe<Expr> =
-    case lookupBy(stringPairEq, pair(moduleName(top.lop.env, top.lop.typerep), moduleName(top.rop.env, top.rop.typerep)), overloads) of
-      just(prod) -> just(prod(new(top.lop), new(top.rop)))
-    | nothing() -> nothing()
-    end;
-  local option2::Maybe<Expr> =
-    case lookupBy(stringEq, moduleName(top.lop.env, top.lop.typerep), lOverloads) of
-      just(prod) -> just(prod(new(top.lop), new(top.rop)))
-    | nothing() -> nothing()
-    end;
-  local option3::Maybe<Expr> =
-    case lookupBy(stringEq, moduleName(top.rop.env, top.rop.typerep), rOverloads) of
-      just(prod) -> just(prod(new(top.lop), new(top.rop)))
-    | nothing() -> nothing()
-    end;
-  top.resolved = orElse(option1, orElse(option2, option3));
+  top.resolved = getBinaryOverload(top.lop, top.rop, overloads, lOverloads, rOverloads);
 }
 aspect production mulEqOp
 top::AssignOp ::=
@@ -89,22 +77,7 @@ top::AssignOp ::=
   lOverloads := [];
   rOverloads := [];
   
-  local option1::Maybe<Expr> =
-    case lookupBy(stringPairEq, pair(moduleName(top.lop.env, top.lop.typerep), moduleName(top.rop.env, top.rop.typerep)), overloads) of
-      just(prod) -> just(prod(new(top.lop), new(top.rop)))
-    | nothing() -> nothing()
-    end;
-  local option2::Maybe<Expr> =
-    case lookupBy(stringEq, moduleName(top.lop.env, top.lop.typerep), lOverloads) of
-      just(prod) -> just(prod(new(top.lop), new(top.rop)))
-    | nothing() -> nothing()
-    end;
-  local option3::Maybe<Expr> =
-    case lookupBy(stringEq, moduleName(top.rop.env, top.rop.typerep), rOverloads) of
-      just(prod) -> just(prod(new(top.lop), new(top.rop)))
-    | nothing() -> nothing()
-    end;
-  top.resolved = orElse(option1, orElse(option2, option3));
+  top.resolved = getBinaryOverload(top.lop, top.rop, overloads, lOverloads, rOverloads);
 }
 aspect production divEqOp
 top::AssignOp ::=
@@ -118,22 +91,7 @@ top::AssignOp ::=
   lOverloads := [];
   rOverloads := [];
   
-  local option1::Maybe<Expr> =
-    case lookupBy(stringPairEq, pair(moduleName(top.lop.env, top.lop.typerep), moduleName(top.rop.env, top.rop.typerep)), overloads) of
-      just(prod) -> just(prod(new(top.lop), new(top.rop)))
-    | nothing() -> nothing()
-    end;
-  local option2::Maybe<Expr> =
-    case lookupBy(stringEq, moduleName(top.lop.env, top.lop.typerep), lOverloads) of
-      just(prod) -> just(prod(new(top.lop), new(top.rop)))
-    | nothing() -> nothing()
-    end;
-  local option3::Maybe<Expr> =
-    case lookupBy(stringEq, moduleName(top.rop.env, top.rop.typerep), rOverloads) of
-      just(prod) -> just(prod(new(top.lop), new(top.rop)))
-    | nothing() -> nothing()
-    end;
-  top.resolved = orElse(option1, orElse(option2, option3));
+  top.resolved = getBinaryOverload(top.lop, top.rop, overloads, lOverloads, rOverloads);
 }
 aspect production modEqOp
 top::AssignOp ::=
@@ -147,22 +105,7 @@ top::AssignOp ::=
   lOverloads := [];
   rOverloads := [];
   
-  local option1::Maybe<Expr> =
-    case lookupBy(stringPairEq, pair(moduleName(top.lop.env, top.lop.typerep), moduleName(top.rop.env, top.rop.typerep)), overloads) of
-      just(prod) -> just(prod(new(top.lop), new(top.rop)))
-    | nothing() -> nothing()
-    end;
-  local option2::Maybe<Expr> =
-    case lookupBy(stringEq, moduleName(top.lop.env, top.lop.typerep), lOverloads) of
-      just(prod) -> just(prod(new(top.lop), new(top.rop)))
-    | nothing() -> nothing()
-    end;
-  local option3::Maybe<Expr> =
-    case lookupBy(stringEq, moduleName(top.rop.env, top.rop.typerep), rOverloads) of
-      just(prod) -> just(prod(new(top.lop), new(top.rop)))
-    | nothing() -> nothing()
-    end;
-  top.resolved = orElse(option1, orElse(option2, option3));
+  top.resolved = getBinaryOverload(top.lop, top.rop, overloads, lOverloads, rOverloads);
 }
 aspect production addEqOp
 top::AssignOp ::=
@@ -176,22 +119,7 @@ top::AssignOp ::=
   lOverloads := [];
   rOverloads := [];
   
-  local option1::Maybe<Expr> =
-    case lookupBy(stringPairEq, pair(moduleName(top.lop.env, top.lop.typerep), moduleName(top.rop.env, top.rop.typerep)), overloads) of
-      just(prod) -> just(prod(new(top.lop), new(top.rop)))
-    | nothing() -> nothing()
-    end;
-  local option2::Maybe<Expr> =
-    case lookupBy(stringEq, moduleName(top.lop.env, top.lop.typerep), lOverloads) of
-      just(prod) -> just(prod(new(top.lop), new(top.rop)))
-    | nothing() -> nothing()
-    end;
-  local option3::Maybe<Expr> =
-    case lookupBy(stringEq, moduleName(top.rop.env, top.rop.typerep), rOverloads) of
-      just(prod) -> just(prod(new(top.lop), new(top.rop)))
-    | nothing() -> nothing()
-    end;
-  top.resolved = orElse(option1, orElse(option2, option3));
+  top.resolved = getBinaryOverload(top.lop, top.rop, overloads, lOverloads, rOverloads);
 }
 aspect production subEqOp
 top::AssignOp ::=
@@ -205,22 +133,7 @@ top::AssignOp ::=
   lOverloads := [];
   rOverloads := [];
   
-  local option1::Maybe<Expr> =
-    case lookupBy(stringPairEq, pair(moduleName(top.lop.env, top.lop.typerep), moduleName(top.rop.env, top.rop.typerep)), overloads) of
-      just(prod) -> just(prod(new(top.lop), new(top.rop)))
-    | nothing() -> nothing()
-    end;
-  local option2::Maybe<Expr> =
-    case lookupBy(stringEq, moduleName(top.lop.env, top.lop.typerep), lOverloads) of
-      just(prod) -> just(prod(new(top.lop), new(top.rop)))
-    | nothing() -> nothing()
-    end;
-  local option3::Maybe<Expr> =
-    case lookupBy(stringEq, moduleName(top.rop.env, top.rop.typerep), rOverloads) of
-      just(prod) -> just(prod(new(top.lop), new(top.rop)))
-    | nothing() -> nothing()
-    end;
-  top.resolved = orElse(option1, orElse(option2, option3));
+  top.resolved = getBinaryOverload(top.lop, top.rop, overloads, lOverloads, rOverloads);
 }
 aspect production lshEqOp
 top::AssignOp ::=
@@ -234,22 +147,7 @@ top::AssignOp ::=
   lOverloads := [];
   rOverloads := [];
   
-  local option1::Maybe<Expr> =
-    case lookupBy(stringPairEq, pair(moduleName(top.lop.env, top.lop.typerep), moduleName(top.rop.env, top.rop.typerep)), overloads) of
-      just(prod) -> just(prod(new(top.lop), new(top.rop)))
-    | nothing() -> nothing()
-    end;
-  local option2::Maybe<Expr> =
-    case lookupBy(stringEq, moduleName(top.lop.env, top.lop.typerep), lOverloads) of
-      just(prod) -> just(prod(new(top.lop), new(top.rop)))
-    | nothing() -> nothing()
-    end;
-  local option3::Maybe<Expr> =
-    case lookupBy(stringEq, moduleName(top.rop.env, top.rop.typerep), rOverloads) of
-      just(prod) -> just(prod(new(top.lop), new(top.rop)))
-    | nothing() -> nothing()
-    end;
-  top.resolved = orElse(option1, orElse(option2, option3));
+  top.resolved = getBinaryOverload(top.lop, top.rop, overloads, lOverloads, rOverloads);
 }
 aspect production rshEqOp
 top::AssignOp ::=
@@ -263,22 +161,7 @@ top::AssignOp ::=
   lOverloads := [];
   rOverloads := [];
   
-  local option1::Maybe<Expr> =
-    case lookupBy(stringPairEq, pair(moduleName(top.lop.env, top.lop.typerep), moduleName(top.rop.env, top.rop.typerep)), overloads) of
-      just(prod) -> just(prod(new(top.lop), new(top.rop)))
-    | nothing() -> nothing()
-    end;
-  local option2::Maybe<Expr> =
-    case lookupBy(stringEq, moduleName(top.lop.env, top.lop.typerep), lOverloads) of
-      just(prod) -> just(prod(new(top.lop), new(top.rop)))
-    | nothing() -> nothing()
-    end;
-  local option3::Maybe<Expr> =
-    case lookupBy(stringEq, moduleName(top.rop.env, top.rop.typerep), rOverloads) of
-      just(prod) -> just(prod(new(top.lop), new(top.rop)))
-    | nothing() -> nothing()
-    end;
-  top.resolved = orElse(option1, orElse(option2, option3));
+  top.resolved = getBinaryOverload(top.lop, top.rop, overloads, lOverloads, rOverloads);
 }
 aspect production andEqOp
 top::AssignOp ::=
@@ -292,22 +175,7 @@ top::AssignOp ::=
   lOverloads := [];
   rOverloads := [];
   
-  local option1::Maybe<Expr> =
-    case lookupBy(stringPairEq, pair(moduleName(top.lop.env, top.lop.typerep), moduleName(top.rop.env, top.rop.typerep)), overloads) of
-      just(prod) -> just(prod(new(top.lop), new(top.rop)))
-    | nothing() -> nothing()
-    end;
-  local option2::Maybe<Expr> =
-    case lookupBy(stringEq, moduleName(top.lop.env, top.lop.typerep), lOverloads) of
-      just(prod) -> just(prod(new(top.lop), new(top.rop)))
-    | nothing() -> nothing()
-    end;
-  local option3::Maybe<Expr> =
-    case lookupBy(stringEq, moduleName(top.rop.env, top.rop.typerep), rOverloads) of
-      just(prod) -> just(prod(new(top.lop), new(top.rop)))
-    | nothing() -> nothing()
-    end;
-  top.resolved = orElse(option1, orElse(option2, option3));
+  top.resolved = getBinaryOverload(top.lop, top.rop, overloads, lOverloads, rOverloads);
 }
 aspect production orEqOp
 top::AssignOp ::=
@@ -321,22 +189,7 @@ top::AssignOp ::=
   lOverloads := [];
   rOverloads := [];
   
-  local option1::Maybe<Expr> =
-    case lookupBy(stringPairEq, pair(moduleName(top.lop.env, top.lop.typerep), moduleName(top.rop.env, top.rop.typerep)), overloads) of
-      just(prod) -> just(prod(new(top.lop), new(top.rop)))
-    | nothing() -> nothing()
-    end;
-  local option2::Maybe<Expr> =
-    case lookupBy(stringEq, moduleName(top.lop.env, top.lop.typerep), lOverloads) of
-      just(prod) -> just(prod(new(top.lop), new(top.rop)))
-    | nothing() -> nothing()
-    end;
-  local option3::Maybe<Expr> =
-    case lookupBy(stringEq, moduleName(top.rop.env, top.rop.typerep), rOverloads) of
-      just(prod) -> just(prod(new(top.lop), new(top.rop)))
-    | nothing() -> nothing()
-    end;
-  top.resolved = orElse(option1, orElse(option2, option3));
+  top.resolved = getBinaryOverload(top.lop, top.rop, overloads, lOverloads, rOverloads);
 }
 aspect production xorEqOp
 top::AssignOp ::=
@@ -350,22 +203,7 @@ top::AssignOp ::=
   lOverloads := [];
   rOverloads := [];
   
-  local option1::Maybe<Expr> =
-    case lookupBy(stringPairEq, pair(moduleName(top.lop.env, top.lop.typerep), moduleName(top.rop.env, top.rop.typerep)), overloads) of
-      just(prod) -> just(prod(new(top.lop), new(top.rop)))
-    | nothing() -> nothing()
-    end;
-  local option2::Maybe<Expr> =
-    case lookupBy(stringEq, moduleName(top.lop.env, top.lop.typerep), lOverloads) of
-      just(prod) -> just(prod(new(top.lop), new(top.rop)))
-    | nothing() -> nothing()
-    end;
-  local option3::Maybe<Expr> =
-    case lookupBy(stringEq, moduleName(top.rop.env, top.rop.typerep), rOverloads) of
-      just(prod) -> just(prod(new(top.lop), new(top.rop)))
-    | nothing() -> nothing()
-    end;
-  top.resolved = orElse(option1, orElse(option2, option3));
+  top.resolved = getBinaryOverload(top.lop, top.rop, overloads, lOverloads, rOverloads);
 }
 
 --------------------------------------------------------------------------------
@@ -387,22 +225,7 @@ top::BoolOp ::=
   lOverloads := [];
   rOverloads := [];
   
-  local option1::Maybe<Expr> =
-    case lookupBy(stringPairEq, pair(moduleName(top.lop.env, top.lop.typerep), moduleName(top.rop.env, top.rop.typerep)), overloads) of
-      just(prod) -> just(prod(new(top.lop), new(top.rop)))
-    | nothing() -> nothing()
-    end;
-  local option2::Maybe<Expr> =
-    case lookupBy(stringEq, moduleName(top.lop.env, top.lop.typerep), lOverloads) of
-      just(prod) -> just(prod(new(top.lop), new(top.rop)))
-    | nothing() -> nothing()
-    end;
-  local option3::Maybe<Expr> =
-    case lookupBy(stringEq, moduleName(top.rop.env, top.rop.typerep), rOverloads) of
-      just(prod) -> just(prod(new(top.lop), new(top.rop)))
-    | nothing() -> nothing()
-    end;
-  top.resolved = orElse(option1, orElse(option2, option3));
+  top.resolved = getBinaryOverload(top.lop, top.rop, overloads, lOverloads, rOverloads);
 }
 aspect production orBoolOp
 top::BoolOp ::=
@@ -414,22 +237,7 @@ top::BoolOp ::=
   lOverloads := [];
   rOverloads := [];
   
-  local option1::Maybe<Expr> =
-    case lookupBy(stringPairEq, pair(moduleName(top.lop.env, top.lop.typerep), moduleName(top.rop.env, top.rop.typerep)), overloads) of
-      just(prod) -> just(prod(new(top.lop), new(top.rop)))
-    | nothing() -> nothing()
-    end;
-  local option2::Maybe<Expr> =
-    case lookupBy(stringEq, moduleName(top.lop.env, top.lop.typerep), lOverloads) of
-      just(prod) -> just(prod(new(top.lop), new(top.rop)))
-    | nothing() -> nothing()
-    end;
-  local option3::Maybe<Expr> =
-    case lookupBy(stringEq, moduleName(top.rop.env, top.rop.typerep), rOverloads) of
-      just(prod) -> just(prod(new(top.lop), new(top.rop)))
-    | nothing() -> nothing()
-    end;
-  top.resolved = orElse(option1, orElse(option2, option3));
+  top.resolved = getBinaryOverload(top.lop, top.rop, overloads, lOverloads, rOverloads);
 }
 
 --------------------------------------------------------------------------------
@@ -449,22 +257,7 @@ top::BitOp ::=
   lOverloads := [];
   rOverloads := [];
   
-  local option1::Maybe<Expr> =
-    case lookupBy(stringPairEq, pair(moduleName(top.lop.env, top.lop.typerep), moduleName(top.rop.env, top.rop.typerep)), overloads) of
-      just(prod) -> just(prod(new(top.lop), new(top.rop)))
-    | nothing() -> nothing()
-    end;
-  local option2::Maybe<Expr> =
-    case lookupBy(stringEq, moduleName(top.lop.env, top.lop.typerep), lOverloads) of
-      just(prod) -> just(prod(new(top.lop), new(top.rop)))
-    | nothing() -> nothing()
-    end;
-  local option3::Maybe<Expr> =
-    case lookupBy(stringEq, moduleName(top.rop.env, top.rop.typerep), rOverloads) of
-      just(prod) -> just(prod(new(top.lop), new(top.rop)))
-    | nothing() -> nothing()
-    end;
-  top.resolved = orElse(option1, orElse(option2, option3));
+  top.resolved = getBinaryOverload(top.lop, top.rop, overloads, lOverloads, rOverloads);
 }
 aspect production orBitOp
 top::BitOp ::=
@@ -476,22 +269,7 @@ top::BitOp ::=
   lOverloads := [];
   rOverloads := [];
   
-  local option1::Maybe<Expr> =
-    case lookupBy(stringPairEq, pair(moduleName(top.lop.env, top.lop.typerep), moduleName(top.rop.env, top.rop.typerep)), overloads) of
-      just(prod) -> just(prod(new(top.lop), new(top.rop)))
-    | nothing() -> nothing()
-    end;
-  local option2::Maybe<Expr> =
-    case lookupBy(stringEq, moduleName(top.lop.env, top.lop.typerep), lOverloads) of
-      just(prod) -> just(prod(new(top.lop), new(top.rop)))
-    | nothing() -> nothing()
-    end;
-  local option3::Maybe<Expr> =
-    case lookupBy(stringEq, moduleName(top.rop.env, top.rop.typerep), rOverloads) of
-      just(prod) -> just(prod(new(top.lop), new(top.rop)))
-    | nothing() -> nothing()
-    end;
-  top.resolved = orElse(option1, orElse(option2, option3));
+  top.resolved = getBinaryOverload(top.lop, top.rop, overloads, lOverloads, rOverloads);
 }
 aspect production xorBitOp
 top::BitOp ::=
@@ -503,22 +281,7 @@ top::BitOp ::=
   lOverloads := [];
   rOverloads := [];
   
-  local option1::Maybe<Expr> =
-    case lookupBy(stringPairEq, pair(moduleName(top.lop.env, top.lop.typerep), moduleName(top.rop.env, top.rop.typerep)), overloads) of
-      just(prod) -> just(prod(new(top.lop), new(top.rop)))
-    | nothing() -> nothing()
-    end;
-  local option2::Maybe<Expr> =
-    case lookupBy(stringEq, moduleName(top.lop.env, top.lop.typerep), lOverloads) of
-      just(prod) -> just(prod(new(top.lop), new(top.rop)))
-    | nothing() -> nothing()
-    end;
-  local option3::Maybe<Expr> =
-    case lookupBy(stringEq, moduleName(top.rop.env, top.rop.typerep), rOverloads) of
-      just(prod) -> just(prod(new(top.lop), new(top.rop)))
-    | nothing() -> nothing()
-    end;
-  top.resolved = orElse(option1, orElse(option2, option3));
+  top.resolved = getBinaryOverload(top.lop, top.rop, overloads, lOverloads, rOverloads);
 }
 aspect production lshBitOp
 top::BitOp ::=
@@ -530,22 +293,7 @@ top::BitOp ::=
   lOverloads := [];
   rOverloads := [];
   
-  local option1::Maybe<Expr> =
-    case lookupBy(stringPairEq, pair(moduleName(top.lop.env, top.lop.typerep), moduleName(top.rop.env, top.rop.typerep)), overloads) of
-      just(prod) -> just(prod(new(top.lop), new(top.rop)))
-    | nothing() -> nothing()
-    end;
-  local option2::Maybe<Expr> =
-    case lookupBy(stringEq, moduleName(top.lop.env, top.lop.typerep), lOverloads) of
-      just(prod) -> just(prod(new(top.lop), new(top.rop)))
-    | nothing() -> nothing()
-    end;
-  local option3::Maybe<Expr> =
-    case lookupBy(stringEq, moduleName(top.rop.env, top.rop.typerep), rOverloads) of
-      just(prod) -> just(prod(new(top.lop), new(top.rop)))
-    | nothing() -> nothing()
-    end;
-  top.resolved = orElse(option1, orElse(option2, option3));
+  top.resolved = getBinaryOverload(top.lop, top.rop, overloads, lOverloads, rOverloads);
 }
 aspect production rshBitOp
 top::BitOp ::=
@@ -557,22 +305,7 @@ top::BitOp ::=
   lOverloads := [];
   rOverloads := [];
   
-  local option1::Maybe<Expr> =
-    case lookupBy(stringPairEq, pair(moduleName(top.lop.env, top.lop.typerep), moduleName(top.rop.env, top.rop.typerep)), overloads) of
-      just(prod) -> just(prod(new(top.lop), new(top.rop)))
-    | nothing() -> nothing()
-    end;
-  local option2::Maybe<Expr> =
-    case lookupBy(stringEq, moduleName(top.lop.env, top.lop.typerep), lOverloads) of
-      just(prod) -> just(prod(new(top.lop), new(top.rop)))
-    | nothing() -> nothing()
-    end;
-  local option3::Maybe<Expr> =
-    case lookupBy(stringEq, moduleName(top.rop.env, top.rop.typerep), rOverloads) of
-      just(prod) -> just(prod(new(top.lop), new(top.rop)))
-    | nothing() -> nothing()
-    end;
-  top.resolved = orElse(option1, orElse(option2, option3));
+  top.resolved = getBinaryOverload(top.lop, top.rop, overloads, lOverloads, rOverloads);
 }
 
 --------------------------------------------------------------------------------
@@ -592,22 +325,7 @@ top::CompareOp ::=
   lOverloads := [];
   rOverloads := [];
   
-  local option1::Maybe<Expr> =
-    case lookupBy(stringPairEq, pair(moduleName(top.lop.env, top.lop.typerep), moduleName(top.rop.env, top.rop.typerep)), overloads) of
-      just(prod) -> just(prod(new(top.lop), new(top.rop)))
-    | nothing() -> nothing()
-    end;
-  local option2::Maybe<Expr> =
-    case lookupBy(stringEq, moduleName(top.lop.env, top.lop.typerep), lOverloads) of
-      just(prod) -> just(prod(new(top.lop), new(top.rop)))
-    | nothing() -> nothing()
-    end;
-  local option3::Maybe<Expr> =
-    case lookupBy(stringEq, moduleName(top.rop.env, top.rop.typerep), rOverloads) of
-      just(prod) -> just(prod(new(top.lop), new(top.rop)))
-    | nothing() -> nothing()
-    end;
-  top.resolved = orElse(option1, orElse(option2, option3));
+  top.resolved = getBinaryOverload(top.lop, top.rop, overloads, lOverloads, rOverloads);
 }
 aspect production notEqualsOp
 top::CompareOp ::=
@@ -619,22 +337,8 @@ top::CompareOp ::=
   lOverloads := [];
   rOverloads := [];
   
-  local option1::Maybe<Expr> =
-    case lookupBy(stringPairEq, pair(moduleName(top.lop.env, top.lop.typerep), moduleName(top.rop.env, top.rop.typerep)), overloads) of
-      just(prod) -> just(prod(new(top.lop), new(top.rop)))
-    | nothing() -> nothing()
-    end;
+  local option1::Maybe<Expr> = getBinaryOverload(top.lop, top.rop, overloads, lOverloads, rOverloads);
   local option2::Maybe<Expr> =
-    case lookupBy(stringEq, moduleName(top.lop.env, top.lop.typerep), lOverloads) of
-      just(prod) -> just(prod(new(top.lop), new(top.rop)))
-    | nothing() -> nothing()
-    end;
-  local option3::Maybe<Expr> =
-    case lookupBy(stringEq, moduleName(top.rop.env, top.rop.typerep), rOverloads) of
-      just(prod) -> just(prod(new(top.lop), new(top.rop)))
-    | nothing() -> nothing()
-    end;
-  local option4::Maybe<Expr> =
     just(
       unaryOpExpr(
         notOp(location=top.location),
@@ -645,7 +349,7 @@ top::CompareOp ::=
           location=top.location),
         location=top.location)); 
   
-  top.resolved = orElse(option1, orElse(option2, orElse(option3, option4)));
+  top.resolved = orElse(option1, option2);
 }
 aspect production gtOp
 top::CompareOp ::=
@@ -657,22 +361,7 @@ top::CompareOp ::=
   lOverloads := [];
   rOverloads := [];
   
-  local option1::Maybe<Expr> =
-    case lookupBy(stringPairEq, pair(moduleName(top.lop.env, top.lop.typerep), moduleName(top.rop.env, top.rop.typerep)), overloads) of
-      just(prod) -> just(prod(new(top.lop), new(top.rop)))
-    | nothing() -> nothing()
-    end;
-  local option2::Maybe<Expr> =
-    case lookupBy(stringEq, moduleName(top.lop.env, top.lop.typerep), lOverloads) of
-      just(prod) -> just(prod(new(top.lop), new(top.rop)))
-    | nothing() -> nothing()
-    end;
-  local option3::Maybe<Expr> =
-    case lookupBy(stringEq, moduleName(top.rop.env, top.rop.typerep), rOverloads) of
-      just(prod) -> just(prod(new(top.lop), new(top.rop)))
-    | nothing() -> nothing()
-    end;
-  top.resolved = orElse(option1, orElse(option2, option3));
+  top.resolved = getBinaryOverload(top.lop, top.rop, overloads, lOverloads, rOverloads);
 }
 aspect production ltOp
 top::CompareOp ::=
@@ -684,22 +373,7 @@ top::CompareOp ::=
   lOverloads := [];
   rOverloads := [];
   
-  local option1::Maybe<Expr> =
-    case lookupBy(stringPairEq, pair(moduleName(top.lop.env, top.lop.typerep), moduleName(top.rop.env, top.rop.typerep)), overloads) of
-      just(prod) -> just(prod(new(top.lop), new(top.rop)))
-    | nothing() -> nothing()
-    end;
-  local option2::Maybe<Expr> =
-    case lookupBy(stringEq, moduleName(top.lop.env, top.lop.typerep), lOverloads) of
-      just(prod) -> just(prod(new(top.lop), new(top.rop)))
-    | nothing() -> nothing()
-    end;
-  local option3::Maybe<Expr> =
-    case lookupBy(stringEq, moduleName(top.rop.env, top.rop.typerep), rOverloads) of
-      just(prod) -> just(prod(new(top.lop), new(top.rop)))
-    | nothing() -> nothing()
-    end;
-  top.resolved = orElse(option1, orElse(option2, option3));
+  top.resolved = getBinaryOverload(top.lop, top.rop, overloads, lOverloads, rOverloads);
 }
 aspect production gteOp
 top::CompareOp ::=
@@ -711,22 +385,8 @@ top::CompareOp ::=
   lOverloads := [];
   rOverloads := [];
   
-  local option1::Maybe<Expr> =
-    case lookupBy(stringPairEq, pair(moduleName(top.lop.env, top.lop.typerep), moduleName(top.rop.env, top.rop.typerep)), overloads) of
-      just(prod) -> just(prod(new(top.lop), new(top.rop)))
-    | nothing() -> nothing()
-    end;
+  local option1::Maybe<Expr> = getBinaryOverload(top.lop, top.rop, overloads, lOverloads, rOverloads);
   local option2::Maybe<Expr> =
-    case lookupBy(stringEq, moduleName(top.lop.env, top.lop.typerep), lOverloads) of
-      just(prod) -> just(prod(new(top.lop), new(top.rop)))
-    | nothing() -> nothing()
-    end;
-  local option3::Maybe<Expr> =
-    case lookupBy(stringEq, moduleName(top.rop.env, top.rop.typerep), rOverloads) of
-      just(prod) -> just(prod(new(top.lop), new(top.rop)))
-    | nothing() -> nothing()
-    end;
-  local option4::Maybe<Expr> =
     just(
       unaryOpExpr(
         notOp(location=top.location),
@@ -737,7 +397,7 @@ top::CompareOp ::=
           location=top.location),
         location=top.location)); 
   
-  top.resolved = orElse(option1, orElse(option2, orElse(option3, option4)));
+  top.resolved = orElse(option1, option2);
 }
 aspect production lteOp
 top::CompareOp ::=
@@ -749,22 +409,8 @@ top::CompareOp ::=
   lOverloads := [];
   rOverloads := [];
   
-  local option1::Maybe<Expr> =
-    case lookupBy(stringPairEq, pair(moduleName(top.lop.env, top.lop.typerep), moduleName(top.rop.env, top.rop.typerep)), overloads) of
-      just(prod) -> just(prod(new(top.lop), new(top.rop)))
-    | nothing() -> nothing()
-    end;
+  local option1::Maybe<Expr> = getBinaryOverload(top.lop, top.rop, overloads, lOverloads, rOverloads);
   local option2::Maybe<Expr> =
-    case lookupBy(stringEq, moduleName(top.lop.env, top.lop.typerep), lOverloads) of
-      just(prod) -> just(prod(new(top.lop), new(top.rop)))
-    | nothing() -> nothing()
-    end;
-  local option3::Maybe<Expr> =
-    case lookupBy(stringEq, moduleName(top.rop.env, top.rop.typerep), rOverloads) of
-      just(prod) -> just(prod(new(top.lop), new(top.rop)))
-    | nothing() -> nothing()
-    end;
-  local option4::Maybe<Expr> =
     just(
       unaryOpExpr(
         notOp(location=top.location),
@@ -775,7 +421,7 @@ top::CompareOp ::=
           location=top.location),
         location=top.location)); 
   
-  top.resolved = orElse(option1, orElse(option2, orElse(option3, option4)));
+  top.resolved = orElse(option1, option2);
 }
 
 
@@ -796,22 +442,7 @@ top::NumOp ::=
   lOverloads := [];
   rOverloads := [];
   
-  local option1::Maybe<Expr> =
-    case lookupBy(stringPairEq, pair(moduleName(top.lop.env, top.lop.typerep), moduleName(top.rop.env, top.rop.typerep)), overloads) of
-      just(prod) -> just(prod(new(top.lop), new(top.rop)))
-    | nothing() -> nothing()
-    end;
-  local option2::Maybe<Expr> =
-    case lookupBy(stringEq, moduleName(top.lop.env, top.lop.typerep), lOverloads) of
-      just(prod) -> just(prod(new(top.lop), new(top.rop)))
-    | nothing() -> nothing()
-    end;
-  local option3::Maybe<Expr> =
-    case lookupBy(stringEq, moduleName(top.rop.env, top.rop.typerep), rOverloads) of
-      just(prod) -> just(prod(new(top.lop), new(top.rop)))
-    | nothing() -> nothing()
-    end;
-  top.resolved = orElse(option1, orElse(option2, option3));
+  top.resolved = getBinaryOverload(top.lop, top.rop, overloads, lOverloads, rOverloads);
 }
 aspect production subOp
 top::NumOp ::=
@@ -823,22 +454,7 @@ top::NumOp ::=
   lOverloads := [];
   rOverloads := [];
   
-  local option1::Maybe<Expr> =
-    case lookupBy(stringPairEq, pair(moduleName(top.lop.env, top.lop.typerep), moduleName(top.rop.env, top.rop.typerep)), overloads) of
-      just(prod) -> just(prod(new(top.lop), new(top.rop)))
-    | nothing() -> nothing()
-    end;
-  local option2::Maybe<Expr> =
-    case lookupBy(stringEq, moduleName(top.lop.env, top.lop.typerep), lOverloads) of
-      just(prod) -> just(prod(new(top.lop), new(top.rop)))
-    | nothing() -> nothing()
-    end;
-  local option3::Maybe<Expr> =
-    case lookupBy(stringEq, moduleName(top.rop.env, top.rop.typerep), rOverloads) of
-      just(prod) -> just(prod(new(top.lop), new(top.rop)))
-    | nothing() -> nothing()
-    end;
-  top.resolved = orElse(option1, orElse(option2, option3));
+  top.resolved = getBinaryOverload(top.lop, top.rop, overloads, lOverloads, rOverloads);
 }
 aspect production mulOp
 top::NumOp ::=
@@ -850,22 +466,7 @@ top::NumOp ::=
   lOverloads := [];
   rOverloads := [];
   
-  local option1::Maybe<Expr> =
-    case lookupBy(stringPairEq, pair(moduleName(top.lop.env, top.lop.typerep), moduleName(top.rop.env, top.rop.typerep)), overloads) of
-      just(prod) -> just(prod(new(top.lop), new(top.rop)))
-    | nothing() -> nothing()
-    end;
-  local option2::Maybe<Expr> =
-    case lookupBy(stringEq, moduleName(top.lop.env, top.lop.typerep), lOverloads) of
-      just(prod) -> just(prod(new(top.lop), new(top.rop)))
-    | nothing() -> nothing()
-    end;
-  local option3::Maybe<Expr> =
-    case lookupBy(stringEq, moduleName(top.rop.env, top.rop.typerep), rOverloads) of
-      just(prod) -> just(prod(new(top.lop), new(top.rop)))
-    | nothing() -> nothing()
-    end;
-  top.resolved = orElse(option1, orElse(option2, option3));
+  top.resolved = getBinaryOverload(top.lop, top.rop, overloads, lOverloads, rOverloads);
 }
 aspect production divOp
 top::NumOp ::=
@@ -877,22 +478,7 @@ top::NumOp ::=
   lOverloads := [];
   rOverloads := [];
   
-  local option1::Maybe<Expr> =
-    case lookupBy(stringPairEq, pair(moduleName(top.lop.env, top.lop.typerep), moduleName(top.rop.env, top.rop.typerep)), overloads) of
-      just(prod) -> just(prod(new(top.lop), new(top.rop)))
-    | nothing() -> nothing()
-    end;
-  local option2::Maybe<Expr> =
-    case lookupBy(stringEq, moduleName(top.lop.env, top.lop.typerep), lOverloads) of
-      just(prod) -> just(prod(new(top.lop), new(top.rop)))
-    | nothing() -> nothing()
-    end;
-  local option3::Maybe<Expr> =
-    case lookupBy(stringEq, moduleName(top.rop.env, top.rop.typerep), rOverloads) of
-      just(prod) -> just(prod(new(top.lop), new(top.rop)))
-    | nothing() -> nothing()
-    end;
-  top.resolved = orElse(option1, orElse(option2, option3));
+  top.resolved = getBinaryOverload(top.lop, top.rop, overloads, lOverloads, rOverloads);
 }
 aspect production modOp
 top::NumOp ::=
@@ -904,28 +490,5 @@ top::NumOp ::=
   lOverloads := [];
   rOverloads := [];
   
-  local option1::Maybe<Expr> =
-    case lookupBy(stringPairEq, pair(moduleName(top.lop.env, top.lop.typerep), moduleName(top.rop.env, top.rop.typerep)), overloads) of
-      just(prod) -> just(prod(new(top.lop), new(top.rop)))
-    | nothing() -> nothing()
-    end;
-  local option2::Maybe<Expr> =
-    case lookupBy(stringEq, moduleName(top.lop.env, top.lop.typerep), lOverloads) of
-      just(prod) -> just(prod(new(top.lop), new(top.rop)))
-    | nothing() -> nothing()
-    end;
-  local option3::Maybe<Expr> =
-    case lookupBy(stringEq, moduleName(top.rop.env, top.rop.typerep), rOverloads) of
-      just(prod) -> just(prod(new(top.lop), new(top.rop)))
-    | nothing() -> nothing()
-    end;
-  top.resolved = orElse(option1, orElse(option2, option3));
-}
-
-
---------------------------------------------------------------------------------
-function stringPairEq
-Boolean ::= p1::Pair<String String> p2::Pair<String String>
-{
-  return p1.fst == p2.fst && p1.snd == p2.snd;
+  top.resolved = getBinaryOverload(top.lop, top.rop, overloads, lOverloads, rOverloads);
 }

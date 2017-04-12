@@ -456,7 +456,7 @@ top::ParameterDecl ::= storage::[StorageClass]  bty::BaseTypeExpr  mty::TypeModi
 
 
 synthesized attribute refId :: String; -- TODO move this later?
-synthesized attribute moduleName :: String;
+synthesized attribute moduleName :: Maybe<String>;
 
 nonterminal StructDecl with location, pp, host<StructDecl>, lifted<StructDecl>, maybename, errors, globalDecls, defs, env, tagEnv, refId, moduleName, returnType, freeVariables;
 
@@ -494,8 +494,7 @@ top::StructDecl ::= attrs::[Attribute]  name::MaybeName  dcls::StructItemList
   local maybeAttribRefIdName::Maybe<String> = getRefIdFromAttributes(attrs);
   top.refId = fromMaybe(name.tagRefId, maybeAttribRefIdName);
   
-  local maybeAttribModuleName::Maybe<String> = getModuleNameFromAttributes(attrs);
-  top.moduleName = fromMaybe("host", maybeAttribModuleName);
+  top.moduleName = getModuleNameFromAttributes(attrs);
   
   top.tagEnv = addEnv(dcls.localdefs, emptyEnv());
   
@@ -538,8 +537,7 @@ top::UnionDecl ::= attrs::[Attribute]  name::MaybeName  dcls::StructItemList
   local maybeAttribRefIdName::Maybe<String> = getRefIdFromAttributes(attrs);
   top.refId = fromMaybe(name.tagRefId, maybeAttribRefIdName);
   
-  local maybeAttribModuleName::Maybe<String> = getModuleNameFromAttributes(attrs);
-  top.moduleName = fromMaybe("host", maybeAttribModuleName);
+  top.moduleName = getModuleNameFromAttributes(attrs);
   
   top.tagEnv = addEnv(dcls.localdefs, emptyEnv());
   

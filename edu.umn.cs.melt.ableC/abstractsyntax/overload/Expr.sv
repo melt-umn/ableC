@@ -10,11 +10,7 @@ top::Expr ::= op::UnaryOp  e::Expr
   
   op.op = e;
   
-  forwards to
-    case op.resolved of
-      just(e) -> e
-    | nothing() -> unaryOpExprDefault(op, e, location=top.location)
-    end;
+  forwards to fromMaybe(unaryOpExprDefault(op, e, location=top.location), op.resolved);
 }
 abstract production arraySubscriptExpr
 top::Expr ::= lhs::Expr  rhs::Expr
@@ -27,11 +23,13 @@ top::Expr ::= lhs::Expr  rhs::Expr
   production attribute overloads::[Pair<String Expr>] with ++;
   overloads := [];
   
-  forwards to
-    case lookupBy(stringEq, moduleName(top.env, lhs.typerep), overloads) of
-      just(fwrd) -> fwrd
-    | nothing() -> arraySubscriptExprDefault(lhs, rhs, location=top.location)
+  local resolved::Maybe<Expr> =
+    case moduleName(top.env, lhs.typerep) of
+      just(n) -> lookupBy(stringEq, n, overloads)
+    | nothing() -> nothing()
     end;
+  
+  forwards to fromMaybe(arraySubscriptExprDefault(lhs, rhs, location=top.location), resolved);
 }
 abstract production callExpr
 top::Expr ::= f::Expr  a::Exprs
@@ -49,19 +47,20 @@ top::Expr ::= f::Expr  a::Exprs
   local option1::Maybe<Expr> = 
     case f of
       memberExpr(l, d, r) ->
-        case lookupBy(stringEq, moduleName(top.env, l.typerep), memberOverloads) of
-          just(prod) -> just(prod(l, d, r))
-        | nothing() -> nothing()
-        end
+        do (bindMaybe, returnMaybe) {
+          n :: String <- moduleName(top.env, l.typerep);
+          prod :: (Expr ::= Expr Boolean Name) <- lookupBy(stringEq, n, memberOverloads);
+          return prod(l, d, r);
+        }
     | _ -> nothing()
     end;
-  local option2::Maybe<Expr> = lookupBy(stringEq, moduleName(top.env, f.typerep), overloads);
-  
-  forwards to
-    case orElse(option1, option2) of
-      just(e) -> e
-    | nothing() -> callExprDefault(f, a, location=top.location)
+  local option2::Maybe<Expr> =
+    case moduleName(top.env, f.typerep) of
+      just(n) -> lookupBy(stringEq, n, overloads)
+    | nothing() -> nothing()
     end;
+  
+  forwards to fromMaybe(callExprDefault(f, a, location=top.location), orElse(option1, option2));
 }
 abstract production memberExpr
 top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
@@ -72,11 +71,13 @@ top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
   production attribute overloads::[Pair<String Expr>] with ++;
   overloads := [];
   
-  forwards to
-    case lookupBy(stringEq, moduleName(top.env, lhs.typerep), overloads) of
-      just(fwrd) -> fwrd
-    | nothing() -> memberExprDefault(lhs, deref, rhs, location=top.location)
+  local resolved::Maybe<Expr> =
+    case moduleName(top.env, lhs.typerep) of
+      just(n) -> lookupBy(stringEq, n, overloads)
+    | nothing() -> nothing()
     end;
+  
+  forwards to fromMaybe(memberExprDefault(lhs, deref, rhs, location=top.location), resolved);
 }
 abstract production binaryOpExpr
 top::Expr ::= lhs::Expr  op::BinOp  rhs::Expr
@@ -94,9 +95,5 @@ top::Expr ::= lhs::Expr  op::BinOp  rhs::Expr
   op.lop = lhs;
   op.rop = rhs;
   
-  forwards to
-    case op.resolved of
-      just(e) -> e
-    | nothing() -> binaryOpExprDefault(lhs, op, rhs, location=top.location)
-    end;
+  forwards to fromMaybe(binaryOpExprDefault(lhs, op, rhs, location=top.location), op.resolved);
 }

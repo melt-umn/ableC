@@ -120,11 +120,13 @@ top::Expr ::= e::Expr
     [pair("edu:umn:cs:melt:exts:ableC:string:string", showString(e, location=top.location))];
   
   local localErrors::[Message] = e.errors;
-  local fwrd::Expr =
-    case lookupBy(stringEq, moduleName(top.env, e.typerep), overloads) of
-      just(fwrd) -> fwrd
-    | nothing() -> showHost(e, location=top.location)
+  local resolved::Maybe<Expr> =
+    case moduleName(e.env, e.typerep) of
+      just(n) -> lookupBy(stringEq, n, overloads)
+    | nothing() -> nothing()
     end;
+  local fwrd::Expr = fromMaybe(showHost(e, location=top.location), resolved);
+  
   forwards to mkErrorCheck(localErrors, fwrd);
 }
 
@@ -254,11 +256,13 @@ top::Expr ::= e::Expr
     [pair("edu:umn:cs:melt:exts:ableC:string:string", strString(e, location=top.location))];
   
   local localErrors::[Message] = e.errors;
-  local fwrd::Expr =
-    case lookupBy(stringEq, moduleName(top.env, e.typerep), overloads) of
-      just(fwrd) -> fwrd
-    | nothing() -> strHost(e, location=top.location)
+  local resolved::Maybe<Expr> =
+    case moduleName(e.env, e.typerep) of
+      just(n) -> lookupBy(stringEq, n, overloads)
+    | nothing() -> nothing()
     end;
+  local fwrd::Expr = fromMaybe(strHost(e, location=top.location), resolved);
+  
   forwards to mkErrorCheck(localErrors, fwrd);
 }
 
