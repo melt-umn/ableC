@@ -16,7 +16,7 @@ int main(int argc, char **argv) {
   b[1] += 7;
   b.append(6);
   printf("b: %s\n", show(b).text);
-  vector<int> d = copy_vector(b);
+  vector<int> d = b.copy();
   b[2] = 7;
   printf("b: %s\n", show(b).text);
   printf("d: %s\n", show(d).text);
