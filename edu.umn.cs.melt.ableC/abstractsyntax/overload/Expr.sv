@@ -16,7 +16,7 @@ abstract production arraySubscriptExpr
 top::Expr ::= lhs::Expr  rhs::Expr
 {
   propagate substituted;
-  top.pp = parens( concat([ lhs.pp, brackets( rhs.pp )]) );
+  top.pp = parens( ppConcat([ lhs.pp, brackets( rhs.pp )]) );
   
   rhs.env = addEnv(lhs.defs, lhs.env);
 
@@ -35,7 +35,7 @@ abstract production callExpr
 top::Expr ::= f::Expr  a::Exprs
 {
   propagate substituted;
-  top.pp = parens( concat([ f.pp, parens( ppImplode( cat( comma(), space() ), a.pps ))]) );
+  top.pp = parens( ppConcat([ f.pp, parens( ppImplode( cat( comma(), space() ), a.pps ))]) );
   
   a.env = addEnv(f.defs, f.env);
 
@@ -66,7 +66,7 @@ abstract production memberExpr
 top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
 {
   propagate substituted;
-  top.pp = parens(concat([lhs.pp, text(if deref then "->" else "."), rhs.pp]));
+  top.pp = parens(ppConcat([lhs.pp, text(if deref then "->" else "."), rhs.pp]));
   
   production attribute overloads::[Pair<String Expr>] with ++;
   overloads := [];
@@ -85,7 +85,7 @@ top::Expr ::= lhs::Expr  op::BinOp  rhs::Expr
   propagate substituted;
   -- case op here is a potential problem, since that emits a dep on op->forward, which eventually should probably include env
   -- Find a way to do this that doesn't cause problems if an op forwards.
-  top.pp = parens( concat([ 
+  top.pp = parens( ppConcat([ 
     {-case op, lhs.pp of
     | assignOp(eqOp()), cat(cat(text("("), lhsNoParens), text(")")) -> lhsNoParens
     | _, _ -> lhs.pp

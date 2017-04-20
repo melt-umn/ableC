@@ -1,7 +1,7 @@
 grammar edu:umn:cs:melt:exts:ableC:templating:abstractsyntax;
 
 imports silver:langutil;
-imports silver:langutil:pp with implode as ppImplode;
+imports silver:langutil:pp with implode as ppImplode, concat as ppConcat;
 
 imports edu:umn:cs:melt:ableC:abstractsyntax;
 imports edu:umn:cs:melt:ableC:abstractsyntax:construction;
@@ -48,9 +48,10 @@ top::Decl ::= params::[Name] n::Name ty::TypeName
 abstract production templateStructDecl
 top::Decl ::= params::[Name] attrs::[Attribute] n::Name dcls::StructItemList
 {
-  top.pp = concat([pp"template<", ppImplode(text(", "), map((.pp), params)), pp">", line(),
-                   pp"struct ", ppAttributes(attrs), text(n.name), space(),
-                   braces(nestlines(2, terminate(cat(semi(),line()), dcls.pps))), semi()]);
+  top.pp =
+    ppConcat([pp"template<", ppImplode(text(", "), map((.pp), params)), pp">", line(),
+              pp"struct ", ppAttributes(attrs), text(n.name), space(),
+              braces(nestlines(2, terminate(cat(semi(),line()), dcls.pps))), semi()]);
   top.substituted =
     templateStructDecl(
       map(\ n::Name -> decorate n with {substitutions = top.substitutions;}.substituted, params),
@@ -94,7 +95,8 @@ top::Decl ::= params::[Name] attrs::[Attribute] n::Name dcls::StructItemList
 abstract production templateFunctionDecl
 top::Decl ::= params::[Name] d::FunctionDecl
 {
-  top.pp = concat([pp"template<", ppImplode(text(", "), map((.pp), params)), pp">", line(), d.pp]);
+  top.pp =
+    ppConcat([pp"template<", ppImplode(text(", "), map((.pp), params)), pp">", line(), d.pp]);
   top.substituted =
     templateFunctionDecl(
       map(\ n::Name -> decorate n with {substitutions = top.substitutions;}.substituted, params),

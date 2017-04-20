@@ -3,7 +3,7 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax:overload;
 imports core:monad;
 
 imports silver:langutil;
-imports silver:langutil:pp with implode as ppImplode;
+imports silver:langutil:pp with implode as ppImplode, concat as ppConcat;
 
 imports edu:umn:cs:melt:ableC:abstractsyntax hiding directCallExpr
                                              with unaryOpExpr as unaryOpExprDefault,

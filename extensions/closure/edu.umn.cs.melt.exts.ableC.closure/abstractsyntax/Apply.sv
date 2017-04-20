@@ -16,7 +16,7 @@ top::Expr ::= fn::Expr args::Exprs
 {
   propagate substituted;
 
-  top.pp = parens(concat([fn.pp, parens(ppImplode(cat(comma(), space()), args.pps))]));
+  top.pp = parens(ppConcat([fn.pp, parens(ppImplode(cat(comma(), space()), args.pps))]));
   
   local localErrors :: [Message] =
     (if isClosureType(fn.typerep)
