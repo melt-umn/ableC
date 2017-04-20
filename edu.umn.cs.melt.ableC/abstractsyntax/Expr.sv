@@ -24,7 +24,7 @@ abstract production errorExpr
 top::Expr ::= msg::[Message]
 {
   propagate host, lifted;
-  top.pp = concat([ text("/*"), text(messagesToString(msg)), text("*/") ]);
+  top.pp = ppConcat([ text("/*"), text(messagesToString(msg)), text("*/") ]);
   top.errors := msg;
   top.globalDecls := [];
   top.defs := [];
@@ -35,7 +35,7 @@ abstract production warnExpr
 top::Expr ::= msg::[Message] e::Expr
 {
   propagate host, lifted;
-  top.pp = concat([ text("/*"), text(messagesToString(msg)), text("*/"), e.pp ]);
+  top.pp = ppConcat([ text("/*"), text(messagesToString(msg)), text("*/"), e.pp ]);
   top.errors <- msg;
   forwards to e;
 }
@@ -93,7 +93,7 @@ abstract production unaryExprOrTypeTraitExpr
 top::Expr ::= op::UnaryTypeOp  e::ExprOrTypeName
 {
   propagate host, lifted;
-  top.pp = parens( concat([op.pp,parens(e.pp)]) );
+  top.pp = parens( ppConcat([op.pp,parens(e.pp)]) );
   top.errors := op.errors ++ e.errors;
   top.globalDecls := e.globalDecls;
   top.defs := e.defs;
@@ -104,7 +104,7 @@ abstract production arraySubscriptExpr
 top::Expr ::= lhs::Expr  rhs::Expr
 {
   propagate host, lifted;
-  top.pp = parens( concat([ lhs.pp, brackets( rhs.pp )]) );
+  top.pp = parens( ppConcat([ lhs.pp, brackets( rhs.pp )]) );
   top.errors := lhs.errors ++ rhs.errors;
   top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
   top.defs := lhs.defs ++ rhs.defs;
@@ -137,7 +137,7 @@ abstract production directCallExpr
 top::Expr ::= f::Name  a::Exprs
 {
   -- Forwarding depends on env. We must be able to compute a pp without using env.
-  top.pp = parens( concat([ f.pp, parens( ppImplode( cat( comma(), space() ), a.pps ))]) );
+  top.pp = parens( ppConcat([ f.pp, parens( ppImplode( cat( comma(), space() ), a.pps ))]) );
 
   forwards to f.valueItem.directCallHandler(f, a, top.location);
 }
@@ -155,7 +155,7 @@ abstract production callExpr
 top::Expr ::= f::Expr  a::Exprs
 {
   propagate host, lifted;
-  top.pp = parens( concat([ f.pp, parens( ppImplode( cat( comma(), space() ), a.pps ))]) );
+  top.pp = parens( ppConcat([ f.pp, parens( ppImplode( cat( comma(), space() ), a.pps ))]) );
   top.errors := f.errors ++ a.errors;
   top.globalDecls := f.globalDecls ++ a.globalDecls;
   top.defs := f.defs ++ a.defs;
@@ -199,7 +199,7 @@ abstract production memberExpr
 top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
 {
   propagate host, lifted;
-  top.pp = parens(concat([lhs.pp, text(if deref then "->" else "."), rhs.pp]));
+  top.pp = parens(ppConcat([lhs.pp, text(if deref then "->" else "."), rhs.pp]));
   top.errors := lhs.errors;
   top.globalDecls := lhs.globalDecls;
   top.defs := lhs.defs;
@@ -248,7 +248,7 @@ top::Expr ::= lhs::Expr  op::BinOp  rhs::Expr
   propagate host, lifted;
   -- case op here is a potential problem, since that emits a dep on op->forward, which eventually should probably include env
   -- Find a way to do this that doesn't cause problems if an op forwards.
-  top.pp = parens( concat([ 
+  top.pp = parens( ppConcat([ 
     {-case op, lhs.pp of
     | assignOp(eqOp()), cat(cat(text("("), lhsNoParens), text(")")) -> lhsNoParens
     | _, _ -> lhs.pp
@@ -270,7 +270,7 @@ abstract production conditionalExpr
 top::Expr ::= cond::Expr  t::Expr  e::Expr
 {
   propagate host, lifted;
-  top.pp = parens( concat([ cond.pp, space(), text("?"), space(), t.pp, space(), text(":"),  space(), e.pp]) );
+  top.pp = parens( ppConcat([ cond.pp, space(), text("?"), space(), t.pp, space(), text(":"),  space(), e.pp]) );
   top.errors := cond.errors ++ t.errors ++ e.errors;
   top.globalDecls := cond.globalDecls ++ t.globalDecls ++ e.globalDecls;
   top.defs := cond.defs ++ t.defs ++ e.defs;
@@ -290,7 +290,7 @@ abstract production binaryConditionalExpr -- GCC extension.
 top::Expr ::= cond::Expr  e::Expr
 {
   propagate host, lifted;
-  top.pp = concat([ cond.pp, space(), text("?:"), space(), e.pp]);
+  top.pp = ppConcat([ cond.pp, space(), text("?:"), space(), e.pp]);
   top.errors := cond.errors ++ e.errors;
   top.globalDecls := cond.globalDecls ++ e.globalDecls;
   top.defs := cond.defs ++ e.defs;
@@ -304,7 +304,7 @@ abstract production explicitCastExpr
 top::Expr ::= ty::TypeName  e::Expr
 {
   propagate host, lifted;
-  top.pp = parens( concat([parens(ty.pp), e.pp]) );
+  top.pp = parens( ppConcat([parens(ty.pp), e.pp]) );
   top.errors := ty.errors ++ e.errors;
   top.globalDecls := ty.globalDecls ++ e.globalDecls;
   top.defs := ty.defs ++ e.defs;
@@ -319,7 +319,7 @@ abstract production compoundLiteralExpr
 top::Expr ::= ty::TypeName  init::InitList
 {
   propagate host, lifted;
-  top.pp = parens( concat([parens(ty.pp), text("{"), ppImplode(text(", "), init.pps), text("}")]) );
+  top.pp = parens( ppConcat([parens(ty.pp), text("{"), ppImplode(text(", "), init.pps), text("}")]) );
   top.errors := ty.errors ++ init.errors;
   top.globalDecls := ty.globalDecls ++ init.globalDecls;
   top.defs := ty.defs ++ init.defs;
@@ -347,7 +347,7 @@ abstract production genericSelectionExpr
 top::Expr ::= e::Expr  gl::GenericAssocs  def::MaybeExpr
 {
   propagate host, lifted;
-  top.pp = concat([text("_Generic"),
+  top.pp = ppConcat([text("_Generic"),
     parens(ppImplode(text(", "), e.pp :: gl.pps ++
       if def.isJust then
         [text("default: "), def.pp]
@@ -406,7 +406,7 @@ abstract production genericAssoc
 top::GenericAssoc ::= ty::TypeName  fun::Expr
 {
   propagate host, lifted;
-  top.pp = concat([ty.pp, text(": "), fun.pp]);
+  top.pp = ppConcat([ty.pp, text(": "), fun.pp]);
   top.errors := ty.errors ++ fun.errors;
   top.globalDecls := ty.globalDecls ++ fun.globalDecls;
   top.defs := ty.defs ++ fun.defs;
@@ -420,7 +420,7 @@ abstract production stmtExpr
 top::Expr ::= body::Stmt result::Expr
 {
   propagate host, lifted;
-  top.pp = concat([text("({"), nestlines(2, concat([body.pp, line(), result.pp, text("; })")]))]);
+  top.pp = ppConcat([text("({"), nestlines(2, ppConcat([body.pp, line(), result.pp, text("; })")]))]);
   top.errors := body.errors ++ result.errors;
   top.globalDecls := body.globalDecls ++ result.globalDecls;
   top.defs := globalDeclsDefs(body.globalDecls) ++ globalDeclsDefs(result.globalDecls); -- defs are *not* propagated up. This is beginning of a scope.
@@ -436,7 +436,7 @@ abstract production comment
 top::Expr ::= s::String
 {
   propagate host, lifted;
-  top.pp = concat([ text("/* "), text(s), text(" */") ]);
+  top.pp = ppConcat([ text("/* "), text(s), text(" */") ]);
   top.errors := [];
   top.globalDecls := [];
   top.defs := [];

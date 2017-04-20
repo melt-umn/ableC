@@ -15,7 +15,7 @@ abstract production justInitializer
 top::MaybeInitializer ::= i::Initializer
 {
   propagate host, lifted;
-  top.pp = concat([ text(" = "), i.pp ]);
+  top.pp = ppConcat([ text(" = "), i.pp ]);
   top.errors := i.errors;
   top.globalDecls := i.globalDecls;
   top.defs := i.defs;
@@ -39,7 +39,7 @@ abstract production objectInitializer
 top::Initializer ::= l::InitList
 {
   propagate host, lifted;
-  top.pp = concat([text("{"), ppImplode(text(", "), l.pps), text("}")]);
+  top.pp = ppConcat([text("{"), ppImplode(text(", "), l.pps), text("}")]);
   top.errors := l.errors;
   top.globalDecls := l.globalDecls;
   top.defs := l.defs;
@@ -89,7 +89,7 @@ abstract production designatedInit
 top::Init ::= d::Designator  i::Initializer
 {
   propagate host, lifted;
-  top.pp = concat([d.pp, text(" = "), i.pp]);
+  top.pp = ppConcat([d.pp, text(" = "), i.pp]);
   top.errors := d.errors ++ i.errors;
   top.globalDecls := d.globalDecls ++ i.globalDecls;
   top.defs := d.defs ++ i.defs;
@@ -119,7 +119,7 @@ abstract production fieldDesignator
 top::Designator ::= d::Designator  f::Name
 {
   propagate host, lifted;
-  top.pp = concat([d.pp, text("."), f.pp]);
+  top.pp = ppConcat([d.pp, text("."), f.pp]);
   top.errors := d.errors;
   top.globalDecls := d.globalDecls;
   top.defs := d.defs;
@@ -130,7 +130,7 @@ abstract production arrayDesignator
 top::Designator ::= d::Designator  e::Expr
 {
   propagate host, lifted;
-  top.pp = concat([d.pp, text("["), e.pp, text("]")]);
+  top.pp = ppConcat([d.pp, text("["), e.pp, text("]")]);
   top.errors := d.errors ++ e.errors;
   top.globalDecls := d.globalDecls ++ e.globalDecls;
   top.defs := d.defs ++ e.defs; -- Yep...
@@ -144,7 +144,7 @@ abstract production arrayRangeDesignator
 top::Designator ::= d::Designator  l::Expr  u::Expr
 {
   propagate host, lifted;
-  top.pp = concat([d.pp, text("["), l.pp, text("..."), u.pp, text("]")]);
+  top.pp = ppConcat([d.pp, text("["), l.pp, text("..."), u.pp, text("]")]);
   top.errors := d.errors ++ l.errors ++ u.errors;
   top.globalDecls := d.globalDecls ++ l.globalDecls ++ u.globalDecls;
   top.defs := d.defs ++ l.defs ++ u.defs;
