@@ -329,18 +329,11 @@ Type ::= qs::[Qualifier] base::Type
  {
    return
      case a of
-     -- TODO: Implement 'claiming' enum types
-   {-| tagType(_, enumTagType(d)) -> just(d.moduleName)
-     | tagType(_, refIdTagType(enumSEU(), n, _)) ->
-         case lookupTag(n, env) of
-         | enumTagItem(d) :: _ -> d.moduleName
-         | _ -> error("Undefined enum " ++ name)
-         end-}
-     | tagType(_, refIdTagType(_, _, refId)) ->
+       tagType(_, refIdTagType(_, _, refId)) ->
          case lookupRefId(refId, env) of
-         | item :: _ -> item.moduleName
+         | item :: _ -> orElse(item.moduleName, a.moduleName)
          | _ -> error("Undefined refId " ++ refId)
          end
-     | _ -> nothing()
+     | _ -> a.moduleName
      end;
  }

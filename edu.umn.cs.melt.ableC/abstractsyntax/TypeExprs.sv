@@ -517,15 +517,6 @@ top::TypeModifierExpr ::= wrapped::TypeModifierExpr
   top.freeVariables = wrapped.freeVariables;
 }
 
-
-
-{-- Attributes that need to be interpreted away somehow -}
---abstract production attributedTypeExpr
---top::TypeExpr ::= q::[Qualifier]  original::TypeExpr  attr::[Attribute] -- or something?
---{
---  top.typerep = original.typerep; -- {-TODO-};
---}
-
 nonterminal TypeNames with pps, host<TypeNames>, lifted<TypeNames>, env, typereps, count, errors, globalDecls, defs, returnType, freeVariables;
 
 abstract production consTypeName

@@ -463,7 +463,6 @@ top::ParameterDecl ::= storage::[StorageClass]  bty::BaseTypeExpr  mty::TypeModi
 
 
 synthesized attribute refId :: String; -- TODO move this later?
-synthesized attribute moduleName :: Maybe<String>;
 
 nonterminal StructDecl with location, pp, host<StructDecl>, lifted<StructDecl>, maybename, errors, globalDecls, defs, env, tagEnv, givenRefId, refId, moduleName, returnType, freeVariables;
 
