@@ -295,7 +295,7 @@ top::BaseTypeExpr ::= q::[Qualifier]  name::Name
 
   top.typerep = 
     if !null(name.valueLookupCheck) then errorType()
-    else noncanonicalType(typedefType(q, name.name, name.valueItem.typerep)); -- TODO bug: we are discarding qualifiers here!
+    else noncanonicalType(typedefType(q, name.name, addQualifiers(q, name.valueItem.typerep)));
   top.errors := [];
   top.globalDecls := [];
   top.typeModifiers = [];
@@ -306,6 +306,33 @@ top::BaseTypeExpr ::= q::[Qualifier]  name::Name
   top.errors <-
     if name.valueItem.isItemTypedef then []
     else [err(name.location, "'" ++ name.name ++ "' does not refer to a type.")];
+}
+{--
+ - GCC __attribute__ types
+ - Note that there is no corresponding type expression in C for an attributed type, as attributes
+ - can only be attatched on declarations.  Thus this production is never actually introduced by
+ - concrete syntax, but it can be created when translating a transformed attributed type back to a
+ - BaseTypeExpr.  To enable this, we must lift a typedef with the appropriate attributes and refer
+ - to that.  
+ -}
+abstract production attributedTypeExpr
+top::BaseTypeExpr ::= attrs::[Attribute]  bt::BaseTypeExpr
+{
+  top.pp = cat(ppAttributes(attrs), bt.pp);
+
+  local liftedName::Name =
+    name(s"_attributedType_${toString(genInt())}", location=builtinLoc("host"));
+  forwards to
+    -- TODO: We can currently only lift to the global level, but this should be lifted to the closest scope
+    injectGlobalDeclsTypeExpr(
+      consDecl(
+        typedefDecls(
+          attrs, bt,
+          consDeclarator(
+            declarator(liftedName, baseTypeExpr(), [], nothingInitializer()),
+            nilDeclarator())),
+        nilDecl()),
+      typedefTypeExpr([], liftedName));
 }
 {-- C11 atomic type -}
 abstract production atomicTypeExpr

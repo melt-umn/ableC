@@ -46,6 +46,7 @@ Boolean ::= a::Type  b::Type  ignoreQualifiers::Boolean
   | functionType(r1, _), functionType(r2, _) -> 
       compatibleTypes(r1, r2, ignoreQualifiers)
   -- extensions
+  | attributedType(_, t1), attributedType(_, t2) -> compatibleTypes(t1, t2, ignoreQualifiers)
   | vectorType(b1, s1), vectorType(b2, s2) -> s1 == s2 && compatibleTypes(b1, b2, ignoreQualifiers)
   -- otherwise
   | _, _ -> false
