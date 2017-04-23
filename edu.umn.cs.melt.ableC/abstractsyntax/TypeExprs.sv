@@ -46,7 +46,10 @@ synthesized attribute typereps :: [Type];
 synthesized attribute typeModifiers :: [TypeModifierExpr];
 autocopy attribute typeModifiersIn :: [TypeModifierExpr];
 
-{- Util attributes -}
+{-- Used to set the refId for a declaration via __attribute__ -}
+autocopy attribute givenRefId :: Maybe<String>;
+
+{-- Util attributes -}
 synthesized attribute bty :: BaseTypeExpr;
 synthesized attribute mty :: TypeModifierExpr;
 
@@ -60,6 +63,7 @@ top::TypeName ::= bty::BaseTypeExpr  mty::TypeModifierExpr
   top.typerep = mty.typerep;
   top.bty = bty;
   top.mty = mty;
+  bty.givenRefId = nothing();
   mty.baseType = bty.typerep;
   mty.typeModifiersIn = bty.typeModifiers;
   top.errors := bty.errors ++ mty.errors;
@@ -72,7 +76,7 @@ top::TypeName ::= bty::BaseTypeExpr  mty::TypeModifierExpr
 {--
  - Corresponds to types obtainable from a TypeSpecifiers.
  -}
-nonterminal BaseTypeExpr with env, typerep, pp, host<BaseTypeExpr>, lifted<BaseTypeExpr>, errors, globalDecls, typeModifiers, defs, returnType, freeVariables;
+nonterminal BaseTypeExpr with env, typerep, pp, host<BaseTypeExpr>, lifted<BaseTypeExpr>, errors, globalDecls, typeModifiers, defs, givenRefId, returnType, freeVariables;
 
 abstract production errorTypeExpr
 top::BaseTypeExpr ::= msg::[Message]
@@ -177,7 +181,7 @@ top::BaseTypeExpr ::= q::[Qualifier]  kwd::StructOrEnumOrUnion  name::Name
     -- It's an enum and we see the declaration.
     | enumSEU(), _ -> "enumN/A" -- N/A
     -- We don't see the declaration, so we're adding it.
-    | _, [] -> name.tagRefId
+    | _, [] -> fromMaybe(name.tagRefId, top.givenRefId)
     -- It's a struct/union and the tag type agrees.
     | structSEU(), refIdTagItem(structSEU(), rid) :: _ -> rid
     | unionSEU(), refIdTagItem(unionSEU(), rid) :: _ -> rid

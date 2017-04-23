@@ -110,6 +110,7 @@ top::Decl ::= storage::[StorageClass]  attrs::[Attribute]  ty::BaseTypeExpr  dcl
   top.defs := ty.defs ++ dcls.defs;
   top.freeVariables = ty.freeVariables ++ dcls.freeVariables;
   
+  ty.givenRefId = nothing();
   dcls.env = addEnv(ty.defs, ty.env);
   dcls.baseType = ty.typerep;
   dcls.typeModifiersIn = ty.typeModifiers;
@@ -126,6 +127,7 @@ top::Decl ::= attrs::[Attribute] ty::BaseTypeExpr
   top.globalDecls := ty.globalDecls;
   top.defs := ty.defs;
   top.freeVariables = ty.freeVariables;
+  ty.givenRefId = getRefIdFromAttributes(attrs);
 }
 
 abstract production typedefDecls
@@ -138,6 +140,7 @@ top::Decl ::= attrs::[Attribute]  ty::BaseTypeExpr  dcls::Declarators
   top.defs := ty.defs ++ dcls.defs;
   top.freeVariables = ty.freeVariables ++ dcls.freeVariables;
   
+  ty.givenRefId = getRefIdFromAttributes(attrs);
   dcls.env = addEnv(ty.defs, ty.env);
   dcls.baseType = ty.typerep;
   dcls.typeModifiersIn = ty.typeModifiers;
@@ -332,6 +335,8 @@ top::FunctionDecl ::= storage::[StorageClass]  fnquals::[SpecialSpecifier]  bty:
   top.typerep = mty.typerep;
   top.sourceLocation = name.location;
   
+  bty.givenRefId = nothing();
+  
   mty.baseType = bty.typerep;
   mty.typeModifiersIn = bty.typeModifiers;
   
@@ -448,6 +453,8 @@ top::ParameterDecl ::= storage::[StorageClass]  bty::BaseTypeExpr  mty::TypeModi
     end;
   top.freeVariables = bty.freeVariables ++ mty.freeVariables;
   
+  bty.givenRefId = nothing();
+  
   mty.baseType = bty.typerep;
   mty.typeModifiersIn = bty.typeModifiers;
   
@@ -458,7 +465,7 @@ top::ParameterDecl ::= storage::[StorageClass]  bty::BaseTypeExpr  mty::TypeModi
 synthesized attribute refId :: String; -- TODO move this later?
 synthesized attribute moduleName :: Maybe<String>;
 
-nonterminal StructDecl with location, pp, host<StructDecl>, lifted<StructDecl>, maybename, errors, globalDecls, defs, env, tagEnv, refId, moduleName, returnType, freeVariables;
+nonterminal StructDecl with location, pp, host<StructDecl>, lifted<StructDecl>, maybename, errors, globalDecls, defs, env, tagEnv, givenRefId, refId, moduleName, returnType, freeVariables;
 
 abstract production structDecl
 top::StructDecl ::= attrs::[Attribute]  name::MaybeName  dcls::StructItemList
@@ -491,7 +498,8 @@ top::StructDecl ::= attrs::[Attribute]  name::MaybeName  dcls::StructItemList
   (c) quick and easy equality: equality of refids.
 -}
 
-  local maybeAttribRefIdName::Maybe<String> = getRefIdFromAttributes(attrs);
+  local maybeAttribRefIdName::Maybe<String> =
+    orElse(getRefIdFromAttributes(attrs), top.givenRefId);
   top.refId = fromMaybe(name.tagRefId, maybeAttribRefIdName);
   
   top.moduleName = getModuleNameFromAttributes(attrs);
@@ -518,7 +526,7 @@ top::StructDecl ::= attrs::[Attribute]  name::MaybeName  dcls::StructItemList
     else [err(top.location, "Redeclaration of struct " ++ name.maybename.fromJust.name)];
 }
 
-nonterminal UnionDecl with location, pp, host<UnionDecl>, lifted<UnionDecl>, maybename, errors, globalDecls, defs, env, tagEnv, refId, moduleName, returnType, freeVariables;
+nonterminal UnionDecl with location, pp, host<UnionDecl>, lifted<UnionDecl>, maybename, errors, globalDecls, defs, env, tagEnv, givenRefId, refId, moduleName, returnType, freeVariables;
 
 abstract production unionDecl
 top::UnionDecl ::= attrs::[Attribute]  name::MaybeName  dcls::StructItemList
@@ -534,7 +542,8 @@ top::UnionDecl ::= attrs::[Attribute]  name::MaybeName  dcls::StructItemList
   top.errors := dcls.errors;
   top.globalDecls := dcls.globalDecls;
 
-  local maybeAttribRefIdName::Maybe<String> = getRefIdFromAttributes(attrs);
+  local maybeAttribRefIdName::Maybe<String> =
+    orElse(getRefIdFromAttributes(attrs), top.givenRefId);
   top.refId = fromMaybe(name.tagRefId, maybeAttribRefIdName);
   
   top.moduleName = getModuleNameFromAttributes(attrs);
@@ -561,53 +570,7 @@ top::UnionDecl ::= attrs::[Attribute]  name::MaybeName  dcls::StructItemList
     else [err(top.location, "Redeclaration of union " ++ name.maybename.fromJust.name)];
 }
 
-function getRefIdFromAttributes
-Maybe<String> ::= attrs::[Attribute]
-{
-  return
-    case attrs of
-      gccAttribute(ats) :: rest -> orElse(getRefIdFromAttribs(ats), getRefIdFromAttributes(rest))
-    | _ :: rest -> getRefIdFromAttributes(rest)
-    | [] -> nothing()
-    end;
-}
-
-function getRefIdFromAttribs
-Maybe<String> ::= attrs::Attribs
-{
-  return
-    case attrs of
-      consAttrib(appliedAttrib(attribName(name("refId")), consExpr(stringLiteral(s), nilExpr())), _) ->
-        just(substring(1, length(s) - 1, s))
-    | consAttrib(_, rest) -> getRefIdFromAttribs(rest)
-    | nilAttrib() -> nothing()
-    end;
-}
-
-function getModuleNameFromAttributes
-Maybe<String> ::= attrs::[Attribute]
-{
-  return
-    case attrs of
-      gccAttribute(ats) :: rest -> orElse(getModuleNameFromAttribs(ats), getModuleNameFromAttributes(rest))
-    | _ :: rest -> getModuleNameFromAttributes(rest)
-    | [] -> nothing()
-    end;
-}
-
-function getModuleNameFromAttribs
-Maybe<String> ::= attrs::Attribs
-{
-  return
-    case attrs of
-      consAttrib(appliedAttrib(attribName(name("module")), consExpr(stringLiteral(s), nilExpr())), _) ->
-        just(substring(1, length(s) - 1, s))
-    | consAttrib(_, rest) -> getModuleNameFromAttribs(rest)
-    | nilAttrib() -> nothing()
-    end;
-}
-
-nonterminal EnumDecl with location, pp, host<EnumDecl>, lifted<EnumDecl>, maybename, errors, globalDecls, defs, env, returnType, freeVariables;
+nonterminal EnumDecl with location, pp, host<EnumDecl>, lifted<EnumDecl>, maybename, errors, globalDecls, defs, env, givenRefId, returnType, freeVariables;
 
 abstract production enumDecl
 top::EnumDecl ::= name::MaybeName  dcls::EnumItemList
@@ -712,6 +675,7 @@ top::StructItem ::= attrs::[Attribute]  ty::BaseTypeExpr  dcls::StructDeclarator
   top.freeVariables = ty.freeVariables ++ dcls.freeVariables;
   top.localdefs := dcls.localdefs;
   
+  ty.givenRefId = getRefIdFromAttributes(attrs);
   dcls.env = addEnv(ty.defs, ty.env);
   dcls.baseType = ty.typerep;
   dcls.typeModifiersIn = ty.typeModifiers;

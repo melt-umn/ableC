@@ -39,3 +39,49 @@ Type ::= attr::Attribs  ty::Type
   end;
 }
 
+
+function getRefIdFromAttributes
+Maybe<String> ::= attrs::[Attribute]
+{
+  return
+    case attrs of
+      gccAttribute(ats) :: rest -> orElse(getRefIdFromAttribs(ats), getRefIdFromAttributes(rest))
+    | _ :: rest -> getRefIdFromAttributes(rest)
+    | [] -> nothing()
+    end;
+}
+
+function getRefIdFromAttribs
+Maybe<String> ::= attrs::Attribs
+{
+  return
+    case attrs of
+      consAttrib(appliedAttrib(attribName(name("refId")), consExpr(stringLiteral(s), nilExpr())), _) ->
+        just(substring(1, length(s) - 1, s))
+    | consAttrib(_, rest) -> getRefIdFromAttribs(rest)
+    | nilAttrib() -> nothing()
+    end;
+}
+
+function getModuleNameFromAttributes
+Maybe<String> ::= attrs::[Attribute]
+{
+  return
+    case attrs of
+      gccAttribute(ats) :: rest -> orElse(getModuleNameFromAttribs(ats), getModuleNameFromAttributes(rest))
+    | _ :: rest -> getModuleNameFromAttributes(rest)
+    | [] -> nothing()
+    end;
+}
+
+function getModuleNameFromAttribs
+Maybe<String> ::= attrs::Attribs
+{
+  return
+    case attrs of
+      consAttrib(appliedAttrib(attribName(name("module")), consExpr(stringLiteral(s), nilExpr())), _) ->
+        just(substring(1, length(s) - 1, s))
+    | consAttrib(_, rest) -> getModuleNameFromAttribs(rest)
+    | nilAttrib() -> nothing()
+    end;
+}
