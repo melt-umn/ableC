@@ -176,26 +176,12 @@ top::BaseTypeExpr ::= q::[Qualifier]  kwd::StructOrEnumOrUnion  name::Name
 
   local tags :: [TagItem] = lookupTag(name.name, top.env);
   
-  local refId :: String =
-    case kwd, tags of
-    -- It's an enum and we see the declaration.
-    | enumSEU(), _ -> "enumN/A" -- N/A
-    -- We don't see the declaration, so we're adding it.
-    | _, [] -> fromMaybe(name.tagRefId, top.givenRefId)
-    -- It's a struct/union and the tag type agrees.
-    | structSEU(), refIdTagItem(structSEU(), rid) :: _ -> rid
-    | unionSEU(), refIdTagItem(unionSEU(), rid) :: _ -> rid
-    -- Otherwise, error!
-    | _, _ -> "err"
-    end;
-    
-  
   top.typerep =
     case kwd, tags of
     -- It's an enum and we see the declaration.
     | enumSEU(), enumTagItem(d) :: _ -> tagType(q, enumTagType(d))
     -- We don't see the declaration, so we're adding it.
-    | _, [] -> tagType(q, refIdTagType(kwd, name.name, name.tagRefId))
+    | _, [] -> tagType(q, refIdTagType(kwd, name.name, fromMaybe(name.tagRefId, top.givenRefId)))
     -- It's a struct/union and the tag type agrees.
     | structSEU(), refIdTagItem(structSEU(), rid) :: _ -> tagType(q, refIdTagType(kwd, name.name, rid))
     | unionSEU(), refIdTagItem(unionSEU(), rid) :: _ -> tagType(q, refIdTagType(kwd, name.name, rid))
@@ -226,7 +212,7 @@ top::BaseTypeExpr ::= q::[Qualifier]  kwd::StructOrEnumOrUnion  name::Name
     -- It's an enum and we see the declaration.
     | enumSEU(), enumTagItem(d) :: _ -> []
     -- We don't see the declaration, so we're adding it.
-    | _, [] -> [tagDef(name.name, refIdTagItem(kwd, name.tagRefId))]
+    | _, [] -> [tagDef(name.name, refIdTagItem(kwd, fromMaybe(name.tagRefId, top.givenRefId)))]
     -- It's a struct/union and the tag type agrees.
     | structSEU(), refIdTagItem(structSEU(), rid) :: _ -> []
     | unionSEU(), refIdTagItem(unionSEU(), rid) :: _ -> []
