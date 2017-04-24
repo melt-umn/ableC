@@ -1,18 +1,16 @@
 
--- TODO: need 'Attributes' nonterminal so this sucks less.
-
 function animateAttributeOnType
-Type ::= attr::[Attribute]  ty::Type
+Type ::= attr::Attributes  ty::Type
 {
   return
     case attr of
-    | gccAttribute(l) :: t -> animateAttribOnType(l, animateAttributeOnType(t, ty))
-    | h :: t ->
+    | consAttribute(gccAttribute(l), t) -> animateAttribOnType(l, animateAttributeOnType(t, ty))
+    | consAttribute(h, t) ->
       case animateAttributeOnType(t, ty) of
-      | attributedType(attr, t) -> attributedType(h :: attr, t) 
-      | t -> attributedType([h], t) 
+      | attributedType(attr, t) -> attributedType(consAttribute(h, attr), t) 
+      | t -> attributedType(consAttribute(h, nilAttribute()), t) 
       end
-    | [] -> ty
+    | nilAttribute() -> ty
     end;
 }
 
@@ -21,33 +19,35 @@ function animateAttribOnType
 Type ::= attr::Attribs  ty::Type
 {
   return case attr of
-  | nilAttrib() -> ty
   -- __vector_size__(num)
   | consAttrib(
       appliedAttrib(
         attribName(name("__vector_size__")), 
         consExpr(realConstant(integerConstant(num, _, _)), nilExpr())),
       t) -> animateAttribOnType(t, vectorType(ty, toInt(num)))
+  
   | consAttrib(h, t) ->
     case animateAttribOnType(t, ty) of
-    | attributedType(gccAttribute(l) :: attr, ty) ->
-        attributedType(gccAttribute(consAttrib(h, l)) :: attr, ty)
+    | attributedType(consAttribute(gccAttribute(l), attr), ty) ->
+        attributedType(consAttribute(gccAttribute(l), attr), ty)
     | attributedType(attr, ty) ->
-        attributedType(gccAttribute(consAttrib(h, nilAttrib())) :: attr, ty)
-    | ty -> attributedType([gccAttribute(consAttrib(h, nilAttrib()))], ty)
+        attributedType(consAttribute(gccAttribute(consAttrib(h, nilAttrib())), attr), ty)
+    | ty -> attributedType(consAttribute(gccAttribute(consAttrib(h, nilAttrib())), nilAttribute()), ty)
     end
+  | nilAttrib() -> ty
   end;
 }
 
 
 function getRefIdFromAttributes
-Maybe<String> ::= attrs::[Attribute]
+Maybe<String> ::= attrs::Attributes
 {
   return
     case attrs of
-      gccAttribute(ats) :: rest -> orElse(getRefIdFromAttribs(ats), getRefIdFromAttributes(rest))
-    | _ :: rest -> getRefIdFromAttributes(rest)
-    | [] -> nothing()
+      consAttribute(gccAttribute(l), t) ->
+        orElse(getRefIdFromAttribs(l), getRefIdFromAttributes(t))
+    | consAttribute(_, t) -> getRefIdFromAttributes(t)
+    | nilAttribute() -> nothing()
     end;
 }
 
@@ -64,13 +64,14 @@ Maybe<String> ::= attrs::Attribs
 }
 
 function getModuleNameFromAttributes
-Maybe<String> ::= attrs::[Attribute]
+Maybe<String> ::= attrs::Attributes
 {
   return
     case attrs of
-      gccAttribute(ats) :: rest -> orElse(getModuleNameFromAttribs(ats), getModuleNameFromAttributes(rest))
-    | _ :: rest -> getModuleNameFromAttributes(rest)
-    | [] -> nothing()
+      consAttribute(gccAttribute(l), t) ->
+        orElse(getModuleNameFromAttribs(l), getModuleNameFromAttributes(t))
+    | consAttribute(_, t) -> getModuleNameFromAttributes(t)
+    | nilAttribute() -> nothing()
     end;
 }
 

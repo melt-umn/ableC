@@ -46,7 +46,7 @@ top::Compilation ::= srcAst::Root
     else if !null(hostAst.errors)
     then [nested(loc("", -1, -1, -1, -1, -1, -1), "Errors in host tree:", hostAst.errors)]
     else if !null(liftedAst.errors)
-    then [nested(loc("", -1, -1, -1, -1, -1, -1), "Errors in lifted tree:", hostAst.errors)]
+    then [nested(loc("", -1, -1, -1, -1, -1, -1), "Errors in lifted tree:", liftedAst.errors)]
     else [];
   
   top.srcAst = srcAst;

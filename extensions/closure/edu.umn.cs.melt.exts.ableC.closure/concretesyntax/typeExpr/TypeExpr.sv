@@ -25,10 +25,10 @@ nonterminal ClosureTypeExpr_c with ast<BaseTypeExpr>, givenQualifiers;
 
 concrete productions top::ClosureTypeExpr_c
 | '(' param::ClosureTypeExpr_c ')' '->' ret::TypeName_c
-    { top.ast = closureTypeExpr(top.givenQualifiers, consParameters(parameterDecl([], param.ast, baseTypeExpr(), nothingName(), []), nilParameters()), ret.ast);
+    { top.ast = closureTypeExpr(top.givenQualifiers, consParameters(parameterDecl([], param.ast, baseTypeExpr(), nothingName(), nilAttribute()), nilParameters()), ret.ast);
       param.givenQualifiers = []; }
 | '(' param::ClosureTypeExpr_c ')' '->' rest::ClosureTypeExpr_c
-    { top.ast = closureTypeExpr(top.givenQualifiers, consParameters(parameterDecl([], param.ast, baseTypeExpr(), nothingName(), []), nilParameters()), typeName(rest.ast, baseTypeExpr()));
+    { top.ast = closureTypeExpr(top.givenQualifiers, consParameters(parameterDecl([], param.ast, baseTypeExpr(), nothingName(), nilAttribute()), nilParameters()), typeName(rest.ast, baseTypeExpr()));
       param.givenQualifiers = [];
       rest.givenQualifiers = []; }
 | '(' params::ClosureParameterList_c ')' '->' rest::ClosureTypeExpr_c

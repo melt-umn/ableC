@@ -306,7 +306,7 @@ top::BaseTypeExpr ::= q::[Qualifier]  name::Name
  - to that.  
  -}
 abstract production attributedTypeExpr
-top::BaseTypeExpr ::= attrs::[Attribute]  bt::BaseTypeExpr
+top::BaseTypeExpr ::= attrs::Attributes  bt::BaseTypeExpr
 {
   top.pp = cat(ppAttributes(attrs), bt.pp);
 
@@ -319,7 +319,7 @@ top::BaseTypeExpr ::= attrs::[Attribute]  bt::BaseTypeExpr
         typedefDecls(
           attrs, bt,
           consDeclarator(
-            declarator(liftedName, baseTypeExpr(), [], nothingInitializer()),
+            declarator(liftedName, baseTypeExpr(), nilAttribute(), nothingInitializer()),
             nilDeclarator())),
         nilDecl()),
       typedefTypeExpr([], liftedName));

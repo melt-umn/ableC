@@ -171,12 +171,12 @@ top::TypeNames ::= h::TypeName t::TypeNames
   top.unusedTypedefTrans =
     consDecl(
       typedefDecls(
-        [], h.bty,
+        nilAttribute(), h.bty,
         consDeclarator(
           declarator(
             name(s"_template_param_unused_${toString(genInt())}", location=builtin),
             h.mty,
-            [],
+            nilAttribute(),
             nothingInitializer()),
           nilDeclarator())),
       t.unusedTypedefTrans);

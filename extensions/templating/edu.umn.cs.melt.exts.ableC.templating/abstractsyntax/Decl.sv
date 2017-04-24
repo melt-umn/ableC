@@ -33,10 +33,10 @@ top::Decl ::= params::[Name] n::Name ty::TypeName
         templateItem(
           true, false, n.location, params,
           typedefDecls(
-            [],
+            nilAttribute(),
             ty.bty,
             consDeclarator(
-              declarator(n, ty.mty, [], nothingInitializer()),
+              declarator(n, ty.mty, nilAttribute(), nothingInitializer()),
               nilDeclarator()))))]);
   
   forwards to
@@ -46,7 +46,7 @@ top::Decl ::= params::[Name] n::Name ty::TypeName
 }
 
 abstract production templateStructForwardDecl
-top::Decl ::= params::[Name] attrs::[Attribute] n::Name
+top::Decl ::= params::[Name] attrs::Attributes n::Name
 {
   top.pp =
     ppConcat([pp"template<", ppImplode(text(", "), map((.pp), params)), pp">", line(),
@@ -54,7 +54,7 @@ top::Decl ::= params::[Name] attrs::[Attribute] n::Name
   top.substituted =
     templateStructForwardDecl(
       map(\ n::Name -> decorate n with {substitutions = top.substitutions;}.substituted, params),
-      map(\ a::Attribute -> decorate a with {substitutions = top.substitutions;}.substituted, attrs),
+      attrs.substituted,
       n.substituted);
   
   local localErrors::[Message] =
@@ -72,17 +72,19 @@ top::Decl ::= params::[Name] attrs::[Attribute] n::Name
           maybeValueDecl(
             n.name,
             typedefDecls(
-              gccAttribute(
-                consAttrib(
-                  appliedAttrib(
-                    attribName(name("refId", location=builtin)),
-                    consExpr(
-                      stringLiteral(s"\"edu:umn:cs:melt:exts:ableC:templating:${n.name}\"", location=builtin),
-                      nilExpr())),
-                  nilAttrib())) :: attrs,
+              consAttribute(
+                gccAttribute(
+                  consAttrib(
+                    appliedAttrib(
+                      attribName(name("refId", location=builtin)),
+                      consExpr(
+                        stringLiteral(s"\"edu:umn:cs:melt:exts:ableC:templating:${n.name}\"", location=builtin),
+                        nilExpr())),
+                    nilAttrib())),
+                attrs),
               tagReferenceTypeExpr([], structSEU(), n),
               consDeclarator(
-                declarator(n, baseTypeExpr(), [], nothingInitializer()),
+                declarator(n, baseTypeExpr(), nilAttribute(), nothingInitializer()),
                 nilDeclarator())))))]);
   
   forwards to
@@ -92,7 +94,7 @@ top::Decl ::= params::[Name] attrs::[Attribute] n::Name
 }
 
 abstract production templateStructDecl
-top::Decl ::= params::[Name] attrs::[Attribute] n::Name dcls::StructItemList
+top::Decl ::= params::[Name] attrs::Attributes n::Name dcls::StructItemList
 {
   top.pp =
     ppConcat([pp"template<", ppImplode(text(", "), map((.pp), params)), pp">", line(),
@@ -101,7 +103,7 @@ top::Decl ::= params::[Name] attrs::[Attribute] n::Name dcls::StructItemList
   top.substituted =
     templateStructDecl(
       map(\ n::Name -> decorate n with {substitutions = top.substitutions;}.substituted, params),
-      map(\ a::Attribute -> decorate a with {substitutions = top.substitutions;}.substituted, attrs),
+      attrs.substituted,
       n.substituted,
       dcls.substituted);
   
@@ -122,21 +124,23 @@ top::Decl ::= params::[Name] attrs::[Attribute] n::Name dcls::StructItemList
               maybeValueDecl(
                 n.name,
                 typedefDecls(
-                  [gccAttribute(
-                     consAttrib(
-                       appliedAttrib(
-                         attribName(name("refId", location=builtin)),
-                         consExpr(
-                           stringLiteral(s"\"edu:umn:cs:melt:exts:ableC:templating:${n.name}\"", location=builtin),
-                           nilExpr())),
-                       nilAttrib()))],
+                  consAttribute(
+                    gccAttribute(
+                      consAttrib(
+                        appliedAttrib(
+                          attribName(name("refId", location=builtin)),
+                          consExpr(
+                            stringLiteral(s"\"edu:umn:cs:melt:exts:ableC:templating:${n.name}\"", location=builtin),
+                            nilExpr())),
+                        nilAttrib())),
+                    nilAttribute()),
                   tagReferenceTypeExpr([], structSEU(), n),
                   consDeclarator(
-                    declarator(n, baseTypeExpr(), [], nothingInitializer()),
+                    declarator(n, baseTypeExpr(), nilAttribute(), nothingInitializer()),
                     nilDeclarator()))),
               -- struct __name__ { ... };
               typeExprDecl(
-                [],
+                nilAttribute(),
                 structTypeExpr(
                   [],
                   structDecl(attrs, justName(n), dcls, location=n.location)))]))))]);

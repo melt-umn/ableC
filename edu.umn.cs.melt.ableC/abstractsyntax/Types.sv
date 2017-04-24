@@ -299,7 +299,7 @@ Parameters ::= args::[Type]
     case args of
       h :: t ->
         consParameters(
-          parameterDecl([], directTypeExpr(h), baseTypeExpr(), nothingName(), []),
+          parameterDecl([], directTypeExpr(h), baseTypeExpr(), nothingName(), nilAttribute()),
           argTypesToParameters(t))
     | [] -> nilParameters()
     end;
@@ -410,7 +410,7 @@ top::Type ::= q::[Qualifier]  bt::Type
  - cases where this isn't true.
  -}
 abstract production attributedType
-top::Type ::= attrs::[Attribute]  bt::Type
+top::Type ::= attrs::Attributes  bt::Type
 {
   propagate host;
   top.lpp = ppConcat([ ppAttributes(attrs), space(), bt.lpp]);
@@ -430,6 +430,10 @@ top::Type ::= attrs::[Attribute]  bt::Type
   top.isIntegerType = bt.isIntegerType;
   top.isScalarType = bt.isScalarType;
   top.isArithmeticType = bt.isArithmeticType;
+  
+  -- Whatever...
+  attrs.env = emptyEnv();
+  attrs.returnType = nothing();
 }
 
 {-------------------------------------------------------------------------------
@@ -448,12 +452,14 @@ top::Type ::= bt::Type  bytes::Integer
   -- Translate vectorType
   top.baseTypeExpr =
     attributedTypeExpr(
-      [gccAttribute(
-         consAttrib(
-           appliedAttrib(
-             attribName(name("__vector_size__", location=builtinLoc("host"))),
-             consExpr(mkIntConst(bytes, builtinLoc("host")), nilExpr())),
-         nilAttrib()))],
+      consAttribute(
+        gccAttribute(
+          consAttrib(
+            appliedAttrib(
+              attribName(name("__vector_size__", location=builtinLoc("host"))),
+              consExpr(mkIntConst(bytes, builtinLoc("host")), nilExpr())),
+          nilAttrib())),
+        nilAttribute()),
       bt.baseTypeExpr);
   top.typeModifierExpr = baseTypeExpr();
   -- You know, who knows what these rules are: TODO

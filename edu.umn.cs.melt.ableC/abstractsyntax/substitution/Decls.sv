@@ -25,39 +25,21 @@ top::Decl ::= d::[Def]
 }
 
 aspect production variableDecls
-top::Decl ::= storage::[StorageClass]  attrs::[Attribute]  ty::BaseTypeExpr  dcls::Declarators
+top::Decl ::= storage::[StorageClass]  attrs::Attributes  ty::BaseTypeExpr  dcls::Declarators
 {
-  top.substituted =
-    variableDecls(
-      storage,
-      map(
-        \ a::Attribute -> decorate a with {substitutions = top.substitutions;}.substituted,
-        attrs),
-      ty.substituted,
-      dcls.substituted);
+  propagate substituted;
 }
 
 aspect production typeExprDecl
-top::Decl ::= attrs::[Attribute] ty::BaseTypeExpr
+top::Decl ::= attrs::Attributes ty::BaseTypeExpr
 {
-  top.substituted =
-    typeExprDecl(
-      map(
-        \ a::Attribute -> decorate a with {substitutions = top.substitutions;}.substituted,
-        attrs),
-      ty.substituted);
+  propagate substituted;
 }
 
 aspect production typedefDecls
-top::Decl ::= attrs::[Attribute]  ty::BaseTypeExpr  dcls::Declarators
+top::Decl ::= attrs::Attributes  ty::BaseTypeExpr  dcls::Declarators
 {
-  top.substituted =
-    typedefDecls(
-      map(
-        \ a::Attribute -> decorate a with {substitutions = top.substitutions;}.substituted,
-        attrs),
-      ty.substituted,
-      dcls.substituted);
+  propagate substituted;
 }
 
 aspect production functionDeclaration
@@ -98,16 +80,9 @@ top::Declarators ::=
 
 
 aspect production declarator
-top::Declarator ::= name::Name  ty::TypeModifierExpr  attrs::[Attribute]  initializer::MaybeInitializer
+top::Declarator ::= name::Name  ty::TypeModifierExpr  attrs::Attributes  initializer::MaybeInitializer
 {
-  top.substituted =
-    declarator(
-      name.substituted,
-      ty.substituted,
-      map(
-        \ a::Attribute -> decorate a with {substitutions = top.substitutions;}.substituted,
-        attrs),
-      initializer.substituted);
+  propagate substituted;
 }
 
 aspect production errorDeclarator
@@ -117,20 +92,9 @@ top::Declarator ::= msg::[Message]
 }
 
 aspect production functionDecl
-top::FunctionDecl ::= storage::[StorageClass]  fnquals::[SpecialSpecifier]  bty::BaseTypeExpr mty::TypeModifierExpr  name::Name  attrs::[Attribute]  decls::Decls  body::Stmt
+top::FunctionDecl ::= storage::[StorageClass]  fnquals::[SpecialSpecifier]  bty::BaseTypeExpr mty::TypeModifierExpr  name::Name  attrs::Attributes  decls::Decls  body::Stmt
 {
-  top.substituted =
-    functionDecl(
-      storage,
-      fnquals,
-      bty.substituted,
-      mty.substituted,
-      name.substituted,
-      map(
-        \ a::Attribute -> decorate a with {substitutions = top.substitutions;}.substituted,
-        attrs),
-      decls.substituted,
-      body.substituted);
+  propagate substituted;
 }
 
 aspect production badFunctionDecl
@@ -152,7 +116,7 @@ top::Parameters ::= h::ParameterDecl  t::Parameters
   local substitutions::Substitutions = top.substitutions;
   substitutions.nameIn =
     case h1 of
-      parameterDecl([], typedefTypeExpr([], id), baseTypeExpr(), nothingName(), []) -> id.name
+      parameterDecl([], typedefTypeExpr([], id), baseTypeExpr(), nothingName(), nilAttribute()) -> id.name
     | _ -> ""
     end;
   top.substituted =
@@ -169,44 +133,22 @@ top::Parameters ::=
 
 
 aspect production parameterDecl
-top::ParameterDecl ::= storage::[StorageClass]  bty::BaseTypeExpr  mty::TypeModifierExpr  name::MaybeName  attrs::[Attribute]
+top::ParameterDecl ::= storage::[StorageClass]  bty::BaseTypeExpr  mty::TypeModifierExpr  name::MaybeName  attrs::Attributes
 {
-  top.substituted =
-    parameterDecl(
-      storage,
-      bty.substituted,
-      mty.substituted,
-      name.substituted,
-      map(
-        \ a::Attribute -> decorate a with {substitutions = top.substitutions;}.substituted,
-        attrs));
+  propagate substituted;
 }
 
 
 aspect production structDecl
-top::StructDecl ::= attrs::[Attribute]  name::MaybeName  dcls::StructItemList
+top::StructDecl ::= attrs::Attributes  name::MaybeName  dcls::StructItemList
 {
-  top.substituted =
-    structDecl(
-      map(
-        \ a::Attribute -> decorate a with {substitutions = top.substitutions;}.substituted,
-        attrs),
-      name.substituted,
-      dcls.substituted,
-      location=top.location);
+  propagate substituted;
 }
 
 aspect production unionDecl
-top::UnionDecl ::= attrs::[Attribute]  name::MaybeName  dcls::StructItemList
+top::UnionDecl ::= attrs::Attributes  name::MaybeName  dcls::StructItemList
 {
-  top.substituted =
-    unionDecl(
-      map(
-        \ a::Attribute -> decorate a with {substitutions = top.substitutions;}.substituted,
-        attrs),
-      name.substituted,
-      dcls.substituted,
-      location=top.location);
+  propagate substituted;
 }
 
 aspect production enumDecl
@@ -240,15 +182,9 @@ top::EnumItemList ::=
 }
 
 aspect production structItem
-top::StructItem ::= attrs::[Attribute]  ty::BaseTypeExpr  dcls::StructDeclarators
+top::StructItem ::= attrs::Attributes  ty::BaseTypeExpr  dcls::StructDeclarators
 {
-  top.substituted =
-    structItem(
-      map(
-        \ a::Attribute -> decorate a with {substitutions = top.substitutions;}.substituted,
-        attrs),
-      ty.substituted,
-      dcls.substituted);
+  propagate substituted;
 }
 aspect production warnStructItem
 top::StructItem ::= msg::[Message]
@@ -270,27 +206,14 @@ top::StructDeclarators ::=
 
 
 aspect production structField
-top::StructDeclarator ::= name::Name  ty::TypeModifierExpr  attrs::[Attribute]
+top::StructDeclarator ::= name::Name  ty::TypeModifierExpr  attrs::Attributes
 {
-  top.substituted =
-    structField(
-      name.substituted,
-      ty.substituted,
-      map(
-        \ a::Attribute -> decorate a with {substitutions = top.substitutions;}.substituted,
-        attrs));
+  propagate substituted;
 }
 aspect production structBitfield
-top::StructDeclarator ::= name::MaybeName  ty::TypeModifierExpr  e::Expr  attrs::[Attribute]
+top::StructDeclarator ::= name::MaybeName  ty::TypeModifierExpr  e::Expr  attrs::Attributes
 {
-  top.substituted =
-    structBitfield(
-      name.substituted,
-      ty.substituted,
-      e.substituted,
-      map(
-        \ a::Attribute -> decorate a with {substitutions = top.substitutions;}.substituted,
-        attrs));
+  propagate substituted;
 }
 aspect production warnStructField
 top::StructDeclarator ::= msg::[Message]

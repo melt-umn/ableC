@@ -178,11 +178,7 @@ top::GlobalDecls ::= h::Decl  t::GlobalDecls
   propagate host;
   
   local newDecls::Decls = foldDecl(map(\ d::Decorated Decl -> d.lifted, h.globalDecls));
-  local newDefs::[Def] = foldr(append, [], map((.defs), h.globalDecls));
-
   top.lifted = consGlobalDecl(decls(newDecls), consGlobalDecl(h.lifted, t.lifted));
-  
-  t.env = addEnv(newDefs ++ h.defs, top.env);
 }
 
 -- Utility functions
