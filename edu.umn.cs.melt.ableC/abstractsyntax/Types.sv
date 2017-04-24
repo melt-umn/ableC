@@ -9,7 +9,7 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax;
  - Variants: builtin, pointer, array, function, tagged, noncanonical.
  - Noncanonical forwards, and so doesn't need any attributes, etc attached to it.
  -}
-nonterminal Type with lpp, rpp, host<Type>, baseTypeExpr, typeModifierExpr, mangledName, moduleName, integerPromotions, defaultArgumentPromotions, defaultLvalueConversion, defaultFunctionArrayLvalueConversion, isIntegerType, isScalarType, isArithmeticType, withoutTypeQualifiers, withTypeQualifiers, addedTypeQualifiers;
+nonterminal Type with lpp, rpp, host<Type>, baseTypeExpr, typeModifierExpr, mangledName, moduleName, integerPromotions, defaultArgumentPromotions, defaultLvalueConversion, defaultFunctionArrayLvalueConversion, isIntegerType, isScalarType, isArithmeticType, withoutAttributes, withoutTypeQualifiers, withTypeQualifiers, addedTypeQualifiers;
 
 -- Used to turn a Type back into a TypeName
 synthesized attribute baseTypeExpr :: BaseTypeExpr;
@@ -25,10 +25,13 @@ synthesized attribute moduleName :: Maybe<String>;
 synthesized attribute integerPromotions :: Type;
 -- float -> double for variadic args
 synthesized attribute defaultArgumentPromotions :: Type;
--- drop qualifiers
+-- drop qualifiers and attributes
 synthesized attribute defaultLvalueConversion :: Type;
 -- above PLUS conversion to pointers
 synthesized attribute defaultFunctionArrayLvalueConversion :: Type;
+
+-- Strip top-level only of GCC __attribute__s from the type
+synthesized attribute withoutAttributes :: Type;
 
 -- Strip top-level only of qualifiers from the type
 synthesized attribute withoutTypeQualifiers :: Type;
@@ -41,6 +44,7 @@ aspect default production
 top::Type ::=
 {
   top.moduleName = nothing();
+  top.withoutAttributes = top;
   top.withoutTypeQualifiers = top;
   top.withTypeQualifiers = top;
   
@@ -419,6 +423,7 @@ top::Type ::= attrs::[Attribute]  bt::Type
   top.defaultArgumentPromotions = attributedType(attrs, bt.defaultArgumentPromotions);
   top.defaultLvalueConversion = bt.defaultLvalueConversion;
   top.defaultFunctionArrayLvalueConversion = bt.defaultFunctionArrayLvalueConversion;
+  top.withoutAttributes = bt.withoutAttributes;
   top.withoutTypeQualifiers = attributedType(attrs, bt.withoutTypeQualifiers);
   top.withTypeQualifiers = attributedType(attrs, bt.withTypeQualifiers);
   bt.addedTypeQualifiers = top.addedTypeQualifiers;
