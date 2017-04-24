@@ -8,6 +8,7 @@ imports edu:umn:cs:melt:ableC:concretesyntax:lexerHack as lh;
 imports edu:umn:cs:melt:ableC:abstractsyntax as ast;
 imports edu:umn:cs:melt:ableC:abstractsyntax:construction as ast;
 
+exports edu:umn:cs:melt:exts:ableC:templating:concretesyntax:templateStructForwardDecl;
 exports edu:umn:cs:melt:exts:ableC:templating:concretesyntax:templateStructDecl;
 exports edu:umn:cs:melt:exts:ableC:templating:concretesyntax:templateFunctionDecl;
 exports edu:umn:cs:melt:exts:ableC:templating:concretesyntax:usingDecl;

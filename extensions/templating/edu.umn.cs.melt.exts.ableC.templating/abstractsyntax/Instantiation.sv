@@ -143,15 +143,14 @@ top::Decl ::= q::[Qualifier] n::Name ts::TypeNames
   
   local fwrd::Decls =
     foldDecl([
-      -- This is effectively the same as writting `struct __name__;`, but with a given refId 
-      defsDecl([tagDef(mangledName, refIdTagItem(structSEU(), mangledRefId))]),
       decls(ts.unusedTypedefTrans),
       subDecl(
         nameSubstitution(n.name, name(mangledName, location=builtin)) ::
-          zipWith(
-            typedefSubstitution,
-            map((.name), templateItem.templateParams),
-            map(directTypeExpr, ts.typereps)),
+          refIdSubstitution(s"edu:umn:cs:melt:exts:ableC:templating:${n.name}", mangledRefId) ::
+            zipWith(
+              typedefSubstitution,
+              map((.name), templateItem.templateParams),
+              map(directTypeExpr, ts.typereps)),
         templateItem.decl)]);
 
   forwards to
