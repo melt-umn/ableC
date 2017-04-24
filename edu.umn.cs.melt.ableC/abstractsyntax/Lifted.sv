@@ -95,7 +95,7 @@ top::Expr ::= decls::Decls lifted::Expr
 {
   propagate host;
   top.errors := decls.errors ++ lifted.errors;
-  top.pp = pp"injectGlobalDeclsExpr {${ppImplode(line(), decls.pps)}} (${lifted.pp})";
+  top.pp = pp"injectGlobalDeclsExpr ${braces(nestlines(2, ppImplode(line(), decls.pps)))} (${lifted.pp})";
   
   -- Insert defs from decls at the global scope
   top.defs := globalDefsDef(decls.defs) :: lifted.defs;
@@ -121,7 +121,7 @@ top::Stmt ::= decls::Decls lifted::Stmt
 {
   propagate host;
   top.errors := decls.errors ++ lifted.errors;
-  top.pp = pp"injectGlobalDeclsStmt {${ppImplode(line(), decls.pps)}} (${lifted.pp})";
+  top.pp = pp"injectGlobalDeclsStmt ${braces(nestlines(2, ppImplode(line(), decls.pps)))} (${lifted.pp})";
   
   -- Insert defs from decls at the global scope
   top.defs := globalDefsDef(decls.defs) :: lifted.defs;
@@ -146,7 +146,7 @@ abstract production injectGlobalDeclsTypeExpr
 top::BaseTypeExpr ::= decls::Decls lifted::BaseTypeExpr
 {
   propagate host;
-  top.pp = pp"injectGlobalDeclsTypeExpr {${ppImplode(line(), decls.pps)}} (${lifted.pp})";
+  top.pp = pp"injectGlobalDeclsTypeExpr ${braces(nestlines(2, ppImplode(line(), decls.pps)))} (${lifted.pp})";
   top.errors := decls.errors ++ lifted.errors;
   top.typerep = lifted.typerep;
   
