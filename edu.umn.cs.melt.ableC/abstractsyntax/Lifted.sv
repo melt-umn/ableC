@@ -50,6 +50,7 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax;
 
 synthesized attribute lifted<a>::a;
 synthesized attribute globalDecls::[Decorated Decl] with ++;
+synthesized attribute unfoldedGlobalDecls::[Decorated Decl];
 
 {--
  - Wrapper production for a decl that first performs some sort of check for whether something is in
@@ -101,7 +102,7 @@ top::Expr ::= decls::Decls lifted::Expr
   top.defs := globalDefsDef(decls.defs) :: lifted.defs;
 
   -- Note that the invariant over `globalDecls` and `lifted` is maintained.
-  top.globalDecls := decls.globalDecls ++ unfoldDecoratedDecl(decls) ++ lifted.globalDecls;
+  top.globalDecls := decls.unfoldedGlobalDecls ++ lifted.globalDecls;
   top.lifted = lifted.lifted;
   
   -- Define other attributes to be the same as on lifted
@@ -127,7 +128,7 @@ top::Stmt ::= decls::Decls lifted::Stmt
   top.defs := globalDefsDef(decls.defs) :: lifted.defs;
 
   -- Note that the invariant over `globalDecls` and `lifted` is maintained.
-  top.globalDecls := decls.globalDecls ++ unfoldDecoratedDecl(decls) ++ lifted.globalDecls;
+  top.globalDecls := decls.unfoldedGlobalDecls ++ lifted.globalDecls;
   top.lifted = lifted.lifted;
   
   -- Define other attributes to be the same as on lifted
@@ -154,7 +155,7 @@ top::BaseTypeExpr ::= decls::Decls lifted::BaseTypeExpr
   top.defs := globalDefsDef(decls.defs) :: lifted.defs;
 
   -- Note that the invariant over `globalDecls` and `lifted` is maintained.
-  top.globalDecls := decls.globalDecls ++ unfoldDecoratedDecl(decls) ++ lifted.globalDecls;
+  top.globalDecls := decls.unfoldedGlobalDecls ++ lifted.globalDecls;
   top.lifted = lifted.lifted;
   
   -- Define other attributes to be the same as on lifted
@@ -185,16 +186,6 @@ top::GlobalDecls ::= h::Decl  t::GlobalDecls
 }
 
 -- Utility functions
-function unfoldDecoratedDecl
-[Decorated Decl] ::= decl::Decorated Decls
-{
-  return
-    case decl of
-      nilDecl() -> []
-    | consDecl(d,ds) -> d :: unfoldDecoratedDecl(ds)
-    end;
-}
-
 function globalDeclsDefs
 [Def] ::= d::[Decorated Decl]
 {

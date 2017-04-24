@@ -31,7 +31,7 @@ top::GlobalDecls ::=
   top.freeVariables = [];
 }
 
-nonterminal Decls with pps, host<Decls>, lifted<Decls>, errors, globalDecls, defs, env, isTopLevel, returnType, freeVariables;
+nonterminal Decls with pps, host<Decls>, lifted<Decls>, errors, globalDecls, unfoldedGlobalDecls, defs, env, isTopLevel, returnType, freeVariables;
 
 autocopy attribute isTopLevel :: Boolean;
 
@@ -43,6 +43,7 @@ top::Decls ::= h::Decl  t::Decls
   top.errors := h.errors ++ t.errors;
   top.defs := h.defs ++ t.defs;
   top.globalDecls := h.globalDecls ++ t.globalDecls;
+  top.unfoldedGlobalDecls = h.unfoldedGlobalDecls ++ t.unfoldedGlobalDecls;
   top.freeVariables =
     h.freeVariables ++
     removeDefsFromNames(h.defs, t.freeVariables);
@@ -57,6 +58,7 @@ top::Decls ::=
   top.pps = [];
   top.errors := [];
   top.globalDecls := [];
+  top.unfoldedGlobalDecls = [];
   top.defs := [];
   top.freeVariables = [];
 }
@@ -68,10 +70,16 @@ Decls ::= d1::Decls d2::Decls
 }
 
 
-nonterminal Decl with pp, host<Decl>, lifted<Decl>, errors, globalDecls, defs, env, isTopLevel, returnType, freeVariables;
+nonterminal Decl with pp, host<Decl>, lifted<Decl>, errors, globalDecls, unfoldedGlobalDecls, defs, env, isTopLevel, returnType, freeVariables;
 
 {-- Pass down from top-level declaration the list of attribute to each name-declaration -}
 autocopy attribute givenAttributes :: [Attribute];
+
+aspect default production
+top::Decl ::=
+{
+  top.unfoldedGlobalDecls = top.globalDecls ++ [top];
+}
 
 abstract production decls
 top::Decl ::= d::Decls
@@ -80,6 +88,7 @@ top::Decl ::= d::Decls
   top.pp = terminate( line(), d.pps );
   top.errors := d.errors;
   top.globalDecls := d.globalDecls;
+  top.unfoldedGlobalDecls = d.unfoldedGlobalDecls;
   top.defs := d.defs;
   top.freeVariables = d.freeVariables;
 }
