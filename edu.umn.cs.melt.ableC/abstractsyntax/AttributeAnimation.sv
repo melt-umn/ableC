@@ -19,6 +19,7 @@ function animateAttribOnType
 Type ::= attr::Attribs  ty::Type
 {
   return case attr of
+  -- Attribs that specify new types (i.e. not type-compatible with what is wrapped)
   -- __vector_size__(num)
   | consAttrib(
       appliedAttrib(
@@ -26,13 +27,21 @@ Type ::= attr::Attribs  ty::Type
         consExpr(realConstant(integerConstant(num, _, _)), nilExpr())),
       t) -> animateAttribOnType(t, vectorType(ty, toInt(num)))
   
+  -- Attribs that should not be attatched
+  -- refId(name)
+  | consAttrib( appliedAttrib(attribName(name("refId")), _), t) -> animateAttribOnType(t, ty)
+  
+  -- TODO: There are probably more that should be discarded here, figure out the semantics of this
+  
+  -- Attatch all other attribs via attributedType
   | consAttrib(h, t) ->
     case animateAttribOnType(t, ty) of
     | attributedType(consAttribute(gccAttribute(l), attr), ty) ->
         attributedType(consAttribute(gccAttribute(l), attr), ty)
     | attributedType(attr, ty) ->
         attributedType(consAttribute(gccAttribute(consAttrib(h, nilAttrib())), attr), ty)
-    | ty -> attributedType(consAttribute(gccAttribute(consAttrib(h, nilAttrib())), nilAttribute()), ty)
+    | ty ->
+        attributedType(consAttribute(gccAttribute(consAttrib(h, nilAttrib())), nilAttribute()), ty)
     end
   | nilAttrib() -> ty
   end;
