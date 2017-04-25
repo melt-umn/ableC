@@ -1,7 +1,7 @@
 grammar edu:umn:cs:melt:exts:ableC:adt:abstractsyntax;
 
 imports silver:langutil;
-imports silver:langutil:pp with implode as ppImplode ;
+imports silver:langutil:pp;
 
 imports edu:umn:cs:melt:ableC:abstractsyntax;
 imports edu:umn:cs:melt:ableC:abstractsyntax:construction;
@@ -139,7 +139,7 @@ nonterminal StmtClause with location, pp, errors, env,
 abstract production stmtClause
 c::StmtClause ::= p::Pattern s::Stmt
 {
-  c.pp = concat([ p.pp, text(":"), space(), nestlines(2, s.pp) ]);
+  c.pp = ppConcat([ p.pp, text(":"), space(), nestlines(2, s.pp) ]);
 
   p.expectedType = c.expectedType;
   s.env = addEnv(p.defs,c.env);
