@@ -1,7 +1,7 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax:substitution;
 
 imports silver:langutil;
-imports silver:langutil:pp with implode as ppImplode;
+imports silver:langutil:pp;
 
 imports edu:umn:cs:melt:ableC:abstractsyntax;
 imports edu:umn:cs:melt:ableC:abstractsyntax:env;

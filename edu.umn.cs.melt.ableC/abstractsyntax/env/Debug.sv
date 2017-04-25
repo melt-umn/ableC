@@ -1,7 +1,7 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax:env;
 
 import silver:langutil;
-import silver:langutil:pp with implode as ppImplode;
+import silver:langutil:pp;
 
 -- Aspects over different "Item" types in Env --
 ------------------------------------------------

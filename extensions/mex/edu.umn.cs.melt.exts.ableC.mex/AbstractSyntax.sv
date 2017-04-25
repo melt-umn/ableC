@@ -172,7 +172,7 @@ nonterminal MexDecl with env, outputTranslate, inputTranslate, index, isInput, e
 abstract production mexDecl
 top::MexDecl ::= bty::BaseTypeExpr  mty::TypeModifierExpr  id::Name
 {
-  local tystring :: String = show(100, concat([bty.pp, mty.lpp, mty.rpp]));
+  local tystring :: String = show(100, ppConcat([bty.pp, mty.lpp, mty.rpp]));
 
   top.errors := 
     if bty.mexTypeOkay && mty.mexTypeOkay then []

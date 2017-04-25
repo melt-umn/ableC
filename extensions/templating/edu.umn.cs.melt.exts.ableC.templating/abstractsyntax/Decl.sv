@@ -1,7 +1,7 @@
 grammar edu:umn:cs:melt:exts:ableC:templating:abstractsyntax;
 
 imports silver:langutil;
-imports silver:langutil:pp with implode as ppImplode, concat as ppConcat;
+imports silver:langutil:pp;
 
 imports edu:umn:cs:melt:ableC:abstractsyntax;
 imports edu:umn:cs:melt:ableC:abstractsyntax:construction;
