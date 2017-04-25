@@ -1,7 +1,7 @@
 grammar edu:umn:cs:melt:exts:ableC:gcadt:concretesyntax:datatype;
 
 imports silver:langutil only ast, pp, errors; 
-imports silver:langutil:pp with implode as ppImplode ;
+imports silver:langutil:pp;
 
 imports edu:umn:cs:melt:ableC:concretesyntax;
 imports edu:umn:cs:melt:ableC:abstractsyntax;
