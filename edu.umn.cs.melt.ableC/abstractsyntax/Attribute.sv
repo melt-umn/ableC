@@ -74,8 +74,7 @@ top::Attribs ::=
   top.pp = text("");
 }
 
-synthesized attribute isHostAttrib::Boolean;
-nonterminal Attrib with pp, host<Attrib>, lifted<Attrib>, env, isHostAttrib, returnType;
+nonterminal Attrib with pp, host<Attrib>, lifted<Attrib>, env, returnType;
 
 -- e.g. __attribute__(())
 abstract production emptyAttrib
@@ -83,7 +82,6 @@ top::Attrib ::=
 {
   propagate host, lifted;
   top.pp = notext();
-  top.isHostAttrib = true;
 }
 -- e.g. __attribute__((deprecated))
 abstract production wordAttrib
@@ -91,7 +89,6 @@ top::Attrib ::= n::AttribName
 {
   propagate host, lifted;
   top.pp = n.pp;
-  top.isHostAttrib = true;
 }
 -- e.g. __attribute__((deprecated("don't use this duh")))
 abstract production appliedAttrib
@@ -99,12 +96,6 @@ top::Attrib ::= n::AttribName  e::Exprs
 {
   propagate host, lifted;
   top.pp = ppConcat([n.pp, parens(ppImplode(text(", "), e.pps))]);
-  top.isHostAttrib =
-    case n of
-      attribName(name("refId")) -> false
-    | attribName(name("module")) -> false
-    | _ -> true
-    end;
 }
 -- e.g. __attribute__((something(foo, "well whatever")))
 -- OR __attribute__((something(foo)))

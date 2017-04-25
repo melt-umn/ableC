@@ -140,7 +140,7 @@ top::Decl ::= attrs::Attributes ty::BaseTypeExpr
   top.globalDecls := ty.globalDecls;
   top.defs := ty.defs;
   top.freeVariables = ty.freeVariables;
-  ty.givenRefId = getRefIdFromAttributes(attrs);
+  ty.givenRefId = attrs.maybeRefId;
 }
 
 abstract production typedefDecls
@@ -153,7 +153,7 @@ top::Decl ::= attrs::Attributes  ty::BaseTypeExpr  dcls::Declarators
   top.defs := ty.defs ++ dcls.defs;
   top.freeVariables = ty.freeVariables ++ dcls.freeVariables;
   
-  ty.givenRefId = getRefIdFromAttributes(attrs);
+  ty.givenRefId = attrs.maybeRefId;
   dcls.env = addEnv(ty.defs, ty.env);
   dcls.baseType = ty.typerep;
   dcls.typeModifiersIn = ty.typeModifiers;
@@ -515,11 +515,10 @@ top::StructDecl ::= attrs::Attributes  name::MaybeName  dcls::StructItemList
   (c) quick and easy equality: equality of refids.
 -}
 
-  local maybeAttribRefIdName::Maybe<String> =
-    orElse(getRefIdFromAttributes(attrs), top.givenRefId);
+  local maybeAttribRefIdName::Maybe<String> = orElse(attrs.maybeRefId, top.givenRefId);
   top.refId = fromMaybe(name.tagRefId, maybeAttribRefIdName);
   
-  top.moduleName = getModuleNameFromAttributes(attrs);
+  top.moduleName = attrs.moduleName;
   
   top.tagEnv = addEnv(dcls.localdefs, emptyEnv());
   
@@ -559,11 +558,10 @@ top::UnionDecl ::= attrs::Attributes  name::MaybeName  dcls::StructItemList
   top.errors := dcls.errors;
   top.globalDecls := dcls.globalDecls;
 
-  local maybeAttribRefIdName::Maybe<String> =
-    orElse(getRefIdFromAttributes(attrs), top.givenRefId);
+  local maybeAttribRefIdName::Maybe<String> = orElse(attrs.maybeRefId, top.givenRefId);
   top.refId = fromMaybe(name.tagRefId, maybeAttribRefIdName);
   
-  top.moduleName = getModuleNameFromAttributes(attrs);
+  top.moduleName = attrs.moduleName;
   
   top.tagEnv = addEnv(dcls.localdefs, emptyEnv());
   
@@ -692,7 +690,7 @@ top::StructItem ::= attrs::Attributes  ty::BaseTypeExpr  dcls::StructDeclarators
   top.freeVariables = ty.freeVariables ++ dcls.freeVariables;
   top.localdefs := dcls.localdefs;
   
-  ty.givenRefId = getRefIdFromAttributes(attrs);
+  ty.givenRefId = attrs.maybeRefId;
   dcls.env = addEnv(ty.defs, ty.env);
   dcls.baseType = ty.typerep;
   dcls.typeModifiersIn = ty.typeModifiers;

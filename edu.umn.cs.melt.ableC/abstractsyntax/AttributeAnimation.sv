@@ -47,51 +47,97 @@ Type ::= attr::Attribs  ty::Type
   end;
 }
 
+synthesized attribute maybeRefId::Maybe<String> occurs on Attributes, Attribute, Attribs, Attrib;
+attribute moduleName occurs on Attributes, Attribute, Attribs, Attrib;
 
-function getRefIdFromAttributes
-Maybe<String> ::= attrs::Attributes
+aspect production consAttribute
+top::Attributes ::= h::Attribute t::Attributes
 {
-  return
-    case attrs of
-      consAttribute(gccAttribute(l), t) ->
-        orElse(getRefIdFromAttribs(l), getRefIdFromAttributes(t))
-    | consAttribute(_, t) -> getRefIdFromAttributes(t)
-    | nilAttribute() -> nothing()
-    end;
+  top.maybeRefId = orElse(h.maybeRefId, t.maybeRefId);
+  top.moduleName = orElse(h.moduleName, t.moduleName);
 }
 
-function getRefIdFromAttribs
-Maybe<String> ::= attrs::Attribs
+aspect production nilAttribute
+top::Attributes ::= 
 {
-  return
-    case attrs of
-      consAttrib(appliedAttrib(attribName(name("refId")), consExpr(stringLiteral(s), nilExpr())), _) ->
+  top.maybeRefId = nothing();
+  top.moduleName = nothing();
+}
+
+aspect production gccAttribute
+top::Attribute ::= l::Attribs
+{
+  top.maybeRefId = l.maybeRefId;
+  top.moduleName = l.moduleName;
+}
+
+aspect production simpleAsm
+top::Attribute ::= s::String
+{
+  top.maybeRefId = nothing();
+  top.moduleName = nothing();
+}
+
+aspect production consAttrib
+top::Attribs ::= h::Attrib t::Attribs
+{
+  top.maybeRefId = orElse(h.maybeRefId, t.maybeRefId);
+  top.moduleName = orElse(h.moduleName, t.moduleName);
+}
+
+aspect production nilAttrib
+top::Attribs ::= 
+{
+  top.maybeRefId = nothing();
+  top.moduleName = nothing();
+}
+
+synthesized attribute isHostAttrib::Boolean occurs on Attrib;
+
+aspect default production
+top::Attrib ::=
+{
+  top.isHostAttrib = true;
+  top.maybeRefId = nothing();
+  top.moduleName = nothing();
+}
+
+-- e.g. __attribute__(())
+aspect production emptyAttrib
+top::Attrib ::=
+{
+}
+-- e.g. __attribute__((deprecated))
+aspect production wordAttrib
+top::Attrib ::= n::AttribName
+{
+}
+-- e.g. __attribute__((deprecated("don't use this duh")))
+aspect production appliedAttrib
+top::Attrib ::= n::AttribName  e::Exprs
+{
+  top.isHostAttrib =
+    case n of
+      attribName(name("refId")) -> false
+    | attribName(name("module")) -> false
+    | _ -> true
+    end;
+  top.maybeRefId =
+    case n, e of
+      attribName(name("refId")), consExpr(stringLiteral(s), nilExpr()) ->
         just(substring(1, length(s) - 1, s))
-    | consAttrib(_, rest) -> getRefIdFromAttribs(rest)
-    | nilAttrib() -> nothing()
+    | _, _ -> nothing()
     end;
-}
-
-function getModuleNameFromAttributes
-Maybe<String> ::= attrs::Attributes
-{
-  return
-    case attrs of
-      consAttribute(gccAttribute(l), t) ->
-        orElse(getModuleNameFromAttribs(l), getModuleNameFromAttributes(t))
-    | consAttribute(_, t) -> getModuleNameFromAttributes(t)
-    | nilAttribute() -> nothing()
-    end;
-}
-
-function getModuleNameFromAttribs
-Maybe<String> ::= attrs::Attribs
-{
-  return
-    case attrs of
-      consAttrib(appliedAttrib(attribName(name("module")), consExpr(stringLiteral(s), nilExpr())), _) ->
+  top.moduleName =
+    case n, e of
+      attribName(name("module")), consExpr(stringLiteral(s), nilExpr()) ->
         just(substring(1, length(s) - 1, s))
-    | consAttrib(_, rest) -> getModuleNameFromAttribs(rest)
-    | nilAttrib() -> nothing()
+    | _, _ -> nothing()
     end;
+}
+-- e.g. __attribute__((something(foo, "well whatever")))
+-- OR __attribute__((something(foo)))
+aspect production idAppliedAttrib
+top::Attrib ::= n::AttribName  id::Name  e::Exprs
+{
 }
