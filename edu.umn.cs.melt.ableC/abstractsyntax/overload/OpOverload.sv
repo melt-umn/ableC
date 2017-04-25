@@ -17,7 +17,31 @@ imports edu:umn:cs:melt:ableC:abstractsyntax:substitution;
 {- Explaination of overloading
  - All standard unary and binary operators may be overloaded, in addition to function calls, array
  - subscripts, and field access.  
- - ...
+ -
+ - This method of overloading works by staticly building lists of possible overloads paired with
+ - module names via collection production attributes on the dispatching productions.  Here the
+ - module name is a unique string based on the grammar name of the extension, which can be set on a
+ - type via GCC's `__attribute__` mechanism.  To avoid prevent unexpected behavior, we require all
+ - overloaded types to be a 'new' type not compatible with any host types, such as structs, unions,
+ - or enums.  
+ -
+ - The module name of an operator argument, if set, can be accessed from its typerep via the
+ - moduleName attribute and used to look up the forward for a dispatching production.  For binary
+ - operators, we must look at the module names of both the left and right children, and check if
+ - there is an overload between those two extension types, an extension type on the left and a host
+ - type on the right, or an host type on the left and an extension type on the right.  
+ -
+ - In order to define an overload, the extension writer must declare a new type with the
+ - `module(<name>)` attribute.  For example
+ -   struct __attribute__((module("org:ext:foo"))) foo { ... }
+ - or
+ -   typedef __attribute__((module("org:ext:bar"))) union bar_u bar;
+ - The extension writer also writes an aspect production for the host production that they wish to
+ - overload, and contribute a pair containing their extension module name and the overload
+ - expression to the list of overloads.  
+ -
+ - Overloadable constructs include all numeric, logical, assignment and comparison operators, array
+ - subscript, function call, member access, assignment to array index, and call to a member access.
  -}
 
 synthesized attribute resolved::Maybe<Expr> occurs on UnaryOp, BinOp, AssignOp, BoolOp, BitOp, CompareOp, NumOp;
