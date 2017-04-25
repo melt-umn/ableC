@@ -53,6 +53,10 @@ Boolean ::= a::Type  b::Type  ignoreQualifiers::Boolean
   -- otherwise
   | _, _ -> false
   end;
+  
+  -- Needed because flow analysis is whiny
+  a.addedTypeQualifiers = error("unneeded");
+  b.addedTypeQualifiers = error("unneeded");
 }
 
 function compatibleTypeList
