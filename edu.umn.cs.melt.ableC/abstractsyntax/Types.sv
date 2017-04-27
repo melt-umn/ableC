@@ -77,7 +77,7 @@ top::Type ::= q::[Qualifier]  bt::BuiltinType
 {
   propagate host;
   top.lpp =
-    concat([terminate(space(), map((.pp), q)),
+    ppConcat([terminate(space(), map((.pp), q)),
             bt.pp]);
   top.rpp = notext();
   top.baseTypeExpr = builtinTypeExpr(q, bt);
@@ -103,7 +103,7 @@ abstract production pointerType
 top::Type ::= q::[Qualifier]  target::Type
 {
   propagate host;
-  top.lpp = concat([ target.lpp, space(), ppImplode( space(), map( (.pp), q ) ),
+  top.lpp = ppConcat([ target.lpp, space(), ppImplode( space(), map( (.pp), q ) ),
                      text("*") ]);
   top.rpp = target.rpp;
   top.baseTypeExpr = target.baseTypeExpr;
@@ -145,7 +145,7 @@ top::Type ::= element::Type  indexQualifiers::[Qualifier]  sizeModifier::ArraySi
   propagate host;
   top.lpp = element.lpp;
   
-  top.rpp = cat(brackets(concat([
+  top.rpp = cat(brackets(ppConcat([
     terminate(space(), map((.pp), indexQualifiers) ++ sizeModifier.pps),
     sub.pp
     ])), element.rpp);
@@ -225,7 +225,7 @@ top::Type ::= result::Type  sub::FunctionType
 {
   propagate host;
   --TODO should this space be here? also TODO: ordering? result lpp before sub.lpp maybe? TODO: actually sub.lpp is always nothing. FIXME
-  top.lpp = concat([ sub.lpp, space(), result.lpp ]);
+  top.lpp = ppConcat([ sub.lpp, space(), result.lpp ]);
   top.rpp = cat(sub.rpp, result.rpp);
   top.baseTypeExpr = result.baseTypeExpr;
   top.typeModifierExpr =
@@ -282,7 +282,7 @@ Parameters ::= args::[Type]
     case args of
       h :: t ->
         consParameters(
-          parameterDecl([], h.baseTypeExpr, h.typeModifierExpr, nothingName(), []),
+          parameterDecl([], directTypeExpr(h), baseTypeExpr(), nothingName(), []),
           argTypesToParameters(t))
     | [] -> nilParameters()
     end;
@@ -296,7 +296,7 @@ abstract production tagType
 top::Type ::= q::[Qualifier]  sub::TagType
 {
   propagate host;
-  top.lpp = concat([ terminate( space(), map( (.pp), q ) ), sub.pp ]);
+  top.lpp = ppConcat([ terminate( space(), map( (.pp), q ) ), sub.pp ]);
   top.rpp = notext();
   top.baseTypeExpr =
     case sub of
@@ -348,7 +348,7 @@ abstract production refIdTagType
 top::TagType ::= kwd::StructOrEnumOrUnion  name::String  refId::String
 {
   propagate host;
-  top.pp = concat([kwd.pp, space(), text(name)]);
+  top.pp = ppConcat([kwd.pp, space(), text(name)]);
   top.mangledName = s"${kwd.mangledName}_${name}_${substitute(":", "_", refId)}";
   top.isIntegerType = false;
 }
@@ -369,7 +369,7 @@ abstract production atomicType
 top::Type ::= q::[Qualifier]  bt::Type
 {
   propagate host;
-  top.lpp = concat([ ppImplode( space(), map( (.pp), q)), space(),
+  top.lpp = ppConcat([ ppImplode( space(), map( (.pp), q)), space(),
                      text("_Atomic"), parens(cat(bt.lpp, bt.rpp))]);
   top.rpp = notext();
   top.mangledName = s"atomic_${implode("_", map((.qualname), q))}_${bt.mangledName}_";
@@ -390,7 +390,7 @@ abstract production vectorType
 top::Type ::= bt::Type  bytes::Integer
 {
   propagate host;
-  top.lpp = concat([ text("__attribute__((__vector_size__(" ++ toString(bytes) ++ "))) "), bt.lpp]);
+  top.lpp = ppConcat([ text("__attribute__((__vector_size__(" ++ toString(bytes) ++ "))) "), bt.lpp]);
   top.rpp = bt.rpp;
   top.mangledName = s"vector_${bt.mangledName}_${toString(bytes)}_";
   -- TODO: pp doesn't match type expression.  Should involve attributedTypeExpr which isn't a thing
@@ -466,7 +466,7 @@ abstract production parenType
 top::NoncanonicalType ::= wrapped::Type
 {
   propagate host;
-  top.lpp = concat([ wrapped.lpp, space(), text("(") ]);
+  top.lpp = ppConcat([ wrapped.lpp, space(), text("(") ]);
   top.rpp = cat( text(")"), wrapped.rpp );
   top.baseTypeExpr = wrapped.baseTypeExpr;
   top.typeModifierExpr = parenTypeExpr(wrapped.typeModifierExpr);
@@ -515,7 +515,7 @@ abstract production typedefType
 top::NoncanonicalType ::= q::[Qualifier]  n::String  resolved::Type
 {
   propagate host;
-  top.lpp = concat([ terminate( space(), map( (.pp), q ) ), text(n) ]);
+  top.lpp = ppConcat([ terminate( space(), map( (.pp), q ) ), text(n) ]);
   top.rpp = notext();
   top.baseTypeExpr = typedefTypeExpr(q, name(n, location=builtinLoc("host")));
   top.typeModifierExpr = baseTypeExpr();
@@ -529,7 +529,7 @@ top::NoncanonicalType ::= q::[Qualifier]  resolved::Type
 {
   propagate host;
   top.canonicalType = resolved;-- todo: some sort of discipline of what to do with qualifiers here
-  top.lpp = concat([text("__typeof__"), parens(cat(resolved.lpp, resolved.rpp))]);
+  top.lpp = ppConcat([text("__typeof__"), parens(cat(resolved.lpp, resolved.rpp))]);
   top.rpp = notext();
   top.baseTypeExpr =
     typeofTypeExpr(q, typeNameExpr(typeName(resolved.baseTypeExpr, resolved.typeModifierExpr)));

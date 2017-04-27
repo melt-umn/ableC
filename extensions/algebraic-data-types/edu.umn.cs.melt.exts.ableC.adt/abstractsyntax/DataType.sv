@@ -323,7 +323,7 @@ nonterminal ConstructorList
 abstract production consConstructor
 top::ConstructorList ::= c::Constructor cl::ConstructorList
 {
-  top.pp = concat([ c.pp, sep, cl.pp ]) ;
+  top.pp = ppConcat([ c.pp, sep, cl.pp ]) ;
   local attribute sep::Document =
     case cl of
     | consConstructor(_,_) -> line()
@@ -367,7 +367,7 @@ top::Constructor ::= n::String tms::TypeNames
   production attribute initStmts::[Stmt] with ++;
   initStmts := [];
 
-  top.pp = concat( [ text(n ++ " ( "), ppImplode (text(", "), tms.pps),
+  top.pp = ppConcat( [ text(n ++ " ( "), ppImplode (text(", "), tms.pps),
                      text(" );") ] );
   tms.position = 0;  
   tms.name_i = n;

@@ -72,10 +72,10 @@ e::Expr ::=
 function showEnv
 Document ::= e::Decorated Env
 {
-  return concat( [
+  return ppConcat( [
     text(" Environment:"),
     nestlines(5, 
-      concat([
+      ppConcat([
        --text("Labels:"),line(),
        text("Values:"),line(),
          nestlines(5, valuesD),
@@ -104,15 +104,15 @@ Document ::= scope::[Pair<String a>] showFunc::(Document ::= Pair<String a>)
 function showValueItemBinding
 Document ::= bnd::Pair<String ValueItem>
 {
- return concat( [ text(bnd.fst), text(" -> "), nestlines(10,bnd.snd.pp) ]);
+ return ppConcat( [ text(bnd.fst), text(" -> "), nestlines(10,bnd.snd.pp) ]);
 }
 function showTagItemBinding
 Document ::= bnd::Pair<String TagItem>
 {
- return concat( [ text(bnd.fst), text(" -> "), nestlines(10,bnd.snd.pp) ]);
+ return ppConcat( [ text(bnd.fst), text(" -> "), nestlines(10,bnd.snd.pp) ]);
 }
 function showRefIdItemBinding
 Document ::= bnd::Pair<String RefIdItem>
 {
- return concat( [ text(bnd.fst), text(" -> "), nestlines(10,bnd.snd.pp) ]);
+ return ppConcat( [ text(bnd.fst), text(" -> "), nestlines(10,bnd.snd.pp) ]);
 }

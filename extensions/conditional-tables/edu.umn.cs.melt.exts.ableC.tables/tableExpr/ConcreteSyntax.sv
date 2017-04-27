@@ -10,7 +10,7 @@ import edu:umn:cs:melt:exts:ableC:tables:mda_test;
 
 marking terminal Table_t 'table' lexer classes {Ckeyword};
 
-terminal NewLine2_t /\n/;
+terminal NewLine2_t /[\r]?\n/;
 terminal TrueTV_t   'T';
 terminal FalseTV_t  'F';
 terminal StarTV_t   '*';

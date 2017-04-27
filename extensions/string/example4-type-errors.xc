@@ -11,7 +11,8 @@ int main(int argc, char **argv) {
 
   b.substring("a");
 
-  char *b = a;
+  char *b = a.text;
+  char *c = a;
 
   return 0;
 }

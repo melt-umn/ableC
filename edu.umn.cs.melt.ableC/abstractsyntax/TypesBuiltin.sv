@@ -57,7 +57,7 @@ abstract production complexType
 top::BuiltinType ::= rt::RealType
 {
   propagate host;
-  top.pp = concat([ text("_Complex "), rt.pp ]);
+  top.pp = ppConcat([ text("_Complex "), rt.pp ]);
   top.mangledName = "complex_" ++ rt.mangledName;
   top.integerPromotionsBuiltin = top;
   top.defaultArgumentPromotionsBuiltin =
@@ -75,7 +75,7 @@ abstract production imaginaryType
 top::BuiltinType ::= rt::RealType
 {
   propagate host;
-  top.pp = concat([ text("_Imaginary "), rt.pp ]);
+  top.pp = ppConcat([ text("_Imaginary "), rt.pp ]);
   top.mangledName = "imaginary_" ++ rt.mangledName;
   top.integerPromotionsBuiltin = top;
   top.defaultArgumentPromotionsBuiltin =
@@ -93,7 +93,7 @@ abstract production signedType
 top::BuiltinType ::= it::IntegerType
 {
   propagate host;
-  top.pp = concat([ text(signed), it.pp ]);
+  top.pp = ppConcat([ text(signed), it.pp ]);
   local signed :: String =
     case it of
     | charType() -> ""
@@ -118,7 +118,7 @@ abstract production unsignedType
 top::BuiltinType ::= it::IntegerType
 {
   propagate host;
-  top.pp = concat([ text("unsigned "), it.pp ]);
+  top.pp = ppConcat([ text("unsigned "), it.pp ]);
   top.mangledName = "unsigned_" ++ it.mangledName;
   top.integerPromotionsBuiltin = 
     case it of
@@ -136,7 +136,7 @@ abstract production complexIntegerType
 top::BuiltinType ::= it::IntegerType
 {
   propagate host;
-  top.pp = concat([ text("_Complex "), it.pp ]);
+  top.pp = ppConcat([ text("_Complex "), it.pp ]);
   top.mangledName = "complexinteger_" ++ it.mangledName;
   top.integerPromotionsBuiltin = 
     complexIntegerType(

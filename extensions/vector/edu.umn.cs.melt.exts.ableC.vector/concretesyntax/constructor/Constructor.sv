@@ -13,10 +13,10 @@ import edu:umn:cs:melt:exts:ableC:vector;
 -- Spurious import, to trigger the tests on build.
 import edu:umn:cs:melt:exts:ableC:vector:mda_test;
 
-marking terminal Vec_t 'vec' lexer classes {Ckeyword};
+marking terminal Vec_t /vec[\ ]*</ lexer classes {Ckeyword};
 
 concrete productions top::PrimaryExpr_c
-| 'vec' '<' sub::TypeName_c '>' init::VectorInitializer_c
+| Vec_t sub::TypeName_c '>' init::VectorInitializer_c
   { top.ast = init.ast;
     init.subTypeIn = sub.ast; }
 
@@ -30,7 +30,7 @@ concrete productions top::VectorInitializer_c
 |'[' ']'
   { top.ast = constructVector(top.subTypeIn, nilExpr(), location=top.location); }
 |'(' size::AssignExpr_c ')'
-  { top.ast = initVector(top.subTypeIn, size.ast, location=top.location); }
+  { top.ast = newVector(top.subTypeIn, size.ast, location=top.location); }
   
 -- Can't use ArgumentExprList due to failing mda
 closed nonterminal VectorConstructorExprList_c with location, ast<[Expr]>;

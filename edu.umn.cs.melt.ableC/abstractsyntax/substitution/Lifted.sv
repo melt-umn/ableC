@@ -1,54 +1,38 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax:substitution;
 
-aspect production injectGlobalDecls
-top::Expr ::= globalDecls::[Pair<String Decl>] lifted::Expr
+aspect production maybeDecl
+top::Decl ::= include::(Boolean ::= Decorated Env) decl::Decl
 {
-  local allDecls::Decls = foldDecl(map(snd, globalDecls));
-  local allNames::[String] = map(fst, globalDecls);
-  
-  allDecls.substitutions = top.substitutions;
-  top.substituted =
-    injectGlobalDecls(
-      zipWith(pair, allNames, unfoldDecl(allDecls.substituted)),
-      lifted.substituted,
-      location=top.location);
+  propagate substituted;
+}
+aspect production maybeValueDecl
+top::Decl ::= name::String decl::Decl
+{
+  propagate substituted;
+}
+aspect production maybeTagDecl
+top::Decl ::= name::String decl::Decl
+{
+  propagate substituted;
+}
+aspect production maybeRefIdDecl
+top::Decl ::= name::String decl::Decl
+{
+  propagate substituted;
 }
 
+aspect production injectGlobalDeclsExpr
+top::Expr ::= decls::Decls lifted::Expr
+{
+  propagate substituted;
+}
 aspect production injectGlobalDeclsStmt
-top::Stmt ::= globalDecls::[Pair<String Decl>] lifted::Stmt
+top::Stmt ::= decls::Decls lifted::Stmt
 {
-  local allDecls::Decls = foldDecl(map(snd, globalDecls));
-  local allNames::[String] = map(fst, globalDecls);
-  
-  allDecls.substitutions = top.substitutions;
-  top.substituted =
-    injectGlobalDeclsStmt(
-      zipWith(pair, allNames, unfoldDecl(allDecls.substituted)),
-      lifted.substituted);
+  propagate substituted;
 }
-
 aspect production injectGlobalDeclsTypeExpr
-top::BaseTypeExpr ::= globalDecls::[Pair<String Decl>] lifted::BaseTypeExpr
+top::BaseTypeExpr ::= decls::Decls lifted::BaseTypeExpr
 {
-  local allDecls::Decls = foldDecl(map(snd, globalDecls));
-  local allNames::[String] = map(fst, globalDecls);
-  
-  allDecls.substitutions = top.substitutions;
-  top.substituted =
-    injectGlobalDeclsTypeExpr(
-      zipWith(pair, allNames, unfoldDecl(allDecls.substituted)),
-      lifted.substituted);
-}
-
-aspect production injectGlobalDeclsType
-top::NoncanonicalType ::= globalDecls::[Pair<String Decl>] lifted::Type
-{
-  local allDecls::Decls = foldDecl(map(snd, globalDecls));
-  local allNames::[String] = map(fst, globalDecls);
-  
-  allDecls.substitutions = top.substitutions;
-  top.substituted =
-    injectGlobalDeclsType(
-      zipWith(pair, allNames, unfoldDecl(allDecls.substituted)),
-      lifted.substituted);
+  propagate substituted;
 }

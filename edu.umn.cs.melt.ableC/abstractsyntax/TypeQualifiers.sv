@@ -103,7 +103,7 @@ abstract production alignasSpecifier
 top::SpecialSpecifier ::= e::Expr
 {
   propagate host, lifted;
-  top.pp = concat([text("_Alignas"), parens(e.pp)]);
+  top.pp = ppConcat([text("_Alignas"), parens(e.pp)]);
 --  top.errors := e.errors;
 }
 

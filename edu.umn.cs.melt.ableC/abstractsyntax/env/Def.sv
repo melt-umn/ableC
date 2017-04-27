@@ -30,3 +30,9 @@ top::Def ::= s::String  l::MiscItem
 {
   top.miscContribs = [pair(s, l)];
 }
+
+abstract production globalDefsDef
+top::Def ::= d::[Def]
+{
+  top.globalDefs = d ++ foldr(consDefs, nilDefs(), d).globalDefs;
+}

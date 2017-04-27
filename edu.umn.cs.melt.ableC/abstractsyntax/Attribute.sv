@@ -17,7 +17,7 @@ abstract production gccAttribute
 top::Attribute ::= l::Attribs
 {
   propagate host, lifted;
-  top.pp = concat([text("__attribute__(("), l.pp, text("))")]);
+  top.pp = ppConcat([text("__attribute__(("), l.pp, text("))")]);
 }
 
 abstract production simpleAsm
@@ -73,7 +73,7 @@ abstract production appliedAttrib
 top::Attrib ::= n::AttribName  e::Exprs
 {
   propagate host, lifted;
-  top.pp = concat([n.pp, parens(ppImplode(text(", "), e.pps))]);
+  top.pp = ppConcat([n.pp, parens(ppImplode(text(", "), e.pps))]);
   top.attribNeedsTrans =
     case n of
       attribName(name("refId")) -> false
@@ -86,7 +86,7 @@ abstract production idAppliedAttrib
 top::Attrib ::= n::AttribName  id::Name  e::Exprs
 {
   propagate host, lifted;
-  top.pp = concat([n.pp, parens(ppImplode(text(", "), id.pp :: e.pps))]);
+  top.pp = ppConcat([n.pp, parens(ppImplode(text(", "), id.pp :: e.pps))]);
   top.attribNeedsTrans = true;
 }
 

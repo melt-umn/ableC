@@ -5,7 +5,7 @@ abstract production asmStatement
 a::AsmStatement ::= arg::AsmArgument
 {
   propagate host, lifted;
-  a.pp = concat( [ text("asm ("), arg.pp, text(")"), text(";") ] );
+  a.pp = ppConcat( [ text("asm ("), arg.pp, text(")"), text(";") ] );
   a.freeVariables = arg.freeVariables;
 }
 
@@ -13,7 +13,7 @@ abstract production asmStatementTypeQual
 a::AsmStatement ::= tq::Qualifier arg::AsmArgument
 {
   propagate host, lifted;
-  a.pp = concat( [ text("asm "), tq.pp, text(" ("), arg.pp, text(")"), text(";") ] );
+  a.pp = ppConcat( [ text("asm "), tq.pp, text(" ("), arg.pp, text(")"), text(";") ] );
   a.freeVariables = arg.freeVariables;
 }
 
@@ -22,7 +22,7 @@ abstract production asmArgument
 top::AsmArgument ::= s::String asmOps1::AsmOperands asmOps2::AsmOperands asmC::AsmClobbers
 {
   propagate host, lifted;
-  top.pp = concat( [ text(s) ]
+  top.pp = ppConcat( [ text(s) ]
              ++ (if asmOps1Exists || asmOps2Exists || asmClobExists then [text(": ")] else [ ])  
              ++ [asmOps1.pp]
              ++ (if asmOps2Exists || asmClobExists then [text(": ")] else [ ])
@@ -57,7 +57,7 @@ abstract production snocAsmClobbers
 top::AsmClobbers ::= asmC::AsmClobbers s::String
 {
   propagate host, lifted;
-  top.pp = concat( [asmC.pp, text(", "), text(s) ] );
+  top.pp = ppConcat( [asmC.pp, text(", "), text(s) ] );
 }
 
 nonterminal AsmOperands with location, pp, host<AsmOperands>, lifted<AsmOperands>, env, returnType, freeVariables;
@@ -79,7 +79,7 @@ abstract production snocAsmOps
 top::AsmOperands ::= asmOps::AsmOperands asmOp::AsmOperand
 {
   propagate host, lifted;
-  top.pp = concat ( [asmOps.pp, text(", "), asmOp.pp] );
+  top.pp = ppConcat ( [asmOps.pp, text(", "), asmOp.pp] );
   top.freeVariables = asmOp.freeVariables ++ asmOps.freeVariables;
 }
 
@@ -88,7 +88,7 @@ abstract production asmOperand
 top::AsmOperand ::= s::String e::Expr
 { 
   propagate host, lifted;
-  top.pp = concat( [ text(s), text(" ("), e.pp, text(")") ] );
+  top.pp = ppConcat( [ text(s), text(" ("), e.pp, text(")") ] );
   top.freeVariables = e.freeVariables;
 }
 
@@ -96,6 +96,6 @@ abstract production asmOperandId
 top::AsmOperand ::= id::Name  s::String e::Expr
 {
   propagate host, lifted;
-  top.pp = concat( [ text("["), id.pp, text("] "), text(s), text(" ("), e.pp, text(")") ] ); 
+  top.pp = ppConcat( [ text("["), id.pp, text("] "), text(s), text(" ("), e.pp, text(")") ] ); 
   top.freeVariables = e.freeVariables;
 }

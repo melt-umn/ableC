@@ -5,7 +5,7 @@
 -- Declaration is rooted in External, but also in stmts. Either a variableDecl or a typedefDecl.
 -- ParameterDecl should probably be something special, distinct from variableDecl.
 
-nonterminal GlobalDecls with pps, host<GlobalDecls>, lifted<GlobalDecls>, errors, defs, globalDeclEnv, env, returnType, freeVariables;
+nonterminal GlobalDecls with pps, host<GlobalDecls>, lifted<GlobalDecls>, errors, env, returnType, freeVariables;
 
 {-- Mirrors Decls, used for lifting mechanism to insert new Decls at top level -}
 abstract production consGlobalDecl
@@ -13,7 +13,6 @@ top::GlobalDecls ::= h::Decl  t::GlobalDecls
 {
   top.pps = h.pp :: t.pps;
   top.errors := h.errors ++ t.errors;
-  top.defs := h.defs ++ t.defs;
   top.freeVariables =
     h.freeVariables ++
     removeDefsFromNames(h.defs, t.freeVariables);
@@ -29,7 +28,6 @@ top::GlobalDecls ::=
   propagate host, lifted;
   top.pps = [];
   top.errors := [];
-  top.defs := [];
   top.freeVariables = [];
 }
 
@@ -86,11 +84,24 @@ top::Decl ::= d::Decls
   top.freeVariables = d.freeVariables;
 }
 
+abstract production defsDecl
+top::Decl ::= d::[Def]
+{
+  propagate host;
+  top.pp = ppConcat([pp"/* defsDecl", showEnv(addEnv(d, emptyEnv())), pp"*/"]);
+  -- This production goes away when lifting occurs
+  top.lifted = decls(nilDecl());
+  top.errors := [];
+  top.globalDecls := [];
+  top.defs := d;
+  top.freeVariables = [];
+}
+
 abstract production variableDecls
 top::Decl ::= storage::[StorageClass]  attrs::[Attribute]  ty::BaseTypeExpr  dcls::Declarators
 {
   propagate host, lifted;
-  top.pp = concat(
+  top.pp = ppConcat(
     terminate(space(), map((.pp), storage)) ::
       ppAttributes(attrs) ::
       [ty.pp, space(), ppImplode(text(", "), dcls.pps), semi()]);
@@ -99,6 +110,7 @@ top::Decl ::= storage::[StorageClass]  attrs::[Attribute]  ty::BaseTypeExpr  dcl
   top.defs := ty.defs ++ dcls.defs;
   top.freeVariables = ty.freeVariables ++ dcls.freeVariables;
   
+  dcls.env = addEnv(ty.defs, ty.env);
   dcls.baseType = ty.typerep;
   dcls.typeModifiersIn = ty.typeModifiers;
   dcls.isTypedef = false;
@@ -120,12 +132,13 @@ abstract production typedefDecls
 top::Decl ::= attrs::[Attribute]  ty::BaseTypeExpr  dcls::Declarators
 {
   propagate host, lifted;
-  top.pp = concat([text("typedef "), ppAttributes(attrs), ty.pp, space(), ppImplode(text(", "), dcls.pps), semi()]);
+  top.pp = ppConcat([text("typedef "), ppAttributes(attrs), ty.pp, space(), ppImplode(text(", "), dcls.pps), semi()]);
   top.errors := ty.errors ++ dcls.errors;
   top.globalDecls := ty.globalDecls ++ dcls.globalDecls;
   top.defs := ty.defs ++ dcls.defs;
   top.freeVariables = ty.freeVariables ++ dcls.freeVariables;
   
+  dcls.env = addEnv(ty.defs, ty.env);
   dcls.baseType = ty.typerep;
   dcls.typeModifiersIn = ty.typeModifiers;
   dcls.isTypedef = true;
@@ -156,7 +169,7 @@ abstract production warnDecl
 top::Decl ::= msg::[Message]
 {
   propagate host, lifted;
-  top.pp = concat([text("/*"),
+  top.pp = ppConcat([text("/*"),
     ppImplode(line(), map(text, map((.output), msg))),
     text("*/")]);
   top.errors := msg;
@@ -170,7 +183,7 @@ abstract production staticAssertDecl
 top::Decl ::= e::Expr  s::String
 {
   propagate host, lifted;
-  top.pp = concat([text("_Static_assert("), e.pp, text(", "), text(s), text(");")]);
+  top.pp = ppConcat([text("_Static_assert("), e.pp, text(", "), text(s), text(");")]);
   top.errors := e.errors;
   top.globalDecls := e.globalDecls;
   top.defs := e.defs;
@@ -181,7 +194,7 @@ abstract production fileScopeAsm
 top::Decl ::= s::String
 {
   propagate host, lifted;
-  top.pp = concat([text("asm"), parens(text(s))]);
+  top.pp = ppConcat([text("asm"), parens(text(s))]);
   top.errors := [];
   top.globalDecls := [];
   top.defs := [];
@@ -230,7 +243,7 @@ top::Declarator ::= name::Name  ty::TypeModifierExpr  attrs::[Attribute]  initia
   top.pps =
     case ty of
 {-      pointerTypeExpr(qs, functionTypeExprWithArgs(result, args, variadic)) ->
-        [concat([
+        [ppConcat([
           ty.lpp,
           parens(cat(name.pp, text("*"))),
           parens(
@@ -240,13 +253,13 @@ top::Declarator ::= name::Name  ty::TypeModifierExpr  attrs::[Attribute]  initia
                 (if variadic then args.pps ++ [text("...")] else args.pps))),
           result.rpp])]
     | pointerTypeExpr(qs, functionTypeExprWithoutArgs(result, ids)) ->
-      [concat([
+      [ppConcat([
         ty.lpp,
         parens(cat(name.pp, text("*"))),
         parens(ppImplode(text(", "),
         map((.pp), ids))),
         result.rpp])]-}
-    | _ -> [concat([ty.lpp, name.pp, ty.rpp, ppAttributesRHS(attrs), initializer.pp])]
+    | _ -> [ppConcat([ty.lpp, name.pp, ty.rpp, ppAttributesRHS(attrs), initializer.pp])]
     end;
   
   top.errors :=
@@ -257,7 +270,7 @@ top::Declarator ::= name::Name  ty::TypeModifierExpr  attrs::[Attribute]  initia
     | _ -> []
     end ++ ty.errors ++ initializer.errors;
   top.globalDecls := ty.globalDecls ++ initializer.globalDecls;
-  top.defs := [valueDef(name.name, declaratorValueItem(top))];
+  top.defs := [valueDef(name.name, declaratorValueItem(top))] ++ initializer.defs;
   top.freeVariables = ty.freeVariables ++ initializer.freeVariables;
   top.typerep = animateAttributeOnType(allAttrs, ty.typerep);
   top.sourceLocation = name.location;
@@ -289,7 +302,7 @@ abstract production functionDecl
 top::FunctionDecl ::= storage::[StorageClass]  fnquals::[SpecialSpecifier]  bty::BaseTypeExpr mty::TypeModifierExpr  name::Name  attrs::[Attribute]  decls::Decls  body::Stmt
 {
   propagate host, lifted;
-  top.pp = concat([terminate(space(), map((.pp), storage)), terminate( space(), map( (.pp), fnquals ) ),
+  top.pp = ppConcat([terminate(space(), map((.pp), storage)), terminate( space(), map( (.pp), fnquals ) ),
     bty.pp, space(), mty.lpp, name.pp, mty.rpp, ppAttributesRHS(attrs), line(), terminate(cat(semi(), line()), decls.pps),
     text("{"), line(), nestlines(2,body.pp), text("}")]);
   
@@ -300,10 +313,17 @@ top::FunctionDecl ::= storage::[StorageClass]  fnquals::[SpecialSpecifier]  bty:
     | _ -> decorate nilParameters() with { env = top.env; returnType = top.returnType; }
     end;
   
+  local funcDefs::[Def] = bty.defs ++ [valueDef(name.name, functionValueItem(top))];
+  local thisFuncDef :: Def = miscDef("this_func", currentFunctionItem(name, top));
+  
   top.errors := bty.errors ++ mty.errors ++ body.errors;
   top.globalDecls := bty.globalDecls ++ mty.globalDecls ++ decls.globalDecls ++ 
                      body.globalDecls;
-  top.defs := bty.defs ++ [valueDef(name.name, functionValueItem(top))];
+  top.defs :=
+    funcDefs ++
+    globalDeclsDefs(mty.globalDecls) ++
+    globalDeclsDefs(decls.globalDecls) ++
+    globalDeclsDefs(body.globalDecls);
   top.freeVariables =
     bty.freeVariables ++
     removeDefsFromNames([thisFuncDef], mty.freeVariables) ++
@@ -327,16 +347,12 @@ top::FunctionDecl ::= storage::[StorageClass]  fnquals::[SpecialSpecifier]  bty:
 
     | _ -> nothing() -- Don't error here, this is caught in type checking
     end;
-  
 
-  local thisFuncDef :: Def = miscDef("this_func", currentFunctionItem(name, top));
-  mty.env = addEnv ([thisFuncDef], top.env);  -- TODO: extend this to decls, body, etc.
-
-  body.env = addEnv(top.defs ++ parameters.defs ++ decls.defs ++ body.functiondefs, 
-                    openScope(addEnv(bty.defs, top.env)));
+  mty.env = addEnv([thisFuncDef], openScope(addEnv(funcDefs, top.env)));
+  decls.env = addEnv(parameters.defs, mty.env);
+  body.env = addEnv(decls.defs ++ body.functiondefs, decls.env);
   
   decls.isTopLevel = false;
-  
   
   -- TODO: so long as the original wasn't also a definition
   top.errors <- name.valueRedeclarationCheck(top.typerep); 
@@ -349,10 +365,11 @@ top::FunctionDecl ::= storage::[StorageClass]  fnquals::[SpecialSpecifier]  bty:
 }
 
 -- Allows extensions to handle nested functions differently
+-- TODO: is this needed?  Should this be forwarding?  
 abstract production nestedFunctionDecl
 top::FunctionDecl ::= storage::[StorageClass]  fnquals::[SpecialSpecifier]  bty::BaseTypeExpr mty::TypeModifierExpr  name::Name  attrs::[Attribute]  decls::Decls  body::Stmt
 {
-  top.defs := bty.defs ++ [valueDef(name.name, functionValueItem(top))];
+  --top.defs := bty.defs ++ [valueDef(name.name, functionValueItem(top))];
   
   decls.isTopLevel = false;
   
@@ -363,7 +380,7 @@ abstract production badFunctionDecl
 top::FunctionDecl ::= msg::[Message]
 {
   propagate host, lifted;
-  top.pp = concat([text("/*"),
+  top.pp = ppConcat([text("/*"),
     ppImplode(line(), map(text, map((.output), msg))),
     text("*/")]);
   top.errors := msg;
@@ -413,7 +430,7 @@ abstract production parameterDecl
 top::ParameterDecl ::= storage::[StorageClass]  bty::BaseTypeExpr  mty::TypeModifierExpr  name::MaybeName  attrs::[Attribute]
 {
   propagate host, lifted;
-  top.pp = concat([terminate(space(), map((.pp), storage)),
+  top.pp = ppConcat([terminate(space(), map((.pp), storage)),
     bty.pp, space(), mty.lpp, space(), name.pp, mty.rpp, ppAttributesRHS(attrs)]);
   top.paramname = name.maybename;
   top.typerep = mty.typerep;
@@ -447,7 +464,7 @@ top::StructDecl ::= attrs::[Attribute]  name::MaybeName  dcls::StructItemList
 {
   propagate host, lifted;
   top.maybename = name.maybename;
-  top.pp = concat([text("struct "), ppAttributes(attrs), name.pp,
+  top.pp = ppConcat([text("struct "), ppAttributes(attrs), name.pp,
     -- DEBUGGING
     --text("/*" ++ top.refId ++ "*/"),
     -- END DEBUGGING
@@ -527,7 +544,7 @@ top::UnionDecl ::= attrs::[Attribute]  name::MaybeName  dcls::StructItemList
 {
   propagate host, lifted;
   top.maybename = name.maybename;
-  top.pp = concat([text("union "), ppAttributes(attrs), name.pp, 
+  top.pp = ppConcat([text("union "), ppAttributes(attrs), name.pp, 
     -- DEBUGGING
     --text("/*" ++ top.refId ++ "*/"),
     -- END DEBUGGING
@@ -567,7 +584,7 @@ top::EnumDecl ::= name::MaybeName  dcls::EnumItemList
 {
   propagate host, lifted;
   top.maybename = name.maybename;
-  top.pp = concat([text("enum"), space(), name.pp, space(), text("{"),
+  top.pp = ppConcat([text("enum"), space(), name.pp, space(), text("{"),
     nestlines(2, ppImplode(cat(comma(),line()), dcls.pps)),
     text("}")]);
   top.errors := dcls.errors;
@@ -658,13 +675,14 @@ abstract production structItem
 top::StructItem ::= attrs::[Attribute]  ty::BaseTypeExpr  dcls::StructDeclarators
 {
   propagate host, lifted;
-  top.pp = concat([ppAttributes(attrs), ty.pp, space(), ppImplode(text(", "), dcls.pps)]);
+  top.pp = ppConcat([ppAttributes(attrs), ty.pp, space(), ppImplode(text(", "), dcls.pps)]);
   top.errors := ty.errors ++ dcls.errors;
   top.globalDecls := ty.globalDecls ++ dcls.globalDecls;
   top.defs := ty.defs;
   top.freeVariables = ty.freeVariables ++ dcls.freeVariables;
   top.localdefs := dcls.localdefs;
   
+  dcls.env = addEnv(ty.defs, ty.env);
   dcls.baseType = ty.typerep;
   dcls.typeModifiersIn = ty.typeModifiers;
   dcls.givenAttributes = attrs;
@@ -715,7 +733,7 @@ abstract production structField
 top::StructDeclarator ::= name::Name  ty::TypeModifierExpr  attrs::[Attribute]
 {
   propagate host, lifted;
-  top.pps = [concat([ty.lpp, name.pp, ty.rpp, ppAttributesRHS(attrs)])];
+  top.pps = [ppConcat([ty.lpp, name.pp, ty.rpp, ppAttributesRHS(attrs)])];
   top.errors := ty.errors;
   top.globalDecls := ty.globalDecls;
   top.localdefs := [valueDef(name.name, fieldValueItem(top))];
@@ -732,7 +750,7 @@ abstract production structBitfield
 top::StructDeclarator ::= name::MaybeName  ty::TypeModifierExpr  e::Expr  attrs::[Attribute]
 {
   propagate host, lifted;
-  top.pps = [concat([ty.lpp, name.pp, ty.rpp, text(" : "), e.pp, ppAttributesRHS(attrs)])];
+  top.pps = [ppConcat([ty.lpp, name.pp, ty.rpp, text(" : "), e.pp, ppAttributesRHS(attrs)])];
   top.errors := ty.errors ++ e.errors;
   top.globalDecls := ty.globalDecls ++ e.globalDecls;
 
@@ -775,7 +793,7 @@ abstract production enumItem
 top::EnumItem ::= name::Name  e::MaybeExpr
 {
   propagate host, lifted;
-  top.pp = concat([name.pp] ++ if e.isJust then [text(" = "), e.pp] else []);
+  top.pp = ppConcat([name.pp] ++ if e.isJust then [text(" = "), e.pp] else []);
   top.errors := e.errors;
   top.globalDecls := e.globalDecls;
   top.defs := [valueDef(name.name, enumValueItem(top))];

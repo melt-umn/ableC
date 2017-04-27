@@ -33,7 +33,7 @@ synthesized attribute rlen :: Integer;
 abstract production tableRowSnoc
 top::TableRows ::= trowstail::TableRows  trow::TableRow
 {
-  top.pp = concat([trowstail.pp, line(), trow.pp]);
+  top.pp = ppConcat([trowstail.pp, line(), trow.pp]);
 
   top.errors := trowstail.errors ++ trow.errors;
   top.errors <-
@@ -66,7 +66,7 @@ synthesized attribute ftExprs :: [abs:Expr];
 abstract production tableRow
 top::TableRow ::= e::abs:Expr tvl::TruthFlagList
 {
-  top.pp = concat([e.pp, text(" : "), tvl.pp]);
+  top.pp = ppConcat([e.pp, text(" : "), tvl.pp]);
   top.errors := e.errors;
   top.rlen = tvl.rlen;
   top.ftExprs = tvl.ftExprs;
@@ -113,7 +113,7 @@ inherited attribute rowExpr :: abs:Expr;
 abstract production tvlistCons
 top::TruthFlagList ::= tv::TruthFlag  tvltail::TruthFlagList
 {
-  top.pp = concat([tv.pp, text(" "), tvltail.pp]);
+  top.pp = ppConcat([tv.pp, text(" "), tvltail.pp]);
   top.rlen = 1 + tvltail.rlen;
   top.ftExprs = tv.ftExpr :: tvltail.ftExprs;
 

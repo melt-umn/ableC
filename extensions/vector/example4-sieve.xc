@@ -24,7 +24,7 @@ vector<int> sieve(int n) {
 }
 
 int main(int argc, char **argv) {
-  printf("sieve(100) = %s\n", show(sieve(100)));
+  printf("sieve(100) = %s\n", show(sieve(100)).text);
 
   return 0;
 }

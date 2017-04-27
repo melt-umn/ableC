@@ -13,9 +13,9 @@ import edu:umn:cs:melt:exts:ableC:vector;
 -- Spurious import, to trigger the tests on build.
 import edu:umn:cs:melt:exts:ableC:vector:mda_test;
 
-marking terminal Vector_t 'vector' lexer classes {Ckeyword};
+marking terminal Vector_t /vector[\ ]*</ lexer classes {Ckeyword};
 
 concrete productions top::TypeSpecifier_c
-| 'vector' '<' sub::TypeName_c '>'
-    { top.realTypeSpecifiers = [vectorTypeExpr(sub.ast)];
+| Vector_t sub::TypeName_c '>'
+    { top.realTypeSpecifiers = [vectorTypeExpr(top.givenQualifiers, sub.ast)];
       top.preTypeSpecifiers = []; }

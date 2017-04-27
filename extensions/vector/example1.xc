@@ -5,21 +5,21 @@
 
 int main(int argc, char **argv) {
   vector<int> a = vec<int> [1, 2, 3];
-  printf("a: %s\n", show(a));
+  printf("a: %s\n", show(a).text);
   vector<int> b = vec<int> [4, 5, 6];
-  printf("b: %s\n", show(b));
+  printf("b: %s\n", show(b).text);
   vector<int> c = a + b;
-  printf("c: %s\n", show(c));
-  printf("a: %s\n", show(a));
+  printf("c: %s\n", show(c).text);
+  printf("a: %s\n", show(a).text);
   a += b;
-  printf("a: %s\n", show(a));
+  printf("a: %s\n", show(a).text);
   b[1] += 7;
   b[3] = 6;
-  printf("b: %s\n", show(b));
+  printf("b: %s\n", show(b).text);
   vector<int> d = copy_vector(b);
   b[2] = 7;
-  printf("b: %s\n", show(b));
-  printf("d: %s\n", show(d));
+  printf("b: %s\n", show(b).text);
+  printf("d: %s\n", show(d).text);
   
   if (a != c)
     return 1;

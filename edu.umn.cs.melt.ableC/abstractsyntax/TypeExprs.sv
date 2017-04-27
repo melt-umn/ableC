@@ -25,6 +25,11 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax;
  - 
  - Invariant: a BaseTypeExpr and its corresponding TypeModifierExpr should have
  - the same environment
+ -
+ - Since BaseTypeExpr may contain new declarations, another invariant is that
+ - extension productions containing a BaseTypeExpr must forward to a tree
+ - containing that BaseTypeExpr exactly once.  However, they are free to use
+ - directTypeExpr(ty.typerep) as many times as needed.    
  -}
 
 autocopy attribute baseType :: Type;
@@ -51,7 +56,7 @@ abstract production typeName
 top::TypeName ::= bty::BaseTypeExpr  mty::TypeModifierExpr
 {
   propagate host, lifted;
-  top.pp = concat([bty.pp, mty.lpp, mty.rpp]);
+  top.pp = ppConcat([bty.pp, mty.lpp, mty.rpp]);
   top.typerep = mty.typerep;
   top.bty = bty;
   top.mty = mty;
@@ -107,7 +112,7 @@ top::BaseTypeExpr ::= msg::[Message]  ty::BaseTypeExpr
 abstract production directTypeExpr
 top::BaseTypeExpr ::= result::Type
 {
-  propagate host;
+  ---propagate host;
   
   top.pp = parens(cat(result.lpp, result.rpp));
   top.typerep = result;
@@ -126,7 +131,7 @@ abstract production typeModifierTypeExpr
 top::BaseTypeExpr ::= bty::BaseTypeExpr  mty::TypeModifierExpr
 {
   propagate host;
-  top.pp = parens(concat([bty.pp, mty.lpp, mty.rpp]));
+  top.pp = parens(ppConcat([bty.pp, mty.lpp, mty.rpp]));
   top.lifted = bty.lifted;
   top.typerep = mty.typerep;
   mty.baseType = bty.typerep;
@@ -157,7 +162,7 @@ abstract production tagReferenceTypeExpr
 top::BaseTypeExpr ::= q::[Qualifier]  kwd::StructOrEnumOrUnion  name::Name
 {
   propagate host, lifted;
-  top.pp = concat([terminate( space(), map( (.pp), q ) ), kwd.pp, space(), name.pp
+  top.pp = ppConcat([terminate( space(), map( (.pp), q ) ), kwd.pp, space(), name.pp
     -- DEBUGGING
     --, text("/*" ++ refId ++ "*/")
     -- END DEBUGGING
@@ -234,7 +239,7 @@ abstract production structTypeExpr
 top::BaseTypeExpr ::= q::[Qualifier]  def::StructDecl
 {
   propagate host, lifted;
-  top.pp = concat([ terminate( space(), map( (.pp), q ) ), def.pp ]);
+  top.pp = ppConcat([ terminate( space(), map( (.pp), q ) ), def.pp ]);
   local name :: String = 
     case def.maybename of
     | just(n) -> n.name
@@ -253,7 +258,7 @@ abstract production unionTypeExpr
 top::BaseTypeExpr ::= q::[Qualifier]  def::UnionDecl
 {
   propagate host, lifted;
-  top.pp = concat([ terminate( space(), map( (.pp), q ) ), def.pp ]);
+  top.pp = ppConcat([ terminate( space(), map( (.pp), q ) ), def.pp ]);
   local name :: String = 
     case def.maybename of
     | just(n) -> n.name
@@ -272,7 +277,7 @@ abstract production enumTypeExpr
 top::BaseTypeExpr ::= q::[Qualifier]  def::EnumDecl
 {
   propagate host, lifted;
-  top.pp = concat([ terminate( space(), map( (.pp), q ) ), def.pp ]);
+  top.pp = ppConcat([ terminate( space(), map( (.pp), q ) ), def.pp ]);
   top.typerep = tagType(q, enumTagType(def));
   top.errors := def.errors;
   top.globalDecls := def.globalDecls;
@@ -286,7 +291,7 @@ abstract production typedefTypeExpr
 top::BaseTypeExpr ::= q::[Qualifier]  name::Name
 {
   propagate host, lifted;
-  top.pp = concat([ terminate( space(), map( (.pp), q ) ), name.pp ]);
+  top.pp = ppConcat([ terminate( space(), map( (.pp), q ) ), name.pp ]);
 
   top.typerep = 
     if !null(name.valueLookupCheck) then errorType()
@@ -308,7 +313,7 @@ top::BaseTypeExpr ::= q::[Qualifier]  wrapped::TypeName
 {
   top.typerep = atomicType(q, wrapped.typerep);
   propagate host, lifted;
-  top.pp = concat([ ppImplode( space(), map( (.pp), q)), space(),
+  top.pp = ppConcat([ ppImplode( space(), map( (.pp), q)), space(),
                      text("_Atomic"), parens(wrapped.pp)]);
   top.errors := wrapped.errors;
   top.globalDecls := wrapped.globalDecls;
@@ -336,7 +341,7 @@ top::BaseTypeExpr ::= q::[Qualifier]  e::ExprOrTypeName
 {
   top.typerep = noncanonicalType(typeofType(q, e.typerep));
   propagate host, lifted;
-  top.pp = concat([text("__typeof__"), parens(e.pp)]);
+  top.pp = ppConcat([text("__typeof__"), parens(e.pp)]);
   top.errors := e.errors;
   top.globalDecls := e.globalDecls;
   top.typeModifiers = [];
@@ -382,7 +387,7 @@ abstract production pointerTypeExpr
 top::TypeModifierExpr ::= q::[Qualifier]  target::TypeModifierExpr
 {
   propagate host, lifted;
-  top.lpp = concat([ target.lpp, space(),
+  top.lpp = ppConcat([ target.lpp, space(),
                      case target of
                        functionTypeExprWithArgs(_, _, _) -> text("(*)")
                      | functionTypeExprWithoutArgs(_, _) -> text("(*)")
@@ -402,7 +407,7 @@ top::TypeModifierExpr ::= element::TypeModifierExpr  indexQualifiers::[Qualifier
   propagate host, lifted;
   top.lpp = element.lpp;
   
-  top.rpp = cat(brackets(concat([
+  top.rpp = cat(brackets(ppConcat([
     terminate(space(), map((.pp), indexQualifiers) ++ sizeModifier.pps), 
     size.pp
     ])), element.rpp);
@@ -435,12 +440,12 @@ abstract production functionTypeExprWithArgs
 top::TypeModifierExpr ::= result::TypeModifierExpr  args::Parameters  variadic::Boolean
 {
   propagate host, lifted;
-  top.lpp = concat([ result.lpp ]);
+  top.lpp = ppConcat([ result.lpp ]);
 
   top.rpp = 
     cat(parens(
       if null(args.pps) 
-      then text("void") 
+      then text("void")
       else ppImplode(text(", "), 
             (if variadic then args.pps ++ [text("...")] else args.pps) 
            )
@@ -490,7 +495,7 @@ top::TypeModifierExpr ::= wrapped::TypeModifierExpr
 --  top.typerep = original.typerep; -- {-TODO-};
 --}
 
-nonterminal TypeNames with pps, host<TypeNames>, lifted<TypeNames>, env, typereps, errors, globalDecls, defs, returnType, freeVariables;
+nonterminal TypeNames with pps, host<TypeNames>, lifted<TypeNames>, env, typereps, count, errors, globalDecls, defs, returnType, freeVariables;
 
 abstract production consTypeName
 top::TypeNames ::= h::TypeName t::TypeNames
@@ -498,10 +503,13 @@ top::TypeNames ::= h::TypeName t::TypeNames
   propagate host, lifted;
   top.pps = h.pp :: t.pps;
   top.typereps = h.typerep :: t.typereps;
+  top.count = t.count + 1;
   top.globalDecls := h.globalDecls ++ t.globalDecls;
   top.errors := h.errors ++ t.errors;
   top.defs := h.defs ++ t.defs;
   top.freeVariables = h.freeVariables ++ t.freeVariables;
+  
+  t.env = addEnv(h.defs, h.env);
 }
 
 abstract production nilTypeName
@@ -510,6 +518,7 @@ top::TypeNames ::=
   propagate host, lifted;
   top.pps = [];
   top.typereps = [];
+  top.count = 0;
   top.globalDecls := [];
   top.errors := [];
   top.defs := [];

@@ -45,14 +45,14 @@ top::RealType ::=
 -}
 
 abstract production stringTypeExpr 
-top::BaseTypeExpr ::= 
+top::BaseTypeExpr ::= q::[Qualifier]
 {
   propagate substituted;
-  forwards to directTypeExpr(stringType());
+  forwards to directTypeExpr(stringType(q));
 }
 
 abstract production stringType
-top::Type ::= 
+top::Type ::= q::[Qualifier]
 {
   top.lpp = pp"string";
   top.rpp = pp"";
@@ -78,12 +78,22 @@ top::Type ::=
   
   top.lBinaryEqProd =
     case top.otherType of
-      stringType() -> just(eqString(_, _, location=_))
+      stringType(_) -> just(eqString(_, _, location=_))
     | pointerType(_, builtinType(_, signedType(charType()))) ->
-        just(eqString(_, _, location=_))
+      just(
+        \ e1::Expr e2::Expr l::Location ->
+         eqString(e1, strCharPointer(e2, location=l), location=l))
     | _ -> nothing()
     end;
-  top.rBinaryEqProd = top.lBinaryEqProd;
+  top.rBinaryEqProd =
+    case top.otherType of
+      stringType(_) -> just(eqString(_, _, location=_))
+    | pointerType(_, builtinType(_, signedType(charType()))) ->
+      just(
+        \ e1::Expr e2::Expr l::Location ->
+         eqString(strCharPointer(e1, location=l), e2, location=l))
+    | _ -> nothing()
+    end;
   
   top.lAssignProd = just(assignString(_, _, location=_));
     
@@ -95,17 +105,12 @@ top::Type ::=
       "substring" -> just(substringString(_, _, location=_))
     | _ -> nothing()
     end;
-    
-  top.memberProd = 
-    case top.otherName of
-      "length" -> just(lengthString(_, location=_))
-    | _ -> nothing()
-    end;
   
   top.showProd = just(showString(_, location=_));
   top.strProd = just(strString(_, location=_));
 
-  forwards to pointerType([], builtinType([constQualifier()], signedType(charType())));
+  forwards to
+    tagType(q, refIdTagType(structSEU(), "_string_s", s"edu:umn:cs:melt:exts:ableC:string:string"));
 }
 
 aspect production pointerType
@@ -149,7 +154,7 @@ top::BuiltinType ::= sub::IntegerType
     end;
   top.pointerShowProd =
     case sub of
-      charType() -> just(showString(_, location=_))
+      charType() -> just(showCharPointer(_, location=_))
     | _ -> nothing()
     end;
   top.strProd = 
@@ -159,7 +164,7 @@ top::BuiltinType ::= sub::IntegerType
     end;
   top.pointerStrProd =
     case sub of
-      charType() -> just(strString(_, location=_))
+      charType() -> just(strCharPointer(_, location=_))
     | _ -> nothing()
     end;
 }
@@ -174,7 +179,7 @@ top::BuiltinType ::= sub::IntegerType
     end;
   top.pointerShowProd =
     case sub of
-      charType() -> just(showString(_, location=_))
+      charType() -> just(showCharPointer(_, location=_))
     | _ -> nothing()
     end;
   top.strProd = 
@@ -184,16 +189,7 @@ top::BuiltinType ::= sub::IntegerType
     end;
   top.pointerStrProd =
     case sub of
-      charType() -> just(strString(_, location=_))
+      charType() -> just(strCharPointer(_, location=_))
     | _ -> nothing()
     end;
-}
-
-aspect production errorType
-top::Type ::=
-{
-  top.showProd = just(\e::Expr l::Location -> errorExpr([err(builtin, "show on errorType")], location=l));
-  top.pointerShowProd = just(\e::Expr l::Location -> errorExpr([err(builtin, "pointer show on errorType")], location=l));
-  top.strProd = just(\e::Expr l::Location -> errorExpr([err(builtin, "str on errorType")], location=l));
-  top.pointerStrProd = just(\e::Expr l::Location -> errorExpr([err(builtin, "pointer str on errorType")], location=l));
 }

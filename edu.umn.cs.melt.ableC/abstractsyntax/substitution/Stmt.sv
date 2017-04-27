@@ -55,13 +55,9 @@ top::Stmt ::= d::Expr
     | _ -> ""
     end;
   top.substituted =
-    case d1 of
-      declRefExpr(id) -> 
-        case substitutions.stmtSub of
-          just(sub) -> sub
-        | nothing() -> exprStmt(d.substituted)
-        end
-    | _ -> exprStmt(d.substituted)
+    case substitutions.stmtSub of
+      just(sub) -> sub
+    | nothing() -> exprStmt(d.substituted)
     end;
 }
 
