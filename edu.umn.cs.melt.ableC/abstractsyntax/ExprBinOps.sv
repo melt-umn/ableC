@@ -23,7 +23,7 @@ top::BinOp ::= op::AssignOp
   top.errors :=
     if typeAssignableTo(top.lop.typerep, top.rop.typerep)
     then
-      if containsQualifier("const", top.lop.typerep)
+      if containsQualifier(constQualifier(), top.lop.typerep)
       then [err(top.location, "Assignment of read-only variable")]
       else []
     else [err(top.location, "Incompatible type in rhs of assignment, expected " ++ showType(top.lop.typerep) ++ " but found " ++ showType(top.rop.typerep))];

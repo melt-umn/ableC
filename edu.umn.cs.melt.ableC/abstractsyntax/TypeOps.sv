@@ -283,14 +283,13 @@ Boolean ::= a::[Qualifier] b::[Qualifier]
   return
     if   null(a)
     then true
-    else containsBy(qualifierEq, head(a), b) && qualSubset(tail(a), b);
+    else containsBy(qualifierCompat, head(a), b) && qualSubset(tail(a), b);
 }
 
-function qualifierEq
+function qualifierCompat
 Boolean ::= a::Qualifier b::Qualifier
 {
-  a.qualToCompare = b;
-  return a.qualEq;
+  return a.qualCompat(b);
 }
 
 {--
