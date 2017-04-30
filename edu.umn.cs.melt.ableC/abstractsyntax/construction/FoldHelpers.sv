@@ -69,9 +69,15 @@ Parameters ::= l::[ParameterDecl]
   | [d] ->
   -- TODO: Possible bug with flow analysis, doesn't complain if this decorate is removed
     case decorate d with {env = emptyEnv(); returnType = nothing();} of
-      parameterDecl([], builtinTypeExpr([], voidType()), baseTypeExpr(), nothingName(), []) -> nilParameters()
+      parameterDecl([], builtinTypeExpr([], voidType()), baseTypeExpr(), nothingName(), nilAttribute()) -> nilParameters()
     | _ -> foldr(consParameters, nilParameters(), l)
     end
   | _ -> foldr(consParameters, nilParameters(), l)
   end;
+}
+
+function foldAttribute
+Attributes ::= l::[Attribute]
+{
+  return foldr(consAttribute, nilAttribute(), l);
 }

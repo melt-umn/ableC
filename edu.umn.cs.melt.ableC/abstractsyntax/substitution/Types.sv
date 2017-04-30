@@ -74,6 +74,11 @@ top::TagType ::= kwd::StructOrEnumOrUnion  name::String  refId::String
   propagate substituted;
 }
 
+aspect production attributedType
+top::Type ::= attrs::Attributes  bt::Type
+{
+  propagate substituted;
+}
 aspect production atomicType
 top::Type ::= q::[Qualifier]  bt::Type
 {

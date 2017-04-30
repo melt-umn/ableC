@@ -46,7 +46,10 @@ synthesized attribute typereps :: [Type];
 synthesized attribute typeModifiers :: [TypeModifierExpr];
 autocopy attribute typeModifiersIn :: [TypeModifierExpr];
 
-{- Util attributes -}
+{-- Used to set the refId for a declaration via __attribute__ -}
+autocopy attribute givenRefId :: Maybe<String>;
+
+{-- Util attributes -}
 synthesized attribute bty :: BaseTypeExpr;
 synthesized attribute mty :: TypeModifierExpr;
 
@@ -60,6 +63,7 @@ top::TypeName ::= bty::BaseTypeExpr  mty::TypeModifierExpr
   top.typerep = mty.typerep;
   top.bty = bty;
   top.mty = mty;
+  bty.givenRefId = nothing();
   mty.baseType = bty.typerep;
   mty.typeModifiersIn = bty.typeModifiers;
   top.errors := bty.errors ++ mty.errors;
@@ -72,7 +76,7 @@ top::TypeName ::= bty::BaseTypeExpr  mty::TypeModifierExpr
 {--
  - Corresponds to types obtainable from a TypeSpecifiers.
  -}
-nonterminal BaseTypeExpr with env, typerep, pp, host<BaseTypeExpr>, lifted<BaseTypeExpr>, errors, globalDecls, typeModifiers, defs, returnType, freeVariables;
+nonterminal BaseTypeExpr with env, typerep, pp, host<BaseTypeExpr>, lifted<BaseTypeExpr>, errors, globalDecls, typeModifiers, defs, givenRefId, returnType, freeVariables;
 
 abstract production errorTypeExpr
 top::BaseTypeExpr ::= msg::[Message]
@@ -172,26 +176,12 @@ top::BaseTypeExpr ::= q::[Qualifier]  kwd::StructOrEnumOrUnion  name::Name
 
   local tags :: [TagItem] = lookupTag(name.name, top.env);
   
-  local refId :: String =
-    case kwd, tags of
-    -- It's an enum and we see the declaration.
-    | enumSEU(), _ -> "enumN/A" -- N/A
-    -- We don't see the declaration, so we're adding it.
-    | _, [] -> name.tagRefId
-    -- It's a struct/union and the tag type agrees.
-    | structSEU(), refIdTagItem(structSEU(), rid) :: _ -> rid
-    | unionSEU(), refIdTagItem(unionSEU(), rid) :: _ -> rid
-    -- Otherwise, error!
-    | _, _ -> "err"
-    end;
-    
-  
   top.typerep =
     case kwd, tags of
     -- It's an enum and we see the declaration.
     | enumSEU(), enumTagItem(d) :: _ -> tagType(q, enumTagType(d))
     -- We don't see the declaration, so we're adding it.
-    | _, [] -> tagType(q, refIdTagType(kwd, name.name, name.tagRefId))
+    | _, [] -> tagType(q, refIdTagType(kwd, name.name, fromMaybe(name.tagRefId, top.givenRefId)))
     -- It's a struct/union and the tag type agrees.
     | structSEU(), refIdTagItem(structSEU(), rid) :: _ -> tagType(q, refIdTagType(kwd, name.name, rid))
     | unionSEU(), refIdTagItem(unionSEU(), rid) :: _ -> tagType(q, refIdTagType(kwd, name.name, rid))
@@ -222,7 +212,7 @@ top::BaseTypeExpr ::= q::[Qualifier]  kwd::StructOrEnumOrUnion  name::Name
     -- It's an enum and we see the declaration.
     | enumSEU(), enumTagItem(d) :: _ -> []
     -- We don't see the declaration, so we're adding it.
-    | _, [] -> [tagDef(name.name, refIdTagItem(kwd, name.tagRefId))]
+    | _, [] -> [tagDef(name.name, refIdTagItem(kwd, fromMaybe(name.tagRefId, top.givenRefId)))]
     -- It's a struct/union and the tag type agrees.
     | structSEU(), refIdTagItem(structSEU(), rid) :: _ -> []
     | unionSEU(), refIdTagItem(unionSEU(), rid) :: _ -> []
@@ -295,7 +285,7 @@ top::BaseTypeExpr ::= q::[Qualifier]  name::Name
 
   top.typerep = 
     if !null(name.valueLookupCheck) then errorType()
-    else noncanonicalType(typedefType(q, name.name, name.valueItem.typerep)); -- TODO bug: we are discarding qualifiers here!
+    else noncanonicalType(typedefType(q, name.name, addQualifiers(q, name.valueItem.typerep)));
   top.errors := [];
   top.globalDecls := [];
   top.typeModifiers = [];
@@ -306,6 +296,33 @@ top::BaseTypeExpr ::= q::[Qualifier]  name::Name
   top.errors <-
     if name.valueItem.isItemTypedef then []
     else [err(name.location, "'" ++ name.name ++ "' does not refer to a type.")];
+}
+{--
+ - GCC __attribute__ types
+ - Note that there is no corresponding type expression in C for an attributed type, as attributes
+ - can only be attatched on declarations.  Thus this production is never actually introduced by
+ - concrete syntax, but it can be created when translating a transformed attributed type back to a
+ - BaseTypeExpr.  To enable this, we must lift a typedef with the appropriate attributes and refer
+ - to that.  
+ -}
+abstract production attributedTypeExpr
+top::BaseTypeExpr ::= attrs::Attributes  bt::BaseTypeExpr
+{
+  top.pp = cat(ppAttributes(attrs), bt.pp);
+
+  local liftedName::Name =
+    name(s"_attributedType_${toString(genInt())}", location=builtinLoc("host"));
+  forwards to
+    -- TODO: We can currently only lift to the global level, but this should be lifted to the closest scope
+    injectGlobalDeclsTypeExpr(
+      consDecl(
+        typedefDecls(
+          attrs, bt,
+          consDeclarator(
+            declarator(liftedName, baseTypeExpr(), nilAttribute(), nothingInitializer()),
+            nilDeclarator())),
+        nilDecl()),
+      typedefTypeExpr([], liftedName));
 }
 {-- C11 atomic type -}
 abstract production atomicTypeExpr
@@ -485,15 +502,6 @@ top::TypeModifierExpr ::= wrapped::TypeModifierExpr
   top.globalDecls := wrapped.globalDecls;
   top.freeVariables = wrapped.freeVariables;
 }
-
-
-
-{-- Attributes that need to be interpreted away somehow -}
---abstract production attributedTypeExpr
---top::TypeExpr ::= q::[Qualifier]  original::TypeExpr  attr::[Attribute] -- or something?
---{
---  top.typerep = original.typerep; -- {-TODO-};
---}
 
 nonterminal TypeNames with pps, host<TypeNames>, lifted<TypeNames>, env, typereps, count, errors, globalDecls, defs, returnType, freeVariables;
 

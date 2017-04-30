@@ -8,7 +8,8 @@
 #ifndef _STRING_XH
 #define _STRING_XH
 
-struct __attribute__((refId("edu:umn:cs:melt:exts:ableC:string:string"))) _string_s {
+struct __attribute__((refId("edu:umn:cs:melt:exts:ableC:string:string"),
+                      module("edu:umn:cs:melt:exts:ableC:string:string"))) _string_s {
   size_t length;
   const char *text;
 };
@@ -154,7 +155,7 @@ static inline string showInt(int i) {
 
 static inline string showFloat(double f) {
   char *result = GC_malloc((CHAR_BIT * sizeof(f) - 1) / 3 + 2);
-  sprintf((char*)result, "%f", f);
+  sprintf((char*)result, "%g", f);
   return (string){strlen(result), result};
 }
 

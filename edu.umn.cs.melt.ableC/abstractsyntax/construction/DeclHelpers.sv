@@ -39,11 +39,11 @@ function mkIntDeclGeneral
 Stmt ::= n::String init::MaybeInitializer l::Location
 {
   return  declStmt( 
-            variableDecls( [], [], 
+            variableDecls( [], nilAttribute(), 
               directTypeExpr(
                 builtinType([], signedType(intType()))),
               consDeclarator( 
-                declarator( name(n, location=l), baseTypeExpr(), [], 
+                declarator( name(n, location=l), baseTypeExpr(), nilAttribute(), 
                   init) , 
                 nilDeclarator() 
               )
@@ -57,9 +57,9 @@ Stmt ::= n::String typ::Type l::Location
   local bty::BaseTypeExpr = directTypeExpr(typ);
 
   return  declStmt( 
-            variableDecls( [], [], bty,
+            variableDecls( [], nilAttribute(), bty,
               consDeclarator( 
-                declarator( name(n, location=l), baseTypeExpr(), [], 
+                declarator( name(n, location=l), baseTypeExpr(), nilAttribute(), 
                     nothingInitializer() ) , 
                 nilDeclarator() )
             )
@@ -73,9 +73,9 @@ Stmt ::= n::String typ::Type v::Expr l::Location
   local bty::BaseTypeExpr = directTypeExpr(typ);
 
   return  declStmt( 
-            variableDecls( [], [], bty,
+            variableDecls( [], nilAttribute(), bty,
               consDeclarator( 
-                declarator( name(n, location=l), baseTypeExpr(), [], 
+                declarator( name(n, location=l), baseTypeExpr(), nilAttribute(), 
                     justInitializer(exprInitializer(v)) ) , 
                 nilDeclarator() )
             )
@@ -94,11 +94,11 @@ Decl ::= n::String val::String l::Location
 function makeDeclIntGeneral
 Decl ::= n::String init::MaybeInitializer l::Location
 {
-  return variableDecls( [], [], 
+  return variableDecls( [], nilAttribute(), 
            directTypeExpr(
              builtinType([], signedType(intType()))),
            consDeclarator( 
-             declarator( name(n, location=l), baseTypeExpr(), [], 
+             declarator( name(n, location=l), baseTypeExpr(), nilAttribute(), 
                init) , 
              nilDeclarator() 
            ) ) ;

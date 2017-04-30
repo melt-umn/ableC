@@ -20,6 +20,7 @@ Type ::= q::[Qualifier] n::String args::[Type] env::Decorated Env
       foldr(consTypeName, nilTypeName(), map(\ t::Type -> typeName(directTypeExpr(t), baseTypeExpr()), args)));
   result.env = env;
   result.returnType = nothing();
+  result.givenRefId = nothing();
   
   return result.typerep;
 }

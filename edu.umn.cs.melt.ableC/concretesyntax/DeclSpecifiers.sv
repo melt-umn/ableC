@@ -48,7 +48,7 @@ autocopy attribute givenQualifiers :: [ast:Qualifier];
  - The __attribute__s that appear in the list.
  - This is a gcc extension, but we need this here.
  -}
-synthesized attribute attributes :: [ast:Attribute];
+synthesized attribute attributes :: ast:Attributes;
 
 -- "Exported" symbols. These are used elsewhere in the C grammar.
 
@@ -72,7 +72,7 @@ concrete productions top::DeclarationSpecifiers_c
       top.typeQualifiers = [];
       top.specialSpecifiers = [];
       top.mutateTypeSpecifiers = [];
-      top.attributes = []; }
+      top.attributes = ast:nilAttribute(); }
 | h::TypeSpecifier_c  t::DeclarationSpecifiers_c
     { top.isTypedef = t.isTypedef;
       top.storageClass = t.storageClass;
@@ -90,7 +90,7 @@ concrete productions top::DeclarationSpecifiers_c
       top.typeQualifiers = [];
       top.specialSpecifiers = [];
       top.mutateTypeSpecifiers = [];
-      top.attributes = []; }
+      top.attributes = ast:nilAttribute(); }
 | h::TypeQualifier_c  t::DeclarationSpecifiers_c
     { top.isTypedef = t.isTypedef;
       top.storageClass = t.storageClass;
@@ -108,7 +108,7 @@ concrete productions top::DeclarationSpecifiers_c
       top.typeQualifiers = h.typeQualifiers;
       top.specialSpecifiers = [];
       top.mutateTypeSpecifiers = h.mutateTypeSpecifiers;
-      top.attributes = []; }
+      top.attributes = ast:nilAttribute(); }
 | h::FunctionSpecifier_c  t::DeclarationSpecifiers_c
     { top.isTypedef = t.isTypedef;
       top.storageClass = t.storageClass;
@@ -126,7 +126,7 @@ concrete productions top::DeclarationSpecifiers_c
       top.typeQualifiers = [];
       top.specialSpecifiers = h.specialSpecifiers;
       top.mutateTypeSpecifiers = [];
-      top.attributes = []; }
+      top.attributes = ast:nilAttribute(); }
 
 
 closed nonterminal SpecifierQualifierList_c with location, preTypeSpecifiers, realTypeSpecifiers, typeQualifiers, givenQualifiers, mutateTypeSpecifiers, specialSpecifiers, attributes;
@@ -144,7 +144,7 @@ concrete productions top::SpecifierQualifierList_c
       top.typeQualifiers = [];
       top.mutateTypeSpecifiers = [];
       top.specialSpecifiers = [];
-      top.attributes = []; }
+      top.attributes = ast:nilAttribute(); }
 | h::TypeQualifier_c  t::SpecifierQualifierList_c
     { top.preTypeSpecifiers = t.preTypeSpecifiers;
       top.realTypeSpecifiers = t.realTypeSpecifiers;
@@ -158,7 +158,7 @@ concrete productions top::SpecifierQualifierList_c
       top.typeQualifiers = h.typeQualifiers;
       top.mutateTypeSpecifiers = h.mutateTypeSpecifiers;
       top.specialSpecifiers = [];
-      top.attributes = []; }
+      top.attributes = ast:nilAttribute(); }
 
 closed nonterminal TypeQualifierList_c with location, typeQualifiers, mutateTypeSpecifiers, specialSpecifiers;
 concrete productions top::TypeQualifierList_c
@@ -266,14 +266,14 @@ concrete productions top::StructOrUnionSpecifier_c
 | su::StructOrUnion_c id::Identifier_t '{' ss::StructDeclarationList_c '}'
     { top.realTypeSpecifiers =
         case su of
-        | struct_c(_) -> [ast:structTypeExpr(top.givenQualifiers, ast:structDecl([], ast:justName(ast:fromId(id)), ast:foldStructItem(ss.ast), location=top.location))]
-        | union_c(_) -> [ast:unionTypeExpr(top.givenQualifiers, ast:unionDecl([], ast:justName(ast:fromId(id)), ast:foldStructItem(ss.ast), location=top.location))]
+        | struct_c(_) -> [ast:structTypeExpr(top.givenQualifiers, ast:structDecl(ast:nilAttribute(), ast:justName(ast:fromId(id)), ast:foldStructItem(ss.ast), location=top.location))]
+        | union_c(_) -> [ast:unionTypeExpr(top.givenQualifiers, ast:unionDecl(ast:nilAttribute(), ast:justName(ast:fromId(id)), ast:foldStructItem(ss.ast), location=top.location))]
         end; }
 | su::StructOrUnion_c '{' ss::StructDeclarationList_c '}'
     { top.realTypeSpecifiers =
         case su of
-        | struct_c(_) -> [ast:structTypeExpr(top.givenQualifiers, ast:structDecl([], ast:nothingName(), ast:foldStructItem(ss.ast), location=top.location))]
-        | union_c(_) -> [ast:unionTypeExpr(top.givenQualifiers, ast:unionDecl([], ast:nothingName(), ast:foldStructItem(ss.ast), location=top.location))]
+        | struct_c(_) -> [ast:structTypeExpr(top.givenQualifiers, ast:structDecl(ast:nilAttribute(), ast:nothingName(), ast:foldStructItem(ss.ast), location=top.location))]
+        | union_c(_) -> [ast:unionTypeExpr(top.givenQualifiers, ast:unionDecl(ast:nilAttribute(), ast:nothingName(), ast:foldStructItem(ss.ast), location=top.location))]
         end; }
 | su::StructOrUnion_c id::Identifier_t
     { top.realTypeSpecifiers =
@@ -320,11 +320,11 @@ concrete productions top::StructDeclaratorList_c
 closed nonterminal StructDeclarator_c with location, ast<[ast:StructDeclarator]>, givenType; 
 concrete productions top::StructDeclarator_c
 | d::Declarator_c
-    { top.ast = [ast:structField(d.declaredIdent, d.ast, [])]; }
+    { top.ast = [ast:structField(d.declaredIdent, d.ast, ast:nilAttribute())]; }
 | d::Declarator_c ':' e::ConstantExpr_c
-    { top.ast = [ast:structBitfield(ast:justName(d.declaredIdent), d.ast, e.ast, [])]; }
+    { top.ast = [ast:structBitfield(ast:justName(d.declaredIdent), d.ast, e.ast, ast:nilAttribute())]; }
 | ':' e::ConstantExpr_c
-    { top.ast = [ast:structBitfield(ast:nothingName(), top.givenType, e.ast, [])]; }
+    { top.ast = [ast:structBitfield(ast:nothingName(), top.givenType, e.ast, ast:nilAttribute())]; }
 
 
 closed nonterminal EnumSpecifier_c with location, realTypeSpecifiers, givenQualifiers; 

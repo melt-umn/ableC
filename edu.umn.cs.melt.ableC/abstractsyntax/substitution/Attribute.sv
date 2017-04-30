@@ -1,4 +1,16 @@
 
+aspect production consAttribute
+top::Attributes ::= h::Attribute t::Attributes
+{
+  propagate substituted;
+}
+
+aspect production nilAttribute
+top::Attributes ::= 
+{
+  propagate substituted;
+}
+
 aspect production gccAttribute
 top::Attribute ::= l::Attribs
 {

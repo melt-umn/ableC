@@ -1,7 +1,5 @@
 grammar edu:umn:cs:melt:exts:ableC:string:abstractsyntax;
 
-import edu:umn:cs:melt:ableC:abstractsyntax:overload;
-
 synthesized attribute showProd::Maybe<(Expr ::= Expr Location)> occurs on Type, BuiltinType;--, IntegerType, RealType;
 synthesized attribute pointerShowProd::Maybe<(Expr ::= Expr Location)> occurs on Type, BuiltinType;--, IntegerType, RealType;
 synthesized attribute strProd::Maybe<(Expr ::= Expr Location)> occurs on Type, BuiltinType;--, IntegerType, RealType;
@@ -56,61 +54,16 @@ top::Type ::= q::[Qualifier]
 {
   top.lpp = pp"string";
   top.rpp = pp"";
-  
-  top.lBinaryPlusProd =
-    case top.otherType.showProd of
-      just(p) -> just(appendString(_, _, location=_))
-    | _ -> nothing()
-    end;
-  top.rBinaryPlusProd = top.lBinaryPlusProd;
-  
-  top.lBinaryMinusProd =
-    case top.otherType.showProd of
-      just(p) -> just(removeString(_, _, location=_))
-    | _ -> nothing()
-    end;
-  top.rBinaryMinusProd = top.lBinaryPlusProd;
-  
-  top.lBinaryStarProd =
-    if top.otherType.isIntegerType
-    then just(repeatString(_, _, location=_))
-    else nothing();
-  
-  top.lBinaryEqProd =
-    case top.otherType of
-      stringType(_) -> just(eqString(_, _, location=_))
-    | pointerType(_, builtinType(_, signedType(charType()))) ->
-      just(
-        \ e1::Expr e2::Expr l::Location ->
-         eqString(e1, strCharPointer(e2, location=l), location=l))
-    | _ -> nothing()
-    end;
-  top.rBinaryEqProd =
-    case top.otherType of
-      stringType(_) -> just(eqString(_, _, location=_))
-    | pointerType(_, builtinType(_, signedType(charType()))) ->
-      just(
-        \ e1::Expr e2::Expr l::Location ->
-         eqString(strCharPointer(e1, location=l), e2, location=l))
-    | _ -> nothing()
-    end;
-  
-  top.lAssignProd = just(assignString(_, _, location=_));
-    
-  top.subscriptProd = just(subscriptString(_, _, location=_));
-  top.subscriptAssignProd = just(subscriptAssignString(_, _, _, _, location=_));
-    
-  top.memberCallProd = 
-    case top.otherName of
-      "substring" -> just(substringString(_, _, location=_))
-    | _ -> nothing()
-    end;
-  
-  top.showProd = just(showString(_, location=_));
-  top.strProd = just(strString(_, location=_));
 
   forwards to
     tagType(q, refIdTagType(structSEU(), "_string_s", s"edu:umn:cs:melt:exts:ableC:string:string"));
+}
+
+aspect production errorType
+top::Type ::= 
+{
+  top.showProd = just(\ e::Expr l::Location -> errorExpr([], location=l));
+  top.strProd = just(\ e::Expr l::Location -> errorExpr([], location=l));
 }
 
 aspect production pointerType
@@ -192,4 +145,38 @@ top::BuiltinType ::= sub::IntegerType
       charType() -> just(strCharPointer(_, location=_))
     | _ -> nothing()
     end;
+}
+
+-- Check if errors result from in applying the show() operator to a type 
+function checkShowErrors
+[Message] ::= t::Type env::Decorated Env
+{
+  local expr::Expr =
+    showExpr(
+      explicitCastExpr(
+        typeName(directTypeExpr(t), baseTypeExpr()),
+        mkIntConst(0, builtin),
+        location=builtin),
+      location=builtin);
+  expr.env = env;
+  expr.returnType = nothing();
+  
+  return expr.errors;
+}
+
+-- Check if errors result from in applying the str() operator to a type 
+function checkStrErrors
+[Message] ::= t::Type env::Decorated Env
+{
+  local expr::Expr =
+    strExpr(
+      explicitCastExpr(
+        typeName(directTypeExpr(t), baseTypeExpr()),
+        mkIntConst(0, builtin),
+        location=builtin),
+      location=builtin);
+  expr.env = env;
+  expr.returnType = nothing();
+  
+  return expr.errors;
 }

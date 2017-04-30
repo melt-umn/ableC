@@ -8,7 +8,7 @@ imports edu:umn:cs:melt:ableC:abstractsyntax:construction;
 imports edu:umn:cs:melt:ableC:abstractsyntax:construction:parsing;
 imports edu:umn:cs:melt:ableC:abstractsyntax:substitution;
 imports edu:umn:cs:melt:ableC:abstractsyntax:env;
-imports edu:umn:cs:melt:ableC:abstractsyntax:overload;
+imports edu:umn:cs:melt:ableC:abstractsyntax:overload as ovrld;
 --imports edu:umn:cs:melt:ableC:abstractsyntax:debug;
 
 import silver:util:raw:treemap as tm;
@@ -26,7 +26,8 @@ top::Expr ::= captured::CaptureList params::Parameters res::Expr
      else [err(top.location, "Closures require <gc.h> to be included.")]) ++
     captured.errors ++ params.errors ++ res.errors;
   
-  local paramNames::[Name] = map(name(_, location=builtin), map(fst, foldr(append, [], map((.valueContribs), params.defs))));
+  local paramNames::[Name] =
+    map(name(_, location=builtin), map(fst, foldr(append, [], map((.valueContribs), params.defs))));
   captured.freeVariablesIn = removeAllBy(nameEq, paramNames, removeDuplicateNames(res.freeVariables));
   captured.globalEnv = addEnv(params.defs, globalEnv(top.env));
   
@@ -41,11 +42,11 @@ top::Expr ::= captured::CaptureList params::Parameters res::Expr
   
   local envStructDcl::Decl =
     typeExprDecl(
-      [],
+      nilAttribute(),
       structTypeExpr(
         [],
         structDecl(
-          [],
+          nilAttribute(),
           justName(name(envStructName, location=builtin)),
           captured.envStructTrans,
           location=builtin)));
@@ -124,9 +125,11 @@ top::CaptureList ::= n::Name rest::CaptureList
     if isGlobal then rest.envStructTrans else
       consStructItem(
         structItem(
-          [],
+          nilAttribute(),
           directTypeExpr(varType),
-          consStructDeclarator(structField(n, baseTypeExpr(), []), nilStructDeclarator())),
+          consStructDeclarator(
+            structField(n, baseTypeExpr(), nilAttribute()),
+            nilStructDeclarator())),
         rest.envStructTrans);
   
   top.envCopyInTrans =
@@ -152,13 +155,13 @@ top::CaptureList ::= n::Name rest::CaptureList
         rest.envCopyOutTrans,
         declStmt(
           variableDecls(
-            [], [],
+            [], nilAttribute(),
             directTypeExpr(addQualifiers([constQualifier()], varType)),
             consDeclarator(
               declarator(
                 n,
                 baseTypeExpr(),
-                [],
+                nilAttribute(),
                 justInitializer(
                   exprInitializer(
                     memberExpr(

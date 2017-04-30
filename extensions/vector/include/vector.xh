@@ -17,22 +17,19 @@ struct _vector_info {
 };
 
 template<a>
-struct _vector_s {
-  struct _vector_info _info;
-  a *_contents;
+struct __attribute__((module("edu:umn:cs:melt:exts:ableC:vector:vector"))) _vector_s {
+  struct _vector_info *_info;
+  a **_contents;
 };
-
-// Not used, right now vector<foo> translates directly to struct _vector_s_template_<mangled name> *
-// using _vector<a> = _vector_s<a>*;
 
 // Check whether an index is valid for given vector info
 template<a>
-static void _check_index_vector(vector<a> vec, size_t i) {
-  if (i >= vec->_info.length || i < 0) {
-    fprintf(stderr, "Vector index out of bounds: length %lu, index %lu\n", vec->_info.length, i);
+static void _check_index_vector(vector<a> vec, size_t idx) {
+  if (idx >= vec.length || idx < 0) {
+    fprintf(stderr, "Vector index out of bounds: length %lu, index %lu\n", vec.length, idx);
     exit(1);
   }
-  if (vec->_contents == NULL) {
+  if (vec._contents == NULL) {
     fprintf(stderr, "Cannot access uninitialized vector\n");
     exit(1);
   }
@@ -41,55 +38,62 @@ static void _check_index_vector(vector<a> vec, size_t i) {
 // Increase the length of a vector to new_size, updating the given info and contents pointers
 template<a>
 static void _resize_vector(vector<a> vec, size_t new_length) {
-  vec->_info.length = new_length;
-  if (new_length > vec->_info.capacity) {
-    vec->_info.capacity = new_length * 2;
-    vec->_contents = GC_realloc(vec->_contents, vec->_info.elem_size * vec->_info.capacity);
-  }
-}
-
-// If the index is equal to the vector size, expand the vector by one
-template<a>
-static void _maybe_grow_vector_by_one(vector<a> vec, size_t i) {
-  if (i > vec->_info.length || i < 0) {
-    fprintf(stderr, "Vector index out of bounds: length %lu, index %lu\n", vec->_info.length, i);
-    exit(1);
-  }
-  if (i == vec->_info.length) {
-    _resize_vector<a>(vec, vec->_info.length + 1);
+  vec._info->length = new_length;
+  if (new_length > vec.capacity) {
+    vec._info->capacity = new_length * 2;
+    *vec._contents = GC_realloc(*vec._contents, vec.elem_size * vec.capacity);
   }
 }
 
 template<a>
 static vector<a> _new_vector(size_t length) {
-  vector<a> result = GC_malloc(sizeof(_vector_s<a>));
-  result->_info = (struct _vector_info){length, length * 2, sizeof(a)};
-  result->_contents = GC_malloc(sizeof(a) * result->_info.capacity);
-  return result;
+  struct _vector_info *info = GC_malloc(sizeof(struct _vector_info));
+  info->length = length;
+  info->capacity = length * 2;
+  info->elem_size = sizeof(a);
+  a **contents = GC_malloc(sizeof(a*));
+  *contents = GC_malloc(sizeof(a) * info->capacity);
+  return (vector<a>){info, contents};
 }
 
 template<a>
 static vector<a> _copy_vector(vector<a> vec) {
-  vector<a> result = GC_malloc(sizeof(_vector_s<a>));
-  result->_info = (struct _vector_info){vec.length, vec.capacity, vec.elem_size};
-  result->_contents = GC_malloc(vec.elem_size * vec.capacity);
+  struct _vector_info *info = GC_malloc(sizeof(struct _vector_info));
+  *info = *vec._info;
+  a **contents = GC_malloc(sizeof(a*));
+  *contents = GC_malloc(vec.elem_size * vec.capacity);
   
   for (size_t i = 0; i < vec.length; i++) {
-    result[i] = vec[i];
+    (*contents)[i] = vec[i];
   }
   
-  return result;
+  return (vector<a>){info, contents};
 }
 
 template<a>
-static vector<a> _append_to_vector(vector<a> vec1, vector<a> vec2) {
+static void _append_vector(vector<a> vec, a elem) {
+  _resize_vector<a>(vec, vec.length + 1);
+  (*vec._contents)[vec.length - 1] = elem;
+}
+
+template<a>
+static void _insert_vector(vector<a> vec, size_t idx, a elem) {
+  _resize_vector<a>(vec, vec.length + 1);
+  
+  for (size_t i = vec.length - 1; i > idx; i--) {
+    vec[i] = vec[i - 1];
+  }
+  vec[idx] = elem;
+}
+
+template<a>
+static void _extend_vector(vector<a> vec1, vector<a> vec2) {
   size_t vec1_length = vec1.length;
+  _resize_vector<a>(vec1, vec1.length + vec2.length);
 
   for (size_t i = 0; i < vec2.length; i++) {
-    vec1[i + vec1_length] = vec2[i];
+    (*vec1._contents)[i + vec1_length] = vec2[i];
   }
-  
-  return vec1;
 }
 
 template<a>

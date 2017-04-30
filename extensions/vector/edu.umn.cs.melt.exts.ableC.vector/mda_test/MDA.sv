@@ -9,7 +9,3 @@ copper_mda testTypeExpr(ablecParser) {
 copper_mda testConstructor(ablecParser) {
   edu:umn:cs:melt:exts:ableC:vector:concretesyntax:constructor;
 }
-
-copper_mda testCopyConstructor(ablecParser) {
-  edu:umn:cs:melt:exts:ableC:vector:concretesyntax:copyConstructor;
-}

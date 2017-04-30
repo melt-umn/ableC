@@ -46,10 +46,17 @@ Boolean ::= a::Type  b::Type  ignoreQualifiers::Boolean
   | functionType(r1, _), functionType(r2, _) -> 
       compatibleTypes(r1, r2, ignoreQualifiers)
   -- extensions
+  | attributedType(_, t1), attributedType(_, t2) -> compatibleTypes(t1, t2, ignoreQualifiers)
+  | attributedType(_, t1), t2 -> compatibleTypes(t1, t2, ignoreQualifiers)
+  | t1, attributedType(_, t2) -> compatibleTypes(t1, t2, ignoreQualifiers)
   | vectorType(b1, s1), vectorType(b2, s2) -> s1 == s2 && compatibleTypes(b1, b2, ignoreQualifiers)
   -- otherwise
   | _, _ -> false
   end;
+  
+  -- Needed because flow analysis is whiny
+  a.addedTypeQualifiers = error("unneeded");
+  b.addedTypeQualifiers = error("unneeded");
 }
 
 function compatibleTypeList
@@ -319,3 +326,20 @@ Type ::= qs::[Qualifier] base::Type
   base.addedTypeQualifiers = qs;
   return base.withTypeQualifiers;
 }
+
+{--
+ - Compute a unique identifier coresponding to the module (host or extension) that 'owns' this type
+ -}
+ function moduleName
+ Maybe<String> ::= env::Decorated Env a::Type
+ {
+   return
+     case a of
+       tagType(_, refIdTagType(_, _, refId)) ->
+         case lookupRefId(refId, env) of
+         | item :: _ -> orElse(item.moduleName, a.moduleName)
+         | _ -> error("Undefined refId " ++ refId)
+         end
+     | _ -> a.moduleName
+     end;
+ }

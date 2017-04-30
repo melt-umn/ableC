@@ -136,7 +136,7 @@ top::Substitution ::= refId::String sub::String
 -- 'occurs on' definitions for every nonterminal
 attribute substitutions occurs on
   AsmStatement, AsmArgument, AsmClobbers, AsmOperands, AsmOperand,
-  Attribute, Attribs, Attrib, AttribName,
+  Attributes, Attribute, Attribs, Attrib, AttribName,
   Decls, Decl, Declarators, Declarator, FunctionDecl, Parameters, ParameterDecl,
     StructDecl, UnionDecl, EnumDecl, StructItemList, EnumItemList,
     StructItem, StructDeclarators, StructDeclarator, EnumItem,
@@ -159,6 +159,7 @@ attribute substituted<AsmArgument> occurs on AsmArgument;
 attribute substituted<AsmClobbers> occurs on AsmClobbers;
 attribute substituted<AsmOperands> occurs on AsmOperands;
 attribute substituted<AsmOperand> occurs on AsmOperand;
+attribute substituted<Attributes> occurs on Attributes;
 attribute substituted<Attribute> occurs on Attribute;
 attribute substituted<Attribs> occurs on Attribs;
 attribute substituted<Attrib> occurs on Attrib;

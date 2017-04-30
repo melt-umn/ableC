@@ -9,7 +9,7 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax;
  - Variants: builtin, pointer, array, function, tagged, noncanonical.
  - Noncanonical forwards, and so doesn't need any attributes, etc attached to it.
  -}
-nonterminal Type with lpp, rpp, host<Type>, baseTypeExpr, typeModifierExpr, mangledName, integerPromotions, defaultArgumentPromotions, defaultLvalueConversion, defaultFunctionArrayLvalueConversion, isIntegerType, isScalarType, isArithmeticType, withoutTypeQualifiers, withTypeQualifiers, addedTypeQualifiers;
+nonterminal Type with lpp, rpp, host<Type>, baseTypeExpr, typeModifierExpr, mangledName, moduleName, integerPromotions, defaultArgumentPromotions, defaultLvalueConversion, defaultFunctionArrayLvalueConversion, isIntegerType, isScalarType, isArithmeticType, withoutAttributes, withoutTypeQualifiers, withTypeQualifiers, addedTypeQualifiers;
 
 -- Used to turn a Type back into a TypeName
 synthesized attribute baseTypeExpr :: BaseTypeExpr;
@@ -18,14 +18,20 @@ synthesized attribute typeModifierExpr :: TypeModifierExpr;
 -- Compute a unique name for a type that is a valid C identifier
 synthesized attribute mangledName :: String;
 
+-- Name of the extension that declared this type, or nothing() for a host type 
+synthesized attribute moduleName :: Maybe<String>;
+
 -- char -> int and stuff in operations
 synthesized attribute integerPromotions :: Type;
 -- float -> double for variadic args
 synthesized attribute defaultArgumentPromotions :: Type;
--- drop qualifiers
+-- drop qualifiers and attributes
 synthesized attribute defaultLvalueConversion :: Type;
 -- above PLUS conversion to pointers
 synthesized attribute defaultFunctionArrayLvalueConversion :: Type;
+
+-- Strip top-level only of GCC __attribute__s from the type
+synthesized attribute withoutAttributes :: Type;
 
 -- Strip top-level only of qualifiers from the type
 synthesized attribute withoutTypeQualifiers :: Type;
@@ -37,6 +43,8 @@ inherited attribute addedTypeQualifiers :: [Qualifier];
 aspect default production
 top::Type ::=
 {
+  top.moduleName = nothing();
+  top.withoutAttributes = top;
   top.withoutTypeQualifiers = top;
   top.withTypeQualifiers = top;
   
@@ -87,7 +95,7 @@ top::Type ::= q::[Qualifier]  bt::BuiltinType
   top.rpp = notext();
   top.baseTypeExpr = builtinTypeExpr(q, bt);
   top.typeModifierExpr = baseTypeExpr();
-  top.mangledName = s"builtin_${implode("_", map((.qualname), q))}_${bt.mangledName}_";
+  top.mangledName = s"${mangleQualifiers(q)}_builtin_${bt.mangledName}_";
   top.integerPromotions = builtinType(q, bt.integerPromotionsBuiltin);
   top.defaultArgumentPromotions = builtinType(q, bt.defaultArgumentPromotionsBuiltin);
   top.defaultLvalueConversion = builtinType([], bt);
@@ -114,7 +122,7 @@ top::Type ::= q::[Qualifier]  target::Type
   top.rpp = target.rpp;
   top.baseTypeExpr = target.baseTypeExpr;
   top.typeModifierExpr = pointerTypeExpr(q, target.typeModifierExpr);
-  top.mangledName = s"pointer_${implode("_", map((.qualname), q))}_${target.mangledName}_";
+  top.mangledName = s"${mangleQualifiers(q)}_pointer_${target.mangledName}_";
   top.integerPromotions = top;
   top.defaultArgumentPromotions = top;
   top.defaultLvalueConversion = pointerType([], target);
@@ -291,7 +299,7 @@ Parameters ::= args::[Type]
     case args of
       h :: t ->
         consParameters(
-          parameterDecl([], directTypeExpr(h), baseTypeExpr(), nothingName(), []),
+          parameterDecl([], directTypeExpr(h), baseTypeExpr(), nothingName(), nilAttribute()),
           argTypesToParameters(t))
     | [] -> nilParameters()
     end;
@@ -314,7 +322,7 @@ top::Type ::= q::[Qualifier]  sub::TagType
       tagReferenceTypeExpr(q, kwd, name(n, location=builtinLoc("host")))
     end;
   top.typeModifierExpr = baseTypeExpr();
-  top.mangledName = s"tag_${implode("_", map((.qualname), q))}_${sub.mangledName}_";
+  top.mangledName = s"${mangleQualifiers(q)}_tag_${sub.mangledName}_";
   top.integerPromotions = top;
   top.defaultArgumentPromotions = top;
   top.defaultLvalueConversion = tagType([], sub);
@@ -382,7 +390,7 @@ top::Type ::= q::[Qualifier]  bt::Type
   top.lpp = ppConcat([ ppImplode( space(), map( (.pp), q)), space(),
                      text("_Atomic"), parens(cat(bt.lpp, bt.rpp))]);
   top.rpp = notext();
-  top.mangledName = s"atomic_${implode("_", map((.qualname), q))}_${bt.mangledName}_";
+  top.mangledName = s"${mangleQualifiers(q)}_atomic_${bt.mangledName}_";
   top.baseTypeExpr = atomicTypeExpr(q, typeName(bt.baseTypeExpr, bt.typeModifierExpr));
   top.typeModifierExpr = baseTypeExpr();
   top.integerPromotions = top;
@@ -395,7 +403,43 @@ top::Type ::= q::[Qualifier]  bt::Type
 }
 
 {-------------------------------------------------------------------------------
+ - GCC __attribute__ types.
+ - This represents attributes attatched to types that aren't handled specially (e.g. vector).  
+ - We assume all attributed types are type-equivalent.
+ - TODO: Make sure we animate attributes with actual custom types instead of attributedType in all
+ - cases where this isn't true.
+ -}
+abstract production attributedType
+top::Type ::= attrs::Attributes  bt::Type
+{
+  propagate host;
+  top.lpp = ppConcat([ ppAttributes(attrs), space(), bt.lpp]);
+  top.rpp = bt.rpp;
+  top.mangledName = bt.mangledName;
+  top.moduleName = orElse(attrs.moduleName, bt.moduleName);
+  top.baseTypeExpr = attributedTypeExpr(attrs, bt.baseTypeExpr);
+  top.typeModifierExpr = baseTypeExpr();
+  top.integerPromotions = attributedType(attrs, bt.integerPromotions);
+  top.defaultArgumentPromotions = attributedType(attrs, bt.defaultArgumentPromotions);
+  top.defaultLvalueConversion = bt.defaultLvalueConversion;
+  top.defaultFunctionArrayLvalueConversion = bt.defaultFunctionArrayLvalueConversion;
+  top.withoutAttributes = bt.withoutAttributes;
+  top.withoutTypeQualifiers = attributedType(attrs, bt.withoutTypeQualifiers);
+  top.withTypeQualifiers = attributedType(attrs, bt.withTypeQualifiers);
+  bt.addedTypeQualifiers = top.addedTypeQualifiers;
+  top.isIntegerType = bt.isIntegerType;
+  top.isScalarType = bt.isScalarType;
+  top.isArithmeticType = bt.isArithmeticType;
+  
+  -- Whatever...
+  attrs.env = emptyEnv();
+  attrs.returnType = nothing();
+}
+
+{-------------------------------------------------------------------------------
  - GCC Vector (MMX/SSE/etc) types.
+ - TODO: This is very broken, __attribute__ can't occur at the outermost level, should involve
+ - attributedType somehow?  
  -}
 abstract production vectorType
 top::Type ::= bt::Type  bytes::Integer
@@ -404,8 +448,19 @@ top::Type ::= bt::Type  bytes::Integer
   top.lpp = ppConcat([ text("__attribute__((__vector_size__(" ++ toString(bytes) ++ "))) "), bt.lpp]);
   top.rpp = bt.rpp;
   top.mangledName = s"vector_${bt.mangledName}_${toString(bytes)}_";
-  -- TODO: pp doesn't match type expression.  Should involve attributedTypeExpr which isn't a thing
-  top.baseTypeExpr = directTypeExpr(bt);
+  top.moduleName = bt.moduleName;
+  -- Translate vectorType
+  top.baseTypeExpr =
+    attributedTypeExpr(
+      consAttribute(
+        gccAttribute(
+          consAttrib(
+            appliedAttrib(
+              attribName(name("__vector_size__", location=builtinLoc("host"))),
+              consExpr(mkIntConst(bytes, builtinLoc("host")), nilExpr())),
+          nilAttrib())),
+        nilAttribute()),
+      bt.baseTypeExpr);
   top.typeModifierExpr = baseTypeExpr();
   -- You know, who knows what these rules are: TODO
   top.integerPromotions = top;
@@ -413,6 +468,7 @@ top::Type ::= bt::Type  bytes::Integer
   top.defaultLvalueConversion = top;
   top.defaultFunctionArrayLvalueConversion = top;
   top.withoutTypeQualifiers = top;
+  top.withTypeQualifiers = top; -- TODO Discarding Qualifiers!
   -- TODO: dunno? left here explicitly since... dunno what to do here.
   top.isIntegerType = false;
   top.isScalarType = false;
@@ -549,16 +605,6 @@ top::NoncanonicalType ::= q::[Qualifier]  resolved::Type
   top.typeModifierExpr = baseTypeExpr();
 }
 
-
-{-- Attributes that need to be interpreted away somehow. What is this?
- - Evidently, part of extensions... maybe we should remove this.
- - e.g. int32 __attribute((vector(4)))__ is supposed to be a SSE register or something
- -}
---abstract production attributedType
---top::NoncanonicalType ::= q::[Qualifier]  original::Type  attr::[Attribute] -- or something?
---{
---  top.canonicalType = error("?"); -- TODO: Perhaps this is supposed to have already been interepreted somehow
---}
 
 -- TODO: Why isn't this in TypeNames.sv?
 abstract production hackUnusedType
