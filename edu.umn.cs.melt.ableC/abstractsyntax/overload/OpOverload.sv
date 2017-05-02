@@ -12,7 +12,6 @@ imports edu:umn:cs:melt:ableC:abstractsyntax hiding directCallExpr
                                                   memberExpr as memberExprDefault,
                                                   binaryOpExpr as binaryOpExprDefault;
 imports edu:umn:cs:melt:ableC:abstractsyntax:env;
-imports edu:umn:cs:melt:ableC:abstractsyntax:substitution;
 
 {- Explaination of overloading
  - All standard unary and binary operators may be overloaded, in addition to function calls, array

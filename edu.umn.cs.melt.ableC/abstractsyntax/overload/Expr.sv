@@ -3,7 +3,6 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax:overload;
 abstract production unaryOpExpr
 top::Expr ::= op::UnaryOp  e::Expr
 {
-  propagate substituted;
   top.pp = if op.preExpr
            then parens( cat( op.pp, e.pp ) )
            else parens( cat( e.pp, op.pp ) );
@@ -15,7 +14,6 @@ top::Expr ::= op::UnaryOp  e::Expr
 abstract production arraySubscriptExpr
 top::Expr ::= lhs::Expr  rhs::Expr
 {
-  propagate substituted;
   top.pp = parens( ppConcat([ lhs.pp, brackets( rhs.pp )]) );
   
   rhs.env = addEnv(lhs.defs, lhs.env);
@@ -34,7 +32,6 @@ top::Expr ::= lhs::Expr  rhs::Expr
 abstract production callExpr
 top::Expr ::= f::Expr  a::Exprs
 {
-  propagate substituted;
   top.pp = parens( ppConcat([ f.pp, parens( ppImplode( cat( comma(), space() ), a.pps ))]) );
   
   a.env = addEnv(f.defs, f.env);
@@ -65,7 +62,6 @@ top::Expr ::= f::Expr  a::Exprs
 abstract production memberExpr
 top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
 {
-  propagate substituted;
   top.pp = parens(ppConcat([lhs.pp, text(if deref then "->" else "."), rhs.pp]));
   
   production attribute overloads::[Pair<String Expr>] with ++;
@@ -82,7 +78,6 @@ top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
 abstract production binaryOpExpr
 top::Expr ::= lhs::Expr  op::BinOp  rhs::Expr
 {
-  propagate substituted;
   -- case op here is a potential problem, since that emits a dep on op->forward, which eventually should probably include env
   -- Find a way to do this that doesn't cause problems if an op forwards.
   top.pp = parens( ppConcat([ 
