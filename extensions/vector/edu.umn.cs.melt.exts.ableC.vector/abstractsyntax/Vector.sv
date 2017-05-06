@@ -537,7 +537,7 @@ top::Expr ::= e::Expr
 
   local localErrors::[Message] =
     checkVectorHeaderDef("_show_vector", top.location, top.env) ++
-    checkShowErrors(subType, top.env);
+    checkShowErrors(subType, top.env, top.location);
   local fwrd::Expr =
     callExpr(
       templateDeclRefExpr(
