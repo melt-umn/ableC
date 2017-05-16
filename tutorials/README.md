@@ -8,11 +8,9 @@ This tutorial is composed of 3 sections.  It is expected that you complete the f
 
 ### ableC basics
 1. [Getting started](getting_started/): Writting a very simple 'Hello world' example extension
-2. [Concrete syntax](concrete_syntax/): A closer look at the concrete syntax of ableC, defining a new infix 'average' operator
-3. [Abstract syntax](abstract_syntax/): A closer look at the abstract syntax of ableC, defining abstract syntax for the above operator
-4. [Error checking](error_checking/): An introduction to the type system of ableC, and implementing error checking for the above operator
-5. [Declarations](declarations/): A look at how declarations and type expressions work in C, writing a new struct declaration syntax for tuples
-5. [Embedded domain spesific languages](embedded_dsl/): Writting a simple embedded DSL, postfix arithmetic expressions
+2. [Error checking](error_checking/): An introduction to the type system of ableC, and implementing error checking for a new binary operator that computes an average
+3. [Declarations](declarations/): A look at how declarations and type expressions work in C, writing a new struct declaration syntax for tuples
+4. [Embedded domain spesific languages](embedded_dsl/): Writting a simple embedded DSL, postfix arithmetic expressions
 
 ### Advanced ableC features
 1. [Construction helpers](construction/): Using the parsing and substitution mechanisms in ableC, implement an exponent operator
