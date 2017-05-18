@@ -608,6 +608,7 @@ Maybe<(Expr ::= Expr Expr Location)> ::=
   local lModuleName :: Maybe<String> = moduleName(env, l);
   local rModuleName :: Maybe<String> = moduleName(env, r);
 
+  -- Option 1: overload for a left extension type and a right extension type
   local option1::Maybe<(Expr ::= Expr Expr Location)> =
     do (bindMaybe, returnMaybe) {
       n1 :: String <- lModuleName;
@@ -615,12 +616,14 @@ Maybe<(Expr ::= Expr Expr Location)> ::=
       prod :: (Expr ::= Expr Expr Location) <- lookupBy(stringPairEq, pair(n1, n2), overloads);
       return prod;
     };
+  -- Option 2: overload for a left extension type and any type
   local option2::Maybe<(Expr ::= Expr Expr Location)> =
     do (bindMaybe, returnMaybe) {
       n :: String <- lModuleName;
       prod :: (Expr ::= Expr Expr Location) <- lookupBy(stringEq, n, lOverloads);
       return prod;
     };
+  -- Option 2: overload for any type and a right extension type
   local option3::Maybe<(Expr ::= Expr Expr Location)> =
     do (bindMaybe, returnMaybe) {
       n :: String <- rModuleName;
@@ -637,6 +640,7 @@ Boolean ::= p1::Pair<String String> p2::Pair<String String>
   return p1.fst == p2.fst && p1.snd == p2.snd;
 }
 
+-- These helper functions apply maybeFn if it is a just() to the arguments, or otherwise return nothing() 
 function applyMaybe
 Maybe<a> ::= maybeFn::Maybe<(a ::= b)> a::b
 {

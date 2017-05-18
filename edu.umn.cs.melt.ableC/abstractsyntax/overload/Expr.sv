@@ -10,6 +10,12 @@ top::Expr ::= op::UnaryOp  e::Expr
   op.op = e;
   
   forwards to fromMaybe(unaryOpExprDefault(op, _, location=_), op.unaryProd)(e, top.location);
+  {- The above is shorthand for
+  forwards to
+    case op.unaryProd of
+      just(prod) -> prod(e, top.location)
+    | nothing() -> unaryOpExprDefault(op, e, location=top.location)
+    end;-}
 }
 abstract production arraySubscriptExpr
 top::Expr ::= lhs::Expr  rhs::Expr
@@ -27,12 +33,14 @@ top::Expr ::= f::Expr  a::Exprs
   top.pp = parens( ppConcat([ f.pp, parens( ppImplode( cat( comma(), space() ), a.pps ))]) );
   
   a.env = addEnv(f.defs, f.env);
+  -- Option 1: Apply a member to arguments (e.g. a.foo(b))
   local option1::Maybe<Expr> = 
     case f of
       memberExpr(l, d, r) ->
         applyMaybe5(getMemberCallOverload(l.typerep, top.env), l, d, r, a, top.location)
     | _ -> nothing()
     end;
+  -- Option 2: Normal overloaded application
   local option2::Maybe<Expr> = applyMaybe3(getCallOverload(f.typerep, top.env), f, a, top.location);
   
   forwards to fromMaybe(callExprDefault(f, a, location=top.location), orElse(option1, option2));
@@ -62,6 +70,7 @@ top::Expr ::= lhs::Expr  op::BinOp  rhs::Expr
   op.lop = lhs;
   op.rop = rhs;
   
+  -- Option 1: Assign to a member or subscript (e.g. a.foo = b, a[i] = b)
   local option1::Maybe<Expr> =
     case lhs, op of
       arraySubscriptExpr(l, r), assignOp(aOp) ->
@@ -70,6 +79,7 @@ top::Expr ::= lhs::Expr  op::BinOp  rhs::Expr
         applyMaybe6(getMemberAssignOverload(l.typerep, top.env), l, d, r, aOp, rhs, top.location)
     | _, _ -> nothing()
     end;
+  -- Option 2: Normal overloaded binary operators
   local option2::Maybe<Expr> = applyMaybe3(op.binaryProd, lhs, rhs, top.location);
   
   forwards to

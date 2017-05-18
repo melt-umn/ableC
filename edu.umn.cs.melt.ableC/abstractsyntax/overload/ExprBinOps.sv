@@ -13,7 +13,9 @@ top::BinOp ::= op::AssignOp
 {
   local tmpName::String = "_tmp" ++ toString(genInt());
 
+  -- Option 1: An explicit overload for the assignment operator
   local option1::Maybe<(Expr ::= Expr Expr Location)> = op.binaryProd;
+  -- Option 2: Infer an overload for a compound assignment operator from the base operator
   local option2::Maybe<(Expr ::= Expr Expr Location)> = 
     do (bindMaybe, returnMaybe) {
       baseOp :: BinOp <- op.baseOp;
@@ -183,8 +185,10 @@ top::CompareOp ::=
 aspect production notEqualsOp
 top::CompareOp ::=
 {
+  -- Option 1: An explicit overload for !=
   local option1::Maybe<(Expr ::= Expr Expr Location)> =
     getNotEqualsOpOverload(top.lop.typerep, top.rop.typerep, top.lop.env);
+  -- Option 2: Infer an overload for != from an overload for ==
   local option2::Maybe<(Expr ::= Expr Expr Location)> =
     case getEqualsOpOverload(top.lop.typerep, top.rop.typerep, top.lop.env) of
       just(prod) ->
@@ -209,8 +213,10 @@ top::CompareOp ::=
 aspect production gteOp
 top::CompareOp ::=
 {
+  -- Option 1: An explicit overload for >=
   local option1::Maybe<(Expr ::= Expr Expr Location)> =
     getGteOpOverload(top.lop.typerep, top.rop.typerep, top.lop.env);
+  -- Option 2: Infer an overload for >= from an overload for <
   local option2::Maybe<(Expr ::= Expr Expr Location)> =
     case getLtOpOverload(top.lop.typerep, top.rop.typerep, top.lop.env) of
       just(prod) ->
@@ -225,8 +231,10 @@ top::CompareOp ::=
 aspect production lteOp
 top::CompareOp ::=
 {
+  -- Option 1: An explicit overload for <=
   local option1::Maybe<(Expr ::= Expr Expr Location)> =
     getLteOpOverload(top.lop.typerep, top.rop.typerep, top.lop.env);
+  -- Option 2: Infer an overload for <= from an overload for >
   local option2::Maybe<(Expr ::= Expr Expr Location)> =
     case getGtOpOverload(top.lop.typerep, top.rop.typerep, top.lop.env) of
       just(prod) ->
