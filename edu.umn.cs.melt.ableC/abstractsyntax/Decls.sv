@@ -748,7 +748,7 @@ top::StructDeclarator ::= name::Name  ty::TypeModifierExpr  attrs::Attributes
   top.globalDecls := ty.globalDecls;
   top.localdefs := [valueDef(name.name, fieldValueItem(top))];
   top.freeVariables = ty.freeVariables;
-  top.typerep = ty.typerep;
+  top.typerep = animateAttributeOnType(allAttrs, ty.typerep);
   top.sourceLocation = name.location;
   
   
@@ -771,7 +771,7 @@ top::StructDeclarator ::= name::MaybeName  ty::TypeModifierExpr  e::Expr  attrs:
     end;
   top.localdefs := thisdcl;
   top.freeVariables = ty.freeVariables ++ e.freeVariables;
-  top.typerep = ty.typerep;
+  top.typerep = animateAttributeOnType(allAttrs, ty.typerep);
   top.sourceLocation = 
     case name.maybename of
     | just(n) -> n.location
