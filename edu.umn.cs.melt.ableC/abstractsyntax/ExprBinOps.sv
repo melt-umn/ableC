@@ -228,42 +228,52 @@ top::BinOp ::= op::NumOp
   top.typerep = op.typerep;
 }
 
-nonterminal NumOp with location, lop, rop, pp, host<NumOp>, lifted<NumOp>, typerep;
+nonterminal NumOp with location, lop, rop, pp, host<NumOp>, lifted<NumOp>, typerep, collectedTypeQualifiers;
 
 abstract production addOp
 top::NumOp ::=
 {
   propagate host, lifted;
   top.pp = text("+");
-  top.typerep = usualAdditiveConversionsOnTypes(top.lop.typerep, top.rop.typerep);
+  top.typerep = addQualifiers(top.collectedTypeQualifiers,
+    usualAdditiveConversionsOnTypes(top.lop.typerep, top.rop.typerep));
+  top.collectedTypeQualifiers := [];
 }
 abstract production subOp
 top::NumOp ::=
 {
   propagate host, lifted;
   top.pp = text("-");
-  top.typerep = usualSubtractiveConversionsOnTypes(top.lop.typerep, top.rop.typerep);
+  top.typerep = addQualifiers(top.collectedTypeQualifiers,
+    usualSubtractiveConversionsOnTypes(top.lop.typerep, top.rop.typerep));
+  top.collectedTypeQualifiers := [];
 }
 abstract production mulOp
 top::NumOp ::=
 {
   propagate host, lifted;
   top.pp = text("*");
-  top.typerep = usualArithmeticConversionsOnTypes(top.lop.typerep, top.rop.typerep);
+  top.typerep = addQualifiers(top.collectedTypeQualifiers,
+    usualArithmeticConversionsOnTypes(top.lop.typerep, top.rop.typerep));
+  top.collectedTypeQualifiers := [];
 }
 abstract production divOp
 top::NumOp ::=
 {
   propagate host, lifted;
   top.pp = text("/");
-  top.typerep = usualArithmeticConversionsOnTypes(top.lop.typerep, top.rop.typerep);
+  top.typerep = addQualifiers(top.collectedTypeQualifiers,
+    usualArithmeticConversionsOnTypes(top.lop.typerep, top.rop.typerep));
+  top.collectedTypeQualifiers := [];
 }
 abstract production modOp
 top::NumOp ::=
 {
   propagate host, lifted;
   top.pp = text("%");
-  top.typerep = usualArithmeticConversionsOnTypes(top.lop.typerep, top.rop.typerep);
+  top.typerep = addQualifiers(top.collectedTypeQualifiers,
+    usualArithmeticConversionsOnTypes(top.lop.typerep, top.rop.typerep));
+  top.collectedTypeQualifiers := [];
 }
 
 --------------------------------------------------------------------------------
