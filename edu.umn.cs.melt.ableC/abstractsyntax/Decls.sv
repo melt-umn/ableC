@@ -479,8 +479,9 @@ top::ParameterDecl ::= storage::[StorageClass]  bty::BaseTypeExpr  mty::TypeModi
   top.errors <- name.valueRedeclarationCheckNoCompatible;
 }
 
-
 synthesized attribute refId :: String; -- TODO move this later?
+-- Name of the extension that declared this struct/union
+synthesized attribute moduleName :: Maybe<String>;
 
 nonterminal StructDecl with location, pp, host<StructDecl>, lifted<StructDecl>, maybename, errors, globalDecls, defs, env, tagEnv, givenRefId, refId, moduleName, returnType, freeVariables;
 

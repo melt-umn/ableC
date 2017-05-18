@@ -335,11 +335,16 @@ Type ::= qs::[Qualifier] base::Type
  {
    return
      case a of
-       tagType(_, refIdTagType(_, _, refId)) ->
+     | tagType(_, refIdTagType(_, _, refId)) ->
          case lookupRefId(refId, env) of
-         | item :: _ -> orElse(item.moduleName, a.moduleName)
-         | _ -> error("Undefined refId " ++ refId)
+-- The type is a tag type, with a definition: Check the attributes on the definition for a module name
+         | item :: _ -> item.moduleName
+-- The type is a tag type, without a definition: The type belongs to host
+         | _ -> nothing()
          end
-     | _ -> a.moduleName
+-- The type is an attributed type: Check the attributes for a module name first, then the base type
+     | attributedType(attrs, bt) -> orElse(attrs.moduleName, moduleName(env, bt))
+-- Other types do not have a module name
+     | _ -> nothing()
      end;
  }
