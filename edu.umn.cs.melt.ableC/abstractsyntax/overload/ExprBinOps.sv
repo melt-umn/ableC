@@ -1,5 +1,7 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax:overload;
 
+import edu:umn:cs:melt:ableC:abstractsyntax:construction;
+
 aspect default production
 top::BinOp ::=
 {
@@ -9,6 +11,8 @@ top::BinOp ::=
 aspect production assignOp
 top::BinOp ::= op::AssignOp
 {
+  local tmpName::String = "_tmp" ++ toString(genInt());
+
   local option1::Maybe<(Expr ::= Expr Expr Location)> = op.binaryProd;
   local option2::Maybe<(Expr ::= Expr Expr Location)> = 
     do (bindMaybe, returnMaybe) {
@@ -17,12 +21,27 @@ top::BinOp ::= op::AssignOp
         decorate baseOp with {lop = top.lop; rop = top.rop;}.binaryProd;
       return
         \ lhs::Expr rhs::Expr loc::Location ->
-          -- TODO: Slight bug here, lhs is used twice
-          binaryOpExpr(
-            lhs,
-            assignOp(eqOp(location=loc), location=loc),
-            baseProd(lhs, rhs, loc),
-          location=loc);
+          -- ({${top.lop.typerep} *${tmpName} = &${lhs}; *${tmpName} = *${tmpName} ${baseOp} ${rhs}})
+          stmtExpr(
+            mkDecl(
+              tmpName,
+              pointerType([], top.lop.typerep),
+              unaryOpExprDefault(addressOfOp(location=loc), lhs, location=loc),
+              loc),
+            binaryOpExpr(
+              unaryOpExprDefault(
+                dereferenceOp(location=loc),
+                declRefExpr(name(tmpName, location=loc), location=loc),
+                location=loc),
+              assignOp(eqOp(location=loc), location=loc),
+              baseProd(
+                unaryOpExprDefault(
+                  dereferenceOp(location=loc),
+                  declRefExpr(name(tmpName, location=loc), location=loc),
+                  location=loc),
+                rhs, loc),
+              location=loc),
+            location=loc);
     };
   top.binaryProd = orElse(option1, option2);
 }
