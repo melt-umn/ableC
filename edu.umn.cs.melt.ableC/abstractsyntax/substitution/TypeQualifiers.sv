@@ -27,15 +27,6 @@ top::Qualifier ::=
   propagate substituted;
 }
 
-aspect production pluggableQualifier
-top::Qualifier ::= isPositive::Boolean appliesWithinRef::Boolean
-                   compat::(Boolean ::= Qualifier)
-{
-  propagate substituted;
-}
-
-
-
 aspect production inlineQualifier
 top::SpecialSpecifier ::=
 {

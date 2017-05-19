@@ -1,7 +1,7 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax;
 
 {-- Type qualifiers (cv or cvr qualifiers) -}
-nonterminal Qualifier with pp, host<Qualifier>, lifted<Qualifier>, qualname, qualIsPositive, qualIsNegative, qualAppliesWithinRef, qualCompat;
+closed nonterminal Qualifier with pp, host<Qualifier>, lifted<Qualifier>, qualname, qualIsPositive, qualIsNegative, qualAppliesWithinRef, qualCompat;
 
 synthesized attribute qualname :: String;
 synthesized attribute qualIsPositive :: Boolean;
@@ -65,19 +65,6 @@ top::Qualifier ::=
   top.qualAppliesWithinRef = true;
   top.qualCompat = \qualToCompare::Qualifier ->
     case qualToCompare of uuRestrictQualifier() -> true | _ -> false end;
-}
-
-abstract production pluggableQualifier
-top::Qualifier ::= isPositive::Boolean appliesWithinRef::Boolean
-                   compat::(Boolean ::= Qualifier)
-{
-  propagate host, lifted;
-  top.pp = text(top.qualname); -- TODO: print qualifier name in error messages but not in generated code
-  top.qualname = "";
-  top.qualIsPositive = isPositive;
-  top.qualIsNegative = !isPositive;
-  top.qualAppliesWithinRef = appliesWithinRef;
-  top.qualCompat = compat;
 }
 
 {-- Specifiers that apply to specific types.

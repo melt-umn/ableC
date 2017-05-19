@@ -13,19 +13,19 @@ imports edu:umn:cs:melt:ableC:abstractsyntax:overload as ovrld;
  -
  - The functor attribute 'substituted' computes a transformation to generate a tree with the
  - rewrites specified by the 'substitutions' attribute.  substitutions is a list of Substitutions,
- - which each can recive inherited attributes to see what is being substituted, and synthesised
+ - which each can receive inherited attributes to see what is being substituted, and synthesized
  - attributes corresponding to the result of performing a substitution.  
  -
- - In every production that would potenitally want to perform a substitution, the incoming
- - subsitutions are decorated with the relavent parameters and the corresponding Maybe attribute
+ - In every production that would potentially want to perform a substitution, the incoming
+ - subsitutions are decorated with the relevant parameters and the corresponding Maybe attribute
  - is accessed, to possibly find a value for substituted different than the current node.  
  -
- - Since this transformation is env-independant, productions that forward based on the env must
+ - Since this transformation is env-independent, productions that forward based on the env must
  - propagate substituted.  It is recommended, however, that all productions do this anyway, similar
  - to pp.  
  - 
  - Substitution is a closed nonterminal in the same way as Def, as extensions may wish to specify
- - new substitutions to perform on extension prodctions.  However, extensions cannot specify a new
+ - new substitutions to perform on extension productions.  However, extensions cannot specify a new
  - substitution for a host production, since there is no way of specifying a new equation for the
  - substituted attribute on a host production.   
  -}
