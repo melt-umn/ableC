@@ -81,13 +81,13 @@ top::Stmt ::= t::Type n::Name init::Expr
   forwards to
     declStmt(
       variableDecls(
-        [], [],
+        [], nilAttribute(),
         directTypeExpr(t),
         consDeclarator(
           declarator(
             n,
             baseTypeExpr(),
-            [],
+            nilAttribute(),
             justInitializer(exprInitializer(init))),
           nilDeclarator())));
         

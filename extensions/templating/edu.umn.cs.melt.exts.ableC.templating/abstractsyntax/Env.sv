@@ -5,17 +5,19 @@ imports silver:util:raw:treemap as tm;
 synthesized attribute templateParams::[Name];
 synthesized attribute decl::Decl;
 synthesized attribute isItemValue::Boolean;
+synthesized attribute isItemForwardDecl::Boolean;
 
-nonterminal TemplateItem with templateParams, decl, sourceLocation, isItemValue, isItemTypedef;
+nonterminal TemplateItem with templateParams, decl, sourceLocation, isItemValue, isItemTypedef, isItemForwardDecl;
 
 abstract production templateItem
-top::TemplateItem ::= params::[Name] isItemTypedef::Boolean sourceLocation::Location decl::Decl
+top::TemplateItem ::= isItemTypedef::Boolean isItemForwardDecl::Boolean sourceLocation::Location params::[Name] decl::Decl
 {
   top.templateParams = params;
   top.decl = decl;
   top.sourceLocation = sourceLocation;
   top.isItemValue = !isItemTypedef;
   top.isItemTypedef = isItemTypedef;
+  top.isItemForwardDecl = isItemForwardDecl;
 }
 
 abstract production errorTemplateItem
@@ -26,6 +28,7 @@ top::TemplateItem ::=
   top.sourceLocation = builtin;
   top.isItemValue = false;
   top.isItemTypedef = false;
+  top.isItemForwardDecl = false;
 }
 
 synthesized attribute templates::Scope<TemplateItem> occurs on Env;
@@ -98,7 +101,10 @@ top::Name ::= n::String
   top.templateRedeclarationCheck =
     case templates of
     | [] -> []
-    | v :: _ -> 
+    | v :: _ ->
+      if v.isItemForwardDecl
+      then []
+      else
         [err(top.location, 
           "Redeclaration of " ++ n ++ ". Original (from line " ++
           toString(v.sourceLocation.line) ++ ")")]

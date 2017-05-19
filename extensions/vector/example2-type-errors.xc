@@ -15,6 +15,11 @@ int main(int argc, char **argv) {
   b[1] += 7;
   b[3] = 6;
   printf("b: %s\n", show(b));
+
+  c.append("a");
+  c.insert("a", 3.2);
+  c.extend(3);
+  
   if (a != c)
     return 1;
   if (a == b)

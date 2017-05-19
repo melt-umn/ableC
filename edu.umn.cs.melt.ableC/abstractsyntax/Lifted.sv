@@ -50,6 +50,7 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax;
 
 synthesized attribute lifted<a>::a;
 synthesized attribute globalDecls::[Decorated Decl] with ++;
+synthesized attribute unfoldedGlobalDecls::[Decorated Decl];
 
 {--
  - Wrapper production for a decl that first performs some sort of check for whether something is in
@@ -95,13 +96,13 @@ top::Expr ::= decls::Decls lifted::Expr
 {
   propagate host;
   top.errors := decls.errors ++ lifted.errors;
-  top.pp = pp"injectGlobalDeclsExpr {${ppImplode(line(), decls.pps)}} (${lifted.pp})";
+  top.pp = pp"injectGlobalDeclsExpr ${braces(nestlines(2, ppImplode(line(), decls.pps)))} (${lifted.pp})";
   
   -- Insert defs from decls at the global scope
   top.defs := globalDefsDef(decls.defs) :: lifted.defs;
 
   -- Note that the invariant over `globalDecls` and `lifted` is maintained.
-  top.globalDecls := decls.globalDecls ++ unfoldDecoratedDecl(decls) ++ lifted.globalDecls;
+  top.globalDecls := decls.unfoldedGlobalDecls ++ lifted.globalDecls;
   top.lifted = lifted.lifted;
   
   -- Define other attributes to be the same as on lifted
@@ -121,13 +122,13 @@ top::Stmt ::= decls::Decls lifted::Stmt
 {
   propagate host;
   top.errors := decls.errors ++ lifted.errors;
-  top.pp = pp"injectGlobalDeclsStmt {${ppImplode(line(), decls.pps)}} (${lifted.pp})";
+  top.pp = pp"injectGlobalDeclsStmt ${braces(nestlines(2, ppImplode(line(), decls.pps)))} (${lifted.pp})";
   
   -- Insert defs from decls at the global scope
   top.defs := globalDefsDef(decls.defs) :: lifted.defs;
 
   -- Note that the invariant over `globalDecls` and `lifted` is maintained.
-  top.globalDecls := decls.globalDecls ++ unfoldDecoratedDecl(decls) ++ lifted.globalDecls;
+  top.globalDecls := decls.unfoldedGlobalDecls ++ lifted.globalDecls;
   top.lifted = lifted.lifted;
   
   -- Define other attributes to be the same as on lifted
@@ -146,7 +147,7 @@ abstract production injectGlobalDeclsTypeExpr
 top::BaseTypeExpr ::= decls::Decls lifted::BaseTypeExpr
 {
   propagate host;
-  top.pp = pp"injectGlobalDeclsTypeExpr {${ppImplode(line(), decls.pps)}} (${lifted.pp})";
+  top.pp = pp"injectGlobalDeclsTypeExpr ${braces(nestlines(2, ppImplode(line(), decls.pps)))} (${lifted.pp})";
   top.errors := decls.errors ++ lifted.errors;
   top.typerep = lifted.typerep;
   
@@ -154,7 +155,7 @@ top::BaseTypeExpr ::= decls::Decls lifted::BaseTypeExpr
   top.defs := globalDefsDef(decls.defs) :: lifted.defs;
 
   -- Note that the invariant over `globalDecls` and `lifted` is maintained.
-  top.globalDecls := decls.globalDecls ++ unfoldDecoratedDecl(decls) ++ lifted.globalDecls;
+  top.globalDecls := decls.unfoldedGlobalDecls ++ lifted.globalDecls;
   top.lifted = lifted.lifted;
   
   -- Define other attributes to be the same as on lifted
@@ -175,26 +176,12 @@ aspect production consGlobalDecl
 top::GlobalDecls ::= h::Decl  t::GlobalDecls
 {
   propagate host;
- 
-  local newDecls::Decls = foldDecl(map(\ d::Decorated Decl -> d.lifted, h.globalDecls));
-  local newDefs::[Def] = foldr(append, [], map((.defs), h.globalDecls));
-
-  top.lifted = consGlobalDecl(decls(newDecls), consGlobalDecl(h.lifted, t.lifted));
   
-  t.env = addEnv(newDefs ++ h.defs, top.env);
+  local newDecls::Decls = foldDecl(map(\ d::Decorated Decl -> d.lifted, h.globalDecls));
+  top.lifted = consGlobalDecl(decls(newDecls), consGlobalDecl(h.lifted, t.lifted));
 }
 
 -- Utility functions
-function unfoldDecoratedDecl
-[Decorated Decl] ::= decl::Decorated Decls
-{
-  return
-    case decl of
-      nilDecl() -> []
-    | consDecl(d,ds) -> d :: unfoldDecoratedDecl(ds)
-    end;
-}
-
 function globalDeclsDefs
 [Def] ::= d::[Decorated Decl]
 {

@@ -126,14 +126,14 @@ concrete productions top::InitDeclarator_c
     { top.declaredIdent = d.declaredIdent;
       d.givenType = ast:baseTypeExpr();
       top.ast =
-        [ast:declarator(d.declaredIdent, d.ast, [ast:simpleAsm(a.ast)], ast:nothingInitializer())];
+        [ast:declarator(d.declaredIdent, d.ast, ast:consAttribute(ast:simpleAsm(a.ast), ast:nilAttribute()), ast:nothingInitializer())];
     }
 | d::Declarator_c  a::SimpleAsmStatement_c  aa::Attributes_c
     operator=Cpp_Attribute_high_prec
     { top.declaredIdent = d.declaredIdent;
       d.givenType = ast:baseTypeExpr();
       top.ast =
-        [ast:declarator(d.declaredIdent, d.ast, [ast:simpleAsm(a.ast)] ++ aa.ast, ast:nothingInitializer())];
+        [ast:declarator(d.declaredIdent, d.ast, ast:consAttribute(ast:simpleAsm(a.ast), aa.ast), ast:nothingInitializer())];
     }
 
 
@@ -146,7 +146,7 @@ concrete productions top::DeclarationSpecifiers_c
       top.typeQualifiers = t.typeQualifiers;
       top.specialSpecifiers = t.specialSpecifiers;
       top.mutateTypeSpecifiers = t.mutateTypeSpecifiers;
-      top.attributes = h.ast ++ t.attributes; }
+      top.attributes = ast:appendAttribute(h.ast, t.attributes); }
 | h::Attributes_c
     precedence = 10 -- See InitDeclarator above.
     -- Looking at a function decl: DeclarationSpecifiers Declarator . DeclarationList CompoundStatement
@@ -167,7 +167,7 @@ concrete productions top::SpecifierQualifierList_c
       top.typeQualifiers = t.typeQualifiers;
       top.mutateTypeSpecifiers = t.mutateTypeSpecifiers;
       top.specialSpecifiers = t.specialSpecifiers;
-      top.attributes = h.ast ++ t.attributes; }
+      top.attributes = ast:appendAttribute(h.ast, t.attributes); }
 | h::Attributes_c 
     { top.preTypeSpecifiers = [];
       top.realTypeSpecifiers = [];
@@ -231,14 +231,14 @@ concrete productions top::StructOrUnionSpecifier_c
 | su::StructOrUnion_c id::Identifier_t '{' '}'
     { top.realTypeSpecifiers =
         case su of
-        | struct_c(_) -> [ast:structTypeExpr(top.givenQualifiers, ast:structDecl([], ast:justName(ast:fromId(id)), ast:foldStructItem([]), location=top.location))]
-        | union_c(_) -> [ast:unionTypeExpr(top.givenQualifiers, ast:unionDecl([], ast:justName(ast:fromId(id)), ast:foldStructItem([]), location=top.location))]
+        | struct_c(_) -> [ast:structTypeExpr(top.givenQualifiers, ast:structDecl(ast:nilAttribute(), ast:justName(ast:fromId(id)), ast:foldStructItem([]), location=top.location))]
+        | union_c(_) -> [ast:unionTypeExpr(top.givenQualifiers, ast:unionDecl(ast:nilAttribute(), ast:justName(ast:fromId(id)), ast:foldStructItem([]), location=top.location))]
         end; }
 | su::StructOrUnion_c '{' '}'
     { top.realTypeSpecifiers =
         case su of
-        | struct_c(_) -> [ast:structTypeExpr(top.givenQualifiers, ast:structDecl([], ast:nothingName(), ast:foldStructItem([]), location=top.location))]
-        | union_c(_) -> [ast:unionTypeExpr(top.givenQualifiers, ast:unionDecl([], ast:nothingName(), ast:foldStructItem([]), location=top.location))]
+        | struct_c(_) -> [ast:structTypeExpr(top.givenQualifiers, ast:structDecl(ast:nilAttribute(), ast:nothingName(), ast:foldStructItem([]), location=top.location))]
+        | union_c(_) -> [ast:unionTypeExpr(top.givenQualifiers, ast:unionDecl(ast:nilAttribute(), ast:nothingName(), ast:foldStructItem([]), location=top.location))]
         end; }
 
 ------------------
@@ -285,7 +285,7 @@ concrete productions top::ParameterDeclaration_c
       d.givenType = ast:baseTypeExpr();
       local bt :: ast:BaseTypeExpr =
         ast:figureOutTypeFromSpecifiers(ds.location, ds.typeQualifiers, ds.preTypeSpecifiers, ds.realTypeSpecifiers, ds.mutateTypeSpecifiers);
-      top.ast = ast:parameterDecl(ds.storageClass, bt, d.ast, ast:justName(d.declaredIdent), ds.attributes ++ aa.ast);
+      top.ast = ast:parameterDecl(ds.storageClass, bt, d.ast, ast:justName(d.declaredIdent), ast:appendAttribute(ds.attributes, aa.ast));
       }
 | ds::DeclarationSpecifiers_c  d::AbstractDeclarator_c  aa::Attributes_c
     { top.declaredIdents = [];
@@ -293,7 +293,7 @@ concrete productions top::ParameterDeclaration_c
       d.givenType = ast:baseTypeExpr();
       local bt :: ast:BaseTypeExpr =
         ast:figureOutTypeFromSpecifiers(ds.location, ds.typeQualifiers, ds.preTypeSpecifiers, ds.realTypeSpecifiers, ds.mutateTypeSpecifiers);
-      top.ast = ast:parameterDecl(ds.storageClass, bt, d.ast, ast:nothingName(), ds.attributes ++ aa.ast);
+      top.ast = ast:parameterDecl(ds.storageClass, bt, d.ast, ast:nothingName(), ast:appendAttribute(ds.attributes, aa.ast));
     }
 -- wtf gcc, first declspecs have attributes and then they're supposed to appear here??
 --| dspecs::DeclarationSpecifiers_c Attributes_c

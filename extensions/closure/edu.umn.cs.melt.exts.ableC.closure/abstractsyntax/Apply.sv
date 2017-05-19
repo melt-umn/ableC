@@ -1,4 +1,10 @@
 grammar edu:umn:cs:melt:exts:ableC:closure:abstractsyntax;
+  
+aspect production ovrld:callExpr
+top::Expr ::= f::Expr  a::Exprs
+{
+  overloads <- [pair("edu:umn:cs:melt:exts:ableC:closure:closure", applyExpr(f, a, location=top.location))];
+}
 
 global applyExprFwrd::Expr = parseExpr(s"""
 ({proto_typedef __closure_type__;
@@ -10,7 +16,7 @@ top::Expr ::= fn::Expr args::Exprs
 {
   propagate substituted;
 
-  top.pp = parens(concat([fn.pp, parens(ppImplode(cat(comma(), space()), args.pps))]));
+  top.pp = parens(ppConcat([fn.pp, parens(ppImplode(cat(comma(), space()), args.pps))]));
   
   local localErrors :: [Message] =
     (if isClosureType(fn.typerep)

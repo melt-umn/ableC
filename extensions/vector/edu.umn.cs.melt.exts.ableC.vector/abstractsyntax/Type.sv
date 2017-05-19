@@ -32,62 +32,6 @@ top::Type ::= q::[Qualifier] sub::Type
   
   top.withoutTypeQualifiers = vectorType([], sub);
   top.withTypeQualifiers = vectorType(top.addedTypeQualifiers ++ q, sub);
-
-  top.ovrld:lBinaryPlusProd =
-    case top.ovrld:otherType of
-      vectorType(_, s) ->
-        if compatibleTypes(sub, s, true)
-        then just(appendVector(_, _, location=_))
-        else nothing()
-    | _ -> nothing()
-    end;
-    
-  top.ovrld:lAssignPlusProd =
-    case top.ovrld:otherType of
-      vectorType(_, s) ->
-        if compatibleTypes(sub, s, true)
-        then just(appendAssignVector(_, _, location=_))
-        else nothing()
-    | _ -> nothing()
-    end;
-  
-  top.ovrld:lBinaryEqProd =
-    case top.ovrld:otherType of
-      vectorType(_, s) ->
-        if compatibleTypes(sub, s, true)
-        then just(eqVector(_, _, location=_))
-        else nothing()
-    | _ -> nothing()
-    end;
-  
-  top.ovrld:memberProd =
-    case top.ovrld:otherName of
-      "length"   -> just(lengthVector(_, location=_))
-    | "size"     -> just(lengthVector(_, location=_))
-    | "capacity" -> just(capacityVector(_, location=_))
-    | "elem_size" -> just(elemSizeVector(_, location=_))
-    | _ -> nothing()
-    end;
-  
-  top.ovrld:subscriptProd =
-    case top.ovrld:otherType of
-      builtinType(_, signedType(_)) -> just(subscriptVector(_, _, location=_))
-    | builtinType(_, unsignedType(_)) -> just(subscriptVector(_, _, location=_))
-    | _ -> nothing()
-    end;
-  
-  top.ovrld:subscriptAssignProd =
-    case top.ovrld:otherType, top.ovrld:otherType2 of
-      builtinType(_, signedType(_)), s ->
-        if compatibleTypes(sub, s, true)
-        then just(subscriptAssignVector(_, _, _, _, location=_))
-        else nothing()
-    | builtinType(_, unsignedType(_)), s ->
-        if compatibleTypes(sub, s, true)
-        then just(subscriptAssignVector(_, _, _, _, location=_))
-        else nothing()
-    | _, _ -> nothing()
-    end;
   
   top.showProd =
     case sub.showProd of
@@ -96,14 +40,34 @@ top::Type ::= q::[Qualifier] sub::Type
     end;
 
   forwards to
-    pointerType(
+    tagType(
       q,
-      tagType(
-        [],
-        refIdTagType(
-          structSEU(),
-          templateMangledName("_vector_s", [sub]),
-          templateMangledRefId("_vector_s", [sub]))));
+      refIdTagType(
+        structSEU(),
+        templateMangledName("_vector_s", [sub]),
+        templateMangledRefId("_vector_s", [sub])));
+}
+
+-- Check if a type is a vector type in a non-interfering way
+function isVectorType
+Boolean ::= t::Type env::Decorated Env
+{
+  local refId::String =
+    case t of
+      tagType(_, refIdTagType(_, _, refId)) -> refId
+    | _ -> ""
+    end;
+  local refIds::[RefIdItem] = lookupRefId(refId, env);
+  local valueItems::[ValueItem] = lookupValue("_contents", head(refIds).tagEnv);
+  local ptrType::Type = head(valueItems).typerep;
+
+  return
+    case refIds, valueItems, ptrType of
+      [], _, _ -> false
+    | _, [], _ -> false
+    | _, _, pointerType(_, pointerType(_, _)) -> true
+    | _, _, _ -> false
+    end;
 }
 
 -- Find the sub-type of a vector type in a non-interfering way
@@ -112,7 +76,7 @@ Type ::= t::Type env::Decorated Env
 {
   local refId::String =
     case t of
-      pointerType(_, tagType(_, refIdTagType(_, _, refId))) -> refId
+      tagType(_, refIdTagType(_, _, refId)) -> refId
     | _ -> ""
     end;
   local refIds::[RefIdItem] = lookupRefId(refId, env);
@@ -123,7 +87,7 @@ Type ::= t::Type env::Decorated Env
     case refIds, valueItems, ptrType of
       [], _, _ -> errorType()
     | _, [], _ -> errorType()
-    | _, _, pointerType(_, sub) -> sub
+    | _, _, pointerType(_, pointerType(_, sub)) -> sub
     | _, _, _ -> errorType()
     end;
 }

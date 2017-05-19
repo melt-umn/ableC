@@ -134,6 +134,31 @@ top::Expr ::= s::String
   propagate substituted;
 }
 
+aspect production ovrld:unaryOpExpr
+top::Expr ::= op::UnaryOp  e::Expr
+{
+  propagate substituted;
+}
+aspect production ovrld:arraySubscriptExpr
+top::Expr ::= lhs::Expr  rhs::Expr
+{
+  propagate substituted;
+}
+aspect production ovrld:callExpr
+top::Expr ::= f::Expr  a::Exprs
+{
+  propagate substituted;
+}
+aspect production ovrld:memberExpr
+top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
+{
+  propagate substituted;
+}
+aspect production ovrld:binaryOpExpr
+top::Expr ::= lhs::Expr  op::BinOp  rhs::Expr
+{
+  propagate substituted;
+}
 
 aspect production hackUnused
 top::Expr ::=

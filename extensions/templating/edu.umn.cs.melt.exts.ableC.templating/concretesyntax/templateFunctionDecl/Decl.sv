@@ -52,7 +52,7 @@ concrete productions top::TemplateInitialFunctionDefinition_c
         ast:figureOutTypeFromSpecifiers(d.location, [], [], [], []);
 
       top.ast = 
-        ast:functionDecl([], [], bt, d.ast, d.declaredIdent, [], ast:foldDecl(l.ast), top.givenStmt);
+        ast:functionDecl([], [], bt, d.ast, d.declaredIdent, ast:nilAttribute(), ast:foldDecl(l.ast), top.givenStmt);
     }
     action {
       -- Unfortunate duplication. This production is necessary for K&R compatibility

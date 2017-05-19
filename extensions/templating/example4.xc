@@ -6,8 +6,8 @@ template<k, v>
 struct treemap_s {
   k key;
   v value;
-  struct treemap_s *left;
-  struct treemap_s *right;
+  treemap_s<k, v> *left;
+  treemap_s<k, v> *right;
 };
 
 using treemap<k, v> = treemap_s<k, v>*;

@@ -206,15 +206,23 @@ top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
   top.freeVariables = lhs.freeVariables;
   
   local isPointer::Boolean =
-    case lhs.typerep of
-    | pointerType(_, tagType(q, refIdTagType(_, _, rid))) -> true
+    case lhs.typerep.withoutAttributes of
+    | pointerType(_, sub) ->
+        case sub.withoutAttributes of
+          tagType(q, refIdTagType(_, _, rid)) -> true
+        | _ -> false
+        end
     | tagType(q, refIdTagType(_, _, rid)) -> false
     | _ -> false
     end;
   
   local quals_refid :: Pair<[Qualifier] String> =
-    case lhs.typerep of
-    | pointerType(_, tagType(q, refIdTagType(_, _, rid))) -> pair(q, rid)
+    case lhs.typerep.withoutAttributes of
+    | pointerType(_, sub) ->
+        case sub.withoutAttributes of
+          tagType(q, refIdTagType(_, _, rid)) -> pair(q, rid)
+        | _ -> pair([], "")
+        end
     | tagType(q, refIdTagType(_, _, rid)) -> pair(q, rid)
     | _ -> pair([], "")
     end;

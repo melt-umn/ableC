@@ -2,6 +2,10 @@ grammar edu:umn:cs:melt:exts:ableC:templating:mda_test;
 
 import edu:umn:cs:melt:ableC:host;
 
+copper_mda testTemplateStructForwardDecl(ablecParser) {
+  edu:umn:cs:melt:exts:ableC:templating:concretesyntax:templateStructForwardDecl;
+}
+
 copper_mda testTemplateStructDecl(ablecParser) {
   edu:umn:cs:melt:exts:ableC:templating:concretesyntax:templateStructDecl;
 }

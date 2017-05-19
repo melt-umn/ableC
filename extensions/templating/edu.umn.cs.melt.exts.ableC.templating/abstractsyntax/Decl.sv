@@ -31,12 +31,12 @@ top::Decl ::= params::[Name] n::Name ty::TypeName
       templateDef(
         n.name,
         templateItem(
-          params, true, n.location,
+          true, false, n.location, params,
           typedefDecls(
-            [],
+            nilAttribute(),
             ty.bty,
             consDeclarator(
-              declarator(n, ty.mty, [], nothingInitializer()),
+              declarator(n, ty.mty, nilAttribute(), nothingInitializer()),
               nilDeclarator()))))]);
   
   forwards to
@@ -45,16 +45,65 @@ top::Decl ::= params::[Name] n::Name ty::TypeName
     else fwrd;
 }
 
-abstract production templateStructDecl
-top::Decl ::= params::[Name] attrs::[Attribute] n::Name dcls::StructItemList
+abstract production templateStructForwardDecl
+top::Decl ::= params::[Name] attrs::Attributes n::Name
 {
-  top.pp = concat([pp"template<", ppImplode(text(", "), map((.pp), params)), pp">", line(),
-                   pp"struct ", ppAttributes(attrs), text(n.name), space(),
-                   braces(nestlines(2, terminate(cat(semi(),line()), dcls.pps))), semi()]);
+  top.pp =
+    ppConcat([pp"template<", ppImplode(text(", "), map((.pp), params)), pp">", line(),
+              pp"struct ", ppAttributes(attrs), text(n.name), space(), semi()]);
+  top.substituted =
+    templateStructForwardDecl(
+      map(\ n::Name -> decorate n with {substitutions = top.substitutions;}.substituted, params),
+      attrs.substituted,
+      n.substituted);
+  
+  local localErrors::[Message] =
+    if !top.isTopLevel
+    then [err(n.location, "Template declarations must be global")]
+    else n.templateRedeclarationCheck ++ duplicateParameterCheck(params, []);
+  
+  local fwrd::Decl =
+    defsDecl([
+      templateDef(
+        n.name,
+        templateItem(
+          true, true, n.location, params,
+          -- maybeDecl {typedef __attribute__((refId("edu:umn:cs:melt:exts:ableC:templating:__name__"))) struct __name__ __name__;}
+          maybeValueDecl(
+            n.name,
+            typedefDecls(
+              consAttribute(
+                gccAttribute(
+                  consAttrib(
+                    appliedAttrib(
+                      attribName(name("refId", location=builtin)),
+                      consExpr(
+                        stringLiteral(s"\"edu:umn:cs:melt:exts:ableC:templating:${n.name}\"", location=builtin),
+                        nilExpr())),
+                    nilAttrib())),
+                attrs),
+              tagReferenceTypeExpr([], structSEU(), n),
+              consDeclarator(
+                declarator(n, baseTypeExpr(), nilAttribute(), nothingInitializer()),
+                nilDeclarator())))))]);
+  
+  forwards to
+    if !null(localErrors)
+    then decls(consDecl(warnDecl(localErrors), consDecl(fwrd, nilDecl())))
+    else fwrd;
+}
+
+abstract production templateStructDecl
+top::Decl ::= params::[Name] attrs::Attributes n::Name dcls::StructItemList
+{
+  top.pp =
+    ppConcat([pp"template<", ppImplode(text(", "), map((.pp), params)), pp">", line(),
+              pp"struct ", ppAttributes(attrs), text(n.name), space(),
+              braces(nestlines(2, terminate(cat(semi(),line()), dcls.pps))), semi()]);
   top.substituted =
     templateStructDecl(
       map(\ n::Name -> decorate n with {substitutions = top.substitutions;}.substituted, params),
-      map(\ a::Attribute -> decorate a with {substitutions = top.substitutions;}.substituted, attrs),
+      attrs.substituted,
       n.substituted,
       dcls.substituted);
   
@@ -68,19 +117,30 @@ top::Decl ::= params::[Name] attrs::[Attribute] n::Name dcls::StructItemList
       templateDef(
         n.name,
         templateItem(
-          params, true, n.location,
+          true, false, n.location, params,
           decls(
             foldDecl([
-              -- typedef struct __name__ __name__;
-              typedefDecls(
-                [],
-                tagReferenceTypeExpr([], structSEU(), n),
-                consDeclarator(
-                  declarator(n, baseTypeExpr(), [], nothingInitializer()),
-                  nilDeclarator())),
+              -- maybeDecl {typedef __attribute__((refId("edu:umn:cs:melt:exts:ableC:templating:__name__"))) struct __name__ __name__;}
+              maybeValueDecl(
+                n.name,
+                typedefDecls(
+                  consAttribute(
+                    gccAttribute(
+                      consAttrib(
+                        appliedAttrib(
+                          attribName(name("refId", location=builtin)),
+                          consExpr(
+                            stringLiteral(s"\"edu:umn:cs:melt:exts:ableC:templating:${n.name}\"", location=builtin),
+                            nilExpr())),
+                        nilAttrib())),
+                    nilAttribute()),
+                  tagReferenceTypeExpr([], structSEU(), n),
+                  consDeclarator(
+                    declarator(n, baseTypeExpr(), nilAttribute(), nothingInitializer()),
+                    nilDeclarator()))),
               -- struct __name__ { ... };
               typeExprDecl(
-                [],
+                nilAttribute(),
                 structTypeExpr(
                   [],
                   structDecl(attrs, justName(n), dcls, location=n.location)))]))))]);
@@ -94,7 +154,8 @@ top::Decl ::= params::[Name] attrs::[Attribute] n::Name dcls::StructItemList
 abstract production templateFunctionDecl
 top::Decl ::= params::[Name] d::FunctionDecl
 {
-  top.pp = concat([pp"template<", ppImplode(text(", "), map((.pp), params)), pp">", line(), d.pp]);
+  top.pp =
+    ppConcat([pp"template<", ppImplode(text(", "), map((.pp), params)), pp">", line(), d.pp]);
   top.substituted =
     templateFunctionDecl(
       map(\ n::Name -> decorate n with {substitutions = top.substitutions;}.substituted, params),
@@ -116,9 +177,7 @@ top::Decl ::= params::[Name] d::FunctionDecl
           templateDef(
             n.name,
             templateItem(
-              params,
-              false,
-              d.sourceLocation,
+              false, false, d.sourceLocation, params,
               functionDeclaration(
                 functionDecl(
                   if !containsBy(storageClassEq, staticStorageClass(), storage)

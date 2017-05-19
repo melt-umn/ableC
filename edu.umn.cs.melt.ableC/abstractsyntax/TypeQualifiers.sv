@@ -119,3 +119,9 @@ function getQualifiers
     end;
 }
 
+-- Compute the mangled name for a list of qualifers to use as part of a mangled name for a type
+function mangleQualifiers
+String ::= qs::[Qualifier]
+{
+  return implode("_", sortBy(stringLte, map((.qualname), qs))); 
+}
