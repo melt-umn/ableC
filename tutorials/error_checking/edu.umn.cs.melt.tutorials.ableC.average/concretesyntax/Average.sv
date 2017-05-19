@@ -7,7 +7,7 @@ imports edu:umn:cs:melt:tutorials:ableC:average:abstractsyntax;
 
 marking terminal AverageOp_t '~~';
 
-concrete production skeleton_c
+concrete production averageExpr_c
 top::AddMulNoneOp_c ::= '~~'
 {
   top.ast = averageExpr(top.leftExpr, top.rightExpr, location=top.location);

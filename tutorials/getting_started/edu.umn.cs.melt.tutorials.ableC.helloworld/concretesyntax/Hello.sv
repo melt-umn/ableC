@@ -7,7 +7,7 @@ imports edu:umn:cs:melt:tutorials:ableC:helloworld:abstractsyntax;
 
 marking terminal Hello_t 'hello!';
 
-concrete production skeleton_c
+concrete production hello_c
 s::Stmt_c ::= sk::Hello_t
 {
   s.ast = hello();
