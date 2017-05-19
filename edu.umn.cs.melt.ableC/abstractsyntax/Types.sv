@@ -9,7 +9,7 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax;
  - Variants: builtin, pointer, array, function, tagged, noncanonical.
  - Noncanonical forwards, and so doesn't need any attributes, etc attached to it.
  -}
-nonterminal Type with lpp, rpp, host<Type>, baseTypeExpr, typeModifierExpr, mangledName, moduleName, integerPromotions, defaultArgumentPromotions, defaultLvalueConversion, defaultFunctionArrayLvalueConversion, isIntegerType, isScalarType, isArithmeticType, withoutAttributes, withTypeQualifiers, addedTypeQualifiers;
+nonterminal Type with lpp, rpp, host<Type>, baseTypeExpr, typeModifierExpr, mangledName, moduleName, integerPromotions, defaultArgumentPromotions, defaultLvalueConversion, defaultFunctionArrayLvalueConversion, isIntegerType, isScalarType, isArithmeticType, withoutAttributes, withTypeQualifiers, addedTypeQualifiers, showlpp, showrpp;
 
 -- Used to turn a Type back into a TypeName
 synthesized attribute baseTypeExpr :: BaseTypeExpr;
@@ -37,6 +37,10 @@ synthesized attribute withoutAttributes :: Type;
 synthesized attribute withTypeQualifiers :: Type;
 inherited attribute addedTypeQualifiers :: [Qualifier];
 
+-- pretty print that should be used in messages to user but not in generated code
+synthesized attribute showlpp :: Document;
+synthesized attribute showrpp :: Document;
+
 aspect default production
 top::Type ::=
 {
@@ -60,6 +64,8 @@ top::Type ::=
   propagate host;
   top.lpp = text("/*err*/");
   top.rpp = text("");
+  top.showlpp = top.lpp;
+  top.showrpp = top.rpp;
   top.baseTypeExpr = errorTypeExpr([]);
   top.typeModifierExpr = baseTypeExpr();
   top.mangledName = "error";
@@ -88,6 +94,10 @@ top::Type ::= q::[Qualifier]  bt::BuiltinType
     ppConcat([terminate(space(), map((.pp), q)),
             bt.pp]);
   top.rpp = notext();
+  top.showlpp =
+    ppConcat([terminate(space(), map(text, map((.qualname), q))),
+            bt.pp]);
+  top.showrpp = top.rpp;
   top.baseTypeExpr = builtinTypeExpr(q, bt);
   top.typeModifierExpr = baseTypeExpr();
   top.mangledName = s"${mangleQualifiers(q)}_builtin_${bt.mangledName}_";
@@ -114,6 +124,9 @@ top::Type ::= q::[Qualifier]  target::Type
   top.lpp = ppConcat([ target.lpp, space(), ppImplode( space(), map( (.pp), q ) ),
                      text("*") ]);
   top.rpp = target.rpp;
+  top.showlpp = ppConcat([ target.showlpp, space(), text("*"),
+                     space(), ppImplode( space(), map(text, map( (.qualname), q )) )]);
+  top.showrpp = target.showrpp;
   top.baseTypeExpr = target.baseTypeExpr;
   top.typeModifierExpr = pointerTypeExpr(q, target.typeModifierExpr);
   top.mangledName = s"${mangleQualifiers(q)}_pointer_${target.mangledName}_";
@@ -157,6 +170,11 @@ top::Type ::= element::Type  indexQualifiers::[Qualifier]  sizeModifier::ArraySi
     terminate(space(), map((.pp), indexQualifiers) ++ sizeModifier.pps),
     sub.pp
     ])), element.rpp);
+  top.showlpp = element.showlpp;
+  top.showrpp = cat(brackets(ppConcat([
+    terminate(space(), map(text, map((.qualname), indexQualifiers)) ++ sizeModifier.pps),
+    sub.pp
+    ])), element.showrpp);
   top.baseTypeExpr = element.baseTypeExpr;
   top.typeModifierExpr =
     case sub of
@@ -235,6 +253,8 @@ top::Type ::= result::Type  sub::FunctionType
   --TODO should this space be here? also TODO: ordering? result lpp before sub.lpp maybe? TODO: actually sub.lpp is always nothing. FIXME
   top.lpp = ppConcat([ sub.lpp, space(), result.lpp ]);
   top.rpp = cat(sub.rpp, result.rpp);
+  top.showlpp = ppConcat([ sub.lpp, space(), result.showlpp ]);
+  top.showrpp = cat(sub.rpp, result.showrpp);
   top.baseTypeExpr = result.baseTypeExpr;
   top.typeModifierExpr =
     case sub of
@@ -306,6 +326,8 @@ top::Type ::= q::[Qualifier]  sub::TagType
   propagate host;
   top.lpp = ppConcat([ terminate( space(), map( (.pp), q ) ), sub.pp ]);
   top.rpp = notext();
+  top.showlpp = ppConcat([ terminate( space(), map(text, map( (.qualname), q )) ), sub.pp ]);
+  top.showrpp = top.rpp;
   top.baseTypeExpr =
     case sub of
       enumTagType(ref) -> enumTypeExpr(q, new(ref))
@@ -380,6 +402,9 @@ top::Type ::= q::[Qualifier]  bt::Type
   top.lpp = ppConcat([ ppImplode( space(), map( (.pp), q)), space(),
                      text("_Atomic"), parens(cat(bt.lpp, bt.rpp))]);
   top.rpp = notext();
+  top.showlpp = ppConcat([ ppImplode( space(), map(text, map( (.qualname), q))), space(),
+                     text("_Atomic"), parens(cat(bt.showlpp, bt.showrpp))]);
+  top.showrpp = top.rpp;
   top.mangledName = s"${mangleQualifiers(q)}_atomic_${bt.mangledName}_";
   top.baseTypeExpr = atomicTypeExpr(q, typeName(bt.baseTypeExpr, bt.typeModifierExpr));
   top.typeModifierExpr = baseTypeExpr();
@@ -404,6 +429,8 @@ top::Type ::= attrs::Attributes  bt::Type
   propagate host;
   top.lpp = ppConcat([ ppAttributes(attrs), space(), bt.lpp]);
   top.rpp = bt.rpp;
+  top.showlpp = ppConcat([ ppAttributes(attrs), space(), bt.showlpp]);
+  top.showrpp = bt.showrpp;
   top.mangledName = bt.mangledName;
   top.moduleName = orElse(attrs.moduleName, bt.moduleName);
   top.baseTypeExpr = attributedTypeExpr(attrs, bt.baseTypeExpr);
@@ -435,6 +462,8 @@ top::Type ::= bt::Type  bytes::Integer
   propagate host;
   top.lpp = ppConcat([ text("__attribute__((__vector_size__(" ++ toString(bytes) ++ "))) "), bt.lpp]);
   top.rpp = bt.rpp;
+  top.showlpp = ppConcat([ text("__attribute__((__vector_size__(" ++ toString(bytes) ++ "))) "), bt.showlpp]);
+  top.showrpp = bt.showrpp;
   top.mangledName = s"vector_${bt.mangledName}_${toString(bytes)}_";
   top.moduleName = bt.moduleName;
   -- Translate vectorType
@@ -471,6 +500,8 @@ top::Type ::= sub::NoncanonicalType
   propagate host;
   top.lpp = sub.lpp;
   top.rpp = sub.rpp;
+  top.showlpp = top.lpp;
+  top.showrpp = top.rpp;
   top.baseTypeExpr = sub.baseTypeExpr;
   top.typeModifierExpr = sub.typeModifierExpr;
 

@@ -15,7 +15,7 @@ synthesized attribute isScalarType :: Boolean; -- pointers or arithmetic
 function showType
 String ::= t::Type
 {
-  return show(80, cat(t.lpp, t.rpp));
+  return show(80, cat(t.showlpp, t.showrpp));
 }
 
 
