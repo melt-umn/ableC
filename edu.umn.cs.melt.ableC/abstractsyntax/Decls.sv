@@ -249,6 +249,7 @@ top::Declarators ::=
 }
 
 nonterminal Declarator with pps, host<Declarator>, lifted<Declarator>, errors, globalDecls, defs, env, baseType, typeModifiersIn, typerep, sourceLocation, isTopLevel, isTypedef, givenAttributes, returnType, freeVariables;
+flowtype Declarator = decorate {env, returnType, baseType, givenAttributes, isTopLevel, isTypedef};
 
 autocopy attribute isTypedef :: Boolean;
 
