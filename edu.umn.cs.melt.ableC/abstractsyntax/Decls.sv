@@ -135,7 +135,7 @@ abstract production typeExprDecl
 top::Decl ::= attrs::Attributes ty::BaseTypeExpr
 {
   propagate host, lifted;
-  top.pp = cat( ty.pp, semi() );
+  top.pp = ppConcat( ppAttributes(attrs) :: [ty.pp, semi()] );
   top.errors := ty.errors;
   top.globalDecls := ty.globalDecls;
   top.defs := ty.defs;
