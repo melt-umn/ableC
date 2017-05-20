@@ -1,13 +1,14 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax;
 
-nonterminal Qualifiers with mangledName, qualifiers, pp;
+nonterminal Qualifiers with mangledName, qualifiers, pp, host<Qualifiers>;
 
 synthesized attribute qualifiers :: [Qualifier];
 
 abstract production consQualifier
 top::Qualifiers ::= h::Qualifier  t::Qualifiers
 {
-  top.mangledName = show(80, h.pp) ++ "_" ++ t.mangledName;
+  top.host = if h.qualIsHost then consQualifier(h, t.host) else t.host;
+  top.mangledName = h.mangledName ++ "_" ++ t.mangledName;
   top.qualifiers = cons(h, t.qualifiers);
   top.pp = ppConcat([h.pp, space(), t.pp]);
 }
@@ -15,13 +16,14 @@ top::Qualifiers ::= h::Qualifier  t::Qualifiers
 abstract production nilQualifier
 top::Qualifiers ::=
 {
+  propagate host;
   top.mangledName = "";
   top.qualifiers = [];
   top.pp = text("");
 }
 
 {-- Type qualifiers (cv or cvr qualifiers) -}
-closed nonterminal Qualifier with pp, qualIsPositive, qualIsNegative, qualAppliesWithinRef, qualCompat;
+closed nonterminal Qualifier with pp, qualIsPositive, qualIsNegative, qualAppliesWithinRef, qualCompat, qualIsHost, mangledName;
 
 synthesized attribute qualIsPositive :: Boolean;
 synthesized attribute qualIsNegative :: Boolean;
@@ -34,48 +36,59 @@ synthesized attribute qualAppliesWithinRef :: Boolean;
 
 synthesized attribute qualCompat :: (Boolean ::= Qualifier);
 
+-- set to false to drop qualifier in generated code
+synthesized attribute qualIsHost :: Boolean;
+
 abstract production constQualifier
 top::Qualifier ::=
 {
   top.pp = text("const");
+  top.mangledName = "const";
   top.qualIsPositive = true;
   top.qualIsNegative = false;
   top.qualAppliesWithinRef = false;
   top.qualCompat = \qualToCompare::Qualifier ->
     case qualToCompare of constQualifier() -> true | _ -> false end;
+  top.qualIsHost = true;
 }
 
 abstract production volatileQualifier
 top::Qualifier ::=
 {
   top.pp = text("volatile");
+  top.mangledName = "volatile";
   top.qualIsPositive = true;
   top.qualIsNegative = false;
   top.qualAppliesWithinRef = true;
   top.qualCompat = \qualToCompare::Qualifier ->
     case qualToCompare of volatileQualifier() -> true | _ -> false end;
+  top.qualIsHost = true;
 }
 
 abstract production restrictQualifier
 top::Qualifier ::=
 {
   top.pp = text("restrict");
+  top.mangledName = "restrict";
   top.qualIsPositive = false;
   top.qualIsNegative = false;
   top.qualAppliesWithinRef = true;
   top.qualCompat = \qualToCompare::Qualifier ->
     case qualToCompare of restrictQualifier() -> true | _ -> false end;
+  top.qualIsHost = true;
 }
 
 abstract production uuRestrictQualifier
 top::Qualifier ::=
 {
   top.pp = text("__restrict");
+  top.mangledName = "__restrict";
   top.qualIsPositive = false;
   top.qualIsNegative = false;
   top.qualAppliesWithinRef = true;
   top.qualCompat = \qualToCompare::Qualifier ->
     case qualToCompare of uuRestrictQualifier() -> true | _ -> false end;
+  top.qualIsHost = true;
 }
 
 {-- Specifiers that apply to specific types.
