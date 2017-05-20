@@ -9,7 +9,7 @@ top::Expr ::= l::TypeName  r::TypeName
   top.globalDecls := l.globalDecls ++ r.globalDecls;
   top.defs := l.defs ++ r.defs;
   top.freeVariables = l.freeVariables ++ r.freeVariables;
-  top.typerep = builtinType([], signedType(intType()));
+  top.typerep = builtinType(nilQualifier(), signedType(intType()));
 }
 abstract production vaArgExpr
 top::Expr ::= e::Expr  ty::TypeName
@@ -32,7 +32,7 @@ top::Expr ::= ty::TypeName  e::MemberDesignator
   top.globalDecls := ty.globalDecls ++ e.globalDecls;
   top.defs := ty.defs ++ e.defs;
   top.freeVariables = ty.freeVariables ++ e.freeVariables;
-  top.typerep = builtinType([], signedType(intType()));
+  top.typerep = builtinType(nilQualifier(), signedType(intType()));
 }
 
 nonterminal MemberDesignator with pp, host<MemberDesignator>, lifted<MemberDesignator>, errors, globalDecls, defs, env, returnType, freeVariables;
@@ -86,7 +86,7 @@ top::Expr ::= e::Expr
   top.errors := e.errors;
   top.defs := e.defs;
   top.globalDecls := e.globalDecls;
-  top.typerep = builtinType([], signedType(intType()));
+  top.typerep = builtinType(nilQualifier(), signedType(intType()));
   top.freeVariables = e.freeVariables;
 }
 
@@ -98,7 +98,7 @@ top::Expr ::=
   top.errors := [];
   top.globalDecls := [];
   top.defs := [];
-  top.typerep = builtinType([], voidType());
+  top.typerep = builtinType(nilQualifier(), voidType());
   top.freeVariables = [];
 }
 
@@ -110,7 +110,7 @@ top::Expr ::= eval::Expr  expected::Expr
   top.errors := eval.errors ++ expected.errors;
   top.globalDecls := eval.globalDecls ++ expected.globalDecls;
   top.defs := eval.defs ++ expected.defs;
-  top.typerep = builtinType([], signedType(intType()));
+  top.typerep = builtinType(nilQualifier(), signedType(intType()));
   top.freeVariables = eval.freeVariables ++ expected.freeVariables;
 }
 
@@ -122,7 +122,7 @@ top::Expr ::= lastParam::Name  valist::Name
   top.errors := [];
   top.globalDecls := [];
   top.defs := [];
-  top.typerep = builtinType([], voidType());
+  top.typerep = builtinType(nilQualifier(), voidType());
   top.freeVariables = [];
 }
 abstract production vaEndExpr
@@ -133,7 +133,7 @@ top::Expr ::= valist::Name
   top.errors := [];
   top.globalDecls := [];
   top.defs := [];
-  top.typerep = builtinType([], voidType());
+  top.typerep = builtinType(nilQualifier(), voidType());
   top.freeVariables = [];
 }
 

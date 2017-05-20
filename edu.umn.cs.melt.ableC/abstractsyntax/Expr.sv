@@ -61,7 +61,8 @@ top::Expr ::= l::String
   top.globalDecls := [];
   top.defs := [];
   top.freeVariables = [];
-  top.typerep = pointerType([], builtinType([constQualifier()], signedType(charType())));
+  top.typerep = pointerType(nilQualifier(),
+    builtinType(foldQualifier([constQualifier()]), signedType(charType())));
 }
 abstract production parenExpr
 top::Expr ::= e::Expr
@@ -98,7 +99,7 @@ top::Expr ::= op::UnaryTypeOp  e::ExprOrTypeName
   top.globalDecls := e.globalDecls;
   top.defs := e.defs;
   top.freeVariables = e.freeVariables;
-  top.typerep = builtinType([], signedType(intType())); -- TODO sizeof / alignof result type
+  top.typerep = builtinType(nilQualifier(), signedType(intType())); -- TODO sizeof / alignof result type
 }
 abstract production arraySubscriptExpr
 top::Expr ::= lhs::Expr  rhs::Expr
@@ -216,15 +217,15 @@ top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
     | _ -> false
     end;
   
-  local quals_refid :: Pair<[Qualifier] String> =
+  local quals_refid :: Pair<Qualifiers String> =
     case lhs.typerep.withoutAttributes of
     | pointerType(_, sub) ->
         case sub.withoutAttributes of
           tagType(q, refIdTagType(_, _, rid)) -> pair(q, rid)
-        | _ -> pair([], "")
+        | _ -> pair(nilQualifier(), "")
         end
     | tagType(q, refIdTagType(_, _, rid)) -> pair(q, rid)
-    | _ -> pair([], "")
+    | _ -> pair(nilQualifier(), "")
     end;
   
   local refids :: [RefIdItem] =
@@ -238,7 +239,7 @@ top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
       errorType()
     else if null(valueitems) then
       errorType()
-    else addQualifiers(quals_refid.fst, head(valueitems).typerep);
+    else addQualifiers(quals_refid.fst.qualifiers, head(valueitems).typerep);
   top.errors <-
     if null(refids) then 
       [err(lhs.location, "expression does not have defined fields (got " ++ showType(lhs.typerep) ++ ")")]
@@ -347,7 +348,8 @@ top::Expr ::=
   top.globalDecls := [];
   top.defs := [];
   top.freeVariables = [];
-  top.typerep = pointerType([], builtinType([constQualifier()], signedType(charType()))); -- const char *
+  top.typerep = pointerType(nilQualifier(),
+    builtinType(foldQualifier([constQualifier()]), signedType(charType()))); -- const char *
 }
 
 -- C11

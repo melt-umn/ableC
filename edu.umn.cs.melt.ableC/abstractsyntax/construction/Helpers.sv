@@ -6,12 +6,12 @@ imports edu:umn:cs:melt:ableC:concretesyntax as cst;
 
 
 function figureOutTypeFromSpecifiers
-BaseTypeExpr ::= l::Location  q::[Qualifier]  pre_ts::[String]  real_ts::[BaseTypeExpr]  mod::[TypeSpecifierMutator]
+BaseTypeExpr ::= l::Location  q::Qualifiers  pre_ts::[String]  real_ts::[BaseTypeExpr]  mod::[TypeSpecifierMutator]
 {
   return if !null(mod) then
     case mod of
     | modifyTypeSpecifier(f) :: [] -> 
-        f(q, figureOutTypeFromSpecifiers(l, [], pre_ts, real_ts, []))
+        f(q, figureOutTypeFromSpecifiers(l, nilQualifier(), pre_ts, real_ts, []))
     | _ ->
         errorTypeExpr([err(l, "Multiple type specifiers" {- TODO -})])
     end
@@ -37,7 +37,7 @@ BaseTypeExpr ::= l::Location  q::[Qualifier]  pre_ts::[String]  real_ts::[BaseTy
  - according to the C11 standard.
  -}
 function interpretTypeSpecifiers
-Maybe<BaseTypeExpr> ::= q::[Qualifier]  sorted_type_specifiers::[String]
+Maybe<BaseTypeExpr> ::= q::Qualifiers  sorted_type_specifiers::[String]
 {
   return case sorted_type_specifiers of
   -- signed char:
@@ -153,7 +153,7 @@ nonterminal TypeSpecifierMutator;
 {-- Takes a type specifier, *and* qualifiers (instead of allowing that te to have them)
  -}
 abstract production modifyTypeSpecifier
-top::TypeSpecifierMutator ::= f::(BaseTypeExpr ::= [Qualifier] BaseTypeExpr)
+top::TypeSpecifierMutator ::= f::(BaseTypeExpr ::= Qualifiers BaseTypeExpr)
 {
 }
 

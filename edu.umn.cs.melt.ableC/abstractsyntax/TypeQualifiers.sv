@@ -1,9 +1,28 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax;
 
-{-- Type qualifiers (cv or cvr qualifiers) -}
-closed nonterminal Qualifier with pp, host<Qualifier>, lifted<Qualifier>, qualname, qualIsPositive, qualIsNegative, qualAppliesWithinRef, qualCompat;
+nonterminal Qualifiers with mangledName, qualifiers, pp;
 
-synthesized attribute qualname :: String;
+synthesized attribute qualifiers :: [Qualifier];
+
+abstract production consQualifier
+top::Qualifiers ::= h::Qualifier  t::Qualifiers
+{
+  top.mangledName = show(80, h.pp) ++ "_" ++ t.mangledName;
+  top.qualifiers = cons(h, t.qualifiers);
+  top.pp = ppConcat([h.pp, space(), t.pp]);
+}
+
+abstract production nilQualifier
+top::Qualifiers ::=
+{
+  top.mangledName = "";
+  top.qualifiers = [];
+  top.pp = text("");
+}
+
+{-- Type qualifiers (cv or cvr qualifiers) -}
+closed nonterminal Qualifier with pp, qualIsPositive, qualIsNegative, qualAppliesWithinRef, qualCompat;
+
 synthesized attribute qualIsPositive :: Boolean;
 synthesized attribute qualIsNegative :: Boolean;
 -- Variables refer to memory locations and thus there is an implicit ref
@@ -18,9 +37,7 @@ synthesized attribute qualCompat :: (Boolean ::= Qualifier);
 abstract production constQualifier
 top::Qualifier ::=
 {
-  propagate host, lifted;
-  top.pp = text(top.qualname);
-  top.qualname = "const";
+  top.pp = text("const");
   top.qualIsPositive = true;
   top.qualIsNegative = false;
   top.qualAppliesWithinRef = false;
@@ -31,9 +48,7 @@ top::Qualifier ::=
 abstract production volatileQualifier
 top::Qualifier ::=
 {
-  propagate host, lifted;
-  top.pp = text(top.qualname);
-  top.qualname = "volatile";
+  top.pp = text("volatile");
   top.qualIsPositive = true;
   top.qualIsNegative = false;
   top.qualAppliesWithinRef = true;
@@ -44,9 +59,7 @@ top::Qualifier ::=
 abstract production restrictQualifier
 top::Qualifier ::=
 {
-  propagate host, lifted;
-  top.pp = text(top.qualname);
-  top.qualname = "restrict";
+  top.pp = text("restrict");
   top.qualIsPositive = false;
   top.qualIsNegative = false;
   top.qualAppliesWithinRef = true;
@@ -57,9 +70,7 @@ top::Qualifier ::=
 abstract production uuRestrictQualifier
 top::Qualifier ::=
 {
-  propagate host, lifted;
-  top.pp = text(top.qualname);
-  top.qualname = "__restrict";
+  top.pp = text("__restrict");
   top.qualIsPositive = false;
   top.qualIsNegative = false;
   top.qualAppliesWithinRef = true;
@@ -100,28 +111,28 @@ top::SpecialSpecifier ::= e::Expr
 function containsQualifier
 Boolean ::= q::Qualifier t::Type
 {
-  return containsBy(qualifierCompat, q, getQualifiers(t));
+  return containsBy(qualifierCompat, q, getQualifiers(t).qualifiers);
 }
 
 function getQualifiers
-[Qualifier] ::= t::Type
+Qualifiers ::= t::Type
 {
   return
     case t of
-    | errorType()           -> []
+    | errorType()           -> nilQualifier()
     | builtinType(q, _)     -> q
     | tagType(q, _)         -> q
     | atomicType(q, _)      -> q
     | pointerType(q, _)     -> q
     | arrayType(_, q, _, _) -> q
     | noncanonicalType(s)   -> getQualifiers(s.canonicalType)
-    | _ -> []
+    | _ -> nilQualifier()
     end;
 }
 
--- Compute the mangled name for a list of qualifers to use as part of a mangled name for a type
-function mangleQualifiers
-String ::= qs::[Qualifier]
+function qualifierCat
+Qualifiers ::= q1::Qualifiers  q2::Qualifiers
 {
-  return implode("_", sortBy(stringLte, map((.qualname), qs))); 
+  return foldQualifier(q1.qualifiers ++ q2.qualifiers);
 }
+

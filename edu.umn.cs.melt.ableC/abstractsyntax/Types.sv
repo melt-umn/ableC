@@ -81,24 +81,24 @@ top::Type ::=
  - also includes complex numbers e.g. 'float _Complex'
  -}
 abstract production builtinType
-top::Type ::= q::[Qualifier]  bt::BuiltinType
+top::Type ::= q::Qualifiers  bt::BuiltinType
 {
   propagate host;
   top.lpp =
-    ppConcat([terminate(space(), map((.pp), q)),
-            bt.pp]);
+    ppConcat([q.pp, space(), bt.pp]);
   top.rpp = notext();
   top.baseTypeExpr = builtinTypeExpr(q, bt);
   top.typeModifierExpr = baseTypeExpr();
-  top.mangledName = s"${mangleQualifiers(q)}_builtin_${bt.mangledName}_";
+  top.mangledName = s"${q.mangledName}_builtin_${bt.mangledName}_";
   top.integerPromotions = builtinType(q, bt.integerPromotionsBuiltin);
   top.defaultArgumentPromotions = builtinType(q, bt.defaultArgumentPromotionsBuiltin);
-  top.defaultLvalueConversion = builtinType([], bt);
+  top.defaultLvalueConversion = builtinType(nilQualifier(), bt);
   top.defaultFunctionArrayLvalueConversion = top;
   top.isIntegerType = bt.isIntegerType;
   top.isArithmeticType = bt.isArithmeticType;
   top.isScalarType = bt.isArithmeticType;
-  top.withTypeQualifiers = builtinType(top.addedTypeQualifiers ++ q, bt);
+  top.withTypeQualifiers = builtinType(foldQualifier(top.addedTypeQualifiers ++
+    q.qualifiers), bt);
 }
 
 
@@ -108,20 +108,20 @@ top::Type ::= q::[Qualifier]  bt::BuiltinType
  - while 'int * const foo' is pointer([const], builtin([], int)).
  -}
 abstract production pointerType
-top::Type ::= q::[Qualifier]  target::Type
+top::Type ::= q::Qualifiers  target::Type
 {
   propagate host;
-  top.lpp = ppConcat([ target.lpp, space(), ppImplode( space(), map( (.pp), q ) ),
-                     text("*") ]);
+  top.lpp = ppConcat([ target.lpp, space(), q.pp, text("*") ]);
   top.rpp = target.rpp;
   top.baseTypeExpr = target.baseTypeExpr;
   top.typeModifierExpr = pointerTypeExpr(q, target.typeModifierExpr);
-  top.mangledName = s"${mangleQualifiers(q)}_pointer_${target.mangledName}_";
+  top.mangledName = s"${q.mangledName}_pointer_${target.mangledName}_";
   top.integerPromotions = top;
   top.defaultArgumentPromotions = top;
-  top.defaultLvalueConversion = pointerType([], target);
+  top.defaultLvalueConversion = pointerType(nilQualifier(), target);
   top.defaultFunctionArrayLvalueConversion = top;
-  top.withTypeQualifiers = pointerType(top.addedTypeQualifiers ++ q, target);
+  top.withTypeQualifiers = pointerType(foldQualifier(top.addedTypeQualifiers ++
+    q.qualifiers), target);
   
   top.isScalarType = true;
 }
@@ -148,13 +148,13 @@ top::Type ::= q::[Qualifier]  target::Type
  - function parameters.
  -}
 abstract production arrayType
-top::Type ::= element::Type  indexQualifiers::[Qualifier]  sizeModifier::ArraySizeModifier  sub::ArrayType
+top::Type ::= element::Type  indexQualifiers::Qualifiers  sizeModifier::ArraySizeModifier  sub::ArrayType
 {
   propagate host;
   top.lpp = element.lpp;
   
   top.rpp = cat(brackets(ppConcat([
-    terminate(space(), map((.pp), indexQualifiers) ++ sizeModifier.pps),
+    indexQualifiers.pp, space(), terminate(space(), sizeModifier.pps),
     sub.pp
     ])), element.rpp);
   top.baseTypeExpr = element.baseTypeExpr;
@@ -249,7 +249,7 @@ top::Type ::= result::Type  sub::FunctionType
   top.defaultLvalueConversion = top;
   top.defaultFunctionArrayLvalueConversion =
     noncanonicalType(decayedType(top,
-      pointerType([], top)));
+      pointerType(nilQualifier(), top)));
 }
 
 {-- The subtypes of functions -}
@@ -301,10 +301,10 @@ Parameters ::= args::[Type]
  - Tagged types: enum, struct, union
  -}
 abstract production tagType
-top::Type ::= q::[Qualifier]  sub::TagType
+top::Type ::= q::Qualifiers  sub::TagType
 {
   propagate host;
-  top.lpp = ppConcat([ terminate( space(), map( (.pp), q ) ), sub.pp ]);
+  top.lpp = ppConcat([ q.pp, space(), sub.pp ]);
   top.rpp = notext();
   top.baseTypeExpr =
     case sub of
@@ -313,12 +313,13 @@ top::Type ::= q::[Qualifier]  sub::TagType
       tagReferenceTypeExpr(q, kwd, name(n, location=builtinLoc("host")))
     end;
   top.typeModifierExpr = baseTypeExpr();
-  top.mangledName = s"${mangleQualifiers(q)}_tag_${sub.mangledName}_";
+  top.mangledName = s"${q.mangledName}_tag_${sub.mangledName}_";
   top.integerPromotions = top;
   top.defaultArgumentPromotions = top;
-  top.defaultLvalueConversion = tagType([], sub);
+  top.defaultLvalueConversion = tagType(nilQualifier(), sub);
   top.defaultFunctionArrayLvalueConversion = top;
-  top.withTypeQualifiers = tagType(top.addedTypeQualifiers ++ q, sub);
+  top.withTypeQualifiers = tagType(foldQualifier(top.addedTypeQualifiers ++
+    q.qualifiers), sub);
   
   top.isIntegerType = sub.isIntegerType;
   top.isArithmeticType = sub.isIntegerType;
@@ -374,13 +375,13 @@ top::StructOrEnumOrUnion ::= { top.pp = text("enum"); top.mangledName = "enum"; 
  - C11 atomic types.
  -}
 abstract production atomicType
-top::Type ::= q::[Qualifier]  bt::Type
+top::Type ::= q::Qualifiers  bt::Type
 {
   propagate host;
-  top.lpp = ppConcat([ ppImplode( space(), map( (.pp), q)), space(),
+  top.lpp = ppConcat([ q.pp, space(),
                      text("_Atomic"), parens(cat(bt.lpp, bt.rpp))]);
   top.rpp = notext();
-  top.mangledName = s"${mangleQualifiers(q)}_atomic_${bt.mangledName}_";
+  top.mangledName = s"${q.mangledName}_atomic_${bt.mangledName}_";
   top.baseTypeExpr = atomicTypeExpr(q, typeName(bt.baseTypeExpr, bt.typeModifierExpr));
   top.typeModifierExpr = baseTypeExpr();
   top.integerPromotions = top;
@@ -388,7 +389,8 @@ top::Type ::= q::[Qualifier]  bt::Type
   -- discarding qualifiers in lvalue conversion discards atomic qualifier, too.
   top.defaultLvalueConversion = bt.defaultLvalueConversion;
   top.defaultFunctionArrayLvalueConversion = top;
-  top.withTypeQualifiers = atomicType(top.addedTypeQualifiers ++ q, bt);
+  top.withTypeQualifiers = atomicType(foldQualifier(top.addedTypeQualifiers ++
+    q.qualifiers), bt);
 }
 
 {-------------------------------------------------------------------------------
@@ -567,10 +569,10 @@ top::NoncanonicalType ::= original::Type  pointer::Type
  - e.g. given: typedef volatile struct foo { } Foo;
  -    'const Foo' will have 'const' in q, and 'resolved' will have const and volatile. -}
 abstract production typedefType
-top::NoncanonicalType ::= q::[Qualifier]  n::String  resolved::Type
+top::NoncanonicalType ::= q::Qualifiers  n::String  resolved::Type
 {
   propagate host;
-  top.lpp = ppConcat([ terminate( space(), map( (.pp), q ) ), text(n) ]);
+  top.lpp = ppConcat([ q.pp, space(), text(n) ]);
   top.rpp = notext();
   top.baseTypeExpr = typedefTypeExpr(q, name(n, location=builtinLoc("host")));
   top.typeModifierExpr = baseTypeExpr();
@@ -580,7 +582,7 @@ top::NoncanonicalType ::= q::[Qualifier]  n::String  resolved::Type
 
 {-- GCC typeof type expression -}
 abstract production typeofType
-top::NoncanonicalType ::= q::[Qualifier]  resolved::Type
+top::NoncanonicalType ::= q::Qualifiers  resolved::Type
 {
   propagate host;
   top.canonicalType = resolved;-- todo: some sort of discipline of what to do with qualifiers here

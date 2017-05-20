@@ -73,7 +73,7 @@ top::UnaryOp ::=
   top.pp = text("&");
   top.preExpr = true;
   top.noLvalueConversion = true;
-  top.typerep = pointerType(top.collectedTypeQualifiers, top.op.typerep);
+  top.typerep = pointerType(foldQualifier(top.collectedTypeQualifiers), top.op.typerep);
   top.collectedTypeQualifiers := [];
 }
 abstract production dereferenceOp

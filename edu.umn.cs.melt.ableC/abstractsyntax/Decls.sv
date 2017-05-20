@@ -382,7 +382,7 @@ top::FunctionDecl ::= storage::[StorageClass]  fnquals::[SpecialSpecifier]  bty:
   
   top.errors <-
     if name.name == "main" && 
-      !compatibleTypes(bty.typerep, builtinType([], signedType(intType())), true, false)
+      !compatibleTypes(bty.typerep, builtinType(nilQualifier(), signedType(intType())), true, false)
     then [wrn(name.location, "Main function should return 'int' not " ++ showType(bty.typerep))]
     else []; -- TODO: check the rest of the signature.
 }
@@ -607,7 +607,7 @@ top::EnumDecl ::= name::MaybeName  dcls::EnumItemList
   top.freeVariables = dcls.freeVariables;
   
   dcls.env = addEnv(thisdcl, top.env);
-  dcls.containingEnum = tagType([], enumTagType(top));
+  dcls.containingEnum = tagType(nilQualifier(), enumTagType(top));
   
 
   top.errors <-

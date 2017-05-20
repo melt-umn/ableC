@@ -80,7 +80,7 @@ Type ::= a::Type  b::Type
   | builtinType(_, x), builtinType(_, y) ->
       case usualArithmeticConversions(x, y) of
       | nothing() -> errorType()
-      | just(z) -> builtinType([], z) -- qualifiers?
+      | just(z) -> builtinType(nilQualifier(), z) -- qualifiers?
       end
   -- TODO: these are not complete. they should be integers, etc.
   | pointerType(_, _), builtinType(_, _) -> a
@@ -98,13 +98,13 @@ Type ::= a::Type  b::Type
   | builtinType(_, x), builtinType(_, y) ->
       case usualArithmeticConversions(x, y) of
       | nothing() -> errorType()
-      | just(z) -> builtinType([], z) -- qualifiers?
+      | just(z) -> builtinType(nilQualifier(), z) -- qualifiers?
       end
   -- TODO: these are not complete. they should be integers, etc.
   | pointerType(_, _), builtinType(_, _) -> a
   | builtinType(_, _), pointerType(_, _) -> a
   -- The special case for subtraction:
-  | pointerType(_, _), pointerType(_, _) -> builtinType([], signedType(intType()))
+  | pointerType(_, _), pointerType(_, _) -> builtinType(nilQualifier(), signedType(intType()))
   -- extensions
   | vectorType(b1, s1), vectorType(b2, s2) ->
       if compatibleTypes(b1, b2, true, false) && s1 == s2 then a else errorType() -- TODO: no idea
@@ -118,7 +118,7 @@ Type ::= a::Type  b::Type
   | builtinType(_, x), builtinType(_, y) ->
       case usualArithmeticConversions(x, y) of
       | nothing() -> errorType()
-      | just(z) -> builtinType([], z) -- qualifiers?
+      | just(z) -> builtinType(nilQualifier(), z) -- qualifiers?
       end
   -- extensions
   | vectorType(b1, s1), vectorType(b2, s2) ->
@@ -257,16 +257,16 @@ Boolean ::= a::IntegerType  b::IntegerType
 -- if allowSubtypes is false then check qualifier equality; otherwise
 --   return true if q1 T is a supertype of q2 T, for some type T; otherwise false
 function compatibleQualifiers
-Boolean ::= q1::[Qualifier]  q2::[Qualifier]  allowSubtypes::Boolean dropOuterQual::Boolean
+Boolean ::= q1::Qualifiers  q2::Qualifiers  allowSubtypes::Boolean dropOuterQual::Boolean
 {
   local q1_filtered :: [Qualifier] =
     if   dropOuterQual
-    then filter((.qualAppliesWithinRef), q1)
-    else q1;
+    then filter((.qualAppliesWithinRef), q1.qualifiers)
+    else q1.qualifiers;
   local q2_filtered :: [Qualifier] =
     if   dropOuterQual
-    then filter((.qualAppliesWithinRef), q2)
-    else q2;
+    then filter((.qualAppliesWithinRef), q2.qualifiers)
+    else q2.qualifiers;
 
   return qualifiersSubtype(q2_filtered, q1_filtered) &&
            (allowSubtypes || qualifiersSubtype(q1_filtered, q2_filtered));
@@ -326,7 +326,7 @@ Boolean ::= lval::Type  rval::Type
     | pointerType(q1, p1), pointerType(q2, p2) ->
         (compatibleTypes(p1, p2, true, false) ||
           compatibleTypes(
-            pointerType([], builtinType([], voidType())),
+            pointerType(nilQualifier(), builtinType(nilQualifier(), voidType())),
             rval.defaultFunctionArrayLvalueConversion,
             true, true
           ) ||
@@ -341,7 +341,7 @@ Boolean ::= lval::Type  rval::Type
         rval.defaultFunctionArrayLvalueConversion.isIntegerType ||
 -- the left operand has atomic, qualified, or unqualified pointer type, and (considering the type the left operand would have after lvalue conversion) one operand is a pointer to an object type, and the other is a pointer to a qualified or unqualified version of void, and the type pointed to by the left has all the qualifiers of the type pointed to by the right;
           compatibleTypes(
-            pointerType([], builtinType([], voidType())),
+            pointerType(nilQualifier(), builtinType(nilQualifier(), voidType())),
             rval.defaultFunctionArrayLvalueConversion,
             true, true
           ) ||

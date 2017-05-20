@@ -41,7 +41,7 @@ Stmt ::= n::String init::MaybeInitializer l::Location
   return  declStmt( 
             variableDecls( [], nilAttribute(), 
               directTypeExpr(
-                builtinType([], signedType(intType()))),
+                builtinType(nilQualifier(), signedType(intType()))),
               consDeclarator( 
                 declarator( name(n, location=l), baseTypeExpr(), nilAttribute(), 
                   init) , 
@@ -96,7 +96,7 @@ Decl ::= n::String init::MaybeInitializer l::Location
 {
   return variableDecls( [], nilAttribute(), 
            directTypeExpr(
-             builtinType([], signedType(intType()))),
+             builtinType(nilQualifier(), signedType(intType()))),
            consDeclarator( 
              declarator( name(n, location=l), baseTypeExpr(), nilAttribute(), 
                init) , 

@@ -149,10 +149,10 @@ top::BaseTypeExpr ::= bty::BaseTypeExpr  mty::TypeModifierExpr
 {-- Builtin C types: void, unsigned int, signed char, float, bool, etc.
  - also includes complex numbers e.g. 'float _Complex' -}
 abstract production builtinTypeExpr
-top::BaseTypeExpr ::= q::[Qualifier]  result::BuiltinType
+top::BaseTypeExpr ::= q::Qualifiers  result::BuiltinType
 {
   propagate host, lifted;
-  top.pp = cat(terminate( space(), map( (.pp), q ) ), result.pp);
+  top.pp = ppConcat([q.pp, space(), result.pp]);
   top.typerep = builtinType(q, result);
   top.errors := [];
   top.globalDecls := [];
@@ -163,10 +163,10 @@ top::BaseTypeExpr ::= q::[Qualifier]  result::BuiltinType
 
 {-- A reference to a tag type. e.g. 'struct foo' not 'struct foo {...}' -}
 abstract production tagReferenceTypeExpr
-top::BaseTypeExpr ::= q::[Qualifier]  kwd::StructOrEnumOrUnion  name::Name
+top::BaseTypeExpr ::= q::Qualifiers  kwd::StructOrEnumOrUnion  name::Name
 {
   propagate host, lifted;
-  top.pp = ppConcat([terminate( space(), map( (.pp), q ) ), kwd.pp, space(), name.pp
+  top.pp = ppConcat([q.pp, space(), kwd.pp, space(), name.pp
     -- DEBUGGING
     --, text("/*" ++ refId ++ "*/")
     -- END DEBUGGING
@@ -226,10 +226,10 @@ top::BaseTypeExpr ::= q::[Qualifier]  kwd::StructOrEnumOrUnion  name::Name
 
 {-- An actual declaration of, not reference to, a struct. -}
 abstract production structTypeExpr
-top::BaseTypeExpr ::= q::[Qualifier]  def::StructDecl
+top::BaseTypeExpr ::= q::Qualifiers  def::StructDecl
 {
   propagate host, lifted;
-  top.pp = ppConcat([ terminate( space(), map( (.pp), q ) ), def.pp ]);
+  top.pp = ppConcat([q.pp, space(), def.pp ]);
   local name :: String = 
     case def.maybename of
     | just(n) -> n.name
@@ -245,10 +245,10 @@ top::BaseTypeExpr ::= q::[Qualifier]  def::StructDecl
 
 {-- An actual declaration of, not reference to, a union. -}
 abstract production unionTypeExpr
-top::BaseTypeExpr ::= q::[Qualifier]  def::UnionDecl
+top::BaseTypeExpr ::= q::Qualifiers  def::UnionDecl
 {
   propagate host, lifted;
-  top.pp = ppConcat([ terminate( space(), map( (.pp), q ) ), def.pp ]);
+  top.pp = ppConcat([q.pp, space(), def.pp ]);
   local name :: String = 
     case def.maybename of
     | just(n) -> n.name
@@ -264,10 +264,10 @@ top::BaseTypeExpr ::= q::[Qualifier]  def::UnionDecl
 
 {-- An actual declaration of, not reference to, an enum. -}
 abstract production enumTypeExpr
-top::BaseTypeExpr ::= q::[Qualifier]  def::EnumDecl
+top::BaseTypeExpr ::= q::Qualifiers  def::EnumDecl
 {
   propagate host, lifted;
-  top.pp = ppConcat([ terminate( space(), map( (.pp), q ) ), def.pp ]);
+  top.pp = ppConcat([q.pp, space(), def.pp ]);
   top.typerep = tagType(q, enumTagType(def));
   top.errors := def.errors;
   top.globalDecls := def.globalDecls;
@@ -278,14 +278,14 @@ top::BaseTypeExpr ::= q::[Qualifier]  def::EnumDecl
 
 {-- A name, that needs to be looked up. -}
 abstract production typedefTypeExpr
-top::BaseTypeExpr ::= q::[Qualifier]  name::Name
+top::BaseTypeExpr ::= q::Qualifiers  name::Name
 {
   propagate host, lifted;
-  top.pp = ppConcat([ terminate( space(), map( (.pp), q ) ), name.pp ]);
+  top.pp = ppConcat([q.pp, space(), name.pp ]);
 
   top.typerep = 
     if !null(name.valueLookupCheck) then errorType()
-    else noncanonicalType(typedefType(q, name.name, addQualifiers(q, name.valueItem.typerep)));
+    else noncanonicalType(typedefType(q, name.name, addQualifiers(q.qualifiers, name.valueItem.typerep)));
   top.errors := [];
   top.globalDecls := [];
   top.typeModifiers = [];
@@ -322,15 +322,15 @@ top::BaseTypeExpr ::= attrs::Attributes  bt::BaseTypeExpr
             declarator(liftedName, baseTypeExpr(), nilAttribute(), nothingInitializer()),
             nilDeclarator())),
         nilDecl()),
-      typedefTypeExpr([], liftedName));
+      typedefTypeExpr(nilQualifier(), liftedName));
 }
 {-- C11 atomic type -}
 abstract production atomicTypeExpr
-top::BaseTypeExpr ::= q::[Qualifier]  wrapped::TypeName
+top::BaseTypeExpr ::= q::Qualifiers  wrapped::TypeName
 {
   top.typerep = atomicType(q, wrapped.typerep);
   propagate host, lifted;
-  top.pp = ppConcat([ ppImplode( space(), map( (.pp), q)), space(),
+  top.pp = ppConcat([ q.pp, space(),
                      text("_Atomic"), parens(wrapped.pp)]);
   top.errors := wrapped.errors;
   top.globalDecls := wrapped.globalDecls;
@@ -342,7 +342,8 @@ top::BaseTypeExpr ::= q::[Qualifier]  wrapped::TypeName
 abstract production vaListTypeExpr
 top::BaseTypeExpr ::=
 {
-  top.typerep = pointerType([], builtinType([], voidType())); -- TODO this should be a special type, not void
+  top.typerep = pointerType(nilQualifier(),
+    builtinType(nilQualifier(), voidType())); -- TODO this should be a special type, not void
   propagate host, lifted;
   top.pp = text("__builtin_va_list");
   top.errors := [];
@@ -354,7 +355,7 @@ top::BaseTypeExpr ::=
 }
 {-- GCC typeof type -}
 abstract production typeofTypeExpr
-top::BaseTypeExpr ::= q::[Qualifier]  e::ExprOrTypeName
+top::BaseTypeExpr ::= q::Qualifiers  e::ExprOrTypeName
 {
   top.typerep = noncanonicalType(typeofType(q, e.typerep));
   propagate host, lifted;
@@ -401,7 +402,7 @@ top::TypeModifierExpr ::=
 
 {-- Pointers -}
 abstract production pointerTypeExpr
-top::TypeModifierExpr ::= q::[Qualifier]  target::TypeModifierExpr
+top::TypeModifierExpr ::= q::Qualifiers  target::TypeModifierExpr
 {
   propagate host, lifted;
   top.lpp = ppConcat([ target.lpp, space(),
@@ -409,7 +410,7 @@ top::TypeModifierExpr ::= q::[Qualifier]  target::TypeModifierExpr
                        functionTypeExprWithArgs(_, _, _) -> text("(*)")
                      | functionTypeExprWithoutArgs(_, _) -> text("(*)")
                      | _ -> text("*")
-                     end, terminate( space(), map( (.pp), q ) ) ]);
+                     end, cat(q.pp, space()) ]);
   top.rpp = target.rpp;
   top.typerep = pointerType(q, target.typerep);
   top.errors := target.errors;
@@ -419,13 +420,14 @@ top::TypeModifierExpr ::= q::[Qualifier]  target::TypeModifierExpr
 
 {-- Arrays (constant, variable, etc) -}
 abstract production arrayTypeExprWithExpr
-top::TypeModifierExpr ::= element::TypeModifierExpr  indexQualifiers::[Qualifier]  sizeModifier::ArraySizeModifier  size::Expr
+top::TypeModifierExpr ::= element::TypeModifierExpr  indexQualifiers::Qualifiers  sizeModifier::ArraySizeModifier  size::Expr
 {
   propagate host, lifted;
   top.lpp = element.lpp;
   
   top.rpp = cat(brackets(ppConcat([
-    terminate(space(), map((.pp), indexQualifiers) ++ sizeModifier.pps), 
+    indexQualifiers.pp, space(), 
+    terminate(space(), sizeModifier.pps), 
     size.pp
     ])), element.rpp);
 
@@ -437,13 +439,13 @@ top::TypeModifierExpr ::= element::TypeModifierExpr  indexQualifiers::[Qualifier
   top.freeVariables = element.freeVariables ++ size.freeVariables;
 }
 abstract production arrayTypeExprWithoutExpr
-top::TypeModifierExpr ::= element::TypeModifierExpr  indexQualifiers::[Qualifier]  sizeModifier::ArraySizeModifier
+top::TypeModifierExpr ::= element::TypeModifierExpr  indexQualifiers::Qualifiers  sizeModifier::ArraySizeModifier
 {
   propagate host, lifted;
   top.lpp = element.lpp;
   
   top.rpp = cat(brackets(
-    ppImplode(space(), map((.pp), indexQualifiers) ++ sizeModifier.pps)
+    ppConcat([indexQualifiers.pp, space(), ppImplode(space(), sizeModifier.pps)])
     ), element.rpp);
 
   top.typerep = arrayType(element.typerep, indexQualifiers, sizeModifier, incompleteArrayType());

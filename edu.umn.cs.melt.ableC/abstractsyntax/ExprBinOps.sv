@@ -107,7 +107,7 @@ top::BinOp ::= op::BoolOp
 {
   propagate host, lifted;
   top.pp = op.pp;
-  top.typerep = builtinType([], signedType(intType()));
+  top.typerep = builtinType(nilQualifier(), signedType(intType()));
 }
 
 nonterminal BoolOp with location, lop, rop, pp, host<BoolOp>, lifted<BoolOp>;
@@ -176,7 +176,7 @@ top::BinOp ::= op::CompareOp
 {
   propagate host, lifted;
   top.pp = op.pp;
-  top.typerep = builtinType([], signedType(intType()));
+  top.typerep = builtinType(nilQualifier(), signedType(intType()));
 }
 
 nonterminal CompareOp with location, lop, rop, pp, host<CompareOp>, lifted<CompareOp>;
