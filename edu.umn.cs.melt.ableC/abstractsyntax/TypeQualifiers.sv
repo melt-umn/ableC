@@ -130,23 +130,7 @@ top::SpecialSpecifier ::= e::Expr
 function containsQualifier
 Boolean ::= q::Qualifier t::Type
 {
-  return containsBy(qualifierCompat, q, getQualifiers(t).qualifiers);
-}
-
-function getQualifiers
-Qualifiers ::= t::Type
-{
-  return
-    case t of
-    | errorType()           -> nilQualifier()
-    | builtinType(q, _)     -> q
-    | tagType(q, _)         -> q
-    | atomicType(q, _)      -> q
-    | pointerType(q, _)     -> q
-    | arrayType(_, q, _, _) -> q
-    | noncanonicalType(s)   -> getQualifiers(s.canonicalType)
-    | _ -> nilQualifier()
-    end;
+  return containsBy(qualifierCompat, q, t.qualifiers);
 }
 
 function qualifierCat

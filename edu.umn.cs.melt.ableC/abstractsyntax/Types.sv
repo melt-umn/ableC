@@ -9,7 +9,7 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax;
  - Variants: builtin, pointer, array, function, tagged, noncanonical.
  - Noncanonical forwards, and so doesn't need any attributes, etc attached to it.
  -}
-nonterminal Type with lpp, rpp, host<Type>, baseTypeExpr, typeModifierExpr, mangledName, moduleName, integerPromotions, defaultArgumentPromotions, defaultLvalueConversion, defaultFunctionArrayLvalueConversion, isIntegerType, isScalarType, isArithmeticType, withoutAttributes, withTypeQualifiers, addedTypeQualifiers;
+nonterminal Type with lpp, rpp, host<Type>, baseTypeExpr, typeModifierExpr, mangledName, moduleName, integerPromotions, defaultArgumentPromotions, defaultLvalueConversion, defaultFunctionArrayLvalueConversion, isIntegerType, isScalarType, isArithmeticType, withoutAttributes, withTypeQualifiers, addedTypeQualifiers, qualifiers;
 
 -- Used to turn a Type back into a TypeName
 synthesized attribute baseTypeExpr :: BaseTypeExpr;
@@ -67,6 +67,7 @@ top::Type ::=
   top.defaultArgumentPromotions = top;
   top.defaultLvalueConversion = top;
   top.defaultFunctionArrayLvalueConversion = top;
+  top.qualifiers = [];
 
   -- The semantics for all flags is that they should be TRUE is no error is to be
   -- raised. Thus, all should be true here, to suppress errors.
@@ -99,6 +100,7 @@ top::Type ::= q::Qualifiers  bt::BuiltinType
   top.isScalarType = bt.isArithmeticType;
   top.withTypeQualifiers = builtinType(foldQualifier(top.addedTypeQualifiers ++
     q.qualifiers), bt);
+  top.qualifiers = q.qualifiers;
 }
 
 
@@ -122,6 +124,7 @@ top::Type ::= q::Qualifiers  target::Type
   top.defaultFunctionArrayLvalueConversion = top;
   top.withTypeQualifiers = pointerType(foldQualifier(top.addedTypeQualifiers ++
     q.qualifiers), target);
+  top.qualifiers = q.qualifiers;
   
   top.isScalarType = true;
 }
@@ -185,6 +188,7 @@ top::Type ::= element::Type  indexQualifiers::Qualifiers  sizeModifier::ArraySiz
   top.defaultFunctionArrayLvalueConversion = 
     noncanonicalType(decayedType(top,
       pointerType(indexQualifiers, element)));
+  top.qualifiers = indexQualifiers.qualifiers;
 }
 
 {-- The subtypes of arrays -}
@@ -320,6 +324,7 @@ top::Type ::= q::Qualifiers  sub::TagType
   top.defaultFunctionArrayLvalueConversion = top;
   top.withTypeQualifiers = tagType(foldQualifier(top.addedTypeQualifiers ++
     q.qualifiers), sub);
+  top.qualifiers = q.qualifiers;
   
   top.isIntegerType = sub.isIntegerType;
   top.isArithmeticType = sub.isIntegerType;
@@ -391,6 +396,7 @@ top::Type ::= q::Qualifiers  bt::Type
   top.defaultFunctionArrayLvalueConversion = top;
   top.withTypeQualifiers = atomicType(foldQualifier(top.addedTypeQualifiers ++
     q.qualifiers), bt);
+  top.qualifiers = q.qualifiers;
 }
 
 {-------------------------------------------------------------------------------
@@ -475,6 +481,7 @@ top::Type ::= sub::NoncanonicalType
   top.rpp = sub.rpp;
   top.baseTypeExpr = sub.baseTypeExpr;
   top.typeModifierExpr = sub.typeModifierExpr;
+  top.qualifiers = sub.canonicalType.qualifiers;
 
   -- behavior? maybe it should be pushed down? TODO
   --top.mangledName = ;
