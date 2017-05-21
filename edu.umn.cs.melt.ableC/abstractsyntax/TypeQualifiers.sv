@@ -39,6 +39,12 @@ synthesized attribute qualCompat :: (Boolean ::= Qualifier);
 -- set to false to drop qualifier in generated code
 synthesized attribute qualIsHost :: Boolean;
 
+aspect default production
+top::Qualifier ::=
+{
+  top.qualIsHost = false;
+}
+
 abstract production constQualifier
 top::Qualifier ::=
 {
