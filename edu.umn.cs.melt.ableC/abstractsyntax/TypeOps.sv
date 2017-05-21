@@ -367,7 +367,8 @@ Boolean ::= lval::Type  rval::Type
 function addQualifiers
 Type ::= qs::[Qualifier] base::Type
 {
-  base.addedTypeQualifiers = qs;
+--  base.addedTypeQualifiers = qs;
+  base.addedTypeQualifiers = [];
   return base.withTypeQualifiers;
 }
 

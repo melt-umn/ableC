@@ -85,7 +85,7 @@ top::Type ::= q::Qualifiers  bt::BuiltinType
 {
   propagate host;
   top.lpp =
-    ppConcat([q.pp, space(), bt.pp]);
+    ppConcat([terminate(space(), q.pps), bt.pp]);
   top.rpp = notext();
   top.baseTypeExpr = builtinTypeExpr(q, bt);
   top.typeModifierExpr = baseTypeExpr();
@@ -111,7 +111,7 @@ abstract production pointerType
 top::Type ::= q::Qualifiers  target::Type
 {
   propagate host;
-  top.lpp = ppConcat([ target.lpp, space(), q.pp, text("*") ]);
+  top.lpp = ppConcat([ target.lpp, space(), ppImplode(space(), q.pps), text("*") ]);
   top.rpp = target.rpp;
   top.baseTypeExpr = target.baseTypeExpr;
   top.typeModifierExpr = pointerTypeExpr(q, target.typeModifierExpr);
@@ -154,7 +154,7 @@ top::Type ::= element::Type  indexQualifiers::Qualifiers  sizeModifier::ArraySiz
   top.lpp = element.lpp;
   
   top.rpp = cat(brackets(ppConcat([
-    indexQualifiers.pp, space(), terminate(space(), sizeModifier.pps),
+    terminate(space(), indexQualifiers.pps ++ sizeModifier.pps),
     sub.pp
     ])), element.rpp);
   top.baseTypeExpr = element.baseTypeExpr;
@@ -304,7 +304,7 @@ abstract production tagType
 top::Type ::= q::Qualifiers  sub::TagType
 {
   propagate host;
-  top.lpp = ppConcat([ q.pp, space(), sub.pp ]);
+  top.lpp = ppConcat([ terminate(space(), q.pps), sub.pp ]);
   top.rpp = notext();
   top.baseTypeExpr =
     case sub of
@@ -378,7 +378,7 @@ abstract production atomicType
 top::Type ::= q::Qualifiers  bt::Type
 {
   propagate host;
-  top.lpp = ppConcat([ q.pp, space(),
+  top.lpp = ppConcat([ terminate(space(), q.pps),
                      text("_Atomic"), parens(cat(bt.lpp, bt.rpp))]);
   top.rpp = notext();
   top.mangledName = s"${q.mangledName}_atomic_${bt.mangledName}_";
@@ -572,7 +572,7 @@ abstract production typedefType
 top::NoncanonicalType ::= q::Qualifiers  n::String  resolved::Type
 {
   propagate host;
-  top.lpp = ppConcat([ q.pp, space(), text(n) ]);
+  top.lpp = ppConcat([ terminate(space(), q.pps), text(n) ]);
   top.rpp = notext();
   top.baseTypeExpr = typedefTypeExpr(q, name(n, location=builtinLoc("host")));
   top.typeModifierExpr = baseTypeExpr();

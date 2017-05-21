@@ -1,6 +1,6 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax;
 
-nonterminal Qualifiers with mangledName, qualifiers, pp, host<Qualifiers>;
+nonterminal Qualifiers with mangledName, qualifiers, pps, host<Qualifiers>;
 
 synthesized attribute qualifiers :: [Qualifier];
 
@@ -10,7 +10,7 @@ top::Qualifiers ::= h::Qualifier  t::Qualifiers
   top.host = if h.qualIsHost then consQualifier(h, t.host) else t.host;
   top.mangledName = h.mangledName ++ "_" ++ t.mangledName;
   top.qualifiers = cons(h, t.qualifiers);
-  top.pp = ppConcat([h.pp, space(), t.pp]);
+  top.pps = cons(h.pp, t.pps);
 }
 
 abstract production nilQualifier
@@ -19,7 +19,7 @@ top::Qualifiers ::=
   propagate host;
   top.mangledName = "";
   top.qualifiers = [];
-  top.pp = text("");
+  top.pps = [];
 }
 
 {-- Type qualifiers (cv or cvr qualifiers) -}

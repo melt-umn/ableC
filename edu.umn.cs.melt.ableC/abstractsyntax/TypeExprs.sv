@@ -152,7 +152,7 @@ abstract production builtinTypeExpr
 top::BaseTypeExpr ::= q::Qualifiers  result::BuiltinType
 {
   propagate host, lifted;
-  top.pp = ppConcat([q.pp, space(), result.pp]);
+  top.pp = ppConcat([terminate(space(), q.pps), result.pp]);
   top.typerep = builtinType(q, result);
   top.errors := [];
   top.globalDecls := [];
@@ -166,7 +166,7 @@ abstract production tagReferenceTypeExpr
 top::BaseTypeExpr ::= q::Qualifiers  kwd::StructOrEnumOrUnion  name::Name
 {
   propagate host, lifted;
-  top.pp = ppConcat([q.pp, space(), kwd.pp, space(), name.pp
+  top.pp = ppConcat([terminate(space(), q.pps), kwd.pp, space(), name.pp
     -- DEBUGGING
     --, text("/*" ++ refId ++ "*/")
     -- END DEBUGGING
@@ -229,7 +229,7 @@ abstract production structTypeExpr
 top::BaseTypeExpr ::= q::Qualifiers  def::StructDecl
 {
   propagate host, lifted;
-  top.pp = ppConcat([q.pp, space(), def.pp ]);
+  top.pp = ppConcat([terminate(space(), q.pps), def.pp ]);
   local name :: String = 
     case def.maybename of
     | just(n) -> n.name
@@ -248,7 +248,7 @@ abstract production unionTypeExpr
 top::BaseTypeExpr ::= q::Qualifiers  def::UnionDecl
 {
   propagate host, lifted;
-  top.pp = ppConcat([q.pp, space(), def.pp ]);
+  top.pp = ppConcat([terminate(space(), q.pps), def.pp ]);
   local name :: String = 
     case def.maybename of
     | just(n) -> n.name
@@ -267,7 +267,7 @@ abstract production enumTypeExpr
 top::BaseTypeExpr ::= q::Qualifiers  def::EnumDecl
 {
   propagate host, lifted;
-  top.pp = ppConcat([q.pp, space(), def.pp ]);
+  top.pp = ppConcat([terminate(space(), q.pps), def.pp ]);
   top.typerep = tagType(q, enumTagType(def));
   top.errors := def.errors;
   top.globalDecls := def.globalDecls;
@@ -281,7 +281,7 @@ abstract production typedefTypeExpr
 top::BaseTypeExpr ::= q::Qualifiers  name::Name
 {
   propagate host, lifted;
-  top.pp = ppConcat([q.pp, space(), name.pp ]);
+  top.pp = ppConcat([terminate(space(), q.pps), name.pp ]);
 
   top.typerep = 
     if !null(name.valueLookupCheck) then errorType()
@@ -330,7 +330,7 @@ top::BaseTypeExpr ::= q::Qualifiers  wrapped::TypeName
 {
   top.typerep = atomicType(q, wrapped.typerep);
   propagate host, lifted;
-  top.pp = ppConcat([ q.pp, space(),
+  top.pp = ppConcat([ terminate(space(), q.pps),
                      text("_Atomic"), parens(wrapped.pp)]);
   top.errors := wrapped.errors;
   top.globalDecls := wrapped.globalDecls;
@@ -410,7 +410,7 @@ top::TypeModifierExpr ::= q::Qualifiers  target::TypeModifierExpr
                        functionTypeExprWithArgs(_, _, _) -> text("(*)")
                      | functionTypeExprWithoutArgs(_, _) -> text("(*)")
                      | _ -> text("*")
-                     end, cat(q.pp, space()) ]);
+                     end, terminate(space(), q.pps) ]);
   top.rpp = target.rpp;
   top.typerep = pointerType(q, target.typerep);
   top.errors := target.errors;
@@ -426,8 +426,7 @@ top::TypeModifierExpr ::= element::TypeModifierExpr  indexQualifiers::Qualifiers
   top.lpp = element.lpp;
   
   top.rpp = cat(brackets(ppConcat([
-    indexQualifiers.pp, space(), 
-    terminate(space(), sizeModifier.pps), 
+    terminate(space(), indexQualifiers.pps ++ sizeModifier.pps),
     size.pp
     ])), element.rpp);
 
@@ -445,7 +444,7 @@ top::TypeModifierExpr ::= element::TypeModifierExpr  indexQualifiers::Qualifiers
   top.lpp = element.lpp;
   
   top.rpp = cat(brackets(
-    ppConcat([indexQualifiers.pp, space(), ppImplode(space(), sizeModifier.pps)])
+    ppImplode(space(), indexQualifiers.pps ++ sizeModifier.pps)
     ), element.rpp);
 
   top.typerep = arrayType(element.typerep, indexQualifiers, sizeModifier, incompleteArrayType());
