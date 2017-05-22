@@ -46,7 +46,7 @@ stage ("Build") {
 
     /* env.PATH is the master's path, not the executor's */
     withEnv(["PATH=${SILVER_BASE}/support/bin/:${env.PATH}"]) {
-      sh "./build"
+      sh "./build --warn-all"
     }
   }
 
