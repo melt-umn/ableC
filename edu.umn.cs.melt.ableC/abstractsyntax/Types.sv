@@ -254,6 +254,7 @@ top::Type ::= result::Type  sub::FunctionType
   top.defaultFunctionArrayLvalueConversion =
     noncanonicalType(decayedType(top,
       pointerType(nilQualifier(), top)));
+  top.qualifiers = [];
 }
 
 {-- The subtypes of functions -}
@@ -423,6 +424,7 @@ top::Type ::= attrs::Attributes  bt::Type
   top.withoutAttributes = bt.withoutAttributes;
   top.withTypeQualifiers = attributedType(attrs, bt.withTypeQualifiers);
   bt.addedTypeQualifiers = top.addedTypeQualifiers;
+  top.qualifiers = bt.qualifiers;
   top.isIntegerType = bt.isIntegerType;
   top.isScalarType = bt.isScalarType;
   top.isArithmeticType = bt.isArithmeticType;
@@ -464,6 +466,7 @@ top::Type ::= bt::Type  bytes::Integer
   top.defaultLvalueConversion = top;
   top.defaultFunctionArrayLvalueConversion = top;
   top.withTypeQualifiers = top; -- TODO Discarding Qualifiers!
+  top.qualifiers = [];
   -- TODO: dunno? left here explicitly since... dunno what to do here.
   top.isIntegerType = false;
   top.isScalarType = false;
