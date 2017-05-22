@@ -26,7 +26,7 @@ concrete productions top::DeclarationSpecifiers_c
       top.typeQualifiers = [];
       top.specialSpecifiers = [];
       top.mutateTypeSpecifiers = [];
-      top.attributes = []; }
+      top.attributes = ast:nilAttribute(); }
 
 -- TODO: need to figure this bit out, somehow. very similar to function specifiers.
 -- maybe we can unify those somehow. "SpecialSpecifiers" instead of FnQualifers in the

@@ -1,101 +1,189 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax;
 
-{- 
-Expressions that want to specify declartions to lift to a global scope
-do so by forwarding to the host production `injectGlobalDecls`.  
-
-After extracting the `host` tree, there are no extension constructs,
-but declarations need to be lifted to the proper place. 
-
-A pair of synthesized attributes can be used for this.
-- `globalDecls`: the list of declarations to lift up
-- `lifted`: the lifted tree.
-An invariant here is that all Decl nodes in the `host` tree appear in
-either `globalDecls` or in `lifted`.
-- On `Decls` nonterminals at the global level, `globalDecls` is empty
-  and all the `Decl` trees to be lifted (were in `globalDecls`) are now
-  put into `lifted`.
-- On all other nonterminals, `globalDecls` need not be empty.
-
-Another invariant is that declarations in globalDecls declare unique
-names.  Thus no fear of name clashes.  This is unrealistic, but we can
-address this later.
--}
+{--
+ - Extensions that want to specify declartions to lift to a global scope
+ - do so by forwarding to the host production `injectGlobalDecls` (or one
+ - of the corresponding ones for Stmt, Type or BaseTypeExpr.)  
+ - 
+ - After extracting the `host` tree, there are no extension constructs, but
+ - the AST contains constructs that cannot be directly translated into C, for
+ - example declarations need to be lifted to the proper place. 
+ - 
+ - A pair of synthesized attributes can be used for this.
+ - * `globalDecls`: the list of declarations to lift up
+ - * `lifted`: the lifted tree.
+ - An invariant here is that all Decl nodes in the `host` tree appear in
+ - either `globalDecls` or in `lifted`.  Also, the 'injection' productions
+ - defined here should not occur in the lifted tree.  
+ -
+ - One issue with this is how to generate the correct environment for the
+ - 'lifted' tree passed to an injection production.  The behaviour we *want* is
+ - to lift the decls to the global level, then add them to the env for the rest
+ - of the tree, including the decl which emitted the globalDecls in the first
+ - place.  This unfortunately doesn't work, because of a cyclical dependancy in
+ - that the env is needed in the first place to figure out the names of the
+ - items being injected, which are then used to generate the env.  
+ -
+ - Instead, we decorate the new decls at the level of the injection production
+ - with an environment only containing the outermost scope in the current env,
+ - and pass these new decls up the tree in the decorated form.  The defs from
+ - these decls then get passed back up the tree wrapped in 'globalDefsDef',
+ - which inserts them in the outermost scope of the environment.  To ensure
+ - that these defs are in scope for the rest of the tree, we must re-add the
+ - defs from the globalDecls being passed upward wherever a new scope is opened.
+ - 
+ - Some extensions may want to use the same global decl with the same name in
+ - multiple places.  To avoid inserting the decl more than once, the new decl
+ - must check that it has not already been defined before forwarding to
+ - something that defines the 'missing' item.  To assist with this, an
+ - extension may use the production 'maybeDecl', which takes a function to look
+ - at the env and return true or false, determining whether the given decl is
+ - to be kept.  
+ -
+ - If there are ever errors reported about something being redefined in the
+ - lifted tree, then there is a bug in the host where something that 
+ - 
+ - TODO:
+ - It would be nice to move all of this to its own grammar, but aspecting
+ - everything for lifted and globalDecls would be kind of a pain
+ -}
 
 synthesized attribute lifted<a>::a;
+synthesized attribute globalDecls::[Decorated Decl] with ++;
+synthesized attribute unfoldedGlobalDecls::[Decorated Decl];
 
--- String is name of decl, could be used to remove duplicates
-synthesized attribute globalDecls::[Pair<String Decl>] with ++;
-
-abstract production injectGlobalDecls
-top::Expr ::= globalDecls::[Pair<String Decl>] lifted::Expr
+{--
+ - Wrapper production for a decl that first performs some sort of check for whether something is in
+ - the environment before including that decl in the Decls passed to an injection production 
+ -}
+abstract production maybeDecl
+top::Decl ::= include::(Boolean ::= Decorated Env) decl::Decl
 {
- top.pp = pp"injectGlobalDecls {${ppImplode(pp"\n", decls.pps)}} (${lifted.pp})";
- top.host = injectGlobalDecls(zipWith(pair, names, unfoldDecl(decls.host)), lifted.host, location=top.location);
- 
- local decls::Decls = foldDecl(map(snd, globalDecls));
- local names::[String] = map(fst, globalDecls);
-
- decls.env = globalEnv(top.env);
- decls.isTopLevel = true;
- decls.returnType = top.returnType;
-
- top.errors := decls.errors;
-
- -- Note that the invariant over `globalDecls` and `lifted` is maintained.
- top.globalDecls :=
-   decls.globalDecls ++ 
-   zipWith(pair, names, unfoldDecl(decls.lifted)) ++
-   lifted.globalDecls;
- -- It should hold that names and unfoldDecl(decls.lifted) are the same length and
- -- correctly correspond to one another.
- top.lifted = lifted.lifted;
- 
- lifted.env = addEnv(decls.defs, top.env);
- 
- -- TODO: We are adding the new env elements to the current scope, when they should really be global
- -- Shouldn't be a problem unless there are name conflicts, doing this the right way would be less
- -- efficent.  
- forwards to lifted
- with {env = lifted.env;};
+  top.pp = cat(pp"maybe ", braces(decl.pp));
+  
+  forwards to
+    if include(top.env)
+    then decl
+    else decls(nilDecl());
 }
 
--- Inserted globalDecls before h. Should only ever get used by top-level 
--- foldGlobalDecl in concrete syntax.
-abstract production consGlobalDecl
-top::Decls ::= h::Decl  t::Decls
+-- Helpers to construct maybeDecl that checks various namespaces
+abstract production maybeValueDecl
+top::Decl ::= name::String decl::Decl
 {
- propagate host;
- 
- local newDecls::Decls =
-   foldDecl(map(snd, removeDuplicateGlobalDeclPairs(h.globalDecls, [])));
-
- top.globalDecls := [];
- top.lifted =
-   if !null(t.globalDecls)
-   then error("consGlobalDecl tail has global decls!")
-   else consDecl( 
-          decls(newDecls),
-          consDecl(
-            h.lifted,
-            t.lifted));
+  top.pp = cat(pp"maybeValue (${text(name)}) ", braces(decl.pp));
   
-  t.env = addEnv(h.defs, top.env);
+  forwards to maybeDecl(\ env::Decorated Env -> null(lookupValue(name, top.env)), decl);
+}
+abstract production maybeTagDecl
+top::Decl ::= name::String decl::Decl
+{
+  top.pp = cat(pp"maybeTag (${text(name)}) ", braces(decl.pp));
   
-  -- define pp, env, defs, etc.
-  forwards to consDecl(h, t);
+  forwards to maybeDecl(\ env::Decorated Env -> null(lookupTag(name, top.env)), decl);
+}
+abstract production maybeRefIdDecl
+top::Decl ::= name::String decl::Decl
+{
+  top.pp = cat(pp"maybeRefId (${text(name)}) ", braces(decl.pp));
+  
+  forwards to maybeDecl(\ env::Decorated Env -> null(lookupRefId(name, top.env)), decl);
 }
 
--- not used here, call with sofar as [] initially.
-function removeDuplicateGlobalDeclPairs
-[Pair<String Decl>] ::= ds::[Pair<String Decl>]  sofar::[String]
+-- Injection production for Expr
+abstract production injectGlobalDeclsExpr
+top::Expr ::= decls::Decls lifted::Expr
 {
-  return
-    case ds of
-      [] -> []
-    | pair(n, d) :: t ->
-        if containsBy(stringEq, n, sofar)
-        then removeDuplicateGlobalDeclPairs(t, sofar)
-        else pair(n, d) :: removeDuplicateGlobalDeclPairs(t, n::sofar)
-    end;
+  propagate host;
+  top.errors := decls.errors ++ lifted.errors;
+  top.pp = pp"injectGlobalDeclsExpr ${braces(nestlines(2, ppImplode(line(), decls.pps)))} (${lifted.pp})";
+  
+  -- Insert defs from decls at the global scope
+  top.defs := globalDefsDef(decls.defs) :: lifted.defs;
+
+  -- Note that the invariant over `globalDecls` and `lifted` is maintained.
+  top.globalDecls := decls.unfoldedGlobalDecls ++ lifted.globalDecls;
+  top.lifted = lifted.lifted;
+  
+  -- Define other attributes to be the same as on lifted
+  top.typerep = lifted.typerep;
+  top.freeVariables = lifted.freeVariables;
+  
+  decls.env = globalEnv(top.env);
+  decls.isTopLevel = true;
+  decls.returnType = nothing();
+
+  lifted.env = addEnv([globalDefsDef(decls.defs)], top.env);
+}
+
+-- Same as injectGlobalDeclsExpr, but on Stmt
+abstract production injectGlobalDeclsStmt
+top::Stmt ::= decls::Decls lifted::Stmt
+{
+  propagate host;
+  top.errors := decls.errors ++ lifted.errors;
+  top.pp = pp"injectGlobalDeclsStmt ${braces(nestlines(2, ppImplode(line(), decls.pps)))} (${lifted.pp})";
+  
+  -- Insert defs from decls at the global scope
+  top.defs := globalDefsDef(decls.defs) :: lifted.defs;
+
+  -- Note that the invariant over `globalDecls` and `lifted` is maintained.
+  top.globalDecls := decls.unfoldedGlobalDecls ++ lifted.globalDecls;
+  top.lifted = lifted.lifted;
+  
+  -- Define other attributes to be the same as on lifted
+  top.functiondefs := lifted.functiondefs;
+  top.freeVariables = lifted.freeVariables;
+  
+  decls.env = globalEnv(top.env);
+  decls.isTopLevel = true;
+  decls.returnType = nothing();
+  
+  lifted.env = addEnv([globalDefsDef(decls.defs)], top.env);
+}
+
+-- Same as injectGlobalDeclsExpr, but on BaseTypeExpr
+abstract production injectGlobalDeclsTypeExpr
+top::BaseTypeExpr ::= decls::Decls lifted::BaseTypeExpr
+{
+  propagate host;
+  top.pp = pp"injectGlobalDeclsTypeExpr ${braces(nestlines(2, ppImplode(line(), decls.pps)))} (${lifted.pp})";
+  top.errors := decls.errors ++ lifted.errors;
+  top.typerep = lifted.typerep;
+  
+  -- Insert defs from decls at the global scope
+  top.defs := globalDefsDef(decls.defs) :: lifted.defs;
+
+  -- Note that the invariant over `globalDecls` and `lifted` is maintained.
+  top.globalDecls := decls.unfoldedGlobalDecls ++ lifted.globalDecls;
+  top.lifted = lifted.lifted;
+  
+  -- Define other attributes to be the same as on lifted
+  top.typeModifiers = lifted.typeModifiers;
+  top.freeVariables = lifted.freeVariables;
+  
+  decls.env = globalEnv(top.env);
+  decls.isTopLevel = true;
+  decls.returnType = nothing();
+
+  lifted.env = addEnv([globalDefsDef(decls.defs)], top.env);
+}
+
+{--
+ - Inserts globalDecls before h
+ -}
+aspect production consGlobalDecl
+top::GlobalDecls ::= h::Decl  t::GlobalDecls
+{
+  propagate host;
+  
+  local newDecls::Decls = foldDecl(map(\ d::Decorated Decl -> d.lifted, h.globalDecls));
+  top.lifted = consGlobalDecl(decls(newDecls), consGlobalDecl(h.lifted, t.lifted));
+}
+
+-- Utility functions
+function globalDeclsDefs
+[Def] ::= d::[Decorated Decl]
+{
+  return [globalDefsDef(foldr(append, [], map((.defs), d)))];
 }

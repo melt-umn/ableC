@@ -1,2 +1,0 @@
-// Allows extensions to include <closure.h> or <closure.xh>
-#include <closure.h>

@@ -8,106 +8,167 @@
 #ifndef _STRING_XH
 #define _STRING_XH
 
-// These functions are in theory OK to call directly
-static inline string showString(string s) {
-  string result = GC_malloc(strlen(s) + 3);
-  sprintf((char*)result, "\"%s\"", s);
-  return result;
+struct __attribute__((refId("edu:umn:cs:melt:exts:ableC:string:string"),
+                      module("edu:umn:cs:melt:exts:ableC:string:string"))) _string_s {
+  size_t length;
+  const char *text;
+};
+
+// Functions prefixed with _ are considered internal to the implimentation of the extension
+// Other functions are in theory OK to call directly
+static inline void _check_index_string(string s, size_t i) {
+  if (i < 0 || i >= s.length) {
+    fprintf(stderr, "String index out of bounds: length %lu, index %lu", s.length, i);
+    exit(1);
+  }
 }
 
-static inline string showInt(int i) {
-  string result = GC_malloc((CHAR_BIT * sizeof(i) - 1) / 3 + 2);
-  sprintf((char*)result, "%d", i);
-  return result;
+static inline char _index_string(string s, size_t i) {
+  _check_index_string(s, i);
+  return s.text[i];
 }
 
-static inline string showFloat(double f) {
-  string result = GC_malloc((CHAR_BIT * sizeof(f) - 1) / 3 + 2);
-  sprintf((char*)result, "%f", f);
-  return result;
+static inline bool _eq_string(string s1, string s2) {
+  return !strcmp(s1.text, s2.text);
 }
 
-static inline string showChar(char c) {
-  string result = GC_malloc(4);
-  sprintf((char*)result, "'%c'", c);
-  return result;
+static inline string _append_string(string s1, string s2) {
+  char *result = GC_malloc(s1.length + s2.length + 1);
+  strcpy(result, s1.text);
+  strcat(result, s2.text);
+  return (string){s1.length + s2.length, result};
+}
+
+static inline string _repeat_string(string s, size_t num) {
+  char *result = GC_malloc(s.length * num + 1);
+  result[0] = '\0';
+  size_t i;
+  for (size_t i = 0; i < num; i++)
+    strcat(result, s.text);
+  return (string){s.length * num, result};
+}
+
+static inline string _remove_string(string s1, string s2) {
+  size_t i, j;
+  char *result = GC_malloc(s1.length + 1);
+  for (i = 0, j = 0; i < s1.length; i++) {
+    if (i > s1.length - s2.length || strncmp(s1.text + i, s2.text, s2.length)) {
+      result[j] = s1[i];
+      j++;
+    }
+    else {
+      i += s2.length - 1;
+    }
+  }
+  result[j] = '\0';
+  
+  return (string){j, result};
+}
+
+static inline string _substring(string s, size_t start, size_t end) {
+  if (start < 0 || start >= s.length || end < 0 || end >= s.length || start > end) {
+    fprintf(stderr, "Substring index out of bounds: length %lu, start %lu, end %lu", s.length, start, end);
+    exit(1);
+  }
+  char *result = GC_malloc(end - start + 1);
+  strncpy(result, s.text + start, end - start);
+  return (string){end - start, result};
+}
+
+static inline string strCharPointer(char *s) {
+  size_t len = strlen(s);
+  char *result = GC_malloc(len + 1);
+  strcpy(result, s);
+  return (string){len, result};
 }
 
 static inline string strChar(char c) {
   char *result = GC_malloc(2);
   result[0] = c;
   result[1] = '\0';
-  return (string)result;
+  return (string){1, result};
 }
 
-// Helper functions should really only be used through the extension
-static inline string _showPointer(const char *baseTypeName, void *ptr) {
-  char *result = GC_malloc(strlen(baseTypeName) + 10);
-  sprintf(result, "<%s at 0x%lx>", baseTypeName, (unsigned long)ptr);
-  return (string)result;
+static inline string strPointer(void *ptr) {
+  char *result = GC_malloc(9);
+  sprintf(result, "%lx", (unsigned long)ptr);
+  return (string){strlen(result), result};
 }
 
-static inline void _check_index_string(string s, int i) {
-  int len = s.length;
-  if (i < 0 || i >= len) {
-    fprintf(stderr, "String index out of bounds: length %d, index %d", len, i);
-    exit(1);
-  }
-}
-
-static inline char _index_string(string s, int i) {
-  _check_index_string(s, i);
-  return ((char*)s)[i];
-}
-
-static inline bool _eq_string(string s1, string s2) {
-  return !strcmp(s1, s2);
-}
-
-static inline string _append_string(string s1, string s2) {
-  string result = GC_malloc(strlen(s1) + strlen(s2) + 1);
-  strcpy((char*)result, s1);
-  strcat((char*)result, s2);
-  return result;
-}
-
-static inline string _repeat_string(string s, int num) {
-  char *result = GC_malloc(strlen(s) * num + 1);
-  result[0] = '\0';
-  int i;
-  for (int i = 0; i < num; i++)
-    strcat(result, s);
-  return (string)result;
-}
-
-static inline string _remove_string(string s1, string s2) {
-  int i, j;
-  int len1 = strlen(s1);
-  int len2 = strlen(s2);
-  char *result = GC_malloc(strlen(s1) + 1);
-  for (i = 0, j = 0; i < len1; i++) {
-    if (i > len1 - len2 || strncmp((const char*)s1 + i, s2, len2)) {
-      result[j] = s1[i];
-      j++;
-    }
-    else {
-      i += len2 - 1;
+static inline string showString(string s) {
+  char *result = GC_malloc(2 * s.length + 3); // Worst-case size, if all chars are escaped
+  result[0] = '\"';
+  size_t resultIndex = 1;
+  for (size_t i = 0; i < s.length; i++) {
+    char *tmp;
+    switch (s[i]) {
+    case '\a':
+      result[resultIndex++] = '\\';
+      result[resultIndex++] = 'a';
+      break;
+    case '\b':
+      result[resultIndex++] = '\\';
+      result[resultIndex++] = 'b';
+      break;
+    case '\n':
+      result[resultIndex++] = '\\';
+      result[resultIndex++] = 'n';
+      break;
+    case '\r':
+      result[resultIndex++] = '\\';
+      result[resultIndex++] = 'r';
+      break;
+    case '\t':
+      result[resultIndex++] = '\\';
+      result[resultIndex++] = 't';
+      break;
+    case '\v':
+      result[resultIndex++] = '\\';
+      result[resultIndex++] = 'v';
+      break;
+    case '\"':
+    case '\'':
+    case '\\':
+    case '\?':
+      result[resultIndex++] = '\\';
+      result[resultIndex++] = s[i];
+      break;
+    default:
+      result[resultIndex++] = s[i];
     }
   }
-  result[j] += '\0';
+  result[resultIndex++] = '\"';
+  result[resultIndex] = '\0';
   
-  return (string)result;
+  return (string){resultIndex, result};
 }
 
-static inline string _substring(string s, int start, int end) {
-  int len = s.length;
-  if (start < 0 || start >= len || end < 0 || end >= len || start > end) {
-    fprintf(stderr, "Substring index out of bounds: length %d, start %d, end %d", len, start, end);
-    exit(1);
-  }
-  char *result = GC_malloc(end - start + 1);
-  strncpy(result, (const char*)s + start, end - start);
-  return (string)result;
+static inline string showCharPointer(char *s) {
+  return showString(strCharPointer(s));
+}
+
+static inline string showInt(int i) {
+  char *result = GC_malloc((CHAR_BIT * sizeof(i) - 1) / 3 + 2);
+  sprintf(result, "%d", i);
+  return (string){strlen(result), result};
+}
+
+static inline string showFloat(double f) {
+  char *result = GC_malloc((CHAR_BIT * sizeof(f) - 1) / 3 + 2);
+  sprintf((char*)result, "%g", f);
+  return (string){strlen(result), result};
+}
+
+static inline string showChar(char c) {
+  char *result = GC_malloc(4);
+  sprintf((char*)result, "'%c'", c);
+  return (string){strlen(result), result};
+}
+
+static inline string _showPointer(const char *baseTypeName, void *ptr) {
+  char *result = GC_malloc(strlen(baseTypeName) + 17);
+  sprintf(result, "<%s at 0x%lx>", baseTypeName, (unsigned long)ptr);
+  return (string){strlen(result), result};
 }
 
 #endif

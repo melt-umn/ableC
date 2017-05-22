@@ -46,10 +46,17 @@ Boolean ::= a::Type  b::Type  ignoreQualifiers::Boolean
   | functionType(r1, _), functionType(r2, _) -> 
       compatibleTypes(r1, r2, ignoreQualifiers)
   -- extensions
+  | attributedType(_, t1), attributedType(_, t2) -> compatibleTypes(t1, t2, ignoreQualifiers)
+  | attributedType(_, t1), t2 -> compatibleTypes(t1, t2, ignoreQualifiers)
+  | t1, attributedType(_, t2) -> compatibleTypes(t1, t2, ignoreQualifiers)
   | vectorType(b1, s1), vectorType(b2, s2) -> s1 == s2 && compatibleTypes(b1, b2, ignoreQualifiers)
   -- otherwise
   | _, _ -> false
   end;
+  
+  -- Needed because flow analysis is whiny
+  a.addedTypeQualifiers = error("unneeded");
+  b.addedTypeQualifiers = error("unneeded");
 }
 
 function compatibleTypeList
@@ -286,7 +293,7 @@ Boolean ::= lval::Type  rval::Type
     case lval.defaultFunctionArrayLvalueConversion of
     | tagType(_, _) -> compatibleTypes(lval.defaultFunctionArrayLvalueConversion, rval.defaultFunctionArrayLvalueConversion, false)
 -- the left operand has atomic, qualified, or unqualified pointer type, and (considering the type the left operand would have after lvalue conversion) both operands are pointers to qualified or unqualified versions of compatible types, and the type pointed to by the left has all the qualifiers of the type pointed to by the right;
-    | pointerType(_, _) -> compatibleTypes(lval.defaultFunctionArrayLvalueConversion, rval.defaultFunctionArrayLvalueConversion, false) -- TODO: sounds like a subsetting relation here for qualifiers!
+    | pointerType(_, _) -> compatibleTypes(lval.defaultFunctionArrayLvalueConversion, rval.defaultFunctionArrayLvalueConversion, true) -- TODO: sounds like a subsetting relation here for qualifiers!
 -- the left operand is an atomic, qualified, or unqualified pointer, and the right is a null pointer constant; or
           || rval.defaultFunctionArrayLvalueConversion.isIntegerType -- TODO: well, accounting for zero here, I guess
 -- the left operand has atomic, qualified, or unqualified pointer type, and (considering the type the left operand would have after lvalue conversion) one operand is a pointer to an object type, and the other is a pointer to a qualified or unqualified version of void, and the type pointed to by the left has all the qualifiers of the type pointed to by the right;
@@ -312,24 +319,27 @@ Boolean ::= lval::Type  rval::Type
     end;
 }
 
-function freshenRefIds
-Type ::= newEnv::Decorated Env t::Type
+{-- Tacks on qualifiers to a type at the outermost level -}
+function addQualifiers
+Type ::= qs::[Qualifier] base::Type
 {
-  return case t of
-    tagType(q, refIdTagType(k, n, r)) ->
-      case lookupTag(n, newEnv) of
-        refIdTagItem(tag, refId) :: _ -> tagType(q, refIdTagType(k, n, refId))
-      | _ -> error("ref id not found in new env")
-      end
-  | tagType(q, enumTagType(d)) -> tagType(q, enumTagType(d))
-  | atomicType(q, t) -> atomicType(q, freshenRefIds(newEnv, t))
-  | pointerType(q, t)  -> pointerType(q, freshenRefIds(newEnv, t))
-  | arrayType(t, q, sm, sub) -> arrayType(freshenRefIds(newEnv, t), q, sm, sub)
-  | functionType(t, noProtoFunctionType()) ->
-    functionType(freshenRefIds(newEnv, t), noProtoFunctionType())
-  | functionType(t, protoFunctionType(ts, v)) ->
-    functionType(freshenRefIds(newEnv, t), protoFunctionType(map(freshenRefIds(newEnv, _), ts), v))
-  | vectorType(t, s) -> vectorType(freshenRefIds(newEnv, t), s)
-  | _ -> t
-  end;
+  base.addedTypeQualifiers = qs;
+  return base.withTypeQualifiers;
 }
+
+{--
+ - Compute a unique identifier coresponding to the module (host or extension) that 'owns' this type
+ -}
+ function moduleName
+ Maybe<String> ::= env::Decorated Env a::Type
+ {
+   return
+     case a of
+       tagType(_, refIdTagType(_, _, refId)) ->
+         case lookupRefId(refId, env) of
+         | item :: _ -> orElse(item.moduleName, a.moduleName)
+         | _ -> error("Undefined refId " ++ refId)
+         end
+     | _ -> a.moduleName
+     end;
+ }

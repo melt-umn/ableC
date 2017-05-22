@@ -18,7 +18,7 @@ e::Expr ::= txt::String
   e.pp = text(txt);
   e.errors := [];
   e.globalDecls := [];
-  e.defs = [];
+  e.defs := [];
   e.freeVariables = [];
   e.typerep = errorType(); -- error("Need a type on txtExpr"); 
 }
@@ -29,9 +29,9 @@ s::Stmt ::= txt::String
   s.pp = text(txt);
   s.errors := [];
   s.globalDecls := [];
-  s.defs = [];
+  s.defs := [];
   s.freeVariables = [];
-  s.functiondefs = [];
+  s.functiondefs := [];
 }
 
 abstract production txtDecl
@@ -41,7 +41,7 @@ d::Decl ::= txt::String
   d.pp = text(txt);
   d.errors := [ ];
   d.globalDecls := [];
-  d.defs = [ ];
+  d.defs := [ ];
   d.freeVariables = [];
 }
 
@@ -59,7 +59,7 @@ e::Expr ::=
 {
   e.errors := [];
   e.globalDecls := [];
-  e.defs = [];
+  e.defs := [];
   e.pp =
     decorate comment("printEnv pp should be demanded through host pp", location=e.location)
     with {env = e.env;
@@ -72,10 +72,10 @@ e::Expr ::=
 function showEnv
 Document ::= e::Decorated Env
 {
-  return concat( [
+  return ppConcat( [
     text(" Environment:"),
     nestlines(5, 
-      concat([
+      ppConcat([
        --text("Labels:"),line(),
        text("Values:"),line(),
          nestlines(5, valuesD),
@@ -104,15 +104,15 @@ Document ::= scope::[Pair<String a>] showFunc::(Document ::= Pair<String a>)
 function showValueItemBinding
 Document ::= bnd::Pair<String ValueItem>
 {
- return concat( [ text(bnd.fst), text(" -> "), nestlines(10,bnd.snd.pp) ]);
+ return ppConcat( [ text(bnd.fst), text(" -> "), nestlines(10,bnd.snd.pp) ]);
 }
 function showTagItemBinding
 Document ::= bnd::Pair<String TagItem>
 {
- return concat( [ text(bnd.fst), text(" -> "), nestlines(10,bnd.snd.pp) ]);
+ return ppConcat( [ text(bnd.fst), text(" -> "), nestlines(10,bnd.snd.pp) ]);
 }
 function showRefIdItemBinding
 Document ::= bnd::Pair<String RefIdItem>
 {
- return concat( [ text(bnd.fst), text(" -> "), nestlines(10,bnd.snd.pp) ]);
+ return ppConcat( [ text(bnd.fst), text(" -> "), nestlines(10,bnd.snd.pp) ]);
 }

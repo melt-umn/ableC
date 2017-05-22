@@ -1,60 +1,78 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax:overload;
 
-synthesized attribute unaryProd::Maybe<(Expr ::= Expr Location)> occurs on UnaryOp;
-
 aspect default production
 top::UnaryOp ::=
 {
-  top.unaryProd = nothing();
+  top.resolved = nothing();
 }
 
 aspect production preIncOp
 top::UnaryOp ::=
 {
-  top.unaryProd = top.op.typerep.preIncProd;
+  production attribute overloads::[Pair<String (Expr ::= Expr)>] with ++;
+  overloads := [];
+  top.resolved = getUnaryOverload(top.op, overloads);
 }
 aspect production preDecOp
 top::UnaryOp ::= 
 {
-  top.unaryProd = top.op.typerep.preDecProd;
+  production attribute overloads::[Pair<String (Expr ::= Expr)>] with ++;
+  overloads := [];
+  top.resolved = getUnaryOverload(top.op, overloads);
 }
 aspect production postIncOp
 top::UnaryOp ::= 
 {
-  top.unaryProd = top.op.typerep.postIncProd;
+  production attribute overloads::[Pair<String (Expr ::= Expr)>] with ++;
+  overloads := [];
+  top.resolved = getUnaryOverload(top.op, overloads);
 }
 aspect production postDecOp
 top::UnaryOp ::= 
 {
-  top.unaryProd = top.op.typerep.postDecProd;
+  production attribute overloads::[Pair<String (Expr ::= Expr)>] with ++;
+  overloads := [];
+  top.resolved = getUnaryOverload(top.op, overloads);
 }
 aspect production addressOfOp
 top::UnaryOp ::=
 {
-  top.unaryProd = top.op.typerep.unaryAndProd;
+  production attribute overloads::[Pair<String (Expr ::= Expr)>] with ++;
+  overloads := [];
+  top.resolved = getUnaryOverload(top.op, overloads);
 }
 aspect production dereferenceOp
 top::UnaryOp ::=
 {
-  top.unaryProd = top.op.typerep.unaryStarProd;
+  production attribute overloads::[Pair<String (Expr ::= Expr)>] with ++;
+  overloads := [];
+  top.resolved = getUnaryOverload(top.op, overloads);
 }
 aspect production positiveOp
 top::UnaryOp ::=
 {
-  top.unaryProd = top.op.typerep.unaryPlusProd;
+  production attribute overloads::[Pair<String (Expr ::= Expr)>] with ++;
+  overloads := [];
+  top.resolved = getUnaryOverload(top.op, overloads);
 }
 aspect production negativeOp
 top::UnaryOp ::=
 {
-  top.unaryProd = top.op.typerep.unaryMinusProd;
+  production attribute overloads::[Pair<String (Expr ::= Expr)>] with ++;
+  overloads := [];
+  top.resolved = getUnaryOverload(top.op, overloads);
 }
 aspect production bitNegateOp
 top::UnaryOp ::=
 {
-  top.unaryProd = top.op.typerep.unaryTildaProd;
+  production attribute overloads::[Pair<String (Expr ::= Expr)>] with ++;
+  overloads := [];
+  top.resolved = getUnaryOverload(top.op, overloads);
 }
 aspect production notOp
 top::UnaryOp ::=
 {
-  top.unaryProd = top.op.typerep.unaryBangProd;
+  production attribute overloads::[Pair<String (Expr ::= Expr)>] with ++;
+  overloads := [];
+  top.resolved = getUnaryOverload(top.op, overloads);
 }

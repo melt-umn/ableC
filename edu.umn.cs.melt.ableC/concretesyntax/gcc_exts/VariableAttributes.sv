@@ -7,13 +7,13 @@ terminal CPP_Attribute_t '__attribute__' lexer classes {Ckeyword}, precedence=10
 terminal CPP_UUAttribute_t '__attribute' lexer classes {Ckeyword}, precedence=10;
 terminal CPP_Attr_LowerPrec_t // precedence=5;
 
-closed nonterminal Attributes_c with location, ast<[ast:Attribute]>;
+closed nonterminal Attributes_c with location, ast<ast:Attributes>;
 concrete productions top::Attributes_c
 | h::Attribute_c
     operator=CPP_Attr_LowerPrec_t -- shift/reduce on Attr? shift! gobble up the whole list.
-    { top.ast = [h.ast]; }
+    { top.ast = ast:consAttribute(h.ast, ast:nilAttribute()); }
 | h::Attribute_c t::Attributes_c
-    { top.ast = h.ast :: t.ast; }
+    { top.ast = ast:consAttribute(h.ast, t.ast); }
 
 closed nonterminal Attribute_c with location, ast<ast:Attribute>;
 concrete productions top::Attribute_c

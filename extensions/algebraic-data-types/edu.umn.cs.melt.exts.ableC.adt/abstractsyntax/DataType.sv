@@ -43,7 +43,7 @@ top::Decl ::= adt::ADTDecl
       | _ -> error( "struct decl not found")
       end;
 
-  top.defs = adt.defs ++
+  top.defs := adt.defs ++
     -- We don't really want all of these.
     -- We want the functions for constructing values,
     -- but not the 'struct ADT' defs.
@@ -83,7 +83,7 @@ top::ADTDecl ::= n::Name cs::ConstructorList
 
   cs.env = addEnv(preDefs, top.env);
 
-  top.defs = preDefs ++
+  top.defs := preDefs ++
     [ adtRefIdDef( name_tagRefId_workaround, adtRefIdItem(top, top.structDcl) ) ] ;
 
   local name_refIdIfOld_workaround :: Maybe<String>
@@ -323,7 +323,7 @@ nonterminal ConstructorList
 abstract production consConstructor
 top::ConstructorList ::= c::Constructor cl::ConstructorList
 {
-  top.pp = concat([ c.pp, sep, cl.pp ]) ;
+  top.pp = ppConcat([ c.pp, sep, cl.pp ]) ;
   local attribute sep::Document =
     case cl of
     | consConstructor(_,_) -> line()
@@ -367,7 +367,7 @@ top::Constructor ::= n::String tms::TypeNames
   production attribute initStmts::[Stmt] with ++;
   initStmts := [];
 
-  top.pp = concat( [ text(n ++ " ( "), ppImplode (text(", "), tms.pps),
+  top.pp = ppConcat( [ text(n ++ " ( "), ppImplode (text(", "), tms.pps),
                      text(" );") ] );
   tms.position = 0;  
   tms.name_i = n;

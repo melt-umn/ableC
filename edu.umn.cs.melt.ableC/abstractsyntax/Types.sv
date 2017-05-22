@@ -9,16 +9,29 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax;
  - Variants: builtin, pointer, array, function, tagged, noncanonical.
  - Noncanonical forwards, and so doesn't need any attributes, etc attached to it.
  -}
-nonterminal Type with lpp, rpp, host<Type>, integerPromotions, defaultArgumentPromotions, defaultLvalueConversion, defaultFunctionArrayLvalueConversion, isIntegerType, isScalarType, isArithmeticType, withoutTypeQualifiers, withTypeQualifiers, addedTypeQualifiers;
+nonterminal Type with lpp, rpp, host<Type>, baseTypeExpr, typeModifierExpr, mangledName, moduleName, integerPromotions, defaultArgumentPromotions, defaultLvalueConversion, defaultFunctionArrayLvalueConversion, isIntegerType, isScalarType, isArithmeticType, withoutAttributes, withoutTypeQualifiers, withTypeQualifiers, addedTypeQualifiers;
+
+-- Used to turn a Type back into a TypeName
+synthesized attribute baseTypeExpr :: BaseTypeExpr;
+synthesized attribute typeModifierExpr :: TypeModifierExpr;
+
+-- Compute a unique name for a type that is a valid C identifier
+synthesized attribute mangledName :: String;
+
+-- Name of the extension that declared this type, or nothing() for a host type 
+synthesized attribute moduleName :: Maybe<String>;
 
 -- char -> int and stuff in operations
 synthesized attribute integerPromotions :: Type;
 -- float -> double for variadic args
 synthesized attribute defaultArgumentPromotions :: Type;
--- drop qualifiers
+-- drop qualifiers and attributes
 synthesized attribute defaultLvalueConversion :: Type;
 -- above PLUS conversion to pointers
 synthesized attribute defaultFunctionArrayLvalueConversion :: Type;
+
+-- Strip top-level only of GCC __attribute__s from the type
+synthesized attribute withoutAttributes :: Type;
 
 -- Strip top-level only of qualifiers from the type
 synthesized attribute withoutTypeQualifiers :: Type;
@@ -30,6 +43,8 @@ inherited attribute addedTypeQualifiers :: [Qualifier];
 aspect default production
 top::Type ::=
 {
+  top.moduleName = nothing();
+  top.withoutAttributes = top;
   top.withoutTypeQualifiers = top;
   top.withTypeQualifiers = top;
   
@@ -49,6 +64,9 @@ top::Type ::=
   propagate host;
   top.lpp = text("/*err*/");
   top.rpp = text("");
+  top.baseTypeExpr = errorTypeExpr([]);
+  top.typeModifierExpr = baseTypeExpr();
+  top.mangledName = "error";
   top.integerPromotions = top;
   top.defaultArgumentPromotions = top;
   top.defaultLvalueConversion = top;
@@ -72,9 +90,12 @@ top::Type ::= q::[Qualifier]  bt::BuiltinType
 {
   propagate host;
   top.lpp =
-    concat([terminate(space(), map((.pp), q)),
+    ppConcat([terminate(space(), map((.pp), q)),
             bt.pp]);
   top.rpp = notext();
+  top.baseTypeExpr = builtinTypeExpr(q, bt);
+  top.typeModifierExpr = baseTypeExpr();
+  top.mangledName = s"${mangleQualifiers(q)}_builtin_${bt.mangledName}_";
   top.integerPromotions = builtinType(q, bt.integerPromotionsBuiltin);
   top.defaultArgumentPromotions = builtinType(q, bt.defaultArgumentPromotionsBuiltin);
   top.defaultLvalueConversion = builtinType([], bt);
@@ -96,9 +117,12 @@ abstract production pointerType
 top::Type ::= q::[Qualifier]  target::Type
 {
   propagate host;
-  top.lpp = concat([ target.lpp, space(), ppImplode( space(), map( (.pp), q ) ),
+  top.lpp = ppConcat([ target.lpp, space(), ppImplode( space(), map( (.pp), q ) ),
                      text("*") ]);
   top.rpp = target.rpp;
+  top.baseTypeExpr = target.baseTypeExpr;
+  top.typeModifierExpr = pointerTypeExpr(q, target.typeModifierExpr);
+  top.mangledName = s"${mangleQualifiers(q)}_pointer_${target.mangledName}_";
   top.integerPromotions = top;
   top.defaultArgumentPromotions = top;
   top.defaultLvalueConversion = pointerType([], target);
@@ -136,10 +160,32 @@ top::Type ::= element::Type  indexQualifiers::[Qualifier]  sizeModifier::ArraySi
   propagate host;
   top.lpp = element.lpp;
   
-  top.rpp = cat(brackets(concat([
+  top.rpp = cat(brackets(ppConcat([
     terminate(space(), map((.pp), indexQualifiers) ++ sizeModifier.pps),
     sub.pp
     ])), element.rpp);
+  top.baseTypeExpr = element.baseTypeExpr;
+  top.typeModifierExpr =
+    case sub of
+      constantArrayType(size) ->
+        arrayTypeExprWithExpr(
+          element.typeModifierExpr,
+          indexQualifiers,
+          sizeModifier,
+          mkIntConst(size, bogusLoc())) -- TODO: location
+    | incompleteArrayType() ->
+        arrayTypeExprWithoutExpr(
+          element.typeModifierExpr,
+          indexQualifiers,
+          sizeModifier)
+    | variableArrayType(size) ->
+        arrayTypeExprWithExpr(
+          element.typeModifierExpr,
+          indexQualifiers,
+          sizeModifier,
+          new(size))
+    end;
+  top.mangledName = top.defaultFunctionArrayLvalueConversion.mangledName; -- TODO?
   top.integerPromotions = top;
   top.defaultArgumentPromotions = top;
   top.defaultLvalueConversion = top;
@@ -196,8 +242,17 @@ top::Type ::= result::Type  sub::FunctionType
 {
   propagate host;
   --TODO should this space be here? also TODO: ordering? result lpp before sub.lpp maybe? TODO: actually sub.lpp is always nothing. FIXME
-  top.lpp = concat([ sub.lpp, space(), result.lpp ]);
+  top.lpp = ppConcat([ sub.lpp, space(), result.lpp ]);
   top.rpp = cat(sub.rpp, result.rpp);
+  top.baseTypeExpr = result.baseTypeExpr;
+  top.typeModifierExpr =
+    case sub of
+      protoFunctionType(args, variadic) ->
+        functionTypeExprWithArgs(result.typeModifierExpr, argTypesToParameters(args), variadic)
+    | noProtoFunctionType() ->
+        functionTypeExprWithoutArgs(result.typeModifierExpr, [])
+    end;
+  top.mangledName = s"function_${result.mangledName}_${sub.mangledName}_";
   top.integerPromotions = top;
   top.defaultArgumentPromotions = top;
   top.defaultLvalueConversion = top;
@@ -207,13 +262,13 @@ top::Type ::= result::Type  sub::FunctionType
 }
 
 {-- The subtypes of functions -}
-nonterminal FunctionType with lpp, rpp, host<FunctionType>;
+nonterminal FunctionType with lpp, rpp, host<FunctionType>, mangledName;
 -- clang has an 'extinfo' structure with calling convention, noreturn, 'produces'?, regparam
 
 abstract production protoFunctionType
 top::FunctionType ::= args::[Type]  variadic::Boolean
 {
-  propagate host;
+  top.host = protoFunctionType(map(\t::Type -> t.host, args), variadic);
   top.lpp = notext();
   top.rpp = parens(
     if null(args) then
@@ -225,6 +280,7 @@ top::FunctionType ::= args::[Type]  variadic::Boolean
     zipWith(cat,
       map((.lpp), args),
       map((.rpp), args)) ++ if variadic then [text("...")] else [];
+  top.mangledName = implode("_", map((.mangledName), args)) ++ if variadic then "_variadic" else "";
 }
 -- Evidently, old K&R C functions don't have args as part of function type
 abstract production noProtoFunctionType
@@ -233,6 +289,20 @@ top::FunctionType ::=
   propagate host;
   top.lpp = notext();
   top.rpp = text("()");
+  top.mangledName = "noproto";
+}
+
+function argTypesToParameters
+Parameters ::= args::[Type]
+{
+  return
+    case args of
+      h :: t ->
+        consParameters(
+          parameterDecl([], directTypeExpr(h), baseTypeExpr(), nothingName(), nilAttribute()),
+          argTypesToParameters(t))
+    | [] -> nilParameters()
+    end;
 }
 
 
@@ -243,8 +313,16 @@ abstract production tagType
 top::Type ::= q::[Qualifier]  sub::TagType
 {
   propagate host;
-  top.lpp = concat([ terminate( space(), map( (.pp), q ) ), sub.pp ]);
+  top.lpp = ppConcat([ terminate( space(), map( (.pp), q ) ), sub.pp ]);
   top.rpp = notext();
+  top.baseTypeExpr =
+    case sub of
+      enumTagType(ref) -> enumTypeExpr(q, new(ref))
+    | refIdTagType(kwd, n, refId) ->
+      tagReferenceTypeExpr(q, kwd, name(n, location=builtinLoc("host")))
+    end;
+  top.typeModifierExpr = baseTypeExpr();
+  top.mangledName = s"${mangleQualifiers(q)}_tag_${sub.mangledName}_";
   top.integerPromotions = top;
   top.defaultArgumentPromotions = top;
   top.defaultLvalueConversion = tagType([], sub);
@@ -258,7 +336,7 @@ top::Type ::= q::[Qualifier]  sub::TagType
 }
 
 {-- Structs, unions and enums -}
-nonterminal TagType with pp, host<TagType>, isIntegerType;
+nonterminal TagType with pp, host<TagType>, mangledName, isIntegerType;
 
 abstract production enumTagType
 top::TagType ::= ref::Decorated EnumDecl
@@ -269,6 +347,13 @@ top::TagType ::= ref::Decorated EnumDecl
     | just(n) -> cat(text("enum "), n.pp)
     | nothing() -> text("int/*anon enum*/") -- TODO: location
     end;
+  top.mangledName =
+    "enum_" ++
+    case ref.maybename of
+    | just(n) -> n.name
+    | nothing() -> "anon"
+    end;
+    
   top.isIntegerType = true;
 }
 {--
@@ -281,17 +366,18 @@ abstract production refIdTagType
 top::TagType ::= kwd::StructOrEnumOrUnion  name::String  refId::String
 {
   propagate host;
-  top.pp = concat([kwd.pp, space(), text(name)]);
+  top.pp = ppConcat([kwd.pp, space(), text(name)]);
+  top.mangledName = s"${kwd.mangledName}_${name}_${substitute(":", "_", refId)}";
   top.isIntegerType = false;
 }
 
-nonterminal StructOrEnumOrUnion with pp; -- Silver enums would be nice.
+nonterminal StructOrEnumOrUnion with pp, mangledName; -- Silver enums would be nice.
 abstract production structSEU
-top::StructOrEnumOrUnion ::= { top.pp = text("struct"); }
+top::StructOrEnumOrUnion ::= { top.pp = text("struct"); top.mangledName = "struct"; }
 abstract production unionSEU
-top::StructOrEnumOrUnion ::= { top.pp = text("union"); }
+top::StructOrEnumOrUnion ::= { top.pp = text("union"); top.mangledName = "union"; }
 abstract production enumSEU
-top::StructOrEnumOrUnion ::= { top.pp = text("enum"); }
+top::StructOrEnumOrUnion ::= { top.pp = text("enum"); top.mangledName = "enum"; }
 
 
 {-------------------------------------------------------------------------------
@@ -301,9 +387,12 @@ abstract production atomicType
 top::Type ::= q::[Qualifier]  bt::Type
 {
   propagate host;
-  top.lpp = concat([ ppImplode( space(), map( (.pp), q)), space(),
+  top.lpp = ppConcat([ ppImplode( space(), map( (.pp), q)), space(),
                      text("_Atomic"), parens(cat(bt.lpp, bt.rpp))]);
   top.rpp = notext();
+  top.mangledName = s"${mangleQualifiers(q)}_atomic_${bt.mangledName}_";
+  top.baseTypeExpr = atomicTypeExpr(q, typeName(bt.baseTypeExpr, bt.typeModifierExpr));
+  top.typeModifierExpr = baseTypeExpr();
   top.integerPromotions = top;
   top.defaultArgumentPromotions = top;
   -- discarding qualifiers in lvalue conversion discards atomic qualifier, too.
@@ -314,20 +403,72 @@ top::Type ::= q::[Qualifier]  bt::Type
 }
 
 {-------------------------------------------------------------------------------
+ - GCC __attribute__ types.
+ - This represents attributes attatched to types that aren't handled specially (e.g. vector).  
+ - We assume all attributed types are type-equivalent.
+ - TODO: Make sure we animate attributes with actual custom types instead of attributedType in all
+ - cases where this isn't true.
+ -}
+abstract production attributedType
+top::Type ::= attrs::Attributes  bt::Type
+{
+  propagate host;
+  top.lpp = ppConcat([ ppAttributes(attrs), space(), bt.lpp]);
+  top.rpp = bt.rpp;
+  top.mangledName = bt.mangledName;
+  top.moduleName = orElse(attrs.moduleName, bt.moduleName);
+  top.baseTypeExpr = attributedTypeExpr(attrs, bt.baseTypeExpr);
+  top.typeModifierExpr = baseTypeExpr();
+  top.integerPromotions = attributedType(attrs, bt.integerPromotions);
+  top.defaultArgumentPromotions = attributedType(attrs, bt.defaultArgumentPromotions);
+  top.defaultLvalueConversion = bt.defaultLvalueConversion;
+  top.defaultFunctionArrayLvalueConversion = bt.defaultFunctionArrayLvalueConversion;
+  top.withoutAttributes = bt.withoutAttributes;
+  top.withoutTypeQualifiers = attributedType(attrs, bt.withoutTypeQualifiers);
+  top.withTypeQualifiers = attributedType(attrs, bt.withTypeQualifiers);
+  bt.addedTypeQualifiers = top.addedTypeQualifiers;
+  top.isIntegerType = bt.isIntegerType;
+  top.isScalarType = bt.isScalarType;
+  top.isArithmeticType = bt.isArithmeticType;
+  
+  -- Whatever...
+  attrs.env = emptyEnv();
+  attrs.returnType = nothing();
+}
+
+{-------------------------------------------------------------------------------
  - GCC Vector (MMX/SSE/etc) types.
+ - TODO: This is very broken, __attribute__ can't occur at the outermost level, should involve
+ - attributedType somehow?  
  -}
 abstract production vectorType
 top::Type ::= bt::Type  bytes::Integer
 {
   propagate host;
-  top.lpp = concat([ text("__attribute__((__vector_size__(" ++ toString(bytes) ++ "))) "), bt.lpp]);
+  top.lpp = ppConcat([ text("__attribute__((__vector_size__(" ++ toString(bytes) ++ "))) "), bt.lpp]);
   top.rpp = bt.rpp;
+  top.mangledName = s"vector_${bt.mangledName}_${toString(bytes)}_";
+  top.moduleName = bt.moduleName;
+  -- Translate vectorType
+  top.baseTypeExpr =
+    attributedTypeExpr(
+      consAttribute(
+        gccAttribute(
+          consAttrib(
+            appliedAttrib(
+              attribName(name("__vector_size__", location=builtinLoc("host"))),
+              consExpr(mkIntConst(bytes, builtinLoc("host")), nilExpr())),
+          nilAttrib())),
+        nilAttribute()),
+      bt.baseTypeExpr);
+  top.typeModifierExpr = baseTypeExpr();
   -- You know, who knows what these rules are: TODO
   top.integerPromotions = top;
   top.defaultArgumentPromotions = top;
   top.defaultLvalueConversion = top;
   top.defaultFunctionArrayLvalueConversion = top;
   top.withoutTypeQualifiers = top;
+  top.withTypeQualifiers = top; -- TODO Discarding Qualifiers!
   -- TODO: dunno? left here explicitly since... dunno what to do here.
   top.isIntegerType = false;
   top.isScalarType = false;
@@ -343,8 +484,11 @@ top::Type ::= sub::NoncanonicalType
   propagate host;
   top.lpp = sub.lpp;
   top.rpp = sub.rpp;
+  top.baseTypeExpr = sub.baseTypeExpr;
+  top.typeModifierExpr = sub.typeModifierExpr;
 
   -- behavior? maybe it should be pushed down? TODO
+  --top.mangledName = ;
   --top.integerPromotions = ;
   --top.defaultArgumentPromotions = ;
   --top.defaultLvalueConversion = ;
@@ -355,9 +499,24 @@ top::Type ::= sub::NoncanonicalType
 }
 
 {-- Types that resolve to other types. -}
-nonterminal NoncanonicalType with canonicalType, lpp, rpp, host<NoncanonicalType>;
+nonterminal NoncanonicalType with canonicalType, lpp, rpp, host<NoncanonicalType>, baseTypeExpr, typeModifierExpr;
 
 synthesized attribute canonicalType :: Type;
+
+{-- A NoncanonicalType that is really just a normal Type
+ - e.g. the result of performing a substitution for a typedef
+ -}
+abstract production resolvedType
+top::NoncanonicalType ::= resolved::Type
+{
+  propagate host;
+  top.lpp = resolved.lpp;
+  top.rpp = resolved.rpp;
+  top.baseTypeExpr = resolved.baseTypeExpr;
+  top.typeModifierExpr = resolved.typeModifierExpr;
+
+  top.canonicalType = resolved;
+}
 
 {-- Parens. 
  - No qualifiers, as it's not even syntactically possible. This exists for no
@@ -376,8 +535,10 @@ abstract production parenType
 top::NoncanonicalType ::= wrapped::Type
 {
   propagate host;
-  top.lpp = concat([ wrapped.lpp, space(), text("(") ]);
+  top.lpp = ppConcat([ wrapped.lpp, space(), text("(") ]);
   top.rpp = cat( text(")"), wrapped.rpp );
+  top.baseTypeExpr = wrapped.baseTypeExpr;
+  top.typeModifierExpr = parenTypeExpr(wrapped.typeModifierExpr);
 
   top.canonicalType = wrapped;
 }
@@ -404,6 +565,8 @@ top::NoncanonicalType ::= original::Type  pointer::Type
   propagate host;
   top.lpp = original.lpp;
   top.rpp = original.rpp;
+  top.baseTypeExpr = original.baseTypeExpr;
+  top.typeModifierExpr = original.typeModifierExpr;
 
   top.canonicalType = pointer;
 }
@@ -418,11 +581,13 @@ top::NoncanonicalType ::= original::Type  pointer::Type
  - e.g. given: typedef volatile struct foo { } Foo;
  -    'const Foo' will have 'const' in q, and 'resolved' will have const and volatile. -}
 abstract production typedefType
-top::NoncanonicalType ::= q::[Qualifier]  name::String  resolved::Type
+top::NoncanonicalType ::= q::[Qualifier]  n::String  resolved::Type
 {
   propagate host;
-  top.lpp = concat([ terminate( space(), map( (.pp), q ) ), text(name) ]);
+  top.lpp = ppConcat([ terminate( space(), map( (.pp), q ) ), text(n) ]);
   top.rpp = notext();
+  top.baseTypeExpr = typedefTypeExpr(q, name(n, location=builtinLoc("host")));
+  top.typeModifierExpr = baseTypeExpr();
 
   top.canonicalType = resolved;
 }
@@ -433,28 +598,22 @@ top::NoncanonicalType ::= q::[Qualifier]  resolved::Type
 {
   propagate host;
   top.canonicalType = resolved;-- todo: some sort of discipline of what to do with qualifiers here
-  top.lpp = concat([text("__typeof__"), parens(cat(resolved.lpp, resolved.rpp))]);
+  top.lpp = ppConcat([text("__typeof__"), parens(cat(resolved.lpp, resolved.rpp))]);
   top.rpp = notext();
+  top.baseTypeExpr =
+    typeofTypeExpr(q, typeNameExpr(typeName(resolved.baseTypeExpr, resolved.typeModifierExpr)));
+  top.typeModifierExpr = baseTypeExpr();
 }
 
 
-{-- Attributes that need to be interpreted away somehow. What is this?
- - Evidently, part of extensions... maybe we should remove this.
- - e.g. int32 __attribute((vector(4)))__ is supposed to be a SSE register or something
- -}
---abstract production attributedType
---top::NoncanonicalType ::= q::[Qualifier]  original::Type  attr::[Attribute] -- or something?
---{
---  top.canonicalType = error("?"); -- TODO: Perhaps this is supposed to have already been interepreted somehow
---}
-
+-- TODO: Why isn't this in TypeNames.sv?
 abstract production hackUnusedType
 top::BaseTypeExpr ::=
 {
   -- pp doesn't depend on env
   top.pp = text("hack");
-  -- Forwarding based on env.
-  forwards to if false then error(hackUnparse(top.env)) else hackUnusedType();
+  -- Forwarding based on env and returnType.
+  forwards to if false then error(hackUnparse(top.env) ++ hackUnparse(top.returnType)) else hackUnusedType();
 }
 
 
@@ -467,11 +626,3 @@ NON_CANONICAL_UNLESS_DEPENDENT_TYPE(TypeOf, Type)
  TYPE(ExtVector, VectorType)
 
 -}
-
-{-- Tacks on qualifiers to a type at the outermost level -}
-function addQualifiers
-Type ::= qs::[Qualifier] base::Type
-{
-  base.addedTypeQualifiers = qs;
-  return base.withTypeQualifiers;
-}

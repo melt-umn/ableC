@@ -16,21 +16,40 @@ import edu:umn:cs:melt:exts:ableC:closure:mda_test;
 marking terminal Closure_t 'closure' lexer classes {Ckeyword};
 
 concrete productions top::TypeSpecifier_c
-| 'closure' '(' te::ClosureTypeExpr_c ')'
+| 'closure' '<' te::ClosureTypeExpr_c '>'
     { top.realTypeSpecifiers = [te.ast];
-      top.preTypeSpecifiers = []; }
-{-| 'closure' '(' res::TypeName_c '(' params::TypeNames_c ')' ')'
-    { top.realTypeSpecifiers = [closureTypeExpr(params.ast, res.ast)];
-      top.preTypeSpecifiers = []; } -}
+      top.preTypeSpecifiers = [];
+      te.givenQualifiers = top.givenQualifiers; }
 
-nonterminal ClosureTypeExpr_c with ast<BaseTypeExpr>;
+nonterminal ClosureTypeExpr_c with ast<BaseTypeExpr>, givenQualifiers;
 
 concrete productions top::ClosureTypeExpr_c
-| '(' params::TypeNames_c ')' '->' rest::ClosureTypeExpr_c
-    { top.ast = closureTypeExpr(params.ast, typeName(rest.ast, baseTypeExpr())); }
-| '(' params::TypeNames_c ')' '->' ret::TypeName_c
-    { top.ast = closureTypeExpr(params.ast, ret.ast); }
 | '(' param::ClosureTypeExpr_c ')' '->' ret::TypeName_c
-    { top.ast = closureTypeExpr(consTypeName(typeName(param.ast, baseTypeExpr()), nilTypeName()), ret.ast); }
+    { top.ast = closureTypeExpr(top.givenQualifiers, consParameters(parameterDecl([], param.ast, baseTypeExpr(), nothingName(), nilAttribute()), nilParameters()), ret.ast);
+      param.givenQualifiers = []; }
 | '(' param::ClosureTypeExpr_c ')' '->' rest::ClosureTypeExpr_c
-    { top.ast = closureTypeExpr(consTypeName(typeName(param.ast, baseTypeExpr()), nilTypeName()), typeName(rest.ast, baseTypeExpr())); }
+    { top.ast = closureTypeExpr(top.givenQualifiers, consParameters(parameterDecl([], param.ast, baseTypeExpr(), nothingName(), nilAttribute()), nilParameters()), typeName(rest.ast, baseTypeExpr()));
+      param.givenQualifiers = [];
+      rest.givenQualifiers = []; }
+| '(' params::ClosureParameterList_c ')' '->' rest::ClosureTypeExpr_c
+    { top.ast = closureTypeExpr(top.givenQualifiers, foldParameterDecl(params.ast), typeName(rest.ast, baseTypeExpr()));
+      rest.givenQualifiers = []; }
+| '(' params::ClosureParameterList_c ')' '->' ret::TypeName_c
+    { top.ast = closureTypeExpr(top.givenQualifiers, foldParameterDecl(params.ast), ret.ast); }
+| '(' ')' '->' rest::ClosureTypeExpr_c
+    { top.ast = closureTypeExpr(top.givenQualifiers, nilParameters(), typeName(rest.ast, baseTypeExpr()));
+      rest.givenQualifiers = []; }
+| '(' ')' '->' ret::TypeName_c
+    { top.ast = closureTypeExpr(top.givenQualifiers, nilParameters(), ret.ast); }
+
+-- Duplicate of ParameterList_c so MDA doesn't complain
+closed nonterminal ClosureParameterList_c with location, declaredIdents, ast<[ParameterDecl]>;
+concrete productions top::ClosureParameterList_c
+| h::ParameterDeclaration_c 
+    { top.declaredIdents = h.declaredIdents;
+      top.ast = [h.ast];
+    }
+| h::ClosureParameterList_c ',' t::ParameterDeclaration_c
+    { top.declaredIdents = h.declaredIdents ++ t.declaredIdents;
+      top.ast = h.ast ++ [t.ast];
+    }

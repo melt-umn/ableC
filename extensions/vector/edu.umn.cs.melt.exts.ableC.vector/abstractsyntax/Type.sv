@@ -1,74 +1,37 @@
 grammar edu:umn:cs:melt:exts:ableC:vector:abstractsyntax;
 
-import edu:umn:cs:melt:ableC:abstractsyntax:overload;
-
 abstract production vectorTypeExpr 
-top::BaseTypeExpr ::= sub::TypeName
+top::BaseTypeExpr ::= q::[Qualifier] sub::TypeName
 {
-  top.typerep = vectorType([], sub.typerep);
-  forwards to typedefTypeExpr([], name("_vector", location=builtIn()));
+  propagate substituted;
+  top.pp = pp"${terminate(space(), map((.pp), q))}vector<${sub.pp}>";
+  
+  sub.env = globalEnv(top.env);
+  
+  local localErrors::[Message] =
+    sub.errors ++ checkVectorHeaderDef("_vector_s", builtin, top.env); -- TODO: location
+  
+  forwards to
+    if !null(localErrors)
+    then errorTypeExpr(localErrors)
+    else
+      injectGlobalDeclsTypeExpr(
+        foldDecl([
+          templateTypeExprInstDecl(
+            q,
+            name("_vector_s", location=builtin),
+            consTypeName(sub, nilTypeName()))]),
+        directTypeExpr(vectorType(q, sub.typerep)));
 }
 
 abstract production vectorType
-top::Type ::= qs::[Qualifier] sub::Type
+top::Type ::= q::[Qualifier] sub::Type
 {
-  top.lpp = pp"${ppImplode(space(), map((.pp), qs))} vector(${sub.lpp}${sub.rpp})";
+  top.lpp = pp"${terminate(space(), map((.pp), q))}vector<${sub.lpp}${sub.rpp}>";
   top.rpp = pp"";
-
-  top.lBinaryPlusProd =
-    case top.otherType of
-      vectorType(_, s) ->
-        if compatibleTypes(sub, s, true)
-        then just(appendVector(_, _, location=_))
-        else nothing()
-    | _ -> nothing()
-    end;
-    
-  top.lAssignPlusProd =
-    case top.otherType of
-      vectorType(_, s) ->
-        if compatibleTypes(sub, s, true)
-        then just(appendAssignVector(_, _, location=_))
-        else nothing()
-    | _ -> nothing()
-    end;
   
-  top.lBinaryEqProd =
-    case top.otherType of
-      vectorType(_, s) ->
-        if compatibleTypes(sub, s, true)
-        then just(eqVector(_, _, location=_))
-        else nothing()
-    | _ -> nothing()
-    end;
-  
-  top.memberProd =
-    case top.otherName of
-      "length"   -> just(memberExpr(_, true, name("length", location=builtIn()), location=_))
-    | "size"     -> just(memberExpr(_, true, name("length", location=builtIn()), location=_))
-    | "capacity" -> just(memberExpr(_, true, name("capacity", location=builtIn()), location=_))
-    | _ -> nothing()
-    end;
-    
-  top.subscriptProd =
-    case top.otherType of
-      builtinType(_, signedType(_)) -> just(subscriptVector(_, _, location=_))
-    | builtinType(_, unsignedType(_)) -> just(subscriptVector(_, _, location=_))
-    | _ -> nothing()
-    end;
-    
-  top.subscriptAssignProd =
-    case top.otherType, top.otherType2 of
-      builtinType(_, signedType(_)), s ->
-        if compatibleTypes(sub, s, true)
-        then just(subscriptAssignVector(_, _, _, _, location=_))
-        else nothing()
-    | builtinType(_, unsignedType(_)), s ->
-        if compatibleTypes(sub, s, true)
-        then just(subscriptAssignVector(_, _, _, _, location=_))
-        else nothing()
-    | _, _ -> nothing()
-    end;
+  top.withoutTypeQualifiers = vectorType([], sub);
+  top.withTypeQualifiers = vectorType(top.addedTypeQualifiers ++ q, sub);
   
   top.showProd =
     case sub.showProd of
@@ -77,16 +40,54 @@ top::Type ::= qs::[Qualifier] sub::Type
     end;
 
   forwards to
-    noncanonicalType(
-      typedefType(
-        qs,
-        "_vector",
-        pointerType(
-          [],
-          tagType(
-            [],
-            refIdTagType(
-              structSEU(),
-              "_vector_s",
-              "edu:umn:cs:melt:exts:ableC:vector:_vector_s")))));
+    tagType(
+      q,
+      refIdTagType(
+        structSEU(),
+        templateMangledName("_vector_s", [sub]),
+        templateMangledRefId("_vector_s", [sub])));
+}
+
+-- Check if a type is a vector type in a non-interfering way
+function isVectorType
+Boolean ::= t::Type env::Decorated Env
+{
+  local refId::String =
+    case t of
+      tagType(_, refIdTagType(_, _, refId)) -> refId
+    | _ -> ""
+    end;
+  local refIds::[RefIdItem] = lookupRefId(refId, env);
+  local valueItems::[ValueItem] = lookupValue("_contents", head(refIds).tagEnv);
+  local ptrType::Type = head(valueItems).typerep;
+
+  return
+    case refIds, valueItems, ptrType of
+      [], _, _ -> false
+    | _, [], _ -> false
+    | _, _, pointerType(_, pointerType(_, _)) -> true
+    | _, _, _ -> false
+    end;
+}
+
+-- Find the sub-type of a vector type in a non-interfering way
+function vectorSubType
+Type ::= t::Type env::Decorated Env
+{
+  local refId::String =
+    case t of
+      tagType(_, refIdTagType(_, _, refId)) -> refId
+    | _ -> ""
+    end;
+  local refIds::[RefIdItem] = lookupRefId(refId, env);
+  local valueItems::[ValueItem] = lookupValue("_contents", head(refIds).tagEnv);
+  local ptrType::Type = head(valueItems).typerep;
+
+  return
+    case refIds, valueItems, ptrType of
+      [], _, _ -> errorType()
+    | _, [], _ -> errorType()
+    | _, _, pointerType(_, pointerType(_, sub)) -> sub
+    | _, _, _ -> errorType()
+    end;
 }

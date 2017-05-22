@@ -20,14 +20,15 @@ synthesized attribute valueItem :: Decorated ValueItem;
 synthesized attribute labelItem :: Decorated LabelItem;
 synthesized attribute tagItem :: Decorated TagItem;
 
-nonterminal Name with location, name, pp, host<Name>, lifted<Name>, env, valueLocalLookup, labelRedeclarationCheck, valueLookupCheck, labelLookupCheck, tagLookupCheck, valueItem, labelItem, tagItem, tagLocalLookup, tagHasForwardDcl, tagRefId, valueRedeclarationCheck, valueRedeclarationCheckNoCompatible;
+nonterminal Name with location, name, pp, host<Name>, lifted<Name>, env, valueLocalLookup, labelRedeclarationCheck, valueLookupCheck, labelLookupCheck, tagLookupCheck, valueItem, labelItem, tagItem, tagLocalLookup, tagHasForwardDcl, tagRefId, valueRedeclarationCheck, valueRedeclarationCheckNoCompatible;--
 
 abstract production name
 top::Name ::= n::String
 {
+  propagate host, lifted;
+  
   top.name = n;
   top.pp = text(n);
-  propagate host, lifted;
   
   top.valueLocalLookup = lookupValueInLocalScope(n, top.env);
   top.valueRedeclarationCheck = doValueRedeclarationCheck(_, top);
@@ -42,7 +43,7 @@ top::Name ::= n::String
   top.tagHasForwardDcl = refIdIfOld.isJust;
   top.tagRefId = fromMaybe(toString(genInt()), refIdIfOld);
   
-  local labdcls :: [LabelItem] = lookupLabelInLocalScope(n, top.env);
+  local labdcls :: [LabelItem] = lookupLabel(n, top.env);
   top.labelRedeclarationCheck =
     case labdcls of
     | [] -> [err(top.location, "INTERNAL compiler error: expected to find label in function scope, was missing.")] -- TODO?

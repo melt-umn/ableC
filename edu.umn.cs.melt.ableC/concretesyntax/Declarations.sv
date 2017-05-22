@@ -100,7 +100,10 @@ concrete productions top::TypeName_c
         ast:figureOutTypeFromSpecifiers(sqs.location, sqs.typeQualifiers, sqs.preTypeSpecifiers, sqs.realTypeSpecifiers, sqs.mutateTypeSpecifiers);
       top.ast =
         ast:typeName(
-          if null(sqs.attributes) then bt else ast:warnTypeExpr([wrn(top.location, "Ignoring attributes in type name1")], bt),
+          case sqs.attributes of
+          | ast:nilAttribute() -> bt
+          | _ -> ast:warnTypeExpr([wrn(top.location, "Ignoring attributes in type name1")], bt)
+          end,
           ast:baseTypeExpr());
     }
 | sqs::SpecifierQualifierList_c d::AbstractDeclarator_c
@@ -111,7 +114,10 @@ concrete productions top::TypeName_c
         ast:figureOutTypeFromSpecifiers(sqs.location, sqs.typeQualifiers, sqs.preTypeSpecifiers, sqs.realTypeSpecifiers, sqs.mutateTypeSpecifiers);
       top.ast =
         ast:typeName(
-          if null(sqs.attributes) then bt else ast:warnTypeExpr([wrn(top.location, "Ignoring attributes in type name1")], bt),
+          case sqs.attributes of
+          | ast:nilAttribute() -> bt
+          | _ -> ast:warnTypeExpr([wrn(top.location, "Ignoring attributes in type name1")], bt)
+          end,
           d.ast);
     }
 
@@ -126,10 +132,19 @@ concrete productions top::TypeNames_c
 | 
     { top.ast = ast:nilTypeName(); }
 
--- Ugly hack to allow a close paren after TypeNames_c
+-- Ugly hack to add things to the follow set TypeNames_c
+-- We set this to match what is allowed by C++ for extensions to use
 terminal TypeNames_NEVER_t 'TypeNames_NEVER_t!!!nevernever1234567890' ;
 concrete productions top::Expr_c
 | 'TypeNames_NEVER_t!!!nevernever1234567890' TypeNames_c ')'
+    { top.ast = ast:errorExpr ( [ err (top.location, "Internal Error. " ++
+        "Placeholder for TypeNames_c should not appear in the tree.") ],
+        location=top.location ) ; }
+| 'TypeNames_NEVER_t!!!nevernever1234567890' TypeNames_c '>'
+    { top.ast = ast:errorExpr ( [ err (top.location, "Internal Error. " ++
+        "Placeholder for TypeNames_c should not appear in the tree.") ],
+        location=top.location ) ; }
+| 'TypeNames_NEVER_t!!!nevernever1234567890' TypeNames_c ';'
     { top.ast = ast:errorExpr ( [ err (top.location, "Internal Error. " ++
         "Placeholder for TypeNames_c should not appear in the tree.") ],
         location=top.location ) ; }
@@ -170,7 +185,7 @@ concrete productions top::InitialFunctionDefinition_c
         ast:figureOutTypeFromSpecifiers(d.location, [], [], [], []);
 
       top.ast = 
-        ast:functionDecl([], [], bt, d.ast, d.declaredIdent, [], ast:foldDecl(l.ast), top.givenStmt);
+        ast:functionDecl([], [], bt, d.ast, d.declaredIdent, ast:nilAttribute(), ast:foldDecl(l.ast), top.givenStmt);
     }
     action {
       -- Unfortunate duplication. This production is necessary for K&R compatibility
@@ -449,12 +464,12 @@ concrete productions top::InitDeclarator_c
     operator=Cpp_Attribute_high_prec
     { top.declaredIdent = d.declaredIdent;
       d.givenType = ast:baseTypeExpr();
-      top.ast = [ast:declarator(d.declaredIdent, d.ast, [], ast:nothingInitializer())];
+      top.ast = [ast:declarator(d.declaredIdent, d.ast, ast:nilAttribute(), ast:nothingInitializer())];
     }
 | d::Declarator_c '=' i::Initializer_c
     { top.declaredIdent = d.declaredIdent;
       d.givenType = ast:baseTypeExpr();
-      top.ast = [ast:declarator(d.declaredIdent, d.ast, [], ast:justInitializer(i.ast))];
+      top.ast = [ast:declarator(d.declaredIdent, d.ast, ast:nilAttribute(), ast:justInitializer(i.ast))];
     }
 -- For Initializer_c see Expr.sv
 

@@ -99,7 +99,7 @@ b::BaseTypeExpr ::= q::[Qualifier] n::Name
   -- maybe create it here, stick in in defs with some bogus name -
   --    n.name ++ "STRUCT"?
     
-  b.defs = 
+  b.defs := 
     case tags of
     -- not already declared, this is the declaration
     | [ ] -> [  adtTagDef( n.name, adtRefIdTagItem( refId, structRefId ) ) ]

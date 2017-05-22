@@ -68,6 +68,13 @@ abstract production alignasSpecifier
 top::SpecialSpecifier ::= e::Expr
 {
   propagate host, lifted;
-  top.pp = concat([text("_Alignas"), parens(e.pp)]);
+  top.pp = ppConcat([text("_Alignas"), parens(e.pp)]);
 --  top.errors := e.errors;
+}
+
+-- Compute the mangled name for a list of qualifers to use as part of a mangled name for a type
+function mangleQualifiers
+String ::= qs::[Qualifier]
+{
+  return implode("_", sortBy(stringLte, map((.qualname), qs))); 
 }
