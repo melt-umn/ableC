@@ -113,7 +113,7 @@ abstract production pointerType
 top::Type ::= q::Qualifiers  target::Type
 {
   propagate host;
-  top.lpp = ppConcat([ target.lpp, space(), ppImplode(space(), q.pps), text("*") ]);
+  top.lpp = ppConcat([ target.lpp, space(), text("*"), space(), ppImplode(space(), q.pps) ]);
   top.rpp = target.rpp;
   top.baseTypeExpr = target.baseTypeExpr;
   top.typeModifierExpr = pointerTypeExpr(q, target.typeModifierExpr);
