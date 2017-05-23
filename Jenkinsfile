@@ -53,59 +53,10 @@ stage ("Build") {
 }
 
 stage ("Extensions") {
-  parallel(
-    /* algebraicDataTypes */
-//    node {
-//      checkout([ $class: 'GitSCM',
-//                 branches: [[name: '*/master']],
-//                 doGenerateSubmoduleConfigurations: false,
-//                 extensions: [
-//                   [ $class: 'RelativeTargetDirectory',
-//                     relativeTargetDir: 'edu.umn.cs.melt.exts.ableC.algebraicDataTypes']
-//                 ],
-//                 submoduleCfg: [],
-//                 userRemoteConfigs: [
-//                   [url: 'https://github.com/melt-umn/edu.umn.cs.melt.exts.ableC.algebraicDataTypes.git']
-//                 ]
-//               ])
-//
-//      /* env.PATH is the master's path, not the executor's */
-//      withEnv(["PATH=${SILVER_BASE}/support/bin/:${env.PATH}"]) {
-//        /* build */
-//        sh "cd edu.umn.cs.melt.exts.ableC.algebraicDataTypes/artifact && ./build.sh"
-//
-//        /* modular analyses */
-//        def mdir = "edu.umn.cs.melt.exts.ableC.algebraicDataTypes/modular_analyses"
-//        sh "cd ${mdir}/determinism && ./run.sh"
-//        sh "cd ${mdir}/well_definedness && ./run.sh"
-//      }
-//    },
-    node {
-      checkout([ $class: 'GitSCM',
-                 branches: [[name: '*/master']],
-                 doGenerateSubmoduleConfigurations: false,
-                 extensions: [
-                   [ $class: 'RelativeTargetDirectory',
-                     relativeTargetDir: 'edu.umn.cs.melt.exts.ableC.sqlite']
-                 ],
-                 submoduleCfg: [],
-                 userRemoteConfigs: [
-                   [url: 'https://github.com/melt-umn/edu.umn.cs.melt.exts.ableC.sqlite.git']
-                 ]
-               ])
-
-      /* env.PATH is the master's path, not the executor's */
-      withEnv(["PATH=${SILVER_BASE}/support/bin/:${env.PATH}"]) {
-        /* build */
-        sh "cd edu.umn.cs.melt.exts.ableC.sqlite/artifact && ./build.sh"
-
-        /* modular analyses */
-        def mdir = "edu.umn.cs.melt.exts.ableC.sqlite/modular_analyses"
-        sh "cd ${mdir}/determinism && ./run.sh"
-        sh "cd ${mdir}/well_definedness && ./run.sh"
-      }
-    }
-  )
+    build job: '/melt-umn/edu.umn.cs.melt.exts.ableC.sqlite/master', parameters:
+      [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: SILVER_BASE],
+       [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE],
+       [$class: 'BooleanParameterValue', name: 'DOWNLOAD_ABLEC', value: false]]
 }
 
 /* TODO: use nailgun!
