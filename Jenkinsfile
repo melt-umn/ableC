@@ -54,15 +54,15 @@ stage ("Build") {
 
 stage ("Test") {
   node {
-    sh "python testing/supertest.py -positive-only ableC.jar testing/tests/* |diff testing/expectedResults/positive /dev/stdin"
+    sh "python testing/supertest.py -positive-only ableC.jar testing/tests/* |diff testing/expected-results/positive /dev/stdin"
   }
 
   node {
-    sh "python testing/supertest.py -negative-only ableC.jar testing/tests/* |diff testing/expectedResults/negative /dev/stdin"
+    sh "python testing/supertest.py -negative-only ableC.jar testing/tests/* |diff testing/expected-results/negative /dev/stdin"
   }
 
   node {
-    sh "python testing/supertest.py -neutral ableC.jar testing/tests/* |diff testing/expectedResults/neutral /dev/stdin"
+    sh "python testing/supertest.py -neutral ableC.jar testing/tests/* |diff testing/expected-results/neutral /dev/stdin"
   }
 }
 
