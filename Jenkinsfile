@@ -68,7 +68,11 @@ stage ("Extensions") {
 */
 stage ("Test") {
   node {
-    sh "cd testing/expected-results && ./runTests"
+    sh "pwd"
+    sh "ls"
+    dir("testing/expected-results") {
+      sh "./runTests"
+    }
   }
 }
 
