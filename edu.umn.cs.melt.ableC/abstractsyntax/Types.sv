@@ -9,7 +9,7 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax;
  - Variants: builtin, pointer, array, function, tagged, noncanonical.
  - Noncanonical forwards, and so doesn't need any attributes, etc attached to it.
  -}
-nonterminal Type with lpp, rpp, host<Type>, baseTypeExpr, typeModifierExpr, mangledName, moduleName, integerPromotions, defaultArgumentPromotions, defaultLvalueConversion, defaultFunctionArrayLvalueConversion, isIntegerType, isScalarType, isArithmeticType, withoutAttributes, withoutTypeQualifiers, withTypeQualifiers, addedTypeQualifiers;
+nonterminal Type with lpp, rpp, host<Type>, baseTypeExpr, typeModifierExpr, mangledName, integerPromotions, defaultArgumentPromotions, defaultLvalueConversion, defaultFunctionArrayLvalueConversion, isIntegerType, isScalarType, isArithmeticType, withoutAttributes, withoutTypeQualifiers, withTypeQualifiers, addedTypeQualifiers;
 
 -- Used to turn a Type back into a TypeName
 synthesized attribute baseTypeExpr :: BaseTypeExpr;
@@ -17,9 +17,6 @@ synthesized attribute typeModifierExpr :: TypeModifierExpr;
 
 -- Compute a unique name for a type that is a valid C identifier
 synthesized attribute mangledName :: String;
-
--- Name of the extension that declared this type, or nothing() for a host type 
-synthesized attribute moduleName :: Maybe<String>;
 
 -- char -> int and stuff in operations
 synthesized attribute integerPromotions :: Type;
@@ -43,7 +40,6 @@ inherited attribute addedTypeQualifiers :: [Qualifier];
 aspect default production
 top::Type ::=
 {
-  top.moduleName = nothing();
   top.withoutAttributes = top;
   top.withoutTypeQualifiers = top;
   top.withTypeQualifiers = top;
@@ -416,7 +412,6 @@ top::Type ::= attrs::Attributes  bt::Type
   top.lpp = ppConcat([ ppAttributes(attrs), space(), bt.lpp]);
   top.rpp = bt.rpp;
   top.mangledName = bt.mangledName;
-  top.moduleName = orElse(attrs.moduleName, bt.moduleName);
   top.baseTypeExpr = attributedTypeExpr(attrs, bt.baseTypeExpr);
   top.typeModifierExpr = baseTypeExpr();
   top.integerPromotions = attributedType(attrs, bt.integerPromotions);
@@ -448,7 +443,6 @@ top::Type ::= bt::Type  bytes::Integer
   top.lpp = ppConcat([ text("__attribute__((__vector_size__(" ++ toString(bytes) ++ "))) "), bt.lpp]);
   top.rpp = bt.rpp;
   top.mangledName = s"vector_${bt.mangledName}_${toString(bytes)}_";
-  top.moduleName = bt.moduleName;
   -- Translate vectorType
   top.baseTypeExpr =
     attributedTypeExpr(

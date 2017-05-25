@@ -249,6 +249,7 @@ top::Declarators ::=
 }
 
 nonterminal Declarator with pps, host<Declarator>, lifted<Declarator>, errors, globalDecls, defs, env, baseType, typeModifiersIn, typerep, sourceLocation, isTopLevel, isTypedef, givenAttributes, returnType, freeVariables;
+flowtype Declarator = decorate {env, returnType, baseType, givenAttributes, isTopLevel, isTypedef};
 
 autocopy attribute isTypedef :: Boolean;
 
@@ -479,8 +480,9 @@ top::ParameterDecl ::= storage::[StorageClass]  bty::BaseTypeExpr  mty::TypeModi
   top.errors <- name.valueRedeclarationCheckNoCompatible;
 }
 
-
 synthesized attribute refId :: String; -- TODO move this later?
+-- Name of the extension that declared this struct/union
+synthesized attribute moduleName :: Maybe<String>;
 
 nonterminal StructDecl with location, pp, host<StructDecl>, lifted<StructDecl>, maybename, errors, globalDecls, defs, env, tagEnv, givenRefId, refId, moduleName, returnType, freeVariables;
 
@@ -747,7 +749,7 @@ top::StructDeclarator ::= name::Name  ty::TypeModifierExpr  attrs::Attributes
   top.globalDecls := ty.globalDecls;
   top.localdefs := [valueDef(name.name, fieldValueItem(top))];
   top.freeVariables = ty.freeVariables;
-  top.typerep = ty.typerep;
+  top.typerep = animateAttributeOnType(allAttrs, ty.typerep);
   top.sourceLocation = name.location;
   
   
@@ -770,7 +772,7 @@ top::StructDeclarator ::= name::MaybeName  ty::TypeModifierExpr  e::Expr  attrs:
     end;
   top.localdefs := thisdcl;
   top.freeVariables = ty.freeVariables ++ e.freeVariables;
-  top.typerep = ty.typerep;
+  top.typerep = animateAttributeOnType(allAttrs, ty.typerep);
   top.sourceLocation = 
     case name.maybename of
     | just(n) -> n.location
