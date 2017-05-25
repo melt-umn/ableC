@@ -39,7 +39,7 @@ properties([
 /* a node allocates an executor to actually do work */
 node {
   try {
-    notifyBuild('STARTED')
+//    notifyBuild('STARTED')
 
     /* stages are pretty much just labels about what's going on */
     stage ("Build") {
@@ -113,7 +113,7 @@ def notifyBuild(String buildStatus = 'STARTED') {
   emailext(
       subject: subject,
       body: details,
-//			to: 'evw@umn.edu',
+			to: 'evw@umn.edu',
       recipientProviders: [[$class: 'CulpritsRecipientProvider']]
     )
 }
