@@ -86,7 +86,7 @@ top::Expr ::= op::UnaryOp  e::Expr
   top.globalDecls := e.globalDecls;
   top.defs := e.defs;
   top.freeVariables = e.freeVariables;
-  top.typerep = op.typerep;
+  top.typerep = addQualifiers(op.collectedTypeQualifiers, op.typerep);
   
   op.op = e;
 }
@@ -268,7 +268,7 @@ top::Expr ::= lhs::Expr  op::BinOp  rhs::Expr
   top.freeVariables =
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
-  top.typerep = op.typerep;
+  top.typerep = addQualifiers(op.collectedTypeQualifiers, op.typerep);
   
   op.lop = lhs;
   op.rop = rhs;

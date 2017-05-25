@@ -26,8 +26,7 @@ top::UnaryOp ::=
   top.pp = text("++");
   top.preExpr = true;
   top.noLvalueConversion = false;
-  top.typerep = addQualifiers(top.collectedTypeQualifiers,
-                              top.op.typerep.defaultLvalueConversion.integerPromotions);
+  top.typerep = top.op.typerep.defaultLvalueConversion.integerPromotions;
   top.collectedTypeQualifiers := [];
 }
 abstract production preDecOp
@@ -38,8 +37,7 @@ top::UnaryOp ::=
   top.pp = text("--");
   top.preExpr = true;
   top.noLvalueConversion = true;
-  top.typerep = addQualifiers(top.collectedTypeQualifiers,
-                              top.op.typerep.integerPromotions);
+  top.typerep = top.op.typerep.integerPromotions;
   top.collectedTypeQualifiers := [];
 }
 abstract production postIncOp
@@ -50,8 +48,7 @@ top::UnaryOp ::=
   top.pp = text("++");
   top.preExpr = false;
   top.noLvalueConversion = true;
-  top.typerep = addQualifiers(top.collectedTypeQualifiers,
-                              top.op.typerep.integerPromotions);
+  top.typerep = top.op.typerep.integerPromotions;
   top.collectedTypeQualifiers := [];
 }
 abstract production postDecOp
@@ -62,8 +59,7 @@ top::UnaryOp ::=
   top.pp = text("--");
   top.preExpr = false;
   top.noLvalueConversion = true;
-  top.typerep = addQualifiers(top.collectedTypeQualifiers,
-                              top.op.typerep.integerPromotions);
+  top.typerep = top.op.typerep.integerPromotions;
   top.collectedTypeQualifiers := [];
 }
 abstract production addressOfOp
@@ -85,7 +81,7 @@ top::UnaryOp ::=
   top.noLvalueConversion = false;
   top.typerep = 
     case top.op.typerep of
-    | pointerType(_, innerty) -> addQualifiers(top.collectedTypeQualifiers, innerty)
+    | pointerType(_, innerty) -> innerty
     | _ -> errorType()
     end;
   top.errors :=
@@ -103,8 +99,7 @@ top::UnaryOp ::=
   top.pp = text("+");
   top.preExpr = true;
   top.noLvalueConversion = false;
-  top.typerep = addQualifiers(top.collectedTypeQualifiers,
-                              top.op.typerep.defaultLvalueConversion.integerPromotions);
+  top.typerep = top.op.typerep.defaultLvalueConversion.integerPromotions;
   top.collectedTypeQualifiers := [];
 }
 abstract production negativeOp
@@ -114,8 +109,7 @@ top::UnaryOp ::=
   top.pp = text("-");
   top.preExpr = true;
   top.noLvalueConversion = false;
-  top.typerep = addQualifiers(top.collectedTypeQualifiers,
-                              top.op.typerep.defaultLvalueConversion.integerPromotions);
+  top.typerep = top.op.typerep.defaultLvalueConversion.integerPromotions;
   top.collectedTypeQualifiers := [];
 }
 abstract production bitNegateOp
@@ -125,8 +119,7 @@ top::UnaryOp ::=
   top.pp = text("~");
   top.preExpr = true;
   top.noLvalueConversion = false;
-  top.typerep = addQualifiers(top.collectedTypeQualifiers,
-                              top.op.typerep.defaultLvalueConversion.integerPromotions);
+  top.typerep = top.op.typerep.defaultLvalueConversion.integerPromotions;
   top.collectedTypeQualifiers := [];
 }
 abstract production notOp
@@ -136,8 +129,7 @@ top::UnaryOp ::=
   top.pp = text("!");
   top.preExpr = true;
   top.noLvalueConversion = false;
-  top.typerep = addQualifiers(top.collectedTypeQualifiers,
-                              top.op.typerep.defaultLvalueConversion.integerPromotions);
+  top.typerep = top.op.typerep.defaultLvalueConversion.integerPromotions;
   top.collectedTypeQualifiers := [];
 }
 
@@ -148,8 +140,7 @@ top::UnaryOp ::= msg::[Message]
   top.pp = text("");
   top.preExpr = true;
   top.noLvalueConversion = false;
-  top.typerep = addQualifiers(top.collectedTypeQualifiers,
-                              top.op.typerep.defaultLvalueConversion.integerPromotions);
+  top.typerep = top.op.typerep.defaultLvalueConversion.integerPromotions;
   top.collectedTypeQualifiers := [];
 }
 
@@ -161,8 +152,7 @@ top::UnaryOp ::=
   top.pp = text("__real__");
   top.preExpr = true;
   top.noLvalueConversion = false;
-  top.typerep = addQualifiers(top.collectedTypeQualifiers,
-                              top.op.typerep.defaultLvalueConversion.integerPromotions);
+  top.typerep = top.op.typerep.defaultLvalueConversion.integerPromotions;
   top.collectedTypeQualifiers := [];
 }
 -- GCC extension
@@ -173,8 +163,7 @@ top::UnaryOp ::=
   top.pp = text("__imag__");
   top.preExpr = true;
   top.noLvalueConversion = false;
-  top.typerep = addQualifiers(top.collectedTypeQualifiers,
-                              top.op.typerep.defaultLvalueConversion.integerPromotions);
+  top.typerep = top.op.typerep.defaultLvalueConversion.integerPromotions;
   top.collectedTypeQualifiers := [];
 }
 
