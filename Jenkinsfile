@@ -57,6 +57,9 @@ stage ("Extensions") {
     build job: '/melt-umn/edu.umn.cs.melt.exts.ableC.sqlite/master', parameters:
       [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: SILVER_BASE],
        [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
+    build job: '/melt-umn/ableC-condition-tables/master', parameters:
+      [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: SILVER_BASE],
+       [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
   }
 }
 
