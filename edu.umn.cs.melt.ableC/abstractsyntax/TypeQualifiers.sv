@@ -78,7 +78,7 @@ top::Qualifier ::=
   top.mangledName = "restrict";
   top.qualIsPositive = false;
   top.qualIsNegative = false;
-  top.qualAppliesWithinRef = true;
+  top.qualAppliesWithinRef = false;
   top.qualCompat = \qualToCompare::Qualifier ->
     case qualToCompare of restrictQualifier() -> true | _ -> false end;
   top.qualIsHost = true;
@@ -91,7 +91,7 @@ top::Qualifier ::=
   top.mangledName = "__restrict";
   top.qualIsPositive = false;
   top.qualIsNegative = false;
-  top.qualAppliesWithinRef = true;
+  top.qualAppliesWithinRef = false;
   top.qualCompat = \qualToCompare::Qualifier ->
     case qualToCompare of uuRestrictQualifier() -> true | _ -> false end;
   top.qualIsHost = true;
