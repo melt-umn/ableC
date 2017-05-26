@@ -78,6 +78,12 @@ top::Expr ::= e::Expr
 abstract production unaryOpExpr
 top::Expr ::= op::UnaryOp  e::Expr
 {
+  top.host = qualifiedUnaryOpExpr(op, e, [], location=top.location);
+  forwards to qualifiedUnaryOpExpr(op, e, op.collectedTypeQualifiers, location=top.location);
+}
+abstract production qualifiedUnaryOpExpr
+top::Expr ::= op::UnaryOp  e::Expr  collectedTypeQualifiers::[Qualifier]
+{
   propagate host, lifted;
   top.pp = if op.preExpr
            then parens( cat( op.pp, e.pp ) )
@@ -86,7 +92,7 @@ top::Expr ::= op::UnaryOp  e::Expr
   top.globalDecls := e.globalDecls;
   top.defs := e.defs;
   top.freeVariables = e.freeVariables;
-  top.typerep = addQualifiers(op.collectedTypeQualifiers, op.typerep);
+  top.typerep = addQualifiers(collectedTypeQualifiers, op.typerep);
   
   op.op = e;
 }
@@ -254,6 +260,12 @@ top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
 abstract production binaryOpExpr
 top::Expr ::= lhs::Expr  op::BinOp  rhs::Expr
 {
+  top.host = qualifiedBinaryOpExpr(lhs, op, rhs, [], location=top.location);
+  forwards to qualifiedBinaryOpExpr(lhs, op, rhs, op.collectedTypeQualifiers, location=top.location);
+}
+abstract production qualifiedBinaryOpExpr
+top::Expr ::= lhs::Expr  op::BinOp  rhs::Expr  collectedTypeQualifiers::[Qualifier]
+{
   propagate host, lifted;
   -- case op here is a potential problem, since that emits a dep on op->forward, which eventually should probably include env
   -- Find a way to do this that doesn't cause problems if an op forwards.
@@ -268,7 +280,7 @@ top::Expr ::= lhs::Expr  op::BinOp  rhs::Expr
   top.freeVariables =
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
-  top.typerep = addQualifiers(op.collectedTypeQualifiers, op.typerep);
+  top.typerep = addQualifiers(collectedTypeQualifiers, op.typerep);
   
   op.lop = lhs;
   op.rop = rhs;
