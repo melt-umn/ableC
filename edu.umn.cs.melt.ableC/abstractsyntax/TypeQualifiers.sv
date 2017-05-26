@@ -65,7 +65,7 @@ top::Qualifier ::=
   top.mangledName = "volatile";
   top.qualIsPositive = true;
   top.qualIsNegative = false;
-  top.qualAppliesWithinRef = true;
+  top.qualAppliesWithinRef = false;
   top.qualCompat = \qualToCompare::Qualifier ->
     case qualToCompare of volatileQualifier() -> true | _ -> false end;
   top.qualIsHost = true;
