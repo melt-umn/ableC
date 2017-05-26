@@ -1,7 +1,11 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax:substitution;
 
 
-
+aspect default production
+top::Qualifier ::=
+{
+  top.substituted = top;
+}
 
 aspect production constQualifier
 top::Qualifier ::=
