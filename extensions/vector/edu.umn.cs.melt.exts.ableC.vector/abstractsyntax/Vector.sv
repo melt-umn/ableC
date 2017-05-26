@@ -16,75 +16,73 @@ imports edu:umn:cs:melt:exts:ableC:string;
 
 global builtin::Location = builtinLoc("vector");
 
-aspect production addOp
-top::NumOp ::=
+aspect function ovrld:getAddOpOverload
+Maybe<(Expr ::= Expr Expr Location)> ::= l::Type r::Type env::Decorated Env
 {
   overloads <-
     [pair(
        pair(
          "edu:umn:cs:melt:exts:ableC:vector:vector",
          "edu:umn:cs:melt:exts:ableC:vector:vector"),
-       concatVector(_, _, location=top.location))];
+       concatVector(_, _, location=_))];
 }
 
-aspect production assignOp
-top::BinOp ::= op::AssignOp
+aspect function ovrld:getSubscriptAssignOverload
+Maybe<(Expr ::= Expr Expr AssignOp Expr Location)> ::= t::Type env::Decorated Env
 {
-  subscriptOverloads <-
+  overloads <-
     [pair(
        "edu:umn:cs:melt:exts:ableC:vector:vector",
-       subscriptAssignVector(_, _, op, _, location=top.location))];
-  memberOverloads <-
-    [pair(
-       "edu:umn:cs:melt:exts:ableC:vector:vector",
-       memberAssignVector(_, _, _, op, _, location=top.location))];
+       subscriptAssignVector(_, _, _, _, location=_))];
 }
 
-aspect production equalsOp
-top::CompareOp ::=
+aspect function ovrld:getMemberAssignOverload
+Maybe<(Expr ::= Expr Boolean Name AssignOp Expr Location)> ::= t::Type env::Decorated Env
+{
+  overloads <-
+    [pair(
+       "edu:umn:cs:melt:exts:ableC:vector:vector",
+       memberAssignVector(_, _, _, _, _, location=_))];
+}
+
+aspect function ovrld:getEqualsOpOverload
+Maybe<(Expr ::= Expr Expr Location)> ::= l::Type r::Type env::Decorated Env
 {
   overloads <-
     [pair(
        pair(
          "edu:umn:cs:melt:exts:ableC:vector:vector",
          "edu:umn:cs:melt:exts:ableC:vector:vector"),
-       eqVector(_, _, location=top.location))];
+       eqVector(_, _, location=_))];
 }
 
-aspect production ovrld:arraySubscriptExpr
-top::Expr ::= lhs::Expr  rhs::Expr
+aspect function ovrld:getArraySubscriptOverload
+Maybe<(Expr ::= Expr Expr Location)> ::= t::Type env::Decorated Env
+{
+  overloads <-
+    [pair("edu:umn:cs:melt:exts:ableC:vector:vector", subscriptVector(_, _, location=_))];
+}
+
+aspect function ovrld:getMemberOverload
+Maybe<(Expr ::= Expr Boolean Name Location)> ::= t::Type env::Decorated Env
+{
+  overloads <-
+    [pair("edu:umn:cs:melt:exts:ableC:vector:vector", memberVector(_, _, _, location=_))];
+}
+
+aspect function ovrld:getMemberCallOverload
+Maybe<(Expr ::= Expr Boolean Name Exprs Location)> ::= t::Type env::Decorated Env
 {
   overloads <-
     [pair(
        "edu:umn:cs:melt:exts:ableC:vector:vector",
-       subscriptVector(lhs, rhs, location=top.location))];
+       memberCallVector(_, _, _, _, location=_))];
 }
 
-aspect production ovrld:memberExpr
-top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
+aspect function getShowOverload
+Maybe<(Expr ::= Expr Location)> ::= t::Type env::Decorated Env
 {
-  overloads <-
-    [pair(
-       "edu:umn:cs:melt:exts:ableC:vector:vector",
-       memberVector(lhs, deref, rhs, location=top.location))];
-}
-
-aspect production ovrld:callExpr
-top::Expr ::= f::Expr  a::Exprs
-{
-  memberOverloads <-
-    [pair(
-       "edu:umn:cs:melt:exts:ableC:vector:vector",
-       memberCallVector(_, _, _, a, location=top.location))];
-}
-
-aspect production showExpr
-top::Expr ::= e::Expr
-{
-  overloads <-
-    [pair(
-       "edu:umn:cs:melt:exts:ableC:vector:vector",
-       showVector(e, location=top.location))];
+  overloads <- [pair("edu:umn:cs:melt:exts:ableC:vector:vector", showVector(_, location=_))];
 }
 
 abstract production memberVector
@@ -539,7 +537,7 @@ top::Expr ::= e::Expr
 
   local localErrors::[Message] =
     checkVectorHeaderDef("_show_vector", top.location, top.env) ++
-    checkShowErrors(subType, top.env);
+    checkShowErrors(subType, top.env, top.location);
   local fwrd::Expr =
     callExpr(
       templateDeclRefExpr(

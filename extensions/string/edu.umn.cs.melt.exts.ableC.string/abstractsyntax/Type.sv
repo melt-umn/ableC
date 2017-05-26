@@ -149,34 +149,22 @@ top::BuiltinType ::= sub::IntegerType
 
 -- Check if errors result from in applying the show() operator to a type 
 function checkShowErrors
-[Message] ::= t::Type env::Decorated Env
+[Message] ::= t::Type env::Decorated Env loc::Location
 {
-  local expr::Expr =
-    showExpr(
-      explicitCastExpr(
-        typeName(directTypeExpr(t), baseTypeExpr()),
-        mkIntConst(0, builtin),
-        location=builtin),
-      location=builtin);
-  expr.env = env;
-  expr.returnType = nothing();
-  
-  return expr.errors;
+  return
+    case orElse(t.showProd, getShowOverload(t, env)) of
+      just(_) -> []
+    | nothing() -> [err(loc, s"show of ${showType(t)} not defined")]
+    end;
 }
 
 -- Check if errors result from in applying the str() operator to a type 
 function checkStrErrors
-[Message] ::= t::Type env::Decorated Env
+[Message] ::= t::Type env::Decorated Env loc::Location
 {
-  local expr::Expr =
-    strExpr(
-      explicitCastExpr(
-        typeName(directTypeExpr(t), baseTypeExpr()),
-        mkIntConst(0, builtin),
-        location=builtin),
-      location=builtin);
-  expr.env = env;
-  expr.returnType = nothing();
-  
-  return expr.errors;
+  return
+    case orElse(t.strProd, getStrOverload(t, env)) of
+      just(_) -> []
+    | nothing() -> [err(loc, s"str of ${showType(t)} not defined")]
+    end;
 }
