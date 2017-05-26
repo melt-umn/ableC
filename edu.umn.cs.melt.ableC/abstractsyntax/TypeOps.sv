@@ -84,7 +84,7 @@ Type ::= a::Type  b::Type
       end
   -- TODO: these are not complete. they should be integers, etc.
   | pointerType(_, _), builtinType(_, _) -> a
-  | builtinType(_, _), pointerType(_, _) -> a
+  | builtinType(_, _), pointerType(_, _) -> b
   -- extensions
   | vectorType(b1, s1), vectorType(b2, s2) ->
       if compatibleTypes(b1, b2, true, false) && s1 == s2 then a else errorType() -- TODO: no idea
@@ -102,7 +102,7 @@ Type ::= a::Type  b::Type
       end
   -- TODO: these are not complete. they should be integers, etc.
   | pointerType(_, _), builtinType(_, _) -> a
-  | builtinType(_, _), pointerType(_, _) -> a
+  | builtinType(_, _), pointerType(_, _) -> b
   -- The special case for subtraction:
   | pointerType(_, _), pointerType(_, _) -> builtinType(nilQualifier(), signedType(intType()))
   -- extensions
