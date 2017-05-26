@@ -82,7 +82,7 @@ top::Decl ::= params::[Name] attrs::Attributes n::Name
                         nilExpr())),
                     nilAttrib())),
                 attrs),
-              tagReferenceTypeExpr([], structSEU(), n),
+              tagReferenceTypeExpr(nilQualifier(), structSEU(), n),
               consDeclarator(
                 declarator(n, baseTypeExpr(), nilAttribute(), nothingInitializer()),
                 nilDeclarator())))))]);
@@ -134,7 +134,7 @@ top::Decl ::= params::[Name] attrs::Attributes n::Name dcls::StructItemList
                             nilExpr())),
                         nilAttrib())),
                     nilAttribute()),
-                  tagReferenceTypeExpr([], structSEU(), n),
+                  tagReferenceTypeExpr(nilQualifier(), structSEU(), n),
                   consDeclarator(
                     declarator(n, baseTypeExpr(), nilAttribute(), nothingInitializer()),
                     nilDeclarator()))),
@@ -142,7 +142,7 @@ top::Decl ::= params::[Name] attrs::Attributes n::Name dcls::StructItemList
               typeExprDecl(
                 nilAttribute(),
                 structTypeExpr(
-                  [],
+                  nilQualifier(),
                   structDecl(attrs, justName(n), dcls, location=n.location)))]))))]);
   
   forwards to

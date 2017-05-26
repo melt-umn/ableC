@@ -179,7 +179,7 @@ top::Expr ::= sub::TypeName e::Exprs
   
   local fwrd::Expr =
     subExpr(
-      [typedefSubstitution("__vector_type__", vectorTypeExpr([], sub)),
+      [typedefSubstitution("__vector_type__", vectorTypeExpr(nilQualifier(), sub)),
        declRefSubstitution(
          "__new_vec__",
          newVector(
@@ -260,7 +260,7 @@ top::Expr ::= e1::Expr e2::Expr
   forwards to 
     stmtExpr(
       foldStmt([
-        mkDecl(vecTempName, vectorType([], subType), copyVector(e1, location=builtin), builtin),
+        mkDecl(vecTempName, vectorType(nilQualifier(), subType), copyVector(e1, location=builtin), builtin),
         exprStmt(
           extendVector(
             declRefExpr(name(vecTempName, location=builtin), location=builtin),
@@ -281,7 +281,7 @@ top::Expr ::= e1::Expr e2::Expr
   
   local localErrors::[Message] =
     checkVectorHeaderDef("_eq_vector", top.location, top.env) ++
-    if !compatibleTypes(subType, vectorSubType(e2.typerep, top.env), false)
+    if !compatibleTypes(subType, vectorSubType(e2.typerep, top.env), true, false)
     then [err(top.location, s"Vector equality sub-types must be the same, got ${showType(e1.typerep)} and ${showType(e2.typerep)}")]
     else [];
   local fwrd::Expr =
@@ -458,7 +458,7 @@ top::Expr ::= lhs::Expr elem::Expr
   
   local localErrors::[Message] =
     checkVectorHeaderDef("_append_vector", top.location, top.env) ++
-    if !compatibleTypes(subType, elem.typerep, false)
+    if !compatibleTypes(subType, elem.typerep, true, false)
     then [err(top.location, s"Appended type must be the same as vector sub-type, got ${showType(subType)} and ${showType(elem.typerep)}")]
     else [];
 
@@ -487,7 +487,7 @@ top::Expr ::= lhs::Expr index::Expr elem::Expr
     (if index.typerep.isIntegerType
      then []
      else [err(index.location, s"Vector insertion index must have integer type, but got ${showType(index.typerep)}")]) ++
-    (if !compatibleTypes(subType, index.typerep, false)
+    (if !compatibleTypes(subType, index.typerep, true, false)
      then [err(top.location, s"Inserted type must be the same as vector sub-type, got ${showType(subType)} and ${showType(index.typerep)}")]
      else []);
 
@@ -513,7 +513,7 @@ top::Expr ::= e1::Expr e2::Expr
   
   local localErrors::[Message] =
     checkVectorHeaderDef("_extend_vector", top.location, top.env) ++
-    if !compatibleTypes(subType, vectorSubType(e2.typerep, top.env), false)
+    if !compatibleTypes(subType, vectorSubType(e2.typerep, top.env), true, false)
     then [err(top.location, s"Vector extend sub-types must be the same, got ${showType(e1.typerep)} and ${showType(e2.typerep)}")]
     else [];
 

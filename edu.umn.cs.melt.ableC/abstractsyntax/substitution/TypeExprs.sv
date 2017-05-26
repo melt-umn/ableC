@@ -24,32 +24,32 @@ top::BaseTypeExpr ::= bty::BaseTypeExpr  mty::TypeModifierExpr
   propagate substituted;
 }
 aspect production builtinTypeExpr
-top::BaseTypeExpr ::= q::[Qualifier]  result::BuiltinType
+top::BaseTypeExpr ::= q::Qualifiers  result::BuiltinType
 {
   propagate substituted;
 }
 aspect production tagReferenceTypeExpr
-top::BaseTypeExpr ::= q::[Qualifier]  kwd::StructOrEnumOrUnion  name::Name
+top::BaseTypeExpr ::= q::Qualifiers  kwd::StructOrEnumOrUnion  name::Name
 {
   propagate substituted;
 }
 aspect production structTypeExpr
-top::BaseTypeExpr ::= q::[Qualifier]  def::StructDecl
+top::BaseTypeExpr ::= q::Qualifiers  def::StructDecl
 {
   propagate substituted;
 }
 aspect production unionTypeExpr
-top::BaseTypeExpr ::= q::[Qualifier]  def::UnionDecl
+top::BaseTypeExpr ::= q::Qualifiers  def::UnionDecl
 {
   propagate substituted;
 }
 aspect production enumTypeExpr
-top::BaseTypeExpr ::= q::[Qualifier]  def::EnumDecl
+top::BaseTypeExpr ::= q::Qualifiers  def::EnumDecl
 {
   propagate substituted;
 }
 aspect production typedefTypeExpr
-top::BaseTypeExpr ::= q::[Qualifier]  name::Name
+top::BaseTypeExpr ::= q::Qualifiers  name::Name
 {
   local substitutions::Substitutions = top.substitutions;
   substitutions.nameIn = name.name;
@@ -60,7 +60,7 @@ top::BaseTypeExpr ::= q::[Qualifier]  name::Name
     end;
 }
 aspect production atomicTypeExpr
-top::BaseTypeExpr ::= q::[Qualifier]  wrapped::TypeName
+top::BaseTypeExpr ::= q::Qualifiers  wrapped::TypeName
 {
   propagate substituted;
 }
@@ -70,7 +70,7 @@ top::BaseTypeExpr ::=
   propagate substituted;
 }
 aspect production typeofTypeExpr
-top::BaseTypeExpr ::= q::[Qualifier]  e::ExprOrTypeName
+top::BaseTypeExpr ::= q::Qualifiers  e::ExprOrTypeName
 {
   propagate substituted;
 }
@@ -81,17 +81,17 @@ top::TypeModifierExpr ::=
   propagate substituted;
 }
 aspect production pointerTypeExpr
-top::TypeModifierExpr ::= q::[Qualifier]  target::TypeModifierExpr
+top::TypeModifierExpr ::= q::Qualifiers  target::TypeModifierExpr
 {
   propagate substituted;
 }
 aspect production arrayTypeExprWithExpr
-top::TypeModifierExpr ::= element::TypeModifierExpr  indexQualifiers::[Qualifier]  sizeModifier::ArraySizeModifier  size::Expr
+top::TypeModifierExpr ::= element::TypeModifierExpr  indexQualifiers::Qualifiers  sizeModifier::ArraySizeModifier  size::Expr
 {
   propagate substituted;
 }
 aspect production arrayTypeExprWithoutExpr
-top::TypeModifierExpr ::= element::TypeModifierExpr  indexQualifiers::[Qualifier]  sizeModifier::ArraySizeModifier
+top::TypeModifierExpr ::= element::TypeModifierExpr  indexQualifiers::Qualifiers  sizeModifier::ArraySizeModifier
 {
   propagate substituted;
 }

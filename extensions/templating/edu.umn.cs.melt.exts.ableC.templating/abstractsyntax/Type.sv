@@ -2,16 +2,16 @@ grammar edu:umn:cs:melt:exts:ableC:templating:abstractsyntax;
 
 -- Type of an instantiated template typedef
 abstract production templatedType
-top::Type ::= q::[Qualifier] n::String args::[Type] resolved::Type
+top::Type ::= q::Qualifiers n::String args::[Type] resolved::Type
 {
-  top.lpp = pp"${terminate(space(), map((.pp), q))}${text(n)}<${ppImplode(pp", ", map(\t::Type -> cat(t.lpp, t.rpp), args))}>";
+  top.lpp = pp"${terminate(space(), q.pps)}${text(n)}<${ppImplode(pp", ", map(\t::Type -> cat(t.lpp, t.rpp), args))}>";
   top.rpp = notext();
   
   forwards to resolved;
 }
 
 function mkTemplatedType
-Type ::= q::[Qualifier] n::String args::[Type] env::Decorated Env
+Type ::= q::Qualifiers n::String args::[Type] env::Decorated Env
 {
   local result::BaseTypeExpr =
     templateTypedefTypeExpr(

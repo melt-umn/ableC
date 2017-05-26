@@ -465,8 +465,8 @@ top::Expr ::= e1::Expr a::Exprs
   top.pp = pp"${e1.pp}.substring(${ppImplode(pp", ", a.pps)}";
   
   a.expectedTypes = -- size_t
-    [builtinType([], unsignedType(longType())),
-     builtinType([], unsignedType(longType()))];
+    [builtinType(nilQualifier(), unsignedType(longType())),
+     builtinType(nilQualifier(), unsignedType(longType()))];
   a.argumentPosition = 1;
   a.callExpr = top; -- Doesn't really matter, just needs location
   a.callVariadic = false;
