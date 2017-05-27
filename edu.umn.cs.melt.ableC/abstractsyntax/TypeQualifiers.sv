@@ -80,7 +80,11 @@ top::Qualifier ::=
   top.qualIsNegative = false;
   top.qualAppliesWithinRef = false;
   top.qualCompat = \qualToCompare::Qualifier ->
-    case qualToCompare of restrictQualifier() -> true | _ -> false end;
+    case qualToCompare of
+      restrictQualifier()   -> true
+    | uuRestrictQualifier() -> true
+    | _                     -> false
+    end;
   top.qualIsHost = true;
 }
 
@@ -93,7 +97,11 @@ top::Qualifier ::=
   top.qualIsNegative = false;
   top.qualAppliesWithinRef = false;
   top.qualCompat = \qualToCompare::Qualifier ->
-    case qualToCompare of uuRestrictQualifier() -> true | _ -> false end;
+    case qualToCompare of
+      restrictQualifier()   -> true
+    | uuRestrictQualifier() -> true
+    | _                     -> false
+    end;
   top.qualIsHost = true;
 }
 
