@@ -113,7 +113,7 @@ def notifyBuild(String buildStatus = 'STARTED') {
   emailext(
       subject: subject,
       body: details,
-//			to: 'evw@umn.edu',
+			to: 'evw@umn.edu',
       recipientProviders: [[$class: 'CulpritsRecipientProvider']]
     )
 }
