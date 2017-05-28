@@ -78,6 +78,7 @@ top::Expr ::= e::Expr
 abstract production unaryOpExpr
 top::Expr ::= op::UnaryOp  e::Expr
 {
+  op.op = e;
   forwards to qualifiedUnaryOpExpr(op, e, foldQualifier(op.collectedTypeQualifiers), location=top.location);
 }
 abstract production qualifiedUnaryOpExpr
@@ -93,7 +94,7 @@ top::Expr ::= op::UnaryOp  e::Expr  collectedTypeQualifiers::Qualifiers
   top.defs := e.defs;
   top.freeVariables = e.freeVariables;
   top.typerep = addQualifiers(collectedTypeQualifiers.qualifiers, op.typerep);
-  
+
   op.op = e;
 }
 abstract production unaryExprOrTypeTraitExpr
@@ -260,6 +261,8 @@ top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
 abstract production binaryOpExpr
 top::Expr ::= lhs::Expr  op::BinOp  rhs::Expr
 {
+  op.lop = lhs;
+  op.rop = lhs;
   forwards to qualifiedBinaryOpExpr(lhs, op, rhs, foldQualifier(op.collectedTypeQualifiers), location=top.location);
 }
 abstract production qualifiedBinaryOpExpr

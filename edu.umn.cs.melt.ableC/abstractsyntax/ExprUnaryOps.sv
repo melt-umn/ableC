@@ -18,6 +18,14 @@ top::UnaryOp ::=
     end;
 }
 
+-- seed flow types
+abstract production hackUnusedUnaryOp
+top::UnaryOp ::=
+{
+  top.collectedTypeQualifiers := top.op.typerep.qualifiers;
+  forwards to hackUnusedUnaryOp(location=top.location);
+}
+
 abstract production preIncOp
 top::UnaryOp ::=
 {

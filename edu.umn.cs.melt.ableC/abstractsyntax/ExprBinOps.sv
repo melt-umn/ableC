@@ -15,6 +15,14 @@ top::BinOp ::=
     end;
 }
 
+-- seed flow types
+abstract production hackUnusedBinOp
+top::NumOp ::=
+{
+  top.collectedTypeQualifiers := top.lop.typerep.qualifiers ++ top.rop.typerep.qualifiers;
+  forwards to hackUnusedBinOp(location=top.location);
+}
+
 --------------------------------------------------------------------------------
 abstract production assignOp
 top::BinOp ::= op::AssignOp
@@ -125,6 +133,14 @@ top::BinOp ::= op::BoolOp
 
 nonterminal BoolOp with location, lop, rop, pp, host<BoolOp>, lifted<BoolOp>, collectedTypeQualifiers;
 
+-- seed flow types
+abstract production hackUnusedBoolOp
+top::BoolOp ::=
+{
+  top.collectedTypeQualifiers := top.lop.typerep.qualifiers ++ top.rop.typerep.qualifiers;
+  forwards to hackUnusedBoolOp(location=top.location);
+}
+
 abstract production andBoolOp
 top::BoolOp ::=
 {
@@ -152,6 +168,14 @@ top::BinOp ::= op::BitOp
 }
 
 nonterminal BitOp with location, lop, rop, pp, host<BitOp>, lifted<BitOp>, collectedTypeQualifiers;
+
+-- seed flow types
+abstract production hackUnusedBitOp
+top::BitOp ::=
+{
+  top.collectedTypeQualifiers := top.lop.typerep.qualifiers ++ top.rop.typerep.qualifiers;
+  forwards to hackUnusedBitOp(location=top.location);
+}
 
 abstract production andBitOp
 top::BitOp ::=
@@ -202,6 +226,14 @@ top::BinOp ::= op::CompareOp
 }
 
 nonterminal CompareOp with location, lop, rop, pp, host<CompareOp>, lifted<CompareOp>, collectedTypeQualifiers;
+
+-- seed flow types
+abstract production hackUnusedCompareOp
+top::CompareOp ::=
+{
+  top.collectedTypeQualifiers := top.lop.typerep.qualifiers ++ top.rop.typerep.qualifiers;
+  forwards to hackUnusedCompareOp(location=top.location);
+}
 
 abstract production equalsOp
 top::CompareOp ::=
@@ -258,6 +290,14 @@ top::BinOp ::= op::NumOp
 }
 
 nonterminal NumOp with location, lop, rop, pp, host<NumOp>, lifted<NumOp>, typerep, collectedTypeQualifiers;
+
+-- seed flow types
+abstract production hackUnusedNumOp
+top::NumOp ::=
+{
+  top.collectedTypeQualifiers := top.lop.typerep.qualifiers ++ top.rop.typerep.qualifiers;
+  forwards to hackUnusedNumOp(location=top.location);
+}
 
 abstract production addOp
 top::NumOp ::=
