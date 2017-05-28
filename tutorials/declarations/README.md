@@ -47,10 +47,19 @@ A `TypeModifierExpr` is structured as a nested chain of modifiers, as opposed to
 * `baseTypeExpr`: The "bottom level" type expression, using the type of the corresponding `BaseTypeExpr`.  
 * `pointerTypeExpr`: Just a pointer to another type, wraps another `BaseTypeExpr`.  
 * `arrayTypeExprWithExpr` and `arrayTypeExprWithoutExpr`: Array type expressions, work similar to pointers.  Not used very often when writing extensions.  
-* `functionTypeExprWithArgs` and `functionTypeExprWithoutArgs`: Function types.  Here the "base type" is the return type, and the modifier is the parameters.  `functionTypeExprWithoutArgs` is for K&R C-style functions, where the parameter types were optional.  
+* `functionTypeExprWithArgs` and `functionTypeExprWithoutArgs`: Function types.  Here the "base type" is the return type, and the modifier contains the parameters.  `functionTypeExprWithoutArgs` is for K&R C-style functions, where the parameter types were optional.  
 * `parenTypeExpr`: This just represent parentheses written by a user, and has no semantic meaning.  Its only purpose is to improve error messages.  
 
 As a convenience to extension writers, we also provide a `TypeNames` nonterminal, simply a list of `TypeName`s, since this pattern is commonly found in extensions.  An example of the use of this may be found in [Tuple.sv](edu.umn.cs.melt.tutorials.ableC.tuple/abstractsyntax/Tuple.sv).  
+
+To access the type corresponding to a type expression, the `typerep` attribute may be used, similarly to an expression.  On `TypeModifierExpr`, to compute the `typerep`, the `typerep` of the corresponding `BaseTypeExpr` is required; this is passed in via the `baseType` attribute.  
+A `Type` may be also be converted back to its component type expressions; the attributes `baseTypeExpr` and `typeModifierExpr` may be used for this purpose.  `directTypeExpr` serves as a helper to do this conversion while preserving the `pp` and `typerep` of the parameter type.  This production simply forwards to the `baseTypeExpr` of the parameter `Type`, wrapped in `typeModifierTypeExpr` if `typeModifierExpr` from the type is anything but `directTypeExpr`.  
+
+It is important to note that although types and type expressions may be converted, they are not equivalent.  A type expression `te` may contain declarations, while `directTypeExpr(te.typerep)` will refer to types declared within `te` without declaring them.  (On the other hand, `directTypeExpr(ty).typerep` *is* guaranteed to be the same as `ty`.)  
+As a result of this, there are several invariants that must be kept by extension writers when dealing with type expressions, to avoid introducing missing or repeated declarations:
+* A `BaseTypeExpr` `te` that is a child of a forwarding production should be included in the forward in some way exactly once.  If multiple uses of that type expression are required, `directTypeExpr(te.typerep)` should be used instead.
+* The use of `te` should appear before any use of `directTypeExpr(te.typerep)` in the forward tree.
+* If a transformation is performed on a type expression and used in the forward, the transformed type expression should still include any declarations in the original type expression.
 
 ## Declarations
 The abstract syntax for declarations in ableC is very hierarchical, and is contained in the file [Decls.sv](../../edu.umn.cs.melt.ableC/abstractsyntax/Decls.sv).  At the top level of declarations, we have `GlobalDecls`, which correspond to the list of declarations at the top level of a file.  The `Decls` nonterminal is similar, but for non-global declarations.  A single declaration is represented by the `Decl` nonterminal, which has several productions.  
@@ -71,6 +80,6 @@ The `typeExprDecl` production consists of a base type expression written by itse
 
 Since as mentioned earlier, C attempts to treat values and types the same way, the `typedefDecls` production is structured similarly to `variableDecls`.  The only difference is that there is no storage class provided and the declarators should not have initializers, since these are not applicable for types.  
 
-The `functionDeclaration` production declares a function.  Since we need to reference the original declaration of a function from the environment, we have the actual internals of declaring a function factored into the `FunctionDecl` nonterminal, constructed via `functionDecl` production.  
+The `functionDeclaration` production declares a function.  Since we need to reference the original declaration of a function from the environment, we have the actual internals of declaring a function factored into the `FunctionDecl` nonterminal, constructed via `functionDecl` production.  A function declaration takes a list of storage classes, a list of `SpecialSpecifier`s (things such as `inline` or `_Noreturn`), base type and type modifier expressions, a name, `Attributes`, a list of initial function-scope declarations, and a body statement.  These type expressions specify the type of the function - the `BaseTypeExpr` gives the base type of the return type, and the `TypeModifierExpr` must be a `functionTypeExprWithArgs` or `functionTypeExprWithoutArgs`.  
 
 ## Concrete syntax
