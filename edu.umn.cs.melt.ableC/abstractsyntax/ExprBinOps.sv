@@ -3,6 +3,7 @@ autocopy attribute lop :: Decorated Expr;
 autocopy attribute rop :: Decorated Expr;
 
 nonterminal BinOp with location, lop, rop, opName, pp, host<BinOp>, lifted<BinOp>, typerep, errors, collectedTypeQualifiers;
+flowtype collectedTypeQualifiers {lop, rop} on BinOp;
 
 aspect default production
 top::BinOp ::=
@@ -13,14 +14,6 @@ top::BinOp ::=
       text(opName) -> opName
     | _ -> error("Op pp isn't simple text, opName must be overridden manually")
     end;
-}
-
--- seed flow types
-abstract production hackUnusedBinOp
-top::NumOp ::=
-{
-  top.collectedTypeQualifiers := top.lop.typerep.qualifiers ++ top.rop.typerep.qualifiers;
-  forwards to hackUnusedBinOp(location=top.location);
 }
 
 --------------------------------------------------------------------------------
@@ -132,14 +125,7 @@ top::BinOp ::= op::BoolOp
 }
 
 nonterminal BoolOp with location, lop, rop, pp, host<BoolOp>, lifted<BoolOp>, collectedTypeQualifiers;
-
--- seed flow types
-abstract production hackUnusedBoolOp
-top::BoolOp ::=
-{
-  top.collectedTypeQualifiers := top.lop.typerep.qualifiers ++ top.rop.typerep.qualifiers;
-  forwards to hackUnusedBoolOp(location=top.location);
-}
+flowtype collectedTypeQualifiers {lop, rop} on BoolOp;
 
 abstract production andBoolOp
 top::BoolOp ::=
@@ -168,14 +154,7 @@ top::BinOp ::= op::BitOp
 }
 
 nonterminal BitOp with location, lop, rop, pp, host<BitOp>, lifted<BitOp>, collectedTypeQualifiers;
-
--- seed flow types
-abstract production hackUnusedBitOp
-top::BitOp ::=
-{
-  top.collectedTypeQualifiers := top.lop.typerep.qualifiers ++ top.rop.typerep.qualifiers;
-  forwards to hackUnusedBitOp(location=top.location);
-}
+flowtype collectedTypeQualifiers {lop, rop} on BitOp;
 
 abstract production andBitOp
 top::BitOp ::=
@@ -226,14 +205,7 @@ top::BinOp ::= op::CompareOp
 }
 
 nonterminal CompareOp with location, lop, rop, pp, host<CompareOp>, lifted<CompareOp>, collectedTypeQualifiers;
-
--- seed flow types
-abstract production hackUnusedCompareOp
-top::CompareOp ::=
-{
-  top.collectedTypeQualifiers := top.lop.typerep.qualifiers ++ top.rop.typerep.qualifiers;
-  forwards to hackUnusedCompareOp(location=top.location);
-}
+flowtype collectedTypeQualifiers {lop, rop} on CompareOp;
 
 abstract production equalsOp
 top::CompareOp ::=
@@ -290,14 +262,7 @@ top::BinOp ::= op::NumOp
 }
 
 nonterminal NumOp with location, lop, rop, pp, host<NumOp>, lifted<NumOp>, typerep, collectedTypeQualifiers;
-
--- seed flow types
-abstract production hackUnusedNumOp
-top::NumOp ::=
-{
-  top.collectedTypeQualifiers := top.lop.typerep.qualifiers ++ top.rop.typerep.qualifiers;
-  forwards to hackUnusedNumOp(location=top.location);
-}
+flowtype collectedTypeQualifiers {lop, rop} on NumOp;
 
 abstract production addOp
 top::NumOp ::=

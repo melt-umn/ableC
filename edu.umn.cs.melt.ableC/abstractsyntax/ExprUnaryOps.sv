@@ -1,5 +1,6 @@
 
 nonterminal UnaryOp with location, op, opName, pp, host<UnaryOp>, lifted<UnaryOp>, preExpr, noLvalueConversion, typerep, errors, collectedTypeQualifiers;
+flowtype collectedTypeQualifiers {op} on UnaryOp;
 
 autocopy attribute op :: Decorated Expr;
 synthesized attribute opName :: String;
@@ -16,14 +17,6 @@ top::UnaryOp ::=
       text(opName) -> opName
     | _ -> error("Op pp isn't simple text, opName must be overridden manually")
     end;
-}
-
--- seed flow types
-abstract production hackUnusedUnaryOp
-top::UnaryOp ::=
-{
-  top.collectedTypeQualifiers := top.op.typerep.qualifiers;
-  forwards to hackUnusedUnaryOp(location=top.location);
 }
 
 abstract production preIncOp
