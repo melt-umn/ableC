@@ -262,7 +262,7 @@ abstract production binaryOpExpr
 top::Expr ::= lhs::Expr  op::BinOp  rhs::Expr
 {
   op.lop = lhs;
-  op.rop = lhs;
+  op.rop = rhs;
   forwards to qualifiedBinaryOpExpr(lhs, op, rhs, foldQualifier(op.collectedTypeQualifiers), location=top.location);
 }
 abstract production qualifiedBinaryOpExpr
