@@ -363,12 +363,26 @@ Boolean ::= lval::Type  rval::Type
     end;
 }
 
-{-- Tacks on qualifiers to a type at the outermost level -}
+{-- Tacks on qualifiers to a type at the outermost level,
+    without adding duplicates -}
 function addQualifiers
 Type ::= qs::[Qualifier] base::Type
 {
-  base.addedTypeQualifiers = qs;
+  base.addedTypeQualifiers = filter(
+      \q::Qualifier -> !containsBy(qualifierCompat, q, base.qualifiers),
+      uniqueBy(qualifierCompat, qs));
   return base.withTypeQualifiers;
+}
+
+{-- remove duplicates from a list -}
+function uniqueBy
+[a] ::= f::(Boolean ::= a a) lst::[a]
+{
+	return if null(lst)
+         then []
+         else if containsBy(f, head(lst), tail(lst))
+              then uniqueBy(f, tail(lst))
+              else head(lst) :: uniqueBy(f, tail(lst));
 }
 
 {--
