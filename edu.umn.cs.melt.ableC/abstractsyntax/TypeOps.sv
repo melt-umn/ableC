@@ -324,7 +324,7 @@ Boolean ::= lval::Type  rval::Type
     | tagType(_, _), _ -> compatibleTypes(lval.defaultFunctionArrayLvalueConversion, rval.defaultFunctionArrayLvalueConversion, true, true)
 -- the left operand has atomic, qualified, or unqualified pointer type, and (considering the type the left operand would have after lvalue conversion) both operands are pointers to qualified or unqualified versions of compatible types, and the type pointed to by the left has all the qualifiers of the type pointed to by the right;
     | pointerType(q1, p1), pointerType(q2, p2) ->
-        (compatibleTypes(p1, p2, false, true) ||
+        (compatibleTypes(p1, p2, true, false) ||
           compatibleTypes(
             pointerType(nilQualifier(), builtinType(nilQualifier(), voidType())),
             rval.defaultFunctionArrayLvalueConversion,
