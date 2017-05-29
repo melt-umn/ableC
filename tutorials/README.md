@@ -10,7 +10,7 @@ This tutorial is composed of 3 sections.  It is expected that you complete the f
 1. [Getting started](getting_started/): Writting a very simple 'Hello world' example extension
 2. [Error checking](error_checking/): An introduction to the type system of ableC, and implementing error checking for a new binary operator that computes an average
 3. [Declarations](declarations/): A look at how declarations and type expressions work in C, writing a new struct declaration syntax for tuples
-4. [Embedded domain spesific languages](embedded_dsl/): Writting a simple embedded DSL, prefix arithmetic expressions
+4. [Embedded domain spesific languages](embedded_dsl/): A look at how expressions work in C, writing a simple embedded DSL, prefix arithmetic expressions
 
 *TODO: Add a section discussing concrete syntax in more detail (which nonterminals to extend, what lexer classes to use, tricks for resolving lexer conflicts, etc.)*
 
