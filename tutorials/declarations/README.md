@@ -41,7 +41,7 @@ The first nonterminal here, `TypeName`, has a single production that pairs toget
 * `builtinTypeExpr`: represents type expressions for built-in types, such as `int`, `float`, `char`, etc.  These share a the `BuiltinType` nonterminal also used by `Type`.  
 * `tagReferenceTypeExpr`: represents a reference to a struct, enum, or union that has already been declared.  `structTypeExpr`, `unionTypeExpr`, and `enumTypeExpr` all wrap actual declarations of these.  
 * `typedefTypeExpr`: represents a name for a typedef'ed type that must be looked up from the environment.  
-* `attributedTypeExpr`: used for GCC's `__attribute__` extension, that allows for types to be further customized in some ways.  This will be discussed later on.  `atomicTypeExpr`, `vaListTypeExpr`, and `typeofTypeExpr` are all related to C11 or GCC extensions to C, which you will likely not need to use.  
+* `attributedTypeExpr`: used for GCC's `__attribute__` feature that allows for types to be further customized in some ways.  This will be discussed later on.  `atomicTypeExpr`, `vaListTypeExpr`, and `typeofTypeExpr` are all related to C11 or GCC extensions to C, which you will likely not need to use.  
 
 A `TypeModifierExpr` is structured as a nested chain of modifiers, as opposed to the more flat structure of `BaseTypeExpr`.  It has the following productions:
 * `baseTypeExpr`: The "bottom level" type expression, using the type of the corresponding `BaseTypeExpr`.  
@@ -81,5 +81,18 @@ The `typeExprDecl` production consists of a base type expression written by itse
 Since as mentioned earlier, C attempts to treat values and types the same way, the `typedefDecls` production is structured similarly to `variableDecls`.  The only difference is that there is no storage class provided and the declarators should not have initializers, since these are not applicable for types.  
 
 The `functionDeclaration` production declares a function.  Since we need to reference the original declaration of a function from the environment, we have the actual internals of declaring a function factored into the `FunctionDecl` nonterminal, constructed via `functionDecl` production.  A function declaration takes a list of storage classes, a list of `SpecialSpecifier`s (things such as `inline` or `_Noreturn`), base type and type modifier expressions, a name, `Attributes`, a list of initial function-scope declarations, and a body statement.  These type expressions specify the type of the function - the `BaseTypeExpr` gives the base type of the return type, and the `TypeModifierExpr` must be a `functionTypeExprWithArgs` or `functionTypeExprWithoutArgs`.  
+The `Parameters` used in `functionTypeExprWithArgs` are represented via a structure that is a list of `ParameterDecl`.  A `ParameterDecl` is constructed via the `parameterDecl` production, using a list of storage classes, base type and type modifier expressions, a name, and `Attributes` attached to the type.  
+
+The representations of `struct`s and `union`s in ableC are similar, so we will only discuss `struct`s for now.  A `StructDecl`, as used in `structTypeExpr`, is constructed by the `structDecl` production with `Attributes`, a `MaybeName` tag name to optionally be declared, and a `StructItemList` representing the body of the struct.  `StructItemList` is a list structure of `StructItem`s, each of which is a declaration found in the body of a struct.  These are constructed via the `structItem` production, which has a similar structure to `typedefDecls`, taking `Attributes`, a `BaseTypeExpr`, and `StructDeclarators`.  A `StructDeclarator` differs from an ordinary `Declarator` in a couple of ways: First, these lack an initializer, since that does not make sense when declaring a struct field.  Secondly, in addition to the `structField` production (which is similar to ordinary `declarator`), there is also `structBitfield`, which represents a bitfield item in a struct, which also includes a constant expression for the size of the bitfield.  
+An example of the use of these constructs for building a struct declaration may be found in [Tuple.sv](edu.umn.cs.melt.tutorials.ableC.tuple/abstractsyntax/Tuple.sv).  
+
+`enum` declarations in ableC work similarly to `struct`s and `union`s, but are somewhat simpler.  An `EnumDecl` consists of a `MaybeName` tag name to optionally be declared and an `EnumItemList` structure of `EnumItem`s.  These are constructed via the `enumItem` production, with a name and an optional constant value expression.  
 
 ## Concrete syntax
+At the top level in the ableC concrete syntax for a global declaration is the `ExternalDeclaration_c` nonterminal.  This can be either a `Declaration_c` (the root nonterminal for a declaration anywhere), or a `FunctionDefinition_c`, representing the actual definition (not a prototype) of a function.  
+
+A `Declaration_c` consists of `DeclarationSpecifiers_c`, containing the complete specification of a type, and `InitDeclaratorList_c`, representing a list of declarators.  
+
+*TODO: Expand this section with more implementation details...*
+
+When introducing new extension type expressions, the `TypeSpecifier_c` nonterminal is typically extended to implement a new `BaseTypeExpr`.  New kinds of declarations that don't directly fit in to the framework of type expressions may extend `Declaration_c` directly.  An example of this may be seen in the concrete syntax for the example tuple extension, in [Tuple.sv](edu.umn.cs.melt.tutorials.ableC.tuple/concretesyntax/Tuple.sv).  
