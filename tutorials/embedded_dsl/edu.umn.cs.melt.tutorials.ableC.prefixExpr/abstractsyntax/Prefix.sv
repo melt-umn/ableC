@@ -7,12 +7,18 @@ imports edu:umn:cs:melt:ableC:abstractsyntax;
 imports edu:umn:cs:melt:ableC:abstractsyntax:construction;
 imports edu:umn:cs:melt:ableC:abstractsyntax:env;
 
+-- Bridge production from host abstract syntax to extension abstract syntax
 abstract production prefixExpr
 top::Expr ::= pe::PrefixExpr
 {
+  top.pp = pp"prefix (${pe.pp})";
+
+  -- Check for errors on the EDSL AST
+  -- Either forward to an error production or the computed translation
   forwards to mkErrorCheck(pe.errors, pe.toExpr);
 }
 
+-- New attribute to compute the translation of a PrefixExpr to an Expr
 synthesized attribute toExpr::Expr;
 
 nonterminal PrefixExpr with location, pp, toExpr, typerep, errors, env, returnType;
