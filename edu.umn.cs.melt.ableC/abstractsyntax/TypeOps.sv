@@ -324,7 +324,7 @@ Boolean ::= lval::Type  rval::Type
     | tagType(_, _), _ -> compatibleTypes(lval.defaultFunctionArrayLvalueConversion, rval.defaultFunctionArrayLvalueConversion, true, true)
 -- the left operand has atomic, qualified, or unqualified pointer type, and (considering the type the left operand would have after lvalue conversion) both operands are pointers to qualified or unqualified versions of compatible types, and the type pointed to by the left has all the qualifiers of the type pointed to by the right;
     | pointerType(q1, p1), pointerType(q2, p2) ->
-        (compatibleTypes(p1, p2, false, false) ||
+        (compatibleTypes(p1, p2, false, true) ||
           compatibleTypes(
             pointerType(nilQualifier(), builtinType(nilQualifier(), voidType())),
             rval.defaultFunctionArrayLvalueConversion,
@@ -370,19 +370,8 @@ Type ::= qs::[Qualifier] base::Type
 {
   base.addedTypeQualifiers = filter(
       \q::Qualifier -> !containsBy(qualifierCompat, q, base.qualifiers),
-      uniqueBy(qualifierCompat, qs));
+      nubBy(qualifierCompat, qs));
   return base.withTypeQualifiers;
-}
-
-{-- remove duplicates from a list -}
-function uniqueBy
-[a] ::= f::(Boolean ::= a a) lst::[a]
-{
-	return if null(lst)
-         then []
-         else if containsBy(f, head(lst), tail(lst))
-              then uniqueBy(f, tail(lst))
-              else head(lst) :: uniqueBy(f, tail(lst));
 }
 
 {--
