@@ -62,7 +62,7 @@ top::Expr ::= l::String
   top.defs := [];
   top.freeVariables = [];
   top.typerep = pointerType(nilQualifier(),
-    builtinType(foldQualifier([constQualifier()]), signedType(charType())));
+    builtinType(foldQualifier([]), signedType(charType())));
 }
 abstract production parenExpr
 top::Expr ::= e::Expr
