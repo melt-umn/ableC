@@ -21,7 +21,7 @@ Negative test       - PASS:             testing/tests/kframework/negative/j009f.
 Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j009g.c
 Negative test       - PASS:             testing/tests/kframework/negative/j009h.c
 Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j009i.c
-Negative test       - PASS:             testing/tests/kframework/negative/j010a.c
+Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j010a.c
 Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j010b.c
 Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j010c.c
 Negative test       - PASS:             testing/tests/kframework/negative/j015.c
@@ -73,7 +73,7 @@ Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j048a.
 Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j048b.c
 Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j049a.c
 Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j049b.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j049c.c
+Negative test       - PASS:             testing/tests/kframework/negative/j049c.c
 Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j052a.c
 Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j052b.c
 Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j053a.c
@@ -94,22 +94,22 @@ Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j061a.
 Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j061b.c
 Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j062a.c
 Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j062b.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j064a.c
+Negative test       - PASS:             testing/tests/kframework/negative/j064a.c
 Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j064b.c
 Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j065a.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j065b.c
+Negative test       - PASS:             testing/tests/kframework/negative/j065b.c
 Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j067a.c
 Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j067b.c
 Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j067c.c
 Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j067d.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j068a.c
+Negative test       - PASS:             testing/tests/kframework/negative/j068a.c
 Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j070a.c
 Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j071a.c
 Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j072a.c
 Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j073a.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j075a.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j075b.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j075c.c
+Negative test       - PASS:             testing/tests/kframework/negative/j075a.c
+Negative test       - PASS:             testing/tests/kframework/negative/j075b.c
+Negative test       - PASS:             testing/tests/kframework/negative/j075c.c
 Negative test       - PASS:             testing/tests/kframework/negative/j075d.c
 Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j075e.c
 Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j075f.c
@@ -129,7 +129,7 @@ Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j082a.
 Negative test       - PASS:             testing/tests/kframework/negative/j082b.c
 Negative test       - PASS:             testing/tests/kframework/negative/j083a.c
 Negative test       - PASS:             testing/tests/kframework/negative/j083b.c
-Negative test       - PASS:             testing/tests/kframework/negative/j084a.c
+Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j084a.c
 Negative test       - PASS:             testing/tests/kframework/negative/j086a.c
 Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j088a.c
 Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j089a.c
@@ -137,7 +137,7 @@ Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j089b.
 Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j090a.c
 Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j301a.c
 Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j302a.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j303a.c
+Negative test       - PASS:             testing/tests/kframework/negative/j303a.c
 Negative test       - PASS:             testing/tests/kframework/negative/j303b.c
 Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j304a.c
 Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j305a.c
@@ -169,10 +169,10 @@ Negative test       - PASS:             testing/tests/kframework/negative/j332b.
 Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j409a.c
 Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j409b.c
 Negative test       - PASS:             testing/tests/kframework/negative/j500a.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j501a.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j501b.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j501c.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j501d.c
+Negative test       - PASS:             testing/tests/kframework/negative/j501a.c
+Negative test       - PASS:             testing/tests/kframework/negative/j501b.c
+Negative test       - PASS:             testing/tests/kframework/negative/j501c.c
+Negative test       - PASS:             testing/tests/kframework/negative/j501d.c
 Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j502a.c
 Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j502b.c
 Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j503a.c
@@ -208,6 +208,7 @@ Failures:
                         testing/tests/kframework/negative/j009e.c
                         testing/tests/kframework/negative/j009g.c
                         testing/tests/kframework/negative/j009i.c
+                        testing/tests/kframework/negative/j010a.c
                         testing/tests/kframework/negative/j010b.c
                         testing/tests/kframework/negative/j010c.c
                         testing/tests/kframework/negative/j017a.c
@@ -252,7 +253,6 @@ Failures:
                         testing/tests/kframework/negative/j048b.c
                         testing/tests/kframework/negative/j049a.c
                         testing/tests/kframework/negative/j049b.c
-                        testing/tests/kframework/negative/j049c.c
                         testing/tests/kframework/negative/j052a.c
                         testing/tests/kframework/negative/j052b.c
                         testing/tests/kframework/negative/j053a.c
@@ -273,22 +273,16 @@ Failures:
                         testing/tests/kframework/negative/j061b.c
                         testing/tests/kframework/negative/j062a.c
                         testing/tests/kframework/negative/j062b.c
-                        testing/tests/kframework/negative/j064a.c
                         testing/tests/kframework/negative/j064b.c
                         testing/tests/kframework/negative/j065a.c
-                        testing/tests/kframework/negative/j065b.c
                         testing/tests/kframework/negative/j067a.c
                         testing/tests/kframework/negative/j067b.c
                         testing/tests/kframework/negative/j067c.c
                         testing/tests/kframework/negative/j067d.c
-                        testing/tests/kframework/negative/j068a.c
                         testing/tests/kframework/negative/j070a.c
                         testing/tests/kframework/negative/j071a.c
                         testing/tests/kframework/negative/j072a.c
                         testing/tests/kframework/negative/j073a.c
-                        testing/tests/kframework/negative/j075a.c
-                        testing/tests/kframework/negative/j075b.c
-                        testing/tests/kframework/negative/j075c.c
                         testing/tests/kframework/negative/j075e.c
                         testing/tests/kframework/negative/j075f.c
                         testing/tests/kframework/negative/j076a.c
@@ -304,13 +298,13 @@ Failures:
                         testing/tests/kframework/negative/j079i.c
                         testing/tests/kframework/negative/j079j.c
                         testing/tests/kframework/negative/j082a.c
+                        testing/tests/kframework/negative/j084a.c
                         testing/tests/kframework/negative/j088a.c
                         testing/tests/kframework/negative/j089a.c
                         testing/tests/kframework/negative/j089b.c
                         testing/tests/kframework/negative/j090a.c
                         testing/tests/kframework/negative/j301a.c
                         testing/tests/kframework/negative/j302a.c
-                        testing/tests/kframework/negative/j303a.c
                         testing/tests/kframework/negative/j304a.c
                         testing/tests/kframework/negative/j305a.c
                         testing/tests/kframework/negative/j306a.c
@@ -335,10 +329,6 @@ Failures:
                         testing/tests/kframework/negative/j324a.c
                         testing/tests/kframework/negative/j409a.c
                         testing/tests/kframework/negative/j409b.c
-                        testing/tests/kframework/negative/j501a.c
-                        testing/tests/kframework/negative/j501b.c
-                        testing/tests/kframework/negative/j501c.c
-                        testing/tests/kframework/negative/j501d.c
                         testing/tests/kframework/negative/j502a.c
                         testing/tests/kframework/negative/j502b.c
                         testing/tests/kframework/negative/j503a.c
@@ -349,10 +339,10 @@ Pass: 0
 Fail: 0
 
 Negative tests:
-Pass: 30
-Fail: 156
+Pass: 40
+Fail: 146
 
 Summary:
-Pass: 30
-Fail: 156
+Pass: 40
+Fail: 146
 

@@ -86,7 +86,7 @@ top::UnaryOp ::=
     | _ -> errorType()
     end;
   top.errors :=
-    case top.op.typerep of
+    case top.op.typerep.defaultFunctionArrayLvalueConversion of
     | pointerType(_, _) -> []
     | _ -> [err(top.location, "invalid type argument of unary ‘*’ (have ‘" ++
                                showType(top.op.typerep) ++ "’")]

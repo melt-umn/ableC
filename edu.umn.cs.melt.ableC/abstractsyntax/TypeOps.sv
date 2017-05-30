@@ -30,7 +30,7 @@ Boolean ::= a::Type  b::Type  allowSubtypes::Boolean  dropOuterQual::Boolean
   | errorType(), _ -> true
   | _, errorType() -> true
   -- Type specifiers
-  | builtinType(q1, b1), builtinType(q2, b2) -> builtinEq(b1, b2) && compatibleQualifiers(q1, q2, allowSubtypes, dropOuterQual)
+  | builtinType(q1, b1), builtinType(q2, b2) -> builtinCompatible(b1, b2, allowSubtypes) && compatibleQualifiers(q1, q2, allowSubtypes, dropOuterQual)
   | tagType(q1, enumTagType(_)), tagType(q2, enumTagType(_)) -> true -- TODO: FIXME: enums should be handled the same as other tags
   | tagType(q1, refIdTagType(_, _, r1)), tagType(q2, refIdTagType(_, _, r2)) -> r1 == r2 && compatibleQualifiers(q1, q2, allowSubtypes, dropOuterQual)
   -- Compound types
@@ -44,7 +44,7 @@ Boolean ::= a::Type  b::Type  allowSubtypes::Boolean  dropOuterQual::Boolean
   | functionType(r1, protoFunctionType(a1, v1)),
     functionType(r2, protoFunctionType(a2, v2)) ->
       compatibleTypes(r1, r2, allowSubtypes, dropOuterQual) &&
-        compatibleTypeList(a1, a2, allowSubtypes, dropOuterQual) &&
+        compatibleTypeList(a1, a2, false, dropOuterQual) && -- TODO: check subtypes of function args
         v1 == v2
   | functionType(r1, _), functionType(r2, _) -> 
       compatibleTypes(r1, r2, allowSubtypes, dropOuterQual)
@@ -211,11 +211,11 @@ IntegerType ::= a::IntegerType  b::IntegerType
 }
 
 
-function builtinEq
-Boolean ::= a::BuiltinType  b::BuiltinType
+function builtinCompatible
+Boolean ::= a::BuiltinType  b::BuiltinType  allowSubtypes::Boolean
 {
   return
-    (a.isArithmeticType && b.isArithmeticType) ||
+    (allowSubtypes && a.isArithmeticType && b.isArithmeticType) ||
     case a, b of
     | voidType(), voidType() -> true
     | boolType(), boolType() -> true
