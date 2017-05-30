@@ -52,13 +52,17 @@ node {
     }
 
     stage ("Extensions") {
-      build job: '/melt-umn/edu.umn.cs.melt.exts.ableC.sqlite/master', parameters:
+//      build job: '/melt-umn/edu.umn.cs.melt.exts.ableC.sqlite/master', parameters:
+      build job: '/melt-umn/edu.umn.cs.melt.exts.ableC.sqlite/feature/type_qualifiers', parameters:
         [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: SILVER_BASE],
          [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
-      build job: '/melt-umn/ableC-condition-tables/master', parameters:
+//      build job: '/melt-umn/ableC-condition-tables/master', parameters:
+      build job: '/melt-umn/ableC-condition-tables/feature/type_qualifiers', parameters:
         [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: SILVER_BASE],
          [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
     }
+
+    print scm.branches.join(", ")
 
     /* TODO: use nailgun!
        sh ". ${SILVER_BASE}/support/nailgun/sv-nailgun"
@@ -113,7 +117,7 @@ def notifyBuild(String buildStatus = 'STARTED') {
   emailext(
       subject: subject,
       body: details,
-			to: 'evw@umn.edu',
+//			to: 'evw@umn.edu',
       recipientProviders: [[$class: 'CulpritsRecipientProvider']]
     )
 }
