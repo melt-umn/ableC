@@ -85,7 +85,7 @@ abstract production qualifiedUnaryOpExpr
 top::Expr ::= op::UnaryOp  e::Expr  collectedTypeQualifiers::Qualifiers
 {
   propagate lifted;
-  top.host = qualifiedUnaryOpExpr(op, e, nilQualifier(), location=top.location);
+  top.host = qualifiedUnaryOpExpr(op.host, e.host, nilQualifier(), location=top.location);
   top.pp = if op.preExpr
            then parens( cat( op.pp, e.pp ) )
            else parens( cat( e.pp, op.pp ) );
@@ -269,7 +269,7 @@ abstract production qualifiedBinaryOpExpr
 top::Expr ::= lhs::Expr  op::BinOp  rhs::Expr  collectedTypeQualifiers::Qualifiers
 {
   propagate lifted;
-  top.host = qualifiedBinaryOpExpr(lhs, op, rhs, nilQualifier(), location=top.location);
+  top.host = qualifiedBinaryOpExpr(lhs.host, op.host, rhs.host, nilQualifier(), location=top.location);
   -- case op here is a potential problem, since that emits a dep on op->forward, which eventually should probably include env
   -- Find a way to do this that doesn't cause problems if an op forwards.
   top.pp = parens( ppConcat([ 
