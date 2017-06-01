@@ -35,7 +35,7 @@ synthesized attribute mutateTypeSpecifiers :: [ast:TypeSpecifierMutator];
 {--
  - A list of type qualifiers.
  -}
-synthesized attribute typeQualifiers :: [ast:Qualifier];
+synthesized attribute typeQualifiers :: ast:Qualifiers;
 {--
  - A list of special specifiers (e.g. inline, noreturn, alignas)
  -}
@@ -43,7 +43,7 @@ synthesized attribute specialSpecifiers :: [ast:SpecialSpecifier];
 {--
  - A list of the qualifiers attached to this declaration, somehow.
  -}
-autocopy attribute givenQualifiers :: [ast:Qualifier];
+autocopy attribute givenQualifiers :: ast:Qualifiers;
 {--
  - The __attribute__s that appear in the list.
  - This is a gcc extension, but we need this here.
@@ -69,7 +69,7 @@ concrete productions top::DeclarationSpecifiers_c
       top.storageClass = h.storageClass;
       top.preTypeSpecifiers = [];
       top.realTypeSpecifiers = [];
-      top.typeQualifiers = [];
+      top.typeQualifiers = ast:nilQualifier();
       top.specialSpecifiers = [];
       top.mutateTypeSpecifiers = [];
       top.attributes = ast:nilAttribute(); }
@@ -87,7 +87,7 @@ concrete productions top::DeclarationSpecifiers_c
       top.storageClass = [];
       top.preTypeSpecifiers = h.preTypeSpecifiers;
       top.realTypeSpecifiers = h.realTypeSpecifiers;
-      top.typeQualifiers = [];
+      top.typeQualifiers = ast:nilQualifier();
       top.specialSpecifiers = [];
       top.mutateTypeSpecifiers = [];
       top.attributes = ast:nilAttribute(); }
@@ -96,7 +96,7 @@ concrete productions top::DeclarationSpecifiers_c
       top.storageClass = t.storageClass;
       top.preTypeSpecifiers = t.preTypeSpecifiers;
       top.realTypeSpecifiers = t.realTypeSpecifiers;
-      top.typeQualifiers = h.typeQualifiers ++ t.typeQualifiers;
+      top.typeQualifiers = ast:qualifierCat(h.typeQualifiers, t.typeQualifiers);
       top.specialSpecifiers = t.specialSpecifiers;
       top.mutateTypeSpecifiers = h.mutateTypeSpecifiers ++ t.mutateTypeSpecifiers;
       top.attributes = t.attributes; }
@@ -123,7 +123,7 @@ concrete productions top::DeclarationSpecifiers_c
       top.storageClass = [];
       top.preTypeSpecifiers = [];
       top.realTypeSpecifiers = [];
-      top.typeQualifiers = [];
+      top.typeQualifiers = ast:nilQualifier();
       top.specialSpecifiers = h.specialSpecifiers;
       top.mutateTypeSpecifiers = [];
       top.attributes = ast:nilAttribute(); }
@@ -141,14 +141,14 @@ concrete productions top::SpecifierQualifierList_c
 | h::TypeSpecifier_c 
     { top.preTypeSpecifiers = h.preTypeSpecifiers;
       top.realTypeSpecifiers = h.realTypeSpecifiers;
-      top.typeQualifiers = [];
+      top.typeQualifiers = ast:nilQualifier();
       top.mutateTypeSpecifiers = [];
       top.specialSpecifiers = [];
       top.attributes = ast:nilAttribute(); }
 | h::TypeQualifier_c  t::SpecifierQualifierList_c
     { top.preTypeSpecifiers = t.preTypeSpecifiers;
       top.realTypeSpecifiers = t.realTypeSpecifiers;
-      top.typeQualifiers = h.typeQualifiers ++ t.typeQualifiers;
+      top.typeQualifiers = ast:qualifierCat(h.typeQualifiers, t.typeQualifiers);
       top.mutateTypeSpecifiers = h.mutateTypeSpecifiers ++ t.mutateTypeSpecifiers;
       top.specialSpecifiers = t.specialSpecifiers;
       top.attributes = t.attributes; }
@@ -167,7 +167,7 @@ concrete productions top::TypeQualifierList_c
       top.mutateTypeSpecifiers = h.mutateTypeSpecifiers;
       top.specialSpecifiers = []; }
 | h::TypeQualifier_c  t::TypeQualifierList_c
-    { top.typeQualifiers = h.typeQualifiers ++ t.typeQualifiers;
+    { top.typeQualifiers = ast:qualifierCat(h.typeQualifiers, t.typeQualifiers);
       top.mutateTypeSpecifiers = h.mutateTypeSpecifiers ++ t.mutateTypeSpecifiers;
       top.specialSpecifiers = t.specialSpecifiers; }
 
@@ -245,13 +245,13 @@ concrete productions top::TypeSpecifier_c
 closed nonterminal TypeQualifier_c with location, typeQualifiers, mutateTypeSpecifiers; 
 concrete productions top::TypeQualifier_c
 | 'const'
-    { top.typeQualifiers = [ast:constQualifier()];
+    { top.typeQualifiers = ast:foldQualifier([ast:constQualifier()]);
       top.mutateTypeSpecifiers = []; }
 | 'volatile'
-    { top.typeQualifiers = [ast:volatileQualifier()];
+    { top.typeQualifiers = ast:foldQualifier([ast:volatileQualifier()]);
       top.mutateTypeSpecifiers = []; }
 | 'restrict'
-    { top.typeQualifiers = [ast:restrictQualifier()];
+    { top.typeQualifiers = ast:foldQualifier([ast:restrictQualifier()]);
       top.mutateTypeSpecifiers = []; }
 
 

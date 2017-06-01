@@ -49,7 +49,7 @@ concrete productions top::TemplateInitialFunctionDefinition_c
     {
       d.givenType = ast:baseTypeExpr();
       local bt :: ast:BaseTypeExpr =
-        ast:figureOutTypeFromSpecifiers(d.location, [], [], [], []);
+        ast:figureOutTypeFromSpecifiers(d.location, ast:nilQualifier(), [], [], []);
 
       top.ast = 
         ast:functionDecl([], [], bt, d.ast, d.declaredIdent, ast:nilAttribute(), ast:foldDecl(l.ast), top.givenStmt);

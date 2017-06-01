@@ -44,7 +44,7 @@ top::Expr ::= captured::CaptureList params::Parameters res::Expr
     typeExprDecl(
       nilAttribute(),
       structTypeExpr(
-        [],
+        nilQualifier(),
         structDecl(
           nilAttribute(),
           justName(name(envStructName, location=builtin)),
@@ -71,7 +71,7 @@ static __res_type__ ${funName}(void *_env_ptr, __params__) {
 
   local fwrd::Expr =
     subExpr(
-      [typedefSubstitution("__closure_type__", directTypeExpr(closureType([], params.typereps, res.typerep))),
+      [typedefSubstitution("__closure_type__", directTypeExpr(closureType(nilQualifier(), params.typereps, res.typerep))),
        stmtSubstitution("__env_copy__", captured.envCopyInTrans)],
       parseExpr(s"""
 ({proto_typedef __closure_type__;
@@ -111,10 +111,10 @@ top::CaptureList ::= n::Name rest::CaptureList
 
   -- Strip qualifiers and convert arrays and functions to pointers
   local varType::Type =
-    case n.valueItem.typerep.withoutTypeQualifiers of
-      arrayType(elem, _, _, _) -> pointerType([], elem)
+    case n.valueItem.typerep of
+      arrayType(elem, _, _, _) -> pointerType(nilQualifier(), elem)
     | functionType(res, sub) ->
-        pointerType([], noncanonicalType(parenType(functionType(res, sub))))
+        pointerType(nilQualifier(), noncanonicalType(parenType(functionType(res, sub))))
     | t -> t
     end;
   

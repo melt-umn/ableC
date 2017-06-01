@@ -9,17 +9,17 @@ top::Type ::=
   propagate substituted;
 }
 aspect production builtinType
-top::Type ::= q::[Qualifier]  bt::BuiltinType
+top::Type ::= q::Qualifiers  bt::BuiltinType
 {
   propagate substituted;
 }
 aspect production pointerType
-top::Type ::= q::[Qualifier]  target::Type
+top::Type ::= q::Qualifiers  target::Type
 {
   propagate substituted;
 }
 aspect production arrayType
-top::Type ::= element::Type  indexQualifiers::[Qualifier]  sizeModifier::ArraySizeModifier  sub::ArrayType
+top::Type ::= element::Type  indexQualifiers::Qualifiers  sizeModifier::ArraySizeModifier  sub::ArrayType
 {
   propagate substituted;
 }
@@ -58,7 +58,7 @@ top::FunctionType ::=
 }
 
 aspect production tagType
-top::Type ::= q::[Qualifier]  sub::TagType
+top::Type ::= q::Qualifiers  sub::TagType
 {
   propagate substituted;
 }
@@ -80,7 +80,7 @@ top::Type ::= attrs::Attributes  bt::Type
   propagate substituted;
 }
 aspect production atomicType
-top::Type ::= q::[Qualifier]  bt::Type
+top::Type ::= q::Qualifiers  bt::Type
 {
   propagate substituted;
 }
@@ -111,13 +111,13 @@ top::NoncanonicalType ::= original::Type  pointer::Type
   propagate substituted;
 }
 aspect production typedefType
-top::NoncanonicalType ::= q::[Qualifier]  n::String  resolved::Type
+top::NoncanonicalType ::= q::Qualifiers  n::String  resolved::Type
 {
   propagate substituted;
 }
 
 aspect production typeofType
-top::NoncanonicalType ::= q::[Qualifier]  resolved::Type
+top::NoncanonicalType ::= q::Qualifiers  resolved::Type
 {
   propagate substituted;
 }

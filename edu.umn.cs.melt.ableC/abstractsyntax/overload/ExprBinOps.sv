@@ -27,7 +27,7 @@ top::BinOp ::= op::AssignOp
           stmtExpr(
             mkDecl(
               tmpName,
-              pointerType([], top.lop.typerep),
+              pointerType(nilQualifier(), top.lop.typerep),
               unaryOpExprDefault(addressOfOp(location=loc), lhs, location=loc),
               loc),
             binaryOpExpr(

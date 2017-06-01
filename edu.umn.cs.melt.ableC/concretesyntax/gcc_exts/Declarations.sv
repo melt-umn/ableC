@@ -39,19 +39,19 @@ concrete productions top::FunctionSpecifier_c
 
 concrete productions top::TypeQualifier_c
 | '__const'
-    { top.typeQualifiers = [ast:constQualifier()];
+    { top.typeQualifiers = ast:foldQualifier([ast:constQualifier()]);
       top.mutateTypeSpecifiers = []; }
 | '__restrict'
-    { top.typeQualifiers = [ast:uuRestrictQualifier()];
+    { top.typeQualifiers = ast:foldQualifier([ast:uuRestrictQualifier()]);
       top.mutateTypeSpecifiers = []; }
 | '__restrict__'
-    { top.typeQualifiers = [ast:restrictQualifier()];
+    { top.typeQualifiers = ast:foldQualifier([ast:restrictQualifier()]);
       top.mutateTypeSpecifiers = []; }
 | '__volatile__'
-    { top.typeQualifiers = [ast:volatileQualifier()];
+    { top.typeQualifiers = ast:foldQualifier([ast:volatileQualifier()]);
       top.mutateTypeSpecifiers = []; }
 | '__volatile'
-    { top.typeQualifiers = [ast:volatileQualifier()];
+    { top.typeQualifiers = ast:foldQualifier([ast:volatileQualifier()]);
       top.mutateTypeSpecifiers = []; }
 
 concrete productions top::TypeSpecifier_c
@@ -155,7 +155,7 @@ concrete productions top::DeclarationSpecifiers_c
       top.storageClass = [];
       top.preTypeSpecifiers = [];
       top.realTypeSpecifiers = [];
-      top.typeQualifiers = [];
+      top.typeQualifiers = ast:nilQualifier();
       top.specialSpecifiers = [];
       top.mutateTypeSpecifiers = [];
       top.attributes = h.ast; }
@@ -171,7 +171,7 @@ concrete productions top::SpecifierQualifierList_c
 | h::Attributes_c 
     { top.preTypeSpecifiers = [];
       top.realTypeSpecifiers = [];
-      top.typeQualifiers = [];
+      top.typeQualifiers = ast:nilQualifier();
       top.mutateTypeSpecifiers = [];
       top.specialSpecifiers = [];
       top.attributes = h.ast; }

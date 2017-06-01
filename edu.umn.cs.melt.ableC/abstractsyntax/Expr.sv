@@ -61,7 +61,8 @@ top::Expr ::= l::String
   top.globalDecls := [];
   top.defs := [];
   top.freeVariables = [];
-  top.typerep = pointerType([], builtinType([constQualifier()], signedType(charType())));
+  top.typerep = pointerType(nilQualifier(),
+    builtinType(foldQualifier([]), signedType(charType())));
 }
 abstract production parenExpr
 top::Expr ::= e::Expr
@@ -77,7 +78,14 @@ top::Expr ::= e::Expr
 abstract production unaryOpExpr
 top::Expr ::= op::UnaryOp  e::Expr
 {
-  propagate host, lifted;
+  op.op = e;
+  forwards to qualifiedUnaryOpExpr(op, e, foldQualifier(op.collectedTypeQualifiers), location=top.location);
+}
+abstract production qualifiedUnaryOpExpr
+top::Expr ::= op::UnaryOp  e::Expr  collectedTypeQualifiers::Qualifiers
+{
+  propagate lifted;
+  top.host = qualifiedUnaryOpExpr(op.host, e.host, nilQualifier(), location=top.location);
   top.pp = if op.preExpr
            then parens( cat( op.pp, e.pp ) )
            else parens( cat( e.pp, op.pp ) );
@@ -85,8 +93,8 @@ top::Expr ::= op::UnaryOp  e::Expr
   top.globalDecls := e.globalDecls;
   top.defs := e.defs;
   top.freeVariables = e.freeVariables;
-  top.typerep = op.typerep;
-  
+  top.typerep = addQualifiers(collectedTypeQualifiers.qualifiers, op.typerep);
+
   op.op = e;
 }
 abstract production unaryExprOrTypeTraitExpr
@@ -98,7 +106,7 @@ top::Expr ::= op::UnaryTypeOp  e::ExprOrTypeName
   top.globalDecls := e.globalDecls;
   top.defs := e.defs;
   top.freeVariables = e.freeVariables;
-  top.typerep = builtinType([], signedType(intType())); -- TODO sizeof / alignof result type
+  top.typerep = builtinType(nilQualifier(), signedType(intType())); -- TODO sizeof / alignof result type
 }
 abstract production arraySubscriptExpr
 top::Expr ::= lhs::Expr  rhs::Expr
@@ -216,15 +224,15 @@ top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
     | _ -> false
     end;
   
-  local quals_refid :: Pair<[Qualifier] String> =
+  local quals_refid :: Pair<Qualifiers String> =
     case lhs.typerep.withoutAttributes of
     | pointerType(_, sub) ->
         case sub.withoutAttributes of
           tagType(q, refIdTagType(_, _, rid)) -> pair(q, rid)
-        | _ -> pair([], "")
+        | _ -> pair(nilQualifier(), "")
         end
     | tagType(q, refIdTagType(_, _, rid)) -> pair(q, rid)
-    | _ -> pair([], "")
+    | _ -> pair(nilQualifier(), "")
     end;
   
   local refids :: [RefIdItem] =
@@ -238,7 +246,7 @@ top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
       errorType()
     else if null(valueitems) then
       errorType()
-    else addQualifiers(quals_refid.fst, head(valueitems).typerep);
+    else addQualifiers(quals_refid.fst.qualifiers, head(valueitems).typerep);
   top.errors <-
     if null(refids) then 
       [err(lhs.location, "expression does not have defined fields (got " ++ showType(lhs.typerep) ++ ")")]
@@ -253,7 +261,15 @@ top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
 abstract production binaryOpExpr
 top::Expr ::= lhs::Expr  op::BinOp  rhs::Expr
 {
-  propagate host, lifted;
+  op.lop = lhs;
+  op.rop = rhs;
+  forwards to qualifiedBinaryOpExpr(lhs, op, rhs, foldQualifier(op.collectedTypeQualifiers), location=top.location);
+}
+abstract production qualifiedBinaryOpExpr
+top::Expr ::= lhs::Expr  op::BinOp  rhs::Expr  collectedTypeQualifiers::Qualifiers
+{
+  propagate lifted;
+  top.host = qualifiedBinaryOpExpr(lhs.host, op.host, rhs.host, nilQualifier(), location=top.location);
   -- case op here is a potential problem, since that emits a dep on op->forward, which eventually should probably include env
   -- Find a way to do this that doesn't cause problems if an op forwards.
   top.pp = parens( ppConcat([ 
@@ -267,7 +283,7 @@ top::Expr ::= lhs::Expr  op::BinOp  rhs::Expr
   top.freeVariables =
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
-  top.typerep = op.typerep;
+  top.typerep = addQualifiers(collectedTypeQualifiers.qualifiers, op.typerep);
   
   op.lop = lhs;
   op.rop = rhs;
@@ -347,7 +363,8 @@ top::Expr ::=
   top.globalDecls := [];
   top.defs := [];
   top.freeVariables = [];
-  top.typerep = pointerType([], builtinType([constQualifier()], signedType(charType()))); -- const char *
+  top.typerep = pointerType(nilQualifier(),
+    builtinType(foldQualifier([constQualifier()]), signedType(charType()))); -- const char *
 }
 
 -- C11
@@ -420,7 +437,7 @@ top::GenericAssoc ::= ty::TypeName  fun::Expr
   top.defs := ty.defs ++ fun.defs;
   top.freeVariables = ty.freeVariables ++ fun.freeVariables;
   top.compatibleSelections =
-    if compatibleTypes(top.selectionType, ty.typerep, true) then [fun] else [];
+    if compatibleTypes(top.selectionType, ty.typerep, true, false) then [fun] else [];
 }
 
 -- GCC stmtExpr

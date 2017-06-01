@@ -12,7 +12,7 @@ top::Expr ::= c::NumericConstant
   top.globalDecls := [];
   top.defs := [];
   top.freeVariables = [];
-  top.typerep = builtinType([], c.constanttyperep);
+  top.typerep = builtinType(nilQualifier(), c.constanttyperep);
 }
 abstract production imaginaryConstant
 top::Expr ::= c::NumericConstant
@@ -23,7 +23,7 @@ top::Expr ::= c::NumericConstant
   top.globalDecls := [];
   top.defs := [];
   top.freeVariables = [];
-  top.typerep = builtinType([], case c.constanttyperep of
+  top.typerep = builtinType(nilQualifier(), case c.constanttyperep of
     | realType(rt) -> complexType(rt)
     | signedType(it) -> complexIntegerType(it)
     | unsignedType(it) -> complexIntegerType(it) -- probably not possible, but buggy!
@@ -38,7 +38,7 @@ top::Expr ::= num::String  c::CharPrefix
   top.globalDecls := [];
   top.defs := [];
   top.freeVariables = [];
-  top.typerep = builtinType([], signedType(charType())); -- TODO: no idea
+  top.typerep = builtinType(nilQualifier(), signedType(charType())); -- TODO: no idea
 }
 
 nonterminal NumericConstant with location, pp, host<NumericConstant>, lifted<NumericConstant>, errors, env, constanttyperep;

@@ -23,7 +23,7 @@ concrete productions top::DeclarationSpecifiers_c
       top.storageClass = [];
       top.preTypeSpecifiers = [];
       top.realTypeSpecifiers = [];
-      top.typeQualifiers = [];
+      top.typeQualifiers = ast:nilQualifier();
       top.specialSpecifiers = [];
       top.mutateTypeSpecifiers = [];
       top.attributes = ast:nilAttribute(); }
@@ -111,11 +111,11 @@ concrete productions top::TypeSpecifier_c
 
 concrete productions top::TypeQualifier_c
 | '_Atomic'
-    { top.typeQualifiers = [];
+    { top.typeQualifiers = ast:nilQualifier();
       top.mutateTypeSpecifiers = [ast:modifyTypeSpecifier(atomicMutator)]; }
 
 function atomicMutator -- TODO MOVE
-ast:BaseTypeExpr ::= q::[ast:Qualifier] bt::ast:BaseTypeExpr
+ast:BaseTypeExpr ::= q::ast:Qualifiers bt::ast:BaseTypeExpr
 {
   return ast:atomicTypeExpr(q, ast:typeName(bt, ast:baseTypeExpr()));
 }

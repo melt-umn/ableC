@@ -116,7 +116,7 @@ top::Parameters ::= h::ParameterDecl  t::Parameters
   local substitutions::Substitutions = top.substitutions;
   substitutions.nameIn =
     case h1 of
-      parameterDecl([], typedefTypeExpr([], id), baseTypeExpr(), nothingName(), nilAttribute()) -> id.name
+      parameterDecl([], typedefTypeExpr(nilQualifier(), id), baseTypeExpr(), nothingName(), nilAttribute()) -> id.name
     | _ -> ""
     end;
   top.substituted =

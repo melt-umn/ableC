@@ -1,11 +1,11 @@
 
 function ppAttributes
-Document ::= l::Attributes
+Document ::= l::Decorated Attributes
 {
   return terminate(space(), l.pps);
 }
 function ppAttributesRHS
-Document ::= l::Attributes
+Document ::= l::Decorated Attributes
 {
   return initiate(space(), l.pps);
 }

@@ -282,7 +282,7 @@ top::Declarator ::= name::Name  ty::TypeModifierExpr  attrs::Attributes  initial
   top.errors :=
     case initializer of
       justInitializer(exprInitializer(e)) ->
-        if typeAssignableTo(e.typerep, top.typerep) then []
+        if typeAssignableTo(top.typerep, e.typerep) then []
         else [err(top.sourceLocation, s"Incompatible type in initialization, expected ${showType(top.typerep)} but found ${showType(e.typerep)}")]
     | _ -> []
     end ++ ty.errors ++ initializer.errors;
@@ -383,7 +383,7 @@ top::FunctionDecl ::= storage::[StorageClass]  fnquals::[SpecialSpecifier]  bty:
   
   top.errors <-
     if name.name == "main" && 
-      !compatibleTypes(bty.typerep, builtinType([], signedType(intType())), true)
+      !compatibleTypes(bty.typerep, builtinType(nilQualifier(), signedType(intType())), false, false)
     then [wrn(name.location, "Main function should return 'int' not " ++ showType(bty.typerep))]
     else []; -- TODO: check the rest of the signature.
 }
@@ -609,7 +609,7 @@ top::EnumDecl ::= name::MaybeName  dcls::EnumItemList
   top.freeVariables = dcls.freeVariables;
   
   dcls.env = addEnv(thisdcl, top.env);
-  dcls.containingEnum = tagType([], enumTagType(top));
+  dcls.containingEnum = tagType(nilQualifier(), enumTagType(top));
   
 
   top.errors <-
