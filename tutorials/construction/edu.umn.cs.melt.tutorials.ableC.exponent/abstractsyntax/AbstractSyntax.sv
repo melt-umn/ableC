@@ -36,6 +36,10 @@ top::Expr ::= l::Expr r::Expr
   __l_type__ ${lTempName} = __l__;
   __r_type__ ${rTempName} = __r__;
   __l_type__ ${resName} = 1;
+  if (${rTempName} < 0) {
+    ${lTempName} = 1 / ${lTempName};
+    ${rTempName} = -${rTempName};
+  }
   for (__r_type__ ${counterName} = 0; ${counterName} < ${rTempName}; ${counterName}++) {
     ${resName} *= ${lTempName};
   }
