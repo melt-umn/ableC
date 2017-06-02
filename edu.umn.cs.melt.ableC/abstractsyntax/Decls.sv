@@ -249,6 +249,7 @@ top::Declarators ::=
 }
 
 nonterminal Declarator with pps, host<Declarator>, lifted<Declarator>, errors, globalDecls, defs, env, baseType, typeModifiersIn, typerep, sourceLocation, isTopLevel, isTypedef, givenAttributes, returnType, freeVariables;
+flowtype Declarator = decorate {env, returnType, baseType, givenAttributes, isTopLevel, isTypedef};
 
 autocopy attribute isTypedef :: Boolean;
 
@@ -281,7 +282,7 @@ top::Declarator ::= name::Name  ty::TypeModifierExpr  attrs::Attributes  initial
   top.errors :=
     case initializer of
       justInitializer(exprInitializer(e)) ->
-        if typeAssignableTo(e.typerep, top.typerep) then []
+        if typeAssignableTo(top.typerep, e.typerep) then []
         else [err(top.sourceLocation, s"Incompatible type in initialization, expected ${showType(top.typerep)} but found ${showType(e.typerep)}")]
     | _ -> []
     end ++ ty.errors ++ initializer.errors;
@@ -382,7 +383,7 @@ top::FunctionDecl ::= storage::[StorageClass]  fnquals::[SpecialSpecifier]  bty:
   
   top.errors <-
     if name.name == "main" && 
-      !compatibleTypes(bty.typerep, builtinType([], signedType(intType())), true)
+      !compatibleTypes(bty.typerep, builtinType(nilQualifier(), signedType(intType())), false, false)
     then [wrn(name.location, "Main function should return 'int' not " ++ showType(bty.typerep))]
     else []; -- TODO: check the rest of the signature.
 }
@@ -479,8 +480,9 @@ top::ParameterDecl ::= storage::[StorageClass]  bty::BaseTypeExpr  mty::TypeModi
   top.errors <- name.valueRedeclarationCheckNoCompatible;
 }
 
-
 synthesized attribute refId :: String; -- TODO move this later?
+-- Name of the extension that declared this struct/union
+synthesized attribute moduleName :: Maybe<String>;
 
 nonterminal StructDecl with location, pp, host<StructDecl>, lifted<StructDecl>, maybename, errors, globalDecls, defs, env, tagEnv, givenRefId, refId, moduleName, returnType, freeVariables;
 
@@ -607,7 +609,7 @@ top::EnumDecl ::= name::MaybeName  dcls::EnumItemList
   top.freeVariables = dcls.freeVariables;
   
   dcls.env = addEnv(thisdcl, top.env);
-  dcls.containingEnum = tagType([], enumTagType(top));
+  dcls.containingEnum = tagType(nilQualifier(), enumTagType(top));
   
 
   top.errors <-
@@ -747,7 +749,7 @@ top::StructDeclarator ::= name::Name  ty::TypeModifierExpr  attrs::Attributes
   top.globalDecls := ty.globalDecls;
   top.localdefs := [valueDef(name.name, fieldValueItem(top))];
   top.freeVariables = ty.freeVariables;
-  top.typerep = ty.typerep;
+  top.typerep = animateAttributeOnType(allAttrs, ty.typerep);
   top.sourceLocation = name.location;
   
   
@@ -770,7 +772,7 @@ top::StructDeclarator ::= name::MaybeName  ty::TypeModifierExpr  e::Expr  attrs:
     end;
   top.localdefs := thisdcl;
   top.freeVariables = ty.freeVariables ++ e.freeVariables;
-  top.typerep = ty.typerep;
+  top.typerep = animateAttributeOnType(allAttrs, ty.typerep);
   top.sourceLocation = 
     case name.maybename of
     | just(n) -> n.location

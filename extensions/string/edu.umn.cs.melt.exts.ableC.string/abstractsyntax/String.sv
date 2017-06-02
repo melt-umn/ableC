@@ -14,99 +14,106 @@ imports edu:umn:cs:melt:ableC:abstractsyntax:overload as ovrld;
 
 global builtin::Location = builtinLoc("string");
 
-aspect production addOp
-top::NumOp ::=
+aspect function ovrld:getAddOpOverload
+Maybe<(Expr ::= Expr Expr Location)> ::= l::Type r::Type env::Decorated Env
 {
   lOverloads <-
     [pair(
        "edu:umn:cs:melt:exts:ableC:string:string",
-       \ lhs::Expr rhs::Expr ->
-         appendString(lhs, strExpr(rhs, location=top.location), location=top.location))];
+       \ lhs::Expr rhs::Expr loc::Location ->
+         appendString(lhs, strExpr(rhs, location=loc), location=loc))];
   rOverloads <-
     [pair(
        "edu:umn:cs:melt:exts:ableC:string:string",
-       \ lhs::Expr rhs::Expr ->
-         appendString(strExpr(lhs, location=top.location), rhs, location=top.location))];
+       \ lhs::Expr rhs::Expr loc::Location ->
+         appendString(strExpr(lhs, location=loc), rhs, location=loc))];
 }
 
-aspect production subOp
-top::NumOp ::=
+aspect function ovrld:getSubOpOverload
+Maybe<(Expr ::= Expr Expr Location)> ::= l::Type r::Type env::Decorated Env
 {
   lOverloads <-
     [pair(
        "edu:umn:cs:melt:exts:ableC:string:string",
-       \ lhs::Expr rhs::Expr ->
-         removeString(lhs, strExpr(rhs, location=top.location), location=top.location))];
+       \ lhs::Expr rhs::Expr loc::Location ->
+         removeString(lhs, strExpr(rhs, location=loc), location=loc))];
 }
 
-aspect production mulOp
-top::NumOp ::=
+aspect function ovrld:getMulOpOverload
+Maybe<(Expr ::= Expr Expr Location)> ::= l::Type r::Type env::Decorated Env
+{
+  lOverloads <- [pair("edu:umn:cs:melt:exts:ableC:string:string", repeatString(_, _, location=_))];
+}
+
+aspect function ovrld:getEqualsOpOverload
+Maybe<(Expr ::= Expr Expr Location)> ::= l::Type r::Type env::Decorated Env
 {
   lOverloads <-
     [pair(
        "edu:umn:cs:melt:exts:ableC:string:string",
-       repeatString(_, _, location=top.location))];
-}
-
-aspect production equalsOp
-top::CompareOp ::=
-{
-  lOverloads <-
-    [pair(
-       "edu:umn:cs:melt:exts:ableC:string:string",
-       \ lhs::Expr rhs::Expr ->
-         eqString(lhs, strExpr(rhs, location=top.location), location=top.location))];
+       \ lhs::Expr rhs::Expr loc::Location ->
+         eqString(lhs, strExpr(rhs, location=loc), location=loc))];
   rOverloads <-
     [pair(
        "edu:umn:cs:melt:exts:ableC:string:string",
-       \ lhs::Expr rhs::Expr ->
-         eqString(strExpr(lhs, location=top.location), rhs, location=top.location))];
+       \ lhs::Expr rhs::Expr loc::Location ->
+         eqString(strExpr(lhs, location=loc), rhs, location=loc))];
 }
 
-aspect production eqOp
-top::AssignOp ::=
+aspect function ovrld:getEqOpOverload
+Maybe<(Expr ::= Expr Expr Location)> ::= l::Type r::Type env::Decorated Env
 {
-  lOverloads <-
-    [pair(
-       "edu:umn:cs:melt:exts:ableC:string:string",
-       assignString(_, _, location=top.location))];
+  lOverloads <- [pair("edu:umn:cs:melt:exts:ableC:string:string", assignString(_, _, location=_))];
 }
 
-aspect production ovrld:callExpr
-top::Expr ::= f::Expr  a::Exprs
+aspect function ovrld:getMemberCallOverload
+Maybe<(Expr ::= Expr Boolean Name Exprs Location)> ::= t::Type env::Decorated Env
 {
-  memberOverloads <-
-    [pair(
-       "edu:umn:cs:melt:exts:ableC:string:string",
-       memberCallString(_, _, _, a, location=top.location))];
+  overloads <-
+    [pair("edu:umn:cs:melt:exts:ableC:string:string", memberCallString(_, _, _, _, location=_))];
 }
 
-aspect production ovrld:arraySubscriptExpr
-top::Expr ::= lhs::Expr  rhs::Expr
+aspect function ovrld:getArraySubscriptOverload
+Maybe<(Expr ::= Expr Expr Location)> ::= t::Type env::Decorated Env
+{
+  overloads <-
+    [pair("edu:umn:cs:melt:exts:ableC:string:string", subscriptString(_, _, location=_))];
+}
+
+aspect function ovrld:getSubscriptAssignOverload
+Maybe<(Expr ::= Expr Expr AssignOp Expr Location)> ::= t::Type env::Decorated Env
 {
   overloads <-
     [pair(
        "edu:umn:cs:melt:exts:ableC:string:string",
-       subscriptString(lhs, rhs, location=top.location))];
+       \ l::Expr i::Expr op::AssignOp r::Expr loc::Location ->
+         errorExpr([err(loc, "Strings are immutable, cannot assign to index")], location=loc))];
 }
 
-aspect production assignOp
-top::BinOp ::= op::AssignOp
+aspect function ovrld:getMemberAssignOverload
+Maybe<(Expr ::= Expr Boolean Name AssignOp Expr Location)> ::= t::Type env::Decorated Env
 {
-  subscriptOverloads <-
+  overloads <-
     [pair(
        "edu:umn:cs:melt:exts:ableC:string:string",
-       \ l::Expr i::Expr r::Expr ->
-         errorExpr(
-           [err(top.location, "Strings are immutable, cannot assign to index")],
-           location=top.location))];
-  memberOverloads <-
-    [pair(
-       "edu:umn:cs:melt:exts:ableC:string:string",
-       \ l::Expr d::Boolean m::Name r::Expr ->
-         errorExpr(
-           [err(top.location, s"Cannot assign to field ${m.name} of string")],
-           location=top.location))];
+       \ l::Expr d::Boolean m::Name op::AssignOp r::Expr loc::Location ->
+         errorExpr([err(loc, s"Cannot assign to field ${m.name} of string")], location=loc))];
+}
+
+function getShowOverload
+Maybe<(Expr ::= Expr Location)> ::= t::Type env::Decorated Env
+{
+  production attribute overloads::[Pair<String (Expr ::= Expr Location)>] with ++;
+  overloads := [pair("edu:umn:cs:melt:exts:ableC:string:string", showString(_, location=_))];
+  return ovrld:getUnaryOverload(t, env, overloads);
+}
+
+function getStrOverload
+Maybe<(Expr ::= Expr Location)> ::= t::Type env::Decorated Env
+{
+  production attribute overloads::[Pair<String (Expr ::= Expr Location)>] with ++;
+  overloads := [pair("edu:umn:cs:melt:exts:ableC:string:string", strString(_, location=_))];
+  return ovrld:getUnaryOverload(t, env, overloads);
 }
 
 abstract production showExpr
@@ -114,18 +121,23 @@ top::Expr ::= e::Expr
 {
   propagate substituted;
   top.pp = pp"show(${e.pp})";
-
-  production attribute overloads::[Pair<String Expr>] with ++;
-  overloads :=
-    [pair("edu:umn:cs:melt:exts:ableC:string:string", showString(e, location=top.location))];
   
   local localErrors::[Message] = e.errors;
-  local resolved::Maybe<Expr> =
-    case moduleName(e.env, e.typerep) of
-      just(n) -> lookupBy(stringEq, n, overloads)
-    | nothing() -> nothing()
-    end;
-  local fwrd::Expr = fromMaybe(showHost(e, location=top.location), resolved);
+  local fwrd::Expr =
+    fromMaybe(showHost(_, location=_), getShowOverload(e.typerep, top.env))(e, top.location);
+  
+  forwards to mkErrorCheck(localErrors, fwrd);
+}
+
+abstract production strExpr
+top::Expr ::= e::Expr
+{
+  propagate substituted;
+  top.pp = pp"str(${e.pp})";
+  
+  local localErrors::[Message] = e.errors;
+  local fwrd::Expr =
+    fromMaybe(strHost(_, location=_), getStrOverload(e.typerep, top.env))(e, top.location);
   
   forwards to mkErrorCheck(localErrors, fwrd);
 }
@@ -242,27 +254,6 @@ top::Expr ::= e::Expr
           e,
           nilExpr())),
       location=builtin);
-  forwards to mkErrorCheck(localErrors, fwrd);
-}
-
-abstract production strExpr
-top::Expr ::= e::Expr
-{
-  propagate substituted;
-  top.pp = pp"str(${e.pp})";
-
-  production attribute overloads::[Pair<String Expr>] with ++;
-  overloads :=
-    [pair("edu:umn:cs:melt:exts:ableC:string:string", strString(e, location=top.location))];
-  
-  local localErrors::[Message] = e.errors;
-  local resolved::Maybe<Expr> =
-    case moduleName(e.env, e.typerep) of
-      just(n) -> lookupBy(stringEq, n, overloads)
-    | nothing() -> nothing()
-    end;
-  local fwrd::Expr = fromMaybe(strHost(e, location=top.location), resolved);
-  
   forwards to mkErrorCheck(localErrors, fwrd);
 }
 
@@ -465,8 +456,8 @@ top::Expr ::= e1::Expr a::Exprs
   top.pp = pp"${e1.pp}.substring(${ppImplode(pp", ", a.pps)}";
   
   a.expectedTypes = -- size_t
-    [builtinType([], unsignedType(longType())),
-     builtinType([], unsignedType(longType()))];
+    [builtinType(nilQualifier(), unsignedType(longType())),
+     builtinType(nilQualifier(), unsignedType(longType()))];
   a.argumentPosition = 1;
   a.callExpr = top; -- Doesn't really matter, just needs location
   a.callVariadic = false;

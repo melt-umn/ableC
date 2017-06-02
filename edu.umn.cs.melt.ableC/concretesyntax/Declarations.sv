@@ -182,7 +182,7 @@ concrete productions top::InitialFunctionDefinition_c
     {
       d.givenType = ast:baseTypeExpr();
       local bt :: ast:BaseTypeExpr =
-        ast:figureOutTypeFromSpecifiers(d.location, [], [], [], []);
+        ast:figureOutTypeFromSpecifiers(d.location, ast:nilQualifier(), [], [], []);
 
       top.ast = 
         ast:functionDecl([], [], bt, d.ast, d.declaredIdent, ast:nilAttribute(), ast:foldDecl(l.ast), top.givenStmt);
@@ -215,11 +215,11 @@ concrete productions top::DeclarationList_c
 closed nonterminal Pointer_c with location, ast<ast:TypeModifierExpr>, givenType; 
 concrete productions top::Pointer_c
 | '*'
-    { top.ast = ast:pointerTypeExpr([], top.givenType); }
+    { top.ast = ast:pointerTypeExpr(ast:nilQualifier(), top.givenType); }
 | '*'  q::TypeQualifierList_c
     { top.ast = ast:pointerTypeExpr(q.typeQualifiers, top.givenType); }
 | '*'  t::Pointer_c
-    { t.givenType = ast:pointerTypeExpr([], top.givenType);
+    { t.givenType = ast:pointerTypeExpr(ast:nilQualifier(), top.givenType);
       top.ast = t.ast; }
 | '*'  q::TypeQualifierList_c  t::Pointer_c
     { t.givenType = ast:pointerTypeExpr(q.typeQualifiers, top.givenType);
@@ -248,7 +248,7 @@ concrete productions top::DirectDeclarator_c
 | dd::DirectDeclarator_c '[' e::AssignExpr_c ']'
     { top.declaredIdent = dd.declaredIdent;
       top.declaredParamIdents = dd.declaredParamIdents;
-      dd.givenType = ast:arrayTypeExprWithExpr(top.givenType, [], ast:normalArraySize(), e.ast);
+      dd.givenType = ast:arrayTypeExprWithExpr(top.givenType, ast:nilQualifier(), ast:normalArraySize(), e.ast);
       top.ast = dd.ast;
     }
 | dd::DirectDeclarator_c '[' q::TypeQualifierList_c ']'
@@ -260,7 +260,7 @@ concrete productions top::DirectDeclarator_c
 | dd::DirectDeclarator_c '[' ']'
     { top.declaredIdent = dd.declaredIdent;
       top.declaredParamIdents = dd.declaredParamIdents;
-      dd.givenType = ast:arrayTypeExprWithoutExpr(top.givenType, [], ast:normalArraySize());
+      dd.givenType = ast:arrayTypeExprWithoutExpr(top.givenType, ast:nilQualifier(), ast:normalArraySize());
       top.ast = dd.ast;
     }
 | dd::DirectDeclarator_c '[' 'static' q::TypeQualifierList_c e::AssignExpr_c ']'
@@ -272,7 +272,7 @@ concrete productions top::DirectDeclarator_c
 | dd::DirectDeclarator_c '[' 'static' e::AssignExpr_c ']'
     { top.declaredIdent = dd.declaredIdent;
       top.declaredParamIdents = dd.declaredParamIdents;
-      dd.givenType = ast:arrayTypeExprWithExpr(top.givenType, [], ast:staticArraySize(), e.ast);
+      dd.givenType = ast:arrayTypeExprWithExpr(top.givenType, ast:nilQualifier(), ast:staticArraySize(), e.ast);
       top.ast = dd.ast;
     }
 | dd::DirectDeclarator_c '[' q::TypeQualifierList_c 'static' e::AssignExpr_c ']'
@@ -290,7 +290,7 @@ concrete productions top::DirectDeclarator_c
 | dd::DirectDeclarator_c '[' '*' ']'
     { top.declaredIdent = dd.declaredIdent;
       top.declaredParamIdents = dd.declaredParamIdents;
-      dd.givenType = ast:arrayTypeExprWithoutExpr(top.givenType, [], ast:starArraySize());
+      dd.givenType = ast:arrayTypeExprWithoutExpr(top.givenType, ast:nilQualifier(), ast:starArraySize());
       top.ast = dd.ast;
     }
 | dd::DirectDeclarator_c '(' ptl::ParameterTypeList_c ')'
@@ -342,30 +342,30 @@ concrete productions top::DirectAbstractDeclarator_c
     }
 | dd::DirectAbstractDeclarator_c  '[' e::AssignExpr_c ']'
     {
-      dd.givenType = ast:arrayTypeExprWithExpr(top.givenType, [], ast:normalArraySize(), e.ast);
+      dd.givenType = ast:arrayTypeExprWithExpr(top.givenType, ast:nilQualifier(), ast:normalArraySize(), e.ast);
       top.ast = dd.ast;
     }
 | '[' e::AssignExpr_c ']'
     {
-      top.ast = ast:arrayTypeExprWithExpr(top.givenType, [], ast:normalArraySize(), e.ast);
+      top.ast = ast:arrayTypeExprWithExpr(top.givenType, ast:nilQualifier(), ast:normalArraySize(), e.ast);
     }
 | dd::DirectAbstractDeclarator_c '['  ']'
     {
-      dd.givenType = ast:arrayTypeExprWithoutExpr(top.givenType, [], ast:normalArraySize());
+      dd.givenType = ast:arrayTypeExprWithoutExpr(top.givenType, ast:nilQualifier(), ast:normalArraySize());
       top.ast = dd.ast;
     }
 | '['  ']'
     {
-      top.ast = ast:arrayTypeExprWithoutExpr(top.givenType, [], ast:normalArraySize());
+      top.ast = ast:arrayTypeExprWithoutExpr(top.givenType, ast:nilQualifier(), ast:normalArraySize());
     }
 | dd::DirectAbstractDeclarator_c '[' '*' ']'
     {
-      dd.givenType = ast:arrayTypeExprWithoutExpr(top.givenType, [], ast:starArraySize());
+      dd.givenType = ast:arrayTypeExprWithoutExpr(top.givenType, ast:nilQualifier(), ast:starArraySize());
       top.ast = dd.ast;
     }
 | '[' '*' ']'
     {
-      top.ast = ast:arrayTypeExprWithoutExpr(top.givenType, [], ast:starArraySize());
+      top.ast = ast:arrayTypeExprWithoutExpr(top.givenType, ast:nilQualifier(), ast:starArraySize());
     }
 | dd::DirectAbstractDeclarator_c  '(' ptl::ParameterTypeList_c ')'
     {

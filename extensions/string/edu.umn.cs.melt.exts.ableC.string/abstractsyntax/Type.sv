@@ -43,14 +43,14 @@ top::RealType ::=
 -}
 
 abstract production stringTypeExpr 
-top::BaseTypeExpr ::= q::[Qualifier]
+top::BaseTypeExpr ::= q::Qualifiers
 {
   propagate substituted;
   forwards to directTypeExpr(stringType(q));
 }
 
 abstract production stringType
-top::Type ::= q::[Qualifier]
+top::Type ::= q::Qualifiers
 {
   top.lpp = pp"string";
   top.rpp = pp"";
@@ -67,7 +67,7 @@ top::Type ::=
 }
 
 aspect production pointerType
-top::Type ::= quals::[Qualifier] sub::Type
+top::Type ::= quals::Qualifiers sub::Type
 {
   top.showProd =
     case sub.pointerShowProd of
@@ -82,7 +82,7 @@ top::Type ::= quals::[Qualifier] sub::Type
 }
 
 aspect production builtinType
-top::Type ::= quals::[Qualifier] sub::BuiltinType
+top::Type ::= quals::Qualifiers sub::BuiltinType
 {
   top.showProd = sub.showProd;
   top.pointerShowProd = sub.pointerShowProd;
@@ -149,34 +149,22 @@ top::BuiltinType ::= sub::IntegerType
 
 -- Check if errors result from in applying the show() operator to a type 
 function checkShowErrors
-[Message] ::= t::Type env::Decorated Env
+[Message] ::= t::Type env::Decorated Env loc::Location
 {
-  local expr::Expr =
-    showExpr(
-      explicitCastExpr(
-        typeName(directTypeExpr(t), baseTypeExpr()),
-        mkIntConst(0, builtin),
-        location=builtin),
-      location=builtin);
-  expr.env = env;
-  expr.returnType = nothing();
-  
-  return expr.errors;
+  return
+    case orElse(t.showProd, getShowOverload(t, env)) of
+      just(_) -> []
+    | nothing() -> [err(loc, s"show of ${showType(t)} not defined")]
+    end;
 }
 
 -- Check if errors result from in applying the str() operator to a type 
 function checkStrErrors
-[Message] ::= t::Type env::Decorated Env
+[Message] ::= t::Type env::Decorated Env loc::Location
 {
-  local expr::Expr =
-    strExpr(
-      explicitCastExpr(
-        typeName(directTypeExpr(t), baseTypeExpr()),
-        mkIntConst(0, builtin),
-        location=builtin),
-      location=builtin);
-  expr.env = env;
-  expr.returnType = nothing();
-  
-  return expr.errors;
+  return
+    case orElse(t.strProd, getStrOverload(t, env)) of
+      just(_) -> []
+    | nothing() -> [err(loc, s"str of ${showType(t)} not defined")]
+    end;
 }

@@ -1,10 +1,10 @@
 grammar edu:umn:cs:melt:exts:ableC:closure:abstractsyntax;
 
 abstract production closureTypeExpr
-top::BaseTypeExpr ::= q::[Qualifier] params::Parameters res::TypeName
+top::BaseTypeExpr ::= q::Qualifiers params::Parameters res::TypeName
 {
   propagate substituted;
-  top.pp = pp"${terminate(space(), map((.pp), q))}closure<(${
+  top.pp = pp"${terminate(space(), q.pps)}closure<(${
     if null(params.pps) then pp"void" else ppImplode(pp", ", params.pps)}) -> ${res.pp}>";
   
   res.env = addEnv(params.defs, top.env);
@@ -19,11 +19,11 @@ top::BaseTypeExpr ::= q::[Qualifier] params::Parameters res::TypeName
 }
 
 abstract production closureType
-top::Type ::= q::[Qualifier] params::[Type] res::Type
+top::Type ::= q::Qualifiers params::[Type] res::Type
 {
   propagate substituted;
   
-  top.lpp = pp"${terminate(space(), map((.pp), q))}closure<(${
+  top.lpp = pp"${terminate(space(), q.pps)}closure<(${
     if null(params) then pp"void" else
       ppImplode(
         pp", ",
@@ -32,8 +32,7 @@ top::Type ::= q::[Qualifier] params::[Type] res::Type
           map((.rpp), params)))}) -> ${res.lpp}${res.rpp}>";
   top.rpp = notext();
   
-  top.withoutTypeQualifiers = closureType([], params, res);
-  top.withTypeQualifiers = closureType(top.addedTypeQualifiers ++ q, params, res);
+  top.withTypeQualifiers = closureType(foldQualifier(top.addedTypeQualifiers ++ q.qualifiers), params, res);
   
   local structName::String = closureStructName(params, res);
   

@@ -15,9 +15,11 @@ closed nonterminal Asm_Statement_c with location, ast<ast:AsmStatement>;
 concrete productions top::Asm_Statement_c
 | Asm_Starter_c ds::TypeQualifier_c '(' arg::AsmArgument_c ')' ';'
     { top.ast = ast:asmStatementTypeQual( 
-                  (if null(ds.typeQualifiers)
-                   then error("Some TypeQualifier_c has empty typeQualifiers attribute.")
-                   else head(ds.typeQualifiers)) , 
+                  (case ds.typeQualifiers of
+                     ast:nilQualifier() ->
+                       error("Some TypeQualifier_c has empty typeQualifiers attribute.")
+                   | ast:consQualifier(h, _) -> h
+                   end),
                   arg.ast, location=top.location);    
     }
 | Asm_Starter_c '(' arg::AsmArgument_c ')' ';'

@@ -26,19 +26,19 @@ nonterminal ClosureTypeExpr_c with ast<BaseTypeExpr>, givenQualifiers;
 concrete productions top::ClosureTypeExpr_c
 | '(' param::ClosureTypeExpr_c ')' '->' ret::TypeName_c
     { top.ast = closureTypeExpr(top.givenQualifiers, consParameters(parameterDecl([], param.ast, baseTypeExpr(), nothingName(), nilAttribute()), nilParameters()), ret.ast);
-      param.givenQualifiers = []; }
+      param.givenQualifiers = nilQualifier(); }
 | '(' param::ClosureTypeExpr_c ')' '->' rest::ClosureTypeExpr_c
     { top.ast = closureTypeExpr(top.givenQualifiers, consParameters(parameterDecl([], param.ast, baseTypeExpr(), nothingName(), nilAttribute()), nilParameters()), typeName(rest.ast, baseTypeExpr()));
-      param.givenQualifiers = [];
-      rest.givenQualifiers = []; }
+      param.givenQualifiers = nilQualifier();
+      rest.givenQualifiers = nilQualifier(); }
 | '(' params::ClosureParameterList_c ')' '->' rest::ClosureTypeExpr_c
     { top.ast = closureTypeExpr(top.givenQualifiers, foldParameterDecl(params.ast), typeName(rest.ast, baseTypeExpr()));
-      rest.givenQualifiers = []; }
+      rest.givenQualifiers = nilQualifier(); }
 | '(' params::ClosureParameterList_c ')' '->' ret::TypeName_c
     { top.ast = closureTypeExpr(top.givenQualifiers, foldParameterDecl(params.ast), ret.ast); }
 | '(' ')' '->' rest::ClosureTypeExpr_c
     { top.ast = closureTypeExpr(top.givenQualifiers, nilParameters(), typeName(rest.ast, baseTypeExpr()));
-      rest.givenQualifiers = []; }
+      rest.givenQualifiers = nilQualifier(); }
 | '(' ')' '->' ret::TypeName_c
     { top.ast = closureTypeExpr(top.givenQualifiers, nilParameters(), ret.ast); }
 

@@ -1,9 +1,9 @@
 grammar edu:umn:cs:melt:exts:ableC:closure:abstractsyntax;
   
-aspect production ovrld:callExpr
-top::Expr ::= f::Expr  a::Exprs
+aspect function ovrld:getCallOverload
+Maybe<(Expr ::= Expr Exprs Location)> ::= t::Type env::Decorated Env
 {
-  overloads <- [pair("edu:umn:cs:melt:exts:ableC:closure:closure", applyExpr(f, a, location=top.location))];
+  overloads <- [pair("edu:umn:cs:melt:exts:ableC:closure:closure", applyExpr(_, _, location=_))];
 }
 
 global applyExprFwrd::Expr = parseExpr(s"""

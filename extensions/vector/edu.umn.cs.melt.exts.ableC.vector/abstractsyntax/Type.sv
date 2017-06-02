@@ -1,10 +1,10 @@
 grammar edu:umn:cs:melt:exts:ableC:vector:abstractsyntax;
 
 abstract production vectorTypeExpr 
-top::BaseTypeExpr ::= q::[Qualifier] sub::TypeName
+top::BaseTypeExpr ::= q::Qualifiers sub::TypeName
 {
   propagate substituted;
-  top.pp = pp"${terminate(space(), map((.pp), q))}vector<${sub.pp}>";
+  top.pp = pp"${terminate(space(), q.pps)}vector<${sub.pp}>";
   
   sub.env = globalEnv(top.env);
   
@@ -25,13 +25,12 @@ top::BaseTypeExpr ::= q::[Qualifier] sub::TypeName
 }
 
 abstract production vectorType
-top::Type ::= q::[Qualifier] sub::Type
+top::Type ::= q::Qualifiers sub::Type
 {
-  top.lpp = pp"${terminate(space(), map((.pp), q))}vector<${sub.lpp}${sub.rpp}>";
+  top.lpp = pp"${terminate(space(), q.pps)}vector<${sub.lpp}${sub.rpp}>";
   top.rpp = pp"";
   
-  top.withoutTypeQualifiers = vectorType([], sub);
-  top.withTypeQualifiers = vectorType(top.addedTypeQualifiers ++ q, sub);
+  top.withTypeQualifiers = vectorType(foldQualifier(top.addedTypeQualifiers ++ q.qualifiers), sub);
   
   top.showProd =
     case sub.showProd of

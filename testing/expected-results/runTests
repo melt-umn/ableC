@@ -1,0 +1,14 @@
+#!/bin/bash
+set -ev
+
+cd ../../
+
+python testing/supertest.py -positive-only ableC.jar testing/tests/* |
+	diff testing/expected-results/positive /dev/stdin
+
+python testing/supertest.py -negative-only ableC.jar testing/tests/* |
+	diff testing/expected-results/negative /dev/stdin
+
+python testing/supertest.py -neutral ableC.jar testing/tests/* |
+	diff testing/expected-results/neutral /dev/stdin
+
