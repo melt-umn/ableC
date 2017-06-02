@@ -23,8 +23,6 @@ top::Expr ::= l::Expr r::Expr
 
   local lTempName::String = "_l_" ++ toString(genInt());
   local rTempName::String = "_r_" ++ toString(genInt());
-  local counterName::String = "_i_" ++ toString(genInt());
-  local resName::String = "_res_" ++ toString(genInt());
   local fwrd::Expr =
     subExpr(
       [typedefSubstitution("__l_type__", directTypeExpr(l.typerep)),
@@ -35,15 +33,15 @@ top::Expr ::= l::Expr r::Expr
 ({proto_typedef __l_type__, __r_type__;
   __l_type__ ${lTempName} = __l__;
   __r_type__ ${rTempName} = __r__;
-  __l_type__ ${resName} = 1;
+  __l_type__ _res = 1;
   if (${rTempName} < 0) {
     ${lTempName} = 1 / ${lTempName};
     ${rTempName} = -${rTempName};
   }
-  for (__r_type__ ${counterName} = 0; ${counterName} < ${rTempName}; ${counterName}++) {
-    ${resName} *= ${lTempName};
+  for (__r_type__ _i = 0; _i < ${rTempName}; _i++) {
+    _res *= ${lTempName};
   }
-  ${resName};})
+  _res;})
 """));
   
   forwards to mkErrorCheck(localErrors, fwrd);
