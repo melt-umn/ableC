@@ -11,6 +11,7 @@ imports silver:langutil:pp;
 abstract production exponentExpr
 top::Expr ::= l::Expr r::Expr
 {
+  propagate substituted;
   top.pp = pp"(${l.pp} ** ${r.pp})";
 
   local localErrors::[Message] =
