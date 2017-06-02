@@ -13,10 +13,10 @@ top::Expr ::= l::Expr r::Expr
 
   local localErrors::[Message] =
     (if !l.typerep.isArithmeticType
-     then [err(l.location, s"Average operand must have aritmetic type (got ${showType(l.typerep)})")]
+     then [err(l.location, s"Average operand must have arithmetic type (got ${showType(l.typerep)})")]
      else []) ++
     (if !r.typerep.isArithmeticType
-     then [err(l.location, s"Average operand must have aritmetic type (got ${showType(r.typerep)})")]
+     then [err(l.location, s"Average operand must have arithmetic type (got ${showType(r.typerep)})")]
      else []);
   local fwrd::Expr =
     binaryOpExpr(
