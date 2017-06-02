@@ -19,7 +19,7 @@ top::Decl ::= n::Name tns::TypeNames
     typedefDecls(
       nilAttribute(),
       structTypeExpr(
-        [],
+        nilQualifier(),
         structDecl(
           nilAttribute(),
           nothingName(),

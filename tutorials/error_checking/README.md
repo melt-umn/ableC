@@ -4,12 +4,12 @@ An important piece of any extension is to perform error/type checking.
 ## ableC type system
 Types in ableC are represented by a nonterminal `Type`.  The type of an expression may be accessed via the attribute `typerep`.  The following are type productions that you may commonly use:
 * `errorType :: (Type ::= )`: The type of an expression with errors, or an otherwise invalid type.  To avoid additional bogus errors, this type should be allowed in any context.  
-* `builtinType :: (Type ::= [Qualifier] BuiltinType)`: Basic types built in to C, such as `int`, `float`, `char`, etc.  `BuiltinType`s may be found in [TypesBuiltin.sv](../../edu.umn.cs.melt.ableC/abstractsyntax/TypesBuiltin.sv).  
-* `pointerType :: (Type ::= [Qualifier] Type)`: A pointer to another type, such as `int*`.
+* `builtinType :: (Type ::= Qualifiers BuiltinType)`: Basic types built in to C, such as `int`, `float`, `char`, etc.  `BuiltinType`s may be found in [TypesBuiltin.sv](../../edu.umn.cs.melt.ableC/abstractsyntax/TypesBuiltin.sv).  
+* `pointerType :: (Type ::= Qualifiers Type)`: A pointer to another type, such as `int*`.
 * `functionType :: (Type ::= Type FunctionType)`: A function.  Note that in many cases, you will want to use a function pointer instead of `functionType` directly.  
-* `tagType :: (Type ::= [Qualifier] TagType)`: A `struct`, `enum`, or `union` type.  More on these later.
+* `tagType :: (Type ::= Qualifiers TagType)`: A `struct`, `enum`, or `union` type.  More on these later.
 
-Many types in ableC take `Qualifier`s as arguments.  These are things such as `const`, `volatile`, etc.  
+Many types in ableC take `Qualifiers` as arguments.  These are things such as `const`, `volatile`, etc.  
 
 A number of operations on `Type`s are provided by ableC, such as checking if a type can be assigned to another or performing numeric type promotions.  See [TypeOps.sv](../../edu.umn.cs.melt.ableC/abstractsyntax/TypeOps.sv) for the full list.  
 
