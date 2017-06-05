@@ -218,3 +218,25 @@ attribute substituted<NoncanonicalType> occurs on NoncanonicalType;
 attribute substituted<BuiltinType> occurs on BuiltinType;
 attribute substituted<RealType> occurs on RealType;
 attribute substituted<IntegerType> occurs on IntegerType;
+
+-- Flowtype declarations for every nonterminal
+flowtype substituted {substitutions} on
+  AsmStatement, AsmArgument, AsmClobbers, AsmOperands, AsmOperand,
+  Attributes, Attribute, Attribs, Attrib, AttribName,
+  Decls, Decl, Declarators, Declarator, FunctionDecl, Parameters, ParameterDecl,
+    StructDecl, UnionDecl, EnumDecl, StructItemList, EnumItemList,
+    StructItem, StructDeclarators, StructDeclarator, EnumItem,
+  Expr, GenericAssocs, GenericAssoc,
+  BinOp, AssignOp, BoolOp, BitOp, CompareOp, NumOp,
+  MemberDesignator,
+  NumericConstant,
+  MaybeExpr, Exprs, ExprOrTypeName,
+  UnaryOp, UnaryTypeOp,
+  MaybeInitializer, Initializer, InitList, Init, Designator,
+  Name, MaybeName,
+  Stmt,
+  TypeName, BaseTypeExpr, TypeModifierExpr, TypeNames,
+  Qualifier, SpecialSpecifier,
+  Type, ArrayType, FunctionType, TagType, NoncanonicalType,
+  BuiltinType, RealType, IntegerType;
+  
