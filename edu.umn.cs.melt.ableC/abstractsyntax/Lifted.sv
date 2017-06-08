@@ -108,6 +108,8 @@ top::Expr ::= decls::Decls lifted::Expr
   -- Define other attributes to be the same as on lifted
   top.typerep = lifted.typerep;
   top.freeVariables = lifted.freeVariables;
+
+  top.runtimeChecks := [];
   
   decls.env = globalEnv(top.env);
   decls.isTopLevel = true;
