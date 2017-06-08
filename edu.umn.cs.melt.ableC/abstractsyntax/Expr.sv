@@ -118,6 +118,7 @@ top::Expr ::= op::UnaryTypeOp  e::ExprOrTypeName
 abstract production arraySubscriptExpr
 top::Expr ::= lhs::Expr  rhs::Expr
 {
+  top.runtimeChecks := [];
   forwards to mkRuntimeChecks(top.runtimeChecks, baseArraySubscriptExpr(lhs, rhs, location=top.location));
 }
 abstract production baseArraySubscriptExpr
