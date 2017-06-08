@@ -46,27 +46,27 @@ node {
       checkout scm
 
       /* env.PATH is the master's path, not the executor's */
-      withEnv(["PATH=${SILVER_BASE}/support/bin/:${env.PATH}"]) {
+      withEnv(["PATH=${params.SILVER_BASE}/support/bin/:${env.PATH}"]) {
         sh "./build -G ${WORKSPACE} --warn-all"
       }
     }
 
     stage ("Extensions") {
       build job: '/melt-umn/edu.umn.cs.melt.exts.ableC.sqlite/master', parameters:
-        [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: SILVER_BASE],
+        [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: params.SILVER_BASE],
          [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
       build job: '/melt-umn/ableC-condition-tables/master', parameters:
-        [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: SILVER_BASE],
+        [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: params.SILVER_BASE],
          [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
       build job: '/melt-umn/ableC-cilk/master', parameters:
-        [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: SILVER_BASE],
+        [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: params.SILVER_BASE],
          [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
     }
 
     /* TODO: use nailgun!
-       sh ". ${SILVER_BASE}/support/nailgun/sv-nailgun"
+       sh ". ${params.SILVER_BASE}/support/nailgun/sv-nailgun"
        sh "sv-serve ableC.jar"
-       sh "python testing/supertest.py ${SILVER_BASE}/support/nailgun/sv-call testing/tests/*"
+       sh "python testing/supertest.py ${params.SILVER_BASE}/support/nailgun/sv-call testing/tests/*"
     */
     stage ("Test") {
       dir("testing/expected-results") {
