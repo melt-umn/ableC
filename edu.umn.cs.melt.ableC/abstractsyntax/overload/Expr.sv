@@ -7,6 +7,7 @@ top::Expr ::= op::UnaryOp  e::Expr
            then parens( cat( op.pp, e.pp ) )
            else parens( cat( e.pp, op.pp ) );
   
+  top.typerep = addQualifiers(op.collectedTypeQualifiers, forward.typerep);
   op.op = e;
   
   forwards to fromMaybe(unaryOpExprDefault(op, _, location=_), op.unaryProd)(e, top.location);
@@ -66,6 +67,7 @@ top::Expr ::= lhs::Expr  op::BinOp  rhs::Expr
     | _, _ -> lhs.pp
     end-} lhs.pp, space(), op.pp, space(), rhs.pp ]) );
   
+  top.typerep = addQualifiers(op.collectedTypeQualifiers, forward.typerep);
   rhs.env = addEnv(lhs.defs, lhs.env);
   op.lop = lhs;
   op.rop = rhs;
