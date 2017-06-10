@@ -52,7 +52,7 @@ top::BaseTypeExpr ::= q::Qualifiers
 abstract production stringType
 top::Type ::= q::Qualifiers
 {
-  top.lpp = pp"string";
+  top.lpp = pp"${terminate(space(), q.pps)}string";
   top.rpp = pp"";
 
   forwards to
