@@ -58,6 +58,9 @@ node {
       build job: '/melt-umn/ableC-condition-tables/master', parameters:
         [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: SILVER_BASE],
          [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
+      build job: '/melt-umn/ableC-cilk/master', parameters:
+        [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: SILVER_BASE],
+         [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
     }
 
     /* TODO: use nailgun!
