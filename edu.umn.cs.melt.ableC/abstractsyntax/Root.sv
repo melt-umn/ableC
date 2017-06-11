@@ -27,7 +27,11 @@ synthesized attribute srcPP::Document;
 synthesized attribute hostPP::Document;
 synthesized attribute liftedPP::Document;
 synthesized attribute finalPP::Document;
-nonterminal Compilation with srcAst, hostAst, liftedAst, srcPP, hostPP, liftedPP, finalPP, errors, env;
+-- functions that given an error return false if the error should be dropped
+synthesized attribute srcErrorFilters::[(Boolean ::= Message)] with ++;
+synthesized attribute hostErrorFilters::[(Boolean ::= Message)] with ++;
+synthesized attribute liftedErrorFilters::[(Boolean ::= Message)] with ++;
+nonterminal Compilation with srcAst, hostAst, liftedAst, srcPP, hostPP, liftedPP, finalPP, errors, env, srcErrorFilters, hostErrorFilters, liftedErrorFilters;
 
 abstract production compilation
 top::Compilation ::= srcAst::Root
@@ -37,16 +41,28 @@ top::Compilation ::= srcAst::Root
   hostAst.env = top.env;
   production liftedAst::Root = hostAst.lifted;
   liftedAst.env = top.env;
+  top.srcErrorFilters := [];
+  top.hostErrorFilters := [];
+  top.liftedErrorFilters := [];
+
+  local srcErrors :: [Message] =
+    foldr(\f::(Boolean ::= Message) e::[Message] -> filter(f, e), srcAst.errors, top.srcErrorFilters);
+
+  local hostErrors :: [Message] =
+    foldr(\f::(Boolean ::= Message) e::[Message] -> filter(f, e), hostAst.errors, top.hostErrorFilters);
+
+  local liftedErrors :: [Message] =
+    foldr(\f::(Boolean ::= Message) e::[Message] -> filter(f, e), liftedAst.errors, top.liftedErrorFilters);
   
   top.errors :=
-    if !null(srcAst.errors)
-    then srcAst.errors
+    if !null(srcErrors)
+    then srcErrors
     else if !fullErrorCheck
     then []
-    else if !null(hostAst.errors)
-    then [nested(loc("", -1, -1, -1, -1, -1, -1), "Errors in host tree:", hostAst.errors)]
-    else if !null(liftedAst.errors)
-    then [nested(loc("", -1, -1, -1, -1, -1, -1), "Errors in lifted tree:", liftedAst.errors)]
+    else if !null(hostErrors)
+    then [nested(loc("", -1, -1, -1, -1, -1, -1), "Errors in host tree:", hostErrors)]
+    else if !null(liftedErrors)
+    then [nested(loc("", -1, -1, -1, -1, -1, -1), "Errors in lifted tree:", liftedErrors)]
     else [];
   
   top.srcAst = srcAst;
