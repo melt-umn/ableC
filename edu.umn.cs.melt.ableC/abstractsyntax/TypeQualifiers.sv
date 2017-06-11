@@ -1,6 +1,10 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax;
 
-nonterminal Qualifiers with mangledName, qualifiers, pps, host<Qualifiers>;
+nonterminal Qualifiers with mangledName, qualifiers, pps, host<Qualifiers>, typeToQualify, qualifyErrors;
+
+autocopy attribute typeToQualify :: Type;
+
+synthesized attribute qualifyErrors :: [Message];
 
 synthesized attribute qualifiers :: [Qualifier];
 
@@ -11,6 +15,7 @@ top::Qualifiers ::= h::Qualifier  t::Qualifiers
   top.mangledName = h.mangledName ++ "_" ++ t.mangledName;
   top.qualifiers = cons(h, t.qualifiers);
   top.pps = cons(h.pp, t.pps);
+  top.qualifyErrors = h.qualifyErrors ++ t.qualifyErrors;
 }
 
 abstract production nilQualifier
@@ -20,10 +25,11 @@ top::Qualifiers ::=
   top.mangledName = "";
   top.qualifiers = [];
   top.pps = [];
+  top.qualifyErrors = [];
 }
 
 {-- Type qualifiers (cv or cvr qualifiers) -}
-closed nonterminal Qualifier with pp, qualIsPositive, qualIsNegative, qualAppliesWithinRef, qualCompat, qualIsHost, mangledName;
+closed nonterminal Qualifier with location, pp, qualIsPositive, qualIsNegative, qualAppliesWithinRef, qualCompat, qualIsHost, mangledName, typeToQualify, qualifyErrors;
 
 synthesized attribute qualIsPositive :: Boolean;
 synthesized attribute qualIsNegative :: Boolean;
@@ -56,6 +62,7 @@ top::Qualifier ::=
   top.qualCompat = \qualToCompare::Qualifier ->
     case qualToCompare of constQualifier() -> true | _ -> false end;
   top.qualIsHost = true;
+  top.qualifyErrors = [];
 }
 
 abstract production volatileQualifier
@@ -69,6 +76,7 @@ top::Qualifier ::=
   top.qualCompat = \qualToCompare::Qualifier ->
     case qualToCompare of volatileQualifier() -> true | _ -> false end;
   top.qualIsHost = true;
+  top.qualifyErrors = [];
 }
 
 abstract production restrictQualifier
@@ -86,6 +94,11 @@ top::Qualifier ::=
     | _                     -> false
     end;
   top.qualIsHost = true;
+  top.qualifyErrors =
+		case top.typeToQualify of
+			pointerType(_, _) -> []
+		| _                 -> [err(top.location, "invalid use of `restrict'")]
+		end;
 }
 
 abstract production uuRestrictQualifier
@@ -103,6 +116,11 @@ top::Qualifier ::=
     | _                     -> false
     end;
   top.qualIsHost = true;
+  top.qualifyErrors =
+		case top.typeToQualify of
+			pointerType(_, _) -> []
+		| _                 -> [err(top.location, "invalid use of `restrict'")]
+		end;
 }
 
 {-- Specifiers that apply to specific types.

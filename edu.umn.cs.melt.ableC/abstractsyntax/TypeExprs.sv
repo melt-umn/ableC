@@ -154,11 +154,12 @@ top::BaseTypeExpr ::= q::Qualifiers  result::BuiltinType
   propagate host, lifted;
   top.pp = ppConcat([terminate(space(), q.pps), result.pp]);
   top.typerep = builtinType(q, result);
-  top.errors := [];
+  top.errors := q.qualifyErrors;
   top.globalDecls := [];
   top.typeModifiers = [];
   top.defs := [];
   top.freeVariables = [];
+  q.typeToQualify = top.typerep;
 }
 
 {-- A reference to a tag type. e.g. 'struct foo' not 'struct foo {...}' -}
@@ -190,6 +191,7 @@ top::BaseTypeExpr ::= q::Qualifiers  kwd::StructOrEnumOrUnion  name::Name
     end;
   
   top.errors :=
+    q.qualifyErrors ++
     case kwd, tags of
     -- It's an enum and we see the declaration.
     | enumSEU(), enumTagItem(d) :: _ -> []
@@ -222,6 +224,7 @@ top::BaseTypeExpr ::= q::Qualifiers  kwd::StructOrEnumOrUnion  name::Name
   
   top.freeVariables = [];
   
+  q.typeToQualify = top.typerep;
 }
 
 {-- An actual declaration of, not reference to, a struct. -}
@@ -236,11 +239,12 @@ top::BaseTypeExpr ::= q::Qualifiers  def::StructDecl
     | nothing() -> "<anon>"
     end;
   top.typerep = tagType(q, refIdTagType(structSEU(), name, def.refId));
-  top.errors := def.errors;
+  top.errors := q.qualifyErrors ++ def.errors;
   top.globalDecls := def.globalDecls;
   top.typeModifiers = [];
   top.defs := def.defs;
   top.freeVariables = [];
+  q.typeToQualify = top.typerep;
 }
 
 {-- An actual declaration of, not reference to, a union. -}
@@ -255,11 +259,12 @@ top::BaseTypeExpr ::= q::Qualifiers  def::UnionDecl
     | nothing() -> "<anon>"
     end;
   top.typerep = tagType(q, refIdTagType(unionSEU(), name, def.refId));
-  top.errors := def.errors;
+  top.errors := q.qualifyErrors ++ def.errors;
   top.globalDecls := def.globalDecls;
   top.typeModifiers = [];
   top.defs := def.defs;
   top.freeVariables = [];
+  q.typeToQualify = top.typerep;
 }
 
 {-- An actual declaration of, not reference to, an enum. -}
@@ -269,11 +274,12 @@ top::BaseTypeExpr ::= q::Qualifiers  def::EnumDecl
   propagate host, lifted;
   top.pp = ppConcat([terminate(space(), q.pps), def.pp ]);
   top.typerep = tagType(q, enumTagType(def));
-  top.errors := def.errors;
+  top.errors := q.qualifyErrors ++ def.errors;
   top.globalDecls := def.globalDecls;
   top.typeModifiers = [];
   top.defs := def.defs;
   top.freeVariables = [];
+  q.typeToQualify = top.typerep;
 }
 
 {-- A name, that needs to be looked up. -}
@@ -286,7 +292,7 @@ top::BaseTypeExpr ::= q::Qualifiers  name::Name
   top.typerep = 
     if !null(name.valueLookupCheck) then errorType()
     else noncanonicalType(typedefType(q, name.name, addQualifiers(q.qualifiers, name.valueItem.typerep)));
-  top.errors := [];
+  top.errors := q.qualifyErrors;
   top.globalDecls := [];
   top.typeModifiers = [];
   top.defs := [];
@@ -296,6 +302,7 @@ top::BaseTypeExpr ::= q::Qualifiers  name::Name
   top.errors <-
     if name.valueItem.isItemTypedef then []
     else [err(name.location, "'" ++ name.name ++ "' does not refer to a type.")];
+  q.typeToQualify = top.typerep;
 }
 {--
  - GCC __attribute__ types
@@ -332,11 +339,12 @@ top::BaseTypeExpr ::= q::Qualifiers  wrapped::TypeName
   propagate host, lifted;
   top.pp = ppConcat([ terminate(space(), q.pps),
                      text("_Atomic"), parens(wrapped.pp)]);
-  top.errors := wrapped.errors;
+  top.errors := q.qualifyErrors ++ wrapped.errors;
   top.globalDecls := wrapped.globalDecls;
   top.typeModifiers = [];
   top.defs := wrapped.defs;
   top.freeVariables = wrapped.freeVariables;
+  q.typeToQualify = top.typerep;
 }
 {-- GCC builtin type -}
 abstract production vaListTypeExpr
@@ -360,11 +368,12 @@ top::BaseTypeExpr ::= q::Qualifiers  e::ExprOrTypeName
   top.typerep = noncanonicalType(typeofType(q, e.typerep));
   propagate host, lifted;
   top.pp = ppConcat([text("__typeof__"), parens(e.pp)]);
-  top.errors := e.errors;
+  top.errors := q.qualifyErrors ++ e.errors;
   top.globalDecls := e.globalDecls;
   top.typeModifiers = [];
   top.defs := e.defs;
   top.freeVariables = e.freeVariables;
+  q.typeToQualify = top.typerep;
 }
 
 
@@ -413,9 +422,10 @@ top::TypeModifierExpr ::= q::Qualifiers  target::TypeModifierExpr
                      end, terminate(space(), q.pps) ]);
   top.rpp = target.rpp;
   top.typerep = pointerType(q, target.typerep);
-  top.errors := target.errors;
+  top.errors := q.qualifyErrors ++ target.errors;
   top.globalDecls := target.globalDecls;
   top.freeVariables = target.freeVariables;
+  q.typeToQualify = top.typerep;
 }
 
 {-- Arrays (constant, variable, etc) -}
@@ -448,9 +458,10 @@ top::TypeModifierExpr ::= element::TypeModifierExpr  indexQualifiers::Qualifiers
     ), element.rpp);
 
   top.typerep = arrayType(element.typerep, indexQualifiers, sizeModifier, incompleteArrayType());
-  top.errors := element.errors;
+  top.errors := element.errors ++ indexQualifiers.qualifyErrors;
   top.globalDecls := element.globalDecls;
   top.freeVariables = element.freeVariables;
+  indexQualifiers.typeToQualify = top.typerep;
 }
 
 {-- Functions (with or without args) -}

@@ -39,19 +39,19 @@ concrete productions top::FunctionSpecifier_c
 
 concrete productions top::TypeQualifier_c
 | '__const'
-    { top.typeQualifiers = ast:foldQualifier([ast:constQualifier()]);
+    { top.typeQualifiers = ast:foldQualifier([ast:constQualifier(location=top.location)]);
       top.mutateTypeSpecifiers = []; }
 | '__restrict'
-    { top.typeQualifiers = ast:foldQualifier([ast:uuRestrictQualifier()]);
+    { top.typeQualifiers = ast:foldQualifier([ast:uuRestrictQualifier(location=top.location)]);
       top.mutateTypeSpecifiers = []; }
 | '__restrict__'
-    { top.typeQualifiers = ast:foldQualifier([ast:restrictQualifier()]);
+    { top.typeQualifiers = ast:foldQualifier([ast:restrictQualifier(location=top.location)]);
       top.mutateTypeSpecifiers = []; }
 | '__volatile__'
-    { top.typeQualifiers = ast:foldQualifier([ast:volatileQualifier()]);
+    { top.typeQualifiers = ast:foldQualifier([ast:volatileQualifier(location=top.location)]);
       top.mutateTypeSpecifiers = []; }
 | '__volatile'
-    { top.typeQualifiers = ast:foldQualifier([ast:volatileQualifier()]);
+    { top.typeQualifiers = ast:foldQualifier([ast:volatileQualifier(location=top.location)]);
       top.mutateTypeSpecifiers = []; }
 
 concrete productions top::TypeSpecifier_c

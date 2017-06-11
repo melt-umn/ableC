@@ -385,7 +385,7 @@ top::Expr ::=
   top.defs := [];
   top.freeVariables = [];
   top.typerep = pointerType(nilQualifier(),
-    builtinType(foldQualifier([constQualifier()]), signedType(charType()))); -- const char *
+    builtinType(foldQualifier([constQualifier(location=builtinLoc("host"))]), signedType(charType()))); -- const char *
   top.runtimeChecks := [];
 }
 

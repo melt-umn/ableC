@@ -9,7 +9,7 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax;
  - Variants: builtin, pointer, array, function, tagged, noncanonical.
  - Noncanonical forwards, and so doesn't need any attributes, etc attached to it.
  -}
-nonterminal Type with lpp, rpp, host<Type>, baseTypeExpr, typeModifierExpr, mangledName, integerPromotions, defaultArgumentPromotions, defaultLvalueConversion, defaultFunctionArrayLvalueConversion, isIntegerType, isScalarType, isArithmeticType, withoutAttributes, withTypeQualifiers, addedTypeQualifiers, qualifiers;
+nonterminal Type with lpp, rpp, host<Type>, baseTypeExpr, typeModifierExpr, mangledName, integerPromotions, defaultArgumentPromotions, defaultLvalueConversion, defaultFunctionArrayLvalueConversion, isIntegerType, isScalarType, isArithmeticType, withoutAttributes, withTypeQualifiers, addedTypeQualifiers, qualifiers, errors;
 
 -- Used to turn a Type back into a TypeName
 synthesized attribute baseTypeExpr :: BaseTypeExpr;
@@ -64,6 +64,7 @@ top::Type ::=
   top.defaultLvalueConversion = top;
   top.defaultFunctionArrayLvalueConversion = top;
   top.qualifiers = [];
+  top.errors := [];
 
   -- The semantics for all flags is that they should be TRUE is no error is to be
   -- raised. Thus, all should be true here, to suppress errors.
@@ -97,6 +98,8 @@ top::Type ::= q::Qualifiers  bt::BuiltinType
   top.withTypeQualifiers = builtinType(foldQualifier(top.addedTypeQualifiers ++
     q.qualifiers), bt);
   top.qualifiers = q.qualifiers;
+  top.errors := q.qualifyErrors;
+  q.typeToQualify = top;
 }
 
 
@@ -121,8 +124,10 @@ top::Type ::= q::Qualifiers  target::Type
   top.withTypeQualifiers = pointerType(foldQualifier(top.addedTypeQualifiers ++
     q.qualifiers), target);
   top.qualifiers = q.qualifiers;
+  top.errors := q.qualifyErrors ++ target.errors;
   
   top.isScalarType = true;
+  q.typeToQualify = top;
 }
 
 
@@ -185,6 +190,8 @@ top::Type ::= element::Type  indexQualifiers::Qualifiers  sizeModifier::ArraySiz
     noncanonicalType(decayedType(top,
       pointerType(indexQualifiers, element)));
   top.qualifiers = indexQualifiers.qualifiers;
+  top.errors := element.errors ++ indexQualifiers.qualifyErrors;
+  indexQualifiers.typeToQualify = top;
 }
 
 {-- The subtypes of arrays -}
@@ -251,10 +258,11 @@ top::Type ::= result::Type  sub::FunctionType
     noncanonicalType(decayedType(top,
       pointerType(nilQualifier(), top)));
   top.qualifiers = [];
+  top.errors := result.errors ++ sub.errors;
 }
 
 {-- The subtypes of functions -}
-nonterminal FunctionType with lpp, rpp, host<FunctionType>, mangledName;
+nonterminal FunctionType with lpp, rpp, host<FunctionType>, mangledName, errors;
 -- clang has an 'extinfo' structure with calling convention, noreturn, 'produces'?, regparam
 
 abstract production protoFunctionType
@@ -273,6 +281,7 @@ top::FunctionType ::= args::[Type]  variadic::Boolean
       map((.lpp), args),
       map((.rpp), args)) ++ if variadic then [text("...")] else [];
   top.mangledName = implode("_", map((.mangledName), args)) ++ if variadic then "_variadic" else "";
+  top.errors := concat(map((.errors), args));
 }
 -- Evidently, old K&R C functions don't have args as part of function type
 abstract production noProtoFunctionType
@@ -282,6 +291,7 @@ top::FunctionType ::=
   top.lpp = notext();
   top.rpp = text("()");
   top.mangledName = "noproto";
+  top.errors := [];
 }
 
 function argTypesToParameters
@@ -322,10 +332,13 @@ top::Type ::= q::Qualifiers  sub::TagType
   top.withTypeQualifiers = tagType(foldQualifier(top.addedTypeQualifiers ++
     q.qualifiers), sub);
   top.qualifiers = q.qualifiers;
+  top.errors := q.qualifyErrors;
   
   top.isIntegerType = sub.isIntegerType;
   top.isArithmeticType = sub.isIntegerType;
   top.isScalarType = sub.isIntegerType;
+
+  q.typeToQualify = top;
 }
 
 {-- Structs, unions and enums -}
@@ -394,6 +407,8 @@ top::Type ::= q::Qualifiers  bt::Type
   top.withTypeQualifiers = atomicType(foldQualifier(top.addedTypeQualifiers ++
     q.qualifiers), bt);
   top.qualifiers = q.qualifiers;
+  top.errors := q.qualifyErrors ++ bt.errors;
+  q.typeToQualify = top;
 }
 
 {-------------------------------------------------------------------------------
@@ -423,6 +438,7 @@ top::Type ::= attrs::Attributes  bt::Type
   top.isIntegerType = bt.isIntegerType;
   top.isScalarType = bt.isScalarType;
   top.isArithmeticType = bt.isArithmeticType;
+  top.errors := bt.errors;
   
   -- Whatever...
   attrs.env = emptyEnv();
@@ -465,6 +481,7 @@ top::Type ::= bt::Type  bytes::Integer
   top.isIntegerType = false;
   top.isScalarType = false;
   top.isArithmeticType = false;
+  top.errors := bt.errors;
 }
 
 {-------------------------------------------------------------------------------
@@ -478,7 +495,6 @@ top::Type ::= sub::NoncanonicalType
   top.rpp = sub.rpp;
   top.baseTypeExpr = sub.baseTypeExpr;
   top.typeModifierExpr = sub.typeModifierExpr;
-  top.qualifiers = sub.canonicalType.qualifiers;
 
   -- behavior? maybe it should be pushed down? TODO
   --top.mangledName = ;
@@ -589,7 +605,7 @@ abstract production typeofType
 top::NoncanonicalType ::= q::Qualifiers  resolved::Type
 {
   propagate host;
-  top.canonicalType = resolved;-- todo: some sort of discipline of what to do with qualifiers here
+  top.canonicalType = resolved;-- TODO: some sort of discipline of what to do with qualifiers here
   top.lpp = ppConcat([text("__typeof__"), parens(cat(resolved.lpp, resolved.rpp))]);
   top.rpp = notext();
   top.baseTypeExpr =
