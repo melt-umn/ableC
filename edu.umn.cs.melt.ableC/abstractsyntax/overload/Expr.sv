@@ -13,17 +13,11 @@ top::Expr ::= op::UnaryOp  e::Expr
   
   forwards to
     if null(top.errors)
-    then fromMaybe(unaryOpExprDefault(op, _, location=_), op.unaryProd)(e, top.location)
+    then case op.unaryProd of
+           just(prod) -> prod(e, top.location)
+         | nothing()  -> unaryOpExprDefault(op, e, location=top.location)
+         end
     else errorExpr(top.errors, location=top.location);
-  {- The above is shorthand for
-  forwards to
-    if null(top.errors)
-    then
-      case op.unaryProd of
-        just(prod) -> prod(e, top.location)
-      | nothing() -> unaryOpExprDefault(op, e, location=top.location)
-      end
-    else errorExpr(top.errors, location=top.location);-}
 }
 abstract production arraySubscriptExpr
 top::Expr ::= lhs::Expr  rhs::Expr
@@ -31,9 +25,10 @@ top::Expr ::= lhs::Expr  rhs::Expr
   top.pp = parens( ppConcat([ lhs.pp, brackets( rhs.pp )]) );
   
   forwards to
-    fromMaybe(
-      arraySubscriptExprDefault(_, _, location=_),
-      getArraySubscriptOverload(lhs.typerep, top.env))(lhs, rhs, top.location);
+    case getArraySubscriptOverload(lhs.typerep, top.env) of
+      just(prod) -> prod(lhs, rhs, top.location)
+    | nothing()  -> arraySubscriptExprDefault(lhs, rhs, location=top.location)
+    end;
 }
 abstract production callExpr
 top::Expr ::= f::Expr  a::Exprs
@@ -51,7 +46,10 @@ top::Expr ::= f::Expr  a::Exprs
   -- Option 2: Normal overloaded application
   local option2::Maybe<Expr> = applyMaybe3(getCallOverload(f.typerep, top.env), f, a, top.location);
   
-  forwards to fromMaybe(callExprDefault(f, a, location=top.location), orElse(option1, option2));
+  forwards to
+    if      option1.isJust then option1.fromJust
+    else if option2.isJust then option2.fromJust
+    else callExprDefault(f, a, location=top.location);
 }
 abstract production memberExpr
 top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
@@ -59,9 +57,10 @@ top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
   top.pp = parens(ppConcat([lhs.pp, text(if deref then "->" else "."), rhs.pp]));
   
   forwards to
-    fromMaybe(
-      memberExprDefault(_, _, _, location=_),
-      getMemberOverload(lhs.typerep, top.env))(lhs, deref, rhs, top.location);
+    case getMemberOverload(lhs.typerep, top.env) of
+      just(prod) -> prod(lhs, deref, rhs, top.location)
+    | nothing()  -> memberExprDefault(lhs, deref, rhs, location=top.location)
+    end;
 }
 abstract production binaryOpExpr
 top::Expr ::= lhs::Expr  op::BinOp  rhs::Expr
@@ -94,6 +93,8 @@ top::Expr ::= lhs::Expr  op::BinOp  rhs::Expr
   
   forwards to
     if null(top.errors)
-    then fromMaybe(binaryOpExprDefault(lhs, op, rhs, location=top.location), orElse(option1, option2))
+    then if      option1.isJust then option1.fromJust
+         else if option2.isJust then option2.fromJust
+         else binaryOpExprDefault(lhs, op, rhs, location=top.location)
     else errorExpr(top.errors, location=top.location);
 }
