@@ -79,9 +79,14 @@ node {
 		currentBuild.result = 'FAILURE'
 		throw e
 	} finally {
+    def previousResult = currentBuild.previousBuild?.result
+
 		if (currentBuild.result == 'FAILURE') {
 			notifyBuild(currentBuild.result)
-		}
+		} else if (currentBuild.result == null &&
+        previousResult && previousResult == 'FAILURE') {
+			notifyBuild('BACK_TO_NORMAL')
+    }
 	}
 }
 
@@ -104,7 +109,7 @@ def notifyBuild(String buildStatus = 'STARTED') {
   if (buildStatus == 'STARTED') {
     color = 'YELLOW'
     colorCode = '#FFFF00'
-  } else if (buildStatus == 'SUCCESSFUL') {
+  } else if (buildStatus == 'SUCCESSFUL' || buildStatus == 'BACK_TO_NORMAL') {
     color = 'GREEN'
     colorCode = '#00FF00'
   } else {
