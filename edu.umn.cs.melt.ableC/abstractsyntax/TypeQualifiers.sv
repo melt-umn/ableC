@@ -95,7 +95,7 @@ top::Qualifier ::=
     end;
   top.qualIsHost = true;
   top.qualifyErrors =
-		case top.typeToQualify of
+		case top.typeToQualify.defaultFunctionArrayLvalueConversion of
 			pointerType(_, _) -> []
 		| _                 -> [err(top.location, "invalid use of `restrict'")]
 		end;
