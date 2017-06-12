@@ -9,14 +9,21 @@ top::Expr ::= op::UnaryOp  e::Expr
   
   top.typerep = addQualifiers(op.collectedTypeQualifiers, forward.typerep);
   op.op = e;
+  top.errors := op.errors ++ e.errors;
   
-  forwards to fromMaybe(unaryOpExprDefault(op, _, location=_), op.unaryProd)(e, top.location);
+  forwards to
+    if null(top.errors)
+    then fromMaybe(unaryOpExprDefault(op, _, location=_), op.unaryProd)(e, top.location)
+    else errorExpr(top.errors, location=top.location);
   {- The above is shorthand for
   forwards to
-    case op.unaryProd of
-      just(prod) -> prod(e, top.location)
-    | nothing() -> unaryOpExprDefault(op, e, location=top.location)
-    end;-}
+    if null(top.errors)
+    then
+      case op.unaryProd of
+        just(prod) -> prod(e, top.location)
+      | nothing() -> unaryOpExprDefault(op, e, location=top.location)
+      end
+    else errorExpr(top.errors, location=top.location);-}
 }
 abstract production arraySubscriptExpr
 top::Expr ::= lhs::Expr  rhs::Expr
@@ -71,6 +78,7 @@ top::Expr ::= lhs::Expr  op::BinOp  rhs::Expr
   rhs.env = addEnv(lhs.defs, lhs.env);
   op.lop = lhs;
   op.rop = rhs;
+  top.errors := lhs.errors ++ op.errors ++ rhs.errors;
   
   -- Option 1: Assign to a member or subscript (e.g. a.foo = b, a[i] = b)
   local option1::Maybe<Expr> =
@@ -85,5 +93,7 @@ top::Expr ::= lhs::Expr  op::BinOp  rhs::Expr
   local option2::Maybe<Expr> = applyMaybe3(op.binaryProd, lhs, rhs, top.location);
   
   forwards to
-    fromMaybe(binaryOpExprDefault(lhs, op, rhs, location=top.location), orElse(option1, option2));
+    if null(top.errors)
+    then fromMaybe(binaryOpExprDefault(lhs, op, rhs, location=top.location), orElse(option1, option2))
+    else errorExpr(top.errors, location=top.location);
 }
