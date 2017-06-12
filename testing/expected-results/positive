@@ -264,7 +264,7 @@ Positive test       - PASS:             testing/tests/kframework/positive/j079d.
 Positive test       - PASS:             testing/tests/kframework/positive/j079e.c
 Positive test       - PASS:             testing/tests/kframework/positive/j079f.c
 Positive test       - PASS:             testing/tests/kframework/positive/j079g.c
-Positive test       - PASS:             testing/tests/kframework/positive/j079h.c
+Positive test       - FAIL: ERROR       testing/tests/kframework/positive/j079h.c
 Positive test       - PASS:             testing/tests/kframework/positive/j079i.c
 Positive test       - PASS:             testing/tests/kframework/positive/j079j.c
 Positive test       - PASS:             testing/tests/kframework/positive/j082a.c
@@ -356,16 +356,17 @@ Failures:
                         testing/tests/kframework/positive/j032b.c
                         testing/tests/kframework/positive/j033b.c
                         testing/tests/kframework/positive/j049c.c
+                        testing/tests/kframework/positive/j079h.c
 
 Positive tests:
-Pass: 300
-Fail: 27
+Pass: 299
+Fail: 28
 
 Negative tests:
 Pass: 0
 Fail: 0
 
 Summary:
-Pass: 300
-Fail: 27
+Pass: 299
+Fail: 28
 
