@@ -4,11 +4,11 @@ autocopy attribute rop :: Decorated Expr;
 
 nonterminal BinOp with location, lop, rop, opName, pp, host<BinOp>, lifted<BinOp>, typerep, errors, collectedTypeQualifiers;
 flowtype collectedTypeQualifiers {lop, rop} on BinOp;
+flowtype errors {lop, rop} on BinOp;
 
 aspect default production
 top::BinOp ::=
 {
-  top.errors := []; -- TODO REMOVE
   top.opName =
     case top.pp of
       text(opName) -> opName
@@ -122,10 +122,12 @@ top::BinOp ::= op::BoolOp
   top.pp = op.pp;
   top.typerep = builtinType(nilQualifier(), signedType(intType()));
   top.collectedTypeQualifiers := op.collectedTypeQualifiers;
+  top.errors := op.errors;
 }
 
-nonterminal BoolOp with location, lop, rop, pp, host<BoolOp>, lifted<BoolOp>, collectedTypeQualifiers;
+nonterminal BoolOp with location, lop, rop, pp, host<BoolOp>, lifted<BoolOp>, collectedTypeQualifiers, errors;
 flowtype collectedTypeQualifiers {lop, rop} on BoolOp;
+flowtype errors {lop, rop} on BoolOp;
 
 abstract production andBoolOp
 top::BoolOp ::=
@@ -133,6 +135,7 @@ top::BoolOp ::=
   propagate host, lifted;
   top.pp = text("&&");
   top.collectedTypeQualifiers := [];
+  top.errors := [];
 }
 abstract production orBoolOp
 top::BoolOp ::=
@@ -140,6 +143,7 @@ top::BoolOp ::=
   propagate host, lifted;
   top.pp = text("||");
   top.collectedTypeQualifiers := [];
+  top.errors := [];
 }
 
 
@@ -151,10 +155,12 @@ top::BinOp ::= op::BitOp
   top.pp = op.pp;
   top.typerep = usualArithmeticConversionsOnTypes(top.lop.typerep, top.rop.typerep);
   top.collectedTypeQualifiers := op.collectedTypeQualifiers;
+  top.errors := op.errors;
 }
 
-nonterminal BitOp with location, lop, rop, pp, host<BitOp>, lifted<BitOp>, collectedTypeQualifiers;
+nonterminal BitOp with location, lop, rop, pp, host<BitOp>, lifted<BitOp>, collectedTypeQualifiers, errors;
 flowtype collectedTypeQualifiers {lop, rop} on BitOp;
+flowtype errors {lop, rop} on BitOp;
 
 abstract production andBitOp
 top::BitOp ::=
@@ -162,6 +168,7 @@ top::BitOp ::=
   propagate host, lifted;
   top.pp = text("&");
   top.collectedTypeQualifiers := [];
+  top.errors := [];
 }
 abstract production orBitOp
 top::BitOp ::=
@@ -169,6 +176,7 @@ top::BitOp ::=
   propagate host, lifted;
   top.pp = text("|");
   top.collectedTypeQualifiers := [];
+  top.errors := [];
 }
 abstract production xorBitOp
 top::BitOp ::=
@@ -176,6 +184,7 @@ top::BitOp ::=
   propagate host, lifted;
   top.pp = text("^");
   top.collectedTypeQualifiers := [];
+  top.errors := [];
 }
 abstract production lshBitOp
 top::BitOp ::=
@@ -183,6 +192,7 @@ top::BitOp ::=
   propagate host, lifted;
   top.pp = text("<<");
   top.collectedTypeQualifiers := [];
+  top.errors := [];
 }
 abstract production rshBitOp
 top::BitOp ::=
@@ -190,6 +200,7 @@ top::BitOp ::=
   propagate host, lifted;
   top.pp = text(">>");
   top.collectedTypeQualifiers := [];
+  top.errors := [];
 }
 
 
@@ -202,10 +213,12 @@ top::BinOp ::= op::CompareOp
   top.pp = op.pp;
   top.typerep = builtinType(nilQualifier(), signedType(intType()));
   top.collectedTypeQualifiers := op.collectedTypeQualifiers;
+  top.errors := op.errors;
 }
 
-nonterminal CompareOp with location, lop, rop, pp, host<CompareOp>, lifted<CompareOp>, collectedTypeQualifiers;
+nonterminal CompareOp with location, lop, rop, pp, host<CompareOp>, lifted<CompareOp>, collectedTypeQualifiers, errors;
 flowtype collectedTypeQualifiers {lop, rop} on CompareOp;
+flowtype errors {lop, rop} on CompareOp;
 
 abstract production equalsOp
 top::CompareOp ::=
@@ -213,6 +226,7 @@ top::CompareOp ::=
   propagate host, lifted;
   top.pp = text("==");
   top.collectedTypeQualifiers := [];
+  top.errors := [];
 }
 abstract production notEqualsOp
 top::CompareOp ::=
@@ -220,6 +234,7 @@ top::CompareOp ::=
   propagate host, lifted;
   top.pp = text("!=");
   top.collectedTypeQualifiers := [];
+  top.errors := [];
 }
 abstract production gtOp
 top::CompareOp ::=
@@ -227,6 +242,7 @@ top::CompareOp ::=
   propagate host, lifted;
   top.pp = text(">");
   top.collectedTypeQualifiers := [];
+  top.errors := [];
 }
 abstract production ltOp
 top::CompareOp ::=
@@ -234,6 +250,7 @@ top::CompareOp ::=
   propagate host, lifted;
   top.pp = text("<");
   top.collectedTypeQualifiers := [];
+  top.errors := [];
 }
 abstract production gteOp
 top::CompareOp ::=
@@ -241,6 +258,7 @@ top::CompareOp ::=
   propagate host, lifted;
   top.pp = text(">=");
   top.collectedTypeQualifiers := [];
+  top.errors := [];
 }
 abstract production lteOp
 top::CompareOp ::=
@@ -248,6 +266,7 @@ top::CompareOp ::=
   propagate host, lifted;
   top.pp = text("<=");
   top.collectedTypeQualifiers := [];
+  top.errors := [];
 }
 
 
@@ -259,10 +278,12 @@ top::BinOp ::= op::NumOp
   top.pp = op.pp;
   top.typerep = op.typerep;
   top.collectedTypeQualifiers := op.collectedTypeQualifiers;
+  top.errors := op.errors;
 }
 
-nonterminal NumOp with location, lop, rop, pp, host<NumOp>, lifted<NumOp>, typerep, collectedTypeQualifiers;
+nonterminal NumOp with location, lop, rop, pp, host<NumOp>, lifted<NumOp>, typerep, collectedTypeQualifiers, errors;
 flowtype collectedTypeQualifiers {lop, rop} on NumOp;
+flowtype errors {lop, rop} on NumOp;
 
 abstract production addOp
 top::NumOp ::=
@@ -271,6 +292,7 @@ top::NumOp ::=
   top.pp = text("+");
   top.typerep = usualAdditiveConversionsOnTypes(top.lop.typerep, top.rop.typerep);
   top.collectedTypeQualifiers := [];
+  top.errors := [];
 }
 abstract production subOp
 top::NumOp ::=
@@ -279,6 +301,7 @@ top::NumOp ::=
   top.pp = text("-");
   top.typerep = usualSubtractiveConversionsOnTypes(top.lop.typerep, top.rop.typerep);
   top.collectedTypeQualifiers := [];
+  top.errors := [];
 }
 abstract production mulOp
 top::NumOp ::=
@@ -287,6 +310,7 @@ top::NumOp ::=
   top.pp = text("*");
   top.typerep = usualArithmeticConversionsOnTypes(top.lop.typerep, top.rop.typerep);
   top.collectedTypeQualifiers := [];
+  top.errors := [];
 }
 abstract production divOp
 top::NumOp ::=
@@ -295,6 +319,7 @@ top::NumOp ::=
   top.pp = text("/");
   top.typerep = usualArithmeticConversionsOnTypes(top.lop.typerep, top.rop.typerep);
   top.collectedTypeQualifiers := [];
+  top.errors := [];
 }
 abstract production modOp
 top::NumOp ::=
@@ -303,6 +328,7 @@ top::NumOp ::=
   top.pp = text("%");
   top.typerep = usualArithmeticConversionsOnTypes(top.lop.typerep, top.rop.typerep);
   top.collectedTypeQualifiers := [];
+  top.errors := [];
 }
 
 --------------------------------------------------------------------------------
@@ -313,6 +339,7 @@ top::BinOp ::=
   top.pp = comma();
   top.typerep = top.rop.typerep;
   top.collectedTypeQualifiers := [];
+  top.errors := [];
 }
 
 
