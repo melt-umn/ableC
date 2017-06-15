@@ -5,7 +5,7 @@ import edu:umn:cs:melt:ableC:abstractsyntax:overload as ovrld;
 nonterminal Expr with location, pp, host<Expr>, lifted<Expr>, globalDecls, errors, defs, env, returnType, freeVariables, typerep, runtimeChecks;
 
 synthesized attribute integerConstantValue :: Maybe<Integer>;
-synthesized attribute runtimeChecks :: [Pair<Expr String>] with ++;
+synthesized attribute runtimeChecks :: [Pair<(Expr ::= Expr) String>] with ++;
 
 {- The production below is never used.  But it adds a dependency for
    the forwards-to equation on returnType so that it may be used by
@@ -99,7 +99,7 @@ top::Expr ::= op::UnaryOp  e::Expr  collectedTypeQualifiers::Qualifiers
   top.defs := e.defs;
   top.freeVariables = e.freeVariables;
   top.typerep = addQualifiers(collectedTypeQualifiers.qualifiers, op.typerep);
-  top.runtimeChecks := [];
+  top.runtimeChecks := op.runtimeChecks;
 
   op.op = e;
 }
@@ -346,6 +346,17 @@ top::Expr ::= cond::Expr  e::Expr
 abstract production explicitCastExpr
 top::Expr ::= ty::TypeName  e::Expr
 {
+  top.runtimeChecks := [];
+  forwards to
+    mkRuntimeChecks(
+      top.runtimeChecks,
+      baseExplicitCastExpr(ty, e, location=top.location)
+    );
+}
+
+abstract production baseExplicitCastExpr
+top::Expr ::= ty::TypeName  e::Expr
+{
   propagate host, lifted;
   top.pp = parens( ppConcat([parens(ty.pp), e.pp]) );
   top.errors := ty.errors ++ e.errors;
@@ -510,19 +521,43 @@ top::Expr ::=
 ---}
 
 function mkRuntimeChecks
-Expr ::= conditionals::[Pair<Expr String>] e::Expr
+Expr ::= conditionals::[Pair<(Expr ::= Expr) String>] e::Expr
 {
+  local tmpName :: Name = name("__runtime_check_tmp" ++ toString(genInt()), location=bogusLoc());
+  local refTmp :: Expr = declRefExpr(tmpName, location=bogusLoc());
+
   return
-    if   null(conditionals)
+    if null(conditionals)
     then e
-    else stmtExpr(foldStmt(map(mkRuntimeCheck, conditionals)), e, location=bogusLoc());
+    else
+      stmtExpr(
+        foldStmt(
+          [
+          declStmt(variableDecls(
+            [], nilAttribute(), e.typerep.baseTypeExpr,
+            foldDeclarator([
+              declarator(
+                tmpName, e.typerep.typeModifierExpr,
+                nilAttribute(), justInitializer(exprInitializer(e))
+              )
+            ])
+          ))
+          ] ++
+          map(
+            \c::Pair<(Expr ::= Expr) String> -> mkRuntimeCheck(c, refTmp),
+            conditionals
+          )
+        ),
+        refTmp,
+        location=bogusLoc()
+      );
 }
 
 function mkRuntimeCheck
-Stmt ::= c::Pair<Expr String>
+Stmt ::= c::Pair<(Expr ::= Expr) String>  tmpE::Expr
 {
   -- TODO: improve error handling
-  return ifStmtNoElse(c.fst, txtStmt(s"fprintf(stderr, \"${c.snd}\"); exit(255);"));
+  return ifStmtNoElse(c.fst(tmpE), txtStmt(s"fprintf(stderr, \"${c.snd}\"); exit(255);"));
 }
 
 {- from clang:

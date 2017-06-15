@@ -13,10 +13,14 @@ top::Expr ::= op::UnaryOp  e::Expr
   
   forwards to
     if null(top.errors)
-    then case op.unaryProd of
-           just(prod) -> prod(e, top.location)
-         | nothing()  -> unaryOpExprDefault(op, e, location=top.location)
-         end
+    then
+      mkRuntimeChecks(
+        op.runtimeChecks,
+        case op.unaryProd of
+          just(prod) -> prod(e, top.location)
+        | nothing()  -> unaryOpExprDefault(op, e, location=top.location)
+        end
+      )
     else errorExpr(top.errors, location=top.location);
 }
 abstract production arraySubscriptExpr
