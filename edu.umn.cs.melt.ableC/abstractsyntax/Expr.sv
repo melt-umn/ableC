@@ -119,7 +119,10 @@ abstract production arraySubscriptExpr
 top::Expr ::= lhs::Expr  rhs::Expr
 {
   top.runtimeChecks := [];
-  forwards to mkRuntimeChecks(top.runtimeChecks, baseArraySubscriptExpr(lhs, rhs, location=top.location));
+  local baseExpr :: Expr = baseArraySubscriptExpr(lhs, rhs, location=top.location);
+  baseExpr.env = top.env;
+  baseExpr.returnType = top.returnType;
+  forwards to mkRuntimeChecks(top.runtimeChecks, baseExpr, baseExpr.typerep);
 }
 abstract production baseArraySubscriptExpr
 top::Expr ::= lhs::Expr  rhs::Expr
@@ -347,11 +350,11 @@ abstract production explicitCastExpr
 top::Expr ::= ty::TypeName  e::Expr
 {
   top.runtimeChecks := [];
+  local baseExpr :: Expr = baseExplicitCastExpr(ty, e, location=top.location);
+  baseExpr.env = top.env;
+  baseExpr.returnType = top.returnType;
   forwards to
-    mkRuntimeChecks(
-      top.runtimeChecks,
-      baseExplicitCastExpr(ty, e, location=top.location)
-    );
+    mkRuntimeChecks(top.runtimeChecks, baseExpr, baseExpr.typerep);
 }
 
 abstract production baseExplicitCastExpr
@@ -521,7 +524,7 @@ top::Expr ::=
 ---}
 
 function mkRuntimeChecks
-Expr ::= conditionals::[Pair<(Expr ::= Expr) String>] e::Expr
+Expr ::= conditionals::[Pair<(Expr ::= Expr) String>]  e::Expr  eTyperep::Type
 {
   local tmpName :: Name = name("__runtime_check_tmp" ++ toString(genInt()), location=bogusLoc());
   local refTmp :: Expr = declRefExpr(tmpName, location=bogusLoc());
@@ -534,10 +537,10 @@ Expr ::= conditionals::[Pair<(Expr ::= Expr) String>] e::Expr
         foldStmt(
           [
           declStmt(variableDecls(
-            [], nilAttribute(), e.typerep.baseTypeExpr,
+            [], nilAttribute(), eTyperep.baseTypeExpr,
             foldDeclarator([
               declarator(
-                tmpName, e.typerep.typeModifierExpr,
+                tmpName, eTyperep.typeModifierExpr,
                 nilAttribute(), justInitializer(exprInitializer(e))
               )
             ])

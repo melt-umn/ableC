@@ -10,17 +10,18 @@ top::Expr ::= op::UnaryOp  e::Expr
   top.typerep = addQualifiers(op.collectedTypeQualifiers, forward.typerep);
   op.op = e;
   top.errors := op.errors ++ e.errors;
+
+  local baseExpr :: Expr =
+    case op.unaryProd of
+      just(prod) -> prod(e, top.location)
+    | nothing()  -> unaryOpExprDefault(op, e, location=top.location)
+    end;
+  baseExpr.env = top.env;
+  baseExpr.returnType = top.returnType;
   
   forwards to
     if null(top.errors)
-    then
-      mkRuntimeChecks(
-        op.runtimeChecks,
-        case op.unaryProd of
-          just(prod) -> prod(e, top.location)
-        | nothing()  -> unaryOpExprDefault(op, e, location=top.location)
-        end
-      )
+    then mkRuntimeChecks(op.runtimeChecks, baseExpr, baseExpr.typerep)
     else errorExpr(top.errors, location=top.location);
 }
 abstract production arraySubscriptExpr
