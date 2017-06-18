@@ -16,7 +16,7 @@ This tutorial is composed of 3 sections.  It is expected that you complete the f
 
 ### Advanced ableC features
 1. [Construction helpers](construction/): Using the parsing and substitution mechanisms in ableC, implement an exponent operator
-2. [Lifting](lifting/): Define a new statment to declare a global int constant
+2. [Lifting](lifting/): Define a new expression to declare a global int constant
 3. [Operator overloading](overloading/): Define a new 'interval' type with overloads for host operators
 4. [Extensible env](extended_env/): *TODO, figure out an example for this*
 5. [Type qualifiers](type_qualifiers/): *Travis, can you write this section?*
