@@ -2,7 +2,7 @@
 
 void foo() {
   globalint x = 1;
-  x += 2;
+  globalint x += 2;
 }
 
 int main() {
