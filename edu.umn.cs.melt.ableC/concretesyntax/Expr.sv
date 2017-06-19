@@ -351,7 +351,7 @@ concrete productions top::CastExpr_c
     { top.ast = e.ast;
       top.directName = e.directName; }
 | '(' tn::TypeName_c ')' e::CastExpr_c
-    { top.ast = ast:explicitCastExpr(tn.ast, e.ast, location=top.location); }
+    { top.ast = ovrld:explicitCastExpr(tn.ast, e.ast, location=top.location); }
 
 
 closed nonterminal UnaryExpr_c with location, ast<ast:Expr>, directName;
@@ -368,8 +368,14 @@ concrete productions top::UnaryExpr_c
     { top.ast = ovrld:unaryOpExpr(ast:preIncOp(location=$1.location), e.ast, location=top.location); }
 | '--' e::UnaryExpr_c
     { top.ast = ovrld:unaryOpExpr(ast:preDecOp(location=$1.location), e.ast, location=top.location); }
+| '*' e::CastExpr_c
+    {
+       top.ast = ovrld:dereferenceExpr(e.ast, location=top.location);
+    }
 | op::UnaryOp_c e::CastExpr_c
-    { top.ast = ovrld:unaryOpExpr(op.ast, e.ast, location=top.location); }
+    {
+       top.ast = ovrld:unaryOpExpr(op.ast, e.ast, location=top.location);
+    }
 | 'sizeof' e::UnaryExpr_c
     { top.ast = ast:unaryExprOrTypeTraitExpr(ast:sizeofOp(location=$1.location), ast:exprExpr(e.ast), location=top.location); }
  | 'sizeof' '(' ty::TypeName_c ')'
@@ -379,7 +385,7 @@ concrete productions top::UnaryExpr_c
 closed nonterminal UnaryOp_c with location, ast<ast:UnaryOp>;
 concrete productions top::UnaryOp_c
 | '&'  { top.ast = ast:addressOfOp(location=top.location); }
-| '*'  { top.ast = ast:dereferenceOp(location=top.location); }
+--| '*'  { top.ast = ast:dereferenceOp(location=top.location); }
 | '+'  { top.ast = ast:positiveOp(location=top.location); }
 | '-'  { top.ast = ast:negativeOp(location=top.location); }
 | '~'  { top.ast = ast:bitNegateOp(location=top.location); }

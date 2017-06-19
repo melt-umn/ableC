@@ -10,18 +10,48 @@ top::Expr ::= op::UnaryOp  e::Expr
   top.typerep = addQualifiers(op.collectedTypeQualifiers, forward.typerep);
   op.op = e;
   top.errors := op.errors ++ e.errors;
-
-  local baseExpr :: Expr =
-    case op.unaryProd of
-      just(prod) -> prod(e, top.location)
-    | nothing()  -> unaryOpExprDefault(op, e, location=top.location)
-    end;
-  baseExpr.env = top.env;
-  baseExpr.returnType = top.returnType;
   
   forwards to
     if null(top.errors)
-    then mkRuntimeChecks(op.runtimeChecks, baseExpr, baseExpr.typerep)
+    then case op.unaryProd of
+           just(prod) -> prod(e, top.location)
+         | nothing()  -> unaryOpExprDefault(op, e, location=top.location)
+         end
+    else errorExpr(top.errors, location=top.location);
+}
+abstract production dereferenceExpr
+top::Expr ::= e::Expr
+{
+  production attribute runtimeChecks::[Pair<(Expr ::= Expr) String>] with ++;
+  runtimeChecks := [];
+
+  top.pp = parens(cat(text("*"), e.pp));
+  top.errors := e.errors;
+
+  local runtimeChecksExpr :: Expr = mkRuntimeChecks(runtimeChecks, e, e.typerep);
+
+  forwards to
+    if null(top.errors)
+    then case getDereferenceOverload(e.typerep, top.env) of
+           just(prod) -> prod(runtimeChecksExpr, top.location)
+         | nothing()  -> dereferenceExprDefault(runtimeChecksExpr, location=top.location)
+         end
+    else errorExpr(top.errors, location=top.location);
+}
+abstract production explicitCastExpr
+top::Expr ::= ty::TypeName  e::Expr
+{
+  production attribute runtimeChecks::[Pair<(Expr ::= Expr) String>] with ++;
+  runtimeChecks := [];
+
+  top.pp = parens( ppConcat([parens(ty.pp), e.pp]) );
+  top.errors := e.errors;
+
+  local runtimeChecksExpr :: Expr = mkRuntimeChecks(runtimeChecks, e, e.typerep);
+
+  forwards to
+    if null(top.errors)
+    then explicitCastExprDefault(ty, runtimeChecksExpr, location=top.location)
     else errorExpr(top.errors, location=top.location);
 }
 abstract production arraySubscriptExpr
@@ -59,13 +89,21 @@ top::Expr ::= f::Expr  a::Exprs
 abstract production memberExpr
 top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
 {
+  production attribute runtimeChecks::[Pair<(Expr ::= Expr) String>] with ++;
+  runtimeChecks := [];
+
   top.pp = parens(ppConcat([lhs.pp, text(if deref then "->" else "."), rhs.pp]));
-  
+  top.errors := lhs.errors;
+
+  local runtimeChecksExpr :: Expr = mkRuntimeChecks(runtimeChecks, lhs, lhs.typerep);
+
   forwards to
-    case getMemberOverload(lhs.typerep, top.env) of
-      just(prod) -> prod(lhs, deref, rhs, top.location)
-    | nothing()  -> memberExprDefault(lhs, deref, rhs, location=top.location)
-    end;
+    if null(top.errors)
+    then case getMemberOverload(lhs.typerep, top.env) of
+           just(prod) -> prod(runtimeChecksExpr, deref, rhs, top.location)
+         | nothing()  -> memberExprDefault(runtimeChecksExpr, deref, rhs, location=top.location)
+         end
+    else errorExpr(top.errors, location=top.location);
 }
 abstract production binaryOpExpr
 top::Expr ::= lhs::Expr  op::BinOp  rhs::Expr
@@ -103,3 +141,44 @@ top::Expr ::= lhs::Expr  op::BinOp  rhs::Expr
          else binaryOpExprDefault(lhs, op, rhs, location=top.location)
     else errorExpr(top.errors, location=top.location);
 }
+
+function mkRuntimeChecks
+Expr ::= conditionals::[Pair<(Expr ::= Expr) String>]  e::Expr  eTyperep::Type
+{
+  local tmpName :: Name = name("__runtime_check_tmp" ++ toString(genInt()), location=bogusLoc());
+  local refTmp :: Expr = declRefExpr(tmpName, location=bogusLoc());
+
+  return
+    if null(conditionals)
+    then e
+    else
+      stmtExpr(
+        foldStmt(
+          [
+          declStmt(variableDecls(
+            [], nilAttribute(), eTyperep.baseTypeExpr,
+            foldDeclarator([
+              declarator(
+                tmpName, eTyperep.typeModifierExpr,
+                nilAttribute(), justInitializer(exprInitializer(e))
+              )
+            ])
+          ))
+          ] ++
+          map(
+            \c::Pair<(Expr ::= Expr) String> -> mkRuntimeCheck(c, refTmp),
+            conditionals
+          )
+        ),
+        refTmp,
+        location=bogusLoc()
+      );
+}
+
+function mkRuntimeCheck
+Stmt ::= c::Pair<(Expr ::= Expr) String>  tmpE::Expr
+{
+  -- TODO: improve error handling
+  return ifStmtNoElse(c.fst(tmpE), txtStmt(s"fprintf(stderr, \"${c.snd}\"); exit(255);"));
+}
+

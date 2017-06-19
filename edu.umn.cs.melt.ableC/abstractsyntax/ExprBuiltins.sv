@@ -10,7 +10,6 @@ top::Expr ::= l::TypeName  r::TypeName
   top.defs := l.defs ++ r.defs;
   top.freeVariables = l.freeVariables ++ r.freeVariables;
   top.typerep = builtinType(nilQualifier(), signedType(intType()));
-  top.runtimeChecks := [];
 }
 abstract production vaArgExpr
 top::Expr ::= e::Expr  ty::TypeName
@@ -22,7 +21,6 @@ top::Expr ::= e::Expr  ty::TypeName
   top.defs := e.defs ++ ty.defs;
   top.freeVariables = e.freeVariables ++ ty.freeVariables;
   top.typerep = ty.typerep;
-  top.runtimeChecks := [];
 }
 
 abstract production offsetofExpr
@@ -35,7 +33,6 @@ top::Expr ::= ty::TypeName  e::MemberDesignator
   top.defs := ty.defs ++ e.defs;
   top.freeVariables = ty.freeVariables ++ e.freeVariables;
   top.typerep = builtinType(nilQualifier(), signedType(intType()));
-  top.runtimeChecks := [];
 }
 
 nonterminal MemberDesignator with pp, host<MemberDesignator>, lifted<MemberDesignator>, errors, globalDecls, defs, env, returnType, freeVariables;
@@ -91,7 +88,6 @@ top::Expr ::= e::Expr
   top.globalDecls := e.globalDecls;
   top.typerep = builtinType(nilQualifier(), signedType(intType()));
   top.freeVariables = e.freeVariables;
-  top.runtimeChecks := [];
 }
 
 abstract production vaArgPackExpr
@@ -104,7 +100,6 @@ top::Expr ::=
   top.defs := [];
   top.typerep = builtinType(nilQualifier(), voidType());
   top.freeVariables = [];
-  top.runtimeChecks := [];
 }
 
 abstract production expectExpr
@@ -117,7 +112,6 @@ top::Expr ::= eval::Expr  expected::Expr
   top.defs := eval.defs ++ expected.defs;
   top.typerep = builtinType(nilQualifier(), signedType(intType()));
   top.freeVariables = eval.freeVariables ++ expected.freeVariables;
-  top.runtimeChecks := [];
 }
 
 abstract production vaStartExpr
@@ -130,7 +124,6 @@ top::Expr ::= lastParam::Name  valist::Name
   top.defs := [];
   top.typerep = builtinType(nilQualifier(), voidType());
   top.freeVariables = [];
-  top.runtimeChecks := [];
 }
 abstract production vaEndExpr
 top::Expr ::= valist::Name
@@ -142,6 +135,5 @@ top::Expr ::= valist::Name
   top.defs := [];
   top.typerep = builtinType(nilQualifier(), voidType());
   top.freeVariables = [];
-  top.runtimeChecks := [];
 }
 

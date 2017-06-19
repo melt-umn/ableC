@@ -109,8 +109,6 @@ top::Expr ::= decls::Decls lifted::Expr
   top.typerep = lifted.typerep;
   top.freeVariables = lifted.freeVariables;
 
-  top.runtimeChecks := [];
-  
   decls.env = globalEnv(top.env);
   decls.isTopLevel = true;
   decls.returnType = nothing();

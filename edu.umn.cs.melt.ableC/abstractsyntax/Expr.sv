@@ -2,10 +2,9 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax;
 
 import edu:umn:cs:melt:ableC:abstractsyntax:overload as ovrld;
 
-nonterminal Expr with location, pp, host<Expr>, lifted<Expr>, globalDecls, errors, defs, env, returnType, freeVariables, typerep, runtimeChecks;
+nonterminal Expr with location, pp, host<Expr>, lifted<Expr>, globalDecls, errors, defs, env, returnType, freeVariables, typerep;
 
 synthesized attribute integerConstantValue :: Maybe<Integer>;
-synthesized attribute runtimeChecks :: [Pair<(Expr ::= Expr) String>] with ++;
 
 {- The production below is never used.  But it adds a dependency for
    the forwards-to equation on returnType so that it may be used by
@@ -31,7 +30,6 @@ top::Expr ::= msg::[Message]
   top.defs := [];
   top.freeVariables = [];
   top.typerep = errorType();
-  top.runtimeChecks := [];
 }
 abstract production warnExpr
 top::Expr ::= msg::[Message] e::Expr
@@ -53,7 +51,6 @@ top::Expr ::= id::Name
   top.freeVariables = [id];
   
   top.errors <- id.valueLookupCheck;
-  top.runtimeChecks := [];
 }
 abstract production stringLiteral
 top::Expr ::= l::String
@@ -66,7 +63,6 @@ top::Expr ::= l::String
   top.freeVariables = [];
   top.typerep = pointerType(nilQualifier(),
     builtinType(foldQualifier([]), signedType(charType())));
-  top.runtimeChecks := [];
 }
 abstract production parenExpr
 top::Expr ::= e::Expr
@@ -78,7 +74,27 @@ top::Expr ::= e::Expr
   top.defs := e.defs;
   top.freeVariables = e.freeVariables;
   top.typerep = e.typerep;
-  top.runtimeChecks := e.runtimeChecks;
+}
+abstract production dereferenceExpr
+top::Expr ::= e::Expr
+{
+  propagate host, lifted;
+  top.pp = parens( cat(text("*"), e.pp) );
+  top.errors :=
+    case e.typerep.defaultFunctionArrayLvalueConversion of
+    | pointerType(_, _) -> []
+    | _ -> [err(top.location, "invalid type argument of unary ‘*’ (have ‘" ++
+                               showType(e.typerep) ++ "’")]
+    end ++
+      e.errors;
+  top.globalDecls := e.globalDecls;
+  top.defs := e.defs;
+  top.freeVariables = e.freeVariables;
+  top.typerep =
+    case e.typerep of
+    | pointerType(_, innerty) -> innerty
+    | _ -> errorType()
+    end;
 }
 abstract production unaryOpExpr
 top::Expr ::= op::UnaryOp  e::Expr
@@ -99,7 +115,6 @@ top::Expr ::= op::UnaryOp  e::Expr  collectedTypeQualifiers::Qualifiers
   top.defs := e.defs;
   top.freeVariables = e.freeVariables;
   top.typerep = addQualifiers(collectedTypeQualifiers.qualifiers, op.typerep);
-  top.runtimeChecks := op.runtimeChecks;
 
   op.op = e;
 }
@@ -113,18 +128,8 @@ top::Expr ::= op::UnaryTypeOp  e::ExprOrTypeName
   top.defs := e.defs;
   top.freeVariables = e.freeVariables;
   top.typerep = builtinType(nilQualifier(), signedType(intType())); -- TODO sizeof / alignof result type
-  top.runtimeChecks := [];
 }
 abstract production arraySubscriptExpr
-top::Expr ::= lhs::Expr  rhs::Expr
-{
-  top.runtimeChecks := [];
-  local baseExpr :: Expr = baseArraySubscriptExpr(lhs, rhs, location=top.location);
-  baseExpr.env = top.env;
-  baseExpr.returnType = top.returnType;
-  forwards to mkRuntimeChecks(top.runtimeChecks, baseExpr, baseExpr.typerep);
-}
-abstract production baseArraySubscriptExpr
 top::Expr ::= lhs::Expr  rhs::Expr
 {
   propagate host, lifted;
@@ -133,7 +138,6 @@ top::Expr ::= lhs::Expr  rhs::Expr
   top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
   top.defs := lhs.defs ++ rhs.defs;
   top.freeVariables = lhs.freeVariables ++ removeDefsFromNames(rhs.defs, rhs.freeVariables);
-  top.runtimeChecks := [];
   
   local subtype :: Either<Type [Message]> =
     case lhs.typerep.defaultFunctionArrayLvalueConversion, rhs.typerep.defaultFunctionArrayLvalueConversion of
@@ -185,7 +189,6 @@ top::Expr ::= f::Expr  a::Exprs
   top.globalDecls := f.globalDecls ++ a.globalDecls;
   top.defs := f.defs ++ a.defs;
   top.freeVariables = f.freeVariables ++ removeDefsFromNames(f.defs, a.freeVariables);
-  top.runtimeChecks := [];
   
   local subtype :: Either<Pair<Type FunctionType> [Message]> =
     case f.typerep.defaultFunctionArrayLvalueConversion of
@@ -230,7 +233,6 @@ top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
   top.globalDecls := lhs.globalDecls;
   top.defs := lhs.defs;
   top.freeVariables = lhs.freeVariables;
-  top.runtimeChecks := [];
   
   local isPointer::Boolean =
     case lhs.typerep.withoutAttributes of
@@ -303,7 +305,6 @@ top::Expr ::= lhs::Expr  op::BinOp  rhs::Expr  collectedTypeQualifiers::Qualifie
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = addQualifiers(collectedTypeQualifiers.qualifiers, op.typerep);
-  top.runtimeChecks := [];
   
   op.lop = lhs;
   op.rop = rhs;
@@ -322,7 +323,6 @@ top::Expr ::= cond::Expr  t::Expr  e::Expr
     cond.freeVariables ++
     removeDefsFromNames(cond.defs, t.freeVariables) ++
     removeDefsFromNames(cond.defs ++ t.defs, e.freeVariables);
-  top.runtimeChecks := [];
   
   top.typerep = t.typerep; -- TODO: this is wrong, but it's an approximation for now
   
@@ -340,24 +340,12 @@ top::Expr ::= cond::Expr  e::Expr
   top.globalDecls := cond.globalDecls ++ e.globalDecls;
   top.defs := cond.defs ++ e.defs;
   top.freeVariables = cond.freeVariables ++ e.freeVariables;
-  top.runtimeChecks := [];
   
   top.typerep = e.typerep; -- TODO: not even sure what this should be
   
   -- TODO: type checking!!
 }
 abstract production explicitCastExpr
-top::Expr ::= ty::TypeName  e::Expr
-{
-  top.runtimeChecks := [];
-  local baseExpr :: Expr = baseExplicitCastExpr(ty, e, location=top.location);
-  baseExpr.env = top.env;
-  baseExpr.returnType = top.returnType;
-  forwards to
-    mkRuntimeChecks(top.runtimeChecks, baseExpr, baseExpr.typerep);
-}
-
-abstract production baseExplicitCastExpr
 top::Expr ::= ty::TypeName  e::Expr
 {
   propagate host, lifted;
@@ -367,7 +355,6 @@ top::Expr ::= ty::TypeName  e::Expr
   top.defs := ty.defs ++ e.defs;
   top.freeVariables = ty.freeVariables ++ removeDefsFromNames(ty.defs, e.freeVariables);
   top.typerep = ty.typerep;
-  top.runtimeChecks := [];
   
   e.env = addEnv(ty.defs, ty.env);
   
@@ -383,7 +370,6 @@ top::Expr ::= ty::TypeName  init::InitList
   top.defs := ty.defs ++ init.defs;
   top.freeVariables = ty.freeVariables ++ removeDefsFromNames(ty.defs, init.freeVariables);
   top.typerep = ty.typerep; -- TODO: actually may involve learning from the initializer e.g. the length of the array.
-  top.runtimeChecks := [];
   
   init.env = addEnv(ty.defs, ty.env);
   
@@ -400,7 +386,6 @@ top::Expr ::=
   top.freeVariables = [];
   top.typerep = pointerType(nilQualifier(),
     builtinType(foldQualifier([constQualifier(location=builtinLoc("host"))]), signedType(charType()))); -- const char *
-  top.runtimeChecks := [];
 }
 
 -- C11
@@ -427,7 +412,6 @@ top::Expr ::= e::Expr  gl::GenericAssocs  def::MaybeExpr
       end
     else
       head(gl.compatibleSelections).typerep;
-  top.runtimeChecks := [];
   
   gl.selectionType = e.typerep;
   
@@ -488,7 +472,6 @@ top::Expr ::= body::Stmt result::Expr
   top.defs := globalDeclsDefs(body.globalDecls) ++ globalDeclsDefs(result.globalDecls); -- defs are *not* propagated up. This is beginning of a scope.
   top.freeVariables = body.freeVariables ++ removeDefsFromNames(body.defs, result.freeVariables);
   top.typerep = result.typerep;
-  top.runtimeChecks := [];
   
   body.env = openScope(top.env);
   result.env = addEnv(body.defs, body.env);
@@ -505,7 +488,6 @@ top::Expr ::= s::String
   top.defs := [];
   top.freeVariables = [];
   top.typerep = errorType();
-  top.runtimeChecks := [];
 }
 
 -- Temporary hack to affect flowtypes generated by the host language.
@@ -522,46 +504,6 @@ top::Expr ::=
   forwards to if false then error(hackUnparse(top.env) ++ hackUnparse(top.returnType)) else hackUnused(location=top.location);
 }
 ---}
-
-function mkRuntimeChecks
-Expr ::= conditionals::[Pair<(Expr ::= Expr) String>]  e::Expr  eTyperep::Type
-{
-  local tmpName :: Name = name("__runtime_check_tmp" ++ toString(genInt()), location=bogusLoc());
-  local refTmp :: Expr = declRefExpr(tmpName, location=bogusLoc());
-
-  return
-    if null(conditionals)
-    then e
-    else
-      stmtExpr(
-        foldStmt(
-          [
-          declStmt(variableDecls(
-            [], nilAttribute(), eTyperep.baseTypeExpr,
-            foldDeclarator([
-              declarator(
-                tmpName, eTyperep.typeModifierExpr,
-                nilAttribute(), justInitializer(exprInitializer(e))
-              )
-            ])
-          ))
-          ] ++
-          map(
-            \c::Pair<(Expr ::= Expr) String> -> mkRuntimeCheck(c, refTmp),
-            conditionals
-          )
-        ),
-        refTmp,
-        location=bogusLoc()
-      );
-}
-
-function mkRuntimeCheck
-Stmt ::= c::Pair<(Expr ::= Expr) String>  tmpE::Expr
-{
-  -- TODO: improve error handling
-  return ifStmtNoElse(c.fst(tmpE), txtStmt(s"fprintf(stderr, \"${c.snd}\"); exit(255);"));
-}
 
 {- from clang:
 

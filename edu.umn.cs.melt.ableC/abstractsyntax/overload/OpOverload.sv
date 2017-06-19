@@ -10,8 +10,12 @@ imports edu:umn:cs:melt:ableC:abstractsyntax hiding directCallExpr
                                                   arraySubscriptExpr as arraySubscriptExprDefault,
                                                   callExpr as callExprDefault,
                                                   memberExpr as memberExprDefault,
+                                                  dereferenceExpr as dereferenceExprDefault,
+                                                  explicitCastExpr as explicitCastExprDefault,
                                                   binaryOpExpr as binaryOpExprDefault;
 imports edu:umn:cs:melt:ableC:abstractsyntax:env;
+
+imports edu:umn:cs:melt:ableC:abstractsyntax:construction;
 
 {- Explaination of overloading
  - All standard unary and binary operators may be overloaded, in addition to function calls, array
@@ -122,6 +126,19 @@ Maybe<(Expr ::= Expr Boolean Name AssignOp Expr Location)> ::= t::Type env::Deco
     do (bindMaybe, returnMaybe) {
       n :: String <- moduleName(env, t);
       prod :: (Expr ::= Expr Boolean Name AssignOp Expr Location) <- lookupBy(stringEq, n, overloads);
+      return prod;
+    };
+}
+
+function getDereferenceOverload
+Maybe<(Expr ::= Expr Location)> ::= t::Type env::Decorated Env
+{
+  production attribute overloads::[Pair<String (Expr ::= Expr Location)>] with ++;
+  overloads := [];
+  return
+    do (bindMaybe, returnMaybe) {
+      n :: String <- moduleName(env, t);
+      prod :: (Expr ::= Expr Location) <- lookupBy(stringEq, n, overloads);
       return prod;
     };
 }

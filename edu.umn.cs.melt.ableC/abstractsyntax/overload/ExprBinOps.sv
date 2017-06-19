@@ -31,14 +31,12 @@ top::BinOp ::= op::AssignOp
               unaryOpExprDefault(addressOfOp(location=loc), lhs, location=loc),
               loc),
             binaryOpExpr(
-              unaryOpExprDefault(
-                dereferenceOp(location=loc),
+              dereferenceExprDefault(
                 declRefExpr(name(tmpName, location=loc), location=loc),
                 location=loc),
               assignOp(eqOp(location=loc), location=loc),
               baseProd(
-                unaryOpExprDefault(
-                  dereferenceOp(location=loc),
+                dereferenceExprDefault(
                   declRefExpr(name(tmpName, location=loc), location=loc),
                   location=loc),
                 rhs, loc),

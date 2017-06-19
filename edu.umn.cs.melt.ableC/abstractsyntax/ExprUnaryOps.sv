@@ -1,8 +1,7 @@
 
-nonterminal UnaryOp with location, op, opName, pp, host<UnaryOp>, lifted<UnaryOp>, preExpr, noLvalueConversion, typerep, errors, collectedTypeQualifiers, runtimeChecks;
+nonterminal UnaryOp with location, op, opName, pp, host<UnaryOp>, lifted<UnaryOp>, preExpr, noLvalueConversion, typerep, errors, collectedTypeQualifiers;
 flowtype collectedTypeQualifiers {op} on UnaryOp;
 flowtype errors {op} on UnaryOp;
-flowtype runtimeChecks {op} on UnaryOp;
 
 autocopy attribute op :: Decorated Expr;
 synthesized attribute opName :: String;
@@ -31,7 +30,6 @@ top::UnaryOp ::=
   top.typerep = top.op.typerep.defaultLvalueConversion.integerPromotions;
   top.collectedTypeQualifiers := [];
   top.errors := [];
-  top.runtimeChecks := [];
 }
 abstract production preDecOp
 top::UnaryOp ::= 
@@ -44,7 +42,6 @@ top::UnaryOp ::=
   top.typerep = top.op.typerep.integerPromotions;
   top.collectedTypeQualifiers := [];
   top.errors := [];
-  top.runtimeChecks := [];
 }
 abstract production postIncOp
 top::UnaryOp ::= 
@@ -57,7 +54,6 @@ top::UnaryOp ::=
   top.typerep = top.op.typerep.integerPromotions;
   top.collectedTypeQualifiers := [];
   top.errors := [];
-  top.runtimeChecks := [];
 }
 abstract production postDecOp
 top::UnaryOp ::= 
@@ -70,7 +66,6 @@ top::UnaryOp ::=
   top.typerep = top.op.typerep.integerPromotions;
   top.collectedTypeQualifiers := [];
   top.errors := [];
-  top.runtimeChecks := [];
 }
 abstract production addressOfOp
 top::UnaryOp ::=
@@ -82,29 +77,27 @@ top::UnaryOp ::=
   top.typerep = pointerType(foldQualifier(top.collectedTypeQualifiers), top.op.typerep);
   top.collectedTypeQualifiers := [];
   top.errors := [];
-  top.runtimeChecks := [];
 }
-abstract production dereferenceOp
-top::UnaryOp ::=
-{
-  propagate host, lifted;
-  top.pp = text("*");
-  top.preExpr = true;
-  top.noLvalueConversion = false;
-  top.typerep = 
-    case top.op.typerep of
-    | pointerType(_, innerty) -> innerty
-    | _ -> errorType()
-    end;
-  top.errors :=
-    case top.op.typerep.defaultFunctionArrayLvalueConversion of
-    | pointerType(_, _) -> []
-    | _ -> [err(top.location, "invalid type argument of unary ‘*’ (have ‘" ++
-                               showType(top.op.typerep) ++ "’")]
-    end;
-  top.collectedTypeQualifiers := [];
-  top.runtimeChecks := [];
-}
+--abstract production dereferenceOp
+--top::UnaryOp ::=
+--{
+--  propagate host, lifted;
+--  top.pp = text("*");
+--  top.preExpr = true;
+--  top.noLvalueConversion = false;
+--  top.typerep = 
+--    case top.op.typerep of
+--    | pointerType(_, innerty) -> innerty
+--    | _ -> errorType()
+--    end;
+--  top.errors :=
+--    case top.op.typerep.defaultFunctionArrayLvalueConversion of
+--    | pointerType(_, _) -> []
+--    | _ -> [err(top.location, "invalid type argument of unary ‘*’ (have ‘" ++
+--                               showType(top.op.typerep) ++ "’")]
+--    end;
+--  top.collectedTypeQualifiers := [];
+--}
 abstract production positiveOp
 top::UnaryOp ::=
 {
@@ -115,7 +108,6 @@ top::UnaryOp ::=
   top.typerep = top.op.typerep.defaultLvalueConversion.integerPromotions;
   top.collectedTypeQualifiers := [];
   top.errors := [];
-  top.runtimeChecks := [];
 }
 abstract production negativeOp
 top::UnaryOp ::=
@@ -127,7 +119,6 @@ top::UnaryOp ::=
   top.typerep = top.op.typerep.defaultLvalueConversion.integerPromotions;
   top.collectedTypeQualifiers := [];
   top.errors := [];
-  top.runtimeChecks := [];
 }
 abstract production bitNegateOp
 top::UnaryOp ::=
@@ -139,7 +130,6 @@ top::UnaryOp ::=
   top.typerep = top.op.typerep.defaultLvalueConversion.integerPromotions;
   top.collectedTypeQualifiers := [];
   top.errors := [];
-  top.runtimeChecks := [];
 }
 abstract production notOp
 top::UnaryOp ::=
@@ -151,7 +141,6 @@ top::UnaryOp ::=
   top.typerep = top.op.typerep.defaultLvalueConversion.integerPromotions;
   top.collectedTypeQualifiers := [];
   top.errors := [];
-  top.runtimeChecks := [];
 }
 
 abstract production warnNoOp
@@ -164,7 +153,6 @@ top::UnaryOp ::= msg::[Message]
   top.typerep = top.op.typerep.defaultLvalueConversion.integerPromotions;
   top.collectedTypeQualifiers := [];
   top.errors := [];
-  top.runtimeChecks := [];
 }
 
 -- GCC extension
@@ -178,7 +166,6 @@ top::UnaryOp ::=
   top.typerep = top.op.typerep.defaultLvalueConversion.integerPromotions;
   top.collectedTypeQualifiers := [];
   top.errors := [];
-  top.runtimeChecks := [];
 }
 -- GCC extension
 abstract production imagOp
@@ -191,7 +178,6 @@ top::UnaryOp ::=
   top.typerep = top.op.typerep.defaultLvalueConversion.integerPromotions;
   top.collectedTypeQualifiers := [];
   top.errors := [];
-  top.runtimeChecks := [];
 }
 
 autocopy attribute typeop :: Type;

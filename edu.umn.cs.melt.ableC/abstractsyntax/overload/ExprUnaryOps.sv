@@ -31,11 +31,11 @@ top::UnaryOp ::=
 {
   top.unaryProd = getAddressOfOpOverload(top.op.typerep, top.op.env);
 }
-aspect production dereferenceOp
-top::UnaryOp ::=
-{
-  top.unaryProd = getDereferenceOpOverload(top.op.typerep, top.op.env);
-}
+--aspect production dereferenceOp
+--top::UnaryOp ::=
+--{
+--  top.unaryProd = getDereferenceOpOverload(top.op.typerep, top.op.env);
+--}
 aspect production positiveOp
 top::UnaryOp ::=
 {
