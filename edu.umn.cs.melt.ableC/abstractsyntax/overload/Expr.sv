@@ -57,13 +57,27 @@ top::Expr ::= ty::TypeName  e::Expr
 abstract production arraySubscriptExpr
 top::Expr ::= lhs::Expr  rhs::Expr
 {
+  production attribute lhsRuntimeChecks::[Pair<(Expr ::= Expr) String>] with ++;
+  lhsRuntimeChecks := [];
+  production attribute rhsRuntimeChecks::[Pair<(Expr ::= Expr) String>] with ++;
+  rhsRuntimeChecks := [];
+
   top.pp = parens( ppConcat([ lhs.pp, brackets( rhs.pp )]) );
-  
+  top.errors := lhs.errors ++ rhs.errors;
+
+  local lhsRuntimeChecksExpr :: Expr = mkRuntimeChecks(lhsRuntimeChecks, lhs, lhs.typerep);
+  local rhsRuntimeChecksExpr :: Expr = mkRuntimeChecks(rhsRuntimeChecks, rhs, rhs.typerep);
+
   forwards to
-    case getArraySubscriptOverload(lhs.typerep, top.env) of
-      just(prod) -> prod(lhs, rhs, top.location)
-    | nothing()  -> arraySubscriptExprDefault(lhs, rhs, location=top.location)
-    end;
+    if null(top.errors)
+    then case getArraySubscriptOverload(lhs.typerep, top.env) of
+           just(prod) ->
+             prod(lhsRuntimeChecksExpr, rhsRuntimeChecksExpr, top.location)
+         | nothing()  ->
+             arraySubscriptExprDefault(lhsRuntimeChecksExpr, rhsRuntimeChecksExpr,
+               location=top.location)
+         end
+    else errorExpr(top.errors, location=top.location);
 }
 abstract production callExpr
 top::Expr ::= f::Expr  a::Exprs
