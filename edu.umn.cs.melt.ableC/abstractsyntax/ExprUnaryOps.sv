@@ -78,26 +78,6 @@ top::UnaryOp ::=
   top.collectedTypeQualifiers := [];
   top.errors := [];
 }
---abstract production dereferenceOp
---top::UnaryOp ::=
---{
---  propagate host, lifted;
---  top.pp = text("*");
---  top.preExpr = true;
---  top.noLvalueConversion = false;
---  top.typerep = 
---    case top.op.typerep of
---    | pointerType(_, innerty) -> innerty
---    | _ -> errorType()
---    end;
---  top.errors :=
---    case top.op.typerep.defaultFunctionArrayLvalueConversion of
---    | pointerType(_, _) -> []
---    | _ -> [err(top.location, "invalid type argument of unary ‘*’ (have ‘" ++
---                               showType(top.op.typerep) ++ "’")]
---    end;
---  top.collectedTypeQualifiers := [];
---}
 abstract production positiveOp
 top::UnaryOp ::=
 {

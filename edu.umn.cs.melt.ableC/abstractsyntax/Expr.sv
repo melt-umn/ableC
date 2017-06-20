@@ -81,6 +81,14 @@ top::Expr ::= e::Expr
 abstract production dereferenceExpr
 top::Expr ::= e::Expr
 {
+  production attribute runtimeChecks::[Pair<(Expr ::= Expr) String>] with ++;
+  runtimeChecks := [];
+
+  forwards to dereferenceHostExpr(mkRuntimeChecks(runtimeChecks, e, e.typerep), location=top.location);
+}
+abstract production dereferenceHostExpr
+top::Expr ::= e::Expr
+{
   propagate host, lifted;
   top.pp = parens( cat(text("*"), e.pp) );
   top.errors :=
@@ -133,6 +141,19 @@ top::Expr ::= op::UnaryTypeOp  e::ExprOrTypeName
   top.typerep = builtinType(nilQualifier(), signedType(intType())); -- TODO sizeof / alignof result type
 }
 abstract production arraySubscriptExpr
+top::Expr ::= lhs::Expr  rhs::Expr
+{
+  production attribute lhsRuntimeChecks::[Pair<(Expr ::= Expr) String>] with ++;
+  lhsRuntimeChecks := [];
+  production attribute rhsRuntimeChecks::[Pair<(Expr ::= Expr) String>] with ++;
+  rhsRuntimeChecks := [];
+
+  local lhsRuntimeChecksExpr :: Expr = mkRuntimeChecks(lhsRuntimeChecks, lhs, lhs.typerep);
+  local rhsRuntimeChecksExpr :: Expr = mkRuntimeChecks(rhsRuntimeChecks, rhs, rhs.typerep);
+
+  forwards to arraySubscriptHostExpr(lhsRuntimeChecksExpr, rhsRuntimeChecksExpr, location=top.location);
+}
+abstract production arraySubscriptHostExpr
 top::Expr ::= lhs::Expr  rhs::Expr
 {
   propagate host, lifted;
@@ -228,6 +249,16 @@ top::Expr ::= f::Expr  a::Exprs
   a.env = addEnv(f.defs, f.env);
 }
 abstract production memberExpr
+top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
+{
+  production attribute runtimeChecks::[Pair<(Expr ::= Expr) String>] with ++;
+  runtimeChecks := [];
+
+  forwards to memberHostExpr(mkRuntimeChecks(runtimeChecks, lhs, lhs.typerep),
+                             deref, rhs, location=top.location);
+}
+
+abstract production memberHostExpr
 top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
 {
   propagate host, lifted;
@@ -349,6 +380,15 @@ top::Expr ::= cond::Expr  e::Expr
   -- TODO: type checking!!
 }
 abstract production explicitCastExpr
+top::Expr ::= ty::TypeName  e::Expr
+{
+  production attribute runtimeChecks::[Pair<(Expr ::= Expr) String>] with ++;
+  runtimeChecks := [];
+
+  forwards to explicitCastHostExpr(ty, mkRuntimeChecks(runtimeChecks, e, e.typerep),
+                                   location=top.location);
+}
+abstract production explicitCastHostExpr
 top::Expr ::= ty::TypeName  e::Expr
 {
   propagate host, lifted;
@@ -507,6 +547,46 @@ top::Expr ::=
   forwards to if false then error(hackUnparse(top.env) ++ hackUnparse(top.returnType)) else hackUnused(location=top.location);
 }
 ---}
+
+function mkRuntimeChecks
+Expr ::= conditionals::[Pair<(Expr ::= Expr) String>]  e::Expr  eTyperep::Type
+{
+  local tmpName :: Name = name("__runtime_check_tmp" ++ toString(genInt()), location=bogusLoc());
+  local refTmp :: Expr = declRefExpr(tmpName, location=bogusLoc());
+
+  return
+    if null(conditionals)
+    then e
+    else
+      stmtExpr(
+        foldStmt(
+          [
+          declStmt(variableDecls(
+            [], nilAttribute(), eTyperep.baseTypeExpr,
+            foldDeclarator([
+              declarator(
+                tmpName, eTyperep.typeModifierExpr,
+                nilAttribute(), justInitializer(exprInitializer(e))
+              )
+            ])
+          ))
+          ] ++
+          map(
+            \c::Pair<(Expr ::= Expr) String> -> mkRuntimeCheck(c, refTmp),
+            conditionals
+          )
+        ),
+        refTmp,
+        location=bogusLoc()
+      );
+}
+
+function mkRuntimeCheck
+Stmt ::= c::Pair<(Expr ::= Expr) String>  tmpE::Expr
+{
+  -- TODO: improve error handling
+  return ifStmtNoElse(c.fst(tmpE), txtStmt(s"fprintf(stderr, \"${c.snd}\"); exit(255);"));
+}
 
 {- from clang:
 
