@@ -204,118 +204,120 @@ top::AdditiveExpr_c ::=
 {
   top.directName = nothing();
 }
-{- Below is the previous implementation of AdditiveExpr_c.  
+{- Below is the previous implementation of AdditiveExpr_c. -}
+--concrete productions top::AdditiveExpr_c
+--| e::AddMulLeft_c 
+--    { top.ast = e.ast;
+--      top.directName = e.directName; }
+--| l::AdditiveExpr_c  op::AdditiveOp_c  r::AddMulLeft_c 
+--    { top.ast = op.ast; 
+--      op.leftExpr=l.ast; op.rightExpr=r.ast; op.exprLocation=top.location; }
+
 concrete productions top::AdditiveExpr_c
 | e::MultiplicativeExpr_c
-    { top.ast = e.ast; }
-| l::AdditiveExpr_c  '+'  r::MultiplicativeExpr_c
-    { top.ast = ovrld:binaryOpExpr(l.ast, ast:numOp(ast:addOp(location=$2.location), location=$2.location), r.ast, location=top.location); }
-| l::AdditiveExpr_c  '-'  r::MultiplicativeExpr_c
-    { top.ast = ovrld:binaryOpExpr(l.ast, ast:numOp(ast:subOp(location=$2.location), location=$2.location), r.ast, location=top.location); }           -}
-concrete productions top::AdditiveExpr_c
-| e::AddMulLeft_c 
     { top.ast = e.ast;
       top.directName = e.directName; }
-| l::AdditiveExpr_c  op::AdditiveOp_c  r::AddMulLeft_c 
-    { top.ast = op.ast; 
-      op.leftExpr=l.ast; op.rightExpr=r.ast; op.exprLocation=top.location; }
+| l::AdditiveExpr_c  '+'  r::MultiplicativeExpr_c
+    { top.ast = ovrld:addExpr(l.ast, r.ast, location=top.location); }
+| l::AdditiveExpr_c  '-'  r::MultiplicativeExpr_c
+    { top.ast = ovrld:subExpr(l.ast, r.ast, location=top.location); }
 
 inherited attribute leftExpr :: ast:Expr;
 inherited attribute rightExpr :: ast:Expr;
 inherited attribute exprLocation :: Location;
 
-closed nonterminal AdditiveOp_c 
-  with location, ast<ast:Expr>, leftExpr, rightExpr, exprLocation ;
-
--- Additive Operators
-concrete productions top::AdditiveOp_c
-| '+'
-    { top.ast = ovrld:binaryOpExpr(top.leftExpr, 
-        ast:numOp(ast:addOp(location=$1.location), location=$1.location), 
-        top.rightExpr, location=top.exprLocation); }
-| '-'
-    { top.ast = ovrld:binaryOpExpr(top.leftExpr, 
-        ast:numOp(ast:subOp(location=$1.location), location=$1.location),
-        top.rightExpr, location=top.exprLocation); }
-
--- Operators with precedence between Additive and Multiplicitive opererators
-
--- Left Associative
-closed nonterminal AddMulLeft_c with location, ast<ast:Expr>, directName;
-aspect default production
-top::AddMulLeft_c ::=
-{
-  top.directName = nothing();
-}
-concrete productions top::AddMulLeft_c
-| e::AddMulRight_c
-    { top.ast = e.ast;
-      top.directName = e.directName; }
-| l::AddMulLeft_c  op::AddMulLeftOp_c r::AddMulRight_c
-    { top.ast = op.ast; 
-      op.leftExpr=l.ast; op.rightExpr=r.ast; op.exprLocation=top.location; }
-
-closed nonterminal AddMulLeftOp_c
-  with location, ast<ast:Expr>, leftExpr, rightExpr, exprLocation ;
-
-terminal AddMulLeft_NEVER_t 'AddMulLeft_Never!!!nevernever1234567890' ;
-concrete productions top::AddMulLeftOp_c
-| AddMulLeft_NEVER_t
-    { top.ast = ast:errorExpr ( [ err (top.location, "Internal Error. " ++
-        "Placeholder for AddMulLeftOp_c should not appear in the tree.") ],
-        location=top.location ) ; }
-
--- Right Associative
-closed nonterminal AddMulRight_c with location, ast<ast:Expr>, directName;
-aspect default production
-top::AddMulRight_c ::=
-{
-  top.directName = nothing();
-}
-concrete productions top::AddMulRight_c
-| e::AddMulNone_c
-    { top.ast = e.ast;
-      top.directName = e.directName; }
-| l::AddMulNone_c  op::AddMulRightOp_c r::AddMulRight_c 
-    { top.ast = op.ast; 
-      op.leftExpr=l.ast; op.rightExpr=r.ast; op.exprLocation=top.location; }
-
-closed nonterminal AddMulRightOp_c
-  with location, ast<ast:Expr>, leftExpr, rightExpr, exprLocation ;
-
-terminal AddMulRight_NEVER_t 'AddMulRight_Never!!!nevernever1234567890' ;
-concrete productions top::AddMulRightOp_c
-| AddMulRight_NEVER_t
-    { top.ast = ast:errorExpr ( [ err (top.location, "Internal Error. " ++
-        "Placeholder for AddMulRightOp_c should not appear in the tree." ) ],
-        location=top.location ) ; }
-
--- Non-associative
-closed nonterminal AddMulNone_c with location, ast<ast:Expr>, directName;
-aspect default production
-top::AddMulNone_c ::=
-{
-  top.directName = nothing();
-}
-concrete productions top::AddMulNone_c
-| e::MultiplicativeExpr_c
-    { top.ast = e.ast;
-      top.directName = e.directName; }
-| l::MultiplicativeExpr_c  op::AddMulNoneOp_c r::MultiplicativeExpr_c 
-    { top.ast = op.ast; 
-      op.leftExpr=l.ast; op.rightExpr=r.ast; op.exprLocation=top.location; }
-
-closed nonterminal AddMulNoneOp_c
-  with location, ast<ast:Expr>, leftExpr, rightExpr, exprLocation ;
-
-terminal AddMulNone_NEVER_t 'AddMulNone_Never!!!nevernever1234567890' ;
-concrete productions top::AddMulNoneOp_c
-| AddMulNone_NEVER_t
-    { top.ast = ast:errorExpr ( [ err (top.location, "Internal Error. " ++
-        "Placeholder for AddMulNoneOp_c should not appear in the tree." ++
-        hackUnparse(pair(pair(top.leftExpr, top.rightExpr), top.exprLocation))) ], -- TODO: flowtype hack, remove
-        location=top.location ) ; }
-
+--closed nonterminal AdditiveOp_c 
+--  with location, ast<ast:Expr>, leftExpr, rightExpr, exprLocation ;
+--
+---- Additive Operators
+--concrete productions top::AdditiveOp_c
+--| '+'
+--    { top.ast = ovrld:binaryOpExpr(top.leftExpr, 
+--        ast:numOp(ast:addOp(location=$1.location), location=$1.location), 
+--        top.rightExpr, location=top.exprLocation); }
+--| '-'
+--    { top.ast = ovrld:binaryOpExpr(top.leftExpr, 
+--        ast:numOp(ast:subOp(location=$1.location), location=$1.location),
+--        top.rightExpr, location=top.exprLocation); }
+--
+---- Operators with precedence between Additive and Multiplicitive opererators
+--
+---- Left Associative
+--closed nonterminal AddMulLeft_c with location, ast<ast:Expr>, directName;
+--aspect default production
+--top::AddMulLeft_c ::=
+--{
+--  top.directName = nothing();
+--}
+--concrete productions top::AddMulLeft_c
+--| e::AddMulRight_c
+--    { top.ast = e.ast;
+--      top.directName = e.directName; }
+--| l::AddMulLeft_c  op::AddMulLeftOp_c r::AddMulRight_c
+--    { top.ast = op.ast; 
+--      op.leftExpr=l.ast; op.rightExpr=r.ast; op.exprLocation=top.location; }
+--
+--closed nonterminal AddMulLeftOp_c
+--  with location, ast<ast:Expr>, leftExpr, rightExpr, exprLocation ;
+--
+--terminal AddMulLeft_NEVER_t 'AddMulLeft_Never!!!nevernever1234567890' ;
+--concrete productions top::AddMulLeftOp_c
+--| AddMulLeft_NEVER_t
+--    { top.ast = ast:errorExpr ( [ err (top.location, "Internal Error. " ++
+--        "Placeholder for AddMulLeftOp_c should not appear in the tree.") ],
+--        location=top.location ) ; }
+--
+---- Right Associative
+--closed nonterminal AddMulRight_c with location, ast<ast:Expr>, directName;
+--aspect default production
+--top::AddMulRight_c ::=
+--{
+--  top.directName = nothing();
+--}
+--concrete productions top::AddMulRight_c
+--| e::AddMulNone_c
+--    { top.ast = e.ast;
+--      top.directName = e.directName; }
+--| l::AddMulNone_c  op::AddMulRightOp_c r::AddMulRight_c 
+--    { top.ast = op.ast; 
+--      op.leftExpr=l.ast; op.rightExpr=r.ast; op.exprLocation=top.location; }
+--
+--closed nonterminal AddMulRightOp_c
+--  with location, ast<ast:Expr>, leftExpr, rightExpr, exprLocation ;
+--
+--terminal AddMulRight_NEVER_t 'AddMulRight_Never!!!nevernever1234567890' ;
+--concrete productions top::AddMulRightOp_c
+--| AddMulRight_NEVER_t
+--    { top.ast = ast:errorExpr ( [ err (top.location, "Internal Error. " ++
+--        "Placeholder for AddMulRightOp_c should not appear in the tree." ) ],
+--        location=top.location ) ; }
+--
+---- Non-associative
+--closed nonterminal AddMulNone_c with location, ast<ast:Expr>, directName;
+--aspect default production
+--top::AddMulNone_c ::=
+--{
+--  top.directName = nothing();
+--}
+--concrete productions top::AddMulNone_c
+--| e::MultiplicativeExpr_c
+--    { top.ast = e.ast;
+--      top.directName = e.directName; }
+--| l::MultiplicativeExpr_c  op::AddMulNoneOp_c r::MultiplicativeExpr_c 
+--    { top.ast = op.ast; 
+--      op.leftExpr=l.ast; op.rightExpr=r.ast; op.exprLocation=top.location; }
+--
+--closed nonterminal AddMulNoneOp_c
+--  with location, ast<ast:Expr>, leftExpr, rightExpr, exprLocation ;
+--
+--terminal AddMulNone_NEVER_t 'AddMulNone_Never!!!nevernever1234567890' ;
+--concrete productions top::AddMulNoneOp_c
+--| AddMulNone_NEVER_t
+--    { top.ast = ast:errorExpr ( [ err (top.location, "Internal Error. " ++
+--        "Placeholder for AddMulNoneOp_c should not appear in the tree." ++
+--        hackUnparse(pair(pair(top.leftExpr, top.rightExpr), top.exprLocation))) ], -- TODO: flowtype hack, remove
+--        location=top.location ) ; }
+--
 
 -- Multiplicative Expressions --
 --------------------------------

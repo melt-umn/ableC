@@ -93,6 +93,40 @@ top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
          end
     else errorExpr(top.errors, location=top.location);
 }
+abstract production addExpr
+top::Expr ::= lhs::Expr  rhs::Expr
+{
+  top.pp = parens( ppConcat([lhs.pp, space(), text("+"), space(), rhs.pp]) );
+  top.errors := lhs.errors ++ rhs.errors;
+
+  top.collectedTypeQualifiers := [];
+  top.typerep = addQualifiers(top.collectedTypeQualifiers, forward.typerep);
+
+  forwards to
+    if null(top.errors)
+    then case getAddOverload(lhs.typerep, rhs.typerep, top.env) of
+           just(prod) -> prod(lhs, rhs, top.location)
+         | nothing()  -> addExprDefault(lhs, rhs, location=top.location)
+         end
+    else errorExpr(top.errors, location=top.location);
+}
+abstract production subExpr
+top::Expr ::= lhs::Expr  rhs::Expr
+{
+  top.pp = parens( ppConcat([lhs.pp, space(), text("-"), space(), rhs.pp]) );
+  top.errors := lhs.errors ++ rhs.errors;
+
+  top.collectedTypeQualifiers := [];
+  top.typerep = addQualifiers(top.collectedTypeQualifiers, forward.typerep);
+
+  forwards to
+    if null(top.errors)
+    then case getSubOverload(lhs.typerep, rhs.typerep, top.env) of
+           just(prod) -> prod(lhs, rhs, top.location)
+         | nothing()  -> subExprDefault(lhs, rhs, location=top.location)
+         end
+    else errorExpr(top.errors, location=top.location);
+}
 abstract production binaryOpExpr
 top::Expr ::= lhs::Expr  op::BinOp  rhs::Expr
 {

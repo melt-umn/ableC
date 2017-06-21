@@ -2,9 +2,15 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax;
 
 import edu:umn:cs:melt:ableC:abstractsyntax:overload as ovrld;
 
-nonterminal Expr with location, pp, host<Expr>, lifted<Expr>, globalDecls, errors, defs, env, returnType, freeVariables, typerep, inferredQualsIn;
+nonterminal Expr with location, pp, host<Expr>, lifted<Expr>, globalDecls, errors, defs, env, returnType, freeVariables, typerep, collectedTypeQualifiers, inferredQualsIn;
 
 synthesized attribute integerConstantValue :: Maybe<Integer>;
+
+aspect default production
+top::Expr ::=
+{
+  top.collectedTypeQualifiers := [];
+}
 
 {- The production below is never used.  But it adds a dependency for
    the forwards-to equation on returnType so that it may be used by
@@ -47,7 +53,8 @@ top::Expr ::= id::Name
   top.errors := [];
   top.globalDecls := [];
   top.defs := [];
-  top.typerep = addQualifiers(inferredQualifiers, id.valueItem.typerep);
+--  top.typerep = addQualifiers(inferredQualifiers, id.valueItem.typerep);
+  top.typerep = id.valueItem.typerep;
   top.freeVariables = [id];
   
   top.errors <- id.valueLookupCheck;
@@ -312,6 +319,58 @@ top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
     else if null(valueitems) then
       [err(lhs.location, "expression does not field " ++ rhs.name)]
     else [];
+}
+abstract production addExpr
+top::Expr ::= lhs::Expr rhs::Expr
+{
+  top.collectedTypeQualifiers := [];
+  top.errors := [];
+  forwards to
+		if null(top.errors)
+		then qualifiedAddExpr(lhs, rhs, foldQualifier(top.collectedTypeQualifiers), location=top.location)
+    else errorExpr(top.errors, location=top.location);
+}
+abstract production qualifiedAddExpr
+top::Expr ::= lhs::Expr rhs::Expr collectedTypeQualifiers::Qualifiers
+{
+  propagate lifted;
+  top.host = qualifiedAddExpr(lhs.host, rhs.host, nilQualifier(), location=top.location);
+  top.pp = parens( ppConcat([lhs.pp, space(), text("+"), space(), rhs.pp]) );
+  top.errors := lhs.errors ++ rhs.errors;
+  top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
+  top.defs := lhs.defs ++ rhs.defs;
+  top.freeVariables =
+    lhs.freeVariables ++
+    removeDefsFromNames(lhs.defs, rhs.freeVariables);
+  top.typerep = addQualifiers(collectedTypeQualifiers.qualifiers,
+    usualAdditiveConversionsOnTypes(lhs.typerep, rhs.typerep));
+  rhs.env = addEnv(lhs.defs, lhs.env);
+}
+abstract production subExpr
+top::Expr ::= lhs::Expr rhs::Expr
+{
+  top.collectedTypeQualifiers := [];
+  top.errors := [];
+  forwards to
+		if null(top.errors)
+		then qualifiedSubExpr(lhs, rhs, foldQualifier(top.collectedTypeQualifiers), location=top.location)
+    else errorExpr(top.errors, location=top.location);
+}
+abstract production qualifiedSubExpr
+top::Expr ::= lhs::Expr rhs::Expr collectedTypeQualifiers::Qualifiers
+{
+  propagate lifted;
+  top.host = qualifiedSubExpr(lhs.host, rhs.host, nilQualifier(), location=top.location);
+  top.pp = parens( ppConcat([lhs.pp, space(), text("-"), space(), rhs.pp]) );
+  top.errors := lhs.errors ++ rhs.errors;
+  top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
+  top.defs := lhs.defs ++ rhs.defs;
+  top.freeVariables =
+    lhs.freeVariables ++
+    removeDefsFromNames(lhs.defs, rhs.freeVariables);
+  top.typerep = addQualifiers(collectedTypeQualifiers.qualifiers,
+    usualSubtractiveConversionsOnTypes(lhs.typerep, rhs.typerep));
+  rhs.env = addEnv(lhs.defs, lhs.env);
 }
 abstract production binaryOpExpr
 top::Expr ::= lhs::Expr  op::BinOp  rhs::Expr

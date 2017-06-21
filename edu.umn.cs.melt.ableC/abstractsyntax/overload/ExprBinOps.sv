@@ -252,7 +252,6 @@ top::BinOp ::= op::NumOp
 {
   top.binaryProd = op.binaryProd;
 }
-
 aspect production addOp
 top::NumOp ::=
 {

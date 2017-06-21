@@ -14,7 +14,7 @@ imports edu:umn:cs:melt:ableC:abstractsyntax:overload as ovrld;
 
 global builtin::Location = builtinLoc("string");
 
-aspect function ovrld:getAddOpOverload
+aspect function ovrld:getAddOverload
 Maybe<(Expr ::= Expr Expr Location)> ::= l::Type r::Type env::Decorated Env
 {
   lOverloads <-
@@ -28,6 +28,21 @@ Maybe<(Expr ::= Expr Expr Location)> ::= l::Type r::Type env::Decorated Env
        \ lhs::Expr rhs::Expr loc::Location ->
          appendString(strExpr(lhs, location=loc), rhs, location=loc))];
 }
+
+--aspect function ovrld:getAddOpOverload
+--Maybe<(Expr ::= Expr Expr Location)> ::= l::Type r::Type env::Decorated Env
+--{
+--  lOverloads <-
+--    [pair(
+--       "edu:umn:cs:melt:exts:ableC:string:string",
+--       \ lhs::Expr rhs::Expr loc::Location ->
+--         appendString(lhs, strExpr(rhs, location=loc), location=loc))];
+--  rOverloads <-
+--    [pair(
+--       "edu:umn:cs:melt:exts:ableC:string:string",
+--       \ lhs::Expr rhs::Expr loc::Location ->
+--         appendString(strExpr(lhs, location=loc), rhs, location=loc))];
+--}
 
 aspect function ovrld:getSubOpOverload
 Maybe<(Expr ::= Expr Expr Location)> ::= l::Type r::Type env::Decorated Env

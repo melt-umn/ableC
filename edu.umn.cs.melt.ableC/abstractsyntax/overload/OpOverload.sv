@@ -12,6 +12,8 @@ imports edu:umn:cs:melt:ableC:abstractsyntax hiding directCallExpr
                                                   memberExpr as memberExprDefault,
                                                   dereferenceExpr as dereferenceExprDefault,
                                                   explicitCastExpr as explicitCastExprDefault,
+                                                  addExpr as addExprDefault,
+                                                  subExpr as subExprDefault,
                                                   binaryOpExpr as binaryOpExprDefault;
 imports edu:umn:cs:melt:ableC:abstractsyntax:env;
 
@@ -222,6 +224,32 @@ Maybe<(Expr ::= Expr Location)> ::= t::Type env::Decorated Env
   production attribute overloads::[Pair<String (Expr ::= Expr Location)>] with ++;
   overloads := [];
   return getUnaryOverload(t, env, overloads);
+}
+
+function getAddOverload
+Maybe<(Expr ::= Expr Expr Location)> ::= l::Type r::Type env::Decorated Env
+{
+  production attribute overloads::[Pair<Pair<String String> (Expr ::= Expr Expr Location)>] with ++;
+  production attribute lOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
+  production attribute rOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
+  overloads := [];
+  lOverloads := [];
+  rOverloads := [];
+
+  return getBinaryOverload(l, r, env, overloads, lOverloads, rOverloads);
+}
+
+function getSubOverload
+Maybe<(Expr ::= Expr Expr Location)> ::= l::Type r::Type env::Decorated Env
+{
+  production attribute overloads::[Pair<Pair<String String> (Expr ::= Expr Expr Location)>] with ++;
+  production attribute lOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
+  production attribute rOverloads::[Pair<String (Expr ::= Expr Expr Location)>] with ++;
+  overloads := [];
+  lOverloads := [];
+  rOverloads := [];
+
+  return getBinaryOverload(l, r, env, overloads, lOverloads, rOverloads);
 }
 
 -- Binary operators
