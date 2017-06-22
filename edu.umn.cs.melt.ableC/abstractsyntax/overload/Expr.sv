@@ -96,34 +96,62 @@ top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
 abstract production addExpr
 top::Expr ::= lhs::Expr  rhs::Expr
 {
+  production attribute lhsRuntimeConversions :: [(Expr ::= Expr)] with ++;
+  lhsRuntimeConversions := [];
+
+  production attribute rhsRuntimeConversions :: [(Expr ::= Expr)] with ++;
+  rhsRuntimeConversions := [];
+
   top.pp = parens( ppConcat([lhs.pp, space(), text("+"), space(), rhs.pp]) );
   top.errors := lhs.errors ++ rhs.errors;
 
   top.collectedTypeQualifiers := [];
   top.typerep = addQualifiers(top.collectedTypeQualifiers, forward.typerep);
 
+  local convertedLhs :: Expr =
+    foldr(\f::(Expr ::= Expr)  e::Expr -> f(e), lhs, lhsRuntimeConversions);
+  convertedLhs.env = top.env;
+
+  local convertedRhs :: Expr =
+    foldr(\f::(Expr ::= Expr)  e::Expr -> f(e), rhs, rhsRuntimeConversions);
+  convertedRhs.env = addEnv(convertedLhs.defs, convertedLhs.env);
+
   forwards to
     if null(top.errors)
-    then case getAddOverload(lhs.typerep, rhs.typerep, top.env) of
-           just(prod) -> prod(lhs, rhs, top.location)
-         | nothing()  -> addExprDefault(lhs, rhs, location=top.location)
+    then case getAddOverload(convertedLhs.typerep, convertedRhs.typerep, top.env) of
+           just(prod) -> prod(convertedLhs, convertedRhs, top.location)
+         | nothing()  -> addExprDefault(convertedLhs, convertedRhs, location=top.location)
          end
     else errorExpr(top.errors, location=top.location);
 }
 abstract production subExpr
 top::Expr ::= lhs::Expr  rhs::Expr
 {
+  production attribute lhsRuntimeConversions :: [(Expr ::= Expr)] with ++;
+  lhsRuntimeConversions := [];
+
+  production attribute rhsRuntimeConversions :: [(Expr ::= Expr)] with ++;
+  rhsRuntimeConversions := [];
+
   top.pp = parens( ppConcat([lhs.pp, space(), text("-"), space(), rhs.pp]) );
   top.errors := lhs.errors ++ rhs.errors;
 
   top.collectedTypeQualifiers := [];
   top.typerep = addQualifiers(top.collectedTypeQualifiers, forward.typerep);
 
+  local convertedLhs :: Expr =
+    foldr(\f::(Expr ::= Expr)  e::Expr -> f(e), lhs, lhsRuntimeConversions);
+  convertedLhs.env = top.env;
+
+  local convertedRhs :: Expr =
+    foldr(\f::(Expr ::= Expr)  e::Expr -> f(e), rhs, rhsRuntimeConversions);
+  convertedRhs.env = addEnv(convertedLhs.defs, convertedLhs.env);
+
   forwards to
     if null(top.errors)
-    then case getSubOverload(lhs.typerep, rhs.typerep, top.env) of
-           just(prod) -> prod(lhs, rhs, top.location)
-         | nothing()  -> subExprDefault(lhs, rhs, location=top.location)
+    then case getSubOverload(convertedLhs.typerep, convertedRhs.typerep, top.env) of
+           just(prod) -> prod(convertedLhs, convertedRhs, top.location)
+         | nothing()  -> subExprDefault(convertedLhs, convertedRhs, location=top.location)
          end
     else errorExpr(top.errors, location=top.location);
 }

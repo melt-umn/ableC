@@ -264,7 +264,6 @@ top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
   forwards to memberHostExpr(mkRuntimeChecks(runtimeChecks, lhs, lhs.typerep),
                              deref, rhs, location=top.location);
 }
-
 abstract production memberHostExpr
 top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
 {
