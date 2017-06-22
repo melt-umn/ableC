@@ -90,12 +90,8 @@ top::Expr ::= e::Expr
 {
   production attribute runtimeChecks::[Pair<(Expr ::= Expr) String>] with ++;
   runtimeChecks := [];
-  top.errors := e.errors;
 
-  forwards to
-    if null(top.errors)
-    then dereferenceHostExpr(mkRuntimeChecks(runtimeChecks, e, e.typerep), location=top.location)
-    else errorExpr(top.errors, location=top.location);
+  forwards to dereferenceHostExpr(mkRuntimeChecks(runtimeChecks, e, e.typerep), location=top.location);
 }
 abstract production dereferenceHostExpr
 top::Expr ::= e::Expr
@@ -264,13 +260,8 @@ top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
 {
   production attribute runtimeChecks::[Pair<(Expr ::= Expr) String>] with ++;
   runtimeChecks := [];
-  top.errors := lhs.errors;
 
-  forwards to
-    if null(top.errors)
-    then memberHostExpr(mkRuntimeChecks(runtimeChecks, lhs, lhs.typerep),
-           deref, rhs, location=top.location)
-    else errorExpr(top.errors, location=top.location);
+  forwards to memberHostExpr(mkRuntimeChecks(runtimeChecks, lhs, lhs.typerep), deref, rhs, location=top.location);
 }
 abstract production memberHostExpr
 top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
@@ -331,11 +322,7 @@ abstract production addExpr
 top::Expr ::= lhs::Expr rhs::Expr
 {
   top.collectedTypeQualifiers := [];
-  top.errors := lhs.errors ++ rhs.errors;
-  forwards to
-		if null(top.errors)
-		then qualifiedAddExpr(lhs, rhs, foldQualifier(top.collectedTypeQualifiers), location=top.location)
-    else errorExpr(top.errors, location=top.location);
+  forwards to qualifiedAddExpr(lhs, rhs, foldQualifier(top.collectedTypeQualifiers), location=top.location);
 }
 abstract production qualifiedAddExpr
 top::Expr ::= lhs::Expr rhs::Expr collectedTypeQualifiers::Qualifiers
@@ -357,11 +344,7 @@ abstract production subExpr
 top::Expr ::= lhs::Expr rhs::Expr
 {
   top.collectedTypeQualifiers := [];
-  top.errors := lhs.errors ++ rhs.errors;
-  forwards to
-		if null(top.errors)
-		then qualifiedSubExpr(lhs, rhs, foldQualifier(top.collectedTypeQualifiers), location=top.location)
-    else errorExpr(top.errors, location=top.location);
+  forwards to qualifiedSubExpr(lhs, rhs, foldQualifier(top.collectedTypeQualifiers), location=top.location);
 }
 abstract production qualifiedSubExpr
 top::Expr ::= lhs::Expr rhs::Expr collectedTypeQualifiers::Qualifiers

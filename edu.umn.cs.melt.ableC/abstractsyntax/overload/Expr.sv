@@ -23,14 +23,18 @@ abstract production dereferenceExpr
 top::Expr ::= e::Expr
 {
   top.pp = parens(cat(text("*"), e.pp));
-  top.errors := e.errors;
+  top.errors := baseExpr.errors;
+
+  local baseExpr :: Expr =
+    case getDereferenceOverload(e.typerep, top.env) of
+      just(prod) -> prod(e, top.location)
+    | nothing()  -> dereferenceExprDefault(e, location=top.location)
+    end;
+  baseExpr.env = top.env;
 
   forwards to
     if null(top.errors)
-    then case getDereferenceOverload(e.typerep, top.env) of
-           just(prod) -> prod(e, top.location)
-         | nothing()  -> dereferenceExprDefault(e, location=top.location)
-         end
+    then baseExpr
     else errorExpr(top.errors, location=top.location);
 }
 abstract production explicitCastExpr
@@ -83,14 +87,18 @@ abstract production memberExpr
 top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
 {
   top.pp = parens(ppConcat([lhs.pp, text(if deref then "->" else "."), rhs.pp]));
-  top.errors := lhs.errors;
+  top.errors := baseExpr.errors;
+
+  local baseExpr :: Expr =
+    case getMemberOverload(lhs.typerep, top.env) of
+      just(prod) -> prod(lhs, deref, rhs, top.location)
+    | nothing()  -> memberExprDefault(lhs, deref, rhs, location=top.location)
+    end;
+  baseExpr.env = top.env;
 
   forwards to
     if null(top.errors)
-    then case getMemberOverload(lhs.typerep, top.env) of
-           just(prod) -> prod(lhs, deref, rhs, top.location)
-         | nothing()  -> memberExprDefault(lhs, deref, rhs, location=top.location)
-         end
+    then baseExpr
     else errorExpr(top.errors, location=top.location);
 }
 abstract production addExpr
@@ -103,7 +111,7 @@ top::Expr ::= lhs::Expr  rhs::Expr
   rhsRuntimeConversions := [];
 
   top.pp = parens( ppConcat([lhs.pp, space(), text("+"), space(), rhs.pp]) );
-  top.errors := lhs.errors ++ rhs.errors;
+  top.errors := baseExpr.errors;
 
   top.collectedTypeQualifiers := [];
   top.typerep = addQualifiers(top.collectedTypeQualifiers, forward.typerep);
@@ -116,12 +124,16 @@ top::Expr ::= lhs::Expr  rhs::Expr
     foldr(\f::(Expr ::= Expr)  e::Expr -> f(e), rhs, rhsRuntimeConversions);
   convertedRhs.env = addEnv(convertedLhs.defs, convertedLhs.env);
 
+  local baseExpr :: Expr =
+    case getAddOverload(convertedLhs.typerep, convertedRhs.typerep, top.env) of
+      just(prod) -> prod(convertedLhs, convertedRhs, top.location)
+    | nothing()  -> addExprDefault(convertedLhs, convertedRhs, location=top.location)
+    end;
+  baseExpr.env = top.env;
+
   forwards to
     if null(top.errors)
-    then case getAddOverload(convertedLhs.typerep, convertedRhs.typerep, top.env) of
-           just(prod) -> prod(convertedLhs, convertedRhs, top.location)
-         | nothing()  -> addExprDefault(convertedLhs, convertedRhs, location=top.location)
-         end
+    then baseExpr
     else errorExpr(top.errors, location=top.location);
 }
 abstract production subExpr
@@ -134,7 +146,7 @@ top::Expr ::= lhs::Expr  rhs::Expr
   rhsRuntimeConversions := [];
 
   top.pp = parens( ppConcat([lhs.pp, space(), text("-"), space(), rhs.pp]) );
-  top.errors := lhs.errors ++ rhs.errors;
+  top.errors := baseExpr.errors;
 
   top.collectedTypeQualifiers := [];
   top.typerep = addQualifiers(top.collectedTypeQualifiers, forward.typerep);
@@ -147,12 +159,16 @@ top::Expr ::= lhs::Expr  rhs::Expr
     foldr(\f::(Expr ::= Expr)  e::Expr -> f(e), rhs, rhsRuntimeConversions);
   convertedRhs.env = addEnv(convertedLhs.defs, convertedLhs.env);
 
+  local baseExpr :: Expr =
+    case getSubOverload(convertedLhs.typerep, convertedRhs.typerep, top.env) of
+      just(prod) -> prod(convertedLhs, convertedRhs, top.location)
+    | nothing()  -> subExprDefault(convertedLhs, convertedRhs, location=top.location)
+    end;
+  baseExpr.env = top.env;
+
   forwards to
     if null(top.errors)
-    then case getSubOverload(convertedLhs.typerep, convertedRhs.typerep, top.env) of
-           just(prod) -> prod(convertedLhs, convertedRhs, top.location)
-         | nothing()  -> subExprDefault(convertedLhs, convertedRhs, location=top.location)
-         end
+    then baseExpr
     else errorExpr(top.errors, location=top.location);
 }
 abstract production binaryOpExpr
