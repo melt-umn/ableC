@@ -84,7 +84,7 @@ top::Qualifier ::=
 {
   top.pp = text("restrict");
   top.mangledName = "restrict";
-  top.qualIsPositive = false;
+  top.qualIsPositive = true;
   top.qualIsNegative = false;
   top.qualAppliesWithinRef = false;
   top.qualCompat = \qualToCompare::Qualifier ->
@@ -106,7 +106,7 @@ top::Qualifier ::=
 {
   top.pp = text("__restrict");
   top.mangledName = "__restrict";
-  top.qualIsPositive = false;
+  top.qualIsPositive = true;
   top.qualIsNegative = false;
   top.qualAppliesWithinRef = false;
   top.qualCompat = \qualToCompare::Qualifier ->
