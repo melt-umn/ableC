@@ -220,7 +220,7 @@ concrete productions top::AdditiveExpr_c
 | l::AdditiveExpr_c  '+'  r::MultiplicativeExpr_c
     { top.ast = ovrld:addExpr(l.ast, r.ast, location=top.location); }
 | l::AdditiveExpr_c  '-'  r::MultiplicativeExpr_c
-    { top.ast = ovrld:subExpr(l.ast, r.ast, location=top.location); }
+    { top.ast = ovrld:subtractExpr(l.ast, r.ast, location=top.location); }
 
 inherited attribute leftExpr :: ast:Expr;
 inherited attribute rightExpr :: ast:Expr;
@@ -371,13 +371,9 @@ concrete productions top::UnaryExpr_c
 | '--' e::UnaryExpr_c
     { top.ast = ovrld:unaryOpExpr(ast:preDecOp(location=$1.location), e.ast, location=top.location); }
 | '*' e::CastExpr_c
-    {
-       top.ast = ovrld:dereferenceExpr(e.ast, location=top.location);
-    }
+    { top.ast = ovrld:dereferenceExpr(e.ast, location=top.location); }
 | op::UnaryOp_c e::CastExpr_c
-    {
-       top.ast = ovrld:unaryOpExpr(op.ast, e.ast, location=top.location);
-    }
+    { top.ast = ovrld:unaryOpExpr(op.ast, e.ast, location=top.location); }
 | 'sizeof' e::UnaryExpr_c
     { top.ast = ast:unaryExprOrTypeTraitExpr(ast:sizeofOp(location=$1.location), ast:exprExpr(e.ast), location=top.location); }
  | 'sizeof' '(' ty::TypeName_c ')'

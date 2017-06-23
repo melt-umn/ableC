@@ -41,11 +41,14 @@ abstract production explicitCastExpr
 top::Expr ::= ty::TypeName  e::Expr
 {
   top.pp = parens( ppConcat([parens(ty.pp), e.pp]) );
-  top.errors := e.errors;
+  top.errors := baseExpr.errors;
+
+  local baseExpr :: Expr = explicitCastExprDefault(ty, e, location=top.location);
+  baseExpr.env = top.env;
 
   forwards to
     if null(top.errors)
-    then explicitCastExprDefault(ty, e, location=top.location)
+    then baseExpr
     else errorExpr(top.errors, location=top.location);
 }
 abstract production arraySubscriptExpr
@@ -136,7 +139,7 @@ top::Expr ::= lhs::Expr  rhs::Expr
     then baseExpr
     else errorExpr(top.errors, location=top.location);
 }
-abstract production subExpr
+abstract production subtractExpr
 top::Expr ::= lhs::Expr  rhs::Expr
 {
   production attribute lhsRuntimeConversions :: [(Expr ::= Expr)] with ++;
@@ -162,7 +165,7 @@ top::Expr ::= lhs::Expr  rhs::Expr
   local baseExpr :: Expr =
     case getSubOverload(convertedLhs.typerep, convertedRhs.typerep, top.env) of
       just(prod) -> prod(convertedLhs, convertedRhs, top.location)
-    | nothing()  -> subExprDefault(convertedLhs, convertedRhs, location=top.location)
+    | nothing()  -> subtractExprDefault(convertedLhs, convertedRhs, location=top.location)
     end;
   baseExpr.env = top.env;
 

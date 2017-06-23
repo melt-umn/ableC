@@ -155,10 +155,12 @@ top::Expr ::= lhs::Expr  rhs::Expr
   production attribute rhsRuntimeChecks::[Pair<(Expr ::= Expr) String>] with ++;
   rhsRuntimeChecks := [];
 
-  local lhsRuntimeChecksExpr :: Expr = mkRuntimeChecks(lhsRuntimeChecks, lhs, lhs.typerep);
-  local rhsRuntimeChecksExpr :: Expr = mkRuntimeChecks(rhsRuntimeChecks, rhs, rhs.typerep);
-
-  forwards to arraySubscriptHostExpr(lhsRuntimeChecksExpr, rhsRuntimeChecksExpr, location=top.location);
+  forwards to
+    arraySubscriptHostExpr(
+      mkRuntimeChecks(lhsRuntimeChecks, lhs, lhs.typerep),
+      mkRuntimeChecks(rhsRuntimeChecks, rhs, rhs.typerep),
+      location=top.location
+    );
 }
 abstract production arraySubscriptHostExpr
 top::Expr ::= lhs::Expr  rhs::Expr
@@ -340,17 +342,17 @@ top::Expr ::= lhs::Expr rhs::Expr collectedTypeQualifiers::Qualifiers
     usualAdditiveConversionsOnTypes(lhs.typerep, rhs.typerep));
   rhs.env = addEnv(lhs.defs, lhs.env);
 }
-abstract production subExpr
+abstract production subtractExpr
 top::Expr ::= lhs::Expr rhs::Expr
 {
   top.collectedTypeQualifiers := [];
-  forwards to qualifiedSubExpr(lhs, rhs, foldQualifier(top.collectedTypeQualifiers), location=top.location);
+  forwards to qualifiedSubtractExpr(lhs, rhs, foldQualifier(top.collectedTypeQualifiers), location=top.location);
 }
-abstract production qualifiedSubExpr
+abstract production qualifiedSubtractExpr
 top::Expr ::= lhs::Expr rhs::Expr collectedTypeQualifiers::Qualifiers
 {
   propagate lifted;
-  top.host = qualifiedSubExpr(lhs.host, rhs.host, nilQualifier(), location=top.location);
+  top.host = qualifiedSubtractExpr(lhs.host, rhs.host, nilQualifier(), location=top.location);
   top.pp = parens( ppConcat([lhs.pp, space(), text("-"), space(), rhs.pp]) );
   top.errors := lhs.errors ++ rhs.errors;
   top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
