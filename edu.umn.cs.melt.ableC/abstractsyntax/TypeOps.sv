@@ -36,7 +36,7 @@ Boolean ::= a::Type  b::Type  allowSubtypes::Boolean  dropOuterQual::Boolean
   -- Compound types
   | atomicType(q1, t1), atomicType(q2, t2) -> compatibleTypes(t1, t2, allowSubtypes, dropOuterQual) && compatibleQualifiers(q1, q2, allowSubtypes, dropOuterQual)
   | pointerType(q1, p1), pointerType(q2, p2) ->
-      compatibleTypes(p1, p2, containsQualifier(constQualifier(location=bogusLoc()), p1), false) &&
+      compatibleTypes(p1, p2, allowSubtypes && containsQualifier(constQualifier(location=bogusLoc()), p1), false) &&
         compatibleQualifiers(q1, q2, allowSubtypes, dropOuterQual)
   | arrayType(e1, q1, sm1, sub1), arrayType(e2, q2, sm2, sub2) -> compatibleTypes(e1, e2, allowSubtypes, dropOuterQual) && compatibleQualifiers(q1, q2, allowSubtypes, dropOuterQual)
       -- TODO: actually, should this include sub1/ sub2 at all? or those sm? maybe? probably. yeah, later, do that.
@@ -45,7 +45,7 @@ Boolean ::= a::Type  b::Type  allowSubtypes::Boolean  dropOuterQual::Boolean
       compatibleTypes(r1, r2, allowSubtypes, dropOuterQual)
   | functionType(r1, protoFunctionType(a1, v1)),
     functionType(r2, protoFunctionType(a2, v2)) ->
-      compatibleTypes(r1, r2, allowSubtypes, dropOuterQual) &&
+      compatibleTypes(r1, r2, false, false) &&
         compatibleTypeList(a1, a2, false, dropOuterQual) && -- TODO: check subtypes of function args
         v1 == v2
   | functionType(r1, _), functionType(r2, _) -> 
