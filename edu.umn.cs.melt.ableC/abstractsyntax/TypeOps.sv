@@ -35,7 +35,9 @@ Boolean ::= a::Type  b::Type  allowSubtypes::Boolean  dropOuterQual::Boolean
   | tagType(q1, refIdTagType(_, _, r1)), tagType(q2, refIdTagType(_, _, r2)) -> r1 == r2 && compatibleQualifiers(q1, q2, allowSubtypes, dropOuterQual)
   -- Compound types
   | atomicType(q1, t1), atomicType(q2, t2) -> compatibleTypes(t1, t2, allowSubtypes, dropOuterQual) && compatibleQualifiers(q1, q2, allowSubtypes, dropOuterQual)
-  | pointerType(q1, p1), pointerType(q2, p2) -> compatibleTypes(p1, p2, false, false) && compatibleQualifiers(q1, q2, allowSubtypes, dropOuterQual)
+  | pointerType(q1, p1), pointerType(q2, p2) ->
+      compatibleTypes(p1, p2, containsQualifier(constQualifier(location=bogusLoc()), p1), false) &&
+        compatibleQualifiers(q1, q2, allowSubtypes, dropOuterQual)
   | arrayType(e1, q1, sm1, sub1), arrayType(e2, q2, sm2, sub2) -> compatibleTypes(e1, e2, allowSubtypes, dropOuterQual) && compatibleQualifiers(q1, q2, allowSubtypes, dropOuterQual)
       -- TODO: actually, should this include sub1/ sub2 at all? or those sm? maybe? probably. yeah, later, do that.
   | functionType(r1, noProtoFunctionType()),
@@ -324,7 +326,7 @@ Boolean ::= lval::Type  rval::Type
     | tagType(_, _), _ -> compatibleTypes(lval.defaultFunctionArrayLvalueConversion, rval.defaultFunctionArrayLvalueConversion, true, true)
 -- the left operand has atomic, qualified, or unqualified pointer type, and (considering the type the left operand would have after lvalue conversion) both operands are pointers to qualified or unqualified versions of compatible types, and the type pointed to by the left has all the qualifiers of the type pointed to by the right;
     | pointerType(q1, p1), pointerType(q2, p2) ->
-        (compatibleTypes(p1, p2, true, false) ||
+        (compatibleTypes(p1, p2, containsQualifier(constQualifier(location=bogusLoc()), p1), false) ||
           compatibleTypes(
             pointerType(nilQualifier(), builtinType(nilQualifier(), voidType())),
             rval.defaultFunctionArrayLvalueConversion,
