@@ -9,7 +9,7 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax;
  - Variants: builtin, pointer, array, function, tagged, noncanonical.
  - Noncanonical forwards, and so doesn't need any attributes, etc attached to it.
  -}
-nonterminal Type with lpp, rpp, host<Type>, baseTypeExpr, typeModifierExpr, mangledName, integerPromotions, defaultArgumentPromotions, defaultLvalueConversion, defaultFunctionArrayLvalueConversion, isIntegerType, isScalarType, isArithmeticType, withoutAttributes, withTypeQualifiers, addedTypeQualifiers, qualifiers, errors;
+nonterminal Type with lpp, rpp, host<Type>, baseTypeExpr, typeModifierExpr, mangledName, integerPromotions, defaultArgumentPromotions, defaultLvalueConversion, defaultFunctionArrayLvalueConversion, isIntegerType, isScalarType, isArithmeticType, withoutAttributes, withoutTypeQualifiers, withTypeQualifiers, addedTypeQualifiers, qualifiers, errors;
 
 -- Used to turn a Type back into a TypeName
 synthesized attribute baseTypeExpr :: BaseTypeExpr;
@@ -30,6 +30,9 @@ synthesized attribute defaultFunctionArrayLvalueConversion :: Type;
 -- Strip top-level only of GCC __attribute__s from the type
 synthesized attribute withoutAttributes :: Type;
 
+-- Strip top-level only of qualifiers from the type
+synthesized attribute withoutTypeQualifiers :: Type;
+
 -- Used in addQualifiers to add qualifiers to a type
 synthesized attribute withTypeQualifiers :: Type;
 inherited attribute addedTypeQualifiers :: [Qualifier];
@@ -38,6 +41,7 @@ aspect default production
 top::Type ::=
 {
   top.withoutAttributes = top;
+  top.withoutTypeQualifiers = top;
   top.withTypeQualifiers = top;
   
   top.isIntegerType = false;
@@ -63,6 +67,7 @@ top::Type ::=
   top.defaultArgumentPromotions = top;
   top.defaultLvalueConversion = top;
   top.defaultFunctionArrayLvalueConversion = top;
+  top.withoutTypeQualifiers = top;
   top.qualifiers = [];
   top.errors := [];
 
@@ -95,6 +100,7 @@ top::Type ::= q::Qualifiers  bt::BuiltinType
   top.isIntegerType = bt.isIntegerType;
   top.isArithmeticType = bt.isArithmeticType;
   top.isScalarType = bt.isArithmeticType;
+  top.withoutTypeQualifiers = builtinType(nilQualifier(), bt);
   top.withTypeQualifiers = builtinType(foldQualifier(top.addedTypeQualifiers ++
     q.qualifiers), bt);
   top.qualifiers = q.qualifiers;
@@ -121,6 +127,7 @@ top::Type ::= q::Qualifiers  target::Type
   top.defaultArgumentPromotions = top;
   top.defaultLvalueConversion = pointerType(nilQualifier(), target);
   top.defaultFunctionArrayLvalueConversion = top;
+  top.withoutTypeQualifiers = pointerType(nilQualifier(), target);
   top.withTypeQualifiers = pointerType(foldQualifier(top.addedTypeQualifiers ++
     q.qualifiers), target);
   top.qualifiers = q.qualifiers;
@@ -329,6 +336,7 @@ top::Type ::= q::Qualifiers  sub::TagType
   top.defaultArgumentPromotions = top;
   top.defaultLvalueConversion = tagType(nilQualifier(), sub);
   top.defaultFunctionArrayLvalueConversion = top;
+  top.withoutTypeQualifiers = tagType(nilQualifier(), sub);
   top.withTypeQualifiers = tagType(foldQualifier(top.addedTypeQualifiers ++
     q.qualifiers), sub);
   top.qualifiers = q.qualifiers;
@@ -404,6 +412,7 @@ top::Type ::= q::Qualifiers  bt::Type
   -- discarding qualifiers in lvalue conversion discards atomic qualifier, too.
   top.defaultLvalueConversion = bt.defaultLvalueConversion;
   top.defaultFunctionArrayLvalueConversion = top;
+  top.withoutTypeQualifiers = atomicType(nilQualifier(), bt);
   top.withTypeQualifiers = atomicType(foldQualifier(top.addedTypeQualifiers ++
     q.qualifiers), bt);
   top.qualifiers = q.qualifiers;
@@ -432,6 +441,7 @@ top::Type ::= attrs::Attributes  bt::Type
   top.defaultLvalueConversion = bt.defaultLvalueConversion;
   top.defaultFunctionArrayLvalueConversion = bt.defaultFunctionArrayLvalueConversion;
   top.withoutAttributes = bt.withoutAttributes;
+  top.withoutTypeQualifiers = attributedType(attrs, bt.withoutTypeQualifiers);
   top.withTypeQualifiers = attributedType(attrs, bt.withTypeQualifiers);
   bt.addedTypeQualifiers = top.addedTypeQualifiers;
   top.qualifiers = bt.qualifiers;
