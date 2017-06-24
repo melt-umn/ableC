@@ -1,5 +1,6 @@
 
-nonterminal MaybeInitializer with pp, host<MaybeInitializer>, lifted<MaybeInitializer>, errors, globalDecls, defs, env, freeVariables, returnType, inferredQualsIn;
+nonterminal MaybeInitializer with pp, host<MaybeInitializer>, lifted<MaybeInitializer>, errors, globalDecls, defs, env, freeVariables, returnType;
+--nonterminal MaybeInitializer with pp, host<MaybeInitializer>, lifted<MaybeInitializer>, errors, globalDecls, defs, env, freeVariables, returnType, inferredQualsIn;
 
 abstract production nothingInitializer
 top::MaybeInitializer ::=
@@ -22,7 +23,8 @@ top::MaybeInitializer ::= i::Initializer
   top.freeVariables = i.freeVariables;
 }
 
-nonterminal Initializer with pp, host<Initializer>, lifted<Initializer>, errors, globalDecls, defs, env, freeVariables, returnType, inferredQualsIn;
+nonterminal Initializer with pp, host<Initializer>, lifted<Initializer>, errors, globalDecls, defs, env, freeVariables, returnType;
+--nonterminal Initializer with pp, host<Initializer>, lifted<Initializer>, errors, globalDecls, defs, env, freeVariables, returnType, inferredQualsIn;
 
 abstract production exprInitializer
 top::Initializer ::= e::Expr

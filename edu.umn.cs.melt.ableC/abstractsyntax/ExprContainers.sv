@@ -1,6 +1,7 @@
 
 
-nonterminal MaybeExpr with pp, host<MaybeExpr>, lifted<MaybeExpr>, isJust, errors, globalDecls, defs, env, maybeTyperep, returnType, freeVariables, justTheExpr, inferredQualsIn;
+nonterminal MaybeExpr with pp, host<MaybeExpr>, lifted<MaybeExpr>, isJust, errors, globalDecls, defs, env, maybeTyperep, returnType, freeVariables, justTheExpr;
+--nonterminal MaybeExpr with pp, host<MaybeExpr>, lifted<MaybeExpr>, isJust, errors, globalDecls, defs, env, maybeTyperep, returnType, freeVariables, justTheExpr, inferredQualsIn;
 
 synthesized attribute maybeTyperep :: Maybe<Type>;
 synthesized attribute justTheExpr :: Maybe<Expr>;
@@ -35,7 +36,8 @@ top::MaybeExpr ::=
 
 synthesized attribute pps :: [Document];
 
-nonterminal Exprs with pps, host<Exprs>, lifted<Exprs>, errors, globalDecls, defs, env, expectedTypes, argumentPosition, callExpr, argumentErrors, typereps, count, callVariadic, returnType, freeVariables, appendedExprs, appendedRes, inferredQualsIn;
+--nonterminal Exprs with pps, host<Exprs>, lifted<Exprs>, errors, globalDecls, defs, env, expectedTypes, argumentPosition, callExpr, argumentErrors, typereps, count, callVariadic, returnType, freeVariables, appendedExprs, appendedRes, inferredQualsIn;
+nonterminal Exprs with pps, host<Exprs>, lifted<Exprs>, errors, globalDecls, defs, env, expectedTypes, argumentPosition, callExpr, argumentErrors, typereps, count, callVariadic, returnType, freeVariables, appendedExprs, appendedRes;
 
 inherited attribute expectedTypes :: [Type];
 {-- Initially 1. -}

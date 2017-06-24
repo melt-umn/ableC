@@ -2,7 +2,8 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax;
 
 import edu:umn:cs:melt:ableC:abstractsyntax:overload as ovrld;
 
-nonterminal Expr with location, pp, host<Expr>, lifted<Expr>, globalDecls, errors, defs, env, returnType, freeVariables, typerep, collectedTypeQualifiers, inferredQualsIn;
+--nonterminal Expr with location, pp, host<Expr>, lifted<Expr>, globalDecls, errors, defs, env, returnType, freeVariables, typerep, collectedTypeQualifiers, inferredQualsIn;
+nonterminal Expr with location, pp, host<Expr>, lifted<Expr>, globalDecls, errors, defs, env, returnType, freeVariables, typerep, collectedTypeQualifiers;
 
 synthesized attribute integerConstantValue :: Maybe<Integer>;
 
@@ -59,8 +60,8 @@ top::Expr ::= id::Name
   
   top.errors <- id.valueLookupCheck;
 
-  local inferredQualifiers :: [Qualifier] =
-    concat(lookupAllBy(\n1::Name n2::Name -> n1.name == n2.name, id, top.inferredQualsIn));
+--  local inferredQualifiers :: [Qualifier] =
+--    concat(lookupAllBy(\n1::Name n2::Name -> n1.name == n2.name, id, top.inferredQualsIn));
 }
 abstract production stringLiteral
 top::Expr ::= l::String

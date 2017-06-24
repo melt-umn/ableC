@@ -127,7 +127,7 @@ function doValueRedeclarationCheck
   return case n.valueLocalLookup of
   | [] -> []
   | v :: _ -> 
-      if compatibleTypes(t, v.typerep, false, true) -- TODO: not sure about this, but I think its safe to ignore qualifiers? (certainly sometimes okay. e.g. "int foo(int) and int foo(const int)" is okay and foo is assumed const.
+      if compatibleTypes(t, v.typerep, false, true)
       then []
       else 
         let originalPP :: String = show(100, cat(v.typerep.lpp, v.typerep.rpp)),

@@ -1,17 +1,18 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax;
 
-nonterminal Stmt with pp, host<Stmt>, lifted<Stmt>, errors, globalDecls, defs, env, functiondefs, returnType, freeVariables, inferredQualsOut, inferredQualsIn;
+nonterminal Stmt with pp, host<Stmt>, lifted<Stmt>, errors, globalDecls, defs, env, functiondefs, returnType, freeVariables;
+--nonterminal Stmt with pp, host<Stmt>, lifted<Stmt>, errors, globalDecls, defs, env, functiondefs, returnType, freeVariables, inferredQualsOut, inferredQualsIn;
 
 autocopy attribute returnType :: Maybe<Type>;
 
-autocopy attribute inferredQualsIn :: [Pair<Name [Qualifier]>];
-synthesized attribute inferredQualsOut :: [Pair<Name [Qualifier]>];
+--autocopy attribute inferredQualsIn :: [Pair<Name [Qualifier]>];
+--synthesized attribute inferredQualsOut :: [Pair<Name [Qualifier]>];
 
-aspect default production
-top::Stmt ::=
-{
-	top.inferredQualsOut = top.inferredQualsIn;
-}
+--aspect default production
+--top::Stmt ::=
+--{
+--	top.inferredQualsOut = top.inferredQualsIn;
+--}
 
 abstract production nullStmt
 top::Stmt ::=
@@ -37,10 +38,10 @@ top::Stmt ::= h::Stmt  t::Stmt
     h.freeVariables ++
     removeDefsFromNames(h.defs, t.freeVariables);
   top.functiondefs := h.functiondefs ++ t.functiondefs;
-  top.inferredQualsOut = t.inferredQualsOut;
+--  top.inferredQualsOut = t.inferredQualsOut;
   
   t.env = addEnv(h.defs, top.env);
-  t.inferredQualsIn = h.inferredQualsOut;
+--  t.inferredQualsIn = h.inferredQualsOut;
 }
 
 abstract production compoundStmt
@@ -53,7 +54,7 @@ top::Stmt ::= s::Stmt
   top.defs := globalDeclsDefs(s.globalDecls); -- compound prevents defs from bubbling up
   top.freeVariables = s.freeVariables;
   top.functiondefs := s.functiondefs;
-  top.inferredQualsOut = s.inferredQualsOut;
+--  top.inferredQualsOut = s.inferredQualsOut;
 
   s.env = openScope(top.env);
 }
@@ -82,7 +83,7 @@ top::Stmt ::= d::Decl
   top.defs := d.defs;
   top.freeVariables = d.freeVariables;
   top.functiondefs := [];
-  top.inferredQualsOut = d.inferredQualsOut;
+--  top.inferredQualsOut = d.inferredQualsOut;
   d.isTopLevel = false;
 }
 

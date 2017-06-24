@@ -31,6 +31,7 @@ top::Expr ::= e::Expr
     | nothing()  -> dereferenceExprDefault(e, location=top.location)
     end;
   baseExpr.env = top.env;
+  baseExpr.returnType = top.returnType;
 
   forwards to
     if null(top.errors)
@@ -45,6 +46,7 @@ top::Expr ::= ty::TypeName  e::Expr
 
   local baseExpr :: Expr = explicitCastExprDefault(ty, e, location=top.location);
   baseExpr.env = top.env;
+  baseExpr.returnType = top.returnType;
 
   forwards to
     if null(top.errors)
@@ -98,6 +100,7 @@ top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
     | nothing()  -> memberExprDefault(lhs, deref, rhs, location=top.location)
     end;
   baseExpr.env = top.env;
+  baseExpr.returnType = top.returnType;
 
   forwards to
     if null(top.errors)
@@ -122,10 +125,12 @@ top::Expr ::= lhs::Expr  rhs::Expr
   local convertedLhs :: Expr =
     foldr(\f::(Expr ::= Expr)  e::Expr -> f(e), lhs, lhsRuntimeConversions);
   convertedLhs.env = top.env;
+  convertedLhs.returnType = top.returnType;
 
   local convertedRhs :: Expr =
     foldr(\f::(Expr ::= Expr)  e::Expr -> f(e), rhs, rhsRuntimeConversions);
   convertedRhs.env = addEnv(convertedLhs.defs, convertedLhs.env);
+  convertedRhs.returnType = top.returnType;
 
   local baseExpr :: Expr =
     case getAddOverload(convertedLhs.typerep, convertedRhs.typerep, top.env) of
@@ -133,6 +138,7 @@ top::Expr ::= lhs::Expr  rhs::Expr
     | nothing()  -> addExprDefault(convertedLhs, convertedRhs, location=top.location)
     end;
   baseExpr.env = top.env;
+  baseExpr.returnType = top.returnType;
 
   forwards to
     if null(top.errors)
@@ -157,10 +163,12 @@ top::Expr ::= lhs::Expr  rhs::Expr
   local convertedLhs :: Expr =
     foldr(\f::(Expr ::= Expr)  e::Expr -> f(e), lhs, lhsRuntimeConversions);
   convertedLhs.env = top.env;
+  convertedLhs.returnType = top.returnType;
 
   local convertedRhs :: Expr =
     foldr(\f::(Expr ::= Expr)  e::Expr -> f(e), rhs, rhsRuntimeConversions);
   convertedRhs.env = addEnv(convertedLhs.defs, convertedLhs.env);
+  convertedRhs.returnType = top.returnType;
 
   local baseExpr :: Expr =
     case getSubOverload(convertedLhs.typerep, convertedRhs.typerep, top.env) of
@@ -168,6 +176,7 @@ top::Expr ::= lhs::Expr  rhs::Expr
     | nothing()  -> subtractExprDefault(convertedLhs, convertedRhs, location=top.location)
     end;
   baseExpr.env = top.env;
+  baseExpr.returnType = top.returnType;
 
   forwards to
     if null(top.errors)
