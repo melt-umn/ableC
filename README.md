@@ -73,4 +73,3 @@ gcc -std=gnu1x -o example1 example1.pp_out.c
 Note the requirement to tell GCC to use the C11 standard plus GNU extensions. This is generally necessary for AbleC generated files.
 
 
-
