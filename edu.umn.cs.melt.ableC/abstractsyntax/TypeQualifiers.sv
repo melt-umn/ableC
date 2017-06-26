@@ -28,6 +28,20 @@ top::Qualifiers ::=
   top.qualifyErrors = [];
 }
 
+function unionQualifiers
+Qualifiers ::= q1::[Qualifier]  q2::[Qualifier]
+{
+  return
+    foldQualifier(
+      filter(
+        -- remove qualifiers in q1 that are also in q2
+        \q::Qualifier -> !containsBy(qualifierCompat, q, q2),
+        -- remove duplicates from within q1
+        nubBy(qualifierCompat, q1)
+      ) ++ q2
+    );
+}
+
 {-- Type qualifiers (cv or cvr qualifiers) -}
 closed nonterminal Qualifier with location, pp, qualIsPositive, qualIsNegative, qualAppliesWithinRef, qualCompat, qualIsHost, mangledName, typeToQualify, qualifyErrors;
 

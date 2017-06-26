@@ -201,6 +201,7 @@ top::Expr ::= lhs::Expr  op::BinOp  rhs::Expr
   local rhsWithRuntimeInsertions :: Expr =
     mkRuntimeInsertions(op.rhsRuntimeInsertions, rhs, rhs.typerep);
   lhsWithRuntimeInsertions.env = top.env;
+  lhsWithRuntimeInsertions.returnType = top.returnType;
 
   rhs.env = addEnv(lhs.defs, lhs.env);
   op.lop = lhs;

@@ -9,7 +9,7 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax;
  - Variants: builtin, pointer, array, function, tagged, noncanonical.
  - Noncanonical forwards, and so doesn't need any attributes, etc attached to it.
  -}
-nonterminal Type with lpp, rpp, host<Type>, baseTypeExpr, typeModifierExpr, mangledName, integerPromotions, defaultArgumentPromotions, defaultLvalueConversion, defaultFunctionArrayLvalueConversion, isIntegerType, isScalarType, isArithmeticType, withoutAttributes, withoutTypeQualifiers, withoutExtensionQualifiers<Type>, withTypeQualifiers, addedTypeQualifiers, qualifiers, errors;
+nonterminal Type with lpp, rpp, host<Type>, baseTypeExpr, typeModifierExpr, mangledName, integerPromotions, defaultArgumentPromotions, defaultLvalueConversion, defaultFunctionArrayLvalueConversion, isIntegerType, isScalarType, isArithmeticType, withoutAttributes, withoutTypeQualifiers, withoutExtensionQualifiers<Type>, withTypeQualifiers, addedTypeQualifiers, qualifiers, mergeQualifiers<Type>, errors;
 
 -- Used to turn a Type back into a TypeName
 synthesized attribute baseTypeExpr :: BaseTypeExpr;
@@ -35,6 +35,9 @@ synthesized attribute withoutTypeQualifiers :: Type;
 
 -- Strip non-host qualifiers from all levels of the type
 synthesized attribute withoutExtensionQualifiers<a> :: a;
+
+-- To support accumulation of extension qualifiers on redeclaration
+synthesized attribute mergeQualifiers<a> :: (a ::= a);
 
 -- Used in addQualifiers to add qualifiers to a type
 synthesized attribute withTypeQualifiers :: Type;
@@ -72,6 +75,7 @@ top::Type ::=
   top.defaultFunctionArrayLvalueConversion = top;
   top.withoutTypeQualifiers = top;
   top.withoutExtensionQualifiers = top;
+  top.mergeQualifiers = \t2::Type -> errorType();
   top.qualifiers = [];
   top.errors := [];
 
@@ -108,6 +112,11 @@ top::Type ::= q::Qualifiers  bt::BuiltinType
   top.withoutExtensionQualifiers = builtinType(filterExtensionQualifiers(q), bt);
   top.withTypeQualifiers = builtinType(foldQualifier(top.addedTypeQualifiers ++
     q.qualifiers), bt);
+  top.mergeQualifiers = \t2::Type ->
+    case t2 of
+      builtinType(q2, bt2) -> builtinType(unionQualifiers(top.qualifiers, q2.qualifiers), bt)
+    | _ -> builtinType(q, bt)
+    end;
   top.qualifiers = q.qualifiers;
   top.errors := q.qualifyErrors;
   q.typeToQualify = top;
@@ -136,6 +145,12 @@ top::Type ::= q::Qualifiers  target::Type
   top.withoutExtensionQualifiers = pointerType(filterExtensionQualifiers(q), target.withoutExtensionQualifiers);
   top.withTypeQualifiers = pointerType(foldQualifier(top.addedTypeQualifiers ++
     q.qualifiers), target);
+  top.mergeQualifiers = \t2::Type ->
+    case t2 of
+      pointerType(q2, target2) ->
+        pointerType(unionQualifiers(top.qualifiers, q2.qualifiers), target.mergeQualifiers(target2))
+    | _ -> pointerType(q, target)
+    end;
   top.qualifiers = q.qualifiers;
   top.errors := q.qualifyErrors ++ target.errors;
   
@@ -202,6 +217,14 @@ top::Type ::= element::Type  indexQualifiers::Qualifiers  sizeModifier::ArraySiz
   top.defaultFunctionArrayLvalueConversion = 
     noncanonicalType(decayedType(top,
       pointerType(indexQualifiers, element)));
+  top.withoutExtensionQualifiers = arrayType(element.withoutExtensionQualifiers, filterExtensionQualifiers(indexQualifiers), sizeModifier, sub);
+  top.mergeQualifiers = \t2::Type ->
+    case t2 of
+      arrayType(element2, q2, _, _) ->
+        arrayType(element.mergeQualifiers(element2),
+          unionQualifiers(top.qualifiers, q2.qualifiers), sizeModifier, sub)
+    | _ -> arrayType(element, indexQualifiers, sizeModifier, sub)
+    end;
   top.qualifiers = indexQualifiers.qualifiers;
   top.errors := element.errors ++ indexQualifiers.qualifyErrors;
   indexQualifiers.typeToQualify = top;
@@ -270,12 +293,18 @@ top::Type ::= result::Type  sub::FunctionType
   top.defaultFunctionArrayLvalueConversion =
     noncanonicalType(decayedType(top,
       pointerType(nilQualifier(), top)));
+  top.mergeQualifiers = \t2::Type ->
+    case t2 of
+      functionType(result2, sub2) ->
+        functionType(result.mergeQualifiers(result2), sub.mergeQualifiers(sub2))
+    | _ -> functionType(result, sub)
+    end;
   top.qualifiers = [];
   top.errors := result.errors ++ sub.errors;
 }
 
 {-- The subtypes of functions -}
-nonterminal FunctionType with lpp, rpp, host<FunctionType>, mangledName, errors, withoutExtensionQualifiers<FunctionType>;
+nonterminal FunctionType with lpp, rpp, host<FunctionType>, mangledName, errors, withoutExtensionQualifiers<FunctionType>, mergeQualifiers<FunctionType>;
 -- clang has an 'extinfo' structure with calling convention, noreturn, 'produces'?, regparam
 
 abstract production protoFunctionType
@@ -283,6 +312,12 @@ top::FunctionType ::= args::[Type]  variadic::Boolean
 {
   top.host = protoFunctionType(map(\t::Type -> t.host, args), variadic);
   top.withoutExtensionQualifiers = protoFunctionType(map(\t::Type -> t.withoutExtensionQualifiers, args), variadic);
+  top.mergeQualifiers = \t2::FunctionType ->
+    case t2 of
+      protoFunctionType(args2, _) ->
+        protoFunctionType(zipWith(\arg1::Type arg2::Type -> arg1.mergeQualifiers(arg2), args, args2), variadic)
+    | _ -> protoFunctionType(args, variadic)
+    end;
   top.lpp = notext();
   top.rpp = parens(
     if null(args) then
@@ -302,6 +337,7 @@ abstract production noProtoFunctionType
 top::FunctionType ::=
 {
   propagate host, withoutExtensionQualifiers;
+  top.mergeQualifiers = \t2::FunctionType -> noProtoFunctionType();
   top.lpp = notext();
   top.rpp = text("()");
   top.mangledName = "noproto";
@@ -347,6 +383,12 @@ top::Type ::= q::Qualifiers  sub::TagType
   top.withoutExtensionQualifiers = tagType(filterExtensionQualifiers(q), sub);
   top.withTypeQualifiers = tagType(foldQualifier(top.addedTypeQualifiers ++
     q.qualifiers), sub);
+  top.mergeQualifiers = \t2::Type ->
+    case t2 of
+      tagType(q2, _) ->
+        tagType(unionQualifiers(top.qualifiers, q2.qualifiers), sub)
+    | _ -> tagType(q, sub)
+    end;
   top.qualifiers = q.qualifiers;
   top.errors := q.qualifyErrors;
   
@@ -424,6 +466,12 @@ top::Type ::= q::Qualifiers  bt::Type
   top.withoutExtensionQualifiers = atomicType(filterExtensionQualifiers(q), bt.withoutExtensionQualifiers);
   top.withTypeQualifiers = atomicType(foldQualifier(top.addedTypeQualifiers ++
     q.qualifiers), bt);
+  top.mergeQualifiers = \t2::Type ->
+    case t2 of
+      atomicType(q2, bt2) ->
+        atomicType(unionQualifiers(top.qualifiers, q2.qualifiers), bt.mergeQualifiers(bt2))
+    | _ -> atomicType(q, bt)
+    end;
   top.qualifiers = q.qualifiers;
   top.errors := q.qualifyErrors ++ bt.errors;
   q.typeToQualify = top;
@@ -439,7 +487,7 @@ top::Type ::= q::Qualifiers  bt::Type
 abstract production attributedType
 top::Type ::= attrs::Attributes  bt::Type
 {
-  propagate host;
+  propagate host, withoutExtensionQualifiers;
   top.lpp = ppConcat([ ppAttributes(attrs), space(), bt.lpp]);
   top.rpp = bt.rpp;
   top.mangledName = bt.mangledName;
@@ -451,9 +499,14 @@ top::Type ::= attrs::Attributes  bt::Type
   top.defaultFunctionArrayLvalueConversion = bt.defaultFunctionArrayLvalueConversion;
   top.withoutAttributes = bt.withoutAttributes;
   top.withoutTypeQualifiers = attributedType(attrs, bt.withoutTypeQualifiers);
-  top.withoutExtensionQualifiers = attributedType(attrs, bt.withoutExtensionQualifiers);
   top.withTypeQualifiers = attributedType(attrs, bt.withTypeQualifiers);
   bt.addedTypeQualifiers = top.addedTypeQualifiers;
+  top.mergeQualifiers = \t2::Type ->
+    case t2 of
+      attributedType(_, bt2) ->
+        attributedType(attrs, bt.mergeQualifiers(bt2))
+    | _ -> attributedType(attrs, bt)
+    end;
   top.qualifiers = bt.qualifiers;
   top.isIntegerType = bt.isIntegerType;
   top.isScalarType = bt.isScalarType;
@@ -473,7 +526,7 @@ top::Type ::= attrs::Attributes  bt::Type
 abstract production vectorType
 top::Type ::= bt::Type  bytes::Integer
 {
-  propagate host;
+  propagate host, withoutExtensionQualifiers;
   top.lpp = ppConcat([ text("__attribute__((__vector_size__(" ++ toString(bytes) ++ "))) "), bt.lpp]);
   top.rpp = bt.rpp;
   top.mangledName = s"vector_${bt.mangledName}_${toString(bytes)}_";
@@ -496,6 +549,12 @@ top::Type ::= bt::Type  bytes::Integer
   top.defaultLvalueConversion = top;
   top.defaultFunctionArrayLvalueConversion = top;
   top.withTypeQualifiers = top; -- TODO Discarding Qualifiers!
+  top.mergeQualifiers = \t2::Type ->
+    case t2 of
+      vectorType(bt2, _) ->
+        vectorType(bt.mergeQualifiers(bt2), bytes)
+    | _ -> vectorType(bt, bytes)
+    end;
   top.qualifiers = [];
   -- TODO: dunno? left here explicitly since... dunno what to do here.
   top.isIntegerType = false;

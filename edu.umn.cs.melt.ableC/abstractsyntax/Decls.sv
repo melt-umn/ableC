@@ -309,7 +309,7 @@ top::Declarator ::= name::Name  ty::TypeModifierExpr  attrs::Attributes  initial
   top.globalDecls := ty.globalDecls ++ initializer.globalDecls;
   top.defs := [valueDef(name.name, declaratorValueItem(top))] ++ initializer.defs;
   top.freeVariables = ty.freeVariables ++ initializer.freeVariables;
-  top.typerep = animateAttributeOnType(allAttrs, ty.typerep);
+  top.typerep = typerepWithAllExtnQuals;
   top.sourceLocation = name.location;
   
   top.errors <- 
@@ -317,8 +317,15 @@ top::Declarator ::= name::Name  ty::TypeModifierExpr  attrs::Attributes  initial
       name.valueRedeclarationCheck(top.typerep)
     else
       name.valueRedeclarationCheckNoCompatible;
-  
+
   local allAttrs :: Attributes = appendAttribute(top.givenAttributes, attrs);
+  local animatedTyperep :: Type = animateAttributeOnType(allAttrs, ty.typerep);
+
+  -- accumulate extension qualifiers on redeclaration
+  local typerepWithAllExtnQuals :: Type =
+		if top.isTopLevel
+		then name.valueMergeRedeclExtnQualifiers(animatedTyperep)
+		else animatedTyperep;
 
 --  top.inferredQualsOut =
 --    case initializer of
@@ -372,7 +379,8 @@ top::FunctionDecl ::= storage::[StorageClass]  fnquals::[SpecialSpecifier]  bty:
     removeDefsFromNames([thisFuncDef], mty.freeVariables) ++
     decls.freeVariables ++ --TODO?
     removeDefsFromNames(top.defs ++ parameters.defs ++ decls.defs ++ body.functiondefs, body.freeVariables);
-  top.typerep = mty.typerep;
+  -- accumulate extension qualifiers on redeclaration
+  top.typerep = name.valueMergeRedeclExtnQualifiers(mty.typerep);
   top.sourceLocation = name.location;
   
   bty.givenRefId = nothing();
