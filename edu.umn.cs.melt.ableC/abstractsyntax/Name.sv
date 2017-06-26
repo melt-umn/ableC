@@ -160,7 +160,7 @@ function doValueRedeclarationCheckNoCompatible
 function doValueMergeQualifiers
 Type ::= t::Type  n::Decorated Name
 {
-  return foldr(\t1::Type t2::Type -> t1.mergeQualifiers(t2), t, map((.typerep), n.valueLocalLookup));
+  return foldr(\t1::Type t2::Type -> t2.mergeQualifiers(t1), t, map((.typerep), n.valueLocalLookup));
 }
 
 --  return
