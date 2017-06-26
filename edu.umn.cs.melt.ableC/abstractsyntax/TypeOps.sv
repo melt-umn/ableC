@@ -261,38 +261,32 @@ Boolean ::= a::IntegerType  b::IntegerType
 function compatibleQualifiers
 Boolean ::= q1::Qualifiers  q2::Qualifiers  allowSubtypes::Boolean dropOuterQual::Boolean
 {
-  local q1_filtered :: [Qualifier] =
+  local q1Filtered :: [Qualifier] =
     if   dropOuterQual
     then filter((.qualAppliesWithinRef), q1.qualifiers)
     else q1.qualifiers;
-  local q2_filtered :: [Qualifier] =
+  local q2Filtered :: [Qualifier] =
     if   dropOuterQual
     then filter((.qualAppliesWithinRef), q2.qualifiers)
     else q2.qualifiers;
 
-  return qualifiersSubtype(q2_filtered, q1_filtered) &&
-           (allowSubtypes || qualifiersSubtype(q1_filtered, q2_filtered));
+  return qualifiersSubtype(q2Filtered, q1Filtered) &&
+           (allowSubtypes || qualifiersSubtype(q1Filtered, q2Filtered));
 }
 
---   return true if q1 T is a subtype of q2 T, for some type T; otherwise false
+-- return true if q1 T is a subtype of q2 T, for some type T; otherwise false
 function qualifiersSubtype
 Boolean ::= q1::[Qualifier]  q2::[Qualifier]
 {
-  local pq1 :: [Qualifier] = filter((.qualIsPositive), q1);
-  local pq2 :: [Qualifier] = filter((.qualIsPositive), q2);
-  local nq1 :: [Qualifier] = filter((.qualIsNegative), q1);
-  local nq2 :: [Qualifier] = filter((.qualIsNegative), q2);
+  local inQ1notQ2 :: [Qualifier] =
+    filter(\q::Qualifier -> !containsBy(qualifierCompat, q, q2), q1);
+  local inQ2notQ1 :: [Qualifier] =
+    filter(\q::Qualifier -> !containsBy(qualifierCompat, q, q1), q2);
 
-  return qualSubset(pq1, pq2) && qualSubset(nq2, nq1);
-}
-
-function qualSubset
-Boolean ::= a::[Qualifier] b::[Qualifier]
-{
-  return
-    if   null(a)
-    then true
-    else containsBy(qualifierCompat, head(a), b) && qualSubset(tail(a), b);
+  -- all extra qualifiers in q1 must be negative
+  -- all extra qualifiers in q2 must be positive
+  return foldr(\a::Boolean b::Boolean -> a && b, true, map((.qualIsNegative), inQ1notQ2)) &&
+    foldr(\a::Boolean b::Boolean -> a && b, true, map((.qualIsPositive), inQ2notQ1));
 }
 
 function qualifierCompat
