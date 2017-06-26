@@ -193,8 +193,14 @@ top::Expr ::= lhs::Expr  op::BinOp  rhs::Expr
     | assignOp(eqOp()), cat(cat(text("("), lhsNoParens), text(")")) -> lhsNoParens
     | _, _ -> lhs.pp
     end-} lhs.pp, space(), op.pp, space(), rhs.pp ]) );
-  
+
   top.typerep = addQualifiers(op.collectedTypeQualifiers, forward.typerep);
+
+  local lhsWithRuntimeInsertions :: Expr =
+    mkRuntimeInsertions(op.lhsRuntimeInsertions, lhs, lhs.typerep);
+  local rhsWithRuntimeInsertions :: Expr =
+    mkRuntimeInsertions(op.rhsRuntimeInsertions, rhs, rhs.typerep);
+
   rhs.env = addEnv(lhs.defs, lhs.env);
   op.lop = lhs;
   op.rop = rhs;
@@ -202,21 +208,54 @@ top::Expr ::= lhs::Expr  op::BinOp  rhs::Expr
   
   -- Option 1: Assign to a member or subscript (e.g. a.foo = b, a[i] = b)
   local option1::Maybe<Expr> =
-    case lhs, op of
+    case lhsWithRuntimeInsertions, op of
       arraySubscriptExpr(l, r), assignOp(aOp) ->
-        applyMaybe5(getSubscriptAssignOverload(l.typerep, top.env), l, r, aOp, rhs, top.location)
+        applyMaybe5(getSubscriptAssignOverload(l.typerep, top.env), l, r, aOp, rhsWithRuntimeInsertions, top.location)
     | memberExpr(l, d, r), assignOp(aOp) ->
-        applyMaybe6(getMemberAssignOverload(l.typerep, top.env), l, d, r, aOp, rhs, top.location)
+        applyMaybe6(getMemberAssignOverload(l.typerep, top.env), l, d, r, aOp, rhsWithRuntimeInsertions, top.location)
     | _, _ -> nothing()
     end;
   -- Option 2: Normal overloaded binary operators
-  local option2::Maybe<Expr> = applyMaybe3(op.binaryProd, lhs, rhs, top.location);
+  local option2::Maybe<Expr> = applyMaybe3(op.binaryProd, lhsWithRuntimeInsertions, rhsWithRuntimeInsertions, top.location);
   
   forwards to
     if null(top.errors)
     then if      option1.isJust then option1.fromJust
          else if option2.isJust then option2.fromJust
-         else binaryOpExprDefault(lhs, op, rhs, location=top.location)
+         else binaryOpExprDefault(lhsWithRuntimeInsertions, op, rhsWithRuntimeInsertions, location=top.location)
     else errorExpr(top.errors, location=top.location);
+}
+
+function mkRuntimeInsertions
+Expr ::= insertions::[(Expr ::= Expr)]  e::Expr  eTyperep::Type
+{
+  local tmpName :: Name = name("__runtime_tmp" ++ toString(genInt()), location=bogusLoc());
+  local refTmp :: Expr = declRefExpr(tmpName, location=bogusLoc());
+
+  return
+    if null(insertions)
+    then e
+    else
+      stmtExpr(
+        foldStmt(
+          [
+          declStmt(variableDecls(
+            [], nilAttribute(), eTyperep.baseTypeExpr,
+            foldDeclarator([
+              declarator(
+                tmpName, eTyperep.typeModifierExpr,
+                nilAttribute(), justInitializer(exprInitializer(e))
+              )
+            ])
+          ))
+          ] ++
+          map(
+            \i::(Expr ::= Expr) -> exprStmt(i(refTmp)),
+            insertions
+          )
+        ),
+        refTmp,
+        location=bogusLoc()
+      );
 }
 
