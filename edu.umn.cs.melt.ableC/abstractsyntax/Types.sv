@@ -9,7 +9,7 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax;
  - Variants: builtin, pointer, array, function, tagged, noncanonical.
  - Noncanonical forwards, and so doesn't need any attributes, etc attached to it.
  -}
-nonterminal Type with lpp, rpp, host<Type>, baseTypeExpr, typeModifierExpr, mangledName, integerPromotions, defaultArgumentPromotions, defaultLvalueConversion, defaultFunctionArrayLvalueConversion, isIntegerType, isScalarType, isArithmeticType, withoutAttributes, withoutTypeQualifiers, withTypeQualifiers, addedTypeQualifiers, qualifiers, errors;
+nonterminal Type with lpp, rpp, host<Type>, baseTypeExpr, typeModifierExpr, mangledName, integerPromotions, defaultArgumentPromotions, defaultLvalueConversion, defaultFunctionArrayLvalueConversion, isIntegerType, isScalarType, isArithmeticType, withoutAttributes, withoutTypeQualifiers, withoutExtensionQualifiers<Type>, withTypeQualifiers, addedTypeQualifiers, qualifiers, errors;
 
 -- Used to turn a Type back into a TypeName
 synthesized attribute baseTypeExpr :: BaseTypeExpr;
@@ -32,6 +32,9 @@ synthesized attribute withoutAttributes :: Type;
 
 -- Strip top-level only of qualifiers from the type
 synthesized attribute withoutTypeQualifiers :: Type;
+
+-- Strip non-host qualifiers from all levels of the type
+synthesized attribute withoutExtensionQualifiers<a> :: a;
 
 -- Used in addQualifiers to add qualifiers to a type
 synthesized attribute withTypeQualifiers :: Type;
@@ -68,6 +71,7 @@ top::Type ::=
   top.defaultLvalueConversion = top;
   top.defaultFunctionArrayLvalueConversion = top;
   top.withoutTypeQualifiers = top;
+  top.withoutExtensionQualifiers = top;
   top.qualifiers = [];
   top.errors := [];
 
@@ -101,6 +105,7 @@ top::Type ::= q::Qualifiers  bt::BuiltinType
   top.isArithmeticType = bt.isArithmeticType;
   top.isScalarType = bt.isArithmeticType;
   top.withoutTypeQualifiers = builtinType(nilQualifier(), bt);
+  top.withoutExtensionQualifiers = builtinType(filterExtensionQualifiers(q), bt);
   top.withTypeQualifiers = builtinType(foldQualifier(top.addedTypeQualifiers ++
     q.qualifiers), bt);
   top.qualifiers = q.qualifiers;
@@ -128,6 +133,7 @@ top::Type ::= q::Qualifiers  target::Type
   top.defaultLvalueConversion = pointerType(nilQualifier(), target);
   top.defaultFunctionArrayLvalueConversion = top;
   top.withoutTypeQualifiers = pointerType(nilQualifier(), target);
+  top.withoutExtensionQualifiers = pointerType(filterExtensionQualifiers(q), target.withoutExtensionQualifiers);
   top.withTypeQualifiers = pointerType(foldQualifier(top.addedTypeQualifiers ++
     q.qualifiers), target);
   top.qualifiers = q.qualifiers;
@@ -245,7 +251,7 @@ top::ArraySizeModifier ::= { top.pps = [text("*")]; }
 abstract production functionType
 top::Type ::= result::Type  sub::FunctionType
 {
-  propagate host;
+  propagate host, withoutExtensionQualifiers;
   --TODO should this space be here? also TODO: ordering? result lpp before sub.lpp maybe? TODO: actually sub.lpp is always nothing. FIXME
   top.lpp = ppConcat([ sub.lpp, space(), result.lpp ]);
   top.rpp = cat(sub.rpp, result.rpp);
@@ -269,13 +275,14 @@ top::Type ::= result::Type  sub::FunctionType
 }
 
 {-- The subtypes of functions -}
-nonterminal FunctionType with lpp, rpp, host<FunctionType>, mangledName, errors;
+nonterminal FunctionType with lpp, rpp, host<FunctionType>, mangledName, errors, withoutExtensionQualifiers<FunctionType>;
 -- clang has an 'extinfo' structure with calling convention, noreturn, 'produces'?, regparam
 
 abstract production protoFunctionType
 top::FunctionType ::= args::[Type]  variadic::Boolean
 {
   top.host = protoFunctionType(map(\t::Type -> t.host, args), variadic);
+  top.withoutExtensionQualifiers = protoFunctionType(map(\t::Type -> t.withoutExtensionQualifiers, args), variadic);
   top.lpp = notext();
   top.rpp = parens(
     if null(args) then
@@ -294,7 +301,7 @@ top::FunctionType ::= args::[Type]  variadic::Boolean
 abstract production noProtoFunctionType
 top::FunctionType ::=
 {
-  propagate host;
+  propagate host, withoutExtensionQualifiers;
   top.lpp = notext();
   top.rpp = text("()");
   top.mangledName = "noproto";
@@ -337,6 +344,7 @@ top::Type ::= q::Qualifiers  sub::TagType
   top.defaultLvalueConversion = tagType(nilQualifier(), sub);
   top.defaultFunctionArrayLvalueConversion = top;
   top.withoutTypeQualifiers = tagType(nilQualifier(), sub);
+  top.withoutExtensionQualifiers = tagType(filterExtensionQualifiers(q), sub);
   top.withTypeQualifiers = tagType(foldQualifier(top.addedTypeQualifiers ++
     q.qualifiers), sub);
   top.qualifiers = q.qualifiers;
@@ -413,6 +421,7 @@ top::Type ::= q::Qualifiers  bt::Type
   top.defaultLvalueConversion = bt.defaultLvalueConversion;
   top.defaultFunctionArrayLvalueConversion = top;
   top.withoutTypeQualifiers = atomicType(nilQualifier(), bt);
+  top.withoutExtensionQualifiers = atomicType(filterExtensionQualifiers(q), bt.withoutExtensionQualifiers);
   top.withTypeQualifiers = atomicType(foldQualifier(top.addedTypeQualifiers ++
     q.qualifiers), bt);
   top.qualifiers = q.qualifiers;
@@ -442,6 +451,7 @@ top::Type ::= attrs::Attributes  bt::Type
   top.defaultFunctionArrayLvalueConversion = bt.defaultFunctionArrayLvalueConversion;
   top.withoutAttributes = bt.withoutAttributes;
   top.withoutTypeQualifiers = attributedType(attrs, bt.withoutTypeQualifiers);
+  top.withoutExtensionQualifiers = attributedType(attrs, bt.withoutExtensionQualifiers);
   top.withTypeQualifiers = attributedType(attrs, bt.withTypeQualifiers);
   bt.addedTypeQualifiers = top.addedTypeQualifiers;
   top.qualifiers = bt.qualifiers;
@@ -634,6 +644,11 @@ top::BaseTypeExpr ::=
   forwards to if false then error(hackUnparse(top.env) ++ hackUnparse(top.returnType)) else hackUnusedType();
 }
 
+function filterExtensionQualifiers
+Qualifiers ::= q::Qualifiers
+{
+  return foldQualifier(filter((.qualIsHost), q.qualifiers));
+}
 
 {- 
 NON_CANONICAL_UNLESS_DEPENDENT_TYPE(TypeOfExpr, Type)
