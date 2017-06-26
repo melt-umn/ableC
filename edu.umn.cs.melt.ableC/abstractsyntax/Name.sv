@@ -127,7 +127,7 @@ function doValueRedeclarationCheck
   return case n.valueLocalLookup of
   | [] -> []
   | v :: _ -> 
-      if compatibleTypes(t, v.typerep, false, true)
+      if compatibleTypes(t, v.typerep, false, false)
       then []
       else 
         let originalPP :: String = show(100, cat(v.typerep.lpp, v.typerep.rpp)),

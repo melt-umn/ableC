@@ -42,11 +42,11 @@ Boolean ::= a::Type  b::Type  allowSubtypes::Boolean  dropOuterQual::Boolean
       -- TODO: actually, should this include sub1/ sub2 at all? or those sm? maybe? probably. yeah, later, do that.
   | functionType(r1, noProtoFunctionType()),
     functionType(r2, noProtoFunctionType()) -> 
-      compatibleTypes(r1, r2, allowSubtypes, dropOuterQual)
+      compatibleTypes(r1, r2, allowSubtypes, true)
   | functionType(r1, protoFunctionType(a1, v1)),
     functionType(r2, protoFunctionType(a2, v2)) ->
       compatibleTypes(r1, r2, false, false) &&
-        compatibleTypeList(a1, a2, false, dropOuterQual) && -- TODO: check subtypes of function args
+        compatibleTypeList(a1, a2, false, true) && -- TODO: check subtypes of function args
         v1 == v2
   | functionType(r1, _), functionType(r2, _) -> 
       compatibleTypes(r1, r2, allowSubtypes, dropOuterQual)
