@@ -624,7 +624,7 @@ Expr ::= conditionals::[Pair<(Expr ::= Expr) String>]  e::Expr  eTyperep::Type
           ))
           ] ++
           map(
-            \c::Pair<(Expr ::= Expr) String> -> mkRuntimeCheck(c, refTmp),
+            \c::Pair<(Expr ::= Expr) String> -> mkRuntimeCheck(c, refTmp, e.location),
             conditionals
           )
         ),
@@ -634,10 +634,10 @@ Expr ::= conditionals::[Pair<(Expr ::= Expr) String>]  e::Expr  eTyperep::Type
 }
 
 function mkRuntimeCheck
-Stmt ::= c::Pair<(Expr ::= Expr) String>  tmpE::Expr
+Stmt ::= c::Pair<(Expr ::= Expr) String>  tmpE::Expr  l::Location
 {
   -- TODO: improve error handling
-  return ifStmtNoElse(c.fst(tmpE), txtStmt(s"fprintf(stderr, \"${c.snd}\"); exit(255);"));
+  return ifStmtNoElse(c.fst(tmpE), txtStmt(s"fprintf(stderr, \"${l.unparse}:${c.snd}\"); exit(255);"));
 }
 
 {- from clang:
