@@ -43,6 +43,11 @@ top::Expr ::= op::UnaryOp  e::Expr
 {
   propagate substituted;
 }
+aspect production qualifiedUnaryOpExpr
+top::Expr ::= op::UnaryOp  e::Expr  collectedTypeQualifiers::Qualifiers
+{
+  propagate substituted;
+}
 aspect production unaryExprOrTypeTraitExpr
 top::Expr ::= op::UnaryTypeOp  e::ExprOrTypeName
 {
@@ -70,6 +75,11 @@ top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
 }
 aspect production binaryOpExpr
 top::Expr ::= lhs::Expr  op::BinOp  rhs::Expr
+{
+  propagate substituted;
+}
+aspect production qualifiedBinaryOpExpr
+top::Expr ::= lhs::Expr  op::BinOp  rhs::Expr  collectedTypeQualifiers::Qualifiers
 {
   propagate substituted;
 }
