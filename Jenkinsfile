@@ -52,15 +52,59 @@ node {
     }
 
     stage ("Extensions") {
-      build job: '/melt-umn/edu.umn.cs.melt.exts.ableC.sqlite/master', parameters:
-        [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: params.SILVER_BASE],
-         [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
-      build job: '/melt-umn/ableC-condition-tables/master', parameters:
-        [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: params.SILVER_BASE],
-         [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
-      build job: '/melt-umn/ableC-cilk/master', parameters:
-        [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: params.SILVER_BASE],
-         [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
+      parallel(
+        "ableC-skeleton": {
+          build job: '/melt-umn/ableC-skeleton/develop', parameters:
+            [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: params.SILVER_BASE],
+             [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
+        },
+        "ableC-lib-skeleton": {
+          build job: '/melt-umn/ableC-lib-skeleton/develop', parameters:
+            [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: params.SILVER_BASE],
+             [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
+        },
+        "ableC-lib-skeleton": {
+          build job: '/melt-umn/edu.umn.cs.melt.exts.ableC.sqlite/master', parameters:
+            [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: params.SILVER_BASE],
+             [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
+        },
+        "ableC-lib-skeleton": {
+          build job: '/melt-umn/ableC-condition-tables/develop', parameters:
+            [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: params.SILVER_BASE],
+             [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
+        },
+        "ableC-lib-skeleton": {
+          build job: '/melt-umn/ableC-cilk/master', parameters:
+            [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: params.SILVER_BASE],
+             [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
+        },
+        "ableC-lib-skeleton": {
+          build job: '/melt-umn/ableC-halide/develop', parameters:
+            [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: params.SILVER_BASE],
+             [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
+        },
+        "ableC-lib-skeleton": {
+          build job: '/melt-umn/ableC-closure/develop', parameters:
+            [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: params.SILVER_BASE],
+             [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
+        },
+        "ableC-lib-skeleton": {
+          build job: '/melt-umn/ableC-templating/develop', parameters:
+            [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: params.SILVER_BASE],
+             [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
+        },
+        "ableC-lib-skeleton": {
+          build job: '/melt-umn/ableC-string/develop', parameters:
+            [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: params.SILVER_BASE],
+             [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
+        },
+        "ableC-lib-skeleton": {
+          build job: '/melt-umn/ableC-vector/develop', parameters:
+            [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: params.SILVER_BASE],
+             [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
+        }
+      )
+>>>>>>> Stashed changes
     }
 
     /* TODO: use nailgun!
