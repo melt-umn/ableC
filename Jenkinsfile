@@ -104,7 +104,6 @@ node {
              [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
         }
       )
->>>>>>> Stashed changes
     }
 
     /* TODO: use nailgun!
