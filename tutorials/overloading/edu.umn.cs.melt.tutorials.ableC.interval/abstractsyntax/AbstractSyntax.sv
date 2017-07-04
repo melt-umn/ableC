@@ -9,6 +9,7 @@ imports edu:umn:cs:melt:ableC:abstractsyntax:substitution;
 imports edu:umn:cs:melt:ableC:abstractsyntax:env;
 imports edu:umn:cs:melt:ableC:abstractsyntax:overload as ovrld;
 
+-- Aspect functions to specify overload productions for the interval module name
 aspect function ovrld:getNegativeOpOverload
 Maybe<(Expr ::= Expr Location)> ::= t::Type env::Decorated Env
 {
@@ -92,6 +93,7 @@ top::Expr ::= min::Expr max::Expr
   forwards to mkErrorCheck(localErrors, fwrd);
 }
 
+-- Extension productions that are used to resolve overloaded operators
 abstract production negInterval
 top::Expr ::= i::Expr
 {
