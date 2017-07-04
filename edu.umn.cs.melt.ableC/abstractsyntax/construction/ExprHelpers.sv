@@ -41,6 +41,7 @@ Expr ::= e::Expr l::Location
 -- Expr --
 
 -- 1, 2, etc.
+-- TODO: Duplicate of mkIntConst, remove
 function mkIntExpr
 Expr ::= val::String l::Location
 { return realConstant(integerConstant(val, false, noIntSuffix(), 
