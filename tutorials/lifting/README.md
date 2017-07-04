@@ -1,5 +1,5 @@
 # Lifting declarations to the global level
-A common pattern when writing extensions is to wish to generate a global declaration for a local piece of code, for example in the case of the [closure extension](https://github.com/melt-umn/ableC-closure).  This can be accomplished via the lifting mechanism
+A common pattern when writing extensions is to wish to generate a global declaration for a local piece of code, for example in the case of the [closure extension](https://github.com/melt-umn/ableC-closure).  This can be accomplished via the lifting mechanism.
 
 ## Semantics
 Lifiting can be performed from the three most-commonly extended nonterminals, `Expr`, `Stmt` and `TypeExpr`.  Productions `injectGlobalDeclsExpr`, `injectGlobalDeclsStmt` and `injectGlobalDeclsTypeExpr` each wrap `Decls` to lift to the global scope, and the base AST of the appropriate type that relies on the lifted item.  Definitions from the `Decls` to be lifted are inserted into the global environment of what is wrapped, and are passed up the tree to be included in the environment for any later definitions.  These productions will then be transformed away by ableC during later phases of translation.  
