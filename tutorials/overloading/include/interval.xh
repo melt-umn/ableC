@@ -1,0 +1,50 @@
+#include <stdbool.h>
+
+#ifndef _INTERVAL_XH
+#define _INTERVAL_XH
+
+#define MIN(a, b) ({typeof(a) _a = a; typeof(b) _b = b; _a < _b? _a : _b;})
+#define MAX(a, b) ({typeof(a) _a = a; typeof(b) _b = b; _a > _b? _a : _b;})
+#define MIN4(a, b, c, d) MIN(MIN(a, b), MIN(c, d))
+#define MAX4(a, b, c, d) MAX(MAX(a, b), MAX(c, d))
+
+struct __attribute__((refId("edu:umn:cs:melt:exts:ableC:interval:interval"),
+                      module("edu:umn:cs:melt:exts:ableC:interval:interval"))) _interval_s {
+  double min;
+  double max;
+};
+
+static interval new_interval(double min, double max) {
+  return (struct _interval_s){min, max};
+}
+
+static interval neg_interval(interval x) {
+  return intr[-x.max, -x.min];
+}
+
+static interval inv_interval(interval x) {
+  return intr[1 / x.max, 1 / x.min];
+}
+
+static interval add_interval(interval x, interval y) {
+  return intr[x.min + y.min, x.max + y.max];
+}
+
+static interval sub_interval(interval x, interval y) {
+  return intr[x.min - y.max, x.max - y.min];
+}
+
+static interval mul_interval(interval x, interval y) {
+  return intr[MIN4(x.min * y.min, x.min * y.max, y.min * x.max, y.min * y.max),
+              MAX4(x.min * y.min, x.min * y.max, y.min * x.max, y.min * y.max)];
+}
+
+static interval div_interval(interval x, interval y) {
+  return mul_interval(x, inv_interval(y));
+}
+
+static bool eq_interval(interval x, interval y) {
+  return x.min == y.min && x.max == y.max;
+}
+  
+#endif

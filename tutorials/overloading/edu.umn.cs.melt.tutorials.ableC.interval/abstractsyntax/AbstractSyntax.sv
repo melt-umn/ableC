@@ -14,7 +14,7 @@ Maybe<(Expr ::= Expr Location)> ::= t::Type env::Decorated Env
 {
   overloads <-
     [pair(
-       "edu:umn:cs:melt:exts:ableC:string:string",
+       "edu:umn:cs:melt:exts:ableC:interval:interval",
        \ e::Expr loc::Location -> negInterval(e, location=loc))];
 }
 
@@ -23,7 +23,7 @@ Maybe<(Expr ::= Expr Location)> ::= t::Type env::Decorated Env
 {
   overloads <-
     [pair(
-       "edu:umn:cs:melt:exts:ableC:string:string",
+       "edu:umn:cs:melt:exts:ableC:interval:interval",
        \ e::Expr loc::Location -> invInterval(e, location=loc))];
 }
 
@@ -33,8 +33,8 @@ Maybe<(Expr ::= Expr Expr Location)> ::= l::Type r::Type env::Decorated Env
   overloads <-
     [pair(
        pair(
-         "edu:umn:cs:melt:exts:ableC:string:string",
-         "edu:umn:cs:melt:exts:ableC:string:string"),
+         "edu:umn:cs:melt:exts:ableC:interval:interval",
+         "edu:umn:cs:melt:exts:ableC:interval:interval"),
        \ lhs::Expr rhs::Expr loc::Location -> addInterval(lhs, rhs, location=loc))];
 }
 
@@ -44,8 +44,8 @@ Maybe<(Expr ::= Expr Expr Location)> ::= l::Type r::Type env::Decorated Env
   overloads <-
     [pair(
        pair(
-         "edu:umn:cs:melt:exts:ableC:string:string",
-         "edu:umn:cs:melt:exts:ableC:string:string"),
+         "edu:umn:cs:melt:exts:ableC:interval:interval",
+         "edu:umn:cs:melt:exts:ableC:interval:interval"),
        \ lhs::Expr rhs::Expr loc::Location -> subInterval(lhs, rhs, location=loc))];
 }
 
@@ -55,8 +55,8 @@ Maybe<(Expr ::= Expr Expr Location)> ::= l::Type r::Type env::Decorated Env
   overloads <-
     [pair(
        pair(
-         "edu:umn:cs:melt:exts:ableC:string:string",
-         "edu:umn:cs:melt:exts:ableC:string:string"),
+         "edu:umn:cs:melt:exts:ableC:interval:interval",
+         "edu:umn:cs:melt:exts:ableC:interval:interval"),
        \ lhs::Expr rhs::Expr loc::Location -> mulInterval(lhs, rhs, location=loc))];
 }
 
@@ -66,8 +66,8 @@ Maybe<(Expr ::= Expr Expr Location)> ::= l::Type r::Type env::Decorated Env
   overloads <-
     [pair(
        pair(
-         "edu:umn:cs:melt:exts:ableC:string:string",
-         "edu:umn:cs:melt:exts:ableC:string:string"),
+         "edu:umn:cs:melt:exts:ableC:interval:interval",
+         "edu:umn:cs:melt:exts:ableC:interval:interval"),
        \ lhs::Expr rhs::Expr loc::Location -> divInterval(lhs, rhs, location=loc))];
 }
 
@@ -77,8 +77,8 @@ Maybe<(Expr ::= Expr Expr Location)> ::= l::Type r::Type env::Decorated Env
   overloads <-
     [pair(
        pair(
-         "edu:umn:cs:melt:exts:ableC:string:string",
-         "edu:umn:cs:melt:exts:ableC:string:string"),
+         "edu:umn:cs:melt:exts:ableC:interval:interval",
+         "edu:umn:cs:melt:exts:ableC:interval:interval"),
        \ lhs::Expr rhs::Expr loc::Location -> eqInterval(lhs, rhs, location=loc))];
 }
 
