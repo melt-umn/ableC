@@ -82,61 +82,94 @@ Maybe<(Expr ::= Expr Expr Location)> ::= l::Type r::Type env::Decorated Env
        \ lhs::Expr rhs::Expr loc::Location -> eqInterval(lhs, rhs, location=loc))];
 }
 
--- TODO: Check for header inclusion errors
 abstract production newInterval
 top::Expr ::= min::Expr max::Expr
 {
-  forwards to
+  local localErrors::[Message] =
+    checkIntervalHeaderDef("new_interval", top.location, top.env);
+  local fwrd::Expr =
     directCallExpr(name("new_interval", location=builtin), foldExpr([min, max]), location=builtin);
+  forwards to mkErrorCheck(localErrors, fwrd);
 }
 
 abstract production negInterval
 top::Expr ::= i::Expr
 {
-  forwards to
+  local localErrors::[Message] =
+    checkIntervalHeaderDef("neg_interval", top.location, top.env);
+  local fwrd::Expr =
     directCallExpr(name("neg_interval", location=builtin), foldExpr([i]), location=builtin);
+  forwards to mkErrorCheck(localErrors, fwrd);
 }
 
 abstract production invInterval
 top::Expr ::= i::Expr
 {
-  forwards to
+  local localErrors::[Message] =
+    checkIntervalHeaderDef("inv_interval", top.location, top.env);
+  local fwrd::Expr =
     directCallExpr(name("inv_interval", location=builtin), foldExpr([i]), location=builtin);
+  forwards to mkErrorCheck(localErrors, fwrd);
 }
 
 abstract production addInterval
 top::Expr ::= i1::Expr i2::Expr
 {
-  forwards to
+  local localErrors::[Message] =
+    checkIntervalHeaderDef("add_interval", top.location, top.env);
+  local fwrd::Expr =
     directCallExpr(name("add_interval", location=builtin), foldExpr([i1, i2]), location=builtin);
+  forwards to mkErrorCheck(localErrors, fwrd);
 }
 
 abstract production subInterval
 top::Expr ::= i1::Expr i2::Expr
 {
-  forwards to
+  local localErrors::[Message] =
+    checkIntervalHeaderDef("sub_interval", top.location, top.env);
+  local fwrd::Expr =
     directCallExpr(name("sub_interval", location=builtin), foldExpr([i1, i2]), location=builtin);
+  forwards to mkErrorCheck(localErrors, fwrd);
 }
 
 abstract production mulInterval
 top::Expr ::= i1::Expr i2::Expr
 {
-  forwards to
+  local localErrors::[Message] =
+    checkIntervalHeaderDef("mul_interval", top.location, top.env);
+  local fwrd::Expr =
     directCallExpr(name("mul_interval", location=builtin), foldExpr([i1, i2]), location=builtin);
+  forwards to mkErrorCheck(localErrors, fwrd);
 }
 
 abstract production divInterval
 top::Expr ::= i1::Expr i2::Expr
 {
-  forwards to
+  local localErrors::[Message] =
+    checkIntervalHeaderDef("div_interval", top.location, top.env);
+  local fwrd::Expr =
     directCallExpr(name("div_interval", location=builtin), foldExpr([i1, i2]), location=builtin);
+  forwards to mkErrorCheck(localErrors, fwrd);
 }
 
 abstract production eqInterval
 top::Expr ::= i1::Expr i2::Expr
 {
-  forwards to
+  local localErrors::[Message] =
+    checkIntervalHeaderDef("eq_interval", top.location, top.env);
+  local fwrd::Expr =
     directCallExpr(name("eq_interval", location=builtin), foldExpr([i1, i2]), location=builtin);
+  forwards to mkErrorCheck(localErrors, fwrd);
+}
+
+-- Check the given env for the given function name
+function checkIntervalHeaderDef
+[Message] ::= n::String loc::Location env::Decorated Env
+{
+  return
+    if !null(lookupValue(n, env))
+    then []
+    else [err(loc, "Missing include of interval.xh")];
 }
 
 global builtin::Location = builtinLoc("interval");
