@@ -39,3 +39,4 @@ A simple example making use of these constructs is an exponent operator, which c
 
 Since expressions in C may have side-effects, an expression should only be included in the forward once.  To avoid this, temporary variables are used, declared with type expressions generated from the types of the operands.  The names of these temporary variables must be specified with `toString(genInt())` prefixes; this is to ensure uniqueness such that when this operator is nested, a variable is not initialized with another variable of the same name, which would effectively be an initialization with itself.  
 
+[Next section: Lifting](lifting/)

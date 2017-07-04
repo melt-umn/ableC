@@ -2,8 +2,6 @@
 This folder contains a series of examples and explanations illustrating how to write extensions in ableC.  Within each folder here is a README.md file explaining what is going on, a simple example extension, some extended C programs, and a Makefile to compile them.  It is expected that the user understands some concepts of programming languages, such as parsing and attribute grammars, and has a basic knowlage of the Silver language.  A more detailed starting guide to Silver and a refrence manual may be found [on the MELT website](http://melt.cs.umn.edu/silver/doc/).
 
 ## Organization
-*note to self: Add links to the next section in each README file*
-
 This tutorial is composed of 3 sections.  It is expected that you complete the first section in order before the second two, but the second and third sections do not depend on each other.  
 
 ### ableC basics
@@ -18,11 +16,11 @@ This tutorial is composed of 3 sections.  It is expected that you complete the f
 1. [Construction helpers](construction/): Using the parsing and substitution mechanisms in ableC, implement an exponent operator
 2. [Lifting](lifting/): Define a new expression to declare a global int constant
 3. [Operator overloading](overloading/): Define a new 'interval' type with overloads for host operators
-4. [Extensible env](extended_env/): *TODO, figure out an example for this*
-5. [Type qualifiers](type_qualifiers/): *Travis, can you write this section?*
+4. *(Coming soon!)* [Extensible env](extended_env/): Define a new environment namespace containing integer constants
+5. *(Coming soon!)* [Type qualifiers](type_qualifiers/): *Travis, can you write this section?*
 
 ### Developing complete extensions
-1. [Modular determinism](mda/): Apply the modular determinism analysis to the previously-defined tuple extension
-2. [Modular well-definedness](mwda/): Apply the modular well-definedness analysis to the previously-defined postfix arithmetic extension
-3. [Organizing extensions](organization/): A look at the skeleton extension, and how to set up an extension for distribution
-4. [Utility extensions](util/): A look at several generally-useful extensions, including string, vector, templating, and closure.  
+1. *(Coming soon!)* [Modular determinism](mda/): Apply the modular determinism analysis to the previously-defined tuple extension
+2. *(Coming soon!)* [Modular well-definedness](mwda/): Apply the modular well-definedness analysis to the previously-defined postfix arithmetic extension
+3. *(Coming soon!)* [Organizing extensions](organization/): A look at the skeleton extension, and how to set up an extension for distribution
+4. *(Coming soon!)* [Utility extensions](util/): A look at several generally-useful extensions, including string, vector, templating, and closure.  
