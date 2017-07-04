@@ -10,8 +10,8 @@
 
 // refId: identifier to use when referring to the struct type
 // module: identifier to use for looking up the overload
-struct __attribute__((refId("edu:umn:cs:melt:exts:ableC:interval:interval"),
-                      module("edu:umn:cs:melt:exts:ableC:interval:interval"))) _interval_s {
+struct __attribute__((refId("edu:umn:cs:melt:tutorials:ableC:interval:interval"),
+                      module("edu:umn:cs:melt:tutorials:ableC:interval:interval"))) _interval_s {
   double min;
   double max;
 };

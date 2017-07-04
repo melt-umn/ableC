@@ -17,5 +17,5 @@ top::Type ::= q::Qualifiers
   forwards to
     tagType(
       q,
-      refIdTagType(structSEU(), "_interval_s", s"edu:umn:cs:melt:exts:ableC:interval:interval"));
+      refIdTagType(structSEU(), "_interval_s", s"edu:umn:cs:melt:tutorials:ableC:interval:interval"));
 }
