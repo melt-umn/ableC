@@ -17,4 +17,4 @@ In order to avoid generating duplicate global declarations, a lifted declaration
 ## Example
 An example use of lifting may be found in [AbstractSyntax.sv](edu.umn.cs.melt.tutorials.ableC.globalint/abstractsyntax/AbstractSyntax.sv).  This extension provides an expression that refers to an int variable that may be accessed from anywhere within a program.  The `injectGlobalDeclsExpr` and `maybeValueDecl` productions are used to lift a parsed expression to the global level, the first time that this name is used.  This extension may be useful for some types of macro programming, such as shown in [log.xc](log.xc).  
 
-[Next section: Operator overloading](overloading/)
+[Next section: Operator overloading](../overloading/)

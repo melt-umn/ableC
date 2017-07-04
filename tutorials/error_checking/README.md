@@ -20,4 +20,4 @@ Extension productions on host nonterminals should generally not ever set attribu
 
 An example of the usual pattern for this may be found in [AbstractSyntax.sv](edu.umn.cs.melt.tutorials.ableC.average/abstractsyntax/AbstractSyntax.sv), the abstract syntax for an extension implementing an average operator.  Forwarding productions should check for the errors created locally (not including errors on children, since this may mean that some error checks happen twice!), and report them by forwarding to an error production if the list is non-empty.  Helpers are provided to do this check automaticly, to reduce verbosity.  Note that in the case of `Stmt` and `Decl`, it may make sense to forward to a sequence of the error production and the normal AST, to avoid introducing further errors involving a missing declaration.  
 
-[Next section: Declarations](declarations/)
+[Next section: Declarations](../declarations/)

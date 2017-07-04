@@ -21,4 +21,4 @@ The abstract syntax for this extension can be found in [AbstractSyntax.sv](edu.u
 
 Note that since `PrefixExpr` may contain `Expr`s, `PrefixExpr` must somehow provide all the inherited attributes needed by `Expr`.  Typically, most of these inherited attributes will occur on the new nonterminal, and simply be copied down from the top-level.  However, there are some cases where 'dummy' values may be provided for some inherited attributes (such as `returnType`) in cases where there is no actual value possible.  
 
-[Next section: Construction helpers](construction/)
+[Next section: Construction helpers](../construction/)

@@ -98,4 +98,4 @@ A `Declaration_c` consists of `DeclarationSpecifiers_c`, containing the complete
 
 When introducing new extension type expressions, the `TypeSpecifier_c` nonterminal is typically extended to implement a new `BaseTypeExpr`.  New kinds of declarations that don't directly fit in to the framework of type expressions may extend `Declaration_c` directly.  An example of this may be seen in the concrete syntax for the example tuple extension, in [ConcreteSyntax.sv](edu.umn.cs.melt.tutorials.ableC.tuple/concretesyntax/ConcreteSyntax.sv).  
 
-[Next section: Embedded domain spesific languages](embedded_dsl/)
+[Next section: Embedded domain spesific languages](../embedded_dsl/)
