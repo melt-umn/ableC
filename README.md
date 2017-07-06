@@ -68,3 +68,22 @@ In a [separate repository](https://github.com/melt-umn/ableC-vm-artifact) we hav
 All you need is vagrant and virtualbox, and you can clone that repo and `vagrant up`.
 
 
+Where to go next
+----------------
+
+You can look under `tutorials` for information about how to develop your own extensions.
+
+Alternatively, we have developed several (this list is not authoritative):
+
+* https://github.com/melt-umn/ableC-sqlite
+* https://github.com/melt-umn/ableC-algebraic-data-types
+* https://github.com/melt-umn/ableC-cilk
+* https://github.com/melt-umn/ableC-interval
+* https://github.com/melt-umn/ableC-vector
+* https://github.com/melt-umn/ableC-halide
+* https://github.com/melt-umn/ableC-closure
+* https://github.com/melt-umn/ableC-templating
+* https://github.com/melt-umn/ableC-string
+* https://github.com/melt-umn/ableC-condition-tables
+
+
