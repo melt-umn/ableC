@@ -1,53 +1,33 @@
 AbleC: Reliably composable language extensions for C
 ====================================================
 
-AbleC is a C11 compiler front-end that supports modular definition and reliable composition of language extensions.
+AbleC is a C11 compiler front-end that supports modular definition and reliable composition of language extensions. AbleC is implemented using [Silver](https://github.com/melt-umn/silver).
 
 
-Migration Status
-----------------
-
-AbleC is currently in the process of being released from our internal subversion repository.
-
-Current migration status:
-
- - [X] Host language ported over
- - [X] Git repository built, published
- - [X] Regex extension ported over
- - [X] Conditional table extension ported over
- - [X] Algebraic datatype extension ported over
- - [X] Matrix extension ported over
- - [X] Mex extension ported over
- - [X] Migration completed! April 22nd.
-
-Remaining TODO items:
-
- - [ ] Clean up past mistakes. :)
- - [ ] Fix buggy/incomplete type checker.
- - [ ] Create a Jenkins-updated combined download for AbleC + Silver + Copper, with pre-built binaries, to make things easier to get started.
-
-
-Using AbleC
------------
+Getting started
+---------------
 
 **Step 1: Environment**
 
-To build AbleC, you need the following packages:
+To build and use AbleC, you will need the following dependecies:
 
- * Bash (many of our scripts will use it)
- * Java 6+
+ * Bash (our build script, among other things)
+ * Java 7+
  * Ant
- * GCC 4.7+ (first version to support C11. Earlier versions will work as long as no C11 features are used.)
- * Nailgun (to run ablec testsuite)
- * Python (to run ablec testsuite)
- * Have `~/bin/` in your path (to install the `silver` script, most distros put it in your path automatically if it's there)
+ * GCC 4.7+ (first version to support C11. Earlier versions may work as long as no C11 features are used.)
+ * Python (to run the ablec testsuite)
+ * Nailgun (likewise)
 
-**Step 2: Silver**
+This setup is achievable from Linux or Windows subsystem for Linux ("WSL") in Windows 10. MacOS sometimes has trouble with header files (system headers have Objective-C in them, which we cannot parse.)
+
+**Step 2: Install Silver**
 
 The [Silver install guide](http://melt.cs.umn.edu/silver/doc/install-guide/) can give full details, but the simplest approach is as follows:
 
- 1. Download [the latest development version of Silver](http://melt.cs.umn.edu/downloads/silver-dev/silver-latest.tar.gz).
- 2. Under `silver/support/bin` run `install-silver-bin` to put the `silver` script in `~/bin`
+1. Download [the latest development version of Silver](http://melt.cs.umn.edu/downloads/silver-dev/silver-latest.tar.gz).
+2. Make sure you have a `~/bin/` directory (most distributions automatically put this in `PATH` once created and shell restarted).
+3. Under `silver/support/bin` run `./install-silver-bin` to put the `silver` script in `~/bin`
+4. (Optional, for AbleC test suite) Under `silver/support/nailgun` run `./install-sv-nailgun` to put some nailgun support scripts in `~/bin`.
 
 **Step 3: Build AbleC**
 
@@ -55,21 +35,36 @@ Just run `./build` in this repository. This will produce `ableC.jar` which shoul
 
 N.B. the currently released version will preprocess a `*.xc` file into a `*.c` one, or raise errors otherwise.
 
-**Step 4: Test with an extension, like regex**
+**Step 4: Run AbleC test suite**
 
 ```
-cd extensions/regex
-./build
-java -jar ableC.jar example1.xc
+cd testing
+./runTests
 ```
 
-This should produce `example1.pp_out.c`. Then:
+There are presently a number of expected failures (this test suite tests conformance to C standards, etc, which AbleC is not perfect about yet.)
+
+**Step 5: Use an extension with AbleC**
+
+Our AbleC extensions are now distributed separately from AbleC. We have a convention of checking extensions out in a directory next to ableC.
 
 ```
-gcc -std=gnu1x -o example1 example1.pp_out.c
-./example1
+$ ls
+ableC extensions
+$ cd extensions
+$ git clone git@github.com:melt-umn/ableC-condition-tables.git
+$ cd ableC-condition-tables
+$ make all
 ```
 
-Note the requirement to tell GCC to use the C11 standard plus GNU extensions. This is generally necessary for AbleC generated files.
+This will build the extension, and test it.
+
+
+Trying AbleC out with a VM
+--------------------------
+
+In a [separate repository](https://github.com/melt-umn/ableC-vm-artifact) we have a [Vagrant](https://www.vagrantup.com/) script that will create an ubuntu VM with all necessary dependencies, including Silver, and also pre-checks out AbleC and many extensions. This may be a useful tool if you just want to try out AbleC without affecting your own system, yet.
+
+All you need is vagrant and virtualbox, and you can clone that repo and `vagrant up`.
 
 
