@@ -43,11 +43,17 @@ node {
 
     /* stages are pretty much just labels about what's going on */
     stage ("Build") {
+      /* Clean Silver-generated files from previous builds in this workspace */
+      sh "mkdir -p generated"
+      sh "rm -rf generated/* || true"
+      /* TEMPORARY: remove old generated files location */
+      sh "rm -rf src bin || true"
+
       checkout scm
 
       /* env.PATH is the master's path, not the executor's */
       withEnv(["PATH=${params.SILVER_BASE}/support/bin/:${env.PATH}"]) {
-        sh "./build -G ${WORKSPACE} --warn-all"
+        sh "./build -G ${WORKSPACE}/generated --warn-all"
       }
     }
 
