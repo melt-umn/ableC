@@ -97,7 +97,12 @@ terminal C11_Atomic_t '_Atomic' lexer classes {Ckeyword};
 -- Whenever _Atomic is immediately followed by '(', it's a TypeSpecifier,
 -- instead of a TypeQualifier. We accomplish this by recognizing '(' as
 -- a different terminal in that parsing context.
-terminal C11_Atomic_LParen_t /\(/;
+
+-- NOTE: we use this kludge [\(] to make the regex different from '('
+-- so that we don't break normal syntax using '(' in production signatures
+-- (this terminal has a different, if equivalent, regex, so '(' doesn't resolve to it)
+terminal C11_Atomic_LParen_t /[\(]/;
+
 disambiguate C11_Atomic_LParen_t, LParen_t
 { pluck C11_Atomic_LParen_t; }
 
