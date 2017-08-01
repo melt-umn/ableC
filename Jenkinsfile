@@ -44,10 +44,11 @@ node {
     /* stages are pretty much just labels about what's going on */
     stage ("Build") {
       /* Clean Silver-generated files from previous builds in this workspace */
-      sh "mkdir -p generated"
-      sh "rm -rf generated/* || true"
-      /* TEMPORARY: remove old generated files location */
-      sh "rm -rf src bin || true"
+      /* note: sh "mkdir -p generated" fails first time? try dir("generated")
+       * instead? this should mkdir if it doesn't exist, maybe? */
+      dir("generated") {
+        sh "rm -rf * || true"
+      }
 
       checkout scm
 
