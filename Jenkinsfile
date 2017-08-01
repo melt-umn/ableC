@@ -70,7 +70,7 @@ node {
              [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
         },
         "ableC-sqlite": {
-          build job: '/melt-umn/edu.umn.cs.melt.exts.ableC.sqlite/master', parameters:
+          build job: '/melt-umn/ableC-sqlite/develop', parameters:
             [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: params.SILVER_BASE],
              [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
         },
