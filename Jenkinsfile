@@ -53,7 +53,7 @@ node {
 
       /* env.PATH is the master's path, not the executor's */
       withEnv(["PATH=${params.SILVER_BASE}/support/bin/:${env.PATH}"]) {
-        sh "./build -G ${WORKSPACE}/generated --warn-all"
+        sh "./build -G ${WORKSPACE}/generated --warn-all --warn-error"
       }
     }
 
