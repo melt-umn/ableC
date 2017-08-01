@@ -319,10 +319,19 @@ abstract production functionDecl
 top::FunctionDecl ::= storage::[StorageClass]  fnquals::[SpecialSpecifier]  bty::BaseTypeExpr mty::TypeModifierExpr  name::Name  attrs::Attributes  decls::Decls  body::Stmt
 {
   propagate host, lifted;
-  top.pp = ppConcat([terminate(space(), map((.pp), storage)), terminate( space(), map( (.pp), fnquals ) ),
+  
+  top.pp = ppConcat([terminate(space(), map((.pp), storage)), terminate( space(), specialSpecifiers.pps ),
     bty.pp, space(), mty.lpp, name.pp, mty.rpp, ppAttributesRHS(attrs), line(), terminate(cat(semi(), line()), decls.pps),
     text("{"), line(), nestlines(2,body.pp), text("}")]);
-  
+
+  -- TODO: consider changing signature of this production to take
+  -- SpecialSpecifiers instead of [SpecialSpecifier]
+  local specialSpecifiers :: SpecialSpecifiers =
+     foldr(consSpecialSpecifier, nilSpecialSpecifier(), fnquals);
+  specialSpecifiers.env = top.env;
+  specialSpecifiers.returnType = top.returnType;  
+ 
+
   local parameters :: Decorated Parameters =
     case mty of
     | functionTypeExprWithArgs(result, args, variadic) ->
@@ -333,19 +342,20 @@ top::FunctionDecl ::= storage::[StorageClass]  fnquals::[SpecialSpecifier]  bty:
   local funcDefs::[Def] = bty.defs ++ [valueDef(name.name, functionValueItem(top))];
   local thisFuncDef :: Def = miscDef("this_func", currentFunctionItem(name, top));
   
-  top.errors := bty.errors ++ mty.errors ++ body.errors;
+  top.errors := bty.errors ++ mty.errors ++ body.errors ++ specialSpecifiers.errors;
   top.globalDecls := bty.globalDecls ++ mty.globalDecls ++ decls.globalDecls ++ 
-                     body.globalDecls;
+                     body.globalDecls ++ specialSpecifiers.globalDecls;
   top.defs :=
     funcDefs ++
     globalDeclsDefs(mty.globalDecls) ++
     globalDeclsDefs(decls.globalDecls) ++
-    globalDeclsDefs(body.globalDecls);
+    globalDeclsDefs(body.globalDecls) ++
+    globalDeclsDefs(specialSpecifiers.globalDecls);
   top.freeVariables =
     bty.freeVariables ++
     removeDefsFromNames([thisFuncDef], mty.freeVariables) ++
     decls.freeVariables ++ --TODO?
-    removeDefsFromNames(top.defs ++ parameters.defs ++ decls.defs ++ body.functiondefs, body.freeVariables);
+    removeDefsFromNames(top.defs ++ parameters.defs ++ decls.defs ++ body.functiondefs ++ specialSpecifiers.defs, body.freeVariables);
   top.typerep = mty.typerep;
   top.sourceLocation = name.location;
   
