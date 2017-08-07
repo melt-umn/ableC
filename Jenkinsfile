@@ -44,10 +44,11 @@ node {
     /* stages are pretty much just labels about what's going on */
     stage ("Build") {
       /* Clean Silver-generated files from previous builds in this workspace */
-      sh "mkdir -p generated"
-      sh "rm -rf generated/* || true"
-      /* TEMPORARY: remove old generated files location */
-      sh "rm -rf src bin || true"
+      /* note: sh "mkdir -p generated" fails first time? try dir("generated")
+       * instead? this should mkdir if it doesn't exist, maybe? */
+      dir("generated") {
+        sh "rm -rf * || true"
+      }
 
       checkout scm
 
@@ -70,7 +71,7 @@ node {
              [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
         },
         "ableC-sqlite": {
-          build job: '/melt-umn/edu.umn.cs.melt.exts.ableC.sqlite/master', parameters:
+          build job: '/melt-umn/ableC-sqlite/develop', parameters:
             [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: params.SILVER_BASE],
              [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
         },
@@ -85,7 +86,7 @@ node {
              [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
         },
         "ableC-cilk": {
-          build job: '/melt-umn/ableC-cilk/master', parameters:
+          build job: '/melt-umn/ableC-cilk/develop', parameters:
             [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: params.SILVER_BASE],
              [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
         },
