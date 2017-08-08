@@ -259,7 +259,7 @@ Boolean ::= a::IntegerType  b::IntegerType
 -- if allowSubtypes is false then check qualifier equality; otherwise
 --   return true if q1 T is a supertype of q2 T, for some type T; otherwise false
 function compatibleQualifiers
-Boolean ::= q1::Qualifiers  q2::Qualifiers  allowSubtypes::Boolean dropOuterQual::Boolean
+Boolean ::= q1::Qualifiers  q2::Qualifiers  allowSubtypes::Boolean  dropOuterQual::Boolean
 {
   local q1Filtered :: [Qualifier] =
     if   dropOuterQual
@@ -270,8 +270,13 @@ Boolean ::= q1::Qualifiers  q2::Qualifiers  allowSubtypes::Boolean dropOuterQual
     then filter((.qualAppliesWithinRef), q2.qualifiers)
     else q2.qualifiers;
 
+  -- ignore allowSubtypes for builtin qualifiers: standard C seems to allow deep
+  --   subtyping for all qualifiers including volatile and restrict
+  local q1FilteredHost :: [Qualifier] = filter(\q :: Qualifier -> !q.qualIsHost, q1Filtered);
+  local q2FilteredHost :: [Qualifier] = filter(\q :: Qualifier -> !q.qualIsHost, q2Filtered);
+
   return qualifiersSubtype(q2Filtered, q1Filtered) &&
-           (allowSubtypes || qualifiersSubtype(q1Filtered, q2Filtered));
+           (allowSubtypes || qualifiersSubtype(q1FilteredHost, q2FilteredHost));
 }
 
 -- return true if q1 T is a subtype of q2 T, for some type T; otherwise false
