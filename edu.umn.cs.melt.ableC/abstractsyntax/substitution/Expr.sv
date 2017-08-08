@@ -43,6 +43,11 @@ top::Expr ::= e::Expr
 {
   propagate substituted;
 }
+aspect production dereferenceHostExpr
+top::Expr ::= e::Expr
+{
+  propagate substituted;
+}
 aspect production unaryOpExpr
 top::Expr ::= op::UnaryOp  e::Expr
 {
@@ -63,6 +68,11 @@ top::Expr ::= lhs::Expr  rhs::Expr
 {
   propagate substituted;
 }
+aspect production arraySubscriptHostExpr
+top::Expr ::= lhs::Expr  rhs::Expr
+{
+  propagate substituted;
+}
 aspect production directCallExpr
 top::Expr ::= f::Name  a::Exprs
 {
@@ -78,13 +88,28 @@ top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
 {
   propagate substituted;
 }
+aspect production memberHostExpr
+top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
+{
+  propagate substituted;
+}
 aspect production addExpr
 top::Expr ::= lhs::Expr  rhs::Expr
 {
   propagate substituted;
 }
+aspect production qualifiedAddExpr
+top::Expr ::= lhs::Expr rhs::Expr collectedTypeQualifiers::Qualifiers
+{
+  propagate substituted;
+}
 aspect production subtractExpr
 top::Expr ::= lhs::Expr  rhs::Expr
+{
+  propagate substituted;
+}
+aspect production qualifiedSubtractExpr
+top::Expr ::= lhs::Expr rhs::Expr collectedTypeQualifiers::Qualifiers
 {
   propagate substituted;
 }
@@ -109,6 +134,11 @@ top::Expr ::= cond::Expr  e::Expr
   propagate substituted;
 }
 aspect production explicitCastExpr
+top::Expr ::= ty::TypeName  e::Expr
+{
+  propagate substituted;
+}
+aspect production explicitCastHostExpr
 top::Expr ::= ty::TypeName  e::Expr
 {
   propagate substituted;
