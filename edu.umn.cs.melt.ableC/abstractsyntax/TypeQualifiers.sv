@@ -141,13 +141,16 @@ top::Qualifier ::=
  - e.g. Function specifiers (inline, _Noreturn)
  -      Alignment specifiers (_Alignas)
  -}
-nonterminal SpecialSpecifier with pp, host<SpecialSpecifier>, lifted<SpecialSpecifier>, env, returnType;
+nonterminal SpecialSpecifier with pp, host<SpecialSpecifier>, lifted<SpecialSpecifier>, env, returnType, errors, globalDecls, defs;
 
 abstract production inlineQualifier
 top::SpecialSpecifier ::=
 {
   propagate host, lifted;
   top.pp = text("inline");
+  top.errors := [];
+  top.globalDecls := [];
+  top.defs := [];
 }
 
 -- C11
@@ -156,6 +159,9 @@ top::SpecialSpecifier ::=
 {
   propagate host, lifted;
   top.pp = text("_Noreturn");
+  top.errors := [];
+  top.globalDecls := [];
+  top.defs := [];
 }
 
 -- C11
@@ -164,8 +170,33 @@ top::SpecialSpecifier ::= e::Expr
 {
   propagate host, lifted;
   top.pp = ppConcat([text("_Alignas"), parens(e.pp)]);
---  top.errors := e.errors;
+  top.errors := e.errors;
+  top.globalDecls := e.globalDecls;
+  top.defs := e.defs;
 }
+
+nonterminal SpecialSpecifiers with pps, host<SpecialSpecifiers>, lifted<SpecialSpecifiers>, env, returnType, errors, globalDecls, defs;
+
+abstract production consSpecialSpecifier
+top::SpecialSpecifiers ::= h::SpecialSpecifier t::SpecialSpecifiers
+{
+  propagate host, lifted;
+  top.pps = h.pp :: t.pps;
+  top.errors := h.errors ++ t.errors;
+  top.globalDecls := h.globalDecls ++ t.globalDecls;
+  top.defs := h.defs ++ t.defs;
+}
+
+abstract production nilSpecialSpecifier
+top::SpecialSpecifiers ::=
+{
+  propagate host, lifted;
+  top.pps = [];
+  top.errors := [];
+  top.globalDecls := [];
+  top.defs := [];
+}
+	
 
 function containsQualifier
 Boolean ::= q::Qualifier t::Type

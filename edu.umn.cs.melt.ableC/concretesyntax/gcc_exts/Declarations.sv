@@ -99,8 +99,11 @@ concrete productions top::InitialNestedFunctionDefinition_c
       local bt :: ast:BaseTypeExpr =
         ast:figureOutTypeFromSpecifiers(ds.location, ds.typeQualifiers, ds.preTypeSpecifiers, ds.realTypeSpecifiers, ds.mutateTypeSpecifiers);
 
+      local specialSpecifiers :: ast:SpecialSpecifiers =
+        foldr(ast:consSpecialSpecifier, ast:nilSpecialSpecifier(), ds.specialSpecifiers);
+
       top.ast =
-        ast:nestedFunctionDecl(ds.storageClass, ds.specialSpecifiers, bt, d.ast, d.declaredIdent, ds.attributes, ast:foldDecl([]), top.givenStmt);
+        ast:nestedFunctionDecl(ds.storageClass, specialSpecifiers, bt, d.ast, d.declaredIdent, ds.attributes, ast:foldDecl([]), top.givenStmt);
     }
     action {
       -- TODO: we have to duplicate this more. yaaay...

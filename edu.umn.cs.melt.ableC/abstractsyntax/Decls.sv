@@ -143,7 +143,7 @@ abstract production typeExprDecl
 top::Decl ::= attrs::Attributes ty::BaseTypeExpr
 {
   propagate host, lifted;
-  top.pp = cat( ty.pp, semi() );
+  top.pp = ppConcat( ppAttributes(attrs) :: [ty.pp, semi()] );
   top.errors := ty.errors;
   top.globalDecls := ty.globalDecls;
   top.defs := ty.defs;
@@ -349,13 +349,22 @@ top::Declarator ::= msg::[Message]
 nonterminal FunctionDecl with pp, host<FunctionDecl>, lifted<FunctionDecl>, errors, globalDecls, defs, env, typerep, sourceLocation, returnType, freeVariables;
 
 abstract production functionDecl
-top::FunctionDecl ::= storage::[StorageClass]  fnquals::[SpecialSpecifier]  bty::BaseTypeExpr mty::TypeModifierExpr  name::Name  attrs::Attributes  decls::Decls  body::Stmt
+top::FunctionDecl ::= storage::[StorageClass]  fnquals::SpecialSpecifiers  bty::BaseTypeExpr mty::TypeModifierExpr  name::Name  attrs::Attributes  decls::Decls  body::Stmt
 {
   propagate host, lifted;
-  top.pp = ppConcat([terminate(space(), map((.pp), storage)), terminate( space(), map( (.pp), fnquals ) ),
+  
+  top.pp = ppConcat([terminate(space(), map((.pp), storage)), terminate( space(), fnquals.pps ),
     bty.pp, space(), mty.lpp, name.pp, mty.rpp, ppAttributesRHS(attrs), line(), terminate(cat(semi(), line()), decls.pps),
     text("{"), line(), nestlines(2,body.pp), text("}")]);
-  
+
+  -- TODO: consider changing signature of this production to take
+  -- SpecialSpecifiers instead of [SpecialSpecifier]
+  --local specialSpecifiers :: SpecialSpecifiers =
+  --   foldr(consSpecialSpecifier, nilSpecialSpecifier(), fnquals);
+  fnquals.env = top.env;
+  fnquals.returnType = top.returnType;  
+ 
+
   local parameters :: Decorated Parameters =
     case mty of
     | functionTypeExprWithArgs(result, args, variadic) ->
@@ -366,19 +375,20 @@ top::FunctionDecl ::= storage::[StorageClass]  fnquals::[SpecialSpecifier]  bty:
   local funcDefs::[Def] = bty.defs ++ [valueDef(name.name, functionValueItem(top))];
   local thisFuncDef :: Def = miscDef("this_func", currentFunctionItem(name, top));
   
-  top.errors := bty.errors ++ mty.errors ++ body.errors;
+  top.errors := bty.errors ++ mty.errors ++ body.errors ++ fnquals.errors;
   top.globalDecls := bty.globalDecls ++ mty.globalDecls ++ decls.globalDecls ++ 
-                     body.globalDecls;
+                     body.globalDecls ++ fnquals.globalDecls;
   top.defs :=
     funcDefs ++
     globalDeclsDefs(mty.globalDecls) ++
     globalDeclsDefs(decls.globalDecls) ++
-    globalDeclsDefs(body.globalDecls);
+    globalDeclsDefs(body.globalDecls) ++
+    globalDeclsDefs(fnquals.globalDecls);
   top.freeVariables =
     bty.freeVariables ++
     removeDefsFromNames([thisFuncDef], mty.freeVariables) ++
     decls.freeVariables ++ --TODO?
-    removeDefsFromNames(top.defs ++ parameters.defs ++ decls.defs ++ body.functiondefs, body.freeVariables);
+    removeDefsFromNames(top.defs ++ parameters.defs ++ decls.defs ++ body.functiondefs ++ fnquals.defs, body.freeVariables);
   -- accumulate extension qualifiers on redeclaration
   top.typerep = name.valueMergeRedeclExtnQualifiers(mty.typerep);
   top.sourceLocation = name.location;
@@ -428,7 +438,7 @@ top::FunctionDecl ::= storage::[StorageClass]  fnquals::[SpecialSpecifier]  bty:
 -- Allows extensions to handle nested functions differently
 -- TODO: is this needed?  Should this be forwarding?  
 abstract production nestedFunctionDecl
-top::FunctionDecl ::= storage::[StorageClass]  fnquals::[SpecialSpecifier]  bty::BaseTypeExpr mty::TypeModifierExpr  name::Name  attrs::Attributes  decls::Decls  body::Stmt
+top::FunctionDecl ::= storage::[StorageClass]  fnquals::SpecialSpecifiers  bty::BaseTypeExpr mty::TypeModifierExpr  name::Name  attrs::Attributes  decls::Decls  body::Stmt
 {
   --top.defs := bty.defs ++ [valueDef(name.name, functionValueItem(top))];
   

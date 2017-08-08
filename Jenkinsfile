@@ -43,26 +43,81 @@ node {
 
     /* stages are pretty much just labels about what's going on */
     stage ("Build") {
+      /* Clean Silver-generated files from previous builds in this workspace */
+      /* note: sh "mkdir -p generated" fails first time? try dir("generated")
+       * instead? this should mkdir if it doesn't exist, maybe? */
+      dir("generated") {
+        sh "rm -rf * || true"
+      }
+
       checkout scm
 
       /* env.PATH is the master's path, not the executor's */
       withEnv(["PATH=${params.SILVER_BASE}/support/bin/:${env.PATH}"]) {
-        sh "./build -G ${WORKSPACE} --warn-all"
+        sh "./build -G ${WORKSPACE}/generated --warn-all --warn-error"
       }
     }
 
     stage ("Extensions") {
-//      build job: '/melt-umn/edu.umn.cs.melt.exts.ableC.sqlite/master', parameters:
-      build job: "/melt-umn/edu.umn.cs.melt.exts.ableC.sqlite/feature%2Ftype_qualifiers", parameters:
-        [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: params.SILVER_BASE],
-         [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
-//      build job: '/melt-umn/ableC-condition-tables/master', parameters:
-//        [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: params.SILVER_BASE],
-//         [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
-//      build job: '/melt-umn/ableC-cilk/master', parameters:
-      build job: "/melt-umn/ableC-cilk/feature%2Ftype_qualifiers", parameters:
-        [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: params.SILVER_BASE],
-         [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
+      parallel(
+        "ableC-skeleton": {
+          build job: '/melt-umn/ableC-skeleton/develop', parameters:
+            [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: params.SILVER_BASE],
+             [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
+        },
+        "ableC-lib-skeleton": {
+          build job: '/melt-umn/ableC-lib-skeleton/develop', parameters:
+            [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: params.SILVER_BASE],
+             [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
+        },
+        "ableC-sqlite": {
+//          build job: '/melt-umn/ableC-sqlite/develop', parameters:
+          build job: "/melt-umn/ableC-sqlite/feature%2Ftype_qualifiers", parameters:
+            [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: params.SILVER_BASE],
+             [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
+        },
+        "ableC-condition-tables": {
+          build job: '/melt-umn/ableC-condition-tables/develop', parameters:
+            [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: params.SILVER_BASE],
+             [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
+        },
+        "ableC-interval": {
+          build job: '/melt-umn/ableC-interval/develop', parameters:
+            [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: params.SILVER_BASE],
+             [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
+        },
+        "ableC-cilk": {
+//          build job: '/melt-umn/ableC-cilk/develop', parameters:
+          build job: "/melt-umn/ableC-cilk/feature%2Ftype_qualifiers", parameters:
+            [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: params.SILVER_BASE],
+             [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
+        },
+        "ableC-halide": {
+          build job: '/melt-umn/ableC-halide/develop', parameters:
+            [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: params.SILVER_BASE],
+             [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
+        },
+        "ableC-closure": {
+          build job: '/melt-umn/ableC-closure/develop', parameters:
+            [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: params.SILVER_BASE],
+             [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
+        },
+        "ableC-templating": {
+          build job: '/melt-umn/ableC-templating/develop', parameters:
+            [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: params.SILVER_BASE],
+             [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
+        },
+        "ableC-string": {
+          build job: '/melt-umn/ableC-string/develop', parameters:
+            [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: params.SILVER_BASE],
+             [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
+        },
+        "ableC-vector": {
+          build job: '/melt-umn/ableC-vector/develop', parameters:
+            [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: params.SILVER_BASE],
+             [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
+        }
+      )
     }
 
     /* TODO: use nailgun!
