@@ -36,6 +36,14 @@ concrete productions top::FunctionDefinition_c
       context = lh:closeScope(context); -- Opened by InitialFunctionDefinition.
     }
 
+closed nonterminal OptTypeQualifierList_c;
+concrete productions top::OptTypeQualifierList_c
+|
+  {
+  }
+| qs::TypeQualifierList_c
+  {
+  }
 
 closed nonterminal Declaration_c with location, ast<ast:Decl>;
 concrete productions top::Declaration_c
