@@ -5,6 +5,7 @@ import edu:umn:cs:melt:ableC:abstractsyntax:overload as ovrld;
 nonterminal Expr with location, pp, host<Expr>, lifted<Expr>, globalDecls, errors, defs, env, returnType, freeVariables, typerep;
 
 synthesized attribute integerConstantValue :: Maybe<Integer>;
+synthesized attribute isLValue::Boolean occurs on Expr;
 
 {- The production below is never used.  But it adds a dependency for
    the forwards-to equation on returnType so that it may be used by
@@ -30,6 +31,7 @@ top::Expr ::= msg::[Message]
   top.defs := [];
   top.freeVariables = [];
   top.typerep = errorType();
+  top.isLValue = false;
 }
 abstract production warnExpr
 top::Expr ::= msg::[Message] e::Expr
@@ -49,6 +51,8 @@ top::Expr ::= id::Name
   top.defs := [];
   top.typerep = id.valueItem.typerep;
   top.freeVariables = [id];
+  top.isLValue = true;
+  
   
   top.errors <- id.valueLookupCheck;
 }
@@ -60,9 +64,10 @@ top::Expr ::= l::String
   top.errors := [];
   top.globalDecls := [];
   top.defs := [];
-  top.freeVariables = [];
+  top.freeVariables = [];  
   top.typerep = pointerType(nilQualifier(),
     builtinType(foldQualifier([]), signedType(charType())));
+  top.isLValue = false;      
 }
 abstract production parenExpr
 top::Expr ::= e::Expr
@@ -74,6 +79,8 @@ top::Expr ::= e::Expr
   top.defs := e.defs;
   top.freeVariables = e.freeVariables;
   top.typerep = e.typerep;
+  top.isLValue = true;  
+  
 }
 abstract production unaryOpExpr
 top::Expr ::= op::UnaryOp  e::Expr
@@ -94,6 +101,7 @@ top::Expr ::= op::UnaryOp  e::Expr  collectedTypeQualifiers::Qualifiers
   top.defs := e.defs;
   top.freeVariables = e.freeVariables;
   top.typerep = addQualifiers(collectedTypeQualifiers.qualifiers, op.typerep);
+  top.isLValue = e.isLValue;    
 
   op.op = e;
 }
@@ -107,6 +115,7 @@ top::Expr ::= op::UnaryTypeOp  e::ExprOrTypeName
   top.defs := e.defs;
   top.freeVariables = e.freeVariables;
   top.typerep = builtinType(nilQualifier(), signedType(intType())); -- TODO sizeof / alignof result type
+  top.isLValue = false;  
 }
 abstract production arraySubscriptExpr
 top::Expr ::= lhs::Expr  rhs::Expr
@@ -117,6 +126,7 @@ top::Expr ::= lhs::Expr  rhs::Expr
   top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
   top.defs := lhs.defs ++ rhs.defs;
   top.freeVariables = lhs.freeVariables ++ removeDefsFromNames(rhs.defs, rhs.freeVariables);
+  top.isLValue := true;
   
   local subtype :: Either<Type [Message]> =
     case lhs.typerep.defaultFunctionArrayLvalueConversion, rhs.typerep.defaultFunctionArrayLvalueConversion of
