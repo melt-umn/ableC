@@ -78,7 +78,7 @@ top::TypeName ::= bty::BaseTypeExpr  mty::TypeModifierExpr
  - Corresponds to types obtainable from a TypeSpecifiers.
  -}
 nonterminal BaseTypeExpr with env, typerep, pp, host<BaseTypeExpr>, lifted<BaseTypeExpr>, errors, globalDecls, typeModifiers, defs, givenRefId, returnType, freeVariables;
-flowtype BaseTypeExpr = decorate {env, givenRefId, returnType};
+flowtype BaseTypeExpr = decorate {env, givenRefId, returnType}, typeModifiers {decorate};
 
 abstract production errorTypeExpr
 top::BaseTypeExpr ::= msg::[Message]
