@@ -32,3 +32,9 @@ Boolean ::= d::Def n::String
     | _ -> false
     end;
 }
+
+function nameEq
+Boolean ::= n1::Name n2::Name
+{
+  return n1.name == n2.name;
+}
