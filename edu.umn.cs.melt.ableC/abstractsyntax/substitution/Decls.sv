@@ -226,13 +226,3 @@ top::EnumItem ::= name::Name  e::MaybeExpr
 {
   propagate substituted;
 }
-
-aspect production hackUnusedDecl
-top::Decl ::=
-{
-  -- substituted doesn't depend on env
-  top.substituted = error("hack");
-}
-
-
-

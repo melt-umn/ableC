@@ -16,8 +16,8 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax;
  - That is, we cannot represent it as "struct { ... } bar; struct { ... } *baz;"
  - because that redeclares the type.
  -
- - Our solution is to have a BaseTypeExprs for a declarations, followed by
- - several identifiers each with their own TypeModifiersExpr.
+ - Our solution is to have a BaseTypeExpr for a declarations, followed by
+ - several identifiers each with their own TypeModifierExpr.
  - This way, the struct appears once in the abstract syntax.
  -
  - TypeModifiersExpr are terminated by "baseTypeExpr" which provides a typerep
@@ -54,6 +54,7 @@ synthesized attribute bty :: BaseTypeExpr;
 synthesized attribute mty :: TypeModifierExpr;
 
 nonterminal TypeName with env, typerep, bty, mty, pp, host<TypeName>, lifted<TypeName>, errors, globalDecls, defs, returnType, freeVariables;
+flowtype TypeName = decorate {env, returnType}, bty {}, mty {};
 
 abstract production typeName
 top::TypeName ::= bty::BaseTypeExpr  mty::TypeModifierExpr
@@ -77,6 +78,7 @@ top::TypeName ::= bty::BaseTypeExpr  mty::TypeModifierExpr
  - Corresponds to types obtainable from a TypeSpecifiers.
  -}
 nonterminal BaseTypeExpr with env, typerep, pp, host<BaseTypeExpr>, lifted<BaseTypeExpr>, errors, globalDecls, typeModifiers, defs, givenRefId, returnType, freeVariables;
+flowtype BaseTypeExpr = decorate {env, givenRefId, returnType};
 
 abstract production errorTypeExpr
 top::BaseTypeExpr ::= msg::[Message]
@@ -109,7 +111,7 @@ top::BaseTypeExpr ::= msg::[Message]  ty::BaseTypeExpr
  - This production is NOT considered part of the host, since Type should not occur in the host tree.
  - Instead we transform the parameter type into a TypeExpr and forward to that.
  - Note that directTypeExpr(te.typerep) is not necessarily equivalent to te, since TypeNames can
- - contain extra information relavent only to the declaration, not to the meaning of the type.  
+ - contain extra information relevant only to the declaration, not to the meaning of the type.  
  - However, directTypeExpr(ty).typerep should be the same as ty, and
  - directTypeExpr(te.typerep).host.pp should be the same as te.typerep.pp
  -}
@@ -121,11 +123,7 @@ top::BaseTypeExpr ::= result::Type
   top.pp = parens(cat(result.lpp, result.rpp));
   top.typerep = result;
   
-  forwards to
-    case result.typeModifierExpr of
-      baseTypeExpr() -> result.baseTypeExpr
-    | _ -> typeModifierTypeExpr(result.baseTypeExpr, result.typeModifierExpr)
-    end;
+  forwards to typeModifierTypeExpr(result.baseTypeExpr, result.typeModifierExpr);
 }
 
 {-- A TypeExpr that contains a type modifier which must be lifted out
@@ -139,6 +137,7 @@ top::BaseTypeExpr ::= bty::BaseTypeExpr  mty::TypeModifierExpr
   top.lifted = bty.lifted;
   top.typerep = mty.typerep;
   mty.baseType = bty.typerep;
+  mty.typeModifiersIn = bty.typeModifiers;
   top.errors := bty.errors ++ mty.errors;
   top.globalDecls := bty.globalDecls ++ mty.globalDecls;
   top.typeModifiers = mty :: bty.typeModifiers;
@@ -374,7 +373,16 @@ top::BaseTypeExpr ::= q::Qualifiers  e::ExprOrTypeName
  - Typically, these are just anchored somewhere to obtain the env,
  - and then turn into an environment-independent Type.
  -}
-nonterminal TypeModifierExpr with env, typerep, lpp, rpp, host<TypeModifierExpr>, lifted<TypeModifierExpr>, baseType, typeModifiersIn, errors, globalDecls, returnType, freeVariables;
+nonterminal TypeModifierExpr with env, typerep, lpp, rpp, host<TypeModifierExpr>, lifted<TypeModifierExpr>, isFunctionTypeExpr, baseType, typeModifiersIn, errors, globalDecls, returnType, freeVariables;
+flowtype TypeModifierExpr = decorate {env, baseType, typeModifiersIn, returnType}, isFunctionTypeExpr {};
+
+synthesized attribute isFunctionTypeExpr::Boolean;
+
+aspect default production
+top::TypeModifierExpr ::=
+{
+  top.isFunctionTypeExpr = false;
+}
 
 {--
  - A TypeModifierExpr that corresponds to whatever the base TypeExpr was.  
@@ -390,8 +398,9 @@ top::TypeModifierExpr ::=
   top.lifted = if !null(top.typeModifiersIn) then mty.lifted else baseTypeExpr();
   
   local mty::TypeModifierExpr = head(top.typeModifiersIn);
-  mty.typeModifiersIn = tail(top.typeModifiersIn);
   mty.env = top.env;
+  mty.baseType = top.typerep;
+  mty.typeModifiersIn = tail(top.typeModifiersIn);
   mty.returnType = top.returnType;
   
   top.typerep = top.baseType; 
@@ -406,11 +415,8 @@ top::TypeModifierExpr ::= q::Qualifiers  target::TypeModifierExpr
 {
   propagate host, lifted;
   top.lpp = ppConcat([ target.lpp, space(),
-                     case target of
-                       functionTypeExprWithArgs(_, _, _) -> text("(*)")
-                     | functionTypeExprWithoutArgs(_, _) -> text("(*)")
-                     | _ -> text("*")
-                     end, terminate(space(), q.pps) ]);
+                     if target.isFunctionTypeExpr then text("(*)") else text("*"),
+                     terminate(space(), q.pps) ]);
   top.rpp = target.rpp;
   top.typerep = pointerType(q, target.typerep);
   top.errors := target.errors;
@@ -469,6 +475,8 @@ top::TypeModifierExpr ::= result::TypeModifierExpr  args::Parameters  variadic::
            )
      ), result.rpp);
   
+  top.isFunctionTypeExpr = true;
+  
   top.typerep = functionType(result.typerep, 
                              protoFunctionType(args.typereps, variadic));
   top.errors := result.errors ++ args.errors;
@@ -483,6 +491,8 @@ top::TypeModifierExpr ::= result::TypeModifierExpr  ids::[Name]  --fnquals::[Spe
   propagate host, lifted;
   top.lpp = result.lpp;
   top.rpp = cat( parens(ppImplode(text(", "), map((.pp), ids))), result.rpp );
+  
+  top.isFunctionTypeExpr = true;
   
   top.typerep = functionType(result.typerep, noProtoFunctionType());
   top.errors := result.errors;
@@ -505,6 +515,7 @@ top::TypeModifierExpr ::= wrapped::TypeModifierExpr
 }
 
 nonterminal TypeNames with pps, host<TypeNames>, lifted<TypeNames>, env, typereps, count, errors, globalDecls, defs, returnType, freeVariables;
+flowtype TypeNames = decorate {env, returnType}, count {};
 
 abstract production consTypeName
 top::TypeNames ::= h::TypeName t::TypeNames

@@ -169,12 +169,3 @@ top::Expr ::= lhs::Expr  op::BinOp  rhs::Expr
 {
   propagate substituted;
 }
-
-aspect production hackUnused
-top::Expr ::=
-{
-  -- substituted doesn't depend on env
-  top.substituted = error("hack");
-}
-
-

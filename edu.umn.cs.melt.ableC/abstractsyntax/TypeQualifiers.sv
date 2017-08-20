@@ -1,6 +1,12 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax;
 
+synthesized attribute collectedTypeQualifiers :: [Qualifier] with ++;
+flowtype collectedTypeQualifiers {} on -- TODO: Should this be allowed to depend on anything?
+  UnaryOp,
+  BinOp, AssignOp, BoolOp, BitOp, CompareOp, NumOp;
+
 nonterminal Qualifiers with mangledName, qualifiers, pps, host<Qualifiers>;
+flowtype Qualifiers = decorate {}, qualifiers {};
 
 synthesized attribute qualifiers :: [Qualifier];
 
@@ -24,6 +30,7 @@ top::Qualifiers ::=
 
 {-- Type qualifiers (cv or cvr qualifiers) -}
 closed nonterminal Qualifier with pp, qualIsPositive, qualIsNegative, qualAppliesWithinRef, qualCompat, qualIsHost, mangledName;
+flowtype Qualifier = decorate {}, qualIsPositive {}, qualIsNegative {}, qualAppliesWithinRef {}, qualCompat {}, qualIsHost {};
 
 synthesized attribute qualIsPositive :: Boolean;
 synthesized attribute qualIsNegative :: Boolean;
@@ -110,6 +117,7 @@ top::Qualifier ::=
  -      Alignment specifiers (_Alignas)
  -}
 nonterminal SpecialSpecifier with pp, host<SpecialSpecifier>, lifted<SpecialSpecifier>, env, returnType;
+flowtype SpecialSpecifier = decorate {env, returnType};
 
 abstract production inlineQualifier
 top::SpecialSpecifier ::=

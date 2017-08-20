@@ -46,6 +46,9 @@ imports edu:umn:cs:melt:ableC:abstractsyntax:env;
 synthesized attribute unaryProd::Maybe<(Expr ::= Expr Location)> occurs on UnaryOp;
 synthesized attribute binaryProd::Maybe<(Expr ::= Expr Expr Location)>
   occurs on BinOp, AssignOp, BoolOp, BitOp, CompareOp, NumOp;
+  
+flowtype unaryProd {decorate} on UnaryOp;
+flowtype binaryProd {decorate} on BinOp, AssignOp, BoolOp, BitOp, CompareOp, NumOp;
 
 -- Expressions
 function getArraySubscriptOverload

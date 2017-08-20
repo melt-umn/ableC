@@ -1,11 +1,11 @@
 
 function ppAttributes
-Document ::= l::Decorated Attributes
+Document ::= l::Attributes
 {
   return terminate(space(), l.pps);
 }
 function ppAttributesRHS
-Document ::= l::Decorated Attributes
+Document ::= l::Attributes
 {
   return initiate(space(), l.pps);
 }
@@ -21,6 +21,7 @@ Attributes ::= l1::Attributes l2::Attributes
 }
 
 nonterminal Attributes with pps, host<Attributes>, lifted<Attributes>, env, returnType;
+flowtype Attributes = decorate {env, returnType};
 
 abstract production consAttribute
 top::Attributes ::= h::Attribute t::Attributes
@@ -38,6 +39,7 @@ top::Attributes ::=
 
 {-- __attribute__ syntax representation -}
 nonterminal Attribute with pp, host<Attribute>, lifted<Attribute>, env, returnType;
+flowtype Attribute = decorate {env, returnType};
 
 abstract production gccAttribute
 top::Attribute ::= l::Attribs
@@ -54,6 +56,7 @@ top::Attribute ::= s::String
 }
 
 nonterminal Attribs with pp, host<Attribs>, lifted<Attribs>, env, returnType;
+flowtype Attribs = decorate {env, returnType};
 
 abstract production consAttrib
 top::Attribs ::= h::Attrib t::Attribs
@@ -75,6 +78,7 @@ top::Attribs ::=
 }
 
 nonterminal Attrib with pp, host<Attrib>, lifted<Attrib>, env, returnType;
+flowtype Attrib = decorate {env, returnType};
 
 -- e.g. __attribute__(())
 abstract production emptyAttrib
@@ -108,7 +112,8 @@ top::Attrib ::= n::AttribName  id::Name  e::Exprs
 }
 
 
-nonterminal AttribName with pp, host<AttribName>, lifted<AttribName>;
+nonterminal AttribName with pp, env, host<AttribName>, lifted<AttribName>;
+flowtype AttribName = decorate {env};
 
 abstract production attribName
 top::AttribName ::= n::Name
