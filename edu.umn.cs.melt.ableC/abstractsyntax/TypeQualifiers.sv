@@ -152,6 +152,7 @@ top::SpecialSpecifier ::= e::Expr
 }
 
 nonterminal SpecialSpecifiers with pps, host<SpecialSpecifiers>, lifted<SpecialSpecifiers>, env, returnType, errors, globalDecls, defs;
+flowtype SpecialSpecifiers = decorate {env, returnType};
 
 abstract production consSpecialSpecifier
 top::SpecialSpecifiers ::= h::SpecialSpecifier t::SpecialSpecifiers

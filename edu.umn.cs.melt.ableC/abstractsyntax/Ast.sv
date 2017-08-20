@@ -31,7 +31,7 @@ flowtype pps {} on
   Attributes,
   GlobalDecls, Decls, Declarators, Declarator, Parameters, StructItemList, EnumItemList, StructDeclarators, StructDeclarator,
   ArraySizeModifier,
-  Qualifiers,
+  Qualifiers, SpecialSpecifiers,
   GenericAssocs,
   TypeNames,
   Exprs,
@@ -54,11 +54,13 @@ flowtype errors {decorate} on
   Stmt,
   UnaryOp, UnaryTypeOp,
   BinOp,
-  MaybeInitializer, Initializer, InitList, Init, Designator;
+  MaybeInitializer, Initializer, InitList, Init, Designator,
+  SpecialSpecifiers;
   
 flowtype defs {decorate} on
   Decls, Decl, Declarators, Declarator, FunctionDecl, Parameters, ParameterDecl, StructDecl, UnionDecl, EnumDecl, StructItemList, EnumItemList, StructItem, EnumItem,
   MemberDesignator,
+  SpecialSpecifiers,
   Expr, GenericAssocs, GenericAssoc,
   TypeName, BaseTypeExpr, TypeNames,
   MaybeExpr, Exprs, ExprOrTypeName,

@@ -16,7 +16,7 @@ flowtype host {decorate} on
   MemberDesignator,
   Type, ArrayType, FunctionType, TagType, NoncanonicalType,
   AsmStatement, AsmArgument, AsmClobbers, AsmOperands, AsmOperand,
-  Qualifiers, SpecialSpecifier,
+  Qualifiers, SpecialSpecifier, SpecialSpecifiers,
   Expr, GenericAssocs, GenericAssoc,
   TypeName, BaseTypeExpr, TypeModifierExpr, TypeNames,
   BuiltinType, RealType, IntegerType,

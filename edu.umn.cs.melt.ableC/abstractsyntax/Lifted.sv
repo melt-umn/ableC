@@ -58,7 +58,7 @@ flowtype lifted {decorate} on
   GlobalDecls, Decls, Decl, Declarators, Declarator, FunctionDecl, Parameters, ParameterDecl, StructDecl, UnionDecl, EnumDecl, StructItemList, EnumItemList, StructItem, StructDeclarators, StructDeclarator, EnumItem,
   MemberDesignator,
   AsmStatement, AsmArgument, AsmClobbers, AsmOperands, AsmOperand,
-  SpecialSpecifier,
+  SpecialSpecifier, SpecialSpecifiers,
   Expr, GenericAssocs, GenericAssoc,
   TypeName, BaseTypeExpr, TypeModifierExpr, TypeNames,
   NumericConstant,
@@ -71,6 +71,7 @@ flowtype lifted {decorate} on
 flowtype globalDecls {decorate} on
   Decls, Decl, Declarators, Declarator, FunctionDecl, Parameters, ParameterDecl, StructDecl, UnionDecl, EnumDecl, StructItemList, EnumItemList, StructItem, StructDeclarators, StructDeclarator, EnumItem,
   MemberDesignator,
+  SpecialSpecifiers,
   Expr, GenericAssocs, GenericAssoc,
   TypeName, BaseTypeExpr, TypeModifierExpr, TypeNames,
   MaybeExpr, Exprs, ExprOrTypeName,
