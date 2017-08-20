@@ -73,7 +73,7 @@ flowtype forward {} on
   Attributes, Attribs, AttribName,
   Decls, Declarators, Parameters, StructItemList, EnumItemList, StructDeclarators,
   AsmClobbers, AsmOperands,
-  Qualifiers,
+  Qualifiers, SpecialSpecifiers,
   GenericAssocs,
   TypeNames,
   MaybeExpr, Exprs, ExprOrTypeName,
