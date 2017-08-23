@@ -26,7 +26,7 @@ top::UnaryOp ::=
   propagate host, lifted;
   top.pp = text("++");
   top.preExpr = true;
-  top.noLvalueConversion = false;
+  top.noLvalueConversion = true;
   top.typerep = top.op.typerep.defaultLvalueConversion.integerPromotions;
   top.collectedTypeQualifiers := [];
 }
