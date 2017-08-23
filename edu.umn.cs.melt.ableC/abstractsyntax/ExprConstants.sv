@@ -55,7 +55,6 @@ top::NumericConstant ::= num::String  unsigned::Boolean  suffix::IntSuffix
   top.pp = text(num);
   top.errors := [];
   top.constanttyperep = if unsigned then unsignedType(suffix.constinttyperep) else signedType(suffix.constinttyperep);
-  top.isLValue = false;
 }
 abstract production hexIntegerConstant
 top::NumericConstant ::= num::String  unsigned::Boolean  suffix::IntSuffix
@@ -64,7 +63,6 @@ top::NumericConstant ::= num::String  unsigned::Boolean  suffix::IntSuffix
   top.pp = text(num);
   top.errors := [];
   top.constanttyperep = if unsigned then unsignedType(suffix.constinttyperep) else signedType(suffix.constinttyperep);
-  top.isLValue = false;
 }
 abstract production octIntegerConstant
 top::NumericConstant ::= num::String  unsigned::Boolean  suffix::IntSuffix
@@ -73,7 +71,6 @@ top::NumericConstant ::= num::String  unsigned::Boolean  suffix::IntSuffix
   top.pp = text(num);
   top.errors := [];
   top.constanttyperep = if unsigned then unsignedType(suffix.constinttyperep) else signedType(suffix.constinttyperep);
-  top.isLValue = false;
 }
 
 abstract production floatConstant
@@ -83,7 +80,6 @@ top::NumericConstant ::= num::String  suffix::FloatSuffix
   top.pp = text(num);
   top.errors := [];
   top.constanttyperep = realType(suffix.constfloattyperep);
-  top.isLValue = false;
 }
 abstract production hexFloatConstant
 top::NumericConstant ::= num::String  suffix::FloatSuffix
@@ -92,7 +88,6 @@ top::NumericConstant ::= num::String  suffix::FloatSuffix
   top.pp = text(num);
   top.errors := [];
   top.constanttyperep = realType(suffix.constfloattyperep);
-  top.isLValue = false;
 }
 
 nonterminal IntSuffix with constinttyperep; -- nothing, L, LL
