@@ -156,8 +156,6 @@ top::Expr ::= f::Name  a::Exprs
   -- Forwarding depends on env. We must be able to compute a pp without using env.
   top.pp = parens( ppConcat([ f.pp, parens( ppImplode( cat( comma(), space() ), a.pps ))]) );
 
-  -- isLValue depends on type
-
   forwards to f.valueItem.directCallHandler(f, a, top.location);
 }
 -- If the identifier is an ordinary one, use the normal function call production
@@ -179,7 +177,7 @@ top::Expr ::= f::Expr  a::Exprs
   top.globalDecls := f.globalDecls ++ a.globalDecls;
   top.defs := f.defs ++ a.defs;
   top.freeVariables = f.freeVariables ++ removeDefsFromNames(f.defs, a.freeVariables);
-  -- isLValue depends on type
+  top.isLValue = false; -- C++ style references would change this
   
   local subtype :: Either<Pair<Type FunctionType> [Message]> =
     case f.typerep.defaultFunctionArrayLvalueConversion of
@@ -253,7 +251,7 @@ top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
   local valueitems :: [ValueItem] =
     lookupValue(rhs.name, head(refids).tagEnv);
 
-  -- isLValue depends on type
+  top.isLValue = true;
   
   top.typerep =
     if null(refids) then 
@@ -302,7 +300,7 @@ top::Expr ::= lhs::Expr  op::BinOp  rhs::Expr  collectedTypeQualifiers::Qualifie
   op.lop = lhs;
   op.rop = rhs;
 
-  -- isLValue depends on type
+  top.isLValue = false;
   
   rhs.env = addEnv(lhs.defs, lhs.env);
 }
@@ -355,7 +353,7 @@ top::Expr ::= ty::TypeName  e::Expr
   
   e.env = addEnv(ty.defs, ty.env);
 
-  -- isLValue depends on type
+  top.isLValue = false;
   
   -- TODO: type checking!!
 }
@@ -386,7 +384,7 @@ top::Expr ::=
   top.freeVariables = [];
   top.typerep = pointerType(nilQualifier(),
     builtinType(foldQualifier([constQualifier()]), signedType(charType()))); -- const char *
-    -- isLValue depends on type?
+  top.isLValue = false;
 }
 
 -- C11
