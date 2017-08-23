@@ -100,7 +100,7 @@ top::Expr ::= op::UnaryOp  e::Expr  collectedTypeQualifiers::Qualifiers
   top.defs := e.defs;
   top.freeVariables = e.freeVariables;
   top.typerep = addQualifiers(collectedTypeQualifiers.qualifiers, op.typerep);
-  top.isLValue = e.isLValue;    
+  top.isLValue = false;    
 
   op.op = e;
 }
@@ -125,7 +125,7 @@ top::Expr ::= lhs::Expr  rhs::Expr
   top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
   top.defs := lhs.defs ++ rhs.defs;
   top.freeVariables = lhs.freeVariables ++ removeDefsFromNames(rhs.defs, rhs.freeVariables);
-  top.isLValue := true;
+  top.isLValue = true;
   
   local subtype :: Either<Type [Message]> =
     case lhs.typerep.defaultFunctionArrayLvalueConversion, rhs.typerep.defaultFunctionArrayLvalueConversion of
