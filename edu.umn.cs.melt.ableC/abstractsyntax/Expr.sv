@@ -101,7 +101,7 @@ top::Expr ::= op::UnaryOp  e::Expr  collectedTypeQualifiers::Qualifiers
   top.freeVariables = e.freeVariables;
   top.typerep = addQualifiers(collectedTypeQualifiers.qualifiers, op.typerep);
   top.isLValue = case op of 
-    | dereferenceOp() -> e.isLValue
+    | dereferenceOp() -> true
     | _ -> false
     end;
 
