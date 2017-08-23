@@ -100,7 +100,7 @@ top::Expr ::= op::UnaryOp  e::Expr  collectedTypeQualifiers::Qualifiers
   top.defs := e.defs;
   top.freeVariables = e.freeVariables;
   top.typerep = addQualifiers(collectedTypeQualifiers.qualifiers, op.typerep);
-  top.isLValue = false;    
+  top.isLValue = e.isLValue; -- This might need to be more complex. 
 
   top.errors <- 
     if !e.isLValue
