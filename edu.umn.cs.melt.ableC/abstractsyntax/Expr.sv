@@ -102,6 +102,11 @@ top::Expr ::= op::UnaryOp  e::Expr  collectedTypeQualifiers::Qualifiers
   top.typerep = addQualifiers(collectedTypeQualifiers.qualifiers, op.typerep);
   top.isLValue = false;    
 
+  top.errors <- 
+    if !e.isLValue
+    then if op.noLvalueConversion then [err(e.location, "lvalue required as " ++ op.pp ++ " operand")]
+    else [];
+
   op.op = e;
 }
 abstract production unaryExprOrTypeTraitExpr
@@ -306,7 +311,7 @@ top::Expr ::= lhs::Expr  op::BinOp  rhs::Expr  collectedTypeQualifiers::Qualifie
     case op of 
       | assignOp(_) -> 
         if lhs.isLValue then []
-        else err(lhs.location, "lvalue required as left operand of assignment")
+        else [err(lhs.location, "lvalue required as left operand of assignment")]
       | _ -> []
     end;
   
