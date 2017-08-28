@@ -108,7 +108,7 @@ top::Expr ::= op::UnaryOp  e::Expr  collectedTypeQualifiers::Qualifiers
   top.errors <- 
     if !e.isLValue
     then if !op.noLvalueConversion then []
-         else [err(e.location, "lvalue required as unary operand")]
+         else [err(e.location, "lvalue required as unary operand for " ++ op.opName)]
     else [];
 
   op.op = e;
