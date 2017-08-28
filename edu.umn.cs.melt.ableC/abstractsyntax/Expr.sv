@@ -260,7 +260,7 @@ top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
   local valueitems :: [ValueItem] =
     lookupValue(rhs.name, head(refids).tagEnv);
 
-  top.isLValue = lhs.isLValue;
+  top.isLValue = true;
   
   top.typerep =
     if null(refids) then 
