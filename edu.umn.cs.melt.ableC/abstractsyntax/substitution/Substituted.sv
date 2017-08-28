@@ -45,6 +45,7 @@ synthesized attribute parametersSub::Maybe<Parameters>;
 synthesized attribute refIdSub::Maybe<String>;
 
 nonterminal Substitutions with nameIn, nameSub, typedefSub, declRefSub, stmtSub, exprsSub, parametersSub, refIdSub;
+flowtype Substitutions = nameSub {nameIn}, typedefSub {nameIn}, declRefSub {nameIn}, stmtSub {nameIn}, exprsSub {nameIn}, parametersSub {nameIn}, refIdSub {nameIn};
 
 abstract production consSubstitution
 top::Substitutions ::= h::Substitution t::Substitutions
@@ -71,6 +72,7 @@ top::Substitutions ::=
 }
 
 closed nonterminal Substitution with nameIn, nameSub, typedefSub, declRefSub, stmtSub, exprsSub, parametersSub, refIdSub;
+flowtype Substitution = nameSub {nameIn}, typedefSub {nameIn}, declRefSub {nameIn}, stmtSub {nameIn}, exprsSub {nameIn}, parametersSub {nameIn}, refIdSub {nameIn};
 
 aspect default production
 top::Substitution ::= 

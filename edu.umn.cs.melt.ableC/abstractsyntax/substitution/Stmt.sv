@@ -162,15 +162,3 @@ top::Stmt ::= asm::AsmStatement
 {
   propagate substituted;
 }
-
-aspect production hackUnusedStmt
-top::Stmt ::=
-{
-  -- substituted doesn't depend on env
-  top.substituted = error("hack");
-}
-
-
-
-
-

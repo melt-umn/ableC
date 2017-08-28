@@ -6,7 +6,8 @@ import silver:langutil:pp;
 -- Aspects over different "Item" types in Env --
 ------------------------------------------------
 
-attribute pp occurs on ValueItem ;
+attribute pp occurs on ValueItem;
+flowtype pp {} on ValueItem;
 
 aspect production declaratorValueItem
 top::ValueItem ::= s::Decorated Declarator
@@ -37,7 +38,8 @@ top::ValueItem ::=
 { top.pp = text("errorValueItem"); }
 
 
-attribute pp occurs on TagItem ;
+attribute pp occurs on TagItem;
+flowtype pp {} on TagItem;
 
 aspect production enumTagItem
 top::TagItem ::= s::Decorated EnumDecl
@@ -58,6 +60,8 @@ t::TagItem ::= adtRefId::String structRefId::String
 
 
 attribute pp occurs on RefIdItem;
+flowtype pp {} on RefIdItem;
+
 {-
 aspect production adtRefIdItem
 t::RefIdItem ::= adt::Decorated ADTDecl s::Decorated StructDecl 

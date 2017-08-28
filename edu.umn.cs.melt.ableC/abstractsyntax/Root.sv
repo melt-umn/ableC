@@ -6,6 +6,7 @@ import edu:umn:cs:melt:ableC:abstractsyntax:builtins as builtinfunctions;
 global fullErrorCheck::Boolean = true;
 
 nonterminal Root with pp, host<Root>, lifted<Root>, errors, env;
+flowtype Root = decorate {env};
 
 abstract production root
 top::Root ::= d::GlobalDecls
@@ -28,6 +29,7 @@ synthesized attribute hostPP::Document;
 synthesized attribute liftedPP::Document;
 synthesized attribute finalPP::Document;
 nonterminal Compilation with srcAst, hostAst, liftedAst, srcPP, hostPP, liftedPP, finalPP, errors, env;
+flowtype Compilation = decorate {env}, srcAst {}, hostAst {env}, liftedAst {env}, srcPP {}, hostPP {env}, liftedPP {env}, finalPP {env};
 
 abstract production compilation
 top::Compilation ::= srcAst::Root
