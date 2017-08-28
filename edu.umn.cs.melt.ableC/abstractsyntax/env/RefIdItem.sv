@@ -24,7 +24,6 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax:env;
  -}
 nonterminal RefIdItem with moduleName, tagEnv;
 
-
 {-- Name resolves to a full struct declaration -}
 abstract production structRefIdItem
 top::RefIdItem ::= s::Decorated StructDecl
