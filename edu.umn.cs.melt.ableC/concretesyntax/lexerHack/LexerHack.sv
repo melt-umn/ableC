@@ -2,16 +2,15 @@ grammar edu:umn:cs:melt:ableC:concretesyntax:lexerHack;
 
 imports edu:umn:cs:melt:ableC:abstractsyntax as ast;
 
-nonterminal IdentType;
+-- Nonterminal representing an enumeration of possible identifier types
+-- This is closed to allow extensions to further utilize this mechanism
+closed nonterminal IdentType;
 abstract production identType_c     top::IdentType ::= {}
 abstract production typenameType_c  top::IdentType ::= {}
 
 -- convenient, one single object for each. totally unnecessary of course...
 global identType :: IdentType = identType_c();
 global typenameType :: IdentType = typenameType_c();
-
-
-
 
 
 -- The logic that mutates the 'context' value is distributed amoung the rules

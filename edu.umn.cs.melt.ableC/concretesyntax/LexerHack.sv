@@ -44,10 +44,11 @@ global typenameType :: IdentType = typenameType_c();
 disambiguate Identifier_t, TypeName_t
 {
   pluck
-
     case lookupBy(stringEq, lexeme, head(context)) of
+    | just(lh:identType_c()) -> Identifier_t
     | just(lh:typenameType_c()) -> TypeName_t
-    | _ -> Identifier_t
+    | nothing() -> Identifier_t
+    | it -> error(s"Unexpected lookup result for ${lexeme} in disambiguation function for Identifier_t, TypeName_t: ${hackUnparse(it)}")
     end;
 }
 
