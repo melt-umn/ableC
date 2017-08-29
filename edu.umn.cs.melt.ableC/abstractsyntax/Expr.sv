@@ -309,14 +309,6 @@ top::Expr ::= lhs::Expr  op::BinOp  rhs::Expr  collectedTypeQualifiers::Qualifie
   op.rop = rhs;
 
   top.isLValue = false;
-
-  top.errors <-
-    case op of 
-      | assignOp(_) -> 
-        if lhs.isLValue then []
-        else [err(lhs.location, "lvalue required as left operand of assignment")]
-      | _ -> []
-    end;
   
   rhs.env = addEnv(lhs.defs, lhs.env);
 }

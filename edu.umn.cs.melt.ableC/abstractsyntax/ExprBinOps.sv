@@ -31,6 +31,9 @@ top::BinOp ::= op::AssignOp
   top.pp = op.pp;
   top.typerep = top.lop.typerep.defaultLvalueConversion;
   top.collectedTypeQualifiers := op.collectedTypeQualifiers;
+
+  top.errors <- if top.lop.isLValue then []
+    else [err(top.lop.location, "lvalue required as left operand of assignment")];
 }
 
 nonterminal AssignOp with location, lop, rop, pp, host<AssignOp>, lifted<AssignOp>, collectedTypeQualifiers;
