@@ -54,7 +54,7 @@ top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
   local ty :: Type =
     if deref
     then case lhs.typerep.withoutAttributes of
-           pointerType(_, sub) -> sub.withoutAttributes
+           pointerType(_, sub) -> sub
          | _                   -> lhs.typerep
          end
     else lhs.typerep;
