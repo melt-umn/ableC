@@ -120,7 +120,10 @@ top::Expr ::= op::UnaryTypeOp  e::ExprOrTypeName
   top.defs := e.defs;
   top.freeVariables = e.freeVariables;
   top.typerep = builtinType(nilQualifier(), signedType(intType())); -- TODO sizeof / alignof result type
+<<<<<<< HEAD
   top.isLValue = false;  
+=======
+>>>>>>> develop
   
   op.typeop = e.typerep;
 }
