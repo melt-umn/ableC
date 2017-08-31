@@ -1,10 +1,7 @@
 
 
-<<<<<<< HEAD
 nonterminal MaybeExpr with pp, host<MaybeExpr>, lifted<MaybeExpr>, isJust, errors, globalDecls, defs, env, maybeTyperep, returnType, freeVariables, justTheExpr, isLValue;
-=======
-nonterminal MaybeExpr with pp, host<MaybeExpr>, lifted<MaybeExpr>, isJust, errors, globalDecls, defs, env, maybeTyperep, returnType, freeVariables, justTheExpr;
->>>>>>> develop
+
 flowtype MaybeExpr = decorate {env, returnType}, isJust {}, justTheExpr {}, maybeTyperep {decorate};
 
 synthesized attribute maybeTyperep :: Maybe<Type>;
@@ -42,11 +39,9 @@ top::MaybeExpr ::=
 
 synthesized attribute pps :: [Document];
 
-<<<<<<< HEAD
+
 nonterminal Exprs with pps, host<Exprs>, lifted<Exprs>, errors, globalDecls, defs, env, expectedTypes, argumentPosition, callExpr, argumentErrors, typereps, count, callVariadic, returnType, freeVariables, appendedExprs, appendedRes, isLValue;
-=======
-nonterminal Exprs with pps, host<Exprs>, lifted<Exprs>, errors, globalDecls, defs, env, expectedTypes, argumentPosition, callExpr, argumentErrors, typereps, count, callVariadic, returnType, freeVariables, appendedExprs, appendedRes;
->>>>>>> develop
+
 flowtype Exprs = decorate {env, returnType}, argumentErrors {decorate, expectedTypes, argumentPosition, callExpr, callVariadic}, count {}, appendedRes {appendedExprs};
 
 inherited attribute expectedTypes :: [Type];
@@ -120,6 +115,7 @@ Exprs ::= e1::Exprs e2::Exprs
 }
 
 nonterminal ExprOrTypeName with pp, host<ExprOrTypeName>, lifted<ExprOrTypeName>, errors, globalDecls, defs, env, typerep, returnType, freeVariables, isLValue;
+
 flowtype ExprOrTypeName = decorate {env, returnType};
 
 abstract production exprExpr

@@ -1,5 +1,6 @@
 
 nonterminal UnaryOp with location, op, opName, pp, host<UnaryOp>, lifted<UnaryOp>, preExpr, noLvalueConversion, typerep, errors, collectedTypeQualifiers, isLValue;
+
 flowtype UnaryOp = decorate {op}, opName {}, preExpr {}, noLvalueConversion {};
 
 autocopy attribute op :: Decorated Expr;

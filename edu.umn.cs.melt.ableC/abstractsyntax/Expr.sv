@@ -3,6 +3,7 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax;
 import edu:umn:cs:melt:ableC:abstractsyntax:overload as ovrld;
 
 nonterminal Expr with location, pp, host<Expr>, lifted<Expr>, globalDecls, errors, defs, env, returnType, freeVariables, typerep, isLValue;
+
 flowtype Expr = decorate {env, returnType};
 
 synthesized attribute integerConstantValue :: Maybe<Integer>;
@@ -120,10 +121,8 @@ top::Expr ::= op::UnaryTypeOp  e::ExprOrTypeName
   top.defs := e.defs;
   top.freeVariables = e.freeVariables;
   top.typerep = builtinType(nilQualifier(), signedType(intType())); -- TODO sizeof / alignof result type
-<<<<<<< HEAD
+
   top.isLValue = false;  
-=======
->>>>>>> develop
   
   op.typeop = e.typerep;
 }
