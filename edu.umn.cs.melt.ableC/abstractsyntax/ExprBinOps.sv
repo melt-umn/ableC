@@ -3,7 +3,7 @@ autocopy attribute lop :: Decorated Expr;
 autocopy attribute rop :: Decorated Expr;
 
 nonterminal BinOp with location, lop, rop, opName, pp, host<BinOp>, lifted<BinOp>, typerep, errors, collectedTypeQualifiers;
-flowtype collectedTypeQualifiers {lop, rop} on BinOp;
+flowtype BinOp = decorate {lop, rop}, opName {};
 
 aspect default production
 top::BinOp ::=
@@ -34,6 +34,7 @@ top::BinOp ::= op::AssignOp
 }
 
 nonterminal AssignOp with location, lop, rop, pp, host<AssignOp>, lifted<AssignOp>, collectedTypeQualifiers;
+flowtype AssignOp = decorate {lop, rop};
 
 abstract production eqOp
 top::AssignOp ::=
@@ -125,7 +126,7 @@ top::BinOp ::= op::BoolOp
 }
 
 nonterminal BoolOp with location, lop, rop, pp, host<BoolOp>, lifted<BoolOp>, collectedTypeQualifiers;
-flowtype collectedTypeQualifiers {lop, rop} on BoolOp;
+flowtype BoolOp = decorate {lop, rop};
 
 abstract production andBoolOp
 top::BoolOp ::=
@@ -154,7 +155,7 @@ top::BinOp ::= op::BitOp
 }
 
 nonterminal BitOp with location, lop, rop, pp, host<BitOp>, lifted<BitOp>, collectedTypeQualifiers;
-flowtype collectedTypeQualifiers {lop, rop} on BitOp;
+flowtype BitOp = decorate {lop, rop};
 
 abstract production andBitOp
 top::BitOp ::=
@@ -205,7 +206,7 @@ top::BinOp ::= op::CompareOp
 }
 
 nonterminal CompareOp with location, lop, rop, pp, host<CompareOp>, lifted<CompareOp>, collectedTypeQualifiers;
-flowtype collectedTypeQualifiers {lop, rop} on CompareOp;
+flowtype CompareOp = decorate {lop, rop};
 
 abstract production equalsOp
 top::CompareOp ::=
@@ -262,7 +263,7 @@ top::BinOp ::= op::NumOp
 }
 
 nonterminal NumOp with location, lop, rop, pp, host<NumOp>, lifted<NumOp>, typerep, collectedTypeQualifiers;
-flowtype collectedTypeQualifiers {lop, rop} on NumOp;
+flowtype NumOp = decorate {lop, rop};
 
 abstract production addOp
 top::NumOp ::=

@@ -1,7 +1,5 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax:substitution;
 
--- TODO: TypeExprs with qualifiers lists should get .sustituted mapped over them - propagate doesn't do this by default
-
 aspect production typeName
 top::TypeName ::= bty::BaseTypeExpr  mty::TypeModifierExpr
 {
@@ -125,11 +123,3 @@ top::TypeNames ::=
 {
   propagate substituted;
 }
-
-aspect production hackUnusedType
-top::BaseTypeExpr ::=
-{
-  -- substituted doesn't depend on env
-  top.substituted = error("hack");
-}
-

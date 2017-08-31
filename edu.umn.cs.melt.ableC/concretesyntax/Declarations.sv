@@ -100,7 +100,7 @@ concrete productions top::TypeName_c
         ast:figureOutTypeFromSpecifiers(sqs.location, sqs.typeQualifiers, sqs.preTypeSpecifiers, sqs.realTypeSpecifiers, sqs.mutateTypeSpecifiers);
       top.ast =
         ast:typeName(
-          case sqs.attributes of
+          case decorate sqs.attributes with { ast:returnType = nothing(); } of
           | ast:nilAttribute() -> bt
           | _ -> ast:warnTypeExpr([wrn(top.location, "Ignoring attributes in type name1")], bt)
           end,
@@ -114,7 +114,7 @@ concrete productions top::TypeName_c
         ast:figureOutTypeFromSpecifiers(sqs.location, sqs.typeQualifiers, sqs.preTypeSpecifiers, sqs.realTypeSpecifiers, sqs.mutateTypeSpecifiers);
       top.ast =
         ast:typeName(
-          case sqs.attributes of
+          case decorate sqs.attributes with { ast:returnType = nothing(); } of
           | ast:nilAttribute() -> bt
           | _ -> ast:warnTypeExpr([wrn(top.location, "Ignoring attributes in type name1")], bt)
           end,

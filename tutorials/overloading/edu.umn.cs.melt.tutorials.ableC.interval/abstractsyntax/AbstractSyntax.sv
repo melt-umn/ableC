@@ -85,6 +85,8 @@ Maybe<(Expr ::= Expr Expr Location)> ::= l::Type r::Type env::Decorated Env
 abstract production newInterval
 top::Expr ::= min::Expr max::Expr
 {
+  top.pp = pp"intr [${min.pp}, ${max.pp}]";
+
   local localErrors::[Message] =
     checkIntervalHeaderDef("new_interval", top.location, top.env);
   local fwrd::Expr =
@@ -96,6 +98,8 @@ top::Expr ::= min::Expr max::Expr
 abstract production negInterval
 top::Expr ::= i::Expr
 {
+  top.pp = pp"-(${i.pp})";
+
   local localErrors::[Message] =
     checkIntervalHeaderDef("neg_interval", top.location, top.env);
   local fwrd::Expr =
@@ -106,6 +110,8 @@ top::Expr ::= i::Expr
 abstract production invInterval
 top::Expr ::= i::Expr
 {
+  top.pp = pp"~(${i.pp})";
+  
   local localErrors::[Message] =
     checkIntervalHeaderDef("inv_interval", top.location, top.env);
   local fwrd::Expr =
@@ -116,6 +122,8 @@ top::Expr ::= i::Expr
 abstract production addInterval
 top::Expr ::= i1::Expr i2::Expr
 {
+  top.pp = pp"(${i1.pp}) + (${i2.pp})";
+
   local localErrors::[Message] =
     checkIntervalHeaderDef("add_interval", top.location, top.env);
   local fwrd::Expr =
@@ -126,6 +134,8 @@ top::Expr ::= i1::Expr i2::Expr
 abstract production subInterval
 top::Expr ::= i1::Expr i2::Expr
 {
+  top.pp = pp"(${i1.pp}) - (${i2.pp})";
+
   local localErrors::[Message] =
     checkIntervalHeaderDef("sub_interval", top.location, top.env);
   local fwrd::Expr =
@@ -136,6 +146,8 @@ top::Expr ::= i1::Expr i2::Expr
 abstract production mulInterval
 top::Expr ::= i1::Expr i2::Expr
 {
+  top.pp = pp"(${i1.pp}) * (${i2.pp})";
+
   local localErrors::[Message] =
     checkIntervalHeaderDef("mul_interval", top.location, top.env);
   local fwrd::Expr =
@@ -146,6 +158,8 @@ top::Expr ::= i1::Expr i2::Expr
 abstract production divInterval
 top::Expr ::= i1::Expr i2::Expr
 {
+  top.pp = pp"(${i1.pp}) / (${i2.pp})";
+
   local localErrors::[Message] =
     checkIntervalHeaderDef("div_interval", top.location, top.env);
   local fwrd::Expr =
@@ -156,6 +170,8 @@ top::Expr ::= i1::Expr i2::Expr
 abstract production eqInterval
 top::Expr ::= i1::Expr i2::Expr
 {
+  top.pp = pp"(${i1.pp}) == (${i2.pp})";
+
   local localErrors::[Message] =
     checkIntervalHeaderDef("eq_interval", top.location, top.env);
   local fwrd::Expr =
