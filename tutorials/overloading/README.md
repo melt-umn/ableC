@@ -40,4 +40,4 @@ An example use of overloading may be found in [AbstractSyntax.sv](edu.umn.cs.mel
 
 A more sophisticated use of lifting may be found in the [string extension](https://github.com/melt-umn/ableC-string).  Here several other host constructs are overloaded as well, in addition to defining new overloaded operators.  
 
-*(Coming soon!)* [Next section: Extensible env](../extended_env/)
+[Next section: Extensible env](../extended_env/)
