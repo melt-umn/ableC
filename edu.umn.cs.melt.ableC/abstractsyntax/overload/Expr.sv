@@ -49,11 +49,20 @@ abstract production memberExpr
 top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
 {
   top.pp = parens(ppConcat([lhs.pp, text(if deref then "->" else "."), rhs.pp]));
-  
+
+  -- get overload function from under pointer if dereferencing
+  local ty :: Type =
+    if deref
+    then case lhs.typerep.withoutAttributes of
+           pointerType(_, sub) -> sub
+         | _                   -> lhs.typerep
+         end
+    else lhs.typerep;
+
   forwards to
     fromMaybe(
       memberExprDefault(_, _, _, location=_),
-      getMemberOverload(lhs.typerep, top.env))(lhs, deref, rhs, top.location);
+      getMemberOverload(ty, top.env))(lhs, deref, rhs, top.location);
 }
 abstract production binaryOpExpr
 top::Expr ::= lhs::Expr  op::BinOp  rhs::Expr
