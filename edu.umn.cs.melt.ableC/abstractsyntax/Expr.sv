@@ -2,10 +2,12 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax;
 
 import edu:umn:cs:melt:ableC:abstractsyntax:overload as ovrld;
 
-nonterminal Expr with location, pp, host<Expr>, lifted<Expr>, globalDecls, errors, defs, env, returnType, freeVariables, typerep;
+nonterminal Expr with location, pp, host<Expr>, lifted<Expr>, globalDecls, errors, defs, env, returnType, freeVariables, typerep, isLValue;
+
 flowtype Expr = decorate {env, returnType};
 
 synthesized attribute integerConstantValue :: Maybe<Integer>;
+synthesized attribute isLValue::Boolean;
 
 {- The production below is never used.  But it adds a dependency for
    the forwards-to equation on returnType so that it may be used by
@@ -31,6 +33,7 @@ top::Expr ::= msg::[Message]
   top.defs := [];
   top.freeVariables = [];
   top.typerep = errorType();
+  top.isLValue = false;
 }
 abstract production warnExpr
 top::Expr ::= msg::[Message] e::Expr
@@ -50,6 +53,7 @@ top::Expr ::= id::Name
   top.defs := [];
   top.typerep = id.valueItem.typerep;
   top.freeVariables = [id];
+  top.isLValue = true;
   
   top.errors <- id.valueLookupCheck;
 }
@@ -61,9 +65,10 @@ top::Expr ::= l::String
   top.errors := [];
   top.globalDecls := [];
   top.defs := [];
-  top.freeVariables = [];
+  top.freeVariables = [];  
   top.typerep = pointerType(nilQualifier(),
     builtinType(foldQualifier([]), signedType(charType())));
+  top.isLValue = false;      
 }
 abstract production parenExpr
 top::Expr ::= e::Expr
@@ -75,6 +80,8 @@ top::Expr ::= e::Expr
   top.defs := e.defs;
   top.freeVariables = e.freeVariables;
   top.typerep = e.typerep;
+  top.isLValue = e.isLValue;  
+  
 }
 abstract production unaryOpExpr
 top::Expr ::= op::UnaryOp  e::Expr
@@ -95,6 +102,12 @@ top::Expr ::= op::UnaryOp  e::Expr  collectedTypeQualifiers::Qualifiers
   top.defs := e.defs;
   top.freeVariables = e.freeVariables;
   top.typerep = addQualifiers(collectedTypeQualifiers.qualifiers, op.typerep);
+  top.isLValue = op.isLValue;
+
+  top.errors <- 
+    if !e.isLValue && op.noLvalueConversion 
+    then [err(e.location, "lvalue required as unary operand for " ++ op.opName)]
+    else [];
 
   op.op = e;
 }
@@ -108,6 +121,8 @@ top::Expr ::= op::UnaryTypeOp  e::ExprOrTypeName
   top.defs := e.defs;
   top.freeVariables = e.freeVariables;
   top.typerep = builtinType(nilQualifier(), signedType(intType())); -- TODO sizeof / alignof result type
+
+  top.isLValue = false;  
   
   op.typeop = e.typerep;
 }
@@ -120,6 +135,7 @@ top::Expr ::= lhs::Expr  rhs::Expr
   top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
   top.defs := lhs.defs ++ rhs.defs;
   top.freeVariables = lhs.freeVariables ++ removeDefsFromNames(rhs.defs, rhs.freeVariables);
+  top.isLValue = true;
   
   local subtype :: Either<Type [Message]> =
     case lhs.typerep.defaultFunctionArrayLvalueConversion, rhs.typerep.defaultFunctionArrayLvalueConversion of
@@ -171,6 +187,7 @@ top::Expr ::= f::Expr  a::Exprs
   top.globalDecls := f.globalDecls ++ a.globalDecls;
   top.defs := f.defs ++ a.defs;
   top.freeVariables = f.freeVariables ++ removeDefsFromNames(f.defs, a.freeVariables);
+  top.isLValue = false; -- C++ style references would change this
   
   local subtype :: Either<Pair<Type FunctionType> [Message]> =
     case f.typerep.defaultFunctionArrayLvalueConversion of
@@ -243,6 +260,8 @@ top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
   
   local valueitems :: [ValueItem] =
     lookupValue(rhs.name, head(refids).tagEnv);
+
+  top.isLValue = true;
   
   top.typerep =
     if null(refids) then 
@@ -290,6 +309,8 @@ top::Expr ::= lhs::Expr  op::BinOp  rhs::Expr  collectedTypeQualifiers::Qualifie
   
   op.lop = lhs;
   op.rop = rhs;
+
+  top.isLValue = false;
   
   rhs.env = addEnv(lhs.defs, lhs.env);
 }
@@ -307,6 +328,7 @@ top::Expr ::= cond::Expr  t::Expr  e::Expr
     removeDefsFromNames(cond.defs ++ t.defs, e.freeVariables);
   
   top.typerep = t.typerep; -- TODO: this is wrong, but it's an approximation for now
+  top.isLValue = false;
   
   t.env = addEnv(cond.defs, cond.env);
   e.env = addEnv(t.defs, t.env);
@@ -322,6 +344,7 @@ top::Expr ::= cond::Expr  e::Expr
   top.globalDecls := cond.globalDecls ++ e.globalDecls;
   top.defs := cond.defs ++ e.defs;
   top.freeVariables = cond.freeVariables ++ e.freeVariables;
+  top.isLValue = false;
   
   top.typerep = e.typerep; -- TODO: not even sure what this should be
   
@@ -339,6 +362,8 @@ top::Expr ::= ty::TypeName  e::Expr
   top.typerep = ty.typerep;
   
   e.env = addEnv(ty.defs, ty.env);
+
+  top.isLValue = false;
   
   -- TODO: type checking!!
 }
@@ -352,7 +377,8 @@ top::Expr ::= ty::TypeName  init::InitList
   top.defs := ty.defs ++ init.defs;
   top.freeVariables = ty.freeVariables ++ removeDefsFromNames(ty.defs, init.freeVariables);
   top.typerep = ty.typerep; -- TODO: actually may involve learning from the initializer e.g. the length of the array.
-  
+  top.isLValue = false;
+
   init.env = addEnv(ty.defs, ty.env);
   
   -- TODO: type checking!!
@@ -368,6 +394,7 @@ top::Expr ::=
   top.freeVariables = [];
   top.typerep = pointerType(nilQualifier(),
     builtinType(foldQualifier([constQualifier()]), signedType(charType()))); -- const char *
+  top.isLValue = false;
 }
 
 -- C11
@@ -394,6 +421,7 @@ top::Expr ::= e::Expr  gl::GenericAssocs  def::MaybeExpr
       end
     else
       head(gl.compatibleSelections).typerep;
+  top.isLValue = false;
   
   gl.selectionType = e.typerep;
   
@@ -456,6 +484,7 @@ top::Expr ::= body::Stmt result::Expr
   top.defs := globalDeclsDefs(body.globalDecls) ++ globalDeclsDefs(result.globalDecls); -- defs are *not* propagated up. This is beginning of a scope.
   top.freeVariables = body.freeVariables ++ removeDefsFromNames(body.defs, result.freeVariables);
   top.typerep = result.typerep;
+  top.isLValue = false;
   
   body.env = openScope(top.env);
   result.env = addEnv(body.defs, body.env);
@@ -472,6 +501,7 @@ top::Expr ::= s::String
   top.defs := [];
   top.freeVariables = [];
   top.typerep = errorType();
+  top.isLValue = false;
 }
 
 {- from clang:

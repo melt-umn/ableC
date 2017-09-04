@@ -1,5 +1,6 @@
 
-nonterminal UnaryOp with location, op, opName, pp, host<UnaryOp>, lifted<UnaryOp>, preExpr, noLvalueConversion, typerep, errors, collectedTypeQualifiers;
+nonterminal UnaryOp with location, op, opName, pp, host<UnaryOp>, lifted<UnaryOp>, preExpr, noLvalueConversion, typerep, errors, collectedTypeQualifiers, isLValue;
+
 flowtype UnaryOp = decorate {op}, opName {}, preExpr {}, noLvalueConversion {};
 
 autocopy attribute op :: Decorated Expr;
@@ -11,6 +12,7 @@ aspect default production
 top::UnaryOp ::=
 {
   top.errors := []; -- TODO REMOVE
+  top.isLValue = false;
   top.opName =
     case top.pp of
       text(opName) -> opName
@@ -25,7 +27,7 @@ top::UnaryOp ::=
   propagate host, lifted;
   top.pp = text("++");
   top.preExpr = true;
-  top.noLvalueConversion = false;
+  top.noLvalueConversion = true;
   top.typerep = top.op.typerep.defaultLvalueConversion.integerPromotions;
   top.collectedTypeQualifiers := [];
 }
@@ -78,6 +80,7 @@ top::UnaryOp ::=
   propagate host, lifted;
   top.pp = text("*");
   top.preExpr = true;
+  top.isLValue = true;
   top.noLvalueConversion = false;
   top.typerep = 
     case top.op.typerep of

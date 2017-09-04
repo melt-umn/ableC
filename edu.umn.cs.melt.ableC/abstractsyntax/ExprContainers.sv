@@ -1,6 +1,7 @@
 
 
-nonterminal MaybeExpr with pp, host<MaybeExpr>, lifted<MaybeExpr>, isJust, errors, globalDecls, defs, env, maybeTyperep, returnType, freeVariables, justTheExpr;
+nonterminal MaybeExpr with pp, host<MaybeExpr>, lifted<MaybeExpr>, isJust, errors, globalDecls, defs, env, maybeTyperep, returnType, freeVariables, justTheExpr, isLValue;
+
 flowtype MaybeExpr = decorate {env, returnType}, isJust {}, justTheExpr {}, maybeTyperep {decorate};
 
 synthesized attribute maybeTyperep :: Maybe<Type>;
@@ -18,6 +19,7 @@ top::MaybeExpr ::= e::Expr
   top.defs := e.defs;
   top.freeVariables = e.freeVariables;
   top.maybeTyperep = just(e.typerep);
+  top.isLValue = e.isLValue;
 }
 abstract production nothingExpr
 top::MaybeExpr ::=
@@ -31,12 +33,15 @@ top::MaybeExpr ::=
   top.defs := [];
   top.freeVariables = [];
   top.maybeTyperep = nothing();
+  top.isLValue = false;
 }
 
 
 synthesized attribute pps :: [Document];
 
-nonterminal Exprs with pps, host<Exprs>, lifted<Exprs>, errors, globalDecls, defs, env, expectedTypes, argumentPosition, callExpr, argumentErrors, typereps, count, callVariadic, returnType, freeVariables, appendedExprs, appendedRes;
+
+nonterminal Exprs with pps, host<Exprs>, lifted<Exprs>, errors, globalDecls, defs, env, expectedTypes, argumentPosition, callExpr, argumentErrors, typereps, count, callVariadic, returnType, freeVariables, appendedExprs, appendedRes, isLValue;
+
 flowtype Exprs = decorate {env, returnType}, argumentErrors {decorate, expectedTypes, argumentPosition, callExpr, callVariadic}, count {}, appendedRes {appendedExprs};
 
 inherited attribute expectedTypes :: [Type];
@@ -63,6 +68,7 @@ top::Exprs ::= h::Expr  t::Exprs
   top.typereps = h.typerep :: t.typereps;
   top.count = 1 + t.count;
   top.appendedRes = consExpr(h, t.appendedRes);
+  top.isLValue = t.isLValue;
   
   top.argumentErrors =
     if null(top.expectedTypes) then
@@ -93,6 +99,7 @@ top::Exprs ::=
   top.typereps = [];
   top.count = 0;
   top.appendedRes = top.appendedExprs;
+  top.isLValue = false;
   
   top.argumentErrors =
     if null(top.expectedTypes) then []
@@ -107,7 +114,8 @@ Exprs ::= e1::Exprs e2::Exprs
   return e1.appendedRes;
 }
 
-nonterminal ExprOrTypeName with pp, host<ExprOrTypeName>, lifted<ExprOrTypeName>, errors, globalDecls, defs, env, typerep, returnType, freeVariables;
+nonterminal ExprOrTypeName with pp, host<ExprOrTypeName>, lifted<ExprOrTypeName>, errors, globalDecls, defs, env, typerep, returnType, freeVariables, isLValue;
+
 flowtype ExprOrTypeName = decorate {env, returnType};
 
 abstract production exprExpr
@@ -120,6 +128,7 @@ top::ExprOrTypeName ::= e::Expr
   top.defs := e.defs;
   top.freeVariables = e.freeVariables;
   top.typerep = e.typerep;
+  top.isLValue = e.isLValue;
 }
 abstract production typeNameExpr
 top::ExprOrTypeName ::= ty::TypeName
@@ -131,6 +140,7 @@ top::ExprOrTypeName ::= ty::TypeName
   top.defs := ty.defs;
   top.freeVariables = ty.freeVariables;
   top.typerep = ty.typerep;
+  top.isLValue = false;
 }
 
 
