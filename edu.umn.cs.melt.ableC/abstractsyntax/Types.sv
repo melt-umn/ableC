@@ -483,12 +483,13 @@ top::Type ::= bt::Type  bytes::Integer
 abstract production noncanonicalType
 top::Type ::= sub::NoncanonicalType
 {
+  -- These equations are all equivalent to the values obtained from the forward,
+  -- but simply serve to preserve the equivalent noncanonicalType when possible.
   propagate host;
   top.lpp = sub.lpp;
   top.rpp = sub.rpp;
   top.baseTypeExpr = sub.baseTypeExpr;
   top.typeModifierExpr = sub.typeModifierExpr;
-  top.qualifiers = sub.canonicalType.qualifiers;
 
   -- behavior? maybe it should be pushed down? TODO
   --top.mangledName = ;
