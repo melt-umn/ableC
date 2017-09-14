@@ -101,12 +101,12 @@ top::Decl ::= d::Decls
 abstract production defsDecl
 top::Decl ::= d::[Def]
 {
+  propagate lifted;
   top.pp = ppConcat([pp"/* defsDecl", showEnv(addEnv(d, emptyEnv())), pp"*/"]);
   -- This production goes away when the transformation to host occurs, this is a special case where
   -- host is not simply propagated, because Def is a closed 'collection' nonterminal with special
   -- semantics
   top.host = decls(nilDecl());
-  top.lifted = decls(nilDecl());
   top.errors := [];
   top.globalDecls := [];
   top.defs := d;
