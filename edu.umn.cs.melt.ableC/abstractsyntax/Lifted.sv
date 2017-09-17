@@ -52,6 +52,34 @@ synthesized attribute lifted<a>::a;
 synthesized attribute globalDecls::[Decorated Decl] with ++;
 synthesized attribute unfoldedGlobalDecls::[Decorated Decl];
 
+flowtype lifted {decorate} on
+  Root,
+  Attributes, Attribute, Attribs, Attrib, AttribName,
+  GlobalDecls, Decls, Decl, Declarators, Declarator, FunctionDecl, Parameters, ParameterDecl, StructDecl, UnionDecl, EnumDecl, StructItemList, EnumItemList, StructItem, StructDeclarators, StructDeclarator, EnumItem,
+  MemberDesignator,
+  AsmStatement, AsmArgument, AsmClobbers, AsmOperands, AsmOperand,
+  SpecialSpecifier, SpecialSpecifiers,
+  Expr, GenericAssocs, GenericAssoc,
+  TypeName, BaseTypeExpr, TypeModifierExpr, TypeNames,
+  NumericConstant,
+  MaybeExpr, Exprs, ExprOrTypeName,
+  Stmt,
+  UnaryOp, UnaryTypeOp,
+  Name, MaybeName,
+  BinOp, AssignOp, BoolOp, BitOp, CompareOp, NumOp,
+  MaybeInitializer, Initializer, InitList, Init, Designator;
+flowtype globalDecls {decorate} on
+  Decls, Decl, Declarators, Declarator, FunctionDecl, Parameters, ParameterDecl, StructDecl, UnionDecl, EnumDecl, StructItemList, EnumItemList, StructItem, StructDeclarators, StructDeclarator, EnumItem,
+  MemberDesignator,
+  SpecialSpecifiers,
+  Expr, GenericAssocs, GenericAssoc,
+  TypeName, BaseTypeExpr, TypeModifierExpr, TypeNames,
+  MaybeExpr, Exprs, ExprOrTypeName,
+  Stmt,
+  MaybeInitializer, Initializer, InitList, Init, Designator;
+flowtype unfoldedGlobalDecls {decorate} on
+  Decls, Decl;
+
 {--
  - Wrapper production for a decl that first performs some sort of check for whether something is in
  - the environment before including that decl in the Decls passed to an injection production 
@@ -114,6 +142,8 @@ top::Expr ::= decls::Decls lifted::Expr
   decls.returnType = nothing();
 
   lifted.env = addEnv([globalDefsDef(decls.defs)], top.env);
+
+  top.isLValue = false;
 }
 
 -- Same as injectGlobalDeclsExpr, but on Stmt

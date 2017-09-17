@@ -3,14 +3,13 @@ autocopy attribute lop :: Decorated Expr;
 autocopy attribute rop :: Decorated Expr;
 
 nonterminal BinOp with location, lop, rop, opName, pp, host<BinOp>, lifted<BinOp>, typerep, errors, collectedTypeQualifiers, lhsRuntimeInsertions, rhsRuntimeInsertions;
-flowtype collectedTypeQualifiers {lop, rop} on BinOp;
-flowtype errors {lop, rop} on BinOp;
 flowtype lhsRuntimeInsertions {lop, rop} on BinOp;
 flowtype rhsRuntimeInsertions {lop, rop} on BinOp;
 
 -- function from temporary variable to code to be inserted
 synthesized attribute lhsRuntimeInsertions :: [(Expr ::= Expr)] with ++;
 synthesized attribute rhsRuntimeInsertions :: [(Expr ::= Expr)] with ++;
+flowtype BinOp = decorate {lop, rop}, opName {};
 
 aspect default production
 top::BinOp ::=
@@ -40,9 +39,13 @@ top::BinOp ::= op::AssignOp
   top.collectedTypeQualifiers := op.collectedTypeQualifiers;
   top.lhsRuntimeInsertions := [];
   top.rhsRuntimeInsertions := [];
+
+  top.errors <- if top.lop.isLValue then []
+    else [err(top.lop.location, "lvalue required as left operand of assignment")];
 }
 
 nonterminal AssignOp with location, lop, rop, pp, host<AssignOp>, lifted<AssignOp>, collectedTypeQualifiers;
+flowtype AssignOp = decorate {lop, rop};
 
 abstract production eqOp
 top::AssignOp ::=
@@ -137,8 +140,7 @@ top::BinOp ::= op::BoolOp
 }
 
 nonterminal BoolOp with location, lop, rop, pp, host<BoolOp>, lifted<BoolOp>, collectedTypeQualifiers, errors;
-flowtype collectedTypeQualifiers {lop, rop} on BoolOp;
-flowtype errors {lop, rop} on BoolOp;
+flowtype BoolOp = decorate {lop, rop};
 
 abstract production andBoolOp
 top::BoolOp ::=
@@ -172,8 +174,7 @@ top::BinOp ::= op::BitOp
 }
 
 nonterminal BitOp with location, lop, rop, pp, host<BitOp>, lifted<BitOp>, collectedTypeQualifiers, errors;
-flowtype collectedTypeQualifiers {lop, rop} on BitOp;
-flowtype errors {lop, rop} on BitOp;
+flowtype BitOp = decorate {lop, rop};
 
 abstract production andBitOp
 top::BitOp ::=
@@ -232,8 +233,7 @@ top::BinOp ::= op::CompareOp
 }
 
 nonterminal CompareOp with location, lop, rop, pp, host<CompareOp>, lifted<CompareOp>, collectedTypeQualifiers, errors;
-flowtype collectedTypeQualifiers {lop, rop} on CompareOp;
-flowtype errors {lop, rop} on CompareOp;
+flowtype CompareOp = decorate {lop, rop};
 
 abstract production equalsOp
 top::CompareOp ::=
@@ -299,8 +299,7 @@ top::BinOp ::= op::NumOp
 }
 
 nonterminal NumOp with location, lop, rop, pp, host<NumOp>, lifted<NumOp>, typerep, collectedTypeQualifiers, errors;
-flowtype collectedTypeQualifiers {lop, rop} on NumOp;
-flowtype errors {lop, rop} on NumOp;
+flowtype NumOp = decorate {lop, rop};
 
 abstract production addOp
 top::NumOp ::=

@@ -5,6 +5,12 @@ nonterminal Qualifiers with mangledName, qualifiers, pps, host<Qualifiers>, type
 autocopy attribute typeToQualify :: Type;
 
 synthesized attribute qualifyErrors :: [Message];
+synthesized attribute collectedTypeQualifiers :: [Qualifier] with ++;
+flowtype collectedTypeQualifiers {} on -- TODO: Should this be allowed to depend on anything?
+  UnaryOp,
+  BinOp, AssignOp, BoolOp, BitOp, CompareOp, NumOp;
+
+flowtype Qualifiers = decorate {}, qualifiers {}, qualifyErrors {typeToQualify};
 
 synthesized attribute qualifiers :: [Qualifier];
 
@@ -44,6 +50,7 @@ Qualifiers ::= q1::[Qualifier]  q2::[Qualifier]
 
 {-- Type qualifiers (cv or cvr qualifiers) -}
 closed nonterminal Qualifier with location, pp, qualIsPositive, qualIsNegative, qualAppliesWithinRef, qualCompat, qualIsHost, mangledName, typeToQualify, qualifyErrors;
+flowtype Qualifier = decorate {}, qualIsPositive {}, qualIsNegative {}, qualAppliesWithinRef {}, qualCompat {}, qualIsHost {}, qualifyErrors {typeToQualify};
 
 synthesized attribute qualIsPositive :: Boolean;
 synthesized attribute qualIsNegative :: Boolean;
@@ -142,6 +149,7 @@ top::Qualifier ::=
  -      Alignment specifiers (_Alignas)
  -}
 nonterminal SpecialSpecifier with pp, host<SpecialSpecifier>, lifted<SpecialSpecifier>, env, returnType, errors, globalDecls, defs;
+flowtype SpecialSpecifier = decorate {env, returnType};
 
 abstract production inlineQualifier
 top::SpecialSpecifier ::=
@@ -176,6 +184,7 @@ top::SpecialSpecifier ::= e::Expr
 }
 
 nonterminal SpecialSpecifiers with pps, host<SpecialSpecifiers>, lifted<SpecialSpecifiers>, env, returnType, errors, globalDecls, defs;
+flowtype SpecialSpecifiers = decorate {env, returnType};
 
 abstract production consSpecialSpecifier
 top::SpecialSpecifiers ::= h::SpecialSpecifier t::SpecialSpecifiers

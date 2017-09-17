@@ -10,6 +10,7 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax;
  - Noncanonical forwards, and so doesn't need any attributes, etc attached to it.
  -}
 nonterminal Type with lpp, rpp, host<Type>, baseTypeExpr, typeModifierExpr, mangledName, integerPromotions, defaultArgumentPromotions, defaultLvalueConversion, defaultFunctionArrayLvalueConversion, isIntegerType, isScalarType, isArithmeticType, withoutAttributes, withoutTypeQualifiers, withoutExtensionQualifiers<Type>, withTypeQualifiers, addedTypeQualifiers, qualifiers, mergeQualifiers<Type>, errors;
+flowtype Type = decorate {}, baseTypeExpr {}, typeModifierExpr {}, integerPromotions {}, defaultArgumentPromotions {}, defaultLvalueConversion {}, defaultFunctionArrayLvalueConversion {}, isIntegerType {}, isScalarType {}, isArithmeticType {}, withoutAttributes {}, withoutTypeQualifiers {}, withoutExtensionQualifiers {}, withTypeQualifiers {addedTypeQualifiers}, qualifiers {}, mergeQualifiers {};
 
 -- Used to turn a Type back into a TypeName
 synthesized attribute baseTypeExpr :: BaseTypeExpr;
@@ -17,6 +18,10 @@ synthesized attribute typeModifierExpr :: TypeModifierExpr;
 
 -- Compute a unique name for a type that is a valid C identifier
 synthesized attribute mangledName :: String;
+flowtype mangledName {} on
+  Type, FunctionType, TagType, StructOrEnumOrUnion,
+  Qualifiers, Qualifier,
+  BuiltinType, RealType, IntegerType;
 
 -- char -> int and stuff in operations
 synthesized attribute integerPromotions :: Type;
@@ -232,6 +237,7 @@ top::Type ::= element::Type  indexQualifiers::Qualifiers  sizeModifier::ArraySiz
 
 {-- The subtypes of arrays -}
 nonterminal ArrayType with pp, host<ArrayType>;
+flowtype ArrayType = decorate {};
 
 abstract production constantArrayType
 top::ArrayType ::= size::Integer
@@ -249,12 +255,14 @@ top::ArrayType ::=
 abstract production variableArrayType
 top::ArrayType ::= size::Decorated Expr
 {
-  propagate host;
+  top.host = variableArrayType(decorate size.host with {env = size.env; returnType = size.returnType;});
   top.pp = size.pp;
 }
 
 {-- Modifiers attached to array types that are function parameters -}
 nonterminal ArraySizeModifier with pps;
+flowtype ArraySizeModifier = decorate {};
+
 {-- Normal array. -}
 abstract production normalArraySize
 top::ArraySizeModifier ::= { top.pps = []; }
@@ -305,6 +313,7 @@ top::Type ::= result::Type  sub::FunctionType
 
 {-- The subtypes of functions -}
 nonterminal FunctionType with lpp, rpp, host<FunctionType>, mangledName, errors, withoutExtensionQualifiers<FunctionType>, mergeQualifiers<FunctionType>;
+flowtype FunctionType = decorate {};
 -- clang has an 'extinfo' structure with calling convention, noreturn, 'produces'?, regparam
 
 abstract production protoFunctionType
@@ -401,6 +410,7 @@ top::Type ::= q::Qualifiers  sub::TagType
 
 {-- Structs, unions and enums -}
 nonterminal TagType with pp, host<TagType>, mangledName, isIntegerType;
+flowtype TagType = decorate {}, isIntegerType {};
 
 abstract production enumTagType
 top::TagType ::= ref::Decorated EnumDecl
@@ -569,6 +579,8 @@ top::Type ::= bt::Type  bytes::Integer
 abstract production noncanonicalType
 top::Type ::= sub::NoncanonicalType
 {
+  -- These equations are all equivalent to the values obtained from the forward,
+  -- but simply serve to preserve the equivalent noncanonicalType when possible.
   propagate host;
   top.lpp = sub.lpp;
   top.rpp = sub.rpp;
@@ -587,6 +599,7 @@ top::Type ::= sub::NoncanonicalType
 
 {-- Types that resolve to other types. -}
 nonterminal NoncanonicalType with canonicalType, lpp, rpp, host<NoncanonicalType>, baseTypeExpr, typeModifierExpr;
+flowtype NoncanonicalType = decorate {}, canonicalType {}, baseTypeExpr {}, typeModifierExpr {};
 
 synthesized attribute canonicalType :: Type;
 
@@ -690,17 +703,6 @@ top::NoncanonicalType ::= q::Qualifiers  resolved::Type
   top.baseTypeExpr =
     typeofTypeExpr(q, typeNameExpr(typeName(resolved.baseTypeExpr, resolved.typeModifierExpr)));
   top.typeModifierExpr = baseTypeExpr();
-}
-
-
--- TODO: Why isn't this in TypeNames.sv?
-abstract production hackUnusedType
-top::BaseTypeExpr ::=
-{
-  -- pp doesn't depend on env
-  top.pp = text("hack");
-  -- Forwarding based on env and returnType.
-  forwards to if false then error(hackUnparse(top.env) ++ hackUnparse(top.returnType)) else hackUnusedType();
 }
 
 function filterExtensionQualifiers

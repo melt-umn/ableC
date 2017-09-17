@@ -21,6 +21,7 @@ e::Expr ::= txt::String
   e.defs := [];
   e.freeVariables = [];
   e.typerep = errorType(); -- error("Need a type on txtExpr"); 
+  e.isLValue = false;
 }
 abstract production txtStmt
 s::Stmt ::= txt::String

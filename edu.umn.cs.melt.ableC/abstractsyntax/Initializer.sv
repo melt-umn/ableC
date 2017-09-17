@@ -1,6 +1,6 @@
 
 nonterminal MaybeInitializer with pp, host<MaybeInitializer>, lifted<MaybeInitializer>, errors, globalDecls, defs, env, freeVariables, returnType;
---nonterminal MaybeInitializer with pp, host<MaybeInitializer>, lifted<MaybeInitializer>, errors, globalDecls, defs, env, freeVariables, returnType, inferredQualsIn;
+flowtype MaybeInitializer = decorate {env, returnType};
 
 abstract production nothingInitializer
 top::MaybeInitializer ::=
@@ -24,7 +24,7 @@ top::MaybeInitializer ::= i::Initializer
 }
 
 nonterminal Initializer with pp, host<Initializer>, lifted<Initializer>, errors, globalDecls, defs, env, freeVariables, returnType;
---nonterminal Initializer with pp, host<Initializer>, lifted<Initializer>, errors, globalDecls, defs, env, freeVariables, returnType, inferredQualsIn;
+flowtype Initializer = decorate {env, returnType};
 
 abstract production exprInitializer
 top::Initializer ::= e::Expr
@@ -49,6 +49,7 @@ top::Initializer ::= l::InitList
 }
 
 nonterminal InitList with pps, host<InitList>, lifted<InitList>, errors, globalDecls, defs, env, freeVariables, returnType;
+flowtype InitList = decorate {env, returnType};
 
 abstract production consInit
 top::InitList ::= h::Init  t::InitList
@@ -75,6 +76,7 @@ top::InitList ::=
 }
 
 nonterminal Init with pp, host<Init>, lifted<Init>, errors, globalDecls, defs, env, freeVariables, returnType;
+flowtype Init = decorate {env, returnType};
 
 abstract production init
 top::Init ::= i::Initializer
@@ -105,6 +107,7 @@ top::Init ::= d::Designator  i::Initializer
  - e.g.  "[1].d[0] = e" gives "array(0, field(d, array(1, initial)))"
  -}
 nonterminal Designator with pp, host<Designator>, lifted<Designator>, errors, globalDecls, defs, env, freeVariables, returnType;
+flowtype Designator = decorate {env, returnType};
 
 abstract production initialDesignator
 top::Designator ::=

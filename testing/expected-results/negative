@@ -181,6 +181,26 @@ Negative test       - PASS:             testing/tests/kframework/negative/j506a.
 Negative test       - PASS:             testing/tests/melt/negative/1.c
 Negative test       - PASS:             testing/tests/melt/negative/expr_type_index_1.c
 Negative test       - PASS:             testing/tests/melt/negative/expr_type_index_2.c
+Negative test       - PASS:             testing/tests/melt/negative/lvalues_1.c
+Negative test       - PASS:             testing/tests/melt/negative/lvalues_10.c
+Negative test       - PASS:             testing/tests/melt/negative/lvalues_11.c
+Negative test       - PASS:             testing/tests/melt/negative/lvalues_12.c
+Negative test       - PASS:             testing/tests/melt/negative/lvalues_13.c
+Negative test       - PASS:             testing/tests/melt/negative/lvalues_14.c
+Negative test       - PASS:             testing/tests/melt/negative/lvalues_15.c
+Negative test       - PASS:             testing/tests/melt/negative/lvalues_16.c
+Negative test       - PASS:             testing/tests/melt/negative/lvalues_17.c
+Negative test       - PASS:             testing/tests/melt/negative/lvalues_18.c
+Negative test       - PASS:             testing/tests/melt/negative/lvalues_19.c
+Negative test       - PASS:             testing/tests/melt/negative/lvalues_2.c
+Negative test       - PASS:             testing/tests/melt/negative/lvalues_20.c
+Negative test       - PASS:             testing/tests/melt/negative/lvalues_3.c
+Negative test       - PASS:             testing/tests/melt/negative/lvalues_4.c
+Negative test       - PASS:             testing/tests/melt/negative/lvalues_5.c
+Negative test       - PASS:             testing/tests/melt/negative/lvalues_6.c
+Negative test       - PASS:             testing/tests/melt/negative/lvalues_7.c
+Negative test       - PASS:             testing/tests/melt/negative/lvalues_8.c
+Negative test       - PASS:             testing/tests/melt/negative/lvalues_9.c
 Negative test       - PASS:             testing/tests/melt/negative/stmt_scoping_1.c
 Negative test       - PASS:             testing/tests/melt/negative/stmt_type_if_1.c
 Negative test       - PASS:             testing/tests/melt/negative/stmt_type_switch_1.c
@@ -337,10 +357,10 @@ Pass: 0
 Fail: 0
 
 Negative tests:
-Pass: 42
-Fail: 144
+Pass: 60
+Fail: 146
 
 Summary:
-Pass: 42
-Fail: 144
+Pass: 60
+Fail: 146
 

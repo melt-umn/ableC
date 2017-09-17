@@ -88,7 +88,7 @@ node {
           build job: "/melt-umn/ableC-cilk/feature%2Ftype_qualifiers", parameters:
             [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: params.SILVER_BASE],
              [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
-        },
+        },*/
         "ableC-halide": {
           build job: '/melt-umn/ableC-halide/develop', parameters:
             [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: params.SILVER_BASE],

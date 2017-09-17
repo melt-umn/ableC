@@ -1,17 +1,17 @@
 
-nonterminal UnaryOp with location, op, opName, pp, host<UnaryOp>, lifted<UnaryOp>, preExpr, noLvalueConversion, typerep, errors, collectedTypeQualifiers;
-flowtype collectedTypeQualifiers {op} on UnaryOp;
-flowtype errors {op} on UnaryOp;
+nonterminal UnaryOp with location, op, opName, pp, host<UnaryOp>, lifted<UnaryOp>, preExpr, noLvalueConversion, typerep, errors, collectedTypeQualifiers, isLValue;
+
+flowtype UnaryOp = decorate {op}, opName {}, preExpr {}, noLvalueConversion {};
 
 autocopy attribute op :: Decorated Expr;
 synthesized attribute opName :: String;
 synthesized attribute preExpr :: Boolean;
 synthesized attribute noLvalueConversion :: Boolean;
-synthesized attribute collectedTypeQualifiers :: [Qualifier] with ++;
 
 aspect default production
 top::UnaryOp ::=
 {
+  top.isLValue = false;
   top.opName =
     case top.pp of
       text(opName) -> opName
@@ -26,7 +26,7 @@ top::UnaryOp ::=
   propagate host, lifted;
   top.pp = text("++");
   top.preExpr = true;
-  top.noLvalueConversion = false;
+  top.noLvalueConversion = true;
   top.typerep = top.op.typerep.defaultLvalueConversion.integerPromotions;
   top.collectedTypeQualifiers := [];
   top.errors := [];
@@ -163,6 +163,7 @@ top::UnaryOp ::=
 autocopy attribute typeop :: Type;
 
 nonterminal UnaryTypeOp with location, typeop, pp, host<UnaryTypeOp>, lifted<UnaryTypeOp>, errors;
+flowtype UnaryTypeOp = decorate {typeop};
 
 abstract production sizeofOp
 top::UnaryTypeOp ::=

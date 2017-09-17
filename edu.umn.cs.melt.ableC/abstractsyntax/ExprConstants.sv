@@ -13,6 +13,7 @@ top::Expr ::= c::NumericConstant
   top.defs := [];
   top.freeVariables = [];
   top.typerep = builtinType(nilQualifier(), c.constanttyperep);
+  top.isLValue = false;
 }
 abstract production imaginaryConstant
 top::Expr ::= c::NumericConstant
@@ -28,6 +29,7 @@ top::Expr ::= c::NumericConstant
     | signedType(it) -> complexIntegerType(it)
     | unsignedType(it) -> complexIntegerType(it) -- probably not possible, but buggy!
     end);
+  top.isLValue = false;
 }
 abstract production characterConstant
 top::Expr ::= num::String  c::CharPrefix
@@ -39,9 +41,11 @@ top::Expr ::= num::String  c::CharPrefix
   top.defs := [];
   top.freeVariables = [];
   top.typerep = builtinType(nilQualifier(), signedType(charType())); -- TODO: no idea
+  top.isLValue = false;
 }
 
 nonterminal NumericConstant with location, pp, host<NumericConstant>, lifted<NumericConstant>, errors, env, constanttyperep;
+flowtype NumericConstant = decorate {env}, constanttyperep {decorate};
 
 synthesized attribute constanttyperep :: BuiltinType;
 
