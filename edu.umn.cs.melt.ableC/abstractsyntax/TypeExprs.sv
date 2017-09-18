@@ -153,7 +153,7 @@ top::BaseTypeExpr ::= q::Qualifiers  result::BuiltinType
   propagate host, lifted;
   top.pp = ppConcat([terminate(space(), q.pps), result.pp]);
   top.typerep = builtinType(q, result);
-  top.errors := q.qualifyErrors;
+  top.errors := q.errors;
   top.globalDecls := [];
   top.typeModifiers = [];
   top.defs := [];
@@ -190,7 +190,7 @@ top::BaseTypeExpr ::= q::Qualifiers  kwd::StructOrEnumOrUnion  name::Name
     end;
   
   top.errors :=
-    q.qualifyErrors ++
+    q.errors ++
     case kwd, tags of
     -- It's an enum and we see the declaration.
     | enumSEU(), enumTagItem(d) :: _ -> []
@@ -238,7 +238,7 @@ top::BaseTypeExpr ::= q::Qualifiers  def::StructDecl
     | nothing() -> "<anon>"
     end;
   top.typerep = tagType(q, refIdTagType(structSEU(), name, def.refId));
-  top.errors := q.qualifyErrors ++ def.errors;
+  top.errors := q.errors ++ def.errors;
   top.globalDecls := def.globalDecls;
   top.typeModifiers = [];
   top.defs := def.defs;
@@ -258,7 +258,7 @@ top::BaseTypeExpr ::= q::Qualifiers  def::UnionDecl
     | nothing() -> "<anon>"
     end;
   top.typerep = tagType(q, refIdTagType(unionSEU(), name, def.refId));
-  top.errors := q.qualifyErrors ++ def.errors;
+  top.errors := q.errors ++ def.errors;
   top.globalDecls := def.globalDecls;
   top.typeModifiers = [];
   top.defs := def.defs;
@@ -273,7 +273,7 @@ top::BaseTypeExpr ::= q::Qualifiers  def::EnumDecl
   propagate host, lifted;
   top.pp = ppConcat([terminate(space(), q.pps), def.pp ]);
   top.typerep = tagType(q, enumTagType(def));
-  top.errors := q.qualifyErrors ++ def.errors;
+  top.errors := q.errors ++ def.errors;
   top.globalDecls := def.globalDecls;
   top.typeModifiers = [];
   top.defs := def.defs;
@@ -291,7 +291,7 @@ top::BaseTypeExpr ::= q::Qualifiers  name::Name
   top.typerep = 
     if !null(name.valueLookupCheck) then errorType()
     else noncanonicalType(typedefType(q, name.name, addQualifiers(q.qualifiers, name.valueItem.typerep)));
-  top.errors := q.qualifyErrors;
+  top.errors := q.errors;
   top.globalDecls := [];
   top.typeModifiers = [];
   top.defs := [];
@@ -338,7 +338,7 @@ top::BaseTypeExpr ::= q::Qualifiers  wrapped::TypeName
   propagate host, lifted;
   top.pp = ppConcat([ terminate(space(), q.pps),
                      text("_Atomic"), parens(wrapped.pp)]);
-  top.errors := q.qualifyErrors ++ wrapped.errors;
+  top.errors := q.errors ++ wrapped.errors;
   top.globalDecls := wrapped.globalDecls;
   top.typeModifiers = [];
   top.defs := wrapped.defs;
@@ -367,7 +367,7 @@ top::BaseTypeExpr ::= q::Qualifiers  e::ExprOrTypeName
   top.typerep = noncanonicalType(typeofType(q, e.typerep));
   propagate host, lifted;
   top.pp = ppConcat([text("__typeof__"), parens(e.pp)]);
-  top.errors := q.qualifyErrors ++ e.errors;
+  top.errors := q.errors ++ e.errors;
   top.globalDecls := e.globalDecls;
   top.typeModifiers = [];
   top.defs := e.defs;
@@ -428,7 +428,7 @@ top::TypeModifierExpr ::= q::Qualifiers  target::TypeModifierExpr
                      terminate(space(), q.pps) ]);
   top.rpp = target.rpp;
   top.typerep = pointerType(q, target.typerep);
-  top.errors := q.qualifyErrors ++ target.errors;
+  top.errors := q.errors ++ target.errors;
   top.globalDecls := target.globalDecls;
   top.freeVariables = target.freeVariables;
   q.typeToQualify = top.typerep;
@@ -464,7 +464,7 @@ top::TypeModifierExpr ::= element::TypeModifierExpr  indexQualifiers::Qualifiers
     ), element.rpp);
 
   top.typerep = arrayType(element.typerep, indexQualifiers, sizeModifier, incompleteArrayType());
-  top.errors := element.errors ++ indexQualifiers.qualifyErrors;
+  top.errors := element.errors ++ indexQualifiers.errors;
   top.globalDecls := element.globalDecls;
   top.freeVariables = element.freeVariables;
   indexQualifiers.typeToQualify = top.typerep;

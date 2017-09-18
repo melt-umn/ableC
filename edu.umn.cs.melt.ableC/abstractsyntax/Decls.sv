@@ -51,10 +51,8 @@ top::Decls ::= h::Decl  t::Decls
   top.freeVariables =
     h.freeVariables ++
     removeDefsFromNames(h.defs, t.freeVariables);
---  top.inferredQualsOut = t.inferredQualsOut;
   
   t.env = addEnv(h.defs, top.env);
---  t.inferredQualsIn = h.inferredQualsOut;
 }
 
 abstract production nilDecl
@@ -67,7 +65,6 @@ top::Decls ::=
   top.unfoldedGlobalDecls = [];
   top.defs := [];
   top.freeVariables = [];
---  top.inferredQualsOut = top.inferredQualsIn;
 }
 
 function appendDecls
@@ -87,7 +84,6 @@ aspect default production
 top::Decl ::=
 {
   top.unfoldedGlobalDecls = top.globalDecls ++ [top];
---  top.inferredQualsOut = top.inferredQualsIn;
 }
 
 abstract production decls
@@ -100,7 +96,6 @@ top::Decl ::= d::Decls
   top.unfoldedGlobalDecls = d.unfoldedGlobalDecls;
   top.defs := d.defs;
   top.freeVariables = d.freeVariables;
---  top.inferredQualsOut = d.inferredQualsOut;
 }
 
 abstract production defsDecl
@@ -130,7 +125,6 @@ top::Decl ::= storage::[StorageClass]  attrs::Attributes  ty::BaseTypeExpr  dcls
   top.globalDecls := ty.globalDecls ++ dcls.globalDecls;
   top.defs := ty.defs ++ dcls.defs;
   top.freeVariables = ty.freeVariables ++ dcls.freeVariables;
---  top.inferredQualsOut = dcls.inferredQualsOut;
 
   ty.givenRefId = nothing();
   dcls.env = addEnv(ty.defs, ty.env);
@@ -161,7 +155,6 @@ top::Decl ::= attrs::Attributes  ty::BaseTypeExpr  dcls::Declarators
   top.globalDecls := ty.globalDecls ++ dcls.globalDecls;
   top.defs := ty.defs ++ dcls.defs;
   top.freeVariables = ty.freeVariables ++ dcls.freeVariables;
---  top.inferredQualsOut = dcls.inferredQualsOut;
   
   ty.givenRefId = attrs.maybeRefId;
   dcls.env = addEnv(ty.defs, ty.env);
@@ -245,10 +238,8 @@ top::Declarators ::= h::Declarator  t::Declarators
   top.freeVariables =
     h.freeVariables ++
     removeDefsFromNames(h.defs, t.freeVariables);
---  top.inferredQualsOut = t.inferredQualsOut;
 
   t.env = addEnv(h.defs, h.env);
---  t.inferredQualsIn = h.inferredQualsOut;
 }
 abstract production nilDeclarator
 top::Declarators ::=
@@ -259,20 +250,12 @@ top::Declarators ::=
   top.globalDecls := [];
   top.defs := [];
   top.freeVariables = [];
---  top.inferredQualsOut = top.inferredQualsIn;
 }
 
---nonterminal Declarator with pps, host<Declarator>, lifted<Declarator>, errors, globalDecls, defs, env, baseType, typeModifiersIn, typerep, sourceLocation, isTopLevel, isTypedef, givenAttributes, returnType, freeVariables, inferredQualsOut, inferredQualsIn;
 nonterminal Declarator with pps, host<Declarator>, lifted<Declarator>, errors, globalDecls, defs, env, baseType, typeModifiersIn, typerep, sourceLocation, isTopLevel, isTypedef, givenAttributes, returnType, freeVariables;
 flowtype Declarator = decorate {env, returnType, baseType, typeModifiersIn, givenAttributes, isTopLevel, isTypedef};
 
 autocopy attribute isTypedef :: Boolean;
-
---aspect default production
---top::Declarator ::=
---{
---	top.inferredQualsOut = top.inferredQualsIn;
---}
 
 abstract production declarator
 top::Declarator ::= name::Name  ty::TypeModifierExpr  attrs::Attributes  initializer::MaybeInitializer
@@ -327,12 +310,6 @@ top::Declarator ::= name::Name  ty::TypeModifierExpr  attrs::Attributes  initial
 		if top.isTopLevel
 		then name.valueMergeRedeclExtnQualifiers(animatedTyperep)
 		else animatedTyperep;
-
---  top.inferredQualsOut =
---    case initializer of
---      justInitializer(exprInitializer(e)) -> [pair(name, e.typerep.qualifiers)]
---    | _ -> []
---    end ++ top.inferredQualsIn;
 }
 abstract production errorDeclarator
 top::Declarator ::= msg::[Message]
@@ -432,9 +409,6 @@ top::FunctionDecl ::= storage::[StorageClass]  fnquals::SpecialSpecifiers  bty::
       !compatibleTypes(bty.typerep, builtinType(nilQualifier(), signedType(intType())), false, false)
     then [wrn(name.location, "Main function should return 'int' not " ++ showType(bty.typerep))]
     else []; -- TODO: check the rest of the signature.
-
---	  decls.inferredQualsIn = [];
---	  body.inferredQualsIn = decls.inferredQualsOut;
 }
 
 -- Allows extensions to handle nested functions differently

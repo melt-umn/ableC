@@ -1,16 +1,15 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax;
 
-nonterminal Qualifiers with mangledName, qualifiers, pps, host<Qualifiers>, typeToQualify, qualifyErrors;
+nonterminal Qualifiers with mangledName, qualifiers, pps, host<Qualifiers>, typeToQualify, errors;
 
 autocopy attribute typeToQualify :: Type;
 
-synthesized attribute qualifyErrors :: [Message];
 synthesized attribute collectedTypeQualifiers :: [Qualifier] with ++;
 flowtype collectedTypeQualifiers {} on -- TODO: Should this be allowed to depend on anything?
   UnaryOp,
   BinOp, AssignOp, BoolOp, BitOp, CompareOp, NumOp;
 
-flowtype Qualifiers = decorate {}, qualifiers {}, qualifyErrors {typeToQualify};
+flowtype Qualifiers = decorate {}, qualifiers {}, errors {typeToQualify};
 
 synthesized attribute qualifiers :: [Qualifier];
 
@@ -21,7 +20,7 @@ top::Qualifiers ::= h::Qualifier  t::Qualifiers
   top.mangledName = h.mangledName ++ "_" ++ t.mangledName;
   top.qualifiers = cons(h, t.qualifiers);
   top.pps = cons(h.pp, t.pps);
-  top.qualifyErrors = h.qualifyErrors ++ t.qualifyErrors;
+  top.errors := h.errors ++ t.errors;
 }
 
 abstract production nilQualifier
@@ -31,7 +30,7 @@ top::Qualifiers ::=
   top.mangledName = "";
   top.qualifiers = [];
   top.pps = [];
-  top.qualifyErrors = [];
+  top.errors := [];
 }
 
 function unionQualifiers
@@ -49,8 +48,8 @@ Qualifiers ::= q1::[Qualifier]  q2::[Qualifier]
 }
 
 {-- Type qualifiers (cv or cvr qualifiers) -}
-closed nonterminal Qualifier with location, pp, qualIsPositive, qualIsNegative, qualAppliesWithinRef, qualCompat, qualIsHost, mangledName, typeToQualify, qualifyErrors;
-flowtype Qualifier = decorate {}, qualIsPositive {}, qualIsNegative {}, qualAppliesWithinRef {}, qualCompat {}, qualIsHost {}, qualifyErrors {typeToQualify};
+closed nonterminal Qualifier with location, pp, qualIsPositive, qualIsNegative, qualAppliesWithinRef, qualCompat, qualIsHost, mangledName, typeToQualify, errors;
+flowtype Qualifier = decorate {}, qualIsPositive {}, qualIsNegative {}, qualAppliesWithinRef {}, qualCompat {}, qualIsHost {}, errors {typeToQualify};
 
 synthesized attribute qualIsPositive :: Boolean;
 synthesized attribute qualIsNegative :: Boolean;
@@ -83,7 +82,7 @@ top::Qualifier ::=
   top.qualCompat = \qualToCompare::Qualifier ->
     case qualToCompare of constQualifier() -> true | _ -> false end;
   top.qualIsHost = true;
-  top.qualifyErrors = [];
+  top.errors := [];
 }
 
 abstract production volatileQualifier
@@ -97,7 +96,7 @@ top::Qualifier ::=
   top.qualCompat = \qualToCompare::Qualifier ->
     case qualToCompare of volatileQualifier() -> true | _ -> false end;
   top.qualIsHost = true;
-  top.qualifyErrors = [];
+  top.errors := [];
 }
 
 abstract production restrictQualifier
@@ -115,7 +114,7 @@ top::Qualifier ::=
     | _                     -> false
     end;
   top.qualIsHost = true;
-  top.qualifyErrors =
+  top.errors :=
 		case top.typeToQualify.defaultFunctionArrayLvalueConversion of
 			pointerType(_, _) -> []
 		| _                 -> [err(top.location, "invalid use of `restrict'")]
@@ -137,7 +136,7 @@ top::Qualifier ::=
     | _                     -> false
     end;
   top.qualIsHost = true;
-  top.qualifyErrors =
+  top.errors :=
 		case top.typeToQualify.defaultFunctionArrayLvalueConversion of
 			pointerType(_, _) -> []
 		| _                 -> [err(top.location, "invalid use of `restrict'")]

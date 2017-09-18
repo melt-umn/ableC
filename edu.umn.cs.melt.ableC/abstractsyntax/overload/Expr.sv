@@ -9,21 +9,17 @@ top::Expr ::= op::UnaryOp  e::Expr
   
   top.typerep = addQualifiers(op.collectedTypeQualifiers, forward.typerep);
   op.op = e;
-  top.errors := op.errors ++ e.errors;
   
   forwards to
-    if null(top.errors)
-    then case op.unaryProd of
-           just(prod) -> prod(e, top.location)
-         | nothing()  -> unaryOpExprDefault(op, e, location=top.location)
-         end
-    else errorExpr(top.errors, location=top.location);
+    case op.unaryProd of
+      just(prod) -> prod(e, top.location)
+    | nothing()  -> unaryOpExprDefault(op, e, location=top.location)
+    end;
 }
 abstract production dereferenceExpr
 top::Expr ::= e::Expr
 {
   top.pp = parens(cat(text("*"), e.pp));
-  top.errors := baseExpr.errors;
 
   local baseExpr :: Expr =
     case getDereferenceOverload(e.typerep, top.env) of
@@ -33,39 +29,29 @@ top::Expr ::= e::Expr
   baseExpr.env = top.env;
   baseExpr.returnType = top.returnType;
 
-  forwards to
-    if null(top.errors)
-    then baseExpr
-    else errorExpr(top.errors, location=top.location);
+  forwards to baseExpr;
 }
 abstract production explicitCastExpr
 top::Expr ::= ty::TypeName  e::Expr
 {
   top.pp = parens( ppConcat([parens(ty.pp), e.pp]) );
-  top.errors := baseExpr.errors;
 
   local baseExpr :: Expr = explicitCastExprDefault(ty, e, location=top.location);
   baseExpr.env = top.env;
   baseExpr.returnType = top.returnType;
 
-  forwards to
-    if null(top.errors)
-    then baseExpr
-    else errorExpr(top.errors, location=top.location);
+  forwards to baseExpr;
 }
 abstract production arraySubscriptExpr
 top::Expr ::= lhs::Expr  rhs::Expr
 {
   top.pp = parens( ppConcat([ lhs.pp, brackets( rhs.pp )]) );
-  top.errors := lhs.errors ++ rhs.errors;
 
   forwards to
-    if null(top.errors)
-    then case getArraySubscriptOverload(lhs.typerep, top.env) of
-           just(prod) -> prod(lhs, rhs, top.location)
-         | nothing()  -> arraySubscriptExprDefault(lhs, rhs, location=top.location)
-         end
-    else errorExpr(top.errors, location=top.location);
+    case getArraySubscriptOverload(lhs.typerep, top.env) of
+      just(prod) -> prod(lhs, rhs, top.location)
+    | nothing()  -> arraySubscriptExprDefault(lhs, rhs, location=top.location)
+    end;
 }
 abstract production callExpr
 top::Expr ::= f::Expr  a::Exprs
@@ -92,20 +78,25 @@ abstract production memberExpr
 top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
 {
   top.pp = parens(ppConcat([lhs.pp, text(if deref then "->" else "."), rhs.pp]));
-  top.errors := baseExpr.errors;
+
+  -- get overload function from under pointer if dereferencing
+  local ty :: Type =
+    if deref
+    then case lhs.typerep.withoutAttributes of
+           pointerType(_, sub) -> sub
+         | _                   -> lhs.typerep
+         end
+    else lhs.typerep;
 
   local baseExpr :: Expr =
-    case getMemberOverload(lhs.typerep, top.env) of
+    case getMemberOverload(ty, top.env) of
       just(prod) -> prod(lhs, deref, rhs, top.location)
     | nothing()  -> memberExprDefault(lhs, deref, rhs, location=top.location)
     end;
   baseExpr.env = top.env;
   baseExpr.returnType = top.returnType;
 
-  forwards to
-    if null(top.errors)
-    then baseExpr
-    else errorExpr(top.errors, location=top.location);
+  forwards to baseExpr;
 }
 abstract production addExpr
 top::Expr ::= lhs::Expr  rhs::Expr
@@ -117,7 +108,6 @@ top::Expr ::= lhs::Expr  rhs::Expr
   rhsRuntimeConversions := [];
 
   top.pp = parens( ppConcat([lhs.pp, space(), text("+"), space(), rhs.pp]) );
-  top.errors := baseExpr.errors;
 
   top.collectedTypeQualifiers := [];
   top.typerep = addQualifiers(top.collectedTypeQualifiers, forward.typerep);
@@ -140,10 +130,7 @@ top::Expr ::= lhs::Expr  rhs::Expr
   baseExpr.env = top.env;
   baseExpr.returnType = top.returnType;
 
-  forwards to
-    if null(top.errors)
-    then baseExpr
-    else errorExpr(top.errors, location=top.location);
+  forwards to baseExpr;
 }
 abstract production subtractExpr
 top::Expr ::= lhs::Expr  rhs::Expr
@@ -155,7 +142,6 @@ top::Expr ::= lhs::Expr  rhs::Expr
   rhsRuntimeConversions := [];
 
   top.pp = parens( ppConcat([lhs.pp, space(), text("-"), space(), rhs.pp]) );
-  top.errors := baseExpr.errors;
 
   top.collectedTypeQualifiers := [];
   top.typerep = addQualifiers(top.collectedTypeQualifiers, forward.typerep);
@@ -178,10 +164,7 @@ top::Expr ::= lhs::Expr  rhs::Expr
   baseExpr.env = top.env;
   baseExpr.returnType = top.returnType;
 
-  forwards to
-    if null(top.errors)
-    then baseExpr
-    else errorExpr(top.errors, location=top.location);
+  forwards to baseExpr;
 }
 abstract production binaryOpExpr
 top::Expr ::= lhs::Expr  op::BinOp  rhs::Expr
@@ -206,7 +189,6 @@ top::Expr ::= lhs::Expr  op::BinOp  rhs::Expr
   rhs.env = addEnv(lhs.defs, lhs.env);
   op.lop = lhs;
   op.rop = rhs;
-  top.errors := lhs.errors ++ op.errors ++ rhs.errors;
   
   -- Option 1: Assign to a member or subscript (e.g. a.foo = b, a[i] = b)
   local option1::Maybe<Expr> =
@@ -221,11 +203,9 @@ top::Expr ::= lhs::Expr  op::BinOp  rhs::Expr
   local option2::Maybe<Expr> = applyMaybe3(op.binaryProd, lhsWithRuntimeInsertions, rhsWithRuntimeInsertions, top.location);
   
   forwards to
-    if null(top.errors)
-    then if      option1.isJust then option1.fromJust
-         else if option2.isJust then option2.fromJust
-         else binaryOpExprDefault(lhsWithRuntimeInsertions, op, rhsWithRuntimeInsertions, location=top.location)
-    else errorExpr(top.errors, location=top.location);
+    if      option1.isJust then option1.fromJust
+    else if option2.isJust then option2.fromJust
+    else binaryOpExprDefault(lhsWithRuntimeInsertions, op, rhsWithRuntimeInsertions, location=top.location);
 }
 
 function mkRuntimeInsertions

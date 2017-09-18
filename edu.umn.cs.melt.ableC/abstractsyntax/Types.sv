@@ -123,7 +123,7 @@ top::Type ::= q::Qualifiers  bt::BuiltinType
     | _ -> builtinType(q, bt)
     end;
   top.qualifiers = q.qualifiers;
-  top.errors := q.qualifyErrors;
+  top.errors := q.errors;
   q.typeToQualify = top;
 }
 
@@ -157,7 +157,7 @@ top::Type ::= q::Qualifiers  target::Type
     | _ -> pointerType(q, target)
     end;
   top.qualifiers = q.qualifiers;
-  top.errors := q.qualifyErrors ++ target.errors;
+  top.errors := q.errors ++ target.errors;
   
   top.isScalarType = true;
   q.typeToQualify = top;
@@ -231,7 +231,7 @@ top::Type ::= element::Type  indexQualifiers::Qualifiers  sizeModifier::ArraySiz
     | _ -> arrayType(element, indexQualifiers, sizeModifier, sub)
     end;
   top.qualifiers = indexQualifiers.qualifiers;
-  top.errors := element.errors ++ indexQualifiers.qualifyErrors;
+  top.errors := element.errors ++ indexQualifiers.errors;
   indexQualifiers.typeToQualify = top;
 }
 
@@ -399,7 +399,7 @@ top::Type ::= q::Qualifiers  sub::TagType
     | _ -> tagType(q, sub)
     end;
   top.qualifiers = q.qualifiers;
-  top.errors := q.qualifyErrors;
+  top.errors := q.errors;
   
   top.isIntegerType = sub.isIntegerType;
   top.isArithmeticType = sub.isIntegerType;
@@ -483,7 +483,7 @@ top::Type ::= q::Qualifiers  bt::Type
     | _ -> atomicType(q, bt)
     end;
   top.qualifiers = q.qualifiers;
-  top.errors := q.qualifyErrors ++ bt.errors;
+  top.errors := q.errors ++ bt.errors;
   q.typeToQualify = top;
 }
 

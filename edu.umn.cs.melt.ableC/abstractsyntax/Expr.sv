@@ -57,15 +57,11 @@ top::Expr ::= id::Name
   top.errors := [];
   top.globalDecls := [];
   top.defs := [];
---  top.typerep = addQualifiers(inferredQualifiers, id.valueItem.typerep);
   top.typerep = id.valueItem.typerep;
   top.freeVariables = [id];
   top.isLValue = true;
   
   top.errors <- id.valueLookupCheck;
-
---  local inferredQualifiers :: [Qualifier] =
---    concat(lookupAllBy(\n1::Name n2::Name -> n1.name == n2.name, id, top.inferredQualsIn));
 }
 abstract production stringLiteral
 top::Expr ::= l::String
@@ -123,7 +119,7 @@ top::Expr ::= e::Expr
     | pointerType(_, innerty) -> innerty
     | _ -> errorType()
     end;
-  top.isLValue = false;
+  top.isLValue = true;
 }
 abstract production unaryOpExpr
 top::Expr ::= op::UnaryOp  e::Expr
