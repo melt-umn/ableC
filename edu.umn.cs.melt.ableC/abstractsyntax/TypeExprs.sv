@@ -472,7 +472,7 @@ top::TypeModifierExpr ::= element::TypeModifierExpr  indexQualifiers::Qualifiers
 
 {-- Functions (with or without args) -}
 abstract production functionTypeExprWithArgs
-top::TypeModifierExpr ::= result::TypeModifierExpr  args::Parameters  variadic::Boolean
+top::TypeModifierExpr ::= result::TypeModifierExpr  args::Parameters  variadic::Boolean  q::Qualifiers
 {
   propagate host, lifted;
   top.lpp = ppConcat([ result.lpp ]);
@@ -489,7 +489,7 @@ top::TypeModifierExpr ::= result::TypeModifierExpr  args::Parameters  variadic::
   top.isFunctionTypeExpr = true;
   
   top.typerep = functionType(result.typerep, 
-                             protoFunctionType(args.typereps, variadic));
+                             protoFunctionType(args.typereps, variadic), q);
   top.errors := result.errors ++ args.errors;
   top.globalDecls := result.globalDecls ++ args.globalDecls;
   top.freeVariables = result.freeVariables;
@@ -497,7 +497,7 @@ top::TypeModifierExpr ::= result::TypeModifierExpr  args::Parameters  variadic::
   args.env = openScope(top.env);
 }
 abstract production functionTypeExprWithoutArgs
-top::TypeModifierExpr ::= result::TypeModifierExpr  ids::[Name]  --fnquals::[SpecialSpecifier]
+top::TypeModifierExpr ::= result::TypeModifierExpr  ids::[Name]  q::Qualifiers --fnquals::[SpecialSpecifier]
 {
   propagate host, lifted;
   top.lpp = result.lpp;
@@ -505,7 +505,7 @@ top::TypeModifierExpr ::= result::TypeModifierExpr  ids::[Name]  --fnquals::[Spe
   
   top.isFunctionTypeExpr = true;
   
-  top.typerep = functionType(result.typerep, noProtoFunctionType());
+  top.typerep = functionType(result.typerep, noProtoFunctionType(), q);
   top.errors := result.errors;
   top.globalDecls := result.globalDecls;
   top.freeVariables = result.freeVariables;

@@ -280,7 +280,7 @@ top::ArraySizeModifier ::= { top.pps = [text("*")]; }
  - about parameter types. Not even number.
  -}
 abstract production functionType
-top::Type ::= result::Type  sub::FunctionType
+top::Type ::= result::Type  sub::FunctionType  q::Qualifiers
 {
   propagate host, withoutExtensionQualifiers;
   --TODO should this space be here? also TODO: ordering? result lpp before sub.lpp maybe? TODO: actually sub.lpp is always nothing. FIXME
@@ -290,9 +290,9 @@ top::Type ::= result::Type  sub::FunctionType
   top.typeModifierExpr =
     case sub of
       protoFunctionType(args, variadic) ->
-        functionTypeExprWithArgs(result.typeModifierExpr, argTypesToParameters(args), variadic)
+        functionTypeExprWithArgs(result.typeModifierExpr, argTypesToParameters(args), variadic, q)
     | noProtoFunctionType() ->
-        functionTypeExprWithoutArgs(result.typeModifierExpr, [])
+        functionTypeExprWithoutArgs(result.typeModifierExpr, [], q)
     end;
   top.mangledName = s"function_${result.mangledName}_${sub.mangledName}_";
   top.integerPromotions = top;
@@ -303,11 +303,11 @@ top::Type ::= result::Type  sub::FunctionType
       pointerType(nilQualifier(), top)));
   top.mergeQualifiers = \t2::Type ->
     case t2 of
-      functionType(result2, sub2) ->
-        functionType(result.mergeQualifiers(result2), sub.mergeQualifiers(sub2))
-    | _ -> functionType(result, sub)
+      functionType(result2, sub2, q2) ->
+        functionType(result.mergeQualifiers(result2), sub.mergeQualifiers(sub2), unionQualifiers(q.qualifiers, q2.qualifiers))
+    | _ -> functionType(result, sub, q)
     end;
-  top.qualifiers = [];
+  top.qualifiers = q.qualifiers;
   top.errors := result.errors ++ sub.errors;
 }
 

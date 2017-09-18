@@ -40,16 +40,18 @@ Boolean ::= a::Type  b::Type  allowSubtypes::Boolean  dropOuterQual::Boolean
         compatibleQualifiers(q1, q2, allowSubtypes, dropOuterQual)
   | arrayType(e1, q1, sm1, sub1), arrayType(e2, q2, sm2, sub2) -> compatibleTypes(e1, e2, allowSubtypes, dropOuterQual) && compatibleQualifiers(q1, q2, allowSubtypes, dropOuterQual)
       -- TODO: actually, should this include sub1/ sub2 at all? or those sm? maybe? probably. yeah, later, do that.
-  | functionType(r1, noProtoFunctionType()),
-    functionType(r2, noProtoFunctionType()) -> 
-      compatibleTypes(r1, r2, allowSubtypes, true)
-  | functionType(r1, protoFunctionType(a1, v1)),
-    functionType(r2, protoFunctionType(a2, v2)) ->
+  | functionType(r1, noProtoFunctionType(), q1),
+    functionType(r2, noProtoFunctionType(), q2) -> 
+      compatibleTypes(r1, r2, allowSubtypes, true) && compatibleQualifiers(q1, q2, allowSubtypes, dropOuterQual)
+  | functionType(r1, protoFunctionType(a1, v1), q1),
+    functionType(r2, protoFunctionType(a2, v2), q2) ->
       compatibleTypes(r1, r2, false, false) &&
         compatibleTypeList(a1, a2, false, true) && -- TODO: check subtypes of function args
+        compatibleQualifiers(q1, q2, allowSubtypes, dropOuterQual) &&
         v1 == v2
-  | functionType(r1, _), functionType(r2, _) -> 
-      compatibleTypes(r1, r2, allowSubtypes, dropOuterQual)
+  | functionType(r1, _, q1), functionType(r2, _, q2) -> 
+      compatibleTypes(r1, r2, allowSubtypes, dropOuterQual) &&
+        compatibleQualifiers(q1, q2, allowSubtypes, dropOuterQual)
   -- extensions
   | attributedType(_, t1), attributedType(_, t2) -> compatibleTypes(t1, t2, allowSubtypes, dropOuterQual)
   | attributedType(_, t1), t2 -> compatibleTypes(t1, t2, allowSubtypes, dropOuterQual)

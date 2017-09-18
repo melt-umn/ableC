@@ -346,7 +346,7 @@ top::FunctionDecl ::= storage::[StorageClass]  fnquals::SpecialSpecifiers  bty::
 
   local parameters :: Decorated Parameters =
     case mty of
-    | functionTypeExprWithArgs(result, args, variadic) ->
+    | functionTypeExprWithArgs(result, args, variadic, q) ->
         args
     | _ -> decorate nilParameters() with { env = top.env; returnType = top.returnType; }
     end;
@@ -381,8 +381,8 @@ top::FunctionDecl ::= storage::[StorageClass]  fnquals::SpecialSpecifiers  bty::
   -- refIds, in case someone decides to declare a new struct in the function return type.  
   local retMty::TypeModifierExpr = 
     case mty of
-    | functionTypeExprWithArgs(ret, _, _) -> ret
-    | functionTypeExprWithoutArgs(ret, _) -> ret
+    | functionTypeExprWithArgs(ret, _, _, _) -> ret
+    | functionTypeExprWithoutArgs(ret, _, _) -> ret
     end;
   retMty.env = mty.env;
   retMty.returnType = mty.returnType;
@@ -390,8 +390,8 @@ top::FunctionDecl ::= storage::[StorageClass]  fnquals::SpecialSpecifiers  bty::
     
   body.returnType =
     case mty of
-    | functionTypeExprWithArgs(ret, _, _) -> just(retMty.typerep)
-    | functionTypeExprWithoutArgs(ret, _) -> just(retMty.typerep)
+    | functionTypeExprWithArgs(ret, _, _, _) -> just(retMty.typerep)
+    | functionTypeExprWithoutArgs(ret, _, _) -> just(retMty.typerep)
     | _ -> nothing() -- Don't error here, this is caught in type checking
     end;
 

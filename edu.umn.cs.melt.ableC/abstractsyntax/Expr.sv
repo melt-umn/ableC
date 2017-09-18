@@ -246,7 +246,7 @@ top::Expr ::= f::Expr  a::Exprs
   
   local subtype :: Either<Pair<Type FunctionType> [Message]> =
     case f.typerep.defaultFunctionArrayLvalueConversion of
-    | pointerType(_, functionType(rt, sub)) -> left(pair(rt, sub))
+    | pointerType(_, functionType(rt, sub, _)) -> left(pair(rt, sub))
     | errorType() -> right([]) -- error already raised.
     | _ -> right([err(f.location, "call expression is not function type (got " ++ showType(f.typerep) ++ ")")])
     end;
