@@ -23,7 +23,7 @@ POSITIVE = True
 NEGATIVE = True
 COMMAND_PREFIX = ""
 #COMPILE_C = True
-#TIMEOUT = 5000 #Num of iterations of time.sleep(.05) before giving up
+TIMEOUT = 600 #Num seconds before giving up
 #DEBUG = False
 
 #######################################################################
@@ -64,55 +64,64 @@ def runPositiveTest(testpath, results):
   #outputs = subprocess.Popen('java -jar ' + JAR + ' ' + testname, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
   outputs = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
-  (stdout_output, stderr_output) = outputs.communicate()
+  for i in range(TIMEOUT) * 20:
+    if outputs.poll() != None:
+      timed_out = False
+      break
+    time.sleep(0.05)
+  else:
+    timed_out = True
 
-#  i = 0
-#  while outputs.poll() == None and i < TIMEOUT:
-#    time.sleep(.05)
-#    i += 1
 
   #stdout_output = outputs.stdout.readlines()
   #stderr_output = outputs.stderr.readlines()
 #  (stdout_output, stderr_output) = outputs.communicate()
 
-#  if i >= TIMEOUT:
-#    return_code = 0
-#  else: 
-#    return_code = outputs.poll()
+  # if i >= TIMEOUT:
+  #   return_code = 0
+  # else: 
+  #   return_code = outputs.poll()
 
-  if outputs.returncode != 0:
-    printTest("Positive test", False, "ERROR", testpath)
-    results['positive'][1] = results['positive'][1] + 1
-    results['fail']['ERROR'].append(testpath)
-    if len(stdout_output) > 0:
-      stdoutFile = open( testpath + ".stdout", 'w' )
-      for l in stdout_output:
-        stdoutFile.write( l )
-      stdoutFile.close()
-    if len(stderr_output) > 0:
+  if timed_out:
+    printTest("Positive test", False, "TIMEOUT", testpath)
+    results['fail']['TIMEOUT'].append(testpath)
+
+  else:
+    (stdout_output, stderr_output) = outputs.communicate()
+    
+    if outputs.returncode != 0:
+      printTest("Positive test", False, "ERROR", testpath)
+      results['positive'][1] = results['positive'][1] + 1
+      results['fail']['ERROR'].append(testpath)
+      if len(stdout_output) > 0:
+        stdoutFile = open( testpath + ".stdout", 'w' )
+        for l in stdout_output:
+          stdoutFile.write( l )
+        stdoutFile.close()
+      if len(stderr_output) > 0:
+        stderrFile = open( testpath + ".stderr", 'w' )
+        for l in stderr_output:
+          stderrFile.write( l )
+        stderrFile.close()
+
+    elif len(stderr_output) > 0:
+      printTest("Positive test", False, "STDERR", testpath)
+      results['positive'][1] = results['positive'][1] + 1
+      results['fail']["STDERR"].append(testpath)
+      if len(stdout_output) > 0:
+        stdoutFile = open( testpath + ".stdout", 'w' )
+        for l in stdout_output:
+          stdoutFile.write( l )
+        stdoutFile.close()
       stderrFile = open( testpath + ".stderr", 'w' )
       for l in stderr_output:
         stderrFile.write( l )
       stderrFile.close()
 
-  elif len(stderr_output) > 0:
-    printTest("Positive test", False, "STDERR", testpath)
-    results['positive'][1] = results['positive'][1] + 1
-    results['fail']["STDERR"].append(testpath)
-    if len(stdout_output) > 0:
-      stdoutFile = open( testpath + ".stdout", 'w' )
-      for l in stdout_output:
-        stdoutFile.write( l )
-      stdoutFile.close()
-    stderrFile = open( testpath + ".stderr", 'w' )
-    for l in stderr_output:
-      stderrFile.write( l )
-    stderrFile.close()
-
-  else:
-    printTest("Positive test", True, "", testpath)
-    results['positive'][0] = results['positive'][0] + 1
-    success = True
+    else:
+      printTest("Positive test", True, "", testpath)
+      results['positive'][0] = results['positive'][0] + 1
+      success = True
   
   return success
 
@@ -134,39 +143,43 @@ def runNegativeTest(testpath, results):
 #  stdout_output = outputs.stdout.readlines()
 #  stderr_output = outputs.stderr.readlines()
 
-#  i = 0
-#  while outputs.poll() == None and i < TIMEOUT:
-#    time.sleep(.05)
-#    i += 1
+  for i in range(TIMEOUT) * 20:
+    if outputs.poll() != None:
+      timed_out = False
+      break
+    time.sleep(0.05)
+  else:
+    timed_out = True
 
 #  if i >= TIMEOUT:
 #    return_code = 0
 #  else: 
 #    return_code = outputs.poll()
 
-  (stdout_output, stderr_output) = outputs.communicate()
-
-  if outputs.returncode == 0:
-    printTest("Negative test", False, "NO ERROR", testpath)
-    ## Fail - Must have errors to pass
+  if timed_out:
+    printTest("Negative test", False, "", testpath)
     results['negative'][1] = results['negative'][1] + 1
-    results['fail']["NO ERROR"].append(testpath)
+    results['fail']["TIMEOUT"].append(testpath)
 
-  elif len(stderr_output) > 0:
-    printTest("Negative test", True, "", testpath)
-    ## Fail - Errors sent to stderr -> incorrect error.
-    results['negative'][0] = results['negative'][0] + 1
-    success = True
+  else:
+    (stdout_output, stderr_output) = outputs.communicate()
 
-#  elif i >= TIMEOUT:
-#    printTest("Negative test", False, "", testpath)
-#    results['negative'][1] = results['negative'][1] + 1
-#    results['fail']["TIMEOUT"].append(testpath)
+    if outputs.returncode == 0:
+      printTest("Negative test", False, "NO ERROR", testpath)
+      ## Fail - Must have errors to pass
+      results['negative'][1] = results['negative'][1] + 1
+      results['fail']["NO ERROR"].append(testpath)
 
-  else: # len(returned_lines) != 0:
-    printTest("Negative test", True, "", testpath)
-    results['negative'][0] = results['negative'][0] + 1
-    success = True
+    elif len(stderr_output) > 0:
+      printTest("Negative test", True, "", testpath)
+      ## Fail - Errors sent to stderr -> incorrect error.
+      results['negative'][0] = results['negative'][0] + 1
+      success = True
+
+    else: # len(returned_lines) != 0:
+      printTest("Negative test", True, "", testpath)
+      results['negative'][0] = results['negative'][0] + 1
+      success = True
   
   return success
 
@@ -379,7 +392,7 @@ def main():
   #results = {'positive':[0,0], 'negative':[0,0], 'compile_c':[0,0], 'run_c':[0,0], 'expected_cmp':[0,0],
   #           'fail':{"ERROR":[], "NO ERROR":[], "WRONG LINE":[], "STDERR":[], "WRONG ERR":[], "GCC ERR":[], "NO C FILE":[], "NO EXP FILE":[], "NO STDOUT FILE":[], "EXP CMP":[], "NO LINE":[], "TIMEOUT":[]} }
   results = {'positive':[0,0], 'negative':[0,0],
-             'fail':{"ERROR":[], "NO ERROR":[], "STDERR":[], "NO LINE":[]} }
+             'fail':{"ERROR":[], "NO ERROR":[], "STDERR":[], "NO LINE":[], "TIMEOUT":[]} }
 
 
   #####################################################################
