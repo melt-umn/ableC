@@ -1,5 +1,7 @@
 grammar edu:umn:cs:melt:ableC:concretesyntax:gcc_exts;
 
+import edu:umn:cs:melt:ableC:abstractsyntax:overload as ovrld;
+
 terminal IDecConstant_t /
 	((0)|([1-9][0-9]*)) -- Begins with 1-9 or is just 0 alone
 	[IiJj]
@@ -95,8 +97,8 @@ terminal GNU_UUImag_t '__imag' lexer classes {Ckeyword};
 terminal GNU_UUImagUU_t '__imag__' lexer classes {Ckeyword};
 
 concrete productions top::UnaryOp_c
-| '__real'  { top.ast = ast:realOp(location=top.location); }
-| '__real__'  { top.ast = ast:realOp(location=top.location); }
-| '__imag'  { top.ast = ast:imagOp(location=top.location); }
-| '__imag__'  { top.ast = ast:imagOp(location=top.location); }
+| '__real'  { top.ast = ovrld:unaryOpExpr(ast:realOp(location=top.location), top.expr, location=top.location); }
+| '__real__'  { top.ast = ovrld:unaryOpExpr(ast:realOp(location=top.location), top.expr, location=top.location); }
+| '__imag'  { top.ast = ovrld:unaryOpExpr(ast:imagOp(location=top.location), top.expr, location=top.location); }
+| '__imag__'  { top.ast = ovrld:unaryOpExpr(ast:imagOp(location=top.location), top.expr, location=top.location); }
 

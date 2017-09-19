@@ -125,6 +125,9 @@ abstract production unaryOpExpr
 top::Expr ::= op::UnaryOp  e::Expr
 {
   op.op = e;
+  top.pp = if op.preExpr
+           then parens( cat( op.pp, e.pp ) )
+           else parens( cat( e.pp, op.pp ) );
   forwards to qualifiedUnaryOpExpr(op, e, foldQualifier(op.collectedTypeQualifiers), location=top.location);
 }
 abstract production qualifiedUnaryOpExpr
@@ -396,6 +399,11 @@ top::Expr ::= lhs::Expr  op::BinOp  rhs::Expr
 {
   op.lop = lhs;
   op.rop = rhs;
+  top.pp = parens( ppConcat([ 
+    {-case op, lhs.pp of
+    | assignOp(eqOp()), cat(cat(text("("), lhsNoParens), text(")")) -> lhsNoParens
+    | _, _ -> lhs.pp
+    end-} lhs.pp, space(), op.pp, space(), rhs.pp ]) );
   forwards to qualifiedBinaryOpExpr(lhs, op, rhs, foldQualifier(op.collectedTypeQualifiers), location=top.location);
 }
 abstract production qualifiedBinaryOpExpr

@@ -5,8 +5,8 @@ nonterminal Qualifiers with mangledName, qualifiers, pps, host<Qualifiers>, type
 autocopy attribute typeToQualify :: Type;
 
 synthesized attribute collectedTypeQualifiers :: [Qualifier] with ++;
-flowtype collectedTypeQualifiers {} on -- TODO: Should this be allowed to depend on anything?
-  UnaryOp,
+flowtype collectedTypeQualifiers {op} on UnaryOp;
+flowtype collectedTypeQualifiers {lop, rop} on
   BinOp, AssignOp, BoolOp, BitOp, CompareOp, NumOp;
 
 flowtype Qualifiers = decorate {}, qualifiers {}, errors {typeToQualify};
