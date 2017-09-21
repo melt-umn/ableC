@@ -351,14 +351,65 @@ top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
 abstract production addExpr
 top::Expr ::= lhs::Expr rhs::Expr
 {
+  -- insert arbitrary boolean expressions and error message to print on exit if failed
+  production attribute lhsRuntimeChecks::[Pair<(Expr ::= Expr) String>] with ++;
+  lhsRuntimeChecks := [];
+  production attribute rhsRuntimeChecks::[Pair<(Expr ::= Expr) String>] with ++;
+  rhsRuntimeChecks := [];
+
+  -- wrap expr using provided functions
+  production attribute lhsRuntimeConversions :: [(Expr ::= Expr)] with ++;
+  lhsRuntimeConversions := [];
+  production attribute rhsRuntimeConversions :: [(Expr ::= Expr)] with ++;
+  rhsRuntimeConversions := [];
+
+  -- insert arbitrary code in stmtExpr that returns expr unchanged
+  production attribute lhsRuntimeInsertions :: [(Expr ::= Expr)] with ++;
+  lhsRuntimeInsertions := [];
+  production attribute rhsRuntimeInsertions :: [(Expr ::= Expr)] with ++;
+  rhsRuntimeInsertions := [];
+
   top.collectedTypeQualifiers := [];
-  forwards to qualifiedAddExpr(lhs, rhs, foldQualifier(top.collectedTypeQualifiers), location=top.location);
+
+  top.pp = parens( ppConcat([lhs.pp, space(), text("+"), space(), rhs.pp]) );
+  top.typerep = addQualifiers(top.collectedTypeQualifiers, forward.typerep);
+
+  local convertedLhs :: Expr =
+    foldr(\f::(Expr ::= Expr)  e::Expr -> f(e), lhs, lhsRuntimeConversions);
+  convertedLhs.env = top.env;
+  convertedLhs.returnType = top.returnType;
+
+  local convertedRhs :: Expr =
+    foldr(\f::(Expr ::= Expr)  e::Expr -> f(e), rhs, rhsRuntimeConversions);
+  convertedRhs.env = addEnv(convertedLhs.defs, convertedLhs.env);
+  convertedRhs.returnType = top.returnType;
+
+  local lhsWithRuntimeChecks :: Expr =
+    mkRuntimeChecks(lhsRuntimeChecks, convertedLhs, convertedLhs.typerep);
+  lhsWithRuntimeChecks.env = top.env;
+  lhsWithRuntimeChecks.returnType = top.returnType;
+
+  local rhsWithRuntimeChecks :: Expr =
+    mkRuntimeChecks(rhsRuntimeChecks, convertedRhs, convertedRhs.typerep);
+  rhsWithRuntimeChecks.env = addEnv(lhsWithRuntimeChecks.defs, lhsWithRuntimeChecks.env);
+  rhsWithRuntimeChecks.returnType = top.returnType;
+
+  local lhsWithRuntimeInsertions :: Expr =
+    mkRuntimeInsertions(lhsRuntimeInsertions, lhsWithRuntimeChecks, lhsWithRuntimeChecks.typerep);
+  lhsWithRuntimeInsertions.env = top.env;
+  lhsWithRuntimeInsertions.returnType = top.returnType;
+
+  local rhsWithRuntimeInsertions :: Expr =
+    mkRuntimeInsertions(rhsRuntimeInsertions, convertedRhs, convertedRhs.typerep);
+  rhsWithRuntimeInsertions.env = addEnv(lhsWithRuntimeInsertions.defs, lhsWithRuntimeInsertions.env);
+  rhsWithRuntimeInsertions.returnType = top.returnType;
+
+  forwards to addHostExpr(lhsWithRuntimeInsertions, rhsWithRuntimeInsertions, location=top.location);
 }
-abstract production qualifiedAddExpr
-top::Expr ::= lhs::Expr rhs::Expr collectedTypeQualifiers::Qualifiers
+abstract production addHostExpr
+top::Expr ::= lhs::Expr rhs::Expr
 {
-  propagate lifted;
-  top.host = qualifiedAddExpr(lhs.host, rhs.host, nilQualifier(), location=top.location);
+  propagate host, lifted;
   top.pp = parens( ppConcat([lhs.pp, space(), text("+"), space(), rhs.pp]) );
   top.errors := lhs.errors ++ rhs.errors;
   top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
@@ -366,8 +417,7 @@ top::Expr ::= lhs::Expr rhs::Expr collectedTypeQualifiers::Qualifiers
   top.freeVariables =
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
-  top.typerep = addQualifiers(collectedTypeQualifiers.qualifiers,
-    usualAdditiveConversionsOnTypes(lhs.typerep, rhs.typerep));
+  top.typerep = usualAdditiveConversionsOnTypes(lhs.typerep, rhs.typerep);
   rhs.env = addEnv(lhs.defs, lhs.env);
   top.isLValue = false;
 }
@@ -672,6 +722,39 @@ Stmt ::= c::Pair<(Expr ::= Expr) String>  tmpE::Expr  l::Location
 {
   -- TODO: improve error handling
   return ifStmtNoElse(c.fst(tmpE), txtStmt(s"fprintf(stderr, \"${l.unparse}:${c.snd}\"); exit(255);"));
+}
+
+function mkRuntimeInsertions
+Expr ::= insertions::[(Expr ::= Expr)]  e::Expr  eTyperep::Type
+{
+  local tmpName :: Name = name("__runtime_tmp" ++ toString(genInt()), location=bogusLoc());
+  local refTmp :: Expr = declRefExpr(tmpName, location=bogusLoc());
+
+  return
+    if null(insertions)
+    then e
+    else
+      stmtExpr(
+        foldStmt(
+          [
+          declStmt(variableDecls(
+            [], nilAttribute(), eTyperep.baseTypeExpr,
+            foldDeclarator([
+              declarator(
+                tmpName, eTyperep.typeModifierExpr,
+                nilAttribute(), justInitializer(exprInitializer(e))
+              )
+            ])
+          ))
+          ] ++
+          map(
+            \i::(Expr ::= Expr) -> exprStmt(i(refTmp)),
+            insertions
+          )
+        ),
+        refTmp,
+        location=bogusLoc()
+      );
 }
 
 {- from clang:

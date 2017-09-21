@@ -98,8 +98,8 @@ top::Expr ::= lhs::Expr  rhs::Expr
 {
   propagate substituted;
 }
-aspect production qualifiedAddExpr
-top::Expr ::= lhs::Expr rhs::Expr collectedTypeQualifiers::Qualifiers
+aspect production addHostExpr
+top::Expr ::= lhs::Expr rhs::Expr
 {
   propagate substituted;
 }

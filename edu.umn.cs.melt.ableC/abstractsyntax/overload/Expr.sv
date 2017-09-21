@@ -119,11 +119,23 @@ top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
 abstract production addExpr
 top::Expr ::= lhs::Expr  rhs::Expr
 {
+  -- insert arbitrary boolean expressions and error message to print on exit if failed
+  production attribute lhsRuntimeChecks::[Pair<(Expr ::= Expr) String>] with ++;
+  lhsRuntimeChecks := [];
+  production attribute rhsRuntimeChecks::[Pair<(Expr ::= Expr) String>] with ++;
+  rhsRuntimeChecks := [];
+
+  -- wrap expr using provided functions
   production attribute lhsRuntimeConversions :: [(Expr ::= Expr)] with ++;
   lhsRuntimeConversions := [];
-
   production attribute rhsRuntimeConversions :: [(Expr ::= Expr)] with ++;
   rhsRuntimeConversions := [];
+
+  -- insert arbitrary code in stmtExpr that returns expr unchanged
+  production attribute lhsRuntimeInsertions :: [(Expr ::= Expr)] with ++;
+  lhsRuntimeInsertions := [];
+  production attribute rhsRuntimeInsertions :: [(Expr ::= Expr)] with ++;
+  rhsRuntimeInsertions := [];
 
   top.pp = parens( ppConcat([lhs.pp, space(), text("+"), space(), rhs.pp]) );
   top.errors := [];
@@ -141,17 +153,34 @@ top::Expr ::= lhs::Expr  rhs::Expr
   convertedRhs.env = addEnv(convertedLhs.defs, convertedLhs.env);
   convertedRhs.returnType = top.returnType;
 
-  local baseExpr :: Expr =
-    case getAddOverload(convertedLhs.typerep, convertedRhs.typerep, top.env) of
-      just(prod) -> prod(convertedLhs, convertedRhs, top.location)
-    | nothing()  -> addExprDefault(convertedLhs, convertedRhs, location=top.location)
-    end;
-  baseExpr.env = top.env;
-  baseExpr.returnType = top.returnType;
+  local lhsWithRuntimeChecks :: Expr =
+    mkRuntimeChecks(lhsRuntimeChecks, convertedLhs, convertedLhs.typerep);
+  lhsWithRuntimeChecks.env = top.env;
+  lhsWithRuntimeChecks.returnType = top.returnType;
+
+  local rhsWithRuntimeChecks :: Expr =
+    mkRuntimeChecks(rhsRuntimeChecks, convertedRhs, convertedRhs.typerep);
+  rhsWithRuntimeChecks.env = addEnv(lhsWithRuntimeChecks.defs, lhsWithRuntimeChecks.env);
+  rhsWithRuntimeChecks.returnType = top.returnType;
+
+  local lhsWithRuntimeInsertions :: Expr =
+    mkRuntimeInsertions(lhsRuntimeInsertions, lhsWithRuntimeChecks, lhsWithRuntimeChecks.typerep);
+  lhsWithRuntimeInsertions.env = top.env;
+  lhsWithRuntimeInsertions.returnType = top.returnType;
+
+  local rhsWithRuntimeInsertions :: Expr =
+    mkRuntimeInsertions(rhsRuntimeInsertions, convertedRhs, convertedRhs.typerep);
+  rhsWithRuntimeInsertions.env = addEnv(lhsWithRuntimeInsertions.defs, lhsWithRuntimeInsertions.env);
+  rhsWithRuntimeInsertions.returnType = top.returnType;
 
   forwards to
     if null(top.errors)
-    then baseExpr
+    then case getAddOverload(lhsWithRuntimeInsertions.typerep,
+                             rhsWithRuntimeInsertions.typerep, top.env) of
+           just(prod) -> prod(lhsWithRuntimeInsertions, rhsWithRuntimeInsertions, top.location)
+         | nothing()  -> addExprDefault(lhsWithRuntimeInsertions,
+                                        rhsWithRuntimeInsertions, location=top.location)
+         end
     else errorExpr(top.errors, location=top.location);
 }
 abstract production subtractExpr
@@ -235,38 +264,5 @@ top::Expr ::= lhs::Expr  op::BinOp  rhs::Expr
          else if option2.isJust then option2.fromJust
          else binaryOpExprDefault(lhsWithRuntimeInsertions, op, rhsWithRuntimeInsertions, location=top.location)
     else errorExpr(top.errors, location=top.location);
-}
-
-function mkRuntimeInsertions
-Expr ::= insertions::[(Expr ::= Expr)]  e::Expr  eTyperep::Type
-{
-  local tmpName :: Name = name("__runtime_tmp" ++ toString(genInt()), location=bogusLoc());
-  local refTmp :: Expr = declRefExpr(tmpName, location=bogusLoc());
-
-  return
-    if null(insertions)
-    then e
-    else
-      stmtExpr(
-        foldStmt(
-          [
-          declStmt(variableDecls(
-            [], nilAttribute(), eTyperep.baseTypeExpr,
-            foldDeclarator([
-              declarator(
-                tmpName, eTyperep.typeModifierExpr,
-                nilAttribute(), justInitializer(exprInitializer(e))
-              )
-            ])
-          ))
-          ] ++
-          map(
-            \i::(Expr ::= Expr) -> exprStmt(i(refTmp)),
-            insertions
-          )
-        ),
-        refTmp,
-        location=bogusLoc()
-      );
 }
 
