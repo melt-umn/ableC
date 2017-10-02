@@ -8,6 +8,7 @@
 
 import glob # Find *.ob files within assorted file structures
 import os # Path methods
+import signal # Process control
 import re # Regex
 import subprocess # Popen for running tests
 import string # Strip whitespace
@@ -23,7 +24,7 @@ POSITIVE = True
 NEGATIVE = True
 COMMAND_PREFIX = ""
 #COMPILE_C = True
-TIMEOUT = 600 #Num seconds before giving up
+TIMEOUT = 15 #Num seconds before giving up
 #DEBUG = False
 
 #######################################################################
@@ -62,7 +63,7 @@ def runPositiveTest(testpath, results):
   command = COMMAND_PREFIX + testpath
 
   #outputs = subprocess.Popen('java -jar ' + JAR + ' ' + testname, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-  outputs = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+  outputs = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, preexec_fn=os.setsid)
 
   for i in range(TIMEOUT) * 20:
     if outputs.poll() != None:
@@ -70,58 +71,41 @@ def runPositiveTest(testpath, results):
       break
     time.sleep(0.05)
   else:
+    #os.killpg(os.getpgid(outputs.pid), signal.SIGKILL)
     timed_out = True
 
-
-  #stdout_output = outputs.stdout.readlines()
-  #stderr_output = outputs.stderr.readlines()
-#  (stdout_output, stderr_output) = outputs.communicate()
-
-  # if i >= TIMEOUT:
-  #   return_code = 0
-  # else: 
-  #   return_code = outputs.poll()
-
   if timed_out:
+    stdout_output, stderr_output = "", ""
+    
     printTest("Positive test", False, "TIMEOUT", testpath)
     results['fail']['TIMEOUT'].append(testpath)
 
   else:
-    (stdout_output, stderr_output) = outputs.communicate()
-    
+    stdout_output, stderr_output = outputs.communicate()
+
     if outputs.returncode != 0:
       printTest("Positive test", False, "ERROR", testpath)
       results['positive'][1] = results['positive'][1] + 1
       results['fail']['ERROR'].append(testpath)
-      if len(stdout_output) > 0:
-        stdoutFile = open( testpath + ".stdout", 'w' )
-        for l in stdout_output:
-          stdoutFile.write( l )
-        stdoutFile.close()
-      if len(stderr_output) > 0:
-        stderrFile = open( testpath + ".stderr", 'w' )
-        for l in stderr_output:
-          stderrFile.write( l )
-        stderrFile.close()
 
     elif len(stderr_output) > 0:
       printTest("Positive test", False, "STDERR", testpath)
       results['positive'][1] = results['positive'][1] + 1
       results['fail']["STDERR"].append(testpath)
-      if len(stdout_output) > 0:
-        stdoutFile = open( testpath + ".stdout", 'w' )
-        for l in stdout_output:
-          stdoutFile.write( l )
-        stdoutFile.close()
-      stderrFile = open( testpath + ".stderr", 'w' )
-      for l in stderr_output:
-        stderrFile.write( l )
-      stderrFile.close()
 
     else:
       printTest("Positive test", True, "", testpath)
       results['positive'][0] = results['positive'][0] + 1
       success = True
+
+  stdoutFile = open( testpath + ".stdout", 'w' )
+  for l in stdout_output:
+    stdoutFile.write( l )
+  stdoutFile.close()
+  stderrFile = open( testpath + ".stderr", 'w' )
+  for l in stderr_output:
+    stderrFile.write( l )
+  stderrFile.close()
   
   return success
 
@@ -138,7 +122,7 @@ def runNegativeTest(testpath, results):
 
   command = COMMAND_PREFIX + testpath
 
-  outputs = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+  outputs = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, preexec_fn=os.setsid)
   
 #  stdout_output = outputs.stdout.readlines()
 #  stderr_output = outputs.stderr.readlines()
@@ -149,6 +133,7 @@ def runNegativeTest(testpath, results):
       break
     time.sleep(0.05)
   else:
+    os.killpg(os.getpgid(outputs.pid), signal.SIGKILL)
     timed_out = True
 
 #  if i >= TIMEOUT:
@@ -156,14 +141,14 @@ def runNegativeTest(testpath, results):
 #  else: 
 #    return_code = outputs.poll()
 
+  stdout_output, stderr_output = outputs.communicate()
+  
   if timed_out:
     printTest("Negative test", False, "", testpath)
     results['negative'][1] = results['negative'][1] + 1
     results['fail']["TIMEOUT"].append(testpath)
 
   else:
-    (stdout_output, stderr_output) = outputs.communicate()
-
     if outputs.returncode == 0:
       printTest("Negative test", False, "NO ERROR", testpath)
       ## Fail - Must have errors to pass
@@ -180,6 +165,15 @@ def runNegativeTest(testpath, results):
       printTest("Negative test", True, "", testpath)
       results['negative'][0] = results['negative'][0] + 1
       success = True
+
+  stdoutFile = open( testpath + ".stdout", 'w' )
+  for l in stdout_output:
+    stdoutFile.write( l )
+  stdoutFile.close()
+  stderrFile = open( testpath + ".stderr", 'w' )
+  for l in stderr_output:
+    stderrFile.write( l )
+  stderrFile.close()
   
   return success
 
