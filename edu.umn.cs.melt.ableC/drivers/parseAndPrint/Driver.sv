@@ -2,6 +2,7 @@ grammar edu:umn:cs:melt:ableC:drivers:parseAndPrint ;
 
 imports edu:umn:cs:melt:ableC:concretesyntax as cst;
 imports edu:umn:cs:melt:ableC:abstractsyntax as abs;
+imports edu:umn:cs:melt:ableC:cfg as cfg;
 
 imports silver:langutil;
 imports silver:langutil:pp;
