@@ -50,9 +50,14 @@ top::Attrib ::= n::AttribName
 aspect production appliedAttrib
 top::Attrib ::= n::AttribName  e::Exprs
 {
+  -- TODO: These are hacks we should probably improve upon.
+  local treat_e_syntactically :: Exprs = e;
+  treat_e_syntactically.env = emptyEnv();
+  treat_e_syntactically.returnType = nothing();
+  
   local substitutions::Substitutions = top.substitutions;
   substitutions.nameIn =
-    case n, e of
+    case n, treat_e_syntactically of
       attribName(n), consExpr(stringLiteral(s), nilExpr()) ->
         if n.name == "refId" then substring(1, length(s) - 1, s) else ""
     | _, _ -> ""

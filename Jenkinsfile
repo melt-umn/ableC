@@ -44,14 +44,16 @@ node {
     /* stages are pretty much just labels about what's going on */
     stage ("Build") {
       /* Clean Silver-generated files from previous builds in this workspace */
-      sh "mkdir -p generated"
       sh "rm -rf generated/* || true"
 
       checkout scm
 
+      /* Checkout sometimes(?) cleans out the workspace, so create this afterwards */
+      sh "mkdir -p generated"
+
       /* env.PATH is the master's path, not the executor's */
       withEnv(["PATH=${params.SILVER_BASE}/support/bin/:${env.PATH}"]) {
-        sh "./build -G ${WORKSPACE}/generated --warn-all --warn-error"
+        sh "./build -G generated --warn-all --warn-error"
       }
     }
 
@@ -125,19 +127,23 @@ node {
         sh "./runTests"
       }
     }
-	} catch (e) {
-		currentBuild.result = 'FAILURE'
-		throw e
-	} finally {
+
+    /* If we've gotten all this way with a successful build, don't take up disk space */
+    sh "rm -rf generated/* || true"
+
+  } catch (e) {
+    currentBuild.result = 'FAILURE'
+    throw e
+  } finally {
     def previousResult = currentBuild.previousBuild?.result
 
-		if (currentBuild.result == 'FAILURE') {
-			notifyBuild(currentBuild.result)
-		} else if (currentBuild.result == null &&
-        previousResult && previousResult == 'FAILURE') {
-			notifyBuild('BACK_TO_NORMAL')
+    if (currentBuild.result == 'FAILURE') {
+      notifyBuild(currentBuild.result)
+    } else if (currentBuild.result == null &&
+      previousResult && previousResult == 'FAILURE') {
+      notifyBuild('BACK_TO_NORMAL')
     }
-	}
+  }
 }
 
 /* Slack / email notification
@@ -145,15 +151,15 @@ node {
  * https://bitbucket.org/snippets/fahl-design/koxKe */
 def notifyBuild(String buildStatus = 'STARTED') {
   // build status of null means successful
-  buildStatus =  buildStatus ?: 'SUCCESSFUL'
+  buildStatus = buildStatus ?: 'SUCCESSFUL'
 
   // Default values
   def colorName = 'RED'
   def colorCode = '#FF0000'
   def subject = "${buildStatus}: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]'"
   def summary = "${subject} (${env.BUILD_URL})"
-  def details = """<p>STARTED: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]':</p>
-    <p>Check console output at &QUOT;<a href='${env.BUILD_URL}'>${env.JOB_NAME} [${env.BUILD_NUMBER}]</a>&QUOT;</p>"""
+  def details = """<p>${buildStatus}: Job '${env.JOB_BASE_NAME} ${env.BRANCH_NAME} [${env.BUILD_NUMBER}]':</p>
+    <p>Check console output at <a href='${env.BUILD_URL}'>${env.BUILD_URL}</a></p>"""
 
   // Override default values based on build status
   if (buildStatus == 'STARTED') {
@@ -171,10 +177,11 @@ def notifyBuild(String buildStatus = 'STARTED') {
   slackSend (color: colorCode, message: summary)
 
   emailext(
-      subject: subject,
-      body: details,
-			to: 'evw@umn.edu',
-      recipientProviders: [[$class: 'CulpritsRecipientProvider']]
-    )
+    subject: subject,
+    mimeType: 'text/html',
+    body: details,
+    to: 'evw@umn.edu',
+    recipientProviders: [[$class: 'CulpritsRecipientProvider']]
+  )
 }
 
