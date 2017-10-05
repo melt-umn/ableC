@@ -1,6 +1,7 @@
 grammar edu:umn:cs:melt:ableC:cfg;
 
 import edu:umn:cs:melt:ableC:abstractsyntax;
+import edu:umn:cs:melt:ableC:abstractsyntax:env;
 import silver:langutil;
 
 attribute initBlock occurs on Stmt;
