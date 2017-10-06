@@ -1,14 +1,27 @@
 #!/bin/bash
-set -ev
 
-cd ../../
+cd ..
 
-python testing/supertest.py -positive-only ableC.jar testing/tests/* |
-	diff testing/expected-results/positive /dev/stdin
+## Load up silver nailgun support (source it)
+. sv-nailgun
 
-python testing/supertest.py -negative-only ableC.jar testing/tests/* |
-	diff testing/expected-results/negative /dev/stdin
+# Start the nailgun server
+sv-serve ../ableC.jar
 
-python testing/supertest.py -neutral ableC.jar testing/tests/* |
-	diff testing/expected-results/neutral /dev/stdin
+## Run supertest.py
+python -u ./supertest.py -positive-only "sv-call" tests/* | tee expected-results/positive.out
+python -u ./supertest.py -negative-only "sv-call" tests/* | tee expected-results/negative.out
+python -u ./supertest.py -neutral "sv-call" tests/* | tee expected-results/neutral.out
+
+# End the nailgun server
+sv-serve-stop
+
+# Check the results
+cd expected-results
+
+set -ve
+
+diff positive positive.out
+diff negative negative.out
+diff neutral neutral.out
 
