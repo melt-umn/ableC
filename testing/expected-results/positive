@@ -7,7 +7,7 @@ Positive test       - PASS:             testing/tests/headers/positive/ar.c
 Positive test       - PASS:             testing/tests/headers/positive/argp.c
 Positive test       - PASS:             testing/tests/headers/positive/argz.c
 Positive test       - PASS:             testing/tests/headers/positive/assert.c
-Positive test       - FAIL: ERROR       testing/tests/headers/positive/byteswap.c
+Positive test       - PASS:             testing/tests/headers/positive/byteswap.c
 Positive test       - PASS:             testing/tests/headers/positive/complex.c
 Positive test       - PASS:             testing/tests/headers/positive/cpio.c
 Positive test       - PASS:             testing/tests/headers/positive/cpuid.c
@@ -72,7 +72,7 @@ Positive test       - PASS:             testing/tests/headers/positive/mqueue.c
 Positive test       - PASS:             testing/tests/headers/positive/nc_tparm.c
 Positive test       - PASS:             testing/tests/headers/positive/ncurses.c
 Positive test       - PASS:             testing/tests/headers/positive/ncurses_dll.c
-Positive test       - FAIL: ERROR       testing/tests/headers/positive/netdb.c
+Positive test       - PASS:             testing/tests/headers/positive/netdb.c
 Positive test       - PASS:             testing/tests/headers/positive/nl_types.c
 Positive test       - FAIL: STDERR      testing/tests/headers/positive/nlist.c
 Positive test       - PASS:             testing/tests/headers/positive/nss.c
@@ -333,7 +333,6 @@ Failures:
                         testing/tests/headers/positive/nlist.c
                         testing/tests/headers/positive/vis.c
             ERROR
-                        testing/tests/headers/positive/byteswap.c
                         testing/tests/headers/positive/emmintrin.c
                         testing/tests/headers/positive/fcntl.c
                         testing/tests/headers/positive/features.c
@@ -344,7 +343,6 @@ Failures:
                         testing/tests/headers/positive/link.c
                         testing/tests/headers/positive/math.c
                         testing/tests/headers/positive/mmintrin.c
-                        testing/tests/headers/positive/netdb.c
                         testing/tests/headers/positive/regex.c
                         testing/tests/headers/positive/resolv.c
                         testing/tests/headers/positive/thread_db.c
@@ -358,14 +356,14 @@ Failures:
                         testing/tests/kframework/positive/j049c.c
 
 Positive tests:
-Pass: 300
-Fail: 27
+Pass: 302
+Fail: 25
 
 Negative tests:
 Pass: 0
 Fail: 0
 
 Summary:
-Pass: 300
-Fail: 27
+Pass: 302
+Fail: 25
 
