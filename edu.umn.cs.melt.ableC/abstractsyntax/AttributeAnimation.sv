@@ -2,6 +2,9 @@
 function animateAttributeOnType
 Type ::= attr::Attributes  ty::Type
 {
+  -- TODO: These are hacks we should probably improve upon.
+  attr.env = emptyEnv();
+  attr.returnType = nothing();
   return
     case attr of
     | consAttribute(gccAttribute(l), t) -> animateAttribOnType(l, animateAttributeOnType(t, ty))
@@ -18,6 +21,9 @@ Type ::= attr::Attributes  ty::Type
 function animateAttribOnType
 Type ::= attr::Attribs  ty::Type
 {
+  -- TODO: These are hacks we should probably improve upon.
+  attr.env = emptyEnv();
+  attr.returnType = nothing();
   return case attr of
   -- Attribs that specify new types (i.e. not type-compatible with what is wrapped)
   -- __vector_size__(num)
