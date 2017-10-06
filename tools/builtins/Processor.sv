@@ -137,7 +137,7 @@ top::Type ::= p::TypePrefixes  t::TypeSpecifier  s::TypeSuffixes
 function addpointers
 a:Type ::= count::Integer  t::a:Type
 {
-  return if count == 0 then t else addpointers(count-1, a:pointerType([], t));
+  return if count == 0 then t else addpointers(count-1, a:pointerType(a:nilQualifier(), t));
 }
 
 nonterminal TypePrefixes with ignoreMe, issigned;
@@ -161,14 +161,14 @@ concrete production consTypeSuffixes
 top::TypeSuffixes ::= h::TypeSuffix  t::TypeSuffixes
 {
   top.ignoreMe = h.ignoreMe || t.ignoreMe;
-  top.qualifiers = h.qualifiers ++ t.qualifiers;
+  top.qualifiers = a:qualifierCat(h.qualifiers, t.qualifiers);
   top.pointercount = h.pointercount + t.pointercount;
 }
 concrete production nilTypeSuffixes
 top::TypeSuffixes ::=
 {
   top.ignoreMe = false;
-  top.qualifiers = [];
+  top.qualifiers = a:nilQualifier();
   top.pointercount = 0;
 }
 
@@ -193,7 +193,7 @@ concrete productions top::TypePrefix
 
 nonterminal TypeSpecifier with ignoreMe, specifier, givenSign, givenDomain;
 
-synthesized attribute specifier :: (a:Type ::= [a:Qualifier]);
+synthesized attribute specifier :: (a:Type ::= a:Qualifiers);
 autocopy attribute givenSign :: (a:BuiltinType ::= a:IntegerType);
 autocopy attribute givenDomain :: (a:BuiltinType ::= a:RealType);
 
@@ -221,36 +221,36 @@ concrete productions top::TypeSpecifier
 | 'P' {-FILE-} { top.ignoreMe = true; } -- dunno what to do with this?
 | 'z' {-size_t-} { top.specifier = a:builtinType(_, top.givenSign(a:intType())); } -- TODO: do better?
 | 'a' {-valist-} { top.specifier = a:builtinType(_, a:voidType()); } -- TODO
-| 'A' {-valist?pointer maybe?-} { top.specifier = a:pointerType(_, a:builtinType([], a:voidType())); }-- TODO ALSO: underscore in wrong spot
+| 'A' {-valist?pointer maybe?-} { top.specifier = a:pointerType(_, a:builtinType(a:nilQualifier(), a:voidType())); }-- TODO ALSO: underscore in wrong spot
 | 'X'  more::TypeSpecifier {-_Complex-} { more.givenSign = a:complexIntegerType;
                                           more.givenDomain = a:complexType;
                                           top.specifier = more.specifier; }
 | 'V'  n::VectorNum  more::TypeSpecifier { top.specifier = createVectorType(_, more.specifier, n.lexeme); }
 
 function createVectorType
-a:Type ::= qs::[a:Qualifier] more::(a:Type ::= [a:Qualifier]) n::String
+a:Type ::= qs::a:Qualifiers more::(a:Type ::= a:Qualifiers) n::String
 {
   return a:vectorType(more(qs), toInt(n));
 }
 
 nonterminal TypeSuffix with ignoreMe, qualifiers, pointercount;
 
-synthesized attribute qualifiers :: [a:Qualifier];
+synthesized attribute qualifiers :: a:Qualifiers;
 synthesized attribute pointercount :: Integer;
 
 aspect default production
 top::TypeSuffix ::=
 {
   top.ignoreMe = false;
-  top.qualifiers = [];
+  top.qualifiers = a:nilQualifier();
   top.pointercount = 0;
 }
 
 concrete productions top::TypeSuffix
 | '*' {-pointer-} { top.pointercount = 1; }
 | '&' {-C++-} { top.ignoreMe = true; } -- ignore these
-| 'C' {-const-} { top.qualifiers = [a:constQualifier()]; }
-| 'D' {-volatile-} { top.qualifiers = [a:volatileQualifier()]; }
+| 'C' {-const-} { top.qualifiers = a:consQualifier(a:constQualifier(), a:nilQualifier()); }
+| 'D' {-volatile-} { top.qualifiers = a:consQualifier(a:volatileQualifier(), a:nilQualifier()); }
 
 
 nonterminal MaybeDots with hasdots;

@@ -1,0 +1,4 @@
+#!/bin/bash
+
+silver -o builtins.jar -I ../.. $@ tools:builtins
+

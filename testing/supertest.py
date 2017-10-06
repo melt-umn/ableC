@@ -369,7 +369,7 @@ def main():
 
   # it may not actually be a jar, in which case, just execute it directly.
   if JAR.endswith("jar"):
-    COMMAND_PREFIX="java -jar " + JAR + " "
+    COMMAND_PREFIX="java -Xss6M -jar " + JAR + " "
   else:
     COMMAND_PREFIX=JAR + " "
 
