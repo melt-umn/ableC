@@ -124,7 +124,9 @@ node {
     */
     stage ("Test") {
       dir("testing/expected-results") {
-        sh "./runTests"
+        withEnv(["PATH=${params.SILVER_BASE}/support/nailgun/:${env.PATH}"]) {
+          sh "./runTests"
+        }
       }
     }
 
