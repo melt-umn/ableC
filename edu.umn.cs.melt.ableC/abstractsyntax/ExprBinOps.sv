@@ -2,13 +2,11 @@
 autocopy attribute lop :: Decorated Expr;
 autocopy attribute rop :: Decorated Expr;
 
-nonterminal BinOp with location, lop, rop, opName, pp, host<BinOp>, lifted<BinOp>, typerep, errors, collectedTypeQualifiers, lhsRuntimeInsertions, rhsRuntimeInsertions;
-flowtype lhsRuntimeInsertions {lop, rop} on BinOp;
-flowtype rhsRuntimeInsertions {lop, rop} on BinOp;
+nonterminal BinOp with location, lop, rop, opName, pp, host<BinOp>, lifted<BinOp>, typerep, errors, collectedTypeQualifiers, lhsRhsRuntimeMods;
+flowtype lhsRhsRuntimeMods {lop, rop} on BinOp;
 
 -- function from temporary variable to code to be inserted
-synthesized attribute lhsRuntimeInsertions :: [(Expr ::= Expr)] with ++;
-synthesized attribute rhsRuntimeInsertions :: [(Expr ::= Expr)] with ++;
+synthesized attribute lhsRhsRuntimeMods :: [LhsOrRhsRuntimeMod] with ++;
 flowtype BinOp = decorate {lop, rop}, opName {};
 
 aspect default production
@@ -37,8 +35,7 @@ top::BinOp ::= op::AssignOp
   top.pp = op.pp;
   top.typerep = top.lop.typerep.defaultLvalueConversion;
   top.collectedTypeQualifiers := op.collectedTypeQualifiers;
-  top.lhsRuntimeInsertions := [];
-  top.rhsRuntimeInsertions := [];
+  top.lhsRhsRuntimeMods := [];
 
   top.errors <- if top.lop.isLValue then []
     else [err(top.lop.location, "lvalue required as left operand of assignment")];
@@ -135,8 +132,7 @@ top::BinOp ::= op::BoolOp
   top.typerep = builtinType(nilQualifier(), signedType(intType()));
   top.collectedTypeQualifiers := op.collectedTypeQualifiers;
   top.errors := op.errors;
-  top.lhsRuntimeInsertions := [];
-  top.rhsRuntimeInsertions := [];
+  top.lhsRhsRuntimeMods := [];
 }
 
 nonterminal BoolOp with location, lop, rop, pp, host<BoolOp>, lifted<BoolOp>, collectedTypeQualifiers, errors;
@@ -169,8 +165,7 @@ top::BinOp ::= op::BitOp
   top.typerep = usualArithmeticConversionsOnTypes(top.lop.typerep, top.rop.typerep);
   top.collectedTypeQualifiers := op.collectedTypeQualifiers;
   top.errors := op.errors;
-  top.lhsRuntimeInsertions := [];
-  top.rhsRuntimeInsertions := [];
+  top.lhsRhsRuntimeMods := [];
 }
 
 nonterminal BitOp with location, lop, rop, pp, host<BitOp>, lifted<BitOp>, collectedTypeQualifiers, errors;
@@ -228,8 +223,7 @@ top::BinOp ::= op::CompareOp
   top.typerep = builtinType(nilQualifier(), signedType(intType()));
   top.collectedTypeQualifiers := op.collectedTypeQualifiers;
   top.errors := op.errors;
-  top.lhsRuntimeInsertions := [];
-  top.rhsRuntimeInsertions := [];
+  top.lhsRhsRuntimeMods := [];
 }
 
 nonterminal CompareOp with location, lop, rop, pp, host<CompareOp>, lifted<CompareOp>, collectedTypeQualifiers, errors;
@@ -294,8 +288,7 @@ top::BinOp ::= op::NumOp
   top.typerep = op.typerep;
   top.collectedTypeQualifiers := op.collectedTypeQualifiers;
   top.errors := op.errors;
-  top.lhsRuntimeInsertions := [];
-  top.rhsRuntimeInsertions := [];
+  top.lhsRhsRuntimeMods := [];
 }
 
 nonterminal NumOp with location, lop, rop, pp, host<NumOp>, lifted<NumOp>, typerep, collectedTypeQualifiers, errors;
@@ -356,8 +349,7 @@ top::BinOp ::=
   top.typerep = top.rop.typerep;
   top.collectedTypeQualifiers := [];
   top.errors := [];
-  top.lhsRuntimeInsertions := [];
-  top.rhsRuntimeInsertions := [];
+  top.lhsRhsRuntimeMods := [];
 }
 
 

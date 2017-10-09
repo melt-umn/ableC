@@ -92,12 +92,15 @@ top::Expr ::= e::Expr
 abstract production dereferenceExpr
 top::Expr ::= e::Expr
 {
-  production attribute runtimeChecks::[Pair<(Expr ::= Expr) String>] with ++;
-  runtimeChecks := [];
+  production attribute runtimeMods::[RuntimeMod] with ++;
+  runtimeMods := [];
+
+  top.collectedTypeQualifiers := [];
 
   top.pp = parens( cat(text("*"), e.pp) );
+  top.typerep = addQualifiers(top.collectedTypeQualifiers, forward.typerep);
 
-  forwards to dereferenceHostExpr(mkRuntimeChecks(runtimeChecks, e, e.typerep), location=top.location);
+  forwards to dereferenceHostExpr(applyMods(runtimeMods, e), location=top.location);
 }
 abstract production dereferenceHostExpr
 top::Expr ::= e::Expr
@@ -170,19 +173,17 @@ top::Expr ::= op::UnaryTypeOp  e::ExprOrTypeName
 abstract production arraySubscriptExpr
 top::Expr ::= lhs::Expr  rhs::Expr
 {
-  production attribute lhsRuntimeChecks::[Pair<(Expr ::= Expr) String>] with ++;
-  lhsRuntimeChecks := [];
-  production attribute rhsRuntimeChecks::[Pair<(Expr ::= Expr) String>] with ++;
-  rhsRuntimeChecks := [];
+  production attribute runtimeMods::[LhsOrRhsRuntimeMod] with ++;
+  runtimeMods := [];
+
+  top.collectedTypeQualifiers := [];
 
   top.pp = parens( ppConcat([ lhs.pp, brackets( rhs.pp )]) );
+  top.typerep = addQualifiers(top.collectedTypeQualifiers, forward.typerep);
 
-  forwards to
-    arraySubscriptHostExpr(
-      mkRuntimeChecks(lhsRuntimeChecks, lhs, lhs.typerep),
-      mkRuntimeChecks(rhsRuntimeChecks, rhs, rhs.typerep),
-      location=top.location
-    );
+  local modLhsRhs :: Pair<Expr Expr> = applyLhsRhsMods(runtimeMods, lhs, rhs);
+
+  forwards to arraySubscriptHostExpr(modLhsRhs.fst, modLhsRhs.snd, location=top.location);
 }
 abstract production arraySubscriptHostExpr
 top::Expr ::= lhs::Expr  rhs::Expr
@@ -284,12 +285,15 @@ top::Expr ::= f::Expr  a::Exprs
 abstract production memberExpr
 top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
 {
-  production attribute runtimeChecks::[Pair<(Expr ::= Expr) String>] with ++;
-  runtimeChecks := [];
+  production attribute runtimeMods::[RuntimeMod] with ++;
+  runtimeMods := [];
+
+  top.collectedTypeQualifiers := [];
 
   top.pp = parens(ppConcat([lhs.pp, text(if deref then "->" else "."), rhs.pp]));
+  top.typerep = addQualifiers(top.collectedTypeQualifiers, forward.typerep);
 
-  forwards to memberHostExpr(mkRuntimeChecks(runtimeChecks, lhs, lhs.typerep), deref, rhs, location=top.location);
+  forwards to memberHostExpr(applyMods(runtimeMods, lhs), deref, rhs, location=top.location);
 }
 abstract production memberHostExpr
 top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
@@ -348,64 +352,133 @@ top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
       [err(lhs.location, "expression does not field " ++ rhs.name)]
     else [];
 }
+
+nonterminal LhsOrRhsRuntimeMods with modLhs, modRhs, lhsToModify, rhsToModify;
+synthesized attribute modLhs :: Expr;
+synthesized attribute modRhs :: Expr;
+autocopy attribute lhsToModify :: Expr;
+autocopy attribute rhsToModify :: Expr;
+
+abstract production consLhsOrRhsRuntimeMod
+top::LhsOrRhsRuntimeMods ::= h::LhsOrRhsRuntimeMod  t::LhsOrRhsRuntimeMods
+{
+  h.lhsToModify = t.modLhs;
+  h.rhsToModify = t.modRhs;
+
+  top.modLhs = h.modLhs;
+  top.modRhs = h.modRhs;
+}
+
+abstract production nilLhsOrRhsRuntimeMod
+top::LhsOrRhsRuntimeMods ::=
+{
+  top.modLhs = top.lhsToModify;
+  top.modRhs = top.rhsToModify;
+}
+
+function applyLhsRhsMods
+Pair<Expr Expr> ::= l::[LhsOrRhsRuntimeMod] lhs::Expr rhs::Expr
+{
+  local mods :: LhsOrRhsRuntimeMods = foldr(consLhsOrRhsRuntimeMod, nilLhsOrRhsRuntimeMod(), l);
+  mods.lhsToModify = lhs;
+  mods.rhsToModify = rhs;
+
+  return pair(mods.modLhs, mods.modRhs);
+}
+
+nonterminal LhsOrRhsRuntimeMod with modLhs, modRhs, lhsToModify, rhsToModify;
+
+abstract production lhsRuntimeMod
+top::LhsOrRhsRuntimeMod ::= rm::RuntimeMod
+{
+  top.modLhs = rm.modExpr;
+  top.modRhs = top.rhsToModify;
+
+  rm.exprToModify = top.lhsToModify;
+}
+
+abstract production rhsRuntimeMod
+top::LhsOrRhsRuntimeMod ::= rm::RuntimeMod
+{
+  top.modLhs = top.lhsToModify;
+  top.modRhs = rm.modExpr;
+
+  rm.exprToModify = top.rhsToModify;
+}
+
+nonterminal RuntimeMods with modExpr, exprToModify;
+synthesized attribute modExpr :: Expr;
+autocopy attribute exprToModify :: Expr;
+
+abstract production consRuntimeMod
+top::RuntimeMods ::= h::RuntimeMod  t::RuntimeMods
+{
+  h.exprToModify = t.modExpr;
+  top.modExpr = h.modExpr;
+}
+
+abstract production nilRuntimeMod
+top::RuntimeMods ::=
+{
+  top.modExpr = top.exprToModify;
+}
+
+function applyMods
+Expr ::= l::[RuntimeMod] e::Expr
+{
+  local mods :: RuntimeMods = foldr(consRuntimeMod, nilRuntimeMod(), l);
+  mods.exprToModify = e;
+
+  return mods.modExpr;
+}
+
+nonterminal RuntimeMod with modExpr, exprToModify;
+
+-- insert arbitrary boolean expressions and error message to print on exit if failed
+abstract production runtimeCheck
+top::RuntimeMod ::= check::(Expr ::= Expr)  failMessage::String  l::Location
+{
+  top.modExpr =
+    stmtExpr(
+      ifStmtNoElse(
+        check(top.exprToModify),
+        txtStmt(s"fprintf(stderr, \"${l.unparse}:${failMessage}\"); exit(255);")
+      ),
+      top.exprToModify,
+      location=bogusLoc()
+    );
+}
+
+-- wrap expr using provided function
+abstract production runtimeConversion
+top::RuntimeMod ::= conv::(Expr ::= Expr)
+{
+  top.modExpr = conv(top.exprToModify);
+}
+
+-- insert arbitrary code in stmtExpr that returns expr unchanged
+abstract production runtimeInsertion
+top::RuntimeMod ::= ins::(Stmt ::= Expr)
+{
+  top.modExpr = stmtExpr(ins(top.exprToModify), top.exprToModify, location=bogusLoc());
+}
+
 abstract production addExpr
 top::Expr ::= lhs::Expr rhs::Expr
 {
-  -- insert arbitrary boolean expressions and error message to print on exit if failed
-  production attribute lhsRuntimeChecks::[Pair<(Expr ::= Expr) String>] with ++;
-  lhsRuntimeChecks := [];
-  production attribute rhsRuntimeChecks::[Pair<(Expr ::= Expr) String>] with ++;
-  rhsRuntimeChecks := [];
-
-  -- wrap expr using provided functions
-  production attribute lhsRuntimeConversions :: [(Expr ::= Expr)] with ++;
-  lhsRuntimeConversions := [];
-  production attribute rhsRuntimeConversions :: [(Expr ::= Expr)] with ++;
-  rhsRuntimeConversions := [];
-
-  -- insert arbitrary code in stmtExpr that returns expr unchanged
-  production attribute lhsRuntimeInsertions :: [(Expr ::= Expr)] with ++;
-  lhsRuntimeInsertions := [];
-  production attribute rhsRuntimeInsertions :: [(Expr ::= Expr)] with ++;
-  rhsRuntimeInsertions := [];
+  production attribute runtimeMods::[LhsOrRhsRuntimeMod] with ++;
+  runtimeMods := [];
 
   top.collectedTypeQualifiers := [];
 
   top.pp = parens( ppConcat([lhs.pp, space(), text("+"), space(), rhs.pp]) );
   top.typerep = addQualifiers(top.collectedTypeQualifiers, forward.typerep);
 
-  local convertedLhs :: Expr =
-    foldr(\f::(Expr ::= Expr)  e::Expr -> f(e), lhs, lhsRuntimeConversions);
-  convertedLhs.env = top.env;
-  convertedLhs.returnType = top.returnType;
+  local modLhsRhs :: Pair<Expr Expr> = applyLhsRhsMods(runtimeMods, lhs, rhs);
 
-  local convertedRhs :: Expr =
-    foldr(\f::(Expr ::= Expr)  e::Expr -> f(e), rhs, rhsRuntimeConversions);
-  convertedRhs.env = addEnv(convertedLhs.defs, convertedLhs.env);
-  convertedRhs.returnType = top.returnType;
-
-  local lhsWithRuntimeChecks :: Expr =
-    mkRuntimeChecks(lhsRuntimeChecks, convertedLhs, convertedLhs.typerep);
-  lhsWithRuntimeChecks.env = top.env;
-  lhsWithRuntimeChecks.returnType = top.returnType;
-
-  local rhsWithRuntimeChecks :: Expr =
-    mkRuntimeChecks(rhsRuntimeChecks, convertedRhs, convertedRhs.typerep);
-  rhsWithRuntimeChecks.env = addEnv(lhsWithRuntimeChecks.defs, lhsWithRuntimeChecks.env);
-  rhsWithRuntimeChecks.returnType = top.returnType;
-
-  local lhsWithRuntimeInsertions :: Expr =
-    mkRuntimeInsertions(lhsRuntimeInsertions, lhsWithRuntimeChecks, lhsWithRuntimeChecks.typerep);
-  lhsWithRuntimeInsertions.env = top.env;
-  lhsWithRuntimeInsertions.returnType = top.returnType;
-
-  local rhsWithRuntimeInsertions :: Expr =
-    mkRuntimeInsertions(rhsRuntimeInsertions, convertedRhs, convertedRhs.typerep);
-  rhsWithRuntimeInsertions.env = addEnv(lhsWithRuntimeInsertions.defs, lhsWithRuntimeInsertions.env);
-  rhsWithRuntimeInsertions.returnType = top.returnType;
-
-  forwards to addHostExpr(lhsWithRuntimeInsertions, rhsWithRuntimeInsertions, location=top.location);
+  forwards to addHostExpr(modLhsRhs.fst, modLhsRhs.snd, location=top.location);
 }
+
 abstract production addHostExpr
 top::Expr ::= lhs::Expr rhs::Expr
 {
@@ -522,13 +595,15 @@ top::Expr ::= cond::Expr  e::Expr
 abstract production explicitCastExpr
 top::Expr ::= ty::TypeName  e::Expr
 {
-  production attribute runtimeChecks::[Pair<(Expr ::= Expr) String>] with ++;
-  runtimeChecks := [];
+  production attribute runtimeMods::[RuntimeMod] with ++;
+  runtimeMods := [];
+
+  top.collectedTypeQualifiers := [];
 
   top.pp = parens( ppConcat([parens(ty.pp), e.pp]) );
+  top.typerep = addQualifiers(top.collectedTypeQualifiers, forward.typerep);
 
-  forwards to explicitCastHostExpr(ty, mkRuntimeChecks(runtimeChecks, e, e.typerep),
-                                   location=top.location);
+  forwards to explicitCastHostExpr(ty, applyMods(runtimeMods, e), location=top.location);
 }
 abstract production explicitCastHostExpr
 top::Expr ::= ty::TypeName  e::Expr
