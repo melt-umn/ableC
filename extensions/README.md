@@ -4,7 +4,7 @@ Example extensions
 This directory previously housed example extensions. These extensions have been
 updated and exist in their own repositories under github.com/melt-umn now. 
 
-The old code is kept at github.umn.edu/melt/old-ableC-examples.
+The old code is kept at github.umn.edu/melt/ableC-old-examples.
 
 
 
