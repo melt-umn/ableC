@@ -53,8 +53,8 @@ top::Expr ::= op::UnaryOp  e::Expr
 {
   propagate substituted;
 }
-aspect production qualifiedUnaryOpExpr
-top::Expr ::= op::UnaryOp  e::Expr  collectedTypeQualifiers::Qualifiers
+aspect production unaryOpHostExpr
+top::Expr ::= op::UnaryOp  e::Expr
 {
   propagate substituted;
 }
@@ -108,8 +108,8 @@ top::Expr ::= lhs::Expr  rhs::Expr
 {
   propagate substituted;
 }
-aspect production qualifiedSubtractExpr
-top::Expr ::= lhs::Expr rhs::Expr collectedTypeQualifiers::Qualifiers
+aspect production subtractHostExpr
+top::Expr ::= lhs::Expr rhs::Expr
 {
   propagate substituted;
 }
@@ -118,8 +118,8 @@ top::Expr ::= lhs::Expr  op::BinOp  rhs::Expr
 {
   propagate substituted;
 }
-aspect production qualifiedBinaryOpExpr
-top::Expr ::= lhs::Expr  op::BinOp  rhs::Expr  collectedTypeQualifiers::Qualifiers
+aspect production binaryOpHostExpr
+top::Expr ::= lhs::Expr  op::BinOp  rhs::Expr
 {
   propagate substituted;
 }

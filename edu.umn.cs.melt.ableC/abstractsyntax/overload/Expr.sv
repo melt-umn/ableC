@@ -118,8 +118,9 @@ top::Expr ::= lhs::Expr  rhs::Expr
   top.pp = parens( ppConcat([lhs.pp, space(), text("+"), space(), rhs.pp]) );
   top.errors := [];
 
-  top.collectedTypeQualifiers := [];
-  top.typerep = addQualifiers(top.collectedTypeQualifiers, forward.typerep);
+  production attribute collectedTypeQualifiers :: [Qualifier] with ++;
+  collectedTypeQualifiers := [];
+  top.typerep = addQualifiers(collectedTypeQualifiers, forward.typerep);
 
   forwards to
     if null(top.errors)
@@ -145,8 +146,9 @@ top::Expr ::= lhs::Expr  rhs::Expr
   top.pp = parens( ppConcat([lhs.pp, space(), text("-"), space(), rhs.pp]) );
   top.errors := [];
 
-  top.collectedTypeQualifiers := [];
-  top.typerep = addQualifiers(top.collectedTypeQualifiers, forward.typerep);
+  production attribute collectedTypeQualifiers :: [Qualifier] with ++;
+  collectedTypeQualifiers := [];
+  top.typerep = addQualifiers(collectedTypeQualifiers, forward.typerep);
 
   forwards to
     if null(top.errors)

@@ -2,18 +2,12 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax;
 
 import edu:umn:cs:melt:ableC:abstractsyntax:overload as ovrld;
 
-nonterminal Expr with location, pp, host<Expr>, lifted<Expr>, globalDecls, errors, defs, env, returnType, freeVariables, typerep, isLValue, collectedTypeQualifiers;
+nonterminal Expr with location, pp, host<Expr>, lifted<Expr>, globalDecls, errors, defs, env, returnType, freeVariables, typerep, isLValue;
 
 flowtype Expr = decorate {env, returnType};
 
 synthesized attribute integerConstantValue :: Maybe<Integer>;
 synthesized attribute isLValue::Boolean;
-
-aspect default production
-top::Expr ::=
-{
-  top.collectedTypeQualifiers := [];
-}
 
 {- The production below is never used.  But it adds a dependency for
    the forwards-to equation on returnType so that it may be used by
@@ -95,10 +89,11 @@ top::Expr ::= e::Expr
   production attribute runtimeMods::[RuntimeMod] with ++;
   runtimeMods := [];
 
-  top.collectedTypeQualifiers := [];
+  production attribute collectedTypeQualifiers :: [Qualifier] with ++;
+  collectedTypeQualifiers := [];
 
   top.pp = parens( cat(text("*"), e.pp) );
-  top.typerep = addQualifiers(top.collectedTypeQualifiers, forward.typerep);
+  top.typerep = addQualifiers(collectedTypeQualifiers, forward.typerep);
 
   forwards to dereferenceHostExpr(applyMods(runtimeMods, e), location=top.location);
 }
@@ -131,13 +126,13 @@ top::Expr ::= op::UnaryOp  e::Expr
   top.pp = if op.preExpr
            then parens( cat( op.pp, e.pp ) )
            else parens( cat( e.pp, op.pp ) );
-  forwards to qualifiedUnaryOpExpr(op, e, foldQualifier(op.collectedTypeQualifiers), location=top.location);
+  top.typerep = addQualifiers(op.collectedTypeQualifiers, forward.typerep);
+  forwards to unaryOpHostExpr(op, e, location=top.location);
 }
-abstract production qualifiedUnaryOpExpr
-top::Expr ::= op::UnaryOp  e::Expr  collectedTypeQualifiers::Qualifiers
+abstract production unaryOpHostExpr
+top::Expr ::= op::UnaryOp  e::Expr
 {
-  propagate lifted;
-  top.host = qualifiedUnaryOpExpr(op.host, e.host, nilQualifier(), location=top.location);
+  propagate host, lifted;
   top.pp = if op.preExpr
            then parens( cat( op.pp, e.pp ) )
            else parens( cat( e.pp, op.pp ) );
@@ -145,7 +140,7 @@ top::Expr ::= op::UnaryOp  e::Expr  collectedTypeQualifiers::Qualifiers
   top.globalDecls := e.globalDecls;
   top.defs := e.defs;
   top.freeVariables = e.freeVariables;
-  top.typerep = addQualifiers(collectedTypeQualifiers.qualifiers, op.typerep);
+  top.typerep = op.typerep;
   top.isLValue = op.isLValue;
 
   top.errors <- 
@@ -176,10 +171,11 @@ top::Expr ::= lhs::Expr  rhs::Expr
   production attribute runtimeMods::[LhsOrRhsRuntimeMod] with ++;
   runtimeMods := [];
 
-  top.collectedTypeQualifiers := [];
+  production attribute collectedTypeQualifiers :: [Qualifier] with ++;
+  collectedTypeQualifiers := [];
 
   top.pp = parens( ppConcat([ lhs.pp, brackets( rhs.pp )]) );
-  top.typerep = addQualifiers(top.collectedTypeQualifiers, forward.typerep);
+  top.typerep = addQualifiers(collectedTypeQualifiers, forward.typerep);
 
   local modLhsRhs :: Pair<Expr Expr> = applyLhsRhsMods(runtimeMods, lhs, rhs);
 
@@ -288,10 +284,11 @@ top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
   production attribute runtimeMods::[RuntimeMod] with ++;
   runtimeMods := [];
 
-  top.collectedTypeQualifiers := [];
+  production attribute collectedTypeQualifiers :: [Qualifier] with ++;
+  collectedTypeQualifiers := [];
 
   top.pp = parens(ppConcat([lhs.pp, text(if deref then "->" else "."), rhs.pp]));
-  top.typerep = addQualifiers(top.collectedTypeQualifiers, forward.typerep);
+  top.typerep = addQualifiers(collectedTypeQualifiers, forward.typerep);
 
   forwards to memberHostExpr(applyMods(runtimeMods, lhs), deref, rhs, location=top.location);
 }
@@ -468,13 +465,13 @@ top::Expr ::= lhs::Expr rhs::Expr
 {
   production attribute runtimeMods::[LhsOrRhsRuntimeMod] with ++;
   runtimeMods := [];
+  local modLhsRhs :: Pair<Expr Expr> = applyLhsRhsMods(runtimeMods, lhs, rhs);
 
-  top.collectedTypeQualifiers := [];
+  production attribute collectedTypeQualifiers :: [Qualifier] with ++;
+  collectedTypeQualifiers := [];
 
   top.pp = parens( ppConcat([lhs.pp, space(), text("+"), space(), rhs.pp]) );
-  top.typerep = addQualifiers(top.collectedTypeQualifiers, forward.typerep);
-
-  local modLhsRhs :: Pair<Expr Expr> = applyLhsRhsMods(runtimeMods, lhs, rhs);
+  top.typerep = addQualifiers(collectedTypeQualifiers, forward.typerep);
 
   forwards to addHostExpr(modLhsRhs.fst, modLhsRhs.snd, location=top.location);
 }
@@ -497,14 +494,22 @@ top::Expr ::= lhs::Expr rhs::Expr
 abstract production subtractExpr
 top::Expr ::= lhs::Expr rhs::Expr
 {
-  top.collectedTypeQualifiers := [];
-  forwards to qualifiedSubtractExpr(lhs, rhs, foldQualifier(top.collectedTypeQualifiers), location=top.location);
+  production attribute runtimeMods::[LhsOrRhsRuntimeMod] with ++;
+  runtimeMods := [];
+  local modLhsRhs :: Pair<Expr Expr> = applyLhsRhsMods(runtimeMods, lhs, rhs);
+
+  production attribute collectedTypeQualifiers :: [Qualifier] with ++;
+  collectedTypeQualifiers := [];
+
+  top.pp = parens( ppConcat([lhs.pp, space(), text("+"), space(), rhs.pp]) );
+  top.typerep = addQualifiers(collectedTypeQualifiers, forward.typerep);
+
+  forwards to subtractHostExpr(modLhsRhs.fst, modLhsRhs.snd, location=top.location);
 }
-abstract production qualifiedSubtractExpr
-top::Expr ::= lhs::Expr rhs::Expr collectedTypeQualifiers::Qualifiers
+abstract production subtractHostExpr
+top::Expr ::= lhs::Expr rhs::Expr
 {
-  propagate lifted;
-  top.host = qualifiedSubtractExpr(lhs.host, rhs.host, nilQualifier(), location=top.location);
+  propagate host, lifted;
   top.pp = parens( ppConcat([lhs.pp, space(), text("-"), space(), rhs.pp]) );
   top.errors := lhs.errors ++ rhs.errors;
   top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
@@ -512,14 +517,22 @@ top::Expr ::= lhs::Expr rhs::Expr collectedTypeQualifiers::Qualifiers
   top.freeVariables =
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
-  top.typerep = addQualifiers(collectedTypeQualifiers.qualifiers,
-    usualSubtractiveConversionsOnTypes(lhs.typerep, rhs.typerep));
+  top.typerep = usualSubtractiveConversionsOnTypes(lhs.typerep, rhs.typerep);
   rhs.env = addEnv(lhs.defs, lhs.env);
   top.isLValue = false;
 }
 abstract production binaryOpExpr
 top::Expr ::= lhs::Expr  op::BinOp  rhs::Expr
 {
+  production attribute runtimeMods::[LhsOrRhsRuntimeMod] with ++;
+  runtimeMods := op.lhsRhsRuntimeMods;
+  local modLhsRhs :: Pair<Expr Expr> = applyLhsRhsMods(runtimeMods, lhs, rhs);
+
+  production attribute collectedTypeQualifiers :: [Qualifier] with ++;
+  collectedTypeQualifiers := [];
+
+  top.typerep = addQualifiers(collectedTypeQualifiers, forward.typerep);
+
   op.lop = lhs;
   op.rop = rhs;
   top.pp = parens( ppConcat([ 
@@ -527,13 +540,12 @@ top::Expr ::= lhs::Expr  op::BinOp  rhs::Expr
     | assignOp(eqOp()), cat(cat(text("("), lhsNoParens), text(")")) -> lhsNoParens
     | _, _ -> lhs.pp
     end-} lhs.pp, space(), op.pp, space(), rhs.pp ]) );
-  forwards to qualifiedBinaryOpExpr(lhs, op, rhs, foldQualifier(op.collectedTypeQualifiers), location=top.location);
+  forwards to binaryOpHostExpr(lhs, op, rhs, location=top.location);
 }
-abstract production qualifiedBinaryOpExpr
-top::Expr ::= lhs::Expr  op::BinOp  rhs::Expr  collectedTypeQualifiers::Qualifiers
+abstract production binaryOpHostExpr
+top::Expr ::= lhs::Expr  op::BinOp  rhs::Expr
 {
-  propagate lifted;
-  top.host = qualifiedBinaryOpExpr(lhs.host, op.host, rhs.host, nilQualifier(), location=top.location);
+  propagate host, lifted;
   -- case op here is a potential problem, since that emits a dep on op->forward, which eventually should probably include env
   -- Find a way to do this that doesn't cause problems if an op forwards.
   top.pp = parens( ppConcat([ 
@@ -547,7 +559,7 @@ top::Expr ::= lhs::Expr  op::BinOp  rhs::Expr  collectedTypeQualifiers::Qualifie
   top.freeVariables =
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
-  top.typerep = addQualifiers(collectedTypeQualifiers.qualifiers, op.typerep);
+  top.typerep = op.typerep;
   
   op.lop = lhs;
   op.rop = rhs;
@@ -598,10 +610,11 @@ top::Expr ::= ty::TypeName  e::Expr
   production attribute runtimeMods::[RuntimeMod] with ++;
   runtimeMods := [];
 
-  top.collectedTypeQualifiers := [];
+  production attribute collectedTypeQualifiers :: [Qualifier] with ++;
+  collectedTypeQualifiers := [];
 
   top.pp = parens( ppConcat([parens(ty.pp), e.pp]) );
-  top.typerep = addQualifiers(top.collectedTypeQualifiers, forward.typerep);
+  top.typerep = addQualifiers(collectedTypeQualifiers, forward.typerep);
 
   forwards to explicitCastHostExpr(ty, applyMods(runtimeMods, e), location=top.location);
 }
