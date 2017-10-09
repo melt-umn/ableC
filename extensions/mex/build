@@ -1,7 +1,0 @@
-#!/bin/bash
-
-# Quick hack fix, since all of these compositions are named artifact.
-touch artifact/Main.sv
-# This extension also depends on the matrix extension.
-silver -I . -I ../.. -I ../matrix -o ableC.jar $@ artifact
-

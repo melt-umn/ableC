@@ -1,6 +1,0 @@
-#!/bin/bash
-
-# Quick hack fix, since all of these compositions are named artifact.
-touch artifact/Main.sv
-silver -I . -I ../.. -I ../algebraic-data-types -I ../conditional-tables -I ../gc -I ../matrix -I ../mex -I ../regex -o ableC.jar $@ artifact
-
