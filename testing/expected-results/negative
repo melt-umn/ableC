@@ -1,356 +1,358 @@
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j004a.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j004b.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j004c.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j004d.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j004e.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j004f.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j004g.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j004h.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j008a.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j008b.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j008c.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j008d.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j008e.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j008f.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j009a.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j009b.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j009c.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j009d.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j009e.c
-Negative test       - PASS:             testing/tests/kframework/negative/j009f.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j009g.c
-Negative test       - PASS:             testing/tests/kframework/negative/j009h.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j009i.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j010a.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j010b.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j010c.c
-Negative test       - PASS:             testing/tests/kframework/negative/j015.c
-Negative test       - PASS:             testing/tests/kframework/negative/j015b.c
-Negative test       - PASS:             testing/tests/kframework/negative/j015c.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j017a.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j017b.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j017c.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j019a.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j019b.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j020a.c
-Negative test       - PASS:             testing/tests/kframework/negative/j020b.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j021a.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j021b.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j021c.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j021d.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j021e.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j021f.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j022a.c
-Negative test       - PASS:             testing/tests/kframework/negative/j026a.c
-Negative test       - PASS:             testing/tests/kframework/negative/j027a.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j027b.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j032a.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j032b.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j033a.c
-Negative test       - PASS:             testing/tests/kframework/negative/j033b.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j033c.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j036a.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j036b.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j036c.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j037a.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j037b.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j038a.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j038b.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j038c.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j040a.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j040b.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j040c.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j041a.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j043a.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j044a.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j046a.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j046b.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j046c.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j047a.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j047b.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j047c.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j048a.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j048b.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j049a.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j049b.c
-Negative test       - PASS:             testing/tests/kframework/negative/j049c.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j052a.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j052b.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j053a.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j055a.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j055b.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j055c.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j055d.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j055e.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j056a.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j058a.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j058b.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j058c.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j058d.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j058e.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j060a.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j060b.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j061a.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j061b.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j062a.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j062b.c
-Negative test       - PASS:             testing/tests/kframework/negative/j064a.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j064b.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j065a.c
-Negative test       - PASS:             testing/tests/kframework/negative/j065b.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j067a.c
-Negative test       - PASS:             testing/tests/kframework/negative/j067b.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j067c.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j067d.c
-Negative test       - PASS:             testing/tests/kframework/negative/j068a.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j070a.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j071a.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j072a.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j073a.c
-Negative test       - PASS:             testing/tests/kframework/negative/j075a.c
-Negative test       - PASS:             testing/tests/kframework/negative/j075b.c
-Negative test       - PASS:             testing/tests/kframework/negative/j075c.c
-Negative test       - PASS:             testing/tests/kframework/negative/j075d.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j075e.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j075f.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j076a.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j078a.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j079a.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j079b.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j079c.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j079d.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j079e.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j079f.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j079g.c
-Negative test       - PASS:             testing/tests/kframework/negative/j079h.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j079i.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j079j.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j082a.c
-Negative test       - PASS:             testing/tests/kframework/negative/j082b.c
-Negative test       - PASS:             testing/tests/kframework/negative/j083a.c
-Negative test       - PASS:             testing/tests/kframework/negative/j083b.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j084a.c
-Negative test       - PASS:             testing/tests/kframework/negative/j086a.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j088a.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j089a.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j089b.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j090a.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j301a.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j302a.c
-Negative test       - PASS:             testing/tests/kframework/negative/j303a.c
-Negative test       - PASS:             testing/tests/kframework/negative/j303b.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j304a.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j305a.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j306a.c
-Negative test       - PASS:             testing/tests/kframework/negative/j307a.c
-Negative test       - PASS:             testing/tests/kframework/negative/j307b.c
-Negative test       - PASS:             testing/tests/kframework/negative/j307c.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j308a.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j309a.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j310a.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j310b.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j310c.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j311a.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j315a.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j315b.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j316a.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j319a.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j319b.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j320a.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j320b.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j321a.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j321b.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j322a.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j322b.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j323a.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j324a.c
-Negative test       - PASS:             testing/tests/kframework/negative/j332a.c
-Negative test       - PASS:             testing/tests/kframework/negative/j332b.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j409a.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j409b.c
-Negative test       - PASS:             testing/tests/kframework/negative/j500a.c
-Negative test       - PASS:             testing/tests/kframework/negative/j501a.c
-Negative test       - PASS:             testing/tests/kframework/negative/j501b.c
-Negative test       - PASS:             testing/tests/kframework/negative/j501c.c
-Negative test       - PASS:             testing/tests/kframework/negative/j501d.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j502a.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j502b.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j503a.c
-Negative test       - FAIL: NO ERROR    testing/tests/kframework/negative/j504a.c
-Negative test       - PASS:             testing/tests/kframework/negative/j506a.c
-Negative test       - PASS:             testing/tests/melt/negative/1.c
-Negative test       - PASS:             testing/tests/melt/negative/expr_type_index_1.c
-Negative test       - PASS:             testing/tests/melt/negative/expr_type_index_2.c
-Negative test       - PASS:             testing/tests/melt/negative/lvalues_1.c
-Negative test       - PASS:             testing/tests/melt/negative/lvalues_10.c
-Negative test       - PASS:             testing/tests/melt/negative/lvalues_11.c
-Negative test       - PASS:             testing/tests/melt/negative/lvalues_12.c
-Negative test       - PASS:             testing/tests/melt/negative/lvalues_13.c
-Negative test       - PASS:             testing/tests/melt/negative/lvalues_14.c
-Negative test       - PASS:             testing/tests/melt/negative/lvalues_15.c
-Negative test       - PASS:             testing/tests/melt/negative/lvalues_16.c
-Negative test       - PASS:             testing/tests/melt/negative/lvalues_17.c
-Negative test       - PASS:             testing/tests/melt/negative/lvalues_18.c
-Negative test       - PASS:             testing/tests/melt/negative/lvalues_19.c
-Negative test       - PASS:             testing/tests/melt/negative/lvalues_2.c
-Negative test       - PASS:             testing/tests/melt/negative/lvalues_20.c
-Negative test       - PASS:             testing/tests/melt/negative/lvalues_3.c
-Negative test       - PASS:             testing/tests/melt/negative/lvalues_4.c
-Negative test       - PASS:             testing/tests/melt/negative/lvalues_5.c
-Negative test       - PASS:             testing/tests/melt/negative/lvalues_6.c
-Negative test       - PASS:             testing/tests/melt/negative/lvalues_7.c
-Negative test       - PASS:             testing/tests/melt/negative/lvalues_8.c
-Negative test       - PASS:             testing/tests/melt/negative/lvalues_9.c
-Negative test       - PASS:             testing/tests/melt/negative/stmt_scoping_1.c
-Negative test       - PASS:             testing/tests/melt/negative/stmt_type_if_1.c
-Negative test       - PASS:             testing/tests/melt/negative/stmt_type_switch_1.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j004a.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j004b.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j004c.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j004d.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j004e.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j004f.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j004g.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j004h.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j008a.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j008b.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j008c.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j008d.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j008e.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j008f.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j009a.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j009b.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j009c.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j009d.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j009e.c
+Negative test       - PASS:             tests/kframework/negative/j009f.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j009g.c
+Negative test       - PASS:             tests/kframework/negative/j009h.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j009i.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j010a.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j010b.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j010c.c
+Negative test       - PASS:             tests/kframework/negative/j015.c
+Negative test       - PASS:             tests/kframework/negative/j015b.c
+Negative test       - PASS:             tests/kframework/negative/j015c.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j017a.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j017b.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j017c.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j019a.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j019b.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j020a.c
+Negative test       - PASS:             tests/kframework/negative/j020b.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j021a.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j021b.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j021c.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j021d.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j021e.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j021f.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j022a.c
+Negative test       - PASS:             tests/kframework/negative/j026a.c
+Negative test       - PASS:             tests/kframework/negative/j027a.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j027b.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j032a.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j032b.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j033a.c
+Negative test       - PASS:             tests/kframework/negative/j033b.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j033c.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j036a.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j036b.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j036c.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j037a.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j037b.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j038a.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j038b.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j038c.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j040a.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j040b.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j040c.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j041a.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j043a.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j044a.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j046a.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j046b.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j046c.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j047a.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j047b.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j047c.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j048a.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j048b.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j049a.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j049b.c
+Negative test       - PASS:             tests/kframework/negative/j049c.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j052a.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j052b.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j053a.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j055a.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j055b.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j055c.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j055d.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j055e.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j056a.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j058a.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j058b.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j058c.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j058d.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j058e.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j060a.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j060b.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j061a.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j061b.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j062a.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j062b.c
+Negative test       - PASS:             tests/kframework/negative/j064a.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j064b.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j065a.c
+Negative test       - PASS:             tests/kframework/negative/j065b.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j067a.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j067b.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j067c.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j067d.c
+Negative test       - PASS:             tests/kframework/negative/j068a.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j070a.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j071a.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j072a.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j073a.c
+Negative test       - PASS:             tests/kframework/negative/j075a.c
+Negative test       - PASS:             tests/kframework/negative/j075b.c
+Negative test       - PASS:             tests/kframework/negative/j075c.c
+Negative test       - PASS:             tests/kframework/negative/j075d.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j075e.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j075f.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j076a.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j078a.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j079a.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j079b.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j079c.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j079d.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j079e.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j079f.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j079g.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j079h.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j079i.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j079j.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j082a.c
+Negative test       - PASS:             tests/kframework/negative/j082b.c
+Negative test       - PASS:             tests/kframework/negative/j083a.c
+Negative test       - PASS:             tests/kframework/negative/j083b.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j084a.c
+Negative test       - PASS:             tests/kframework/negative/j086a.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j088a.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j089a.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j089b.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j090a.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j301a.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j302a.c
+Negative test       - PASS:             tests/kframework/negative/j303a.c
+Negative test       - PASS:             tests/kframework/negative/j303b.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j304a.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j305a.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j306a.c
+Negative test       - PASS:             tests/kframework/negative/j307a.c
+Negative test       - PASS:             tests/kframework/negative/j307b.c
+Negative test       - PASS:             tests/kframework/negative/j307c.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j308a.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j309a.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j310a.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j310b.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j310c.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j311a.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j315a.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j315b.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j316a.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j319a.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j319b.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j320a.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j320b.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j321a.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j321b.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j322a.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j322b.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j323a.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j324a.c
+Negative test       - PASS:             tests/kframework/negative/j332a.c
+Negative test       - PASS:             tests/kframework/negative/j332b.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j409a.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j409b.c
+Negative test       - PASS:             tests/kframework/negative/j500a.c
+Negative test       - PASS:             tests/kframework/negative/j501a.c
+Negative test       - PASS:             tests/kframework/negative/j501b.c
+Negative test       - PASS:             tests/kframework/negative/j501c.c
+Negative test       - PASS:             tests/kframework/negative/j501d.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j502a.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j502b.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j503a.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j504a.c
+Negative test       - PASS:             tests/kframework/negative/j506a.c
+Negative test       - PASS:             tests/melt/negative/1.c
+Negative test       - PASS:             tests/melt/negative/expr_type_index_1.c
+Negative test       - PASS:             tests/melt/negative/expr_type_index_2.c
+Negative test       - PASS:             tests/melt/negative/lvalues_1.c
+Negative test       - PASS:             tests/melt/negative/lvalues_10.c
+Negative test       - PASS:             tests/melt/negative/lvalues_11.c
+Negative test       - PASS:             tests/melt/negative/lvalues_12.c
+Negative test       - PASS:             tests/melt/negative/lvalues_13.c
+Negative test       - PASS:             tests/melt/negative/lvalues_14.c
+Negative test       - PASS:             tests/melt/negative/lvalues_15.c
+Negative test       - PASS:             tests/melt/negative/lvalues_16.c
+Negative test       - PASS:             tests/melt/negative/lvalues_17.c
+Negative test       - PASS:             tests/melt/negative/lvalues_18.c
+Negative test       - PASS:             tests/melt/negative/lvalues_19.c
+Negative test       - PASS:             tests/melt/negative/lvalues_2.c
+Negative test       - PASS:             tests/melt/negative/lvalues_20.c
+Negative test       - PASS:             tests/melt/negative/lvalues_3.c
+Negative test       - PASS:             tests/melt/negative/lvalues_4.c
+Negative test       - PASS:             tests/melt/negative/lvalues_5.c
+Negative test       - PASS:             tests/melt/negative/lvalues_6.c
+Negative test       - PASS:             tests/melt/negative/lvalues_7.c
+Negative test       - PASS:             tests/melt/negative/lvalues_8.c
+Negative test       - PASS:             tests/melt/negative/lvalues_9.c
+Negative test       - PASS:             tests/melt/negative/stmt_scoping_1.c
+Negative test       - PASS:             tests/melt/negative/stmt_type_if_1.c
+Negative test       - PASS:             tests/melt/negative/stmt_type_switch_1.c
 
 Failures:
             NO ERROR
-                        testing/tests/kframework/negative/j004a.c
-                        testing/tests/kframework/negative/j004b.c
-                        testing/tests/kframework/negative/j004c.c
-                        testing/tests/kframework/negative/j004d.c
-                        testing/tests/kframework/negative/j004e.c
-                        testing/tests/kframework/negative/j004f.c
-                        testing/tests/kframework/negative/j004g.c
-                        testing/tests/kframework/negative/j004h.c
-                        testing/tests/kframework/negative/j008a.c
-                        testing/tests/kframework/negative/j008b.c
-                        testing/tests/kframework/negative/j008c.c
-                        testing/tests/kframework/negative/j008d.c
-                        testing/tests/kframework/negative/j008e.c
-                        testing/tests/kframework/negative/j008f.c
-                        testing/tests/kframework/negative/j009a.c
-                        testing/tests/kframework/negative/j009b.c
-                        testing/tests/kframework/negative/j009c.c
-                        testing/tests/kframework/negative/j009d.c
-                        testing/tests/kframework/negative/j009e.c
-                        testing/tests/kframework/negative/j009g.c
-                        testing/tests/kframework/negative/j009i.c
-                        testing/tests/kframework/negative/j010a.c
-                        testing/tests/kframework/negative/j010b.c
-                        testing/tests/kframework/negative/j010c.c
-                        testing/tests/kframework/negative/j017a.c
-                        testing/tests/kframework/negative/j017b.c
-                        testing/tests/kframework/negative/j017c.c
-                        testing/tests/kframework/negative/j019a.c
-                        testing/tests/kframework/negative/j019b.c
-                        testing/tests/kframework/negative/j020a.c
-                        testing/tests/kframework/negative/j021a.c
-                        testing/tests/kframework/negative/j021b.c
-                        testing/tests/kframework/negative/j021c.c
-                        testing/tests/kframework/negative/j021d.c
-                        testing/tests/kframework/negative/j021e.c
-                        testing/tests/kframework/negative/j021f.c
-                        testing/tests/kframework/negative/j022a.c
-                        testing/tests/kframework/negative/j027b.c
-                        testing/tests/kframework/negative/j032a.c
-                        testing/tests/kframework/negative/j032b.c
-                        testing/tests/kframework/negative/j033a.c
-                        testing/tests/kframework/negative/j033c.c
-                        testing/tests/kframework/negative/j036a.c
-                        testing/tests/kframework/negative/j036b.c
-                        testing/tests/kframework/negative/j036c.c
-                        testing/tests/kframework/negative/j037a.c
-                        testing/tests/kframework/negative/j037b.c
-                        testing/tests/kframework/negative/j038a.c
-                        testing/tests/kframework/negative/j038b.c
-                        testing/tests/kframework/negative/j038c.c
-                        testing/tests/kframework/negative/j040a.c
-                        testing/tests/kframework/negative/j040b.c
-                        testing/tests/kframework/negative/j040c.c
-                        testing/tests/kframework/negative/j041a.c
-                        testing/tests/kframework/negative/j043a.c
-                        testing/tests/kframework/negative/j044a.c
-                        testing/tests/kframework/negative/j046a.c
-                        testing/tests/kframework/negative/j046b.c
-                        testing/tests/kframework/negative/j046c.c
-                        testing/tests/kframework/negative/j047a.c
-                        testing/tests/kframework/negative/j047b.c
-                        testing/tests/kframework/negative/j047c.c
-                        testing/tests/kframework/negative/j048a.c
-                        testing/tests/kframework/negative/j048b.c
-                        testing/tests/kframework/negative/j049a.c
-                        testing/tests/kframework/negative/j049b.c
-                        testing/tests/kframework/negative/j052a.c
-                        testing/tests/kframework/negative/j052b.c
-                        testing/tests/kframework/negative/j053a.c
-                        testing/tests/kframework/negative/j055a.c
-                        testing/tests/kframework/negative/j055b.c
-                        testing/tests/kframework/negative/j055c.c
-                        testing/tests/kframework/negative/j055d.c
-                        testing/tests/kframework/negative/j055e.c
-                        testing/tests/kframework/negative/j056a.c
-                        testing/tests/kframework/negative/j058a.c
-                        testing/tests/kframework/negative/j058b.c
-                        testing/tests/kframework/negative/j058c.c
-                        testing/tests/kframework/negative/j058d.c
-                        testing/tests/kframework/negative/j058e.c
-                        testing/tests/kframework/negative/j060a.c
-                        testing/tests/kframework/negative/j060b.c
-                        testing/tests/kframework/negative/j061a.c
-                        testing/tests/kframework/negative/j061b.c
-                        testing/tests/kframework/negative/j062a.c
-                        testing/tests/kframework/negative/j062b.c
-                        testing/tests/kframework/negative/j064b.c
-                        testing/tests/kframework/negative/j065a.c
-                        testing/tests/kframework/negative/j067a.c
-                        testing/tests/kframework/negative/j067c.c
-                        testing/tests/kframework/negative/j067d.c
-                        testing/tests/kframework/negative/j070a.c
-                        testing/tests/kframework/negative/j071a.c
-                        testing/tests/kframework/negative/j072a.c
-                        testing/tests/kframework/negative/j073a.c
-                        testing/tests/kframework/negative/j075e.c
-                        testing/tests/kframework/negative/j075f.c
-                        testing/tests/kframework/negative/j076a.c
-                        testing/tests/kframework/negative/j078a.c
-                        testing/tests/kframework/negative/j079a.c
-                        testing/tests/kframework/negative/j079b.c
-                        testing/tests/kframework/negative/j079c.c
-                        testing/tests/kframework/negative/j079d.c
-                        testing/tests/kframework/negative/j079e.c
-                        testing/tests/kframework/negative/j079f.c
-                        testing/tests/kframework/negative/j079g.c
-                        testing/tests/kframework/negative/j079i.c
-                        testing/tests/kframework/negative/j079j.c
-                        testing/tests/kframework/negative/j082a.c
-                        testing/tests/kframework/negative/j084a.c
-                        testing/tests/kframework/negative/j088a.c
-                        testing/tests/kframework/negative/j089a.c
-                        testing/tests/kframework/negative/j089b.c
-                        testing/tests/kframework/negative/j090a.c
-                        testing/tests/kframework/negative/j301a.c
-                        testing/tests/kframework/negative/j302a.c
-                        testing/tests/kframework/negative/j304a.c
-                        testing/tests/kframework/negative/j305a.c
-                        testing/tests/kframework/negative/j306a.c
-                        testing/tests/kframework/negative/j308a.c
-                        testing/tests/kframework/negative/j309a.c
-                        testing/tests/kframework/negative/j310a.c
-                        testing/tests/kframework/negative/j310b.c
-                        testing/tests/kframework/negative/j310c.c
-                        testing/tests/kframework/negative/j311a.c
-                        testing/tests/kframework/negative/j315a.c
-                        testing/tests/kframework/negative/j315b.c
-                        testing/tests/kframework/negative/j316a.c
-                        testing/tests/kframework/negative/j319a.c
-                        testing/tests/kframework/negative/j319b.c
-                        testing/tests/kframework/negative/j320a.c
-                        testing/tests/kframework/negative/j320b.c
-                        testing/tests/kframework/negative/j321a.c
-                        testing/tests/kframework/negative/j321b.c
-                        testing/tests/kframework/negative/j322a.c
-                        testing/tests/kframework/negative/j322b.c
-                        testing/tests/kframework/negative/j323a.c
-                        testing/tests/kframework/negative/j324a.c
-                        testing/tests/kframework/negative/j409a.c
-                        testing/tests/kframework/negative/j409b.c
-                        testing/tests/kframework/negative/j502a.c
-                        testing/tests/kframework/negative/j502b.c
-                        testing/tests/kframework/negative/j503a.c
-                        testing/tests/kframework/negative/j504a.c
+                        tests/kframework/negative/j004a.c
+                        tests/kframework/negative/j004b.c
+                        tests/kframework/negative/j004c.c
+                        tests/kframework/negative/j004d.c
+                        tests/kframework/negative/j004e.c
+                        tests/kframework/negative/j004f.c
+                        tests/kframework/negative/j004g.c
+                        tests/kframework/negative/j004h.c
+                        tests/kframework/negative/j008a.c
+                        tests/kframework/negative/j008b.c
+                        tests/kframework/negative/j008c.c
+                        tests/kframework/negative/j008d.c
+                        tests/kframework/negative/j008e.c
+                        tests/kframework/negative/j008f.c
+                        tests/kframework/negative/j009a.c
+                        tests/kframework/negative/j009b.c
+                        tests/kframework/negative/j009c.c
+                        tests/kframework/negative/j009d.c
+                        tests/kframework/negative/j009e.c
+                        tests/kframework/negative/j009g.c
+                        tests/kframework/negative/j009i.c
+                        tests/kframework/negative/j010a.c
+                        tests/kframework/negative/j010b.c
+                        tests/kframework/negative/j010c.c
+                        tests/kframework/negative/j017a.c
+                        tests/kframework/negative/j017b.c
+                        tests/kframework/negative/j017c.c
+                        tests/kframework/negative/j019a.c
+                        tests/kframework/negative/j019b.c
+                        tests/kframework/negative/j020a.c
+                        tests/kframework/negative/j021a.c
+                        tests/kframework/negative/j021b.c
+                        tests/kframework/negative/j021c.c
+                        tests/kframework/negative/j021d.c
+                        tests/kframework/negative/j021e.c
+                        tests/kframework/negative/j021f.c
+                        tests/kframework/negative/j022a.c
+                        tests/kframework/negative/j027b.c
+                        tests/kframework/negative/j032a.c
+                        tests/kframework/negative/j032b.c
+                        tests/kframework/negative/j033a.c
+                        tests/kframework/negative/j033c.c
+                        tests/kframework/negative/j036a.c
+                        tests/kframework/negative/j036b.c
+                        tests/kframework/negative/j036c.c
+                        tests/kframework/negative/j037a.c
+                        tests/kframework/negative/j037b.c
+                        tests/kframework/negative/j038a.c
+                        tests/kframework/negative/j038b.c
+                        tests/kframework/negative/j038c.c
+                        tests/kframework/negative/j040a.c
+                        tests/kframework/negative/j040b.c
+                        tests/kframework/negative/j040c.c
+                        tests/kframework/negative/j041a.c
+                        tests/kframework/negative/j043a.c
+                        tests/kframework/negative/j044a.c
+                        tests/kframework/negative/j046a.c
+                        tests/kframework/negative/j046b.c
+                        tests/kframework/negative/j046c.c
+                        tests/kframework/negative/j047a.c
+                        tests/kframework/negative/j047b.c
+                        tests/kframework/negative/j047c.c
+                        tests/kframework/negative/j048a.c
+                        tests/kframework/negative/j048b.c
+                        tests/kframework/negative/j049a.c
+                        tests/kframework/negative/j049b.c
+                        tests/kframework/negative/j052a.c
+                        tests/kframework/negative/j052b.c
+                        tests/kframework/negative/j053a.c
+                        tests/kframework/negative/j055a.c
+                        tests/kframework/negative/j055b.c
+                        tests/kframework/negative/j055c.c
+                        tests/kframework/negative/j055d.c
+                        tests/kframework/negative/j055e.c
+                        tests/kframework/negative/j056a.c
+                        tests/kframework/negative/j058a.c
+                        tests/kframework/negative/j058b.c
+                        tests/kframework/negative/j058c.c
+                        tests/kframework/negative/j058d.c
+                        tests/kframework/negative/j058e.c
+                        tests/kframework/negative/j060a.c
+                        tests/kframework/negative/j060b.c
+                        tests/kframework/negative/j061a.c
+                        tests/kframework/negative/j061b.c
+                        tests/kframework/negative/j062a.c
+                        tests/kframework/negative/j062b.c
+                        tests/kframework/negative/j064b.c
+                        tests/kframework/negative/j065a.c
+                        tests/kframework/negative/j067a.c
+                        tests/kframework/negative/j067b.c
+                        tests/kframework/negative/j067c.c
+                        tests/kframework/negative/j067d.c
+                        tests/kframework/negative/j070a.c
+                        tests/kframework/negative/j071a.c
+                        tests/kframework/negative/j072a.c
+                        tests/kframework/negative/j073a.c
+                        tests/kframework/negative/j075e.c
+                        tests/kframework/negative/j075f.c
+                        tests/kframework/negative/j076a.c
+                        tests/kframework/negative/j078a.c
+                        tests/kframework/negative/j079a.c
+                        tests/kframework/negative/j079b.c
+                        tests/kframework/negative/j079c.c
+                        tests/kframework/negative/j079d.c
+                        tests/kframework/negative/j079e.c
+                        tests/kframework/negative/j079f.c
+                        tests/kframework/negative/j079g.c
+                        tests/kframework/negative/j079h.c
+                        tests/kframework/negative/j079i.c
+                        tests/kframework/negative/j079j.c
+                        tests/kframework/negative/j082a.c
+                        tests/kframework/negative/j084a.c
+                        tests/kframework/negative/j088a.c
+                        tests/kframework/negative/j089a.c
+                        tests/kframework/negative/j089b.c
+                        tests/kframework/negative/j090a.c
+                        tests/kframework/negative/j301a.c
+                        tests/kframework/negative/j302a.c
+                        tests/kframework/negative/j304a.c
+                        tests/kframework/negative/j305a.c
+                        tests/kframework/negative/j306a.c
+                        tests/kframework/negative/j308a.c
+                        tests/kframework/negative/j309a.c
+                        tests/kframework/negative/j310a.c
+                        tests/kframework/negative/j310b.c
+                        tests/kframework/negative/j310c.c
+                        tests/kframework/negative/j311a.c
+                        tests/kframework/negative/j315a.c
+                        tests/kframework/negative/j315b.c
+                        tests/kframework/negative/j316a.c
+                        tests/kframework/negative/j319a.c
+                        tests/kframework/negative/j319b.c
+                        tests/kframework/negative/j320a.c
+                        tests/kframework/negative/j320b.c
+                        tests/kframework/negative/j321a.c
+                        tests/kframework/negative/j321b.c
+                        tests/kframework/negative/j322a.c
+                        tests/kframework/negative/j322b.c
+                        tests/kframework/negative/j323a.c
+                        tests/kframework/negative/j324a.c
+                        tests/kframework/negative/j409a.c
+                        tests/kframework/negative/j409b.c
+                        tests/kframework/negative/j502a.c
+                        tests/kframework/negative/j502b.c
+                        tests/kframework/negative/j503a.c
+                        tests/kframework/negative/j504a.c
 
 Positive tests:
 Pass: 0
