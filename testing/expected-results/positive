@@ -264,7 +264,7 @@ Positive test       - PASS:             tests/kframework/positive/j079d.c
 Positive test       - PASS:             tests/kframework/positive/j079e.c
 Positive test       - PASS:             tests/kframework/positive/j079f.c
 Positive test       - PASS:             tests/kframework/positive/j079g.c
-Positive test       - PASS:             tests/kframework/positive/j079h.c
+Positive test       - FAIL: ERROR       tests/kframework/positive/j079h.c
 Positive test       - PASS:             tests/kframework/positive/j079i.c
 Positive test       - PASS:             tests/kframework/positive/j079j.c
 Positive test       - PASS:             tests/kframework/positive/j082a.c
@@ -325,40 +325,9 @@ Positive test       - PASS:             tests/melt/positive/asm-1.c
 Positive test       - PASS:             tests/melt/positive/expr-stmt-types.c
 Positive test       - PASS:             tests/melt/positive/struct-scoping.c
 Positive test       - PASS:             tests/melt/positive/typedef_1.c
->>>>>>> develop
 
 Failures:
             ERROR
-<<<<<<< HEAD
-                        testing/tests/headers/positive/byteswap.c
-                        testing/tests/headers/positive/emmintrin.c
-                        testing/tests/headers/positive/fcntl.c
-                        testing/tests/headers/positive/features.c
-                        testing/tests/headers/positive/fts.c
-                        testing/tests/headers/positive/gmp.c
-                        testing/tests/headers/positive/immintrin.c
-                        testing/tests/headers/positive/libio.c
-                        testing/tests/headers/positive/link.c
-                        testing/tests/headers/positive/math.c
-                        testing/tests/headers/positive/mmintrin.c
-                        testing/tests/headers/positive/netdb.c
-                        testing/tests/headers/positive/regex.c
-                        testing/tests/headers/positive/resolv.c
-                        testing/tests/headers/positive/thread_db.c
-                        testing/tests/headers/positive/ucontext.c
-                        testing/tests/headers/positive/x86intrin.c
-                        testing/tests/headers/positive/xmmintrin.c
-                        testing/tests/kframework/positive/j020b.c
-                        testing/tests/kframework/positive/j032a.c
-                        testing/tests/kframework/positive/j032b.c
-                        testing/tests/kframework/positive/j033b.c
-                        testing/tests/kframework/positive/j049c.c
-                        testing/tests/kframework/positive/j079h.c
-
-Positive tests:
-Pass: 299
-Fail: 28
-=======
                         tests/headers/positive/emmintrin.c
                         tests/headers/positive/fcntl.c
                         tests/headers/positive/features.c
@@ -380,16 +349,17 @@ Fail: 28
                         tests/kframework/positive/j032b.c
                         tests/kframework/positive/j033b.c
                         tests/kframework/positive/j049c.c
+                        tests/kframework/positive/j079h.c
 
 Positive tests:
-Pass: 306
-Fail: 21
+Pass: 305
+Fail: 22
 
 Negative tests:
 Pass: 0
 Fail: 0
 
 Summary:
-Pass: 306
-Fail: 21
+Pass: 305
+Fail: 22
 

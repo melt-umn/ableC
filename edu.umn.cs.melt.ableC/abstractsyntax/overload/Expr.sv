@@ -139,6 +139,7 @@ top::Expr ::= lhs::Expr  rhs::Expr
   local modLhsRhs :: Pair<Expr Expr> = applyLhsRhsMods(runtimeMods, lhs, rhs);
 
   production attribute collectedTypeQualifiers :: [Qualifier] with ++;
+  collectedTypeQualifiers := [];
 
   forwards to
     if null(top.errors)
@@ -168,6 +169,7 @@ top::Expr ::= lhs::Expr  op::BinOp  rhs::Expr
   local modLhsRhs :: Pair<Expr Expr> = applyLhsRhsMods(runtimeMods, lhs, rhs);
 
   production attribute collectedTypeQualifiers :: [Qualifier] with ++;
+  collectedTypeQualifiers := [];
 
   rhs.env = addEnv(lhs.defs, lhs.env);
   op.lop = lhs;
