@@ -1,5 +1,8 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax:overload;
 
+import edu:umn:cs:melt:ableC:abstractsyntax:injectable only LhsOrRhsRuntimeMod, applyLhsRhsMods;
+import edu:umn:cs:melt:ableC:abstractsyntax:injectable as inj;
+
 abstract production unaryOpExpr
 top::Expr ::= op::UnaryOp  e::Expr
 {
@@ -120,7 +123,7 @@ top::Expr ::= lhs::Expr  rhs::Expr
     then qualifiedExpr(foldQualifier(collectedTypeQualifiers),
            case getAddOverload(lhs.typerep, rhs.typerep, top.env) of
              just(prod) -> prod(modLhsRhs.fst, modLhsRhs.snd, top.location)
-           | nothing()  -> addExprDefault(modLhsRhs.fst, modLhsRhs.snd, location=top.location)
+           | nothing()  -> inj:addExpr(modLhsRhs.fst, modLhsRhs.snd, location=top.location)
            end,
            location=top.location)
     else errorExpr(top.errors, location=top.location);
@@ -142,7 +145,7 @@ top::Expr ::= lhs::Expr  rhs::Expr
     then qualifiedExpr(foldQualifier(collectedTypeQualifiers),
            case getSubOverload(lhs.typerep, rhs.typerep, top.env) of
              just(prod) -> prod(modLhsRhs.fst, modLhsRhs.snd, top.location)
-           | nothing()  -> subtractExprDefault(modLhsRhs.fst, modLhsRhs.snd, location=top.location)
+           | nothing()  -> inj:subtractExpr(modLhsRhs.fst, modLhsRhs.snd, location=top.location)
            end,
            location=top.location)
     else errorExpr(top.errors, location=top.location);
@@ -187,7 +190,7 @@ top::Expr ::= lhs::Expr  op::BinOp  rhs::Expr
     then qualifiedExpr(foldQualifier(collectedTypeQualifiers),
            if      option1.isJust then option1.fromJust
            else if option2.isJust then option2.fromJust
-           else binaryOpExprDefault(modLhsRhs.fst, op, modLhsRhs.snd, location=top.location),
+           else inj:binaryOpExpr(modLhsRhs.fst, op, modLhsRhs.snd, location=top.location),
            location=top.location)
     else errorExpr(top.errors, location=top.location);
 }

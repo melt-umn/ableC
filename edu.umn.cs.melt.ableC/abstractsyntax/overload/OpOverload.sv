@@ -19,6 +19,8 @@ imports edu:umn:cs:melt:ableC:abstractsyntax:env;
 
 imports edu:umn:cs:melt:ableC:abstractsyntax:construction;
 
+imports edu:umn:cs:melt:ableC:abstractsyntax:injectable as inj;
+
 {- Explaination of overloading
  - All standard unary and binary operators may be overloaded, in addition to function calls, array
  - subscripts, and field access.  

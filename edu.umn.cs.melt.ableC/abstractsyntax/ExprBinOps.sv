@@ -1,3 +1,4 @@
+import edu:umn:cs:melt:ableC:abstractsyntax:injectable;
 
 autocopy attribute lop :: Decorated Expr;
 autocopy attribute rop :: Decorated Expr;
