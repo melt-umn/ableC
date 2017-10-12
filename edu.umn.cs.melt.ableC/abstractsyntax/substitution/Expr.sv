@@ -93,6 +93,11 @@ top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
 {
   propagate substituted;
 }
+aspect production qualifiedExpr
+top::Expr ::= q::Qualifiers e::Expr
+{
+  propagate substituted;
+}
 aspect production addExpr
 top::Expr ::= lhs::Expr  rhs::Expr
 {

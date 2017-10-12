@@ -86,16 +86,21 @@ top::Expr ::= e::Expr
 abstract production dereferenceExpr
 top::Expr ::= e::Expr
 {
+  top.pp = parens( cat(text("*"), e.pp) );
+  top.errors := [];
+
   production attribute runtimeMods::[RuntimeMod] with ++;
   runtimeMods := [];
 
   production attribute collectedTypeQualifiers :: [Qualifier] with ++;
   collectedTypeQualifiers := [];
 
-  top.pp = parens( cat(text("*"), e.pp) );
-  top.typerep = addQualifiers(collectedTypeQualifiers, forward.typerep);
-
-  forwards to dereferenceHostExpr(applyMods(runtimeMods, e), location=top.location);
+  forwards to
+    if null(top.errors)
+    then qualifiedExpr(foldQualifier(collectedTypeQualifiers),
+           dereferenceHostExpr(applyMods(runtimeMods, e), location=top.location),
+           location=top.location)
+    else errorExpr(top.errors, location=top.location);
 }
 abstract production dereferenceHostExpr
 top::Expr ::= e::Expr
@@ -168,18 +173,22 @@ top::Expr ::= op::UnaryTypeOp  e::ExprOrTypeName
 abstract production arraySubscriptExpr
 top::Expr ::= lhs::Expr  rhs::Expr
 {
+  top.pp = parens( ppConcat([ lhs.pp, brackets( rhs.pp )]) );
+  top.errors := [];
+
   production attribute runtimeMods::[LhsOrRhsRuntimeMod] with ++;
   runtimeMods := [];
+  local modLhsRhs :: Pair<Expr Expr> = applyLhsRhsMods(runtimeMods, lhs, rhs);
 
   production attribute collectedTypeQualifiers :: [Qualifier] with ++;
   collectedTypeQualifiers := [];
 
-  top.pp = parens( ppConcat([ lhs.pp, brackets( rhs.pp )]) );
-  top.typerep = addQualifiers(collectedTypeQualifiers, forward.typerep);
-
-  local modLhsRhs :: Pair<Expr Expr> = applyLhsRhsMods(runtimeMods, lhs, rhs);
-
-  forwards to arraySubscriptHostExpr(modLhsRhs.fst, modLhsRhs.snd, location=top.location);
+  forwards to
+    if null(top.errors)
+    then qualifiedExpr(foldQualifier(collectedTypeQualifiers),
+           arraySubscriptHostExpr(modLhsRhs.fst, modLhsRhs.snd, location=top.location),
+           location=top.location)
+    else errorExpr(top.errors, location=top.location);
 }
 abstract production arraySubscriptHostExpr
 top::Expr ::= lhs::Expr  rhs::Expr
@@ -281,16 +290,21 @@ top::Expr ::= f::Expr  a::Exprs
 abstract production memberExpr
 top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
 {
+  top.pp = parens(ppConcat([lhs.pp, text(if deref then "->" else "."), rhs.pp]));
+  top.errors := [];
+
   production attribute runtimeMods::[RuntimeMod] with ++;
   runtimeMods := [];
 
   production attribute collectedTypeQualifiers :: [Qualifier] with ++;
   collectedTypeQualifiers := [];
 
-  top.pp = parens(ppConcat([lhs.pp, text(if deref then "->" else "."), rhs.pp]));
-  top.typerep = addQualifiers(collectedTypeQualifiers, forward.typerep);
-
-  forwards to memberHostExpr(applyMods(runtimeMods, lhs), deref, rhs, location=top.location);
+  forwards to
+    if null(top.errors)
+    then qualifiedExpr(foldQualifier(collectedTypeQualifiers),
+           memberHostExpr(applyMods(runtimeMods, lhs), deref, rhs, location=top.location),
+           location=top.location)
+    else errorExpr(top.errors, location=top.location);
 }
 abstract production memberHostExpr
 top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
@@ -460,9 +474,26 @@ top::RuntimeMod ::= ins::(Stmt ::= Expr)
   top.modExpr = stmtExpr(ins(top.exprToModify), top.exprToModify, location=bogusLoc());
 }
 
+abstract production qualifiedExpr
+top::Expr ::= q::Qualifiers e::Expr
+{
+  propagate lifted;
+  top.host = e;
+  top.typerep = addQualifiers(q.qualifiers, e.typerep);
+  top.pp = e.pp;
+  top.errors := e.errors;
+  top.globalDecls := e.globalDecls;
+  top.defs := e.defs;
+  top.freeVariables = e.freeVariables;
+  top.isLValue = e.isLValue;
+}
+
 abstract production addExpr
 top::Expr ::= lhs::Expr rhs::Expr
 {
+  top.pp = parens( ppConcat([lhs.pp, space(), text("+"), space(), rhs.pp]) );
+  top.errors := [];
+
   production attribute runtimeMods::[LhsOrRhsRuntimeMod] with ++;
   runtimeMods := [];
   local modLhsRhs :: Pair<Expr Expr> = applyLhsRhsMods(runtimeMods, lhs, rhs);
@@ -470,10 +501,12 @@ top::Expr ::= lhs::Expr rhs::Expr
   production attribute collectedTypeQualifiers :: [Qualifier] with ++;
   collectedTypeQualifiers := [];
 
-  top.pp = parens( ppConcat([lhs.pp, space(), text("+"), space(), rhs.pp]) );
-  top.typerep = addQualifiers(collectedTypeQualifiers, forward.typerep);
-
-  forwards to addHostExpr(modLhsRhs.fst, modLhsRhs.snd, location=top.location);
+  forwards to
+    if null(top.errors)
+    then qualifiedExpr(foldQualifier(collectedTypeQualifiers),
+           addHostExpr(modLhsRhs.fst, modLhsRhs.snd, location=top.location),
+           location=top.location)
+    else errorExpr(top.errors, location=top.location);
 }
 
 abstract production addHostExpr
@@ -494,6 +527,9 @@ top::Expr ::= lhs::Expr rhs::Expr
 abstract production subtractExpr
 top::Expr ::= lhs::Expr rhs::Expr
 {
+  top.pp = parens( ppConcat([lhs.pp, space(), text("+"), space(), rhs.pp]) );
+  top.errors := [];
+
   production attribute runtimeMods::[LhsOrRhsRuntimeMod] with ++;
   runtimeMods := [];
   local modLhsRhs :: Pair<Expr Expr> = applyLhsRhsMods(runtimeMods, lhs, rhs);
@@ -501,10 +537,12 @@ top::Expr ::= lhs::Expr rhs::Expr
   production attribute collectedTypeQualifiers :: [Qualifier] with ++;
   collectedTypeQualifiers := [];
 
-  top.pp = parens( ppConcat([lhs.pp, space(), text("+"), space(), rhs.pp]) );
-  top.typerep = addQualifiers(collectedTypeQualifiers, forward.typerep);
-
-  forwards to subtractHostExpr(modLhsRhs.fst, modLhsRhs.snd, location=top.location);
+  forwards to
+    if null(top.errors)
+    then qualifiedExpr(foldQualifier(collectedTypeQualifiers),
+           subtractHostExpr(modLhsRhs.fst, modLhsRhs.snd, location=top.location),
+           location=top.location)
+    else errorExpr(top.errors, location=top.location);
 }
 abstract production subtractHostExpr
 top::Expr ::= lhs::Expr rhs::Expr
@@ -524,6 +562,13 @@ top::Expr ::= lhs::Expr rhs::Expr
 abstract production binaryOpExpr
 top::Expr ::= lhs::Expr  op::BinOp  rhs::Expr
 {
+  top.pp = parens( ppConcat([ 
+    {-case op, lhs.pp of
+    | assignOp(eqOp()), cat(cat(text("("), lhsNoParens), text(")")) -> lhsNoParens
+    | _, _ -> lhs.pp
+    end-} lhs.pp, space(), op.pp, space(), rhs.pp ]) );
+  top.errors := [];
+
   production attribute runtimeMods::[LhsOrRhsRuntimeMod] with ++;
   runtimeMods := op.lhsRhsRuntimeMods;
   local modLhsRhs :: Pair<Expr Expr> = applyLhsRhsMods(runtimeMods, lhs, rhs);
@@ -531,16 +576,14 @@ top::Expr ::= lhs::Expr  op::BinOp  rhs::Expr
   production attribute collectedTypeQualifiers :: [Qualifier] with ++;
   collectedTypeQualifiers := [];
 
-  top.typerep = addQualifiers(collectedTypeQualifiers, forward.typerep);
-
   op.lop = lhs;
   op.rop = rhs;
-  top.pp = parens( ppConcat([ 
-    {-case op, lhs.pp of
-    | assignOp(eqOp()), cat(cat(text("("), lhsNoParens), text(")")) -> lhsNoParens
-    | _, _ -> lhs.pp
-    end-} lhs.pp, space(), op.pp, space(), rhs.pp ]) );
-  forwards to binaryOpHostExpr(lhs, op, rhs, location=top.location);
+  forwards to
+    if null(top.errors)
+    then qualifiedExpr(foldQualifier(collectedTypeQualifiers),
+           binaryOpHostExpr(lhs, op, rhs, location=top.location),
+           location=top.location)
+    else errorExpr(top.errors, location=top.location);
 }
 abstract production binaryOpHostExpr
 top::Expr ::= lhs::Expr  op::BinOp  rhs::Expr
@@ -607,16 +650,21 @@ top::Expr ::= cond::Expr  e::Expr
 abstract production explicitCastExpr
 top::Expr ::= ty::TypeName  e::Expr
 {
+  top.pp = parens( ppConcat([parens(ty.pp), e.pp]) );
+  top.errors := [];
+
   production attribute runtimeMods::[RuntimeMod] with ++;
   runtimeMods := [];
 
   production attribute collectedTypeQualifiers :: [Qualifier] with ++;
   collectedTypeQualifiers := [];
 
-  top.pp = parens( ppConcat([parens(ty.pp), e.pp]) );
-  top.typerep = addQualifiers(collectedTypeQualifiers, forward.typerep);
-
-  forwards to explicitCastHostExpr(ty, applyMods(runtimeMods, e), location=top.location);
+  forwards to
+    if null(top.errors)
+    then qualifiedExpr(foldQualifier(collectedTypeQualifiers),
+           explicitCastHostExpr(ty, applyMods(runtimeMods, e), location=top.location),
+           location=top.location)
+    else errorExpr(top.errors, location=top.location);
 }
 abstract production explicitCastHostExpr
 top::Expr ::= ty::TypeName  e::Expr

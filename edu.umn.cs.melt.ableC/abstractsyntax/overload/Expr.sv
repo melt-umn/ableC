@@ -105,72 +105,51 @@ top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
 abstract production addExpr
 top::Expr ::= lhs::Expr  rhs::Expr
 {
-  production attribute runtimeMods::[LhsOrRhsRuntimeMod] with ++;
-  runtimeMods := [];
-  local modLhsRhs :: Pair<Expr Expr> = applyLhsRhsMods(runtimeMods, lhs, rhs);
-	local modLhs :: Expr = modLhsRhs.fst;
-	local modRhs :: Expr = modLhsRhs.snd;
-	modLhs.env = top.env;
-	modLhs.returnType = top.returnType;
-	modRhs.env = addEnv(modLhs.defs, modLhs.env);
-	modRhs.returnType = top.returnType;
-
   top.pp = parens( ppConcat([lhs.pp, space(), text("+"), space(), rhs.pp]) );
   top.errors := [];
 
+  production attribute runtimeMods::[LhsOrRhsRuntimeMod] with ++;
+  runtimeMods := [];
+  local modLhsRhs :: Pair<Expr Expr> = applyLhsRhsMods(runtimeMods, lhs, rhs);
+
   production attribute collectedTypeQualifiers :: [Qualifier] with ++;
   collectedTypeQualifiers := [];
-  top.typerep = addQualifiers(collectedTypeQualifiers, forward.typerep);
 
   forwards to
     if null(top.errors)
-    then case getAddOverload(modLhs.typerep, modRhs.typerep, top.env) of
-           just(prod) -> prod(modLhs, modRhs, top.location)
-         | nothing()  -> addExprDefault(modLhs, modRhs, location=top.location)
-         end
+    then qualifiedExpr(foldQualifier(collectedTypeQualifiers),
+           case getAddOverload(lhs.typerep, rhs.typerep, top.env) of
+             just(prod) -> prod(modLhsRhs.fst, modLhsRhs.snd, top.location)
+           | nothing()  -> addExprDefault(modLhsRhs.fst, modLhsRhs.snd, location=top.location)
+           end,
+           location=top.location)
     else errorExpr(top.errors, location=top.location);
 }
 abstract production subtractExpr
 top::Expr ::= lhs::Expr  rhs::Expr
 {
-  production attribute runtimeMods::[LhsOrRhsRuntimeMod] with ++;
-  runtimeMods := [];
-  local modLhsRhs :: Pair<Expr Expr> = applyLhsRhsMods(runtimeMods, lhs, rhs);
-	local modLhs :: Expr = modLhsRhs.fst;
-	local modRhs :: Expr = modLhsRhs.snd;
-	modLhs.env = top.env;
-	modLhs.returnType = top.returnType;
-	modRhs.env = addEnv(modLhs.defs, modLhs.env);
-	modRhs.returnType = top.returnType;
-
   top.pp = parens( ppConcat([lhs.pp, space(), text("-"), space(), rhs.pp]) );
   top.errors := [];
 
+  production attribute runtimeMods::[LhsOrRhsRuntimeMod] with ++;
+  runtimeMods := [];
+  local modLhsRhs :: Pair<Expr Expr> = applyLhsRhsMods(runtimeMods, lhs, rhs);
+
   production attribute collectedTypeQualifiers :: [Qualifier] with ++;
-  collectedTypeQualifiers := [];
-  top.typerep = addQualifiers(collectedTypeQualifiers, forward.typerep);
 
   forwards to
     if null(top.errors)
-    then case getSubOverload(modLhs.typerep, modRhs.typerep, top.env) of
-           just(prod) -> prod(modLhs, modRhs, top.location)
-         | nothing()  -> subtractExprDefault(modLhs, modRhs, location=top.location)
-         end
+    then qualifiedExpr(foldQualifier(collectedTypeQualifiers),
+           case getSubOverload(lhs.typerep, rhs.typerep, top.env) of
+             just(prod) -> prod(modLhsRhs.fst, modLhsRhs.snd, top.location)
+           | nothing()  -> subtractExprDefault(modLhsRhs.fst, modLhsRhs.snd, location=top.location)
+           end,
+           location=top.location)
     else errorExpr(top.errors, location=top.location);
 }
 abstract production binaryOpExpr
 top::Expr ::= lhs::Expr  op::BinOp  rhs::Expr
 {
-  production attribute runtimeMods::[LhsOrRhsRuntimeMod] with ++;
-  runtimeMods := op.lhsRhsRuntimeMods;
-  local modLhsRhs :: Pair<Expr Expr> = applyLhsRhsMods(runtimeMods, lhs, rhs);
-	local modLhs :: Expr = modLhsRhs.fst;
-	local modRhs :: Expr = modLhsRhs.snd;
-	modLhs.env = top.env;
-	modLhs.returnType = top.returnType;
-	modRhs.env = addEnv(modLhs.defs, modLhs.env);
-	modRhs.returnType = top.returnType;
-
   -- case op here is a potential problem, since that emits a dep on op->forward, which eventually should probably include env
   -- Find a way to do this that doesn't cause problems if an op forwards.
   top.pp = parens( ppConcat([ 
@@ -179,30 +158,37 @@ top::Expr ::= lhs::Expr  op::BinOp  rhs::Expr
     | _, _ -> lhs.pp
     end-} lhs.pp, space(), op.pp, space(), rhs.pp ]) );
 
-  top.typerep = addQualifiers(op.collectedTypeQualifiers, forward.typerep);
+  top.errors := [];
+
+  production attribute runtimeMods::[LhsOrRhsRuntimeMod] with ++;
+  runtimeMods := op.lhsRhsRuntimeMods;
+  local modLhsRhs :: Pair<Expr Expr> = applyLhsRhsMods(runtimeMods, lhs, rhs);
+
+  production attribute collectedTypeQualifiers :: [Qualifier] with ++;
 
   rhs.env = addEnv(lhs.defs, lhs.env);
   op.lop = lhs;
   op.rop = rhs;
-  top.errors := [];
 
   -- Option 1: Assign to a member or subscript (e.g. a.foo = b, a[i] = b)
   local option1::Maybe<Expr> =
-    case modLhs, op of
+    case lhs, op of
       arraySubscriptExpr(l, r), assignOp(aOp) ->
-        applyMaybe5(getSubscriptAssignOverload(l.typerep, top.env), l, r, aOp, modRhs, top.location)
+        applyMaybe5(getSubscriptAssignOverload(l.typerep, top.env), l, r, aOp, rhs, top.location)
     | memberExpr(l, d, r), assignOp(aOp) ->
-        applyMaybe6(getMemberAssignOverload(l.typerep, top.env), l, d, r, aOp, modRhs, top.location)
+        applyMaybe6(getMemberAssignOverload(l.typerep, top.env), l, d, r, aOp, rhs, top.location)
     | _, _ -> nothing()
     end;
   -- Option 2: Normal overloaded binary operators
-  local option2::Maybe<Expr> = applyMaybe3(op.binaryProd, modLhs, modRhs, top.location);
+  local option2::Maybe<Expr> = applyMaybe3(op.binaryProd, lhs, rhs, top.location);
   
   forwards to
     if null(top.errors)
-    then if      option1.isJust then option1.fromJust
-         else if option2.isJust then option2.fromJust
-         else binaryOpExprDefault(modLhs, op, modRhs, location=top.location)
+    then qualifiedExpr(foldQualifier(collectedTypeQualifiers),
+           if      option1.isJust then option1.fromJust
+           else if option2.isJust then option2.fromJust
+           else binaryOpExprDefault(modLhsRhs.fst, op, modLhsRhs.snd, location=top.location),
+           location=top.location)
     else errorExpr(top.errors, location=top.location);
 }
 
