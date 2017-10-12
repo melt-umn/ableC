@@ -25,9 +25,9 @@ top::Expr ::= e::Expr
 
   forwards to
     if null(top.errors)
-    then qualifiedExpr(foldQualifier(collectedTypeQualifiers),
+    then wrapQualifiedExpr(collectedTypeQualifiers,
            dereferenceExprDefault(applyMods(runtimeMods, e), location=top.location),
-           location=top.location)
+           top.location)
     else errorExpr(top.errors, location=top.location);
 }
 
@@ -48,9 +48,9 @@ top::Expr ::= op::UnaryOp  e::Expr
 
   forwards to
     if null(top.errors)
-    then qualifiedExpr(foldQualifier(collectedTypeQualifiers),
+    then wrapQualifiedExpr(collectedTypeQualifiers,
            unaryOpExprDefault(op, applyMods(runtimeMods, e), location=top.location),
-           location=top.location)
+           top.location)
     else errorExpr(top.errors, location=top.location);
 }
 
@@ -69,9 +69,9 @@ top::Expr ::= lhs::Expr  rhs::Expr
 
   forwards to
     if null(top.errors)
-    then qualifiedExpr(foldQualifier(collectedTypeQualifiers),
+    then wrapQualifiedExpr(collectedTypeQualifiers,
            arraySubscriptExprDefault(modLhsRhs.fst, modLhsRhs.snd, location=top.location),
-           location=top.location)
+           top.location)
     else errorExpr(top.errors, location=top.location);
 }
 
@@ -89,9 +89,9 @@ top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
 
   forwards to
     if null(top.errors)
-    then qualifiedExpr(foldQualifier(collectedTypeQualifiers),
+    then wrapQualifiedExpr(collectedTypeQualifiers,
            memberExprDefault(applyMods(runtimeMods, lhs), deref, rhs, location=top.location),
-           location=top.location)
+           top.location)
     else errorExpr(top.errors, location=top.location);
 }
 
@@ -110,9 +110,9 @@ top::Expr ::= lhs::Expr rhs::Expr
 
   forwards to
     if null(top.errors)
-    then qualifiedExpr(foldQualifier(collectedTypeQualifiers),
+    then wrapQualifiedExpr(collectedTypeQualifiers,
            addExprDefault(modLhsRhs.fst, modLhsRhs.snd, location=top.location),
-           location=top.location)
+           top.location)
     else errorExpr(top.errors, location=top.location);
 }
 
@@ -131,9 +131,9 @@ top::Expr ::= lhs::Expr rhs::Expr
 
   forwards to
     if null(top.errors)
-    then qualifiedExpr(foldQualifier(collectedTypeQualifiers),
+    then wrapQualifiedExpr(collectedTypeQualifiers,
            subtractExprDefault(modLhsRhs.fst, modLhsRhs.snd, location=top.location),
-           location=top.location)
+           top.location)
     else errorExpr(top.errors, location=top.location);
 }
 
@@ -158,9 +158,9 @@ top::Expr ::= lhs::Expr  op::BinOp  rhs::Expr
   op.rop = rhs;
   forwards to
     if null(top.errors)
-    then qualifiedExpr(foldQualifier(collectedTypeQualifiers),
+    then wrapQualifiedExpr(collectedTypeQualifiers,
            binaryOpExprDefault(lhs, op, rhs, location=top.location),
-           location=top.location)
+           top.location)
     else errorExpr(top.errors, location=top.location);
 }
 
@@ -178,8 +178,8 @@ top::Expr ::= ty::TypeName  e::Expr
 
   forwards to
     if null(top.errors)
-    then qualifiedExpr(foldQualifier(collectedTypeQualifiers),
+    then wrapQualifiedExpr(collectedTypeQualifiers,
            explicitCastExprDefault(ty, applyMods(runtimeMods, e), location=top.location),
-           location=top.location)
+           top.location)
     else errorExpr(top.errors, location=top.location);
 }

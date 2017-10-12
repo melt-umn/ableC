@@ -12,7 +12,7 @@ top::Expr ::= op::UnaryOp  e::Expr
   
   top.typerep = addQualifiers(op.collectedTypeQualifiers, forward.typerep);
   op.op = e;
-  top.errors := [];
+  top.errors := op.errors ++ e.errors;
   
   forwards to
     if null(top.errors)
@@ -26,7 +26,7 @@ abstract production dereferenceExpr
 top::Expr ::= e::Expr
 {
   top.pp = parens(cat(text("*"), e.pp));
-  top.errors := [];
+  top.errors := e.errors;
 
   forwards to
     if null(top.errors)
@@ -40,7 +40,7 @@ abstract production explicitCastExpr
 top::Expr ::= ty::TypeName  e::Expr
 {
   top.pp = parens( ppConcat([parens(ty.pp), e.pp]) );
-  top.errors := [];
+  top.errors := ty.errors ++ e.errors;
 
   forwards to
     if null(top.errors)
@@ -51,7 +51,7 @@ abstract production arraySubscriptExpr
 top::Expr ::= lhs::Expr  rhs::Expr
 {
   top.pp = parens( ppConcat([ lhs.pp, brackets( rhs.pp )]) );
-  top.errors := [];
+  top.errors := lhs.errors ++ rhs.errors;
 
   forwards to
     if null(top.errors)
@@ -86,7 +86,7 @@ abstract production memberExpr
 top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
 {
   top.pp = parens(ppConcat([lhs.pp, text(if deref then "->" else "."), rhs.pp]));
-  top.errors := [];
+  top.errors := lhs.errors;
 
   -- get overload function from under pointer if dereferencing
   local ty :: Type =
@@ -109,7 +109,7 @@ abstract production addExpr
 top::Expr ::= lhs::Expr  rhs::Expr
 {
   top.pp = parens( ppConcat([lhs.pp, space(), text("+"), space(), rhs.pp]) );
-  top.errors := [];
+  top.errors := lhs.errors ++ rhs.errors;
 
   production attribute runtimeMods::[LhsOrRhsRuntimeMod] with ++;
   runtimeMods := [];
@@ -120,19 +120,19 @@ top::Expr ::= lhs::Expr  rhs::Expr
 
   forwards to
     if null(top.errors)
-    then qualifiedExpr(foldQualifier(collectedTypeQualifiers),
+    then wrapQualifiedExpr(collectedTypeQualifiers,
            case getAddOverload(lhs.typerep, rhs.typerep, top.env) of
              just(prod) -> prod(modLhsRhs.fst, modLhsRhs.snd, top.location)
            | nothing()  -> inj:addExpr(modLhsRhs.fst, modLhsRhs.snd, location=top.location)
            end,
-           location=top.location)
+           top.location)
     else errorExpr(top.errors, location=top.location);
 }
 abstract production subtractExpr
 top::Expr ::= lhs::Expr  rhs::Expr
 {
   top.pp = parens( ppConcat([lhs.pp, space(), text("-"), space(), rhs.pp]) );
-  top.errors := [];
+  top.errors := lhs.errors ++ rhs.errors;
 
   production attribute runtimeMods::[LhsOrRhsRuntimeMod] with ++;
   runtimeMods := [];
@@ -143,12 +143,12 @@ top::Expr ::= lhs::Expr  rhs::Expr
 
   forwards to
     if null(top.errors)
-    then qualifiedExpr(foldQualifier(collectedTypeQualifiers),
+    then wrapQualifiedExpr(collectedTypeQualifiers,
            case getSubOverload(lhs.typerep, rhs.typerep, top.env) of
              just(prod) -> prod(modLhsRhs.fst, modLhsRhs.snd, top.location)
            | nothing()  -> inj:subtractExpr(modLhsRhs.fst, modLhsRhs.snd, location=top.location)
            end,
-           location=top.location)
+           top.location)
     else errorExpr(top.errors, location=top.location);
 }
 abstract production binaryOpExpr
@@ -162,14 +162,14 @@ top::Expr ::= lhs::Expr  op::BinOp  rhs::Expr
     | _, _ -> lhs.pp
     end-} lhs.pp, space(), op.pp, space(), rhs.pp ]) );
 
-  top.errors := [];
+  top.errors := lhs.errors ++ op.errors ++ rhs.errors;
 
   production attribute runtimeMods::[LhsOrRhsRuntimeMod] with ++;
   runtimeMods := op.lhsRhsRuntimeMods;
   local modLhsRhs :: Pair<Expr Expr> = applyLhsRhsMods(runtimeMods, lhs, rhs);
 
   production attribute collectedTypeQualifiers :: [Qualifier] with ++;
-  collectedTypeQualifiers := [];
+  collectedTypeQualifiers := op.collectedTypeQualifiers;
 
   rhs.env = addEnv(lhs.defs, lhs.env);
   op.lop = lhs;
@@ -189,11 +189,11 @@ top::Expr ::= lhs::Expr  op::BinOp  rhs::Expr
   
   forwards to
     if null(top.errors)
-    then qualifiedExpr(foldQualifier(collectedTypeQualifiers),
+    then wrapQualifiedExpr(collectedTypeQualifiers,
            if      option1.isJust then option1.fromJust
            else if option2.isJust then option2.fromJust
            else inj:binaryOpExpr(modLhsRhs.fst, op, modLhsRhs.snd, location=top.location),
-           location=top.location)
+           top.location)
     else errorExpr(top.errors, location=top.location);
 }
 

@@ -49,12 +49,18 @@ top::Expr ::= q::Qualifiers e::Expr
   propagate lifted;
   top.host = e;
   top.typerep = addQualifiers(q.qualifiers, e.typerep);
-  top.pp = e.pp;
+  top.pp = parens( ppConcat([e.pp, space(), e.pp]) );
   top.errors := e.errors;
   top.globalDecls := e.globalDecls;
   top.defs := e.defs;
   top.freeVariables = e.freeVariables;
   top.isLValue = e.isLValue;
+}
+-- only wrap in qualifiedExpr if have qualifiers to wrap with
+function wrapQualifiedExpr
+Expr ::= q::[Qualifier]  e::Expr  l::Location
+{
+  return if null(q) then e else qualifiedExpr(foldQualifier(q), e, location=l);
 }
 abstract production declRefExpr
 top::Expr ::= id::Name
