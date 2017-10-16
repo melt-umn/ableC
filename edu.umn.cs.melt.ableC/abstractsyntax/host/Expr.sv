@@ -46,7 +46,7 @@ abstract production qualifiedExpr
 top::Expr ::= q::Qualifiers e::Expr
 {
   propagate lifted;
-  top.host = e;
+  top.host = e.host;
   top.typerep = addQualifiers(q.qualifiers, e.typerep);
   top.pp = pp"qualifiedExpr (${ppImplode(space(), q.pps)} (${e.pp}))";
   top.errors := e.errors;
