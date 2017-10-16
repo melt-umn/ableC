@@ -1,6 +1,6 @@
 grammar edu:umn:cs:melt:ableC:concretesyntax:gcc_exts;
 
-import edu:umn:cs:melt:ableC:abstractsyntax:overload as ovrld;
+import edu:umn:cs:melt:ableC:abstractsyntax:overloadable as ovrld;
 
 terminal GNU_AlignOf_T '__alignof' lexer classes {Ckeyword};
 terminal GNU_AlignOfUU_T '__alignof__' lexer classes {Ckeyword};

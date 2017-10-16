@@ -1,6 +1,6 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 
-import edu:umn:cs:melt:ableC:abstractsyntax:overload as ovrld;
+import edu:umn:cs:melt:ableC:abstractsyntax:overloadable as ovrld;
 
 {- The production below is never used.  But it adds a dependency for
    the forwards-to equation on returnType so that it may be used by

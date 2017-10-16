@@ -6,7 +6,7 @@ imports silver:langutil:pp;
 imports edu:umn:cs:melt:ableC:abstractsyntax;
 imports edu:umn:cs:melt:ableC:abstractsyntax:env;
 imports edu:umn:cs:melt:ableC:abstractsyntax:construction;
-imports edu:umn:cs:melt:ableC:abstractsyntax:overload as ovrld;
+imports edu:umn:cs:melt:ableC:abstractsyntax:overloadable as ovrld;
 
 {--
  - Framework for performing substitutions on ASTs

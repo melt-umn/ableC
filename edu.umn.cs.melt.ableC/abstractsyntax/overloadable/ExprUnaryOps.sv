@@ -1,4 +1,4 @@
-grammar edu:umn:cs:melt:ableC:abstractsyntax:overload;
+grammar edu:umn:cs:melt:ableC:abstractsyntax:overloadable;
 
 aspect default production
 top::UnaryOp ::=

@@ -1,7 +1,7 @@
 grammar edu:umn:cs:melt:ableC:concretesyntax;
 
 import edu:umn:cs:melt:ableC:abstractsyntax:env only env;
-import edu:umn:cs:melt:ableC:abstractsyntax:overload as ovrld;
+import edu:umn:cs:melt:ableC:abstractsyntax:overloadable as ovrld;
 -- "Exported" nonterminals
 
 closed nonterminal Expr_c with location, ast<ast:Expr>; 

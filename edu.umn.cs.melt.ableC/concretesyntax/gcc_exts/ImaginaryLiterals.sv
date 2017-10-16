@@ -1,6 +1,6 @@
 grammar edu:umn:cs:melt:ableC:concretesyntax:gcc_exts;
 
-import edu:umn:cs:melt:ableC:abstractsyntax:overload as ovrld;
+import edu:umn:cs:melt:ableC:abstractsyntax:overloadable as ovrld;
 
 terminal IDecConstant_t /
 	((0)|([1-9][0-9]*)) -- Begins with 1-9 or is just 0 alone

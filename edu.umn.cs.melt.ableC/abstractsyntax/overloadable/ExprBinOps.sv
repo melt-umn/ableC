@@ -1,4 +1,4 @@
-grammar edu:umn:cs:melt:ableC:abstractsyntax:overload;
+grammar edu:umn:cs:melt:ableC:abstractsyntax:overloadable;
 
 import edu:umn:cs:melt:ableC:abstractsyntax:construction;
 
