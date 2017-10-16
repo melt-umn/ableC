@@ -113,6 +113,16 @@ node {
           build job: '/melt-umn/ableC-vector/develop', parameters:
             [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: params.SILVER_BASE],
              [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
+        },
+        "ableC-algebraic-data-types": {
+          build job: '/melt-umn/ableC-algebraic-data-types/develop', parameters:
+            [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: params.SILVER_BASE],
+             [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
+        },
+        "ableC_sample_projects": {
+          build job: '/melt-umn/ableC_sample_projects/develop', parameters:
+            [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: params.SILVER_BASE],
+             [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
         }
       )
     }
