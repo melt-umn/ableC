@@ -120,7 +120,7 @@ node {
              [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
         },
         "ableC_sample_projects": {
-          build job: '/melt-umn/ableC_sample_projects/develop', parameters:
+          build job: '/melt-umn/ableC_sample_projects/master', parameters:
             [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: params.SILVER_BASE],
              [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
         }
