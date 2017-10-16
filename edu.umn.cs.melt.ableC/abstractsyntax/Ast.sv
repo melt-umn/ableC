@@ -1,5 +1,7 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax;
 
+exports edu:umn:cs:melt:ableC:abstractsyntax:host;
+
 imports silver:langutil;
 imports silver:langutil:pp;
 imports edu:umn:cs:melt:ableC:abstractsyntax:env;
