@@ -25,7 +25,7 @@ top::BinOp ::= op::AssignOp
     else [err(top.location, "Incompatible type in rhs of assignment, expected " ++ showType(top.lop.typerep) ++ " but found " ++ showType(top.rop.typerep))];
   top.pp = op.pp;
   top.typerep = top.lop.typerep.defaultLvalueConversion;
-  top.collectedTypeQualifiers := op.collectedTypeQualifiers;
+  top.injectedQualifiers := op.injectedQualifiers;
   top.lhsRhsRuntimeMods := [];
 
   top.errors <- if top.lop.isLValue then []
@@ -37,77 +37,77 @@ top::AssignOp ::=
 {
   propagate host, lifted;
   top.pp = text("=");
-  top.collectedTypeQualifiers := [];
+  top.injectedQualifiers := [];
 }
 abstract production mulEqOp
 top::AssignOp ::=
 {
   propagate host, lifted;
   top.pp = text("*=");
-  top.collectedTypeQualifiers := [];
+  top.injectedQualifiers := [];
 }
 abstract production divEqOp
 top::AssignOp ::=
 {
   propagate host, lifted;
   top.pp = text("/=");
-  top.collectedTypeQualifiers := [];
+  top.injectedQualifiers := [];
 }
 abstract production modEqOp
 top::AssignOp ::=
 {
   propagate host, lifted;
   top.pp = text("%=");
-  top.collectedTypeQualifiers := [];
+  top.injectedQualifiers := [];
 }
 abstract production addEqOp
 top::AssignOp ::=
 {
   propagate host, lifted;
   top.pp = text("+=");
-  top.collectedTypeQualifiers := [];
+  top.injectedQualifiers := [];
 }
 abstract production subEqOp
 top::AssignOp ::=
 {
   propagate host, lifted;
   top.pp = text("-=");
-  top.collectedTypeQualifiers := [];
+  top.injectedQualifiers := [];
 }
 abstract production lshEqOp
 top::AssignOp ::=
 {
   propagate host, lifted;
   top.pp = text("<<=");
-  top.collectedTypeQualifiers := [];
+  top.injectedQualifiers := [];
 }
 abstract production rshEqOp
 top::AssignOp ::=
 {
   propagate host, lifted;
   top.pp = text(">>=");
-  top.collectedTypeQualifiers := [];
+  top.injectedQualifiers := [];
 }
 abstract production andEqOp
 top::AssignOp ::=
 {
   propagate host, lifted;
   top.pp = text("&=");
-  top.collectedTypeQualifiers := [];
+  top.injectedQualifiers := [];
 }
 abstract production orEqOp
 top::AssignOp ::=
 {
   propagate host, lifted;
   top.pp = text("|=");
-  top.collectedTypeQualifiers := [];
+  top.injectedQualifiers := [];
 }
 abstract production xorEqOp
 top::AssignOp ::=
 {
   propagate host, lifted;
   top.pp = text("^=");
-  top.collectedTypeQualifiers := [];
+  top.injectedQualifiers := [];
 }
 
 
@@ -118,7 +118,7 @@ top::BinOp ::= op::BoolOp
   propagate host, lifted;
   top.pp = op.pp;
   top.typerep = builtinType(nilQualifier(), signedType(intType()));
-  top.collectedTypeQualifiers := op.collectedTypeQualifiers;
+  top.injectedQualifiers := op.injectedQualifiers;
   top.errors := op.errors;
   top.lhsRhsRuntimeMods := [];
 }
@@ -128,7 +128,7 @@ top::BoolOp ::=
 {
   propagate host, lifted;
   top.pp = text("&&");
-  top.collectedTypeQualifiers := [];
+  top.injectedQualifiers := [];
   top.errors := [];
 }
 abstract production orBoolOp
@@ -136,7 +136,7 @@ top::BoolOp ::=
 {
   propagate host, lifted;
   top.pp = text("||");
-  top.collectedTypeQualifiers := [];
+  top.injectedQualifiers := [];
   top.errors := [];
 }
 
@@ -148,7 +148,7 @@ top::BinOp ::= op::BitOp
   propagate host, lifted;
   top.pp = op.pp;
   top.typerep = usualArithmeticConversionsOnTypes(top.lop.typerep, top.rop.typerep);
-  top.collectedTypeQualifiers := op.collectedTypeQualifiers;
+  top.injectedQualifiers := op.injectedQualifiers;
   top.errors := op.errors;
   top.lhsRhsRuntimeMods := [];
 }
@@ -158,7 +158,7 @@ top::BitOp ::=
 {
   propagate host, lifted;
   top.pp = text("&");
-  top.collectedTypeQualifiers := [];
+  top.injectedQualifiers := [];
   top.errors := [];
 }
 abstract production orBitOp
@@ -166,7 +166,7 @@ top::BitOp ::=
 {
   propagate host, lifted;
   top.pp = text("|");
-  top.collectedTypeQualifiers := [];
+  top.injectedQualifiers := [];
   top.errors := [];
 }
 abstract production xorBitOp
@@ -174,7 +174,7 @@ top::BitOp ::=
 {
   propagate host, lifted;
   top.pp = text("^");
-  top.collectedTypeQualifiers := [];
+  top.injectedQualifiers := [];
   top.errors := [];
 }
 abstract production lshBitOp
@@ -182,7 +182,7 @@ top::BitOp ::=
 {
   propagate host, lifted;
   top.pp = text("<<");
-  top.collectedTypeQualifiers := [];
+  top.injectedQualifiers := [];
   top.errors := [];
 }
 abstract production rshBitOp
@@ -190,7 +190,7 @@ top::BitOp ::=
 {
   propagate host, lifted;
   top.pp = text(">>");
-  top.collectedTypeQualifiers := [];
+  top.injectedQualifiers := [];
   top.errors := [];
 }
 
@@ -202,7 +202,7 @@ top::BinOp ::= op::CompareOp
   propagate host, lifted;
   top.pp = op.pp;
   top.typerep = builtinType(nilQualifier(), signedType(intType()));
-  top.collectedTypeQualifiers := op.collectedTypeQualifiers;
+  top.injectedQualifiers := op.injectedQualifiers;
   top.errors := op.errors;
   top.lhsRhsRuntimeMods := [];
 }
@@ -212,7 +212,7 @@ top::CompareOp ::=
 {
   propagate host, lifted;
   top.pp = text("==");
-  top.collectedTypeQualifiers := [];
+  top.injectedQualifiers := [];
   top.errors := [];
 }
 abstract production notEqualsOp
@@ -220,7 +220,7 @@ top::CompareOp ::=
 {
   propagate host, lifted;
   top.pp = text("!=");
-  top.collectedTypeQualifiers := [];
+  top.injectedQualifiers := [];
   top.errors := [];
 }
 abstract production gtOp
@@ -228,7 +228,7 @@ top::CompareOp ::=
 {
   propagate host, lifted;
   top.pp = text(">");
-  top.collectedTypeQualifiers := [];
+  top.injectedQualifiers := [];
   top.errors := [];
 }
 abstract production ltOp
@@ -236,7 +236,7 @@ top::CompareOp ::=
 {
   propagate host, lifted;
   top.pp = text("<");
-  top.collectedTypeQualifiers := [];
+  top.injectedQualifiers := [];
   top.errors := [];
 }
 abstract production gteOp
@@ -244,7 +244,7 @@ top::CompareOp ::=
 {
   propagate host, lifted;
   top.pp = text(">=");
-  top.collectedTypeQualifiers := [];
+  top.injectedQualifiers := [];
   top.errors := [];
 }
 abstract production lteOp
@@ -252,7 +252,7 @@ top::CompareOp ::=
 {
   propagate host, lifted;
   top.pp = text("<=");
-  top.collectedTypeQualifiers := [];
+  top.injectedQualifiers := [];
   top.errors := [];
 }
 
@@ -264,7 +264,7 @@ top::BinOp ::= op::NumOp
   propagate host, lifted;
   top.pp = op.pp;
   top.typerep = op.typerep;
-  top.collectedTypeQualifiers := op.collectedTypeQualifiers;
+  top.injectedQualifiers := op.injectedQualifiers;
   top.errors := op.errors;
   top.lhsRhsRuntimeMods := [];
 }
@@ -275,7 +275,7 @@ top::NumOp ::=
   propagate host, lifted;
   top.pp = text("+");
   top.typerep = usualAdditiveConversionsOnTypes(top.lop.typerep, top.rop.typerep);
-  top.collectedTypeQualifiers := [];
+  top.injectedQualifiers := [];
   top.errors := [];
 }
 abstract production subOp
@@ -284,7 +284,7 @@ top::NumOp ::=
   propagate host, lifted;
   top.pp = text("-");
   top.typerep = usualSubtractiveConversionsOnTypes(top.lop.typerep, top.rop.typerep);
-  top.collectedTypeQualifiers := [];
+  top.injectedQualifiers := [];
   top.errors := [];
 }
 abstract production mulOp
@@ -293,7 +293,7 @@ top::NumOp ::=
   propagate host, lifted;
   top.pp = text("*");
   top.typerep = usualArithmeticConversionsOnTypes(top.lop.typerep, top.rop.typerep);
-  top.collectedTypeQualifiers := [];
+  top.injectedQualifiers := [];
   top.errors := [];
 }
 abstract production divOp
@@ -302,7 +302,7 @@ top::NumOp ::=
   propagate host, lifted;
   top.pp = text("/");
   top.typerep = usualArithmeticConversionsOnTypes(top.lop.typerep, top.rop.typerep);
-  top.collectedTypeQualifiers := [];
+  top.injectedQualifiers := [];
   top.errors := [];
 }
 abstract production modOp
@@ -311,7 +311,7 @@ top::NumOp ::=
   propagate host, lifted;
   top.pp = text("%");
   top.typerep = usualArithmeticConversionsOnTypes(top.lop.typerep, top.rop.typerep);
-  top.collectedTypeQualifiers := [];
+  top.injectedQualifiers := [];
   top.errors := [];
 }
 
@@ -322,7 +322,7 @@ top::BinOp ::=
   propagate host, lifted;
   top.pp = comma();
   top.typerep = top.rop.typerep;
-  top.collectedTypeQualifiers := [];
+  top.injectedQualifiers := [];
   top.errors := [];
   top.lhsRhsRuntimeMods := [];
 }

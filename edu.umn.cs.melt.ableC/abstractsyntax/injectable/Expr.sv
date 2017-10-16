@@ -21,12 +21,12 @@ top::Expr ::= e::Expr
   production attribute runtimeMods::[RuntimeMod] with ++;
   runtimeMods := [];
 
-  production attribute collectedTypeQualifiers :: [Qualifier] with ++;
-  collectedTypeQualifiers := [];
+  production attribute injectedQualifiers :: [Qualifier] with ++;
+  injectedQualifiers := [];
 
   forwards to
     wrapWarnExpr(lerrors,
-      wrapQualifiedExpr(collectedTypeQualifiers,
+      wrapQualifiedExpr(injectedQualifiers,
         dereferenceExprDefault(applyMods(runtimeMods, e), location=top.location),
         top.location),
       top.location);
@@ -45,12 +45,12 @@ top::Expr ::= op::UnaryOp  e::Expr
   production attribute runtimeMods::[RuntimeMod] with ++;
   runtimeMods := [];
 
-  production attribute collectedTypeQualifiers :: [Qualifier] with ++;
-  collectedTypeQualifiers := [];
+  production attribute injectedQualifiers :: [Qualifier] with ++;
+  injectedQualifiers := [];
 
   forwards to
     wrapWarnExpr(lerrors,
-      wrapQualifiedExpr(collectedTypeQualifiers,
+      wrapQualifiedExpr(injectedQualifiers,
         unaryOpExprDefault(op, applyMods(runtimeMods, e), location=top.location),
         top.location),
       top.location);
@@ -67,12 +67,12 @@ top::Expr ::= lhs::Expr  rhs::Expr
   runtimeMods := [];
   local modLhsRhs :: Pair<Expr Expr> = applyLhsRhsMods(runtimeMods, lhs, rhs);
 
-  production attribute collectedTypeQualifiers :: [Qualifier] with ++;
-  collectedTypeQualifiers := [];
+  production attribute injectedQualifiers :: [Qualifier] with ++;
+  injectedQualifiers := [];
 
   forwards to
     wrapWarnExpr(lerrors,
-      wrapQualifiedExpr(collectedTypeQualifiers,
+      wrapQualifiedExpr(injectedQualifiers,
         arraySubscriptExprDefault(modLhsRhs.fst, modLhsRhs.snd, location=top.location),
         top.location),
       top.location);
@@ -88,12 +88,12 @@ top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
   production attribute runtimeMods::[RuntimeMod] with ++;
   runtimeMods := [];
 
-  production attribute collectedTypeQualifiers :: [Qualifier] with ++;
-  collectedTypeQualifiers := [];
+  production attribute injectedQualifiers :: [Qualifier] with ++;
+  injectedQualifiers := [];
 
   forwards to
     wrapWarnExpr(lerrors,
-      wrapQualifiedExpr(collectedTypeQualifiers,
+      wrapQualifiedExpr(injectedQualifiers,
         memberExprDefault(applyMods(runtimeMods, lhs), deref, rhs, location=top.location),
         top.location),
       top.location);
@@ -110,12 +110,12 @@ top::Expr ::= lhs::Expr rhs::Expr
   runtimeMods := [];
   local modLhsRhs :: Pair<Expr Expr> = applyLhsRhsMods(runtimeMods, lhs, rhs);
 
-  production attribute collectedTypeQualifiers :: [Qualifier] with ++;
-  collectedTypeQualifiers := [];
+  production attribute injectedQualifiers :: [Qualifier] with ++;
+  injectedQualifiers := [];
 
   forwards to
     wrapWarnExpr(lerrors,
-      wrapQualifiedExpr(collectedTypeQualifiers,
+      wrapQualifiedExpr(injectedQualifiers,
         addExprDefault(modLhsRhs.fst, modLhsRhs.snd, location=top.location),
         top.location),
       top.location);
@@ -132,12 +132,12 @@ top::Expr ::= lhs::Expr rhs::Expr
   runtimeMods := [];
   local modLhsRhs :: Pair<Expr Expr> = applyLhsRhsMods(runtimeMods, lhs, rhs);
 
-  production attribute collectedTypeQualifiers :: [Qualifier] with ++;
-  collectedTypeQualifiers := [];
+  production attribute injectedQualifiers :: [Qualifier] with ++;
+  injectedQualifiers := [];
 
   forwards to
     wrapWarnExpr(lerrors,
-      wrapQualifiedExpr(collectedTypeQualifiers,
+      wrapQualifiedExpr(injectedQualifiers,
         subtractExprDefault(modLhsRhs.fst, modLhsRhs.snd, location=top.location),
         top.location),
       top.location);
@@ -158,14 +158,14 @@ top::Expr ::= lhs::Expr  op::BinOp  rhs::Expr
   runtimeMods := op.lhsRhsRuntimeMods;
   local modLhsRhs :: Pair<Expr Expr> = applyLhsRhsMods(runtimeMods, lhs, rhs);
 
-  production attribute collectedTypeQualifiers :: [Qualifier] with ++;
-  collectedTypeQualifiers := [];
+  production attribute injectedQualifiers :: [Qualifier] with ++;
+  injectedQualifiers := [];
 
   op.lop = lhs;
   op.rop = rhs;
   forwards to
     wrapWarnExpr(lerrors,
-      wrapQualifiedExpr(collectedTypeQualifiers,
+      wrapQualifiedExpr(injectedQualifiers,
         binaryOpExprDefault(lhs, op, rhs, location=top.location),
         top.location),
       top.location);
@@ -181,12 +181,12 @@ top::Expr ::= ty::TypeName  e::Expr
   production attribute runtimeMods::[RuntimeMod] with ++;
   runtimeMods := [];
 
-  production attribute collectedTypeQualifiers :: [Qualifier] with ++;
-  collectedTypeQualifiers := [];
+  production attribute injectedQualifiers :: [Qualifier] with ++;
+  injectedQualifiers := [];
 
   forwards to
     wrapWarnExpr(lerrors,
-      wrapQualifiedExpr(collectedTypeQualifiers,
+      wrapQualifiedExpr(injectedQualifiers,
         explicitCastExprDefault(ty, applyMods(runtimeMods, e), location=top.location),
         top.location),
       top.location);

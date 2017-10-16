@@ -10,7 +10,7 @@ top::Expr ::= op::UnaryOp  e::Expr
            then parens( cat( op.pp, e.pp ) )
            else parens( cat( e.pp, op.pp ) );
   
-  top.typerep = addQualifiers(op.collectedTypeQualifiers, forward.typerep);
+  top.typerep = addQualifiers(op.injectedQualifiers, forward.typerep);
   op.op = e;
   production attribute lerrors :: [Message] with ++;
   lerrors := [];
@@ -121,12 +121,12 @@ top::Expr ::= lhs::Expr  rhs::Expr
   runtimeMods := [];
   local modLhsRhs :: Pair<Expr Expr> = applyLhsRhsMods(runtimeMods, lhs, rhs);
 
-  production attribute collectedTypeQualifiers :: [Qualifier] with ++;
-  collectedTypeQualifiers := [];
+  production attribute injectedQualifiers :: [Qualifier] with ++;
+  injectedQualifiers := [];
 
   forwards to
     wrapWarnExpr(lerrors,
-      wrapQualifiedExpr(collectedTypeQualifiers,
+      wrapQualifiedExpr(injectedQualifiers,
         case getAddOverload(lhs.typerep, rhs.typerep, top.env) of
           just(prod) -> prod(modLhsRhs.fst, modLhsRhs.snd, top.location)
         | nothing()  -> inj:addExpr(modLhsRhs.fst, modLhsRhs.snd, location=top.location)
@@ -145,12 +145,12 @@ top::Expr ::= lhs::Expr  rhs::Expr
   runtimeMods := [];
   local modLhsRhs :: Pair<Expr Expr> = applyLhsRhsMods(runtimeMods, lhs, rhs);
 
-  production attribute collectedTypeQualifiers :: [Qualifier] with ++;
-  collectedTypeQualifiers := [];
+  production attribute injectedQualifiers :: [Qualifier] with ++;
+  injectedQualifiers := [];
 
   forwards to
     wrapWarnExpr(lerrors,
-      wrapQualifiedExpr(collectedTypeQualifiers,
+      wrapQualifiedExpr(injectedQualifiers,
         case getSubOverload(lhs.typerep, rhs.typerep, top.env) of
           just(prod) -> prod(modLhsRhs.fst, modLhsRhs.snd, top.location)
         | nothing()  -> inj:subtractExpr(modLhsRhs.fst, modLhsRhs.snd, location=top.location)
@@ -176,8 +176,8 @@ top::Expr ::= lhs::Expr  op::BinOp  rhs::Expr
   runtimeMods := op.lhsRhsRuntimeMods;
   local modLhsRhs :: Pair<Expr Expr> = applyLhsRhsMods(runtimeMods, lhs, rhs);
 
-  production attribute collectedTypeQualifiers :: [Qualifier] with ++;
-  collectedTypeQualifiers := op.collectedTypeQualifiers;
+  production attribute injectedQualifiers :: [Qualifier] with ++;
+  injectedQualifiers := op.injectedQualifiers;
 
   rhs.env = addEnv(lhs.defs, lhs.env);
   op.lop = lhs;
@@ -197,7 +197,7 @@ top::Expr ::= lhs::Expr  op::BinOp  rhs::Expr
   
   forwards to
     wrapWarnExpr(lerrors,
-      wrapQualifiedExpr(collectedTypeQualifiers,
+      wrapQualifiedExpr(injectedQualifiers,
         if      option1.isJust then option1.fromJust
         else if option2.isJust then option2.fromJust
         else inj:binaryOpExpr(modLhsRhs.fst, op, modLhsRhs.snd, location=top.location),

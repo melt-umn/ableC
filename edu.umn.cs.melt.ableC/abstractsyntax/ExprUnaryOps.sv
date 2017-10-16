@@ -1,5 +1,5 @@
 
-nonterminal UnaryOp with location, op, opName, pp, host<UnaryOp>, lifted<UnaryOp>, preExpr, noLvalueConversion, typerep, errors, collectedTypeQualifiers, isLValue;
+nonterminal UnaryOp with location, op, opName, pp, host<UnaryOp>, lifted<UnaryOp>, preExpr, noLvalueConversion, typerep, errors, injectedQualifiers, isLValue;
 
 flowtype UnaryOp = decorate {op}, opName {}, preExpr {}, noLvalueConversion {};
 
