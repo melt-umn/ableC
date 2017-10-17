@@ -19,10 +19,10 @@ top::Expr ::= e::Expr
   lerrors := [];
 
   production attribute runtimeMods::[RuntimeMod] with ++;
-  runtimeMods := [];
+  runtimeMods := case top.env, top.returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end; -- TODO: seed flow type properly
 
   production attribute injectedQualifiers :: [Qualifier] with ++;
-  injectedQualifiers := [];
+  injectedQualifiers := case top.env, top.returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end; -- TODO: seed flow type properly
 
   forwards to
     wrapWarnExpr(lerrors,
@@ -43,10 +43,10 @@ top::Expr ::= op::UnaryOp  e::Expr
   op.op = e;
 
   production attribute runtimeMods::[RuntimeMod] with ++;
-  runtimeMods := [];
+  runtimeMods := case top.env, top.returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end; -- TODO: seed flow type properly
 
   production attribute injectedQualifiers :: [Qualifier] with ++;
-  injectedQualifiers := [];
+  injectedQualifiers := case top.env, top.returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end; -- TODO: seed flow type properly
 
   forwards to
     wrapWarnExpr(lerrors,
@@ -64,11 +64,11 @@ top::Expr ::= lhs::Expr  rhs::Expr
   lerrors := [];
 
   production attribute runtimeMods::[LhsOrRhsRuntimeMod] with ++;
-  runtimeMods := [];
+  runtimeMods := case top.env, top.returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end; -- TODO: seed flow type properly
   local modLhsRhs :: Pair<Expr Expr> = applyLhsRhsMods(runtimeMods, lhs, rhs);
 
   production attribute injectedQualifiers :: [Qualifier] with ++;
-  injectedQualifiers := [];
+  injectedQualifiers := case top.env, top.returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end; -- TODO: seed flow type properly
 
   forwards to
     wrapWarnExpr(lerrors,
@@ -86,10 +86,10 @@ top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
   lerrors := [];
 
   production attribute runtimeMods::[RuntimeMod] with ++;
-  runtimeMods := [];
+  runtimeMods := case top.env, top.returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end; -- TODO: seed flow type properly
 
   production attribute injectedQualifiers :: [Qualifier] with ++;
-  injectedQualifiers := [];
+  injectedQualifiers := case top.env, top.returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end; -- TODO: seed flow type properly
 
   forwards to
     wrapWarnExpr(lerrors,
@@ -107,11 +107,11 @@ top::Expr ::= lhs::Expr rhs::Expr
   lerrors := [];
 
   production attribute runtimeMods::[LhsOrRhsRuntimeMod] with ++;
-  runtimeMods := [];
+  runtimeMods := case top.env, top.returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end; -- TODO: seed flow type properly
   local modLhsRhs :: Pair<Expr Expr> = applyLhsRhsMods(runtimeMods, lhs, rhs);
 
   production attribute injectedQualifiers :: [Qualifier] with ++;
-  injectedQualifiers := [];
+  injectedQualifiers := case top.env, top.returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end; -- TODO: seed flow type properly
 
   forwards to
     wrapWarnExpr(lerrors,
@@ -129,11 +129,11 @@ top::Expr ::= lhs::Expr rhs::Expr
   lerrors := [];
 
   production attribute runtimeMods::[LhsOrRhsRuntimeMod] with ++;
-  runtimeMods := [];
+  runtimeMods := case top.env, top.returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end; -- TODO: seed flow type properly
   local modLhsRhs :: Pair<Expr Expr> = applyLhsRhsMods(runtimeMods, lhs, rhs);
 
   production attribute injectedQualifiers :: [Qualifier] with ++;
-  injectedQualifiers := [];
+  injectedQualifiers := case top.env, top.returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end; -- TODO: seed flow type properly
 
   forwards to
     wrapWarnExpr(lerrors,
@@ -155,11 +155,12 @@ top::Expr ::= lhs::Expr  op::BinOp  rhs::Expr
   lerrors := [];
 
   production attribute runtimeMods::[LhsOrRhsRuntimeMod] with ++;
-  runtimeMods := op.lhsRhsRuntimeMods;
+  runtimeMods := case top.env, top.returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end; -- TODO: seed flow type properly
+  runtimeMods <- op.lhsRhsRuntimeMods;
   local modLhsRhs :: Pair<Expr Expr> = applyLhsRhsMods(runtimeMods, lhs, rhs);
 
   production attribute injectedQualifiers :: [Qualifier] with ++;
-  injectedQualifiers := [];
+  injectedQualifiers := case top.env, top.returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end; -- TODO: seed flow type properly
 
   op.lop = lhs;
   op.rop = rhs;
@@ -179,10 +180,10 @@ top::Expr ::= ty::TypeName  e::Expr
   lerrors := [];
 
   production attribute runtimeMods::[RuntimeMod] with ++;
-  runtimeMods := [];
+  runtimeMods := case top.env, top.returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end; -- TODO: seed flow type properly
 
   production attribute injectedQualifiers :: [Qualifier] with ++;
-  injectedQualifiers := [];
+  injectedQualifiers := case top.env, top.returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end; -- TODO: seed flow type properly
 
   forwards to
     wrapWarnExpr(lerrors,
