@@ -336,7 +336,7 @@ top::Expr ::= lhs::Expr rhs::Expr
   rhs.env = addEnv(lhs.defs, lhs.env);
   top.isLValue = false;
 }
-abstract production subtractExpr
+abstract production subExpr
 top::Expr ::= lhs::Expr rhs::Expr
 {
   propagate host, lifted;

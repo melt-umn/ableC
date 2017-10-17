@@ -16,35 +16,35 @@ function unfoldSubstitution
     end;
 }
 
-function subDecls
+function substDecls
 Decls ::= subs::[Substitution] base::Decls
 {
   base.substitutions = foldSubstitution(subs);
   return base.substituted;
 }
 
-function subDecl
+function substDecl
 Decl ::= subs::[Substitution] base::Decl
 {
   base.substitutions = foldSubstitution(subs);
   return base.substituted;
 }
 
-function subStmt
+function substStmt
 Stmt ::= subs::[Substitution] base::Stmt
 {
   base.substitutions = foldSubstitution(subs);
   return base.substituted;
 }
 
-function subExpr
+function substExpr
 Expr ::= subs::[Substitution] base::Expr
 {
   base.substitutions = foldSubstitution(subs);
   return base.substituted;
 }
 
-function subName
+function substName
 Name ::= subs::[Substitution] base::Name
 {
   base.substitutions = foldSubstitution(subs);

@@ -8,7 +8,7 @@ imports edu:umn:cs:melt:ableC:abstractsyntax:host
                                                   dereferenceExpr as dereferenceExprDefault,
                                                   explicitCastExpr as explicitCastExprDefault,
                                                   addExpr as addExprDefault,
-                                                  subtractExpr as subtractExprDefault,
+                                                  subExpr as subExprDefault,
                                                   binaryOpExpr as binaryOpExprDefault;
 
 abstract production dereferenceExpr
@@ -121,7 +121,7 @@ top::Expr ::= lhs::Expr rhs::Expr
       top.location);
 }
 
-abstract production subtractExpr
+abstract production subExpr
 top::Expr ::= lhs::Expr rhs::Expr
 {
   top.pp = parens( ppConcat([lhs.pp, space(), text("+"), space(), rhs.pp]) );
@@ -138,7 +138,7 @@ top::Expr ::= lhs::Expr rhs::Expr
   forwards to
     wrapWarnExpr(lerrors,
       wrapQualifiedExpr(injectedQualifiers,
-        subtractExprDefault(modLhsRhs.fst, modLhsRhs.snd, location=top.location),
+        subExprDefault(modLhsRhs.fst, modLhsRhs.snd, location=top.location),
         top.location),
       top.location);
 }

@@ -232,7 +232,7 @@ concrete productions top::AdditiveOp_c
 | '+'
     { top.ast = ovrld:addExpr(top.leftExpr, top.rightExpr, location=top.exprLocation); }
 | '-'
-    { top.ast = ovrld:subtractExpr(top.leftExpr, top.rightExpr, location=top.exprLocation); }
+    { top.ast = ovrld:subExpr(top.leftExpr, top.rightExpr, location=top.exprLocation); }
 
 -- Operators with precedence between Additive and Multiplicitive opererators
 

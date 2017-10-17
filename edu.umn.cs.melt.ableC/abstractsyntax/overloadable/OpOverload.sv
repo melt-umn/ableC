@@ -13,7 +13,7 @@ imports edu:umn:cs:melt:ableC:abstractsyntax:host hiding directCallExpr
                                                   dereferenceExpr as dereferenceExprDefault,
                                                   explicitCastExpr as explicitCastExprDefault,
                                                   addExpr as addExprDefault,
-                                                  subtractExpr as subtractExprDefault,
+                                                  subExpr as subExprDefault,
                                                   binaryOpExpr as binaryOpExprDefault;
 imports edu:umn:cs:melt:ableC:abstractsyntax:env;
 

@@ -105,7 +105,7 @@ top::TypeModifierExpr ::= result::TypeModifierExpr  ids::[Name]  q::Qualifiers
   top.substituted =
     functionTypeExprWithoutArgs(
       result.substituted,
-      map(subName(unfoldSubstitution(top.substitutions), _), ids), q);
+      map(substName(unfoldSubstitution(top.substitutions), _), ids), q);
 }
 aspect production parenTypeExpr
 top::TypeModifierExpr ::= wrapped::TypeModifierExpr

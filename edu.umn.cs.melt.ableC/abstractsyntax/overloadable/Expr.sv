@@ -134,7 +134,7 @@ top::Expr ::= lhs::Expr  rhs::Expr
         top.location),
       top.location);
 }
-abstract production subtractExpr
+abstract production subExpr
 top::Expr ::= lhs::Expr  rhs::Expr
 {
   top.pp = parens( ppConcat([lhs.pp, space(), text("-"), space(), rhs.pp]) );
@@ -153,7 +153,7 @@ top::Expr ::= lhs::Expr  rhs::Expr
       wrapQualifiedExpr(injectedQualifiers,
         case getSubOverload(lhs.typerep, rhs.typerep, top.env) of
           just(prod) -> prod(modLhsRhs.fst, modLhsRhs.snd, top.location)
-        | nothing()  -> inj:subtractExpr(modLhsRhs.fst, modLhsRhs.snd, location=top.location)
+        | nothing()  -> inj:subExpr(modLhsRhs.fst, modLhsRhs.snd, location=top.location)
         end,
         top.location),
       top.location);

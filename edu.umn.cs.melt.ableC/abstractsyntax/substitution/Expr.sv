@@ -83,7 +83,7 @@ top::Expr ::= lhs::Expr  rhs::Expr
 {
   propagate substituted;
 }
-aspect production subtractExpr
+aspect production subExpr
 top::Expr ::= lhs::Expr  rhs::Expr
 {
   propagate substituted;
@@ -184,7 +184,7 @@ top::Expr ::= lhs::Expr  rhs::Expr
 {
   propagate substituted;
 }
-aspect production ovrld:subtractExpr
+aspect production ovrld:subExpr
 top::Expr ::= lhs::Expr  rhs::Expr
 {
   propagate substituted;
