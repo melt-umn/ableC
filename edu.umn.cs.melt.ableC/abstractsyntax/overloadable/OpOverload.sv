@@ -5,22 +5,9 @@ imports core:monad;
 imports silver:langutil;
 imports silver:langutil:pp with implode as ppImplode, concat as ppConcat;
 
-imports edu:umn:cs:melt:ableC:abstractsyntax:host
-	hiding directCallExpr, eqExpr, mulEqExpr, divEqExpr, modEqExpr, addEqExpr, subEqExpr,
-    lshEqExpr, rshEqExpr, andEqExpr, xorEqExpr, orEqExpr, andExpr, orExpr,
-    andBitExpr, orBitExpr, xorExpr, lshExpr, rshExpr, equalsExpr, notEqualsExpr,
-    gtExpr, ltExpr, gteExpr, lteExpr, addExpr, subExpr, mulExpr, divExpr, modExpr,
-    arraySubscriptExpr, memberExpr
-  with unaryOpExpr as unaryOpExprDefault,
-       explicitCastExpr as explicitCastExprDefault,
-       callExpr as callExprDefault,
-       dereferenceExpr as dereferenceExprDefault;
-
 imports edu:umn:cs:melt:ableC:abstractsyntax:env;
-
 imports edu:umn:cs:melt:ableC:abstractsyntax:construction;
-
-imports edu:umn:cs:melt:ableC:abstractsyntax:injectable as inj;
+import edu:umn:cs:melt:ableC:abstractsyntax:host;
 
 {- Explaination of overloading
  - All standard unary and binary operators may be overloaded, in addition to function calls, array

@@ -1,117 +1,116 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax:injectable;
 
-import edu:umn:cs:melt:ableC:abstractsyntax:host
-                                             with unaryOpExpr as unaryOpExprDefault,
-                                                  arraySubscriptExpr as arraySubscriptExprDefault,
-                                                  memberExpr as memberExprDefault,
-                                                  dereferenceExpr as dereferenceExprDefault,
-                                                  explicitCastExpr as explicitCastExprDefault;
+import edu:umn:cs:melt:ableC:abstractsyntax:host as host;
 
 abstract production dereferenceExpr
-top::Expr ::= e::Expr
+top::host:Expr ::= e::host:Expr
 {
   top.pp = parens( cat(text("*"), e.pp) );
   production attribute lerrors :: [Message] with ++;
-  lerrors := case top.env, top.returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end; -- TODO: seed flow type properly
+  {- TODO: Seed flow types properly on lerrors, runtimeMods, and injectedQualifiers. 
+    These equations exist only to seed dependencies on env and returnType so
+    extensions can freely compute these synthesized attributes based on them
+    while still passing the modular well-definedness analysis. -}
+  lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   production attribute runtimeMods::[RuntimeMod] with ++;
-  runtimeMods := case top.env, top.returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end; -- TODO: seed flow type properly
+  runtimeMods := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
-  production attribute injectedQualifiers :: [Qualifier] with ++;
-  injectedQualifiers := case top.env, top.returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end; -- TODO: seed flow type properly
+  production attribute injectedQualifiers :: [host:Qualifier] with ++;
+  injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   forwards to
-    wrapWarnExpr(lerrors,
-      wrapQualifiedExpr(injectedQualifiers,
-        dereferenceExprDefault(applyMods(runtimeMods, e), location=top.location),
+    host:wrapWarnExpr(lerrors,
+      host:wrapQualifiedExpr(injectedQualifiers,
+        host:dereferenceExpr(applyMods(runtimeMods, e), location=top.location),
         top.location),
       top.location);
 }
 
 abstract production unaryOpExpr
-top::Expr ::= op::UnaryOp  e::Expr
+top::host:Expr ::= op::host:UnaryOp  e::host:Expr
 {
-  top.pp = if op.preExpr
+  top.pp = if op.host:preExpr
            then parens( cat( op.pp, e.pp ) )
            else parens( cat( e.pp, op.pp ) );
   production attribute lerrors :: [Message] with ++;
-  lerrors := case top.env, top.returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end; -- TODO: seed flow type properly
-  op.op = e;
+  lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  op.host:op = e;
 
   production attribute runtimeMods::[RuntimeMod] with ++;
-  runtimeMods := case top.env, top.returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end; -- TODO: seed flow type properly
+  runtimeMods := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
-  production attribute injectedQualifiers :: [Qualifier] with ++;
-  injectedQualifiers := case top.env, top.returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end; -- TODO: seed flow type properly
+  production attribute injectedQualifiers :: [host:Qualifier] with ++;
+  injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   forwards to
-    wrapWarnExpr(lerrors,
-      wrapQualifiedExpr(injectedQualifiers,
-        unaryOpExprDefault(op, applyMods(runtimeMods, e), location=top.location),
+    host:wrapWarnExpr(lerrors,
+      host:wrapQualifiedExpr(injectedQualifiers,
+        host:unaryOpExpr(op, applyMods(runtimeMods, e), location=top.location),
         top.location),
       top.location);
 }
 
 abstract production arraySubscriptExpr
-top::Expr ::= lhs::Expr  rhs::Expr
+top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 {
   top.pp = parens( ppConcat([ lhs.pp, brackets( rhs.pp )]) );
   production attribute lerrors :: [Message] with ++;
-  lerrors := case top.env, top.returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end; -- TODO: seed flow type properly
+  lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   production attribute runtimeMods::[LhsOrRhsRuntimeMod] with ++;
-  runtimeMods := case top.env, top.returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end; -- TODO: seed flow type properly
-  local modLhsRhs :: Pair<Expr Expr> = applyLhsRhsMods(runtimeMods, lhs, rhs);
+  runtimeMods := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  local modLhsRhs :: Pair<host:Expr host:Expr> = applyLhsRhsMods(runtimeMods, lhs, rhs);
 
-  production attribute injectedQualifiers :: [Qualifier] with ++;
-  injectedQualifiers := case top.env, top.returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end; -- TODO: seed flow type properly
+  production attribute injectedQualifiers :: [host:Qualifier] with ++;
+  injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   forwards to
-    wrapWarnExpr(lerrors,
-      wrapQualifiedExpr(injectedQualifiers,
-        arraySubscriptExprDefault(modLhsRhs.fst, modLhsRhs.snd, location=top.location),
+    host:wrapWarnExpr(lerrors,
+      host:wrapQualifiedExpr(injectedQualifiers,
+        host:arraySubscriptExpr(modLhsRhs.fst, modLhsRhs.snd, location=top.location),
         top.location),
       top.location);
 }
 
 abstract production memberExpr
-top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
+top::host:Expr ::= lhs::host:Expr  deref::Boolean  rhs::host:Name
 {
   top.pp = parens(ppConcat([lhs.pp, text(if deref then "->" else "."), rhs.pp]));
   production attribute lerrors :: [Message] with ++;
-  lerrors := case top.env, top.returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end; -- TODO: seed flow type properly
+  lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   production attribute runtimeMods::[RuntimeMod] with ++;
-  runtimeMods := case top.env, top.returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end; -- TODO: seed flow type properly
+  runtimeMods := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
-  production attribute injectedQualifiers :: [Qualifier] with ++;
-  injectedQualifiers := case top.env, top.returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end; -- TODO: seed flow type properly
+  production attribute injectedQualifiers :: [host:Qualifier] with ++;
+  injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   forwards to
-    wrapWarnExpr(lerrors,
-      wrapQualifiedExpr(injectedQualifiers,
-        memberExprDefault(applyMods(runtimeMods, lhs), deref, rhs, location=top.location),
+    host:wrapWarnExpr(lerrors,
+      host:wrapQualifiedExpr(injectedQualifiers,
+        host:memberExpr(applyMods(runtimeMods, lhs), deref, rhs, location=top.location),
         top.location),
       top.location);
 }
 
 abstract production explicitCastExpr
-top::Expr ::= ty::TypeName  e::Expr
+top::host:Expr ::= ty::host:TypeName  e::host:Expr
 {
   top.pp = parens( ppConcat([parens(ty.pp), e.pp]) );
   production attribute lerrors :: [Message] with ++;
-  lerrors := case top.env, top.returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end; -- TODO: seed flow type properly
+  lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   production attribute runtimeMods::[RuntimeMod] with ++;
-  runtimeMods := case top.env, top.returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end; -- TODO: seed flow type properly
+  runtimeMods := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
-  production attribute injectedQualifiers :: [Qualifier] with ++;
-  injectedQualifiers := case top.env, top.returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end; -- TODO: seed flow type properly
+  production attribute injectedQualifiers :: [host:Qualifier] with ++;
+  injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   forwards to
-    wrapWarnExpr(lerrors,
-      wrapQualifiedExpr(injectedQualifiers,
-        explicitCastExprDefault(ty, applyMods(runtimeMods, e), location=top.location),
+    host:wrapWarnExpr(lerrors,
+      host:wrapQualifiedExpr(injectedQualifiers,
+        host:explicitCastExpr(ty, applyMods(runtimeMods, e), location=top.location),
         top.location),
       top.location);
 }

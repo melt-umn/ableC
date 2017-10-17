@@ -1,5 +1,7 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax:overloadable;
 
+import edu:umn:cs:melt:ableC:abstractsyntax:host;
+
 aspect default production
 top::UnaryOp ::=
 {
