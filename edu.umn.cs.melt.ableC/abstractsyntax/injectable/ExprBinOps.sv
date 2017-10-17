@@ -584,7 +584,7 @@ top::Expr ::= lhs::Expr rhs::Expr
 abstract production subExpr
 top::Expr ::= lhs::Expr rhs::Expr
 {
-  top.pp = parens( ppConcat([lhs.pp, space(), text("+"), space(), rhs.pp]) );
+  top.pp = parens( ppConcat([lhs.pp, space(), text("-"), space(), rhs.pp]) );
   production attribute lerrors :: [Message] with ++;
   lerrors := case top.env, top.returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end; -- TODO: seed flow type properly
 
@@ -606,7 +606,7 @@ top::Expr ::= lhs::Expr rhs::Expr
 abstract production mulExpr
 top::Expr ::= lhs::Expr rhs::Expr
 {
-  top.pp = parens( ppConcat([lhs.pp, space(), text("+"), space(), rhs.pp]) );
+  top.pp = parens( ppConcat([lhs.pp, space(), text("*"), space(), rhs.pp]) );
   production attribute lerrors :: [Message] with ++;
   lerrors := case top.env, top.returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end; -- TODO: seed flow type properly
 
@@ -628,7 +628,7 @@ top::Expr ::= lhs::Expr rhs::Expr
 abstract production divExpr
 top::Expr ::= lhs::Expr rhs::Expr
 {
-  top.pp = parens( ppConcat([lhs.pp, space(), text("+"), space(), rhs.pp]) );
+  top.pp = parens( ppConcat([lhs.pp, space(), text("/"), space(), rhs.pp]) );
   production attribute lerrors :: [Message] with ++;
   lerrors := case top.env, top.returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end; -- TODO: seed flow type properly
 
@@ -650,7 +650,7 @@ top::Expr ::= lhs::Expr rhs::Expr
 abstract production modExpr
 top::Expr ::= lhs::Expr rhs::Expr
 {
-  top.pp = parens( ppConcat([lhs.pp, space(), text("+"), space(), rhs.pp]) );
+  top.pp = parens( ppConcat([lhs.pp, space(), text("%"), space(), rhs.pp]) );
   production attribute lerrors :: [Message] with ++;
   lerrors := case top.env, top.returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end; -- TODO: seed flow type properly
 
