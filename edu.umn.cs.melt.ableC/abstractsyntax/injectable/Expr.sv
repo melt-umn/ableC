@@ -1,6 +1,6 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax:injectable;
 
-import edu:umn:cs:melt:ableC:abstractsyntax:host as host;
+imports edu:umn:cs:melt:ableC:abstractsyntax:host as host;
 
 abstract production dereferenceExpr
 top::host:Expr ::= e::host:Expr

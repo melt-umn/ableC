@@ -101,25 +101,39 @@ node {
             [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: params.SILVER_BASE],
              [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
         },
-//        "ableC-closure": {
+        "ableC-closure": {
 //          build job: '/melt-umn/ableC-closure/develop', parameters:
-//            [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: params.SILVER_BASE],
-//             [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
-//        },
-//        "ableC-templating": {
+          build job: "/melt-umn/ableC-closure/feature%2Ftype_qualifiers", parameters:
+            [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: params.SILVER_BASE],
+             [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
+        },
+        "ableC-templating": {
 //          build job: '/melt-umn/ableC-templating/develop', parameters:
-//            [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: params.SILVER_BASE],
-//             [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
-//        },
+          build job: "/melt-umn/ableC-templating/feature%2Ftype_qualifiers", parameters:
+            [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: params.SILVER_BASE],
+             [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
+        },
         "ableC-string": {
 //          build job: '/melt-umn/ableC-string/develop', parameters:
           build job: '/melt-umn/ableC-string/feature%2Ftype_qualifiers', parameters:
             [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: params.SILVER_BASE],
              [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
         },
-//        "ableC-vector": {
-////          build job: '/melt-umn/ableC-vector/develop', parameters:
-//          build job: '/melt-umn/ableC-vector/feature%2Ftype_qualifiers', parameters:
+        "ableC-vector": {
+//          build job: '/melt-umn/ableC-vector/develop', parameters:
+          build job: '/melt-umn/ableC-vector/feature%2Ftype_qualifiers', parameters:
+            [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: params.SILVER_BASE],
+             [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
+        },
+        "ableC-algebraic-data-types": {
+//          build job: '/melt-umn/ableC-algebraic-data-types/develop', parameters:
+          build job: '/melt-umn/ableC-algebraic-data-types/feature%2Ftype_qualifiers', parameters:
+            [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: params.SILVER_BASE],
+             [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
+        },
+//        "ableC_sample_projects": {
+////          build job: '/melt-umn/ableC_sample_projects/master', parameters:
+//          build job: '/melt-umn/ableC_sample_projects/feature%2Ftype_qualifiers', parameters:
 //            [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: params.SILVER_BASE],
 //             [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
 //        }

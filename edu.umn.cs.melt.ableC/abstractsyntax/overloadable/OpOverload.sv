@@ -97,53 +97,27 @@ Maybe<(Expr ::= Expr Boolean Name Location)> ::= t::Type env::Decorated Env
 }
 
 function getSubscriptAssignOverload
-Maybe<(Expr ::= Expr Expr Expr Location)> ::= t::Type env::Decorated Env
+Maybe<(Expr ::= Expr Expr (Expr ::= Expr Expr Location) Document Expr Location)> ::= t::Type env::Decorated Env
 {
-  production attribute overloads::[Pair<String (Expr ::= Expr Expr Expr Location)>] with ++;
+  production attribute overloads::[Pair<String (Expr ::= Expr Expr (Expr ::= Expr Expr Location) Document Expr Location)>] with ++;
   overloads := [];
   return
     do (bindMaybe, returnMaybe) {
       n :: String <- moduleName(env, t);
-      prod :: (Expr ::= Expr Expr Expr Location) <- lookupBy(stringEq, n, overloads);
+      prod :: (Expr ::= Expr Expr (Expr ::= Expr Expr Location) Document Expr Location) <- lookupBy(stringEq, n, overloads);
       return prod;
     };
 }
 
 function getMemberAssignOverload
-Maybe<(Expr ::= Expr Boolean Name Expr Location)> ::= t::Type env::Decorated Env
+Maybe<(Expr ::= Expr Boolean Name (Expr ::= Expr Expr Location) Document Expr Location)> ::= t::Type env::Decorated Env
 {
-  production attribute overloads::[Pair<String (Expr ::= Expr Boolean Name Expr Location)>] with ++;
+  production attribute overloads::[Pair<String (Expr ::= Expr Boolean Name (Expr ::= Expr Expr Location) Document Expr Location)>] with ++;
   overloads := [];
   return
     do (bindMaybe, returnMaybe) {
       n :: String <- moduleName(env, t);
-      prod :: (Expr ::= Expr Boolean Name Expr Location) <- lookupBy(stringEq, n, overloads);
-      return prod;
-    };
-}
-
-function getSubscriptAddAssignOverload
-Maybe<(Expr ::= Expr Expr Expr Location)> ::= t::Type env::Decorated Env
-{
-  production attribute overloads::[Pair<String (Expr ::= Expr Expr Expr Location)>] with ++;
-  overloads := [];
-  return
-    do (bindMaybe, returnMaybe) {
-      n :: String <- moduleName(env, t);
-      prod :: (Expr ::= Expr Expr Expr Location) <- lookupBy(stringEq, n, overloads);
-      return prod;
-    };
-}
-
-function getMemberAddAssignOverload
-Maybe<(Expr ::= Expr Boolean Name Expr Location)> ::= t::Type env::Decorated Env
-{
-  production attribute overloads::[Pair<String (Expr ::= Expr Boolean Name Expr Location)>] with ++;
-  overloads := [];
-  return
-    do (bindMaybe, returnMaybe) {
-      n :: String <- moduleName(env, t);
-      prod :: (Expr ::= Expr Boolean Name Expr Location) <- lookupBy(stringEq, n, overloads);
+      prod :: (Expr ::= Expr Boolean Name (Expr ::= Expr Expr Location) Document Expr Location) <- lookupBy(stringEq, n, overloads);
       return prod;
     };
 }
@@ -732,6 +706,16 @@ Maybe<a> ::= maybeFn::Maybe<(a ::= b c d e f g)> a1::b a2::c a3::d a4::e a5::f a
   return
     case maybeFn of
       just(fn) -> just(fn(a1, a2, a3, a4, a5, a6))
+    | nothing() -> nothing()
+    end;
+}
+
+function applyMaybe7
+Maybe<a> ::= maybeFn::Maybe<(a ::= b c d e f g h)> a1::b a2::c a3::d a4::e a5::f a6::g a7::h
+{
+  return
+    case maybeFn of
+      just(fn) -> just(fn(a1, a2, a3, a4, a5, a6, a7))
     | nothing() -> nothing()
     end;
 }

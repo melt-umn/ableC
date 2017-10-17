@@ -1,7 +1,5 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax:injectable;
 
-import edu:umn:cs:melt:ableC:abstractsyntax:host as host;
-
 abstract production eqExpr
 top::host:Expr ::= lhs::host:Expr rhs::host:Expr
 {

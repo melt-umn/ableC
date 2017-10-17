@@ -139,13 +139,18 @@ top::Expr ::= s::String
   propagate substituted;
 }
 
+aspect production ovrld:unaryOpExpr
+top::Expr ::= op::UnaryOp  e::Expr
+{
+  propagate substituted;
+}
 aspect production ovrld:dereferenceExpr
 top::Expr ::= e::Expr
 {
   propagate substituted;
 }
-aspect production ovrld:unaryOpExpr
-top::Expr ::= op::UnaryOp  e::Expr
+aspect production ovrld:explicitCastExpr
+top::Expr ::= ty::TypeName e::Expr
 {
   propagate substituted;
 }
@@ -160,6 +165,32 @@ top::Expr ::= f::Expr  a::Exprs
   propagate substituted;
 }
 aspect production ovrld:memberExpr
+top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
+{
+  propagate substituted;
+}
+
+aspect production inj:unaryOpExpr
+top::Expr ::= op::UnaryOp  e::Expr
+{
+  propagate substituted;
+}
+aspect production inj:dereferenceExpr
+top::Expr ::= e::Expr
+{
+  propagate substituted;
+}
+aspect production inj:explicitCastExpr
+top::Expr ::= ty::TypeName e::Expr
+{
+  propagate substituted;
+}
+aspect production inj:arraySubscriptExpr
+top::Expr ::= lhs::Expr  rhs::Expr
+{
+  propagate substituted;
+}
+aspect production inj:memberExpr
 top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
 {
   propagate substituted;

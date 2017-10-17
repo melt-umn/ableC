@@ -26,8 +26,10 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   -- TODO: overload subscript/member on all assign exprs
   local option1::Maybe<host:Expr> =
     case lhs of
-      arraySubscriptExpr(l, r) -> applyMaybe4(getSubscriptAssignOverload(l.host:typerep, top.env), l, r, rhs, top.location)
-    | memberExpr(l, d, r)      -> applyMaybe5(getMemberAssignOverload(l.host:typerep, top.env), l, d, r, rhs, top.location)
+      arraySubscriptExpr(l, r) -> applyMaybe6(getSubscriptAssignOverload(l.host:typerep, top.env), l, r,
+                                                host:eqExpr(_, _, location=_), text("="), rhs, top.location)
+    | memberExpr(l, d, r)      -> applyMaybe7(getMemberAssignOverload(l.host:typerep, top.env), l, d, r,
+                                                host:eqExpr(_, _, location=_), text("="), rhs, top.location)
     | _                        -> nothing()
     end;
 
@@ -59,13 +61,26 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
   injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
+  local option1::Maybe<host:Expr> =
+    case lhs of
+      arraySubscriptExpr(l, r) -> applyMaybe6(getSubscriptAssignOverload(l.host:typerep, top.env), l, r,
+                                                host:mulEqExpr(_, _, location=_), text("*="), rhs, top.location)
+    | memberExpr(l, d, r)      -> applyMaybe7(getMemberAssignOverload(l.host:typerep, top.env), l, d, r,
+                                                host:mulEqExpr(_, _, location=_), text("*="), rhs, top.location)
+    | _                        -> nothing()
+    end;
+
   forwards to
     host:wrapWarnExpr(lerrors,
       host:wrapQualifiedExpr(injectedQualifiers,
-        case getMulEqOverload(lhs.host:typerep, rhs.host:typerep, top.env), getMulOverload(lhs.host:typerep, rhs.host:typerep, top.env) of
-          just(prod), _         -> prod(modLhsRhs.fst, modLhsRhs.snd, top.location)
-        | nothing(), just(prod) -> expandAssign(modLhsRhs.fst, modLhsRhs.snd, lhs.host:typerep, prod, top.location)
-        | nothing(), nothing()  -> inj:mulEqExpr(modLhsRhs.fst, modLhsRhs.snd, location=top.location)
+        case option1, getMulEqOverload(lhs.host:typerep, rhs.host:typerep, top.env),
+                      getMulOverload(lhs.host:typerep, rhs.host:typerep, top.env) of
+        -- Option 1: Assign to a member or subscript (e.g. a.foo = b, a[i] = b)
+          just(e), _, _                    -> e
+        -- Option 2: Normal overloaded binary operators
+        | nothing(), just(prod), _         -> prod(modLhsRhs.fst, modLhsRhs.snd, top.location)
+        | nothing(), nothing(), just(prod) -> expandAssign(modLhsRhs.fst, modLhsRhs.snd, lhs.host:typerep, prod, top.location)
+        | nothing(), nothing(), nothing()  -> inj:mulEqExpr(modLhsRhs.fst, modLhsRhs.snd, location=top.location)
         end,
         top.location),
       top.location);
@@ -85,13 +100,26 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
   injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
+  local option1::Maybe<host:Expr> =
+    case lhs of
+      arraySubscriptExpr(l, r) -> applyMaybe6(getSubscriptAssignOverload(l.host:typerep, top.env), l, r,
+                                                host:divEqExpr(_, _, location=_), text("/="), rhs, top.location)
+    | memberExpr(l, d, r)      -> applyMaybe7(getMemberAssignOverload(l.host:typerep, top.env), l, d, r,
+                                                host:divEqExpr(_, _, location=_), text("/="), rhs, top.location)
+    | _                        -> nothing()
+    end;
+
   forwards to
     host:wrapWarnExpr(lerrors,
       host:wrapQualifiedExpr(injectedQualifiers,
-        case getDivEqOverload(lhs.host:typerep, rhs.host:typerep, top.env), getDivOverload(lhs.host:typerep, rhs.host:typerep, top.env) of
-          just(prod), _         -> prod(modLhsRhs.fst, modLhsRhs.snd, top.location)
-        | nothing(), just(prod) -> expandAssign(modLhsRhs.fst, modLhsRhs.snd, lhs.host:typerep, prod, top.location)
-        | nothing(), nothing()  -> inj:divEqExpr(modLhsRhs.fst, modLhsRhs.snd, location=top.location)
+        case option1, getDivEqOverload(lhs.host:typerep, rhs.host:typerep, top.env),
+                      getDivOverload(lhs.host:typerep, rhs.host:typerep, top.env) of
+        -- Option 1: Assign to a member or subscript (e.g. a.foo = b, a[i] = b)
+          just(e), _, _                    -> e
+        -- Option 2: Normal overloaded binary operators
+        | nothing(), just(prod), _         -> prod(modLhsRhs.fst, modLhsRhs.snd, top.location)
+        | nothing(), nothing(), just(prod) -> expandAssign(modLhsRhs.fst, modLhsRhs.snd, lhs.host:typerep, prod, top.location)
+        | nothing(), nothing(), nothing()  -> inj:divEqExpr(modLhsRhs.fst, modLhsRhs.snd, location=top.location)
         end,
         top.location),
       top.location);
@@ -111,13 +139,26 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
   injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
+  local option1::Maybe<host:Expr> =
+    case lhs of
+      arraySubscriptExpr(l, r) -> applyMaybe6(getSubscriptAssignOverload(l.host:typerep, top.env), l, r,
+                                                host:modEqExpr(_, _, location=_), text("%="), rhs, top.location)
+    | memberExpr(l, d, r)      -> applyMaybe7(getMemberAssignOverload(l.host:typerep, top.env), l, d, r,
+                                                host:modEqExpr(_, _, location=_), text("%="), rhs, top.location)
+    | _                        -> nothing()
+    end;
+
   forwards to
     host:wrapWarnExpr(lerrors,
       host:wrapQualifiedExpr(injectedQualifiers,
-        case getModEqOverload(lhs.host:typerep, rhs.host:typerep, top.env), getModOverload(lhs.host:typerep, rhs.host:typerep, top.env) of
-          just(prod), _         -> prod(modLhsRhs.fst, modLhsRhs.snd, top.location)
-        | nothing(), just(prod) -> expandAssign(modLhsRhs.fst, modLhsRhs.snd, lhs.host:typerep, prod, top.location)
-        | nothing(), nothing()  -> inj:modEqExpr(modLhsRhs.fst, modLhsRhs.snd, location=top.location)
+        case option1, getModEqOverload(lhs.host:typerep, rhs.host:typerep, top.env),
+                      getModOverload(lhs.host:typerep, rhs.host:typerep, top.env) of
+        -- Option 1: Assign to a member or subscript (e.g. a.foo = b, a[i] = b)
+          just(e), _, _                    -> e
+        -- Option 2: Normal overloaded binary operators
+        | nothing(), just(prod), _         -> prod(modLhsRhs.fst, modLhsRhs.snd, top.location)
+        | nothing(), nothing(), just(prod) -> expandAssign(modLhsRhs.fst, modLhsRhs.snd, lhs.host:typerep, prod, top.location)
+        | nothing(), nothing(), nothing()  -> inj:modEqExpr(modLhsRhs.fst, modLhsRhs.snd, location=top.location)
         end,
         top.location),
       top.location);
@@ -139,8 +180,10 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 
   local option1::Maybe<host:Expr> =
     case lhs of
-      arraySubscriptExpr(l, r) -> applyMaybe4(getSubscriptAddAssignOverload(l.host:typerep, top.env), l, r, rhs, top.location)
-    | memberExpr(l, d, r)      -> applyMaybe5(getMemberAddAssignOverload(l.host:typerep, top.env), l, d, r, rhs, top.location)
+      arraySubscriptExpr(l, r) -> applyMaybe6(getSubscriptAssignOverload(l.host:typerep, top.env), l, r,
+                                                host:addEqExpr(_, _, location=_), text("+="), rhs, top.location)
+    | memberExpr(l, d, r)      -> applyMaybe7(getMemberAssignOverload(l.host:typerep, top.env), l, d, r,
+                                                host:addEqExpr(_, _, location=_), text("+="), rhs, top.location)
     | _                        -> nothing()
     end;
 
@@ -174,13 +217,26 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
   injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
+  local option1::Maybe<host:Expr> =
+    case lhs of
+      arraySubscriptExpr(l, r) -> applyMaybe6(getSubscriptAssignOverload(l.host:typerep, top.env), l, r,
+                                                host:subEqExpr(_, _, location=_), text("-="), rhs, top.location)
+    | memberExpr(l, d, r)      -> applyMaybe7(getMemberAssignOverload(l.host:typerep, top.env), l, d, r,
+                                                host:subEqExpr(_, _, location=_), text("-="), rhs, top.location)
+    | _                        -> nothing()
+    end;
+
   forwards to
     host:wrapWarnExpr(lerrors,
       host:wrapQualifiedExpr(injectedQualifiers,
-        case getSubEqOverload(lhs.host:typerep, rhs.host:typerep, top.env), getSubOverload(lhs.host:typerep, rhs.host:typerep, top.env) of
-          just(prod), _         -> prod(modLhsRhs.fst, modLhsRhs.snd, top.location)
-        | nothing(), just(prod) -> expandAssign(modLhsRhs.fst, modLhsRhs.snd, lhs.host:typerep, prod, top.location)
-        | nothing(), nothing()  -> inj:subEqExpr(modLhsRhs.fst, modLhsRhs.snd, location=top.location)
+        case option1, getSubEqOverload(lhs.host:typerep, rhs.host:typerep, top.env),
+                      getSubOverload(lhs.host:typerep, rhs.host:typerep, top.env) of
+        -- Option 1: Assign to a member or subscript (e.g. a.foo = b, a[i] = b)
+          just(e), _, _                    -> e
+        -- Option 2: Normal overloaded binary operators
+        | nothing(), just(prod), _         -> prod(modLhsRhs.fst, modLhsRhs.snd, top.location)
+        | nothing(), nothing(), just(prod) -> expandAssign(modLhsRhs.fst, modLhsRhs.snd, lhs.host:typerep, prod, top.location)
+        | nothing(), nothing(), nothing()  -> inj:subEqExpr(modLhsRhs.fst, modLhsRhs.snd, location=top.location)
         end,
         top.location),
       top.location);
@@ -200,13 +256,26 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
   injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
+  local option1::Maybe<host:Expr> =
+    case lhs of
+      arraySubscriptExpr(l, r) -> applyMaybe6(getSubscriptAssignOverload(l.host:typerep, top.env), l, r,
+                                                host:lshEqExpr(_, _, location=_), text("<<="), rhs, top.location)
+    | memberExpr(l, d, r)      -> applyMaybe7(getMemberAssignOverload(l.host:typerep, top.env), l, d, r,
+                                                host:lshEqExpr(_, _, location=_), text("<<="), rhs, top.location)
+    | _                        -> nothing()
+    end;
+
   forwards to
     host:wrapWarnExpr(lerrors,
       host:wrapQualifiedExpr(injectedQualifiers,
-        case getLshEqOverload(lhs.host:typerep, rhs.host:typerep, top.env), getLshOverload(lhs.host:typerep, rhs.host:typerep, top.env) of
-          just(prod), _         -> prod(modLhsRhs.fst, modLhsRhs.snd, top.location)
-        | nothing(), just(prod) -> expandAssign(modLhsRhs.fst, modLhsRhs.snd, lhs.host:typerep, prod, top.location)
-        | nothing(), nothing()  -> inj:lshEqExpr(modLhsRhs.fst, modLhsRhs.snd, location=top.location)
+        case option1, getLshEqOverload(lhs.host:typerep, rhs.host:typerep, top.env),
+                      getLshOverload(lhs.host:typerep, rhs.host:typerep, top.env) of
+        -- Option 1: Assign to a member or subscript (e.g. a.foo = b, a[i] = b)
+          just(e), _, _                    -> e
+        -- Option 2: Normal overloaded binary operators
+        | nothing(), just(prod), _         -> prod(modLhsRhs.fst, modLhsRhs.snd, top.location)
+        | nothing(), nothing(), just(prod) -> expandAssign(modLhsRhs.fst, modLhsRhs.snd, lhs.host:typerep, prod, top.location)
+        | nothing(), nothing(), nothing()  -> inj:lshEqExpr(modLhsRhs.fst, modLhsRhs.snd, location=top.location)
         end,
         top.location),
       top.location);
@@ -226,13 +295,26 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
   injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
+  local option1::Maybe<host:Expr> =
+    case lhs of
+      arraySubscriptExpr(l, r) -> applyMaybe6(getSubscriptAssignOverload(l.host:typerep, top.env), l, r,
+                                                host:rshEqExpr(_, _, location=_), text(">>="), rhs, top.location)
+    | memberExpr(l, d, r)      -> applyMaybe7(getMemberAssignOverload(l.host:typerep, top.env), l, d, r,
+                                                host:rshEqExpr(_, _, location=_), text(">>="), rhs, top.location)
+    | _                        -> nothing()
+    end;
+
   forwards to
     host:wrapWarnExpr(lerrors,
       host:wrapQualifiedExpr(injectedQualifiers,
-        case getRshEqOverload(lhs.host:typerep, rhs.host:typerep, top.env), getRshOverload(lhs.host:typerep, rhs.host:typerep, top.env) of
-          just(prod), _         -> prod(modLhsRhs.fst, modLhsRhs.snd, top.location)
-        | nothing(), just(prod) -> expandAssign(modLhsRhs.fst, modLhsRhs.snd, lhs.host:typerep, prod, top.location)
-        | nothing(), nothing()  -> inj:rshEqExpr(modLhsRhs.fst, modLhsRhs.snd, location=top.location)
+        case option1, getRshEqOverload(lhs.host:typerep, rhs.host:typerep, top.env),
+                      getRshOverload(lhs.host:typerep, rhs.host:typerep, top.env) of
+        -- Option 1: Assign to a member or subscript (e.g. a.foo = b, a[i] = b)
+          just(e), _, _                    -> e
+        -- Option 2: Normal overloaded binary operators
+        | nothing(), just(prod), _         -> prod(modLhsRhs.fst, modLhsRhs.snd, top.location)
+        | nothing(), nothing(), just(prod) -> expandAssign(modLhsRhs.fst, modLhsRhs.snd, lhs.host:typerep, prod, top.location)
+        | nothing(), nothing(), nothing()  -> inj:rshEqExpr(modLhsRhs.fst, modLhsRhs.snd, location=top.location)
         end,
         top.location),
       top.location);
@@ -252,13 +334,26 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
   injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
+  local option1::Maybe<host:Expr> =
+    case lhs of
+      arraySubscriptExpr(l, r) -> applyMaybe6(getSubscriptAssignOverload(l.host:typerep, top.env), l, r,
+                                                host:andEqExpr(_, _, location=_), text("&="), rhs, top.location)
+    | memberExpr(l, d, r)      -> applyMaybe7(getMemberAssignOverload(l.host:typerep, top.env), l, d, r,
+                                                host:andEqExpr(_, _, location=_), text("&="), rhs, top.location)
+    | _                        -> nothing()
+    end;
+
   forwards to
     host:wrapWarnExpr(lerrors,
       host:wrapQualifiedExpr(injectedQualifiers,
-        case getAndEqOverload(lhs.host:typerep, rhs.host:typerep, top.env), getAndOverload(lhs.host:typerep, rhs.host:typerep, top.env) of
-          just(prod), _         -> prod(modLhsRhs.fst, modLhsRhs.snd, top.location)
-        | nothing(), just(prod) -> expandAssign(modLhsRhs.fst, modLhsRhs.snd, lhs.host:typerep, prod, top.location)
-        | nothing(), nothing()  -> inj:andEqExpr(modLhsRhs.fst, modLhsRhs.snd, location=top.location)
+        case option1, getAndEqOverload(lhs.host:typerep, rhs.host:typerep, top.env),
+                      getAndOverload(lhs.host:typerep, rhs.host:typerep, top.env) of
+        -- Option 1: Assign to a member or subscript (e.g. a.foo = b, a[i] = b)
+          just(e), _, _                    -> e
+        -- Option 2: Normal overloaded binary operators
+        | nothing(), just(prod), _         -> prod(modLhsRhs.fst, modLhsRhs.snd, top.location)
+        | nothing(), nothing(), just(prod) -> expandAssign(modLhsRhs.fst, modLhsRhs.snd, lhs.host:typerep, prod, top.location)
+        | nothing(), nothing(), nothing()  -> inj:andEqExpr(modLhsRhs.fst, modLhsRhs.snd, location=top.location)
         end,
         top.location),
       top.location);
@@ -278,13 +373,26 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
   injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
+  local option1::Maybe<host:Expr> =
+    case lhs of
+      arraySubscriptExpr(l, r) -> applyMaybe6(getSubscriptAssignOverload(l.host:typerep, top.env), l, r,
+                                                host:xorEqExpr(_, _, location=_), text("^="), rhs, top.location)
+    | memberExpr(l, d, r)      -> applyMaybe7(getMemberAssignOverload(l.host:typerep, top.env), l, d, r,
+                                                host:xorEqExpr(_, _, location=_), text("^="), rhs, top.location)
+    | _                        -> nothing()
+    end;
+
   forwards to
     host:wrapWarnExpr(lerrors,
       host:wrapQualifiedExpr(injectedQualifiers,
-        case getXorEqOverload(lhs.host:typerep, rhs.host:typerep, top.env), getXorOverload(lhs.host:typerep, rhs.host:typerep, top.env) of
-          just(prod), _         -> prod(modLhsRhs.fst, modLhsRhs.snd, top.location)
-        | nothing(), just(prod) -> expandAssign(modLhsRhs.fst, modLhsRhs.snd, lhs.host:typerep, prod, top.location)
-        | nothing(), nothing()  -> inj:xorEqExpr(modLhsRhs.fst, modLhsRhs.snd, location=top.location)
+        case option1, getXorEqOverload(lhs.host:typerep, rhs.host:typerep, top.env),
+                      getXorOverload(lhs.host:typerep, rhs.host:typerep, top.env) of
+        -- Option 1: Assign to a member or subscript (e.g. a.foo = b, a[i] = b)
+          just(e), _, _                    -> e
+        -- Option 2: Normal overloaded binary operators
+        | nothing(), just(prod), _         -> prod(modLhsRhs.fst, modLhsRhs.snd, top.location)
+        | nothing(), nothing(), just(prod) -> expandAssign(modLhsRhs.fst, modLhsRhs.snd, lhs.host:typerep, prod, top.location)
+        | nothing(), nothing(), nothing()  -> inj:xorEqExpr(modLhsRhs.fst, modLhsRhs.snd, location=top.location)
         end,
         top.location),
       top.location);
@@ -304,13 +412,26 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
   injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
+  local option1::Maybe<host:Expr> =
+    case lhs of
+      arraySubscriptExpr(l, r) -> applyMaybe6(getSubscriptAssignOverload(l.host:typerep, top.env), l, r,
+                                                host:orEqExpr(_, _, location=_), text("|="), rhs, top.location)
+    | memberExpr(l, d, r)      -> applyMaybe7(getMemberAssignOverload(l.host:typerep, top.env), l, d, r,
+                                                host:orEqExpr(_, _, location=_), text("|="), rhs, top.location)
+    | _                        -> nothing()
+    end;
+
   forwards to
     host:wrapWarnExpr(lerrors,
       host:wrapQualifiedExpr(injectedQualifiers,
-        case getOrEqOverload(lhs.host:typerep, rhs.host:typerep, top.env), getOrOverload(lhs.host:typerep, rhs.host:typerep, top.env) of
-          just(prod), _         -> prod(modLhsRhs.fst, modLhsRhs.snd, top.location)
-        | nothing(), just(prod) -> expandAssign(modLhsRhs.fst, modLhsRhs.snd, lhs.host:typerep, prod, top.location)
-        | nothing(), nothing()  -> inj:orEqExpr(modLhsRhs.fst, modLhsRhs.snd, location=top.location)
+        case option1, getOrEqOverload(lhs.host:typerep, rhs.host:typerep, top.env),
+                      getOrOverload(lhs.host:typerep, rhs.host:typerep, top.env) of
+        -- Option 1: Assign to a member or subscript (e.g. a.foo = b, a[i] = b)
+          just(e), _, _                    -> e
+        -- Option 2: Normal overloaded binary operators
+        | nothing(), just(prod), _         -> prod(modLhsRhs.fst, modLhsRhs.snd, top.location)
+        | nothing(), nothing(), just(prod) -> expandAssign(modLhsRhs.fst, modLhsRhs.snd, lhs.host:typerep, prod, top.location)
+        | nothing(), nothing(), nothing()  -> inj:orEqExpr(modLhsRhs.fst, modLhsRhs.snd, location=top.location)
         end,
         top.location),
       top.location);
