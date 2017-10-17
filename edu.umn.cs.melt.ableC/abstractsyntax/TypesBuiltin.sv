@@ -132,7 +132,7 @@ top::BuiltinType ::= it::IntegerType
   top.isArithmeticType = true;
 }
 
-{-- any _Complex *integer* type -- probably a gcc extension? -}
+{-- any _Complex *integer* type -- a gcc extension -}
 abstract production complexIntegerType
 top::BuiltinType ::= it::IntegerType
 {
