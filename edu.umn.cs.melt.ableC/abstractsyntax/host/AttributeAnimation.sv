@@ -54,6 +54,9 @@ Type ::= attr::Attribs  ty::Type
   end;
 }
 
+synthesized attribute maybeRefId::Maybe<String> occurs on Attributes, Attribute, Attribs, Attrib;
+attribute moduleName occurs on Attributes, Attribute, Attribs, Attrib;
+
 aspect production consAttribute
 top::Attributes ::= h::Attribute t::Attributes
 {
@@ -95,6 +98,8 @@ top::Attribs ::=
   top.maybeRefId = nothing();
   top.moduleName = nothing();
 }
+
+synthesized attribute isHostAttrib::Boolean occurs on Attrib;
 
 aspect default production
 top::Attrib ::=
@@ -143,4 +148,3 @@ aspect production idAppliedAttrib
 top::Attrib ::= n::AttribName  id::Name  e::Exprs
 {
 }
-

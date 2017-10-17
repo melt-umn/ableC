@@ -1,4 +1,4 @@
-grammar edu:umn:cs:melt:ableC:abstractsyntax;
+grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 
 -- For effeciency and simplicity, duplicates are not removed automaticly.  
 -- This must be done at the top level, where the attribute is used, by calling removeDuplicateNames.  

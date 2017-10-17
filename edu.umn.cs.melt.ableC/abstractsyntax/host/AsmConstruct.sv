@@ -1,4 +1,6 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
+nonterminal AsmStatement with location, pp, host<AsmStatement>, lifted<AsmStatement>, env, returnType, freeVariables;
+flowtype AsmStatement = decorate {env, returnType};
 
 abstract production asmStatement
 a::AsmStatement ::= arg::AsmArgument
@@ -16,6 +18,9 @@ a::AsmStatement ::= tq::Qualifier arg::AsmArgument
   a.freeVariables = arg.freeVariables;
 }
 
+nonterminal AsmArgument with location, pp, host<AsmArgument>, lifted<AsmArgument>, env, returnType, freeVariables;
+flowtype AsmArgument = decorate {env, returnType};
+
 abstract production asmArgument
 top::AsmArgument ::= s::String asmOps1::AsmOperands asmOps2::AsmOperands asmC::AsmClobbers
 {
@@ -30,6 +35,11 @@ top::AsmArgument ::= s::String asmOps1::AsmOperands asmOps2::AsmOperands asmC::A
              ) ;  
   top.freeVariables = asmOps1.freeVariables ++ asmOps2.freeVariables;
 }
+
+synthesized attribute exists::Boolean;
+
+nonterminal AsmClobbers with location, pp, exists, host<AsmClobbers>, lifted<AsmClobbers>;
+flowtype AsmClobbers = decorate {}, exists {};
 
 abstract production noneAsmClobbers 
 top::AsmClobbers ::=
@@ -52,6 +62,9 @@ top::AsmClobbers ::= asmC::AsmClobbers s::String
   top.exists = true;
   top.pp = ppConcat( [asmC.pp, text(", "), text(s) ] );
 }
+
+nonterminal AsmOperands with location, pp, exists, host<AsmOperands>, lifted<AsmOperands>, env, returnType, freeVariables;
+flowtype AsmOperands = decorate {env, returnType}, exists {};
 
 abstract production noneAsmOps
 top::AsmOperands ::= 
@@ -77,6 +90,9 @@ top::AsmOperands ::= asmOps::AsmOperands asmOp::AsmOperand
   top.exists = true;
   top.freeVariables = asmOp.freeVariables ++ asmOps.freeVariables;
 }
+
+nonterminal AsmOperand with location, pp, host<AsmOperand>, lifted<AsmOperand>, env, returnType, freeVariables;
+flowtype AsmOperand = decorate {env, returnType};
 
 abstract production asmOperand
 top::AsmOperand ::= s::String e::Expr

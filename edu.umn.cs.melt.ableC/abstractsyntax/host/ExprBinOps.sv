@@ -1,5 +1,17 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 
+import edu:umn:cs:melt:ableC:abstractsyntax:injectable;
+
+autocopy attribute lop :: Decorated Expr;
+autocopy attribute rop :: Decorated Expr;
+
+nonterminal BinOp with location, lop, rop, opName, pp, host<BinOp>, lifted<BinOp>, typerep, errors, injectedQualifiers, lhsRhsRuntimeMods;
+flowtype lhsRhsRuntimeMods {lop, rop} on BinOp;
+
+-- function from temporary variable to code to be inserted
+synthesized attribute lhsRhsRuntimeMods :: [LhsOrRhsRuntimeMod] with ++;
+flowtype BinOp = decorate {lop, rop}, opName {};
+
 aspect default production
 top::BinOp ::=
 {
@@ -31,6 +43,9 @@ top::BinOp ::= op::AssignOp
   top.errors <- if top.lop.isLValue then []
     else [err(top.lop.location, "lvalue required as left operand of assignment")];
 }
+
+nonterminal AssignOp with location, lop, rop, pp, host<AssignOp>, lifted<AssignOp>, injectedQualifiers;
+flowtype AssignOp = decorate {lop, rop};
 
 abstract production eqOp
 top::AssignOp ::=
@@ -123,6 +138,9 @@ top::BinOp ::= op::BoolOp
   top.lhsRhsRuntimeMods := [];
 }
 
+nonterminal BoolOp with location, lop, rop, pp, host<BoolOp>, lifted<BoolOp>, injectedQualifiers, errors;
+flowtype BoolOp = decorate {lop, rop};
+
 abstract production andBoolOp
 top::BoolOp ::=
 {
@@ -152,6 +170,9 @@ top::BinOp ::= op::BitOp
   top.errors := op.errors;
   top.lhsRhsRuntimeMods := [];
 }
+
+nonterminal BitOp with location, lop, rop, pp, host<BitOp>, lifted<BitOp>, injectedQualifiers, errors;
+flowtype BitOp = decorate {lop, rop};
 
 abstract production andBitOp
 top::BitOp ::=
@@ -195,6 +216,7 @@ top::BitOp ::=
 }
 
 
+
 --------------------------------------------------------------------------------
 abstract production compareOp
 top::BinOp ::= op::CompareOp
@@ -206,6 +228,9 @@ top::BinOp ::= op::CompareOp
   top.errors := op.errors;
   top.lhsRhsRuntimeMods := [];
 }
+
+nonterminal CompareOp with location, lop, rop, pp, host<CompareOp>, lifted<CompareOp>, injectedQualifiers, errors;
+flowtype CompareOp = decorate {lop, rop};
 
 abstract production equalsOp
 top::CompareOp ::=
@@ -268,6 +293,9 @@ top::BinOp ::= op::NumOp
   top.errors := op.errors;
   top.lhsRhsRuntimeMods := [];
 }
+
+nonterminal NumOp with location, lop, rop, pp, host<NumOp>, lifted<NumOp>, typerep, injectedQualifiers, errors;
+flowtype NumOp = decorate {lop, rop};
 
 abstract production addOp
 top::NumOp ::=

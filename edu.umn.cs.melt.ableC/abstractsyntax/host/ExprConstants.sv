@@ -45,6 +45,11 @@ top::Expr ::= num::String  c::CharPrefix
   top.isLValue = false;
 }
 
+nonterminal NumericConstant with location, pp, host<NumericConstant>, lifted<NumericConstant>, errors, env, constanttyperep;
+flowtype NumericConstant = decorate {env}, constanttyperep {decorate};
+
+synthesized attribute constanttyperep :: BuiltinType;
+
 abstract production integerConstant
 top::NumericConstant ::= num::String  unsigned::Boolean  suffix::IntSuffix
 {
@@ -87,14 +92,19 @@ top::NumericConstant ::= num::String  suffix::FloatSuffix
   top.constanttyperep = realType(suffix.constfloattyperep);
 }
 
+nonterminal IntSuffix with constinttyperep; -- nothing, L, LL
+synthesized attribute constinttyperep :: IntegerType;
 abstract production noIntSuffix        top::IntSuffix ::= { top.constinttyperep = intType(); }
 abstract production longIntSuffix      top::IntSuffix ::= { top.constinttyperep = longType(); }
 abstract production longLongIntSuffix  top::IntSuffix ::= { top.constinttyperep = longlongType(); }
 
+nonterminal FloatSuffix with constfloattyperep; -- nothing, F, L
+synthesized attribute constfloattyperep :: RealType;
 abstract production doubleFloatSuffix      top::FloatSuffix ::= { top.constfloattyperep = doubleType(); }
 abstract production floatFloatSuffix       top::FloatSuffix ::= { top.constfloattyperep = floatType(); }
 abstract production longDoubleFloatSuffix  top::FloatSuffix ::= { top.constfloattyperep = longdoubleType(); }
 
+nonterminal CharPrefix; -- nothing, L, u, U
 abstract production noCharPrefix  top::CharPrefix ::= { }
 abstract production wcharCharPrefix  top::CharPrefix ::= { }
 abstract production char16CharPrefix  top::CharPrefix ::= { }

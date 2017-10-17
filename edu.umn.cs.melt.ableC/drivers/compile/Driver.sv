@@ -44,7 +44,7 @@ Possible flags:
 grammar edu:umn:cs:melt:ableC:drivers:compile ;
 
 imports edu:umn:cs:melt:ableC:concretesyntax as cst;
-imports edu:umn:cs:melt:ableC:abstractsyntax as abs;
+imports edu:umn:cs:melt:ableC:abstractsyntax:host as abs;
 
 imports silver:langutil;
 imports silver:langutil:pp;

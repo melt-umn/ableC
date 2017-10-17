@@ -4,7 +4,7 @@ imports silver:langutil;
 imports silver:langutil:pp with implode as ppImplode, concat as ppConcat;
 imports edu:umn:cs:melt:ableC:abstractsyntax:env;
 imports edu:umn:cs:melt:ableC:abstractsyntax:construction;
-import edu:umn:cs:melt:ableC:abstractsyntax;
+import edu:umn:cs:melt:ableC:abstractsyntax:host;
 
 nonterminal LhsOrRhsRuntimeMods with modLhs, modRhs, lhsToModify, rhsToModify;
 synthesized attribute modLhs :: Expr;

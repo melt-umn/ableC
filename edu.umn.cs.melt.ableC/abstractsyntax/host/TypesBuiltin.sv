@@ -1,5 +1,11 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 
+nonterminal BuiltinType with pp, host<BuiltinType>, mangledName, integerPromotionsBuiltin, defaultArgumentPromotionsBuiltin, isIntegerType, isArithmeticType;
+flowtype BuiltinType = decorate {}, integerPromotionsBuiltin {}, defaultArgumentPromotionsBuiltin {}, isIntegerType {}, isArithmeticType {};
+
+synthesized attribute integerPromotionsBuiltin :: BuiltinType;
+synthesized attribute defaultArgumentPromotionsBuiltin :: BuiltinType;
+
 -- It might be nice to have an enum in Silver or something to represent these.
 -- That's Clang's design, complete with duplicate entries for signed/unsigned ints.
 
@@ -145,6 +151,11 @@ top::BuiltinType ::= it::IntegerType
   top.isArithmeticType = true;
 }
 
+
+{-- Floating types, for which there is a normal and complex variant -}
+nonterminal RealType with pp, host<RealType>, mangledName;
+flowtype RealType = decorate {};
+
 abstract production floatType
 top::RealType ::=
 {
@@ -168,6 +179,13 @@ top::RealType ::=
   top.pp = text("long double");
   top.mangledName = "longdouble";
 }
+
+
+{-- Integer types, for which there is a signed and unsigned variant -}
+nonterminal IntegerType with pp, host<IntegerType>, mangledName, integerConversionRank;
+flowtype IntegerType = decorate {}, integerConversionRank {};
+
+synthesized attribute integerConversionRank :: Integer;
 
 abstract production charType
 top::IntegerType ::=

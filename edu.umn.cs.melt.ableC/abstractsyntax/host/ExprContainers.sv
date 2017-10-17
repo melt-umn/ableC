@@ -1,5 +1,12 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 
+nonterminal MaybeExpr with pp, host<MaybeExpr>, lifted<MaybeExpr>, isJust, errors, globalDecls, defs, env, maybeTyperep, returnType, freeVariables, justTheExpr, isLValue;
+
+flowtype MaybeExpr = decorate {env, returnType}, isJust {}, justTheExpr {}, maybeTyperep {decorate};
+
+synthesized attribute maybeTyperep :: Maybe<Type>;
+synthesized attribute justTheExpr :: Maybe<Expr>;
+
 abstract production justExpr
 top::MaybeExpr ::= e::Expr
 {
@@ -28,6 +35,26 @@ top::MaybeExpr ::=
   top.maybeTyperep = nothing();
   top.isLValue = false;
 }
+
+
+synthesized attribute pps :: [Document];
+
+
+nonterminal Exprs with pps, host<Exprs>, lifted<Exprs>, errors, globalDecls, defs, env, expectedTypes, argumentPosition, callExpr, argumentErrors, typereps, count, callVariadic, returnType, freeVariables, appendedExprs, appendedRes, isLValue;
+
+flowtype Exprs = decorate {env, returnType}, argumentErrors {decorate, expectedTypes, argumentPosition, callExpr, callVariadic}, count {}, appendedRes {appendedExprs};
+
+inherited attribute expectedTypes :: [Type];
+{-- Initially 1. -}
+inherited attribute argumentPosition :: Integer;
+autocopy attribute callExpr :: Decorated Expr;
+autocopy attribute callVariadic :: Boolean;
+synthesized attribute argumentErrors :: [Message];
+
+synthesized attribute count :: Integer;
+
+inherited attribute appendedExprs :: Exprs;
+synthesized attribute appendedRes :: Exprs;
 
 abstract production consExpr
 top::Exprs ::= h::Expr  t::Exprs
@@ -86,6 +113,10 @@ Exprs ::= e1::Exprs e2::Exprs
   e1.appendedExprs = e2;
   return e1.appendedRes;
 }
+
+nonterminal ExprOrTypeName with pp, host<ExprOrTypeName>, lifted<ExprOrTypeName>, errors, globalDecls, defs, env, typerep, returnType, freeVariables, isLValue;
+
+flowtype ExprOrTypeName = decorate {env, returnType};
 
 abstract production exprExpr
 top::ExprOrTypeName ::= e::Expr

@@ -2,6 +2,13 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 
 import edu:umn:cs:melt:ableC:abstractsyntax:overloadable as ovrld;
 
+nonterminal Expr with location, pp, host<Expr>, lifted<Expr>, globalDecls, errors, defs, env, returnType, freeVariables, typerep, isLValue;
+
+flowtype Expr = decorate {env, returnType};
+
+synthesized attribute integerConstantValue :: Maybe<Integer>;
+synthesized attribute isLValue::Boolean;
+
 {- The production below is never used.  But it adds a dependency for
    the forwards-to equation on returnType so that it may be used by
     extensions to determine what the forward to.  -}
@@ -484,6 +491,12 @@ top::Expr ::= e::Expr  gl::GenericAssocs  def::MaybeExpr
   -- TODO: type checking!!
 }
 
+nonterminal GenericAssocs with pps, host<GenericAssocs>, lifted<GenericAssocs>, errors, globalDecls, defs, env, selectionType, compatibleSelections, returnType, freeVariables;
+flowtype GenericAssocs = decorate {env, returnType}, compatibleSelections {decorate, selectionType};
+
+autocopy attribute selectionType :: Type;
+synthesized attribute compatibleSelections :: [Decorated Expr];
+
 abstract production consGenericAssoc
 top::GenericAssocs ::= h::GenericAssoc  t::GenericAssocs
 {
@@ -506,6 +519,9 @@ top::GenericAssocs ::=
   top.freeVariables = [];
   top.compatibleSelections = [];
 }
+
+nonterminal GenericAssoc with location, pp, host<GenericAssoc>, lifted<GenericAssoc>, globalDecls, errors, defs, env, selectionType, compatibleSelections, returnType, freeVariables;
+flowtype GenericAssoc = decorate {env, returnType}, compatibleSelections {decorate, selectionType};
 
 abstract production genericAssoc
 top::GenericAssoc ::= ty::TypeName  fun::Expr
@@ -676,4 +692,3 @@ def BlockExpr : DStmt<Expr>;
 def OpaqueValueExpr : DStmt<Expr>;
 
 -}
-

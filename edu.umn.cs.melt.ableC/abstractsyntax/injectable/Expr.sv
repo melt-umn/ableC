@@ -1,6 +1,6 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax:injectable;
 
-imports edu:umn:cs:melt:ableC:abstractsyntax
+imports edu:umn:cs:melt:ableC:abstractsyntax:host
                                              with unaryOpExpr as unaryOpExprDefault,
                                                   arraySubscriptExpr as arraySubscriptExprDefault,
                                                   callExpr as callExprDefault,
