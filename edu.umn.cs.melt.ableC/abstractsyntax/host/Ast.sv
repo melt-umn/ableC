@@ -25,7 +25,6 @@ flowtype pp {} on
   Stmt,
   UnaryOp, UnaryTypeOp,
   Name, MaybeName,
-  BinOp, AssignOp, BoolOp, BitOp, CompareOp, NumOp,
   MaybeInitializer, Initializer, Init, Designator;
 flowtype pps {} on 
   Attributes,
@@ -53,7 +52,6 @@ flowtype errors {decorate} on
   MaybeExpr, Exprs, ExprOrTypeName,
   Stmt,
   UnaryOp, UnaryTypeOp,
-  BinOp,
   MaybeInitializer, Initializer, InitList, Init, Designator,
   SpecialSpecifiers;
   
@@ -98,5 +96,4 @@ flowtype forward {decorate} on
   Stmt,
   UnaryOp, UnaryTypeOp,
   Name,
-  BinOp, AssignOp, BoolOp, BitOp, CompareOp, NumOp,
   Initializer, Init, Designator;

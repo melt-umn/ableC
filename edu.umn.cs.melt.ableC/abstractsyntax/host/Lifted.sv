@@ -66,7 +66,6 @@ flowtype lifted {decorate} on
   Stmt,
   UnaryOp, UnaryTypeOp,
   Name, MaybeName,
-  BinOp, AssignOp, BoolOp, BitOp, CompareOp, NumOp,
   MaybeInitializer, Initializer, InitList, Init, Designator;
 flowtype globalDecls {decorate} on
   Decls, Decl, Declarators, Declarator, FunctionDecl, Parameters, ParameterDecl, StructDecl, UnionDecl, EnumDecl, StructItemList, EnumItemList, StructItem, StructDeclarators, StructDeclarator, EnumItem,

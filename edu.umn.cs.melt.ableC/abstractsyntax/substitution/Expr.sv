@@ -78,21 +78,6 @@ top::Expr ::= q::Qualifiers e::Expr
 {
   propagate substituted;
 }
-aspect production addExpr
-top::Expr ::= lhs::Expr  rhs::Expr
-{
-  propagate substituted;
-}
-aspect production subExpr
-top::Expr ::= lhs::Expr  rhs::Expr
-{
-  propagate substituted;
-}
-aspect production binaryOpExpr
-top::Expr ::= lhs::Expr  op::BinOp  rhs::Expr
-{
-  propagate substituted;
-}
 aspect production conditionalExpr
 top::Expr ::= cond::Expr  t::Expr  e::Expr
 {
@@ -176,21 +161,6 @@ top::Expr ::= f::Expr  a::Exprs
 }
 aspect production ovrld:memberExpr
 top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
-{
-  propagate substituted;
-}
-aspect production ovrld:addExpr
-top::Expr ::= lhs::Expr  rhs::Expr
-{
-  propagate substituted;
-}
-aspect production ovrld:subExpr
-top::Expr ::= lhs::Expr  rhs::Expr
-{
-  propagate substituted;
-}
-aspect production ovrld:binaryOpExpr
-top::Expr ::= lhs::Expr  op::BinOp  rhs::Expr
 {
   propagate substituted;
 }

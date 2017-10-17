@@ -25,5 +25,4 @@ flowtype host {decorate} on
   Stmt,
   UnaryOp, UnaryTypeOp,
   Name, MaybeName,
-  BinOp, AssignOp, BoolOp, BitOp, CompareOp, NumOp,
   MaybeInitializer, Initializer, InitList, Init, Designator;

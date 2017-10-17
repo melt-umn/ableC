@@ -1,358 +1,496 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 
-import edu:umn:cs:melt:ableC:abstractsyntax:injectable;
-
-autocopy attribute lop :: Decorated Expr;
-autocopy attribute rop :: Decorated Expr;
-
-nonterminal BinOp with location, lop, rop, opName, pp, host<BinOp>, lifted<BinOp>, typerep, errors, injectedQualifiers, lhsRhsRuntimeMods;
-flowtype lhsRhsRuntimeMods {lop, rop} on BinOp;
-
--- function from temporary variable to code to be inserted
-synthesized attribute lhsRhsRuntimeMods :: [LhsOrRhsRuntimeMod] with ++;
-flowtype BinOp = decorate {lop, rop}, opName {};
-
-aspect default production
-top::BinOp ::=
-{
-  top.opName =
-    case top.pp of
-      text(opName) -> opName
-    | _ -> error("Op pp isn't simple text, opName must be overridden manually")
-    end;
-}
-
---------------------------------------------------------------------------------
-abstract production assignOp
-top::BinOp ::= op::AssignOp
+abstract production eqExpr
+top::Expr ::= lhs::Expr rhs::Expr
 {
   propagate host, lifted;
+  top.pp = parens( ppConcat([lhs.pp, space(), text("="), space(), rhs.pp]) );
+  top.errors := lhs.errors ++ assignErrors(lhs, rhs, top.location) ++ rhs.errors;
+  top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
+  top.defs := lhs.defs ++ rhs.defs;
+  top.freeVariables =
+    lhs.freeVariables ++
+    removeDefsFromNames(lhs.defs, rhs.freeVariables);
+  top.typerep = lhs.typerep.defaultLvalueConversion;
+  rhs.env = addEnv(lhs.defs, lhs.env);
+  top.isLValue = false;
+}
 
-  top.errors :=
-    if typeAssignableTo(top.lop.typerep, top.rop.typerep)
+abstract production mulEqExpr
+top::Expr ::= lhs::Expr rhs::Expr
+{
+  propagate host, lifted;
+  top.pp = parens( ppConcat([lhs.pp, space(), text("*="), space(), rhs.pp]) );
+  top.errors := lhs.errors ++ assignErrors(lhs, rhs, top.location) ++ rhs.errors;
+  top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
+  top.defs := lhs.defs ++ rhs.defs;
+  top.freeVariables =
+    lhs.freeVariables ++
+    removeDefsFromNames(lhs.defs, rhs.freeVariables);
+  top.typerep = lhs.typerep.defaultLvalueConversion;
+  rhs.env = addEnv(lhs.defs, lhs.env);
+  top.isLValue = false;
+}
+
+abstract production divEqExpr
+top::Expr ::= lhs::Expr rhs::Expr
+{
+  propagate host, lifted;
+  top.pp = parens( ppConcat([lhs.pp, space(), text("/="), space(), rhs.pp]) );
+  top.errors := lhs.errors ++ assignErrors(lhs, rhs, top.location) ++ rhs.errors;
+  top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
+  top.defs := lhs.defs ++ rhs.defs;
+  top.freeVariables =
+    lhs.freeVariables ++
+    removeDefsFromNames(lhs.defs, rhs.freeVariables);
+  top.typerep = lhs.typerep.defaultLvalueConversion;
+  rhs.env = addEnv(lhs.defs, lhs.env);
+  top.isLValue = false;
+}
+
+abstract production modEqExpr
+top::Expr ::= lhs::Expr rhs::Expr
+{
+  propagate host, lifted;
+  top.pp = parens( ppConcat([lhs.pp, space(), text("%="), space(), rhs.pp]) );
+  top.errors := lhs.errors ++ assignErrors(lhs, rhs, top.location) ++ rhs.errors;
+  top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
+  top.defs := lhs.defs ++ rhs.defs;
+  top.freeVariables =
+    lhs.freeVariables ++
+    removeDefsFromNames(lhs.defs, rhs.freeVariables);
+  top.typerep = lhs.typerep.defaultLvalueConversion;
+  rhs.env = addEnv(lhs.defs, lhs.env);
+  top.isLValue = false;
+}
+
+abstract production addEqExpr
+top::Expr ::= lhs::Expr rhs::Expr
+{
+  propagate host, lifted;
+  top.pp = parens( ppConcat([lhs.pp, space(), text("+="), space(), rhs.pp]) );
+  top.errors := lhs.errors ++ assignErrors(lhs, rhs, top.location) ++ rhs.errors;
+  top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
+  top.defs := lhs.defs ++ rhs.defs;
+  top.freeVariables =
+    lhs.freeVariables ++
+    removeDefsFromNames(lhs.defs, rhs.freeVariables);
+  top.typerep = lhs.typerep.defaultLvalueConversion;
+  rhs.env = addEnv(lhs.defs, lhs.env);
+  top.isLValue = false;
+}
+
+abstract production subEqExpr
+top::Expr ::= lhs::Expr rhs::Expr
+{
+  propagate host, lifted;
+  top.pp = parens( ppConcat([lhs.pp, space(), text("-="), space(), rhs.pp]) );
+  top.errors := lhs.errors ++ assignErrors(lhs, rhs, top.location) ++ rhs.errors;
+  top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
+  top.defs := lhs.defs ++ rhs.defs;
+  top.freeVariables =
+    lhs.freeVariables ++
+    removeDefsFromNames(lhs.defs, rhs.freeVariables);
+  top.typerep = lhs.typerep.defaultLvalueConversion;
+  rhs.env = addEnv(lhs.defs, lhs.env);
+  top.isLValue = false;
+}
+
+abstract production lshEqExpr
+top::Expr ::= lhs::Expr rhs::Expr
+{
+  propagate host, lifted;
+  top.pp = parens( ppConcat([lhs.pp, space(), text("<<="), space(), rhs.pp]) );
+  top.errors := lhs.errors ++ assignErrors(lhs, rhs, top.location) ++ rhs.errors;
+  top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
+  top.defs := lhs.defs ++ rhs.defs;
+  top.freeVariables =
+    lhs.freeVariables ++
+    removeDefsFromNames(lhs.defs, rhs.freeVariables);
+  top.typerep = lhs.typerep.defaultLvalueConversion;
+  rhs.env = addEnv(lhs.defs, lhs.env);
+  top.isLValue = false;
+}
+
+abstract production rshEqExpr
+top::Expr ::= lhs::Expr rhs::Expr
+{
+  propagate host, lifted;
+  top.pp = parens( ppConcat([lhs.pp, space(), text(">>="), space(), rhs.pp]) );
+  top.errors := lhs.errors ++ assignErrors(lhs, rhs, top.location) ++ rhs.errors;
+  top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
+  top.defs := lhs.defs ++ rhs.defs;
+  top.freeVariables =
+    lhs.freeVariables ++
+    removeDefsFromNames(lhs.defs, rhs.freeVariables);
+  top.typerep = lhs.typerep.defaultLvalueConversion;
+  rhs.env = addEnv(lhs.defs, lhs.env);
+  top.isLValue = false;
+}
+
+abstract production andEqExpr
+top::Expr ::= lhs::Expr rhs::Expr
+{
+  propagate host, lifted;
+  top.pp = parens( ppConcat([lhs.pp, space(), text("&="), space(), rhs.pp]) );
+  top.errors := lhs.errors ++ assignErrors(lhs, rhs, top.location) ++ rhs.errors;
+  top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
+  top.defs := lhs.defs ++ rhs.defs;
+  top.freeVariables =
+    lhs.freeVariables ++
+    removeDefsFromNames(lhs.defs, rhs.freeVariables);
+  top.typerep = lhs.typerep.defaultLvalueConversion;
+  rhs.env = addEnv(lhs.defs, lhs.env);
+  top.isLValue = false;
+}
+
+abstract production xorEqExpr
+top::Expr ::= lhs::Expr rhs::Expr
+{
+  propagate host, lifted;
+  top.pp = parens( ppConcat([lhs.pp, space(), text("^="), space(), rhs.pp]) );
+  top.errors := lhs.errors ++ assignErrors(lhs, rhs, top.location) ++ rhs.errors;
+  top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
+  top.defs := lhs.defs ++ rhs.defs;
+  top.freeVariables =
+    lhs.freeVariables ++
+    removeDefsFromNames(lhs.defs, rhs.freeVariables);
+  top.typerep = lhs.typerep.defaultLvalueConversion;
+  rhs.env = addEnv(lhs.defs, lhs.env);
+  top.isLValue = false;
+}
+
+abstract production orEqExpr
+top::Expr ::= lhs::Expr rhs::Expr
+{
+  propagate host, lifted;
+  top.pp = parens( ppConcat([lhs.pp, space(), text("|="), space(), rhs.pp]) );
+  top.errors := lhs.errors ++ assignErrors(lhs, rhs, top.location) ++ rhs.errors;
+  top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
+  top.defs := lhs.defs ++ rhs.defs;
+  top.freeVariables =
+    lhs.freeVariables ++
+    removeDefsFromNames(lhs.defs, rhs.freeVariables);
+  top.typerep = lhs.typerep.defaultLvalueConversion;
+  rhs.env = addEnv(lhs.defs, lhs.env);
+  top.isLValue = false;
+}
+
+function assignErrors
+[Message] ::= lhs::Decorated Expr  rhs::Decorated Expr  loc::Location
+{
+	return
+    (if typeAssignableTo(lhs.typerep, rhs.typerep)
     then
-      if containsQualifier(constQualifier(location=bogusLoc()), top.lop.typerep)
-      then [err(top.location, "Assignment of read-only variable")]
+      if containsQualifier(constQualifier(location=bogusLoc()), lhs.typerep)
+      then [err(loc, "Assignment of read-only variable")]
       else []
-    else [err(top.location, "Incompatible type in rhs of assignment, expected " ++ showType(top.lop.typerep) ++ " but found " ++ showType(top.rop.typerep))];
-  top.pp = op.pp;
-  top.typerep = top.lop.typerep.defaultLvalueConversion;
-  top.injectedQualifiers := op.injectedQualifiers;
-  top.lhsRhsRuntimeMods := [];
-
-  top.errors <- if top.lop.isLValue then []
-    else [err(top.lop.location, "lvalue required as left operand of assignment")];
+    else [err(loc, "Incompatible type in rhs of assignment, expected " ++ showType(lhs.typerep) ++ " but found " ++ showType(rhs.typerep))]) ++
+    if lhs.isLValue then []
+      else [err(lhs.location, "lvalue required as left operand of assignment")];
 }
 
-nonterminal AssignOp with location, lop, rop, pp, host<AssignOp>, lifted<AssignOp>, injectedQualifiers;
-flowtype AssignOp = decorate {lop, rop};
-
-abstract production eqOp
-top::AssignOp ::=
+abstract production andExpr
+top::Expr ::= lhs::Expr rhs::Expr
 {
   propagate host, lifted;
-  top.pp = text("=");
-  top.injectedQualifiers := [];
-}
-abstract production mulEqOp
-top::AssignOp ::=
-{
-  propagate host, lifted;
-  top.pp = text("*=");
-  top.injectedQualifiers := [];
-}
-abstract production divEqOp
-top::AssignOp ::=
-{
-  propagate host, lifted;
-  top.pp = text("/=");
-  top.injectedQualifiers := [];
-}
-abstract production modEqOp
-top::AssignOp ::=
-{
-  propagate host, lifted;
-  top.pp = text("%=");
-  top.injectedQualifiers := [];
-}
-abstract production addEqOp
-top::AssignOp ::=
-{
-  propagate host, lifted;
-  top.pp = text("+=");
-  top.injectedQualifiers := [];
-}
-abstract production subEqOp
-top::AssignOp ::=
-{
-  propagate host, lifted;
-  top.pp = text("-=");
-  top.injectedQualifiers := [];
-}
-abstract production lshEqOp
-top::AssignOp ::=
-{
-  propagate host, lifted;
-  top.pp = text("<<=");
-  top.injectedQualifiers := [];
-}
-abstract production rshEqOp
-top::AssignOp ::=
-{
-  propagate host, lifted;
-  top.pp = text(">>=");
-  top.injectedQualifiers := [];
-}
-abstract production andEqOp
-top::AssignOp ::=
-{
-  propagate host, lifted;
-  top.pp = text("&=");
-  top.injectedQualifiers := [];
-}
-abstract production orEqOp
-top::AssignOp ::=
-{
-  propagate host, lifted;
-  top.pp = text("|=");
-  top.injectedQualifiers := [];
-}
-abstract production xorEqOp
-top::AssignOp ::=
-{
-  propagate host, lifted;
-  top.pp = text("^=");
-  top.injectedQualifiers := [];
-}
-
-
---------------------------------------------------------------------------------
-abstract production boolOp
-top::BinOp ::= op::BoolOp
-{
-  propagate host, lifted;
-  top.pp = op.pp;
+  top.pp = parens( ppConcat([lhs.pp, space(), text("&&"), space(), rhs.pp]) );
+  top.errors := lhs.errors ++ rhs.errors;
+  top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
+  top.defs := lhs.defs ++ rhs.defs;
+  top.freeVariables =
+    lhs.freeVariables ++
+    removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = builtinType(nilQualifier(), signedType(intType()));
-  top.injectedQualifiers := op.injectedQualifiers;
-  top.errors := op.errors;
-  top.lhsRhsRuntimeMods := [];
+  rhs.env = addEnv(lhs.defs, lhs.env);
+  top.isLValue = false;
 }
 
-nonterminal BoolOp with location, lop, rop, pp, host<BoolOp>, lifted<BoolOp>, injectedQualifiers, errors;
-flowtype BoolOp = decorate {lop, rop};
-
-abstract production andBoolOp
-top::BoolOp ::=
+abstract production orExpr
+top::Expr ::= lhs::Expr rhs::Expr
 {
   propagate host, lifted;
-  top.pp = text("&&");
-  top.injectedQualifiers := [];
-  top.errors := [];
-}
-abstract production orBoolOp
-top::BoolOp ::=
-{
-  propagate host, lifted;
-  top.pp = text("||");
-  top.injectedQualifiers := [];
-  top.errors := [];
-}
-
-
---------------------------------------------------------------------------------
-abstract production bitOp
-top::BinOp ::= op::BitOp
-{
-  propagate host, lifted;
-  top.pp = op.pp;
-  top.typerep = usualArithmeticConversionsOnTypes(top.lop.typerep, top.rop.typerep);
-  top.injectedQualifiers := op.injectedQualifiers;
-  top.errors := op.errors;
-  top.lhsRhsRuntimeMods := [];
-}
-
-nonterminal BitOp with location, lop, rop, pp, host<BitOp>, lifted<BitOp>, injectedQualifiers, errors;
-flowtype BitOp = decorate {lop, rop};
-
-abstract production andBitOp
-top::BitOp ::=
-{
-  propagate host, lifted;
-  top.pp = text("&");
-  top.injectedQualifiers := [];
-  top.errors := [];
-}
-abstract production orBitOp
-top::BitOp ::=
-{
-  propagate host, lifted;
-  top.pp = text("|");
-  top.injectedQualifiers := [];
-  top.errors := [];
-}
-abstract production xorBitOp
-top::BitOp ::=
-{
-  propagate host, lifted;
-  top.pp = text("^");
-  top.injectedQualifiers := [];
-  top.errors := [];
-}
-abstract production lshBitOp
-top::BitOp ::=
-{
-  propagate host, lifted;
-  top.pp = text("<<");
-  top.injectedQualifiers := [];
-  top.errors := [];
-}
-abstract production rshBitOp
-top::BitOp ::=
-{
-  propagate host, lifted;
-  top.pp = text(">>");
-  top.injectedQualifiers := [];
-  top.errors := [];
-}
-
-
-
---------------------------------------------------------------------------------
-abstract production compareOp
-top::BinOp ::= op::CompareOp
-{
-  propagate host, lifted;
-  top.pp = op.pp;
+  top.pp = parens( ppConcat([lhs.pp, space(), text("||"), space(), rhs.pp]) );
+  top.errors := lhs.errors ++ rhs.errors;
+  top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
+  top.defs := lhs.defs ++ rhs.defs;
+  top.freeVariables =
+    lhs.freeVariables ++
+    removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = builtinType(nilQualifier(), signedType(intType()));
-  top.injectedQualifiers := op.injectedQualifiers;
-  top.errors := op.errors;
-  top.lhsRhsRuntimeMods := [];
+  rhs.env = addEnv(lhs.defs, lhs.env);
+  top.isLValue = false;
 }
 
-nonterminal CompareOp with location, lop, rop, pp, host<CompareOp>, lifted<CompareOp>, injectedQualifiers, errors;
-flowtype CompareOp = decorate {lop, rop};
-
-abstract production equalsOp
-top::CompareOp ::=
+abstract production andBitExpr
+top::Expr ::= lhs::Expr rhs::Expr
 {
   propagate host, lifted;
-  top.pp = text("==");
-  top.injectedQualifiers := [];
-  top.errors := [];
-}
-abstract production notEqualsOp
-top::CompareOp ::=
-{
-  propagate host, lifted;
-  top.pp = text("!=");
-  top.injectedQualifiers := [];
-  top.errors := [];
-}
-abstract production gtOp
-top::CompareOp ::=
-{
-  propagate host, lifted;
-  top.pp = text(">");
-  top.injectedQualifiers := [];
-  top.errors := [];
-}
-abstract production ltOp
-top::CompareOp ::=
-{
-  propagate host, lifted;
-  top.pp = text("<");
-  top.injectedQualifiers := [];
-  top.errors := [];
-}
-abstract production gteOp
-top::CompareOp ::=
-{
-  propagate host, lifted;
-  top.pp = text(">=");
-  top.injectedQualifiers := [];
-  top.errors := [];
-}
-abstract production lteOp
-top::CompareOp ::=
-{
-  propagate host, lifted;
-  top.pp = text("<=");
-  top.injectedQualifiers := [];
-  top.errors := [];
+  top.pp = parens( ppConcat([lhs.pp, space(), text("&"), space(), rhs.pp]) );
+  top.errors := lhs.errors ++ rhs.errors;
+  top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
+  top.defs := lhs.defs ++ rhs.defs;
+  top.freeVariables =
+    lhs.freeVariables ++
+    removeDefsFromNames(lhs.defs, rhs.freeVariables);
+  top.typerep = usualArithmeticConversionsOnTypes(lhs.typerep, rhs.typerep);
+  rhs.env = addEnv(lhs.defs, lhs.env);
+  top.isLValue = false;
 }
 
-
---------------------------------------------------------------------------------
-abstract production numOp
-top::BinOp ::= op::NumOp
+abstract production orBitExpr
+top::Expr ::= lhs::Expr rhs::Expr
 {
   propagate host, lifted;
-  top.pp = op.pp;
-  top.typerep = op.typerep;
-  top.injectedQualifiers := op.injectedQualifiers;
-  top.errors := op.errors;
-  top.lhsRhsRuntimeMods := [];
+  top.pp = parens( ppConcat([lhs.pp, space(), text("|"), space(), rhs.pp]) );
+  top.errors := lhs.errors ++ rhs.errors;
+  top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
+  top.defs := lhs.defs ++ rhs.defs;
+  top.freeVariables =
+    lhs.freeVariables ++
+    removeDefsFromNames(lhs.defs, rhs.freeVariables);
+  top.typerep = usualArithmeticConversionsOnTypes(lhs.typerep, rhs.typerep);
+  rhs.env = addEnv(lhs.defs, lhs.env);
+  top.isLValue = false;
 }
 
-nonterminal NumOp with location, lop, rop, pp, host<NumOp>, lifted<NumOp>, typerep, injectedQualifiers, errors;
-flowtype NumOp = decorate {lop, rop};
-
-abstract production addOp
-top::NumOp ::=
+abstract production xorExpr
+top::Expr ::= lhs::Expr rhs::Expr
 {
   propagate host, lifted;
-  top.pp = text("+");
-  top.typerep = usualAdditiveConversionsOnTypes(top.lop.typerep, top.rop.typerep);
-  top.injectedQualifiers := [];
-  top.errors := [];
-}
-abstract production subOp
-top::NumOp ::=
-{
-  propagate host, lifted;
-  top.pp = text("-");
-  top.typerep = usualSubtractiveConversionsOnTypes(top.lop.typerep, top.rop.typerep);
-  top.injectedQualifiers := [];
-  top.errors := [];
-}
-abstract production mulOp
-top::NumOp ::=
-{
-  propagate host, lifted;
-  top.pp = text("*");
-  top.typerep = usualArithmeticConversionsOnTypes(top.lop.typerep, top.rop.typerep);
-  top.injectedQualifiers := [];
-  top.errors := [];
-}
-abstract production divOp
-top::NumOp ::=
-{
-  propagate host, lifted;
-  top.pp = text("/");
-  top.typerep = usualArithmeticConversionsOnTypes(top.lop.typerep, top.rop.typerep);
-  top.injectedQualifiers := [];
-  top.errors := [];
-}
-abstract production modOp
-top::NumOp ::=
-{
-  propagate host, lifted;
-  top.pp = text("%");
-  top.typerep = usualArithmeticConversionsOnTypes(top.lop.typerep, top.rop.typerep);
-  top.injectedQualifiers := [];
-  top.errors := [];
+  top.pp = parens( ppConcat([lhs.pp, space(), text("^"), space(), rhs.pp]) );
+  top.errors := lhs.errors ++ rhs.errors;
+  top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
+  top.defs := lhs.defs ++ rhs.defs;
+  top.freeVariables =
+    lhs.freeVariables ++
+    removeDefsFromNames(lhs.defs, rhs.freeVariables);
+  top.typerep = usualArithmeticConversionsOnTypes(lhs.typerep, rhs.typerep);
+  rhs.env = addEnv(lhs.defs, lhs.env);
+  top.isLValue = false;
 }
 
---------------------------------------------------------------------------------
-abstract production commaOp
-top::BinOp ::=
+abstract production lshExpr
+top::Expr ::= lhs::Expr rhs::Expr
 {
   propagate host, lifted;
-  top.pp = comma();
-  top.typerep = top.rop.typerep;
-  top.injectedQualifiers := [];
-  top.errors := [];
-  top.lhsRhsRuntimeMods := [];
+  top.pp = parens( ppConcat([lhs.pp, space(), text("<<"), space(), rhs.pp]) );
+  top.errors := lhs.errors ++ rhs.errors;
+  top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
+  top.defs := lhs.defs ++ rhs.defs;
+  top.freeVariables =
+    lhs.freeVariables ++
+    removeDefsFromNames(lhs.defs, rhs.freeVariables);
+  top.typerep = usualArithmeticConversionsOnTypes(lhs.typerep, rhs.typerep);
+  rhs.env = addEnv(lhs.defs, lhs.env);
+  top.isLValue = false;
 }
 
+abstract production rshExpr
+top::Expr ::= lhs::Expr rhs::Expr
+{
+  propagate host, lifted;
+  top.pp = parens( ppConcat([lhs.pp, space(), text(">>"), space(), rhs.pp]) );
+  top.errors := lhs.errors ++ rhs.errors;
+  top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
+  top.defs := lhs.defs ++ rhs.defs;
+  top.freeVariables =
+    lhs.freeVariables ++
+    removeDefsFromNames(lhs.defs, rhs.freeVariables);
+  top.typerep = usualArithmeticConversionsOnTypes(lhs.typerep, rhs.typerep);
+  rhs.env = addEnv(lhs.defs, lhs.env);
+  top.isLValue = false;
+}
+
+abstract production equalsExpr
+top::Expr ::= lhs::Expr rhs::Expr
+{
+  propagate host, lifted;
+  top.pp = parens( ppConcat([lhs.pp, space(), text("=="), space(), rhs.pp]) );
+  top.errors := lhs.errors ++ rhs.errors;
+  top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
+  top.defs := lhs.defs ++ rhs.defs;
+  top.freeVariables =
+    lhs.freeVariables ++
+    removeDefsFromNames(lhs.defs, rhs.freeVariables);
+  top.typerep = builtinType(nilQualifier(), signedType(intType()));
+  rhs.env = addEnv(lhs.defs, lhs.env);
+  top.isLValue = false;
+}
+
+abstract production notEqualsExpr
+top::Expr ::= lhs::Expr rhs::Expr
+{
+  propagate host, lifted;
+  top.pp = parens( ppConcat([lhs.pp, space(), text("!="), space(), rhs.pp]) );
+  top.errors := lhs.errors ++ rhs.errors;
+  top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
+  top.defs := lhs.defs ++ rhs.defs;
+  top.freeVariables =
+    lhs.freeVariables ++
+    removeDefsFromNames(lhs.defs, rhs.freeVariables);
+  top.typerep = builtinType(nilQualifier(), signedType(intType()));
+  rhs.env = addEnv(lhs.defs, lhs.env);
+  top.isLValue = false;
+}
+
+abstract production gtExpr
+top::Expr ::= lhs::Expr rhs::Expr
+{
+  propagate host, lifted;
+  top.pp = parens( ppConcat([lhs.pp, space(), text(">"), space(), rhs.pp]) );
+  top.errors := lhs.errors ++ rhs.errors;
+  top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
+  top.defs := lhs.defs ++ rhs.defs;
+  top.freeVariables =
+    lhs.freeVariables ++
+    removeDefsFromNames(lhs.defs, rhs.freeVariables);
+  top.typerep = builtinType(nilQualifier(), signedType(intType()));
+  rhs.env = addEnv(lhs.defs, lhs.env);
+  top.isLValue = false;
+}
+
+abstract production ltExpr
+top::Expr ::= lhs::Expr rhs::Expr
+{
+  propagate host, lifted;
+  top.pp = parens( ppConcat([lhs.pp, space(), text("<"), space(), rhs.pp]) );
+  top.errors := lhs.errors ++ rhs.errors;
+  top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
+  top.defs := lhs.defs ++ rhs.defs;
+  top.freeVariables =
+    lhs.freeVariables ++
+    removeDefsFromNames(lhs.defs, rhs.freeVariables);
+  top.typerep = builtinType(nilQualifier(), signedType(intType()));
+  rhs.env = addEnv(lhs.defs, lhs.env);
+  top.isLValue = false;
+}
+
+abstract production gteExpr
+top::Expr ::= lhs::Expr rhs::Expr
+{
+  propagate host, lifted;
+  top.pp = parens( ppConcat([lhs.pp, space(), text(">="), space(), rhs.pp]) );
+  top.errors := lhs.errors ++ rhs.errors;
+  top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
+  top.defs := lhs.defs ++ rhs.defs;
+  top.freeVariables =
+    lhs.freeVariables ++
+    removeDefsFromNames(lhs.defs, rhs.freeVariables);
+  top.typerep = builtinType(nilQualifier(), signedType(intType()));
+  rhs.env = addEnv(lhs.defs, lhs.env);
+  top.isLValue = false;
+}
+
+abstract production lteExpr
+top::Expr ::= lhs::Expr rhs::Expr
+{
+  propagate host, lifted;
+  top.pp = parens( ppConcat([lhs.pp, space(), text("<="), space(), rhs.pp]) );
+  top.errors := lhs.errors ++ rhs.errors;
+  top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
+  top.defs := lhs.defs ++ rhs.defs;
+  top.freeVariables =
+    lhs.freeVariables ++
+    removeDefsFromNames(lhs.defs, rhs.freeVariables);
+  top.typerep = builtinType(nilQualifier(), signedType(intType()));
+  rhs.env = addEnv(lhs.defs, lhs.env);
+  top.isLValue = false;
+}
+
+abstract production addExpr
+top::Expr ::= lhs::Expr rhs::Expr
+{
+  propagate host, lifted;
+  top.pp = parens( ppConcat([lhs.pp, space(), text("+"), space(), rhs.pp]) );
+  top.errors := lhs.errors ++ rhs.errors;
+  top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
+  top.defs := lhs.defs ++ rhs.defs;
+  top.freeVariables =
+    lhs.freeVariables ++
+    removeDefsFromNames(lhs.defs, rhs.freeVariables);
+  top.typerep = usualAdditiveConversionsOnTypes(lhs.typerep, rhs.typerep);
+  rhs.env = addEnv(lhs.defs, lhs.env);
+  top.isLValue = false;
+}
+
+abstract production subExpr
+top::Expr ::= lhs::Expr rhs::Expr
+{
+  propagate host, lifted;
+  top.pp = parens( ppConcat([lhs.pp, space(), text("-"), space(), rhs.pp]) );
+  top.errors := lhs.errors ++ rhs.errors;
+  top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
+  top.defs := lhs.defs ++ rhs.defs;
+  top.freeVariables =
+    lhs.freeVariables ++
+    removeDefsFromNames(lhs.defs, rhs.freeVariables);
+  top.typerep = usualSubtractiveConversionsOnTypes(lhs.typerep, rhs.typerep);
+  rhs.env = addEnv(lhs.defs, lhs.env);
+  top.isLValue = false;
+}
+
+abstract production mulExpr
+top::Expr ::= lhs::Expr rhs::Expr
+{
+  propagate host, lifted;
+  top.pp = parens( ppConcat([lhs.pp, space(), text("*"), space(), rhs.pp]) );
+  top.errors := lhs.errors ++ rhs.errors;
+  top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
+  top.defs := lhs.defs ++ rhs.defs;
+  top.freeVariables =
+    lhs.freeVariables ++
+    removeDefsFromNames(lhs.defs, rhs.freeVariables);
+  top.typerep = usualArithmeticConversionsOnTypes(lhs.typerep, rhs.typerep);
+  rhs.env = addEnv(lhs.defs, lhs.env);
+  top.isLValue = false;
+}
+
+abstract production divExpr
+top::Expr ::= lhs::Expr rhs::Expr
+{
+  propagate host, lifted;
+  top.pp = parens( ppConcat([lhs.pp, space(), text("/"), space(), rhs.pp]) );
+  top.errors := lhs.errors ++ rhs.errors;
+  top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
+  top.defs := lhs.defs ++ rhs.defs;
+  top.freeVariables =
+    lhs.freeVariables ++
+    removeDefsFromNames(lhs.defs, rhs.freeVariables);
+  top.typerep = usualArithmeticConversionsOnTypes(lhs.typerep, rhs.typerep);
+  rhs.env = addEnv(lhs.defs, lhs.env);
+  top.isLValue = false;
+}
+
+abstract production modExpr
+top::Expr ::= lhs::Expr rhs::Expr
+{
+  propagate host, lifted;
+  top.pp = parens( ppConcat([lhs.pp, space(), text("%"), space(), rhs.pp]) );
+  top.errors := lhs.errors ++ rhs.errors;
+  top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
+  top.defs := lhs.defs ++ rhs.defs;
+  top.freeVariables =
+    lhs.freeVariables ++
+    removeDefsFromNames(lhs.defs, rhs.freeVariables);
+  top.typerep = usualArithmeticConversionsOnTypes(lhs.typerep, rhs.typerep);
+  rhs.env = addEnv(lhs.defs, lhs.env);
+  top.isLValue = false;
+}
+
+abstract production commaExpr
+top::Expr ::= lhs::Expr rhs::Expr
+{
+  propagate host, lifted;
+  top.pp = parens( ppConcat([lhs.pp, space(), comma(), space(), rhs.pp]) );
+  top.errors := lhs.errors ++ rhs.errors;
+  top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
+  top.defs := lhs.defs ++ rhs.defs;
+  top.freeVariables =
+    lhs.freeVariables ++
+    removeDefsFromNames(lhs.defs, rhs.freeVariables);
+  top.typerep = rhs.typerep;
+  rhs.env = addEnv(lhs.defs, lhs.env);
+  top.isLValue = false;
+}
 

@@ -6,8 +6,6 @@ autocopy attribute typeToQualify :: Type;
 
 synthesized attribute injectedQualifiers :: [Qualifier] with ++;
 flowtype injectedQualifiers {op} on UnaryOp;
-flowtype injectedQualifiers {lop, rop} on
-  BinOp, AssignOp, BoolOp, BitOp, CompareOp, NumOp;
 
 flowtype Qualifiers = decorate {}, qualifiers {}, errors {typeToQualify};
 

@@ -60,12 +60,14 @@ node {
     stage ("Extensions") {
       parallel(
         "ableC-skeleton": {
-          build job: '/melt-umn/ableC-skeleton/develop', parameters:
+//          build job: '/melt-umn/ableC-skeleton/develop', parameters:
+          build job: "/melt-umn/ableC-skeleton/feature%2Ftype_qualifiers", parameters:
             [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: params.SILVER_BASE],
              [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
         },
         "ableC-lib-skeleton": {
-          build job: '/melt-umn/ableC-lib-skeleton/develop', parameters:
+//          build job: '/melt-umn/ableC-lib-skeleton/develop', parameters:
+          build job: "/melt-umn/ableC-lib-skeleton/feature%2Ftype_qualifiers", parameters:
             [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: params.SILVER_BASE],
              [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
         },
@@ -76,15 +78,17 @@ node {
              [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
         },
         "ableC-condition-tables": {
-          build job: '/melt-umn/ableC-condition-tables/develop', parameters:
+//          build job: '/melt-umn/ableC-condition-tables/develop', parameters:
+          build job: "/melt-umn/ableC-condition-tables/feature%2Ftype_qualifiers", parameters:
             [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: params.SILVER_BASE],
              [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
         },
-//        "ableC-interval": {
+        "ableC-interval": {
 //          build job: '/melt-umn/ableC-interval/develop', parameters:
-//            [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: params.SILVER_BASE],
-//             [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
-//        },
+          build job: "/melt-umn/ableC-interval/feature%2Ftype_qualifiers", parameters:
+            [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: params.SILVER_BASE],
+             [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
+        },
         "ableC-cilk": {
 //          build job: '/melt-umn/ableC-cilk/develop', parameters:
           build job: "/melt-umn/ableC-cilk/feature%2Ftype_qualifiers", parameters:
@@ -92,7 +96,8 @@ node {
              [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
         },
         "ableC-halide": {
-          build job: '/melt-umn/ableC-halide/develop', parameters:
+//          build job: '/melt-umn/ableC-halide/develop', parameters:
+          build job: "/melt-umn/ableC-halide/feature%2Ftype_qualifiers", parameters:
             [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: params.SILVER_BASE],
              [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
         },
