@@ -26,10 +26,10 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   -- TODO: overload subscript/member on all assign exprs
   local option1::Maybe<host:Expr> =
     case lhs of
-      arraySubscriptExpr(l, r) -> applyMaybe6(getSubscriptAssignOverload(l.host:typerep, top.env), l, r,
-                                                host:eqExpr(_, _, location=_), text("="), rhs, top.location)
-    | memberExpr(l, d, r)      -> applyMaybe7(getMemberAssignOverload(l.host:typerep, top.env), l, d, r,
-                                                host:eqExpr(_, _, location=_), text("="), rhs, top.location)
+      arraySubscriptExpr(l, r) -> applyMaybe5(getSubscriptAssignOverload(l.host:typerep, top.env), l, r,
+                                                host:eqExpr(_, _, location=_), rhs, top.location)
+    | memberExpr(l, d, r)      -> applyMaybe6(getMemberAssignOverload(l.host:typerep, top.env), l, d, r,
+                                                host:eqExpr(_, _, location=_), rhs, top.location)
     | _                        -> nothing()
     end;
 
@@ -63,10 +63,10 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 
   local option1::Maybe<host:Expr> =
     case lhs of
-      arraySubscriptExpr(l, r) -> applyMaybe6(getSubscriptAssignOverload(l.host:typerep, top.env), l, r,
-                                                host:mulEqExpr(_, _, location=_), text("*="), rhs, top.location)
-    | memberExpr(l, d, r)      -> applyMaybe7(getMemberAssignOverload(l.host:typerep, top.env), l, d, r,
-                                                host:mulEqExpr(_, _, location=_), text("*="), rhs, top.location)
+      arraySubscriptExpr(l, r) -> applyMaybe5(getSubscriptAssignOverload(l.host:typerep, top.env), l, r,
+                                                host:mulEqExpr(_, _, location=_), rhs, top.location)
+    | memberExpr(l, d, r)      -> applyMaybe6(getMemberAssignOverload(l.host:typerep, top.env), l, d, r,
+                                                host:mulEqExpr(_, _, location=_), rhs, top.location)
     | _                        -> nothing()
     end;
 
@@ -102,10 +102,10 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 
   local option1::Maybe<host:Expr> =
     case lhs of
-      arraySubscriptExpr(l, r) -> applyMaybe6(getSubscriptAssignOverload(l.host:typerep, top.env), l, r,
-                                                host:divEqExpr(_, _, location=_), text("/="), rhs, top.location)
-    | memberExpr(l, d, r)      -> applyMaybe7(getMemberAssignOverload(l.host:typerep, top.env), l, d, r,
-                                                host:divEqExpr(_, _, location=_), text("/="), rhs, top.location)
+      arraySubscriptExpr(l, r) -> applyMaybe5(getSubscriptAssignOverload(l.host:typerep, top.env), l, r,
+                                                host:divEqExpr(_, _, location=_), rhs, top.location)
+    | memberExpr(l, d, r)      -> applyMaybe6(getMemberAssignOverload(l.host:typerep, top.env), l, d, r,
+                                                host:divEqExpr(_, _, location=_), rhs, top.location)
     | _                        -> nothing()
     end;
 
@@ -141,10 +141,10 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 
   local option1::Maybe<host:Expr> =
     case lhs of
-      arraySubscriptExpr(l, r) -> applyMaybe6(getSubscriptAssignOverload(l.host:typerep, top.env), l, r,
-                                                host:modEqExpr(_, _, location=_), text("%="), rhs, top.location)
-    | memberExpr(l, d, r)      -> applyMaybe7(getMemberAssignOverload(l.host:typerep, top.env), l, d, r,
-                                                host:modEqExpr(_, _, location=_), text("%="), rhs, top.location)
+      arraySubscriptExpr(l, r) -> applyMaybe5(getSubscriptAssignOverload(l.host:typerep, top.env), l, r,
+                                                host:modEqExpr(_, _, location=_), rhs, top.location)
+    | memberExpr(l, d, r)      -> applyMaybe6(getMemberAssignOverload(l.host:typerep, top.env), l, d, r,
+                                                host:modEqExpr(_, _, location=_), rhs, top.location)
     | _                        -> nothing()
     end;
 
@@ -180,10 +180,10 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 
   local option1::Maybe<host:Expr> =
     case lhs of
-      arraySubscriptExpr(l, r) -> applyMaybe6(getSubscriptAssignOverload(l.host:typerep, top.env), l, r,
-                                                host:addEqExpr(_, _, location=_), text("+="), rhs, top.location)
-    | memberExpr(l, d, r)      -> applyMaybe7(getMemberAssignOverload(l.host:typerep, top.env), l, d, r,
-                                                host:addEqExpr(_, _, location=_), text("+="), rhs, top.location)
+      arraySubscriptExpr(l, r) -> applyMaybe5(getSubscriptAssignOverload(l.host:typerep, top.env), l, r,
+                                                host:addEqExpr(_, _, location=_), rhs, top.location)
+    | memberExpr(l, d, r)      -> applyMaybe6(getMemberAssignOverload(l.host:typerep, top.env), l, d, r,
+                                                host:addEqExpr(_, _, location=_), rhs, top.location)
     | _                        -> nothing()
     end;
 
@@ -219,10 +219,10 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 
   local option1::Maybe<host:Expr> =
     case lhs of
-      arraySubscriptExpr(l, r) -> applyMaybe6(getSubscriptAssignOverload(l.host:typerep, top.env), l, r,
-                                                host:subEqExpr(_, _, location=_), text("-="), rhs, top.location)
-    | memberExpr(l, d, r)      -> applyMaybe7(getMemberAssignOverload(l.host:typerep, top.env), l, d, r,
-                                                host:subEqExpr(_, _, location=_), text("-="), rhs, top.location)
+      arraySubscriptExpr(l, r) -> applyMaybe5(getSubscriptAssignOverload(l.host:typerep, top.env), l, r,
+                                                host:subEqExpr(_, _, location=_), rhs, top.location)
+    | memberExpr(l, d, r)      -> applyMaybe6(getMemberAssignOverload(l.host:typerep, top.env), l, d, r,
+                                                host:subEqExpr(_, _, location=_), rhs, top.location)
     | _                        -> nothing()
     end;
 
@@ -258,10 +258,10 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 
   local option1::Maybe<host:Expr> =
     case lhs of
-      arraySubscriptExpr(l, r) -> applyMaybe6(getSubscriptAssignOverload(l.host:typerep, top.env), l, r,
-                                                host:lshEqExpr(_, _, location=_), text("<<="), rhs, top.location)
-    | memberExpr(l, d, r)      -> applyMaybe7(getMemberAssignOverload(l.host:typerep, top.env), l, d, r,
-                                                host:lshEqExpr(_, _, location=_), text("<<="), rhs, top.location)
+      arraySubscriptExpr(l, r) -> applyMaybe5(getSubscriptAssignOverload(l.host:typerep, top.env), l, r,
+                                                host:lshEqExpr(_, _, location=_), rhs, top.location)
+    | memberExpr(l, d, r)      -> applyMaybe6(getMemberAssignOverload(l.host:typerep, top.env), l, d, r,
+                                                host:lshEqExpr(_, _, location=_), rhs, top.location)
     | _                        -> nothing()
     end;
 
@@ -297,10 +297,10 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 
   local option1::Maybe<host:Expr> =
     case lhs of
-      arraySubscriptExpr(l, r) -> applyMaybe6(getSubscriptAssignOverload(l.host:typerep, top.env), l, r,
-                                                host:rshEqExpr(_, _, location=_), text(">>="), rhs, top.location)
-    | memberExpr(l, d, r)      -> applyMaybe7(getMemberAssignOverload(l.host:typerep, top.env), l, d, r,
-                                                host:rshEqExpr(_, _, location=_), text(">>="), rhs, top.location)
+      arraySubscriptExpr(l, r) -> applyMaybe5(getSubscriptAssignOverload(l.host:typerep, top.env), l, r,
+                                                host:rshEqExpr(_, _, location=_), rhs, top.location)
+    | memberExpr(l, d, r)      -> applyMaybe6(getMemberAssignOverload(l.host:typerep, top.env), l, d, r,
+                                                host:rshEqExpr(_, _, location=_), rhs, top.location)
     | _                        -> nothing()
     end;
 
@@ -336,10 +336,10 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 
   local option1::Maybe<host:Expr> =
     case lhs of
-      arraySubscriptExpr(l, r) -> applyMaybe6(getSubscriptAssignOverload(l.host:typerep, top.env), l, r,
-                                                host:andEqExpr(_, _, location=_), text("&="), rhs, top.location)
-    | memberExpr(l, d, r)      -> applyMaybe7(getMemberAssignOverload(l.host:typerep, top.env), l, d, r,
-                                                host:andEqExpr(_, _, location=_), text("&="), rhs, top.location)
+      arraySubscriptExpr(l, r) -> applyMaybe5(getSubscriptAssignOverload(l.host:typerep, top.env), l, r,
+                                                host:andEqExpr(_, _, location=_), rhs, top.location)
+    | memberExpr(l, d, r)      -> applyMaybe6(getMemberAssignOverload(l.host:typerep, top.env), l, d, r,
+                                                host:andEqExpr(_, _, location=_), rhs, top.location)
     | _                        -> nothing()
     end;
 
@@ -375,10 +375,10 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 
   local option1::Maybe<host:Expr> =
     case lhs of
-      arraySubscriptExpr(l, r) -> applyMaybe6(getSubscriptAssignOverload(l.host:typerep, top.env), l, r,
-                                                host:xorEqExpr(_, _, location=_), text("^="), rhs, top.location)
-    | memberExpr(l, d, r)      -> applyMaybe7(getMemberAssignOverload(l.host:typerep, top.env), l, d, r,
-                                                host:xorEqExpr(_, _, location=_), text("^="), rhs, top.location)
+      arraySubscriptExpr(l, r) -> applyMaybe5(getSubscriptAssignOverload(l.host:typerep, top.env), l, r,
+                                                host:xorEqExpr(_, _, location=_), rhs, top.location)
+    | memberExpr(l, d, r)      -> applyMaybe6(getMemberAssignOverload(l.host:typerep, top.env), l, d, r,
+                                                host:xorEqExpr(_, _, location=_), rhs, top.location)
     | _                        -> nothing()
     end;
 
@@ -414,10 +414,10 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 
   local option1::Maybe<host:Expr> =
     case lhs of
-      arraySubscriptExpr(l, r) -> applyMaybe6(getSubscriptAssignOverload(l.host:typerep, top.env), l, r,
-                                                host:orEqExpr(_, _, location=_), text("|="), rhs, top.location)
-    | memberExpr(l, d, r)      -> applyMaybe7(getMemberAssignOverload(l.host:typerep, top.env), l, d, r,
-                                                host:orEqExpr(_, _, location=_), text("|="), rhs, top.location)
+      arraySubscriptExpr(l, r) -> applyMaybe5(getSubscriptAssignOverload(l.host:typerep, top.env), l, r,
+                                                host:orEqExpr(_, _, location=_), rhs, top.location)
+    | memberExpr(l, d, r)      -> applyMaybe6(getMemberAssignOverload(l.host:typerep, top.env), l, d, r,
+                                                host:orEqExpr(_, _, location=_), rhs, top.location)
     | _                        -> nothing()
     end;
 
