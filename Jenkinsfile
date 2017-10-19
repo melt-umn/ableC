@@ -136,7 +136,7 @@ node {
           build job: '/melt-umn/ableC_sample_projects/feature%2Ftype_qualifiers', parameters:
             [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: params.SILVER_BASE],
              [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
-        }
+        },
         "ableC-nonnull": {
           build job: '/melt-umn/ableC-nonnull/develop', parameters:
             [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: params.SILVER_BASE],
