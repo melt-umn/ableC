@@ -4,6 +4,7 @@ imports silver:langutil;
 imports silver:langutil:pp with implode as ppImplode, concat as ppConcat;
 imports edu:umn:cs:melt:ableC:abstractsyntax:env;
 imports edu:umn:cs:melt:ableC:abstractsyntax:construction;
+imports edu:umn:cs:melt:ableC:abstractsyntax:construction:parsing;
 import edu:umn:cs:melt:ableC:abstractsyntax:host;
 
 nonterminal LhsOrRhsRuntimeMods with modLhs, modRhs, lhsToModify, rhsToModify;
@@ -32,21 +33,48 @@ top::LhsOrRhsRuntimeMods ::=
 function applyLhsRhsMods
 Pair<Expr Expr> ::= l::[LhsOrRhsRuntimeMod]  lhs::Decorated Expr  rhs::Decorated Expr
 {
-  -- TODO: copy lhs/rhs to temps to prevent being evaluated more than once
-  local mods :: LhsOrRhsRuntimeMods = foldr(consLhsOrRhsRuntimeMod, nilLhsOrRhsRuntimeMod(), l);
-  mods.lhsToModify = new(lhs);
-  mods.rhsToModify = new(rhs);
+  local tmpLhsName :: String = "_tmpLhs" ++ toString(genInt());
+  local tmpLhs :: Expr = declRefExpr(name(tmpLhsName, location=lhs.location), location=lhs.location);
+  local tmpRhsName :: String = "_tmpRhs" ++ toString(genInt());
+  local tmpRhs :: Expr = declRefExpr(name(tmpRhsName, location=rhs.location), location=rhs.location);
 
-  return pair(mods.modLhs, mods.modRhs);
+  local mods :: LhsOrRhsRuntimeMods = foldr(consLhsOrRhsRuntimeMod, nilLhsOrRhsRuntimeMod(), l);
+  mods.lhsToModify = tmpLhs;
+  mods.rhsToModify = tmpRhs;
+
+  -- copy lhs/rhs to temps to prevent being evaluated more than once
+  local modLhs :: Expr =
+    if null(filter((.isLhs), l))
+    then new(lhs)
+    else
+      stmtExpr(
+        mkDecl(tmpLhsName, lhs.typerep, new(lhs), lhs.location),
+        mods.modLhs,
+        location=lhs.location
+      );
+
+  local modRhs :: Expr =
+    if null(filter(\m::LhsOrRhsRuntimeMod -> !m.isLhs, l))
+    then new(rhs)
+    else
+      stmtExpr(
+        mkDecl(tmpRhsName, rhs.typerep, new(rhs), rhs.location),
+        mods.modRhs,
+        location=rhs.location
+      );
+
+  return pair(modLhs, modRhs);
 }
 
-nonterminal LhsOrRhsRuntimeMod with modLhs, modRhs, lhsToModify, rhsToModify;
+nonterminal LhsOrRhsRuntimeMod with modLhs, modRhs, isLhs, lhsToModify, rhsToModify;
+synthesized attribute isLhs :: Boolean;
 
 abstract production lhsRuntimeMod
 top::LhsOrRhsRuntimeMod ::= rm::RuntimeMod
 {
   top.modLhs = rm.modExpr;
   top.modRhs = top.rhsToModify;
+  top.isLhs = true;
 
   rm.exprToModify = top.lhsToModify;
 }
@@ -56,6 +84,7 @@ top::LhsOrRhsRuntimeMod ::= rm::RuntimeMod
 {
   top.modLhs = top.lhsToModify;
   top.modRhs = rm.modExpr;
+  top.isLhs = false;
 
   rm.exprToModify = top.rhsToModify;
 }
@@ -80,10 +109,23 @@ top::RuntimeMods ::=
 function applyMods
 Expr ::= l::[RuntimeMod] e::Decorated Expr
 {
-  local mods :: RuntimeMods = foldr(consRuntimeMod, nilRuntimeMod(), l);
-  mods.exprToModify = new(e);
+  local tmpName :: String = "_tmp" ++ toString(genInt());
+  local tmp :: Expr = declRefExpr(name(tmpName, location=e.location), location=e.location);
 
-  return mods.modExpr;
+  local mods :: RuntimeMods = foldr(consRuntimeMod, nilRuntimeMod(), l);
+  mods.exprToModify = tmp;
+
+  -- copy to temp to prevent being evaluated more than once
+  local modExpr :: Expr =
+    if null(l) then new(e)
+    else
+      stmtExpr(
+        mkDecl(tmpName, e.typerep, new(e), e.location),
+        mods.modExpr,
+        location=e.location
+      );
+
+  return modExpr;
 }
 
 nonterminal RuntimeMod with modExpr, exprToModify;
@@ -96,7 +138,7 @@ top::RuntimeMod ::= check::(Expr ::= Expr)  failMessage::String  l::Location
     stmtExpr(
       ifStmtNoElse(
         check(top.exprToModify),
-        txtStmt(s"fprintf(stderr, \"${l.unparse}:${failMessage}\"); exit(255);")
+        parseStmt(s"fprintf(stderr, \"${l.unparse}:${failMessage}\"); exit(255);")
       ),
       top.exprToModify,
       location=bogusLoc()
