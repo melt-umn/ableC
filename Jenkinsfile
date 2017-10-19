@@ -131,12 +131,32 @@ node {
             [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: params.SILVER_BASE],
              [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
         },
-//        "ableC_sample_projects": {
-////          build job: '/melt-umn/ableC_sample_projects/master', parameters:
-//          build job: '/melt-umn/ableC_sample_projects/feature%2Ftype_qualifiers', parameters:
-//            [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: params.SILVER_BASE],
-//             [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
-//        }
+        "ableC_sample_projects": {
+//          build job: '/melt-umn/ableC_sample_projects/master', parameters:
+          build job: '/melt-umn/ableC_sample_projects/feature%2Ftype_qualifiers', parameters:
+            [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: params.SILVER_BASE],
+             [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
+        }
+        "ableC-nonnull": {
+          build job: '/melt-umn/ableC-nonnull/develop', parameters:
+            [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: params.SILVER_BASE],
+             [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
+        },
+        "ableC-checkBounds": {
+          build job: '/melt-umn/ableC-checkBounds/develop', parameters:
+            [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: params.SILVER_BASE],
+             [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
+        },
+        "ableC-watch": {
+          build job: '/melt-umn/ableC-watch/develop', parameters:
+            [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: params.SILVER_BASE],
+             [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
+        },
+        "ableC-dimensionalAnalysis": {
+          build job: '/melt-umn/ableC-dimensionalAnalysis/develop', parameters:
+            [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: params.SILVER_BASE],
+             [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
+        }
       )
     }
 
