@@ -5,7 +5,7 @@ imports silver:langutil;
 imports edu:umn:cs:melt:ableC:concretesyntax;
 imports edu:umn:cs:melt:ableC:concretesyntax:lexerHack as lh;
 imports edu:umn:cs:melt:ableC:abstractsyntax:construction;
-imports edu:umn:cs:melt:ableC:abstractsyntax;
+imports edu:umn:cs:melt:ableC:abstractsyntax:host;
 
 -- Needed for the lexer hack to work, allows specification of type names to add to lexer scope
 marking terminal LexerHackTypedefProto_t 'proto_typedef' lexer classes {Ckeyword};

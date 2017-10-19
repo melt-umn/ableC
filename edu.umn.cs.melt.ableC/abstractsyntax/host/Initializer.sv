@@ -1,4 +1,4 @@
-
+grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 nonterminal MaybeInitializer with pp, host<MaybeInitializer>, lifted<MaybeInitializer>, errors, globalDecls, defs, env, freeVariables, returnType;
 flowtype MaybeInitializer = decorate {env, returnType};
 

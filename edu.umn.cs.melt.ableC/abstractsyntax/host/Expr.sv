@@ -1,6 +1,6 @@
-grammar edu:umn:cs:melt:ableC:abstractsyntax;
+grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 
-import edu:umn:cs:melt:ableC:abstractsyntax:overload as ovrld;
+import edu:umn:cs:melt:ableC:abstractsyntax:overloadable as ovrld;
 
 nonterminal Expr with location, pp, host<Expr>, lifted<Expr>, globalDecls, errors, defs, env, returnType, freeVariables, typerep, isLValue;
 
@@ -43,6 +43,31 @@ top::Expr ::= msg::[Message] e::Expr
   top.errors <- msg;
   forwards to e;
 }
+-- only wrap in warnExpr if have messages
+function wrapWarnExpr
+Expr ::= msg::[Message] e::Expr l::Location
+{
+  return if null(msg) then e else warnExpr(msg, e, location=l);
+}
+abstract production qualifiedExpr
+top::Expr ::= q::Qualifiers e::Expr
+{
+  propagate lifted;
+  top.host = e.host;
+  top.typerep = addQualifiers(q.qualifiers, e.typerep);
+  top.pp = pp"qualifiedExpr (${ppImplode(space(), q.pps)} (${e.pp}))";
+  top.errors := e.errors;
+  top.globalDecls := e.globalDecls;
+  top.defs := e.defs;
+  top.freeVariables = e.freeVariables;
+  top.isLValue = e.isLValue;
+}
+-- only wrap in qualifiedExpr if have qualifiers to wrap with
+function wrapQualifiedExpr
+Expr ::= q::[Qualifier]  e::Expr  l::Location
+{
+  return if null(q) then e else qualifiedExpr(foldQualifier(q), e, location=l);
+}
 abstract production declRefExpr
 top::Expr ::= id::Name
 { -- Reference to a value. (Either a Decl or a EnumItem)
@@ -83,17 +108,32 @@ top::Expr ::= e::Expr
   top.isLValue = e.isLValue;  
   
 }
+abstract production dereferenceExpr
+top::Expr ::= e::Expr
+{
+  propagate host, lifted;
+  top.pp = parens( cat(text("*"), e.pp) );
+  top.errors :=
+    case e.typerep.defaultFunctionArrayLvalueConversion of
+    | pointerType(_, _) -> []
+    | _ -> [err(top.location, "invalid type argument of unary ‘*’ (have ‘" ++
+                               showType(e.typerep) ++ "’")]
+    end ++
+      e.errors;
+  top.globalDecls := e.globalDecls;
+  top.defs := e.defs;
+  top.freeVariables = e.freeVariables;
+  top.typerep =
+    case e.typerep of
+    | pointerType(_, innerty) -> innerty
+    | _ -> errorType()
+    end;
+  top.isLValue = true;
+}
 abstract production unaryOpExpr
 top::Expr ::= op::UnaryOp  e::Expr
 {
-  op.op = e;
-  forwards to qualifiedUnaryOpExpr(op, e, foldQualifier(op.collectedTypeQualifiers), location=top.location);
-}
-abstract production qualifiedUnaryOpExpr
-top::Expr ::= op::UnaryOp  e::Expr  collectedTypeQualifiers::Qualifiers
-{
-  propagate lifted;
-  top.host = qualifiedUnaryOpExpr(op.host, e.host, nilQualifier(), location=top.location);
+  propagate host, lifted;
   top.pp = if op.preExpr
            then parens( cat( op.pp, e.pp ) )
            else parens( cat( e.pp, op.pp ) );
@@ -101,7 +141,7 @@ top::Expr ::= op::UnaryOp  e::Expr  collectedTypeQualifiers::Qualifiers
   top.globalDecls := e.globalDecls;
   top.defs := e.defs;
   top.freeVariables = e.freeVariables;
-  top.typerep = addQualifiers(collectedTypeQualifiers.qualifiers, op.typerep);
+  top.typerep = op.typerep;
   top.isLValue = op.isLValue;
 
   top.errors <- 
@@ -191,7 +231,7 @@ top::Expr ::= f::Expr  a::Exprs
   
   local subtype :: Either<Pair<Type FunctionType> [Message]> =
     case f.typerep.defaultFunctionArrayLvalueConversion of
-    | pointerType(_, functionType(rt, sub)) -> left(pair(rt, sub))
+    | pointerType(_, functionType(rt, sub, _)) -> left(pair(rt, sub))
     | errorType() -> right([]) -- error already raised.
     | _ -> right([err(f.location, "call expression is not function type (got " ++ showType(f.typerep) ++ ")")])
     end;
@@ -280,40 +320,7 @@ top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
       [err(lhs.location, "expression does not field " ++ rhs.name)]
     else [];
 }
-abstract production binaryOpExpr
-top::Expr ::= lhs::Expr  op::BinOp  rhs::Expr
-{
-  op.lop = lhs;
-  op.rop = rhs;
-  forwards to qualifiedBinaryOpExpr(lhs, op, rhs, foldQualifier(op.collectedTypeQualifiers), location=top.location);
-}
-abstract production qualifiedBinaryOpExpr
-top::Expr ::= lhs::Expr  op::BinOp  rhs::Expr  collectedTypeQualifiers::Qualifiers
-{
-  propagate lifted;
-  top.host = qualifiedBinaryOpExpr(lhs.host, op.host, rhs.host, nilQualifier(), location=top.location);
-  -- case op here is a potential problem, since that emits a dep on op->forward, which eventually should probably include env
-  -- Find a way to do this that doesn't cause problems if an op forwards.
-  top.pp = parens( ppConcat([ 
-    {-case op, lhs.pp of
-    | assignOp(eqOp()), cat(cat(text("("), lhsNoParens), text(")")) -> lhsNoParens
-    | _, _ -> lhs.pp
-    end-} lhs.pp, space(), op.pp, space(), rhs.pp ]) );
-  top.errors := lhs.errors ++ op.errors ++ rhs.errors;
-  top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
-  top.defs := lhs.defs ++ rhs.defs;
-  top.freeVariables =
-    lhs.freeVariables ++
-    removeDefsFromNames(lhs.defs, rhs.freeVariables);
-  top.typerep = addQualifiers(collectedTypeQualifiers.qualifiers, op.typerep);
-  
-  op.lop = lhs;
-  op.rop = rhs;
 
-  top.isLValue = false;
-  
-  rhs.env = addEnv(lhs.defs, lhs.env);
-}
 abstract production conditionalExpr
 top::Expr ::= cond::Expr  t::Expr  e::Expr
 {
@@ -393,7 +400,7 @@ top::Expr ::=
   top.defs := [];
   top.freeVariables = [];
   top.typerep = pointerType(nilQualifier(),
-    builtinType(foldQualifier([constQualifier()]), signedType(charType()))); -- const char *
+  builtinType(foldQualifier([constQualifier(location=builtinLoc("host"))]), signedType(charType()))); -- const char *
   top.isLValue = false;
 }
 

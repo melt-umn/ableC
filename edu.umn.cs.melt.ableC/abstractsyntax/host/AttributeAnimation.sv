@@ -1,3 +1,4 @@
+grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 
 function animateAttributeOnType
 Type ::= attr::Attributes  ty::Type

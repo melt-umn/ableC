@@ -12,9 +12,8 @@ Expr ::= n::Integer l::Location
 function mkAdd
 Expr ::= left::Expr  right::Expr  l::Location
 { return
-    binaryOpExpr (
+    addExpr (
       left,
-      numOp(addOp(location=l),location=l),
       right,
       location=l
    ) ;
@@ -24,9 +23,8 @@ Expr ::= left::Expr  right::Expr  l::Location
 function mkAnd
 Expr ::= left::Expr  right::Expr  l::Location
 { return
-    binaryOpExpr (
+    andExpr (
       left,
-      boolOp(andBoolOp(location=l),location=l),
       right,
       location=l
    ) ;

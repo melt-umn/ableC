@@ -1,4 +1,4 @@
-grammar edu:umn:cs:melt:ableC:abstractsyntax;
+grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 
 {--
  - Functor attribute to compute the host AST corresponding to an extended AST
@@ -25,5 +25,4 @@ flowtype host {decorate} on
   Stmt,
   UnaryOp, UnaryTypeOp,
   Name, MaybeName,
-  BinOp, AssignOp, BoolOp, BitOp, CompareOp, NumOp,
   MaybeInitializer, Initializer, InitList, Init, Designator;

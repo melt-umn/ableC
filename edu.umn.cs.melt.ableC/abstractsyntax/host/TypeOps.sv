@@ -1,3 +1,4 @@
+grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 
 -- Some attributes for Type and BuiltinType.
 
@@ -35,19 +36,23 @@ Boolean ::= a::Type  b::Type  allowSubtypes::Boolean  dropOuterQual::Boolean
   | tagType(q1, refIdTagType(_, _, r1)), tagType(q2, refIdTagType(_, _, r2)) -> r1 == r2 && compatibleQualifiers(q1, q2, allowSubtypes, dropOuterQual)
   -- Compound types
   | atomicType(q1, t1), atomicType(q2, t2) -> compatibleTypes(t1, t2, allowSubtypes, dropOuterQual) && compatibleQualifiers(q1, q2, allowSubtypes, dropOuterQual)
-  | pointerType(q1, p1), pointerType(q2, p2) -> compatibleTypes(p1, p2, false, false) && compatibleQualifiers(q1, q2, allowSubtypes, dropOuterQual)
+  | pointerType(q1, p1), pointerType(q2, p2) ->
+      compatibleTypes(p1, p2, allowSubtypes && containsQualifier(constQualifier(location=bogusLoc()), p1), false) &&
+        compatibleQualifiers(q1, q2, allowSubtypes, dropOuterQual)
   | arrayType(e1, q1, sm1, sub1), arrayType(e2, q2, sm2, sub2) -> compatibleTypes(e1, e2, allowSubtypes, dropOuterQual) && compatibleQualifiers(q1, q2, allowSubtypes, dropOuterQual)
       -- TODO: actually, should this include sub1/ sub2 at all? or those sm? maybe? probably. yeah, later, do that.
-  | functionType(r1, noProtoFunctionType()),
-    functionType(r2, noProtoFunctionType()) -> 
-      compatibleTypes(r1, r2, allowSubtypes, dropOuterQual)
-  | functionType(r1, protoFunctionType(a1, v1)),
-    functionType(r2, protoFunctionType(a2, v2)) ->
-      compatibleTypes(r1, r2, allowSubtypes, dropOuterQual) &&
-        compatibleTypeList(a1, a2, false, dropOuterQual) && -- TODO: check subtypes of function args
+  | functionType(r1, noProtoFunctionType(), q1),
+    functionType(r2, noProtoFunctionType(), q2) -> 
+      compatibleTypes(r1, r2, allowSubtypes, true) && compatibleQualifiers(q1, q2, allowSubtypes, dropOuterQual)
+  | functionType(r1, protoFunctionType(a1, v1), q1),
+    functionType(r2, protoFunctionType(a2, v2), q2) ->
+      compatibleTypes(r1, r2, false, false) &&
+        compatibleTypeList(a1, a2, false, true) && -- TODO: check subtypes of function args
+        compatibleQualifiers(q1, q2, allowSubtypes, dropOuterQual) &&
         v1 == v2
-  | functionType(r1, _), functionType(r2, _) -> 
-      compatibleTypes(r1, r2, allowSubtypes, dropOuterQual)
+  | functionType(r1, _, q1), functionType(r2, _, q2) -> 
+      compatibleTypes(r1, r2, allowSubtypes, dropOuterQual) &&
+        compatibleQualifiers(q1, q2, allowSubtypes, dropOuterQual)
   -- extensions
   | attributedType(_, t1), attributedType(_, t2) -> compatibleTypes(t1, t2, allowSubtypes, dropOuterQual)
   | attributedType(_, t1), t2 -> compatibleTypes(t1, t2, allowSubtypes, dropOuterQual)
@@ -257,40 +262,39 @@ Boolean ::= a::IntegerType  b::IntegerType
 -- if allowSubtypes is false then check qualifier equality; otherwise
 --   return true if q1 T is a supertype of q2 T, for some type T; otherwise false
 function compatibleQualifiers
-Boolean ::= q1::Qualifiers  q2::Qualifiers  allowSubtypes::Boolean dropOuterQual::Boolean
+Boolean ::= q1::Qualifiers  q2::Qualifiers  allowSubtypes::Boolean  dropOuterQual::Boolean
 {
-  local q1_filtered :: [Qualifier] =
+  local q1Filtered :: [Qualifier] =
     if   dropOuterQual
     then filter((.qualAppliesWithinRef), q1.qualifiers)
     else q1.qualifiers;
-  local q2_filtered :: [Qualifier] =
+  local q2Filtered :: [Qualifier] =
     if   dropOuterQual
     then filter((.qualAppliesWithinRef), q2.qualifiers)
     else q2.qualifiers;
 
-  return qualifiersSubtype(q2_filtered, q1_filtered) &&
-           (allowSubtypes || qualifiersSubtype(q1_filtered, q2_filtered));
+  -- ignore allowSubtypes for builtin qualifiers: standard C seems to allow deep
+  --   subtyping for all qualifiers including volatile and restrict
+  local q1FilteredHost :: [Qualifier] = filter(\q :: Qualifier -> !q.qualIsHost, q1Filtered);
+  local q2FilteredHost :: [Qualifier] = filter(\q :: Qualifier -> !q.qualIsHost, q2Filtered);
+
+  return qualifiersSubtype(q2Filtered, q1Filtered) &&
+           (allowSubtypes || qualifiersSubtype(q1FilteredHost, q2FilteredHost));
 }
 
---   return true if q1 T is a subtype of q2 T, for some type T; otherwise false
+-- return true if q1 T is a subtype of q2 T, for some type T; otherwise false
 function qualifiersSubtype
 Boolean ::= q1::[Qualifier]  q2::[Qualifier]
 {
-  local pq1 :: [Qualifier] = filter((.qualIsPositive), q1);
-  local pq2 :: [Qualifier] = filter((.qualIsPositive), q2);
-  local nq1 :: [Qualifier] = filter((.qualIsNegative), q1);
-  local nq2 :: [Qualifier] = filter((.qualIsNegative), q2);
+  local inQ1notQ2 :: [Qualifier] =
+    filter(\q::Qualifier -> !containsBy(qualifierCompat, q, q2), q1);
+  local inQ2notQ1 :: [Qualifier] =
+    filter(\q::Qualifier -> !containsBy(qualifierCompat, q, q1), q2);
 
-  return qualSubset(pq1, pq2) && qualSubset(nq2, nq1);
-}
-
-function qualSubset
-Boolean ::= a::[Qualifier] b::[Qualifier]
-{
-  return
-    if   null(a)
-    then true
-    else containsBy(qualifierCompat, head(a), b) && qualSubset(tail(a), b);
+  -- all extra qualifiers in q1 must be negative
+  -- all extra qualifiers in q2 must be positive
+  return foldr(\a::Boolean b::Boolean -> a && b, true, map((.qualIsNegative), inQ1notQ2)) &&
+    foldr(\a::Boolean b::Boolean -> a && b, true, map((.qualIsPositive), inQ2notQ1));
 }
 
 function qualifierCompat
@@ -324,7 +328,7 @@ Boolean ::= lval::Type  rval::Type
     | tagType(_, _), _ -> compatibleTypes(lval.defaultFunctionArrayLvalueConversion, rval.defaultFunctionArrayLvalueConversion, true, true)
 -- the left operand has atomic, qualified, or unqualified pointer type, and (considering the type the left operand would have after lvalue conversion) both operands are pointers to qualified or unqualified versions of compatible types, and the type pointed to by the left has all the qualifiers of the type pointed to by the right;
     | pointerType(q1, p1), pointerType(q2, p2) ->
-        (compatibleTypes(p1, p2, true, false) ||
+        (compatibleTypes(p1, p2, containsQualifier(constQualifier(location=bogusLoc()), p1), false) ||
           compatibleTypes(
             pointerType(nilQualifier(), builtinType(nilQualifier(), voidType())),
             rval.defaultFunctionArrayLvalueConversion,

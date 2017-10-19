@@ -38,13 +38,13 @@ top::Expr ::= e::Expr
 {
   propagate substituted;
 }
-aspect production unaryOpExpr
-top::Expr ::= op::UnaryOp  e::Expr
+aspect production dereferenceExpr
+top::Expr ::= e::Expr
 {
   propagate substituted;
 }
-aspect production qualifiedUnaryOpExpr
-top::Expr ::= op::UnaryOp  e::Expr  collectedTypeQualifiers::Qualifiers
+aspect production unaryOpExpr
+top::Expr ::= op::UnaryOp  e::Expr
 {
   propagate substituted;
 }
@@ -73,13 +73,8 @@ top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
 {
   propagate substituted;
 }
-aspect production binaryOpExpr
-top::Expr ::= lhs::Expr  op::BinOp  rhs::Expr
-{
-  propagate substituted;
-}
-aspect production qualifiedBinaryOpExpr
-top::Expr ::= lhs::Expr  op::BinOp  rhs::Expr  collectedTypeQualifiers::Qualifiers
+aspect production qualifiedExpr
+top::Expr ::= q::Qualifiers e::Expr
 {
   propagate substituted;
 }
@@ -149,6 +144,16 @@ top::Expr ::= op::UnaryOp  e::Expr
 {
   propagate substituted;
 }
+aspect production ovrld:dereferenceExpr
+top::Expr ::= e::Expr
+{
+  propagate substituted;
+}
+aspect production ovrld:explicitCastExpr
+top::Expr ::= ty::TypeName e::Expr
+{
+  propagate substituted;
+}
 aspect production ovrld:arraySubscriptExpr
 top::Expr ::= lhs::Expr  rhs::Expr
 {
@@ -164,8 +169,29 @@ top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
 {
   propagate substituted;
 }
-aspect production ovrld:binaryOpExpr
-top::Expr ::= lhs::Expr  op::BinOp  rhs::Expr
+
+aspect production inj:unaryOpExpr
+top::Expr ::= op::UnaryOp  e::Expr
+{
+  propagate substituted;
+}
+aspect production inj:dereferenceExpr
+top::Expr ::= e::Expr
+{
+  propagate substituted;
+}
+aspect production inj:explicitCastExpr
+top::Expr ::= ty::TypeName e::Expr
+{
+  propagate substituted;
+}
+aspect production inj:arraySubscriptExpr
+top::Expr ::= lhs::Expr  rhs::Expr
+{
+  propagate substituted;
+}
+aspect production inj:memberExpr
+top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
 {
   propagate substituted;
 }

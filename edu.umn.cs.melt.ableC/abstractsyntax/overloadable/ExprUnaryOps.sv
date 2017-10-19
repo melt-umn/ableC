@@ -1,4 +1,6 @@
-grammar edu:umn:cs:melt:ableC:abstractsyntax:overload;
+grammar edu:umn:cs:melt:ableC:abstractsyntax:overloadable;
+
+import edu:umn:cs:melt:ableC:abstractsyntax:host;
 
 aspect default production
 top::UnaryOp ::=
@@ -30,11 +32,6 @@ aspect production addressOfOp
 top::UnaryOp ::=
 {
   top.unaryProd = getAddressOfOpOverload(top.op.typerep, top.op.env);
-}
-aspect production dereferenceOp
-top::UnaryOp ::=
-{
-  top.unaryProd = getDereferenceOpOverload(top.op.typerep, top.op.env);
 }
 aspect production positiveOp
 top::UnaryOp ::=

@@ -1,4 +1,4 @@
-
+grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 -- StructDecl, UnionDecl, and EnumDecl are all rooted in the abstract syntax within a TypeExpr.
 
 -- FunctionDecl is (for now) always rooted in an ExternalDeclaration
@@ -125,7 +125,7 @@ top::Decl ::= storage::[StorageClass]  attrs::Attributes  ty::BaseTypeExpr  dcls
   top.globalDecls := ty.globalDecls ++ dcls.globalDecls;
   top.defs := ty.defs ++ dcls.defs;
   top.freeVariables = ty.freeVariables ++ dcls.freeVariables;
-  
+
   ty.givenRefId = nothing();
   dcls.env = addEnv(ty.defs, ty.env);
   dcls.baseType = ty.typerep;
@@ -238,7 +238,7 @@ top::Declarators ::= h::Declarator  t::Declarators
   top.freeVariables =
     h.freeVariables ++
     removeDefsFromNames(h.defs, t.freeVariables);
-  
+
   t.env = addEnv(h.defs, h.env);
 }
 abstract production nilDeclarator
@@ -282,7 +282,7 @@ top::Declarator ::= name::Name  ty::TypeModifierExpr  attrs::Attributes  initial
         result.rpp])]-}
     | _ -> [ppConcat([ty.lpp, name.pp, ty.rpp, ppAttributesRHS(attrs), initializer.pp])]
     end;
-  
+
   top.errors :=
     case initializer of
       justInitializer(exprInitializer(e)) ->
@@ -293,7 +293,7 @@ top::Declarator ::= name::Name  ty::TypeModifierExpr  attrs::Attributes  initial
   top.globalDecls := ty.globalDecls ++ initializer.globalDecls;
   top.defs := [valueDef(name.name, declaratorValueItem(top))] ++ initializer.defs;
   top.freeVariables = ty.freeVariables ++ initializer.freeVariables;
-  top.typerep = animateAttributeOnType(allAttrs, ty.typerep);
+  top.typerep = typerepWithAllExtnQuals;
   top.sourceLocation = name.location;
   
   top.errors <- 
@@ -301,8 +301,15 @@ top::Declarator ::= name::Name  ty::TypeModifierExpr  attrs::Attributes  initial
       name.valueRedeclarationCheck(top.typerep)
     else
       name.valueRedeclarationCheckNoCompatible;
-  
+
   local allAttrs :: Attributes = appendAttribute(top.givenAttributes, attrs);
+  local animatedTyperep :: Type = animateAttributeOnType(allAttrs, ty.typerep);
+
+  -- accumulate extension qualifiers on redeclaration
+  local typerepWithAllExtnQuals :: Type =
+		if top.isTopLevel
+		then name.valueMergeRedeclExtnQualifiers(animatedTyperep)
+		else animatedTyperep;
 }
 abstract production errorDeclarator
 top::Declarator ::= msg::[Message]
@@ -339,7 +346,7 @@ top::FunctionDecl ::= storage::[StorageClass]  fnquals::SpecialSpecifiers  bty::
 
   local parameters :: Decorated Parameters =
     case mty of
-    | functionTypeExprWithArgs(result, args, variadic) ->
+    | functionTypeExprWithArgs(result, args, variadic, q) ->
         args
     | _ -> decorate nilParameters() with { env = top.env; returnType = top.returnType; }
     end;
@@ -361,7 +368,8 @@ top::FunctionDecl ::= storage::[StorageClass]  fnquals::SpecialSpecifiers  bty::
     removeDefsFromNames([thisFuncDef], mty.freeVariables) ++
     decls.freeVariables ++ --TODO?
     removeDefsFromNames(top.defs ++ parameters.defs ++ decls.defs ++ body.functiondefs ++ fnquals.defs, body.freeVariables);
-  top.typerep = mty.typerep;
+  -- accumulate extension qualifiers on redeclaration
+  top.typerep = name.valueMergeRedeclExtnQualifiers(mty.typerep);
   top.sourceLocation = name.location;
   
   bty.givenRefId = nothing();
@@ -373,8 +381,8 @@ top::FunctionDecl ::= storage::[StorageClass]  fnquals::SpecialSpecifiers  bty::
   -- refIds, in case someone decides to declare a new struct in the function return type.  
   local retMty::TypeModifierExpr = 
     case mty of
-    | functionTypeExprWithArgs(ret, _, _) -> ret
-    | functionTypeExprWithoutArgs(ret, _) -> ret
+    | functionTypeExprWithArgs(ret, _, _, _) -> ret
+    | functionTypeExprWithoutArgs(ret, _, _) -> ret
     end;
   retMty.env = mty.env;
   retMty.returnType = mty.returnType;
@@ -382,8 +390,8 @@ top::FunctionDecl ::= storage::[StorageClass]  fnquals::SpecialSpecifiers  bty::
     
   body.returnType =
     case mty of
-    | functionTypeExprWithArgs(ret, _, _) -> just(retMty.typerep)
-    | functionTypeExprWithoutArgs(ret, _) -> just(retMty.typerep)
+    | functionTypeExprWithArgs(ret, _, _, _) -> just(retMty.typerep)
+    | functionTypeExprWithoutArgs(ret, _, _) -> just(retMty.typerep)
     | _ -> nothing() -- Don't error here, this is caught in type checking
     end;
 

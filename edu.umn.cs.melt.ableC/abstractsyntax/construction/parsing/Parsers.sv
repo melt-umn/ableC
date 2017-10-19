@@ -5,7 +5,7 @@ imports silver:langutil;
 imports edu:umn:cs:melt:ableC:concretesyntax as cst;
 imports edu:umn:cs:melt:ableC:concretesyntax:lexerHack as lh;
 imports edu:umn:cs:melt:ableC:abstractsyntax:construction;
-imports edu:umn:cs:melt:ableC:abstractsyntax;
+imports edu:umn:cs:melt:ableC:abstractsyntax:host;
 
 {-- Parse wrapper functions for generating ASTs
  - These functions all take a string as input and return an AST, or raise an error on parse

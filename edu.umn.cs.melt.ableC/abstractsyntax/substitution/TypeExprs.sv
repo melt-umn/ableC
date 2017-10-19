@@ -95,17 +95,17 @@ top::TypeModifierExpr ::= element::TypeModifierExpr  indexQualifiers::Qualifiers
 }
 
 aspect production functionTypeExprWithArgs
-top::TypeModifierExpr ::= result::TypeModifierExpr  args::Parameters  variadic::Boolean
+top::TypeModifierExpr ::= result::TypeModifierExpr  args::Parameters  variadic::Boolean  q::Qualifiers
 {
   propagate substituted;
 }
 aspect production functionTypeExprWithoutArgs
-top::TypeModifierExpr ::= result::TypeModifierExpr  ids::[Name]
+top::TypeModifierExpr ::= result::TypeModifierExpr  ids::[Name]  q::Qualifiers
 {
   top.substituted =
     functionTypeExprWithoutArgs(
       result.substituted,
-      map(subName(unfoldSubstitution(top.substitutions), _), ids));
+      map(substName(unfoldSubstitution(top.substitutions), _), ids), q);
 }
 aspect production parenTypeExpr
 top::TypeModifierExpr ::= wrapped::TypeModifierExpr

@@ -1,5 +1,6 @@
+grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 
-nonterminal UnaryOp with location, op, opName, pp, host<UnaryOp>, lifted<UnaryOp>, preExpr, noLvalueConversion, typerep, errors, collectedTypeQualifiers, isLValue;
+nonterminal UnaryOp with location, op, opName, pp, host<UnaryOp>, lifted<UnaryOp>, preExpr, noLvalueConversion, typerep, errors, injectedQualifiers, isLValue;
 
 flowtype UnaryOp = decorate {op}, opName {}, preExpr {}, noLvalueConversion {};
 
@@ -11,7 +12,6 @@ synthesized attribute noLvalueConversion :: Boolean;
 aspect default production
 top::UnaryOp ::=
 {
-  top.errors := []; -- TODO REMOVE
   top.isLValue = false;
   top.opName =
     case top.pp of
@@ -29,7 +29,8 @@ top::UnaryOp ::=
   top.preExpr = true;
   top.noLvalueConversion = true;
   top.typerep = top.op.typerep.defaultLvalueConversion.integerPromotions;
-  top.collectedTypeQualifiers := [];
+  top.injectedQualifiers := [];
+  top.errors := [];
 }
 abstract production preDecOp
 top::UnaryOp ::= 
@@ -40,7 +41,8 @@ top::UnaryOp ::=
   top.preExpr = true;
   top.noLvalueConversion = true;
   top.typerep = top.op.typerep.integerPromotions;
-  top.collectedTypeQualifiers := [];
+  top.injectedQualifiers := [];
+  top.errors := [];
 }
 abstract production postIncOp
 top::UnaryOp ::= 
@@ -51,7 +53,8 @@ top::UnaryOp ::=
   top.preExpr = false;
   top.noLvalueConversion = true;
   top.typerep = top.op.typerep.integerPromotions;
-  top.collectedTypeQualifiers := [];
+  top.injectedQualifiers := [];
+  top.errors := [];
 }
 abstract production postDecOp
 top::UnaryOp ::= 
@@ -62,7 +65,8 @@ top::UnaryOp ::=
   top.preExpr = false;
   top.noLvalueConversion = true;
   top.typerep = top.op.typerep.integerPromotions;
-  top.collectedTypeQualifiers := [];
+  top.injectedQualifiers := [];
+  top.errors := [];
 }
 abstract production addressOfOp
 top::UnaryOp ::=
@@ -71,29 +75,9 @@ top::UnaryOp ::=
   top.pp = text("&");
   top.preExpr = true;
   top.noLvalueConversion = true;
-  top.typerep = pointerType(foldQualifier(top.collectedTypeQualifiers), top.op.typerep);
-  top.collectedTypeQualifiers := [];
-}
-abstract production dereferenceOp
-top::UnaryOp ::=
-{
-  propagate host, lifted;
-  top.pp = text("*");
-  top.preExpr = true;
-  top.isLValue = true;
-  top.noLvalueConversion = false;
-  top.typerep = 
-    case top.op.typerep of
-    | pointerType(_, innerty) -> innerty
-    | _ -> errorType()
-    end;
-  top.errors :=
-    case top.op.typerep.defaultFunctionArrayLvalueConversion of
-    | pointerType(_, _) -> []
-    | _ -> [err(top.location, "invalid type argument of unary ‘*’ (have ‘" ++
-                               showType(top.op.typerep) ++ "’")]
-    end;
-  top.collectedTypeQualifiers := [];
+  top.typerep = pointerType(foldQualifier(top.injectedQualifiers), top.op.typerep);
+  top.injectedQualifiers := [];
+  top.errors := [];
 }
 abstract production positiveOp
 top::UnaryOp ::=
@@ -103,7 +87,8 @@ top::UnaryOp ::=
   top.preExpr = true;
   top.noLvalueConversion = false;
   top.typerep = top.op.typerep.defaultLvalueConversion.integerPromotions;
-  top.collectedTypeQualifiers := [];
+  top.injectedQualifiers := [];
+  top.errors := [];
 }
 abstract production negativeOp
 top::UnaryOp ::=
@@ -113,7 +98,8 @@ top::UnaryOp ::=
   top.preExpr = true;
   top.noLvalueConversion = false;
   top.typerep = top.op.typerep.defaultLvalueConversion.integerPromotions;
-  top.collectedTypeQualifiers := [];
+  top.injectedQualifiers := [];
+  top.errors := [];
 }
 abstract production bitNegateOp
 top::UnaryOp ::=
@@ -123,7 +109,8 @@ top::UnaryOp ::=
   top.preExpr = true;
   top.noLvalueConversion = false;
   top.typerep = top.op.typerep.defaultLvalueConversion.integerPromotions;
-  top.collectedTypeQualifiers := [];
+  top.injectedQualifiers := [];
+  top.errors := [];
 }
 abstract production notOp
 top::UnaryOp ::=
@@ -133,7 +120,8 @@ top::UnaryOp ::=
   top.preExpr = true;
   top.noLvalueConversion = false;
   top.typerep = top.op.typerep.defaultLvalueConversion.integerPromotions;
-  top.collectedTypeQualifiers := [];
+  top.injectedQualifiers := [];
+  top.errors := [];
 }
 
 abstract production warnNoOp
@@ -144,7 +132,8 @@ top::UnaryOp ::= msg::[Message]
   top.preExpr = true;
   top.noLvalueConversion = false;
   top.typerep = top.op.typerep.defaultLvalueConversion.integerPromotions;
-  top.collectedTypeQualifiers := [];
+  top.injectedQualifiers := [];
+  top.errors := [];
 }
 
 -- GCC extension
@@ -156,7 +145,8 @@ top::UnaryOp ::=
   top.preExpr = true;
   top.noLvalueConversion = false;
   top.typerep = top.op.typerep.defaultLvalueConversion.integerPromotions;
-  top.collectedTypeQualifiers := [];
+  top.injectedQualifiers := [];
+  top.errors := [];
 }
 -- GCC extension
 abstract production imagOp
@@ -167,7 +157,8 @@ top::UnaryOp ::=
   top.preExpr = true;
   top.noLvalueConversion = false;
   top.typerep = top.op.typerep.defaultLvalueConversion.integerPromotions;
-  top.collectedTypeQualifiers := [];
+  top.injectedQualifiers := [];
+  top.errors := [];
 }
 
 autocopy attribute typeop :: Type;
@@ -175,17 +166,12 @@ autocopy attribute typeop :: Type;
 nonterminal UnaryTypeOp with location, typeop, pp, host<UnaryTypeOp>, lifted<UnaryTypeOp>, errors;
 flowtype UnaryTypeOp = decorate {typeop};
 
-aspect default production
-top::UnaryTypeOp ::=
-{
-  top.errors := []; -- TODO REMOVE
-}
-
 abstract production sizeofOp
 top::UnaryTypeOp ::=
 {
   propagate host, lifted;
   top.pp = text("sizeof");
+  top.errors := [];
 }
 
 -- C11
@@ -194,5 +180,6 @@ top::UnaryTypeOp ::=
 {
   propagate host, lifted;
   top.pp = text("_Alignof");
+  top.errors := [];
 }
 

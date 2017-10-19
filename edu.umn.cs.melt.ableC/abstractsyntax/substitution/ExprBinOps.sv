@@ -1,197 +1,477 @@
 
-aspect production assignOp
-top::BinOp ::= op::AssignOp
+aspect production eqExpr
+top::Expr ::= lhs::Expr rhs::Expr
+{
+  propagate substituted;
+}
+aspect production mulEqExpr
+top::Expr ::= lhs::Expr rhs::Expr
+{
+  propagate substituted;
+}
+aspect production divEqExpr
+top::Expr ::= lhs::Expr rhs::Expr
+{
+  propagate substituted;
+}
+aspect production modEqExpr
+top::Expr ::= lhs::Expr rhs::Expr
+{
+  propagate substituted;
+}
+aspect production addEqExpr
+top::Expr ::= lhs::Expr rhs::Expr
+{
+  propagate substituted;
+}
+aspect production subEqExpr
+top::Expr ::= lhs::Expr rhs::Expr
+{
+  propagate substituted;
+}
+aspect production lshEqExpr
+top::Expr ::= lhs::Expr rhs::Expr
+{
+  propagate substituted;
+}
+aspect production rshEqExpr
+top::Expr ::= lhs::Expr rhs::Expr
+{
+  propagate substituted;
+}
+aspect production andEqExpr
+top::Expr ::= lhs::Expr rhs::Expr
+{
+  propagate substituted;
+}
+aspect production orEqExpr
+top::Expr ::= lhs::Expr rhs::Expr
+{
+  propagate substituted;
+}
+aspect production xorEqExpr
+top::Expr ::= lhs::Expr rhs::Expr
 {
   propagate substituted;
 }
 
 
-aspect production eqOp
-top::AssignOp ::=
+
+aspect production andExpr
+top::Expr ::= lhs::Expr rhs::Expr
 {
   propagate substituted;
 }
-aspect production mulEqOp
-top::AssignOp ::=
-{
-  propagate substituted;
-}
-aspect production divEqOp
-top::AssignOp ::=
-{
-  propagate substituted;
-}
-aspect production modEqOp
-top::AssignOp ::=
-{
-  propagate substituted;
-}
-aspect production addEqOp
-top::AssignOp ::=
-{
-  propagate substituted;
-}
-aspect production subEqOp
-top::AssignOp ::=
-{
-  propagate substituted;
-}
-aspect production lshEqOp
-top::AssignOp ::=
-{
-  propagate substituted;
-}
-aspect production rshEqOp
-top::AssignOp ::=
-{
-  propagate substituted;
-}
-aspect production andEqOp
-top::AssignOp ::=
-{
-  propagate substituted;
-}
-aspect production orEqOp
-top::AssignOp ::=
-{
-  propagate substituted;
-}
-aspect production xorEqOp
-top::AssignOp ::=
+aspect production orExpr
+top::Expr ::= lhs::Expr rhs::Expr
 {
   propagate substituted;
 }
 
 
-aspect production boolOp
-top::BinOp ::= op::BoolOp
+
+aspect production andBitExpr
+top::Expr ::= lhs::Expr rhs::Expr
+{
+  propagate substituted;
+}
+aspect production orBitExpr
+top::Expr ::= lhs::Expr rhs::Expr
+{
+  propagate substituted;
+}
+aspect production xorExpr
+top::Expr ::= lhs::Expr rhs::Expr
+{
+  propagate substituted;
+}
+aspect production lshExpr
+top::Expr ::= lhs::Expr rhs::Expr
+{
+  propagate substituted;
+}
+aspect production rshExpr
+top::Expr ::= lhs::Expr rhs::Expr
 {
   propagate substituted;
 }
 
 
-aspect production andBoolOp
-top::BoolOp ::=
+
+aspect production equalsExpr
+top::Expr ::= lhs::Expr rhs::Expr
 {
   propagate substituted;
 }
-aspect production orBoolOp
-top::BoolOp ::=
+aspect production notEqualsExpr
+top::Expr ::= lhs::Expr rhs::Expr
+{
+  propagate substituted;
+}
+aspect production gtExpr
+top::Expr ::= lhs::Expr rhs::Expr
+{
+  propagate substituted;
+}
+aspect production ltExpr
+top::Expr ::= lhs::Expr rhs::Expr
+{
+  propagate substituted;
+}
+aspect production gteExpr
+top::Expr ::= lhs::Expr rhs::Expr
+{
+  propagate substituted;
+}
+aspect production lteExpr
+top::Expr ::= lhs::Expr rhs::Expr
+{
+  propagate substituted;
+}
+
+aspect production addExpr
+top::Expr ::= lhs::Expr  rhs::Expr
+{
+  propagate substituted;
+}
+aspect production subExpr
+top::Expr ::= lhs::Expr  rhs::Expr
+{
+  propagate substituted;
+}
+aspect production mulExpr
+top::Expr ::= lhs::Expr  rhs::Expr
+{
+  propagate substituted;
+}
+aspect production divExpr
+top::Expr ::= lhs::Expr  rhs::Expr
+{
+  propagate substituted;
+}
+aspect production modExpr
+top::Expr ::= lhs::Expr  rhs::Expr
+{
+  propagate substituted;
+}
+
+aspect production commaExpr
+top::Expr ::= lhs::Expr rhs::Expr
 {
   propagate substituted;
 }
 
 
-aspect production bitOp
-top::BinOp ::= op::BitOp
+aspect production ovrld:eqExpr
+top::Expr ::= lhs::Expr rhs::Expr
+{
+  propagate substituted;
+}
+aspect production ovrld:mulEqExpr
+top::Expr ::= lhs::Expr rhs::Expr
+{
+  propagate substituted;
+}
+aspect production ovrld:divEqExpr
+top::Expr ::= lhs::Expr rhs::Expr
+{
+  propagate substituted;
+}
+aspect production ovrld:modEqExpr
+top::Expr ::= lhs::Expr rhs::Expr
+{
+  propagate substituted;
+}
+aspect production ovrld:addEqExpr
+top::Expr ::= lhs::Expr rhs::Expr
+{
+  propagate substituted;
+}
+aspect production ovrld:subEqExpr
+top::Expr ::= lhs::Expr rhs::Expr
+{
+  propagate substituted;
+}
+aspect production ovrld:lshEqExpr
+top::Expr ::= lhs::Expr rhs::Expr
+{
+  propagate substituted;
+}
+aspect production ovrld:rshEqExpr
+top::Expr ::= lhs::Expr rhs::Expr
+{
+  propagate substituted;
+}
+aspect production ovrld:andEqExpr
+top::Expr ::= lhs::Expr rhs::Expr
+{
+  propagate substituted;
+}
+aspect production ovrld:orEqExpr
+top::Expr ::= lhs::Expr rhs::Expr
+{
+  propagate substituted;
+}
+aspect production ovrld:xorEqExpr
+top::Expr ::= lhs::Expr rhs::Expr
 {
   propagate substituted;
 }
 
 
-aspect production andBitOp
-top::BitOp ::=
+
+aspect production ovrld:andExpr
+top::Expr ::= lhs::Expr rhs::Expr
 {
   propagate substituted;
 }
-aspect production orBitOp
-top::BitOp ::=
-{
-  propagate substituted;
-}
-aspect production xorBitOp
-top::BitOp ::=
-{
-  propagate substituted;
-}
-aspect production lshBitOp
-top::BitOp ::=
-{
-  propagate substituted;
-}
-aspect production rshBitOp
-top::BitOp ::=
+aspect production ovrld:orExpr
+top::Expr ::= lhs::Expr rhs::Expr
 {
   propagate substituted;
 }
 
 
-aspect production compareOp
-top::BinOp ::= op::CompareOp
+
+aspect production ovrld:andBitExpr
+top::Expr ::= lhs::Expr rhs::Expr
+{
+  propagate substituted;
+}
+aspect production ovrld:orBitExpr
+top::Expr ::= lhs::Expr rhs::Expr
+{
+  propagate substituted;
+}
+aspect production ovrld:xorExpr
+top::Expr ::= lhs::Expr rhs::Expr
+{
+  propagate substituted;
+}
+aspect production ovrld:lshExpr
+top::Expr ::= lhs::Expr rhs::Expr
+{
+  propagate substituted;
+}
+aspect production ovrld:rshExpr
+top::Expr ::= lhs::Expr rhs::Expr
 {
   propagate substituted;
 }
 
 
-aspect production equalsOp
-top::CompareOp ::=
+
+aspect production ovrld:equalsExpr
+top::Expr ::= lhs::Expr rhs::Expr
 {
   propagate substituted;
 }
-aspect production notEqualsOp
-top::CompareOp ::=
+aspect production ovrld:notEqualsExpr
+top::Expr ::= lhs::Expr rhs::Expr
 {
   propagate substituted;
 }
-aspect production gtOp
-top::CompareOp ::=
+aspect production ovrld:gtExpr
+top::Expr ::= lhs::Expr rhs::Expr
 {
   propagate substituted;
 }
-aspect production ltOp
-top::CompareOp ::=
+aspect production ovrld:ltExpr
+top::Expr ::= lhs::Expr rhs::Expr
 {
   propagate substituted;
 }
-aspect production gteOp
-top::CompareOp ::=
+aspect production ovrld:gteExpr
+top::Expr ::= lhs::Expr rhs::Expr
 {
   propagate substituted;
 }
-aspect production lteOp
-top::CompareOp ::=
+aspect production ovrld:lteExpr
+top::Expr ::= lhs::Expr rhs::Expr
+{
+  propagate substituted;
+}
+
+aspect production ovrld:addExpr
+top::Expr ::= lhs::Expr  rhs::Expr
+{
+  propagate substituted;
+}
+aspect production ovrld:subExpr
+top::Expr ::= lhs::Expr  rhs::Expr
+{
+  propagate substituted;
+}
+aspect production ovrld:mulExpr
+top::Expr ::= lhs::Expr  rhs::Expr
+{
+  propagate substituted;
+}
+aspect production ovrld:divExpr
+top::Expr ::= lhs::Expr  rhs::Expr
+{
+  propagate substituted;
+}
+aspect production ovrld:modExpr
+top::Expr ::= lhs::Expr  rhs::Expr
 {
   propagate substituted;
 }
 
 
-aspect production numOp
-top::BinOp ::= op::NumOp
+aspect production inj:eqExpr
+top::Expr ::= lhs::Expr rhs::Expr
+{
+  propagate substituted;
+}
+aspect production inj:mulEqExpr
+top::Expr ::= lhs::Expr rhs::Expr
+{
+  propagate substituted;
+}
+aspect production inj:divEqExpr
+top::Expr ::= lhs::Expr rhs::Expr
+{
+  propagate substituted;
+}
+aspect production inj:modEqExpr
+top::Expr ::= lhs::Expr rhs::Expr
+{
+  propagate substituted;
+}
+aspect production inj:addEqExpr
+top::Expr ::= lhs::Expr rhs::Expr
+{
+  propagate substituted;
+}
+aspect production inj:subEqExpr
+top::Expr ::= lhs::Expr rhs::Expr
+{
+  propagate substituted;
+}
+aspect production inj:lshEqExpr
+top::Expr ::= lhs::Expr rhs::Expr
+{
+  propagate substituted;
+}
+aspect production inj:rshEqExpr
+top::Expr ::= lhs::Expr rhs::Expr
+{
+  propagate substituted;
+}
+aspect production inj:andEqExpr
+top::Expr ::= lhs::Expr rhs::Expr
+{
+  propagate substituted;
+}
+aspect production inj:orEqExpr
+top::Expr ::= lhs::Expr rhs::Expr
+{
+  propagate substituted;
+}
+aspect production inj:xorEqExpr
+top::Expr ::= lhs::Expr rhs::Expr
 {
   propagate substituted;
 }
 
 
-aspect production addOp
-top::NumOp ::=
+
+aspect production inj:andExpr
+top::Expr ::= lhs::Expr rhs::Expr
 {
   propagate substituted;
 }
-aspect production subOp
-top::NumOp ::=
-{
-  propagate substituted;
-}
-aspect production mulOp
-top::NumOp ::=
-{
-  propagate substituted;
-}
-aspect production divOp
-top::NumOp ::=
-{
-  propagate substituted;
-}
-aspect production modOp
-top::NumOp ::=
+aspect production inj:orExpr
+top::Expr ::= lhs::Expr rhs::Expr
 {
   propagate substituted;
 }
 
-aspect production commaOp
-top::BinOp ::=
+
+
+aspect production inj:andBitExpr
+top::Expr ::= lhs::Expr rhs::Expr
+{
+  propagate substituted;
+}
+aspect production inj:orBitExpr
+top::Expr ::= lhs::Expr rhs::Expr
+{
+  propagate substituted;
+}
+aspect production inj:xorExpr
+top::Expr ::= lhs::Expr rhs::Expr
+{
+  propagate substituted;
+}
+aspect production inj:lshExpr
+top::Expr ::= lhs::Expr rhs::Expr
+{
+  propagate substituted;
+}
+aspect production inj:rshExpr
+top::Expr ::= lhs::Expr rhs::Expr
 {
   propagate substituted;
 }
 
+
+
+aspect production inj:equalsExpr
+top::Expr ::= lhs::Expr rhs::Expr
+{
+  propagate substituted;
+}
+aspect production inj:notEqualsExpr
+top::Expr ::= lhs::Expr rhs::Expr
+{
+  propagate substituted;
+}
+aspect production inj:gtExpr
+top::Expr ::= lhs::Expr rhs::Expr
+{
+  propagate substituted;
+}
+aspect production inj:ltExpr
+top::Expr ::= lhs::Expr rhs::Expr
+{
+  propagate substituted;
+}
+aspect production inj:gteExpr
+top::Expr ::= lhs::Expr rhs::Expr
+{
+  propagate substituted;
+}
+aspect production inj:lteExpr
+top::Expr ::= lhs::Expr rhs::Expr
+{
+  propagate substituted;
+}
+
+aspect production inj:addExpr
+top::Expr ::= lhs::Expr  rhs::Expr
+{
+  propagate substituted;
+}
+aspect production inj:subExpr
+top::Expr ::= lhs::Expr  rhs::Expr
+{
+  propagate substituted;
+}
+aspect production inj:mulExpr
+top::Expr ::= lhs::Expr  rhs::Expr
+{
+  propagate substituted;
+}
+aspect production inj:divExpr
+top::Expr ::= lhs::Expr  rhs::Expr
+{
+  propagate substituted;
+}
+aspect production inj:modExpr
+top::Expr ::= lhs::Expr  rhs::Expr
+{
+  propagate substituted;
+}
 

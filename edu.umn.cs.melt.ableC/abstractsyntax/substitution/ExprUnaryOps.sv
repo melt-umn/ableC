@@ -25,11 +25,6 @@ top::UnaryOp ::=
 {
   propagate substituted;
 }
-aspect production dereferenceOp
-top::UnaryOp ::=
-{
-  propagate substituted;
-}
 aspect production positiveOp
 top::UnaryOp ::=
 {

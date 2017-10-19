@@ -1,7 +1,7 @@
 grammar edu:umn:cs:melt:ableC:concretesyntax;
 
 import edu:umn:cs:melt:ableC:abstractsyntax:env only env;
-import edu:umn:cs:melt:ableC:abstractsyntax:overload as ovrld;
+import edu:umn:cs:melt:ableC:abstractsyntax:overloadable as ovrld;
 -- "Exported" nonterminals
 
 closed nonterminal Expr_c with location, ast<ast:Expr>; 
@@ -9,7 +9,7 @@ concrete productions top::Expr_c
 | e::AssignExpr_c
     { top.ast = e.ast; }
 | l::AssignExpr_c ',' r::Expr_c
-    { top.ast = ovrld:binaryOpExpr(l.ast, ast:commaOp(location=$2.location), r.ast, location=top.location); }
+    { top.ast = ast:commaExpr(l.ast, r.ast, location=top.location); }
 
 
 closed nonterminal AssignExpr_c with location, ast<ast:Expr>, directName; 
@@ -23,7 +23,8 @@ concrete productions top::AssignExpr_c
     { top.ast = e.ast;
       top.directName = e.directName; }
 | l::UnaryExpr_c op::AssignOp_c  r::AssignExpr_c
-    { top.ast = ovrld:binaryOpExpr(l.ast, ast:assignOp(op.ast, location=op.location), r.ast, location=top.location); }
+    { top.ast = op.ast; 
+      op.leftExpr=l.ast; op.rightExpr=r.ast; op.exprLocation=top.location; }
 
 
 closed nonterminal ConstantExpr_c with location, ast<ast:Expr>;
@@ -45,19 +46,19 @@ concrete productions top::Initializer_c
 -- "Non-exported" nonterminals
 
 
-closed nonterminal AssignOp_c with location, ast<ast:AssignOp>;
+closed nonterminal AssignOp_c with location, ast<ast:Expr>, leftExpr, rightExpr, exprLocation;
 concrete productions top::AssignOp_c
-| '='   { top.ast = ast:eqOp(location=top.location); }
-| '*='  { top.ast = ast:mulEqOp(location=top.location); }
-| '/='  { top.ast = ast:divEqOp(location=top.location); }
-| '%='  { top.ast = ast:modEqOp(location=top.location); }
-| '+='  { top.ast = ast:addEqOp(location=top.location); }
-| '-='  { top.ast = ast:subEqOp(location=top.location); }
-| '<<=' { top.ast = ast:lshEqOp(location=top.location); }
-| '>>=' { top.ast = ast:rshEqOp(location=top.location); }
-| '&='  { top.ast = ast:andEqOp(location=top.location); }
-| '^='  { top.ast = ast:xorEqOp(location=top.location); }
-| '|='  { top.ast = ast:orEqOp(location=top.location); }
+| '='   { top.ast = ovrld:eqExpr(top.leftExpr, top.rightExpr, location=top.exprLocation); }
+| '*='  { top.ast = ovrld:mulEqExpr(top.leftExpr, top.rightExpr, location=top.exprLocation); }
+| '/='  { top.ast = ovrld:divEqExpr(top.leftExpr, top.rightExpr, location=top.exprLocation); }
+| '%='  { top.ast = ovrld:modEqExpr(top.leftExpr, top.rightExpr, location=top.exprLocation); }
+| '+='  { top.ast = ovrld:addEqExpr(top.leftExpr, top.rightExpr, location=top.exprLocation); }
+| '-='  { top.ast = ovrld:subEqExpr(top.leftExpr, top.rightExpr, location=top.exprLocation); }
+| '<<=' { top.ast = ovrld:lshEqExpr(top.leftExpr, top.rightExpr, location=top.exprLocation); }
+| '>>=' { top.ast = ovrld:rshEqExpr(top.leftExpr, top.rightExpr, location=top.exprLocation); }
+| '&='  { top.ast = ovrld:andEqExpr(top.leftExpr, top.rightExpr, location=top.exprLocation); }
+| '^='  { top.ast = ovrld:xorEqExpr(top.leftExpr, top.rightExpr, location=top.exprLocation); }
+| '|='  { top.ast = ovrld:orEqExpr(top.leftExpr, top.rightExpr, location=top.exprLocation); }
 
 
 closed nonterminal ConditionalExpr_c with location, ast<ast:Expr>, directName;
@@ -85,7 +86,7 @@ concrete productions top::LogicalOrExpr_c
     { top.ast = e.ast;
       top.directName = e.directName; }
 | l::LogicalOrExpr_c '||' r::LogicalAndExpr_c
-    { top.ast = ovrld:binaryOpExpr(l.ast, ast:boolOp(ast:orBoolOp(location=$2.location), location=$2.location), r.ast, location=top.location); }
+    { top.ast = ovrld:orExpr(l.ast, r.ast, location=top.location); }
 
 
 closed nonterminal LogicalAndExpr_c with location, ast<ast:Expr>, directName;
@@ -99,7 +100,7 @@ concrete productions top::LogicalAndExpr_c
     { top.ast = e.ast;
       top.directName = e.directName; }
 | l::LogicalAndExpr_c '&&' r::InclusiveOrExpr_c
-    { top.ast = ovrld:binaryOpExpr(l.ast, ast:boolOp(ast:andBoolOp(location=$2.location), location=$2.location), r.ast, location=top.location); }
+    { top.ast = ovrld:andExpr(l.ast, r.ast, location=top.location); }
 
 
 closed nonterminal InclusiveOrExpr_c with location, ast<ast:Expr>, directName;
@@ -113,7 +114,7 @@ concrete productions top::InclusiveOrExpr_c
     { top.ast = e.ast;
       top.directName = e.directName; }
 | l::InclusiveOrExpr_c '|' r::ExclusiveOrExpr_c
-    { top.ast = ovrld:binaryOpExpr(l.ast, ast:bitOp(ast:orBitOp(location=$2.location), location=$2.location), r.ast, location=top.location); }
+    { top.ast = ovrld:orBitExpr(l.ast, r.ast, location=top.location); }
 
 
 closed nonterminal ExclusiveOrExpr_c with location, ast<ast:Expr>, directName;
@@ -127,7 +128,7 @@ concrete productions top::ExclusiveOrExpr_c
     { top.ast = e.ast;
       top.directName = e.directName; }
 | l::ExclusiveOrExpr_c '^' r::AndExpr_c
-    { top.ast = ovrld:binaryOpExpr(l.ast, ast:bitOp(ast:xorBitOp(location=$2.location), location=$2.location), r.ast, location=top.location); }
+    { top.ast = ovrld:xorExpr(l.ast, r.ast, location=top.location); }
 
 
 closed nonterminal AndExpr_c with location, ast<ast:Expr>, directName;
@@ -141,7 +142,7 @@ concrete productions top::AndExpr_c
     { top.ast = e.ast;
       top.directName = e.directName; }
 | l::AndExpr_c '&' r::EqualityExpr_c
-    { top.ast = ovrld:binaryOpExpr(l.ast, ast:bitOp(ast:andBitOp(location=$2.location), location=$2.location), r.ast, location=top.location); }
+    { top.ast = ovrld:andBitExpr(l.ast, r.ast, location=top.location); }
 
 
 closed nonterminal EqualityExpr_c with location, ast<ast:Expr>, directName;
@@ -155,9 +156,9 @@ concrete productions top::EqualityExpr_c
     { top.ast = e.ast;
       top.directName = e.directName; }
 | l::EqualityExpr_c '==' r::RelationalExpr_c
-    { top.ast = ovrld:binaryOpExpr(l.ast, ast:compareOp(ast:equalsOp(location=$2.location), location=$2.location), r.ast, location=top.location); }
+    { top.ast = ovrld:equalsExpr(l.ast, r.ast, location=top.location); }
 | l::EqualityExpr_c '!=' r::RelationalExpr_c
-    { top.ast = ovrld:binaryOpExpr(l.ast, ast:compareOp(ast:notEqualsOp(location=$2.location), location=$2.location), r.ast, location=top.location); }
+    { top.ast = ovrld:notEqualsExpr(l.ast, r.ast, location=top.location); }
 
 
 closed nonterminal RelationalExpr_c with location, ast<ast:Expr>, directName;
@@ -171,13 +172,13 @@ concrete productions top::RelationalExpr_c
     { top.ast = e.ast;
       top.directName = e.directName; }
 | l::RelationalExpr_c '<' r::ShiftExpr_c 
-    { top.ast = ovrld:binaryOpExpr(l.ast, ast:compareOp(ast:ltOp(location=$2.location), location=$2.location), r.ast, location=top.location); }
+    { top.ast = ovrld:ltExpr(l.ast, r.ast, location=top.location); }
 | l::RelationalExpr_c '>' r::ShiftExpr_c
-    { top.ast = ovrld:binaryOpExpr(l.ast, ast:compareOp(ast:gtOp(location=$2.location), location=$2.location), r.ast, location=top.location); }
+    { top.ast = ovrld:gtExpr(l.ast, r.ast, location=top.location); }
 | l::RelationalExpr_c '<=' r::ShiftExpr_c
-    { top.ast = ovrld:binaryOpExpr(l.ast, ast:compareOp(ast:lteOp(location=$2.location), location=$2.location), r.ast, location=top.location); }
+    { top.ast = ovrld:lteExpr(l.ast, r.ast, location=top.location); }
 | l::RelationalExpr_c '>=' r::ShiftExpr_c
-    { top.ast = ovrld:binaryOpExpr(l.ast, ast:compareOp(ast:gteOp(location=$2.location), location=$2.location), r.ast, location=top.location); }
+    { top.ast = ovrld:gteExpr(l.ast, r.ast, location=top.location); }
 
 
 closed nonterminal ShiftExpr_c with location, ast<ast:Expr>, directName;
@@ -191,9 +192,9 @@ concrete productions top::ShiftExpr_c
     { top.ast = e.ast;
       top.directName = e.directName; }
 | l::ShiftExpr_c '<<' r::AdditiveExpr_c
-    { top.ast = ovrld:binaryOpExpr(l.ast, ast:bitOp(ast:lshBitOp(location=$2.location), location=$2.location), r.ast, location=top.location); }
+    { top.ast = ovrld:lshExpr(l.ast, r.ast, location=top.location); }
 | l::ShiftExpr_c '>>' r::AdditiveExpr_c
-    { top.ast = ovrld:binaryOpExpr(l.ast, ast:bitOp(ast:rshBitOp(location=$2.location), location=$2.location), r.ast, location=top.location); }
+    { top.ast = ovrld:rshExpr(l.ast, r.ast, location=top.location); }
 
 
 -- Additive Expressions --
@@ -230,13 +231,9 @@ closed nonterminal AdditiveOp_c
 -- Additive Operators
 concrete productions top::AdditiveOp_c
 | '+'
-    { top.ast = ovrld:binaryOpExpr(top.leftExpr, 
-        ast:numOp(ast:addOp(location=$1.location), location=$1.location), 
-        top.rightExpr, location=top.exprLocation); }
+    { top.ast = ovrld:addExpr(top.leftExpr, top.rightExpr, location=top.exprLocation); }
 | '-'
-    { top.ast = ovrld:binaryOpExpr(top.leftExpr, 
-        ast:numOp(ast:subOp(location=$1.location), location=$1.location),
-        top.rightExpr, location=top.exprLocation); }
+    { top.ast = ovrld:subExpr(top.leftExpr, top.rightExpr, location=top.exprLocation); }
 
 -- Operators with precedence between Additive and Multiplicitive opererators
 
@@ -330,14 +327,11 @@ concrete productions top::MultiplicativeExpr_c
     { top.ast = e.ast;
       top.directName = e.directName; }
 | l::MultiplicativeExpr_c '*' r::CastExpr_c
-    { top.ast = ovrld:binaryOpExpr(l.ast, ast:numOp(ast:mulOp(location=$2.location), 
-        location=$2.location), r.ast, location=top.location); }
+    { top.ast = ovrld:mulExpr(l.ast, r.ast, location=top.location); }
 | l::MultiplicativeExpr_c '/' r::CastExpr_c
-    { top.ast = ovrld:binaryOpExpr(l.ast, ast:numOp(ast:divOp(location=$2.location),
-        location=$2.location), r.ast, location=top.location); }
+    { top.ast = ovrld:divExpr(l.ast, r.ast, location=top.location); }
 | l::MultiplicativeExpr_c '%' r::CastExpr_c
-    { top.ast = ovrld:binaryOpExpr(l.ast, ast:numOp(ast:modOp(location=$2.location),
-        location=$2.location), r.ast, location=top.location); }
+    { top.ast = ovrld:modExpr(l.ast, r.ast, location=top.location); }
 
 
 closed nonterminal CastExpr_c with location, ast<ast:Expr>, directName;
@@ -351,7 +345,7 @@ concrete productions top::CastExpr_c
     { top.ast = e.ast;
       top.directName = e.directName; }
 | '(' tn::TypeName_c ')' e::CastExpr_c
-    { top.ast = ast:explicitCastExpr(tn.ast, e.ast, location=top.location); }
+    { top.ast = ovrld:explicitCastExpr(tn.ast, e.ast, location=top.location); }
 
 
 closed nonterminal UnaryExpr_c with location, ast<ast:Expr>, directName;
@@ -369,21 +363,24 @@ concrete productions top::UnaryExpr_c
 | '--' e::UnaryExpr_c
     { top.ast = ovrld:unaryOpExpr(ast:preDecOp(location=$1.location), e.ast, location=top.location); }
 | op::UnaryOp_c e::CastExpr_c
-    { top.ast = ovrld:unaryOpExpr(op.ast, e.ast, location=top.location); }
+    { top.ast = op.ast;
+      op.expr = e.ast; }
 | 'sizeof' e::UnaryExpr_c
     { top.ast = ast:unaryExprOrTypeTraitExpr(ast:sizeofOp(location=$1.location), ast:exprExpr(e.ast), location=top.location); }
  | 'sizeof' '(' ty::TypeName_c ')'
     { top.ast = ast:unaryExprOrTypeTraitExpr(ast:sizeofOp(location=$1.location), ast:typeNameExpr(ty.ast), location=top.location); }
 
 
-closed nonterminal UnaryOp_c with location, ast<ast:UnaryOp>;
+closed nonterminal UnaryOp_c with location, ast<ast:Expr>, expr;
+inherited attribute expr :: ast:Expr;
+
 concrete productions top::UnaryOp_c
-| '&'  { top.ast = ast:addressOfOp(location=top.location); }
-| '*'  { top.ast = ast:dereferenceOp(location=top.location); }
-| '+'  { top.ast = ast:positiveOp(location=top.location); }
-| '-'  { top.ast = ast:negativeOp(location=top.location); }
-| '~'  { top.ast = ast:bitNegateOp(location=top.location); }
-| '!'  { top.ast = ast:notOp(location=top.location); }
+| '&'  { top.ast = ovrld:unaryOpExpr(ast:addressOfOp(location=top.location), top.expr, location=top.location); }
+| '*'  { top.ast = ovrld:dereferenceExpr(top.expr, location=top.location); }
+| '+'  { top.ast = ovrld:unaryOpExpr(ast:positiveOp(location=top.location), top.expr, location=top.location); }
+| '-'  { top.ast = ovrld:unaryOpExpr(ast:negativeOp(location=top.location), top.expr, location=top.location); }
+| '~'  { top.ast = ovrld:unaryOpExpr(ast:bitNegateOp(location=top.location), top.expr, location=top.location); }
+| '!'  { top.ast = ovrld:unaryOpExpr(ast:notOp(location=top.location), top.expr, location=top.location); }
 
 -- Needed for constructing calls correctly
 synthesized attribute directName::Maybe<Identifier_t>;

@@ -1,12 +1,13 @@
-grammar edu:umn:cs:melt:ableC:abstractsyntax;
+grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 
-synthesized attribute collectedTypeQualifiers :: [Qualifier] with ++;
-flowtype collectedTypeQualifiers {} on -- TODO: Should this be allowed to depend on anything?
-  UnaryOp,
-  BinOp, AssignOp, BoolOp, BitOp, CompareOp, NumOp;
+nonterminal Qualifiers with mangledName, qualifiers, pps, host<Qualifiers>, typeToQualify, errors;
 
-nonterminal Qualifiers with mangledName, qualifiers, pps, host<Qualifiers>;
-flowtype Qualifiers = decorate {}, qualifiers {};
+autocopy attribute typeToQualify :: Type;
+
+synthesized attribute injectedQualifiers :: [Qualifier] with ++;
+flowtype injectedQualifiers {op} on UnaryOp;
+
+flowtype Qualifiers = decorate {}, qualifiers {}, errors {typeToQualify};
 
 synthesized attribute qualifiers :: [Qualifier];
 
@@ -17,6 +18,7 @@ top::Qualifiers ::= h::Qualifier  t::Qualifiers
   top.mangledName = h.mangledName ++ "_" ++ t.mangledName;
   top.qualifiers = cons(h, t.qualifiers);
   top.pps = cons(h.pp, t.pps);
+  top.errors := h.errors ++ t.errors;
 }
 
 abstract production nilQualifier
@@ -26,11 +28,26 @@ top::Qualifiers ::=
   top.mangledName = "";
   top.qualifiers = [];
   top.pps = [];
+  top.errors := [];
+}
+
+function unionQualifiers
+Qualifiers ::= q1::[Qualifier]  q2::[Qualifier]
+{
+  return
+    foldQualifier(
+      filter(
+        -- remove qualifiers in q1 that are also in q2
+        \q::Qualifier -> !containsBy(qualifierCompat, q, q2),
+        -- remove duplicates from within q1
+        nubBy(qualifierCompat, q1)
+      ) ++ q2
+    );
 }
 
 {-- Type qualifiers (cv or cvr qualifiers) -}
-closed nonterminal Qualifier with pp, qualIsPositive, qualIsNegative, qualAppliesWithinRef, qualCompat, qualIsHost, mangledName;
-flowtype Qualifier = decorate {}, qualIsPositive {}, qualIsNegative {}, qualAppliesWithinRef {}, qualCompat {}, qualIsHost {};
+closed nonterminal Qualifier with location, pp, qualIsPositive, qualIsNegative, qualAppliesWithinRef, qualCompat, qualIsHost, mangledName, typeToQualify, errors;
+flowtype Qualifier = decorate {}, qualIsPositive {}, qualIsNegative {}, qualAppliesWithinRef {}, qualCompat {}, qualIsHost {}, errors {typeToQualify};
 
 synthesized attribute qualIsPositive :: Boolean;
 synthesized attribute qualIsNegative :: Boolean;
@@ -63,6 +80,7 @@ top::Qualifier ::=
   top.qualCompat = \qualToCompare::Qualifier ->
     case qualToCompare of constQualifier() -> true | _ -> false end;
   top.qualIsHost = true;
+  top.errors := [];
 }
 
 abstract production volatileQualifier
@@ -76,6 +94,7 @@ top::Qualifier ::=
   top.qualCompat = \qualToCompare::Qualifier ->
     case qualToCompare of volatileQualifier() -> true | _ -> false end;
   top.qualIsHost = true;
+  top.errors := [];
 }
 
 abstract production restrictQualifier
@@ -83,7 +102,7 @@ top::Qualifier ::=
 {
   top.pp = text("restrict");
   top.mangledName = "restrict";
-  top.qualIsPositive = false;
+  top.qualIsPositive = true;
   top.qualIsNegative = false;
   top.qualAppliesWithinRef = false;
   top.qualCompat = \qualToCompare::Qualifier ->
@@ -93,6 +112,11 @@ top::Qualifier ::=
     | _                     -> false
     end;
   top.qualIsHost = true;
+  top.errors :=
+		case top.typeToQualify.defaultFunctionArrayLvalueConversion of
+			pointerType(_, _) -> []
+		| _                 -> [err(top.location, "invalid use of `restrict'")]
+		end;
 }
 
 abstract production uuRestrictQualifier
@@ -100,7 +124,7 @@ top::Qualifier ::=
 {
   top.pp = text("__restrict");
   top.mangledName = "__restrict";
-  top.qualIsPositive = false;
+  top.qualIsPositive = true;
   top.qualIsNegative = false;
   top.qualAppliesWithinRef = false;
   top.qualCompat = \qualToCompare::Qualifier ->
@@ -110,6 +134,11 @@ top::Qualifier ::=
     | _                     -> false
     end;
   top.qualIsHost = true;
+  top.errors :=
+		case top.typeToQualify.defaultFunctionArrayLvalueConversion of
+			pointerType(_, _) -> []
+		| _                 -> [err(top.location, "invalid use of `restrict'")]
+		end;
 }
 
 {-- Specifiers that apply to specific types.

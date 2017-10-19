@@ -1,4 +1,4 @@
-grammar edu:umn:cs:melt:ableC:abstractsyntax;
+grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 
 {--
  - Extensions that want to specify declartions to lift to a global scope
@@ -66,7 +66,6 @@ flowtype lifted {decorate} on
   Stmt,
   UnaryOp, UnaryTypeOp,
   Name, MaybeName,
-  BinOp, AssignOp, BoolOp, BitOp, CompareOp, NumOp,
   MaybeInitializer, Initializer, InitList, Init, Designator;
 flowtype globalDecls {decorate} on
   Decls, Decl, Declarators, Declarator, FunctionDecl, Parameters, ParameterDecl, StructDecl, UnionDecl, EnumDecl, StructItemList, EnumItemList, StructItem, StructDeclarators, StructDeclarator, EnumItem,
@@ -136,7 +135,7 @@ top::Expr ::= decls::Decls lifted::Expr
   -- Define other attributes to be the same as on lifted
   top.typerep = lifted.typerep;
   top.freeVariables = lifted.freeVariables;
-  
+
   decls.env = globalEnv(top.env);
   decls.isTopLevel = true;
   decls.returnType = nothing();

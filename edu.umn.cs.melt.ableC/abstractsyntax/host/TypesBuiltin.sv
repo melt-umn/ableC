@@ -1,4 +1,4 @@
-grammar edu:umn:cs:melt:ableC:abstractsyntax;
+grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 
 nonterminal BuiltinType with pp, host<BuiltinType>, mangledName, integerPromotionsBuiltin, defaultArgumentPromotionsBuiltin, isIntegerType, isArithmeticType;
 flowtype BuiltinType = decorate {}, integerPromotionsBuiltin {}, defaultArgumentPromotionsBuiltin {}, isIntegerType {}, isArithmeticType {};

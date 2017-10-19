@@ -1,4 +1,4 @@
-
+grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 nonterminal AsmStatement with location, pp, host<AsmStatement>, lifted<AsmStatement>, env, returnType, freeVariables;
 flowtype AsmStatement = decorate {env, returnType};
 

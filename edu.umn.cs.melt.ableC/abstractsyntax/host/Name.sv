@@ -1,4 +1,4 @@
-grammar edu:umn:cs:melt:ableC:abstractsyntax;
+grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 
 synthesized attribute name :: String;
 
@@ -7,6 +7,7 @@ synthesized attribute labelRedeclarationCheck :: [Message];
 synthesized attribute valueLocalLookup :: [ValueItem];
 synthesized attribute valueRedeclarationCheck :: ([Message] ::= Type);
 synthesized attribute valueRedeclarationCheckNoCompatible :: [Message];
+synthesized attribute valueMergeRedeclExtnQualifiers :: (Type ::= Type);
 
 synthesized attribute tagLocalLookup :: [TagItem];
 synthesized attribute tagHasForwardDcl :: Boolean;
@@ -20,8 +21,8 @@ synthesized attribute valueItem :: Decorated ValueItem;
 synthesized attribute labelItem :: Decorated LabelItem;
 synthesized attribute tagItem :: Decorated TagItem;
 
-nonterminal Name with location, name, pp, host<Name>, lifted<Name>, env, valueLocalLookup, labelRedeclarationCheck, valueLookupCheck, labelLookupCheck, tagLookupCheck, valueItem, labelItem, tagItem, tagLocalLookup, tagHasForwardDcl, tagRefId, valueRedeclarationCheck, valueRedeclarationCheckNoCompatible;--
-flowtype Name = decorate {env}, name {}, valueLocalLookup {env}, labelRedeclarationCheck {env}, valueLookupCheck {env}, labelLookupCheck {env}, tagLookupCheck {env}, valueItem {env}, labelItem {env}, tagItem {env}, tagLocalLookup {env}, tagHasForwardDcl {env}, tagRefId {env}, valueRedeclarationCheck {env}, valueRedeclarationCheckNoCompatible {env};
+nonterminal Name with location, name, pp, host<Name>, lifted<Name>, env, valueLocalLookup, labelRedeclarationCheck, valueLookupCheck, labelLookupCheck, tagLookupCheck, valueItem, labelItem, tagItem, tagLocalLookup, tagHasForwardDcl, tagRefId, valueRedeclarationCheck, valueRedeclarationCheckNoCompatible, valueMergeRedeclExtnQualifiers;
+flowtype Name = decorate {env}, name {}, valueLocalLookup {env}, labelRedeclarationCheck {env}, valueLookupCheck {env}, labelLookupCheck {env}, tagLookupCheck {env}, valueItem {env}, labelItem {env}, tagItem {env}, tagLocalLookup {env}, tagHasForwardDcl {env}, tagRefId {env}, valueRedeclarationCheck {env}, valueRedeclarationCheckNoCompatible {env}, valueMergeRedeclExtnQualifiers {env};
 
 abstract production name
 top::Name ::= n::String
@@ -34,6 +35,7 @@ top::Name ::= n::String
   top.valueLocalLookup = lookupValueInLocalScope(n, top.env);
   top.valueRedeclarationCheck = doValueRedeclarationCheck(_, top);
   top.valueRedeclarationCheckNoCompatible = doValueRedeclarationCheckNoCompatible(top);
+  top.valueMergeRedeclExtnQualifiers = doValueMergeQualifiers(_, top);
   
   top.tagLocalLookup = lookupTagInLocalScope(n, top.env);
   local refIdIfOld :: Maybe<String> =
@@ -83,8 +85,8 @@ top::Name ::= n::String
 synthesized attribute maybename :: Maybe<Name>;
 synthesized attribute hasName :: Boolean;
 
-nonterminal MaybeName with maybename, pp, host<MaybeName>, lifted<MaybeName>, env, valueLocalLookup, tagLocalLookup, tagHasForwardDcl, tagRefId, hasName, valueRedeclarationCheckNoCompatible, valueRedeclarationCheck;
-flowtype MaybeName = decorate {env}, maybename {}, hasName {}, valueLocalLookup {env}, tagLocalLookup {env}, tagHasForwardDcl {env}, tagRefId {env}, valueRedeclarationCheckNoCompatible {env}, valueRedeclarationCheck {env};
+nonterminal MaybeName with maybename, pp, host<MaybeName>, lifted<MaybeName>, env, valueLocalLookup, tagLocalLookup, tagHasForwardDcl, tagRefId, hasName, valueRedeclarationCheckNoCompatible, valueRedeclarationCheck, valueMergeRedeclExtnQualifiers;
+flowtype MaybeName = decorate {env}, maybename {}, hasName {}, valueLocalLookup {env}, tagLocalLookup {env}, tagHasForwardDcl {env}, tagRefId {env}, valueRedeclarationCheckNoCompatible {env}, valueRedeclarationCheck {env}, valueMergeRedeclExtnQualifiers {env};
 
 abstract production justName
 top::MaybeName ::= n::Name
@@ -96,6 +98,7 @@ top::MaybeName ::= n::Name
 
   top.valueRedeclarationCheck = n.valueRedeclarationCheck;
   top.valueRedeclarationCheckNoCompatible = n.valueRedeclarationCheckNoCompatible;
+  top.valueMergeRedeclExtnQualifiers = n.valueMergeRedeclExtnQualifiers;
   top.valueLocalLookup = n.valueLocalLookup;
   top.tagLocalLookup = n.tagLocalLookup;
   top.tagHasForwardDcl = n.tagHasForwardDcl;
@@ -111,6 +114,7 @@ top::MaybeName ::=
 
   top.valueRedeclarationCheck = doNotDoValueRedeclarationCheck;
   top.valueRedeclarationCheckNoCompatible = [];
+  top.valueMergeRedeclExtnQualifiers = \t::Type -> errorType();
 
   top.valueLocalLookup = [];
   top.tagLocalLookup = [];
@@ -129,7 +133,7 @@ function doValueRedeclarationCheck
   return case n.valueLocalLookup of
   | [] -> []
   | v :: _ -> 
-      if compatibleTypes(t, v.typerep, false, false) -- TODO: not sure about this, but I think its safe to ignore qualifiers? (certainly sometimes okay. e.g. "int foo(int) and int foo(const int)" is okay and foo is assumed const.
+      if compatibleTypes(t.withoutExtensionQualifiers, v.typerep.withoutExtensionQualifiers, false, false)
       then []
       else 
         let originalPP :: String = show(100, cat(v.typerep.lpp, v.typerep.rpp)),
@@ -154,4 +158,32 @@ function doValueRedeclarationCheckNoCompatible
         toString(v.sourceLocation.line) ++ ")")]
   end;
 }
+
+function doValueMergeQualifiers
+Type ::= t::Type  n::Decorated Name
+{
+  return foldr(\t1::Type t2::Type -> t2.mergeQualifiers(t1), t, map((.typerep), n.valueLocalLookup));
+}
+
+--  return
+--    if null(valueLookup)
+--    then t
+--    else mergeRedeclarationExtnQuals
+--
+--  return case n.valueLocalLookup of
+--  | [] -> []
+--  | v :: _ -> 
+--      if compatibleTypes(t.withoutExtensionQualifiers, v.typerep.withoutExtensionQualifiers, false, false)
+--      then []
+--      else 
+--        let originalPP :: String = show(100, cat(v.typerep.lpp, v.typerep.rpp)),
+--            herePP :: String = show(100, cat(t.lpp, t.rpp))
+--         in
+--            [err(n.location, 
+--              "Redeclaration of " ++ n.name ++ " with incompatible types. Original (from line " ++
+--              toString(v.sourceLocation.line) ++ ") " ++ originalPP ++ 
+--              " but here it is " ++ herePP)]
+--        end
+--  end;
+--}
 

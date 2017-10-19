@@ -41,7 +41,7 @@ top::ArrayType ::= size::Decorated Expr
 }
 
 aspect production functionType
-top::Type ::= result::Type  sub::FunctionType
+top::Type ::= result::Type  sub::FunctionType  q::Qualifiers
 {
   propagate substituted;
 }

@@ -1,6 +1,6 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax:builtins;
 
-imports edu:umn:cs:melt:ableC:abstractsyntax;
+imports edu:umn:cs:melt:ableC:abstractsyntax:host;
 imports edu:umn:cs:melt:ableC:abstractsyntax:env;
 
 -- The environment used at the top-level.

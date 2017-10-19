@@ -1,4 +1,4 @@
-grammar edu:umn:cs:melt:ableC:abstractsyntax;
+grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 
 nonterminal Stmt with pp, host<Stmt>, lifted<Stmt>, errors, globalDecls, defs, env, functiondefs, returnType, freeVariables;
 flowtype Stmt = decorate {env, returnType}, functiondefs {env, returnType};

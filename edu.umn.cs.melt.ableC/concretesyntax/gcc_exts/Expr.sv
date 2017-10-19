@@ -1,5 +1,7 @@
 grammar edu:umn:cs:melt:ableC:concretesyntax:gcc_exts;
 
+import edu:umn:cs:melt:ableC:abstractsyntax:overloadable as ovrld;
+
 terminal GNU_AlignOf_T '__alignof' lexer classes {Ckeyword};
 terminal GNU_AlignOfUU_T '__alignof__' lexer classes {Ckeyword};
 
@@ -32,7 +34,7 @@ concrete productions top::UnaryExpr_c
 
 concrete productions top::UnaryOp_c
 | '__extension__'
-    { top.ast = ast:warnNoOp([], location=top.location); } -- Discard and ignore these annotations
+    { top.ast = ovrld:unaryOpExpr(ast:warnNoOp([], location=top.location), top.expr, location=top.location); } -- Discard and ignore these annotations
 
 concrete productions top::PrimaryExpr_c
 | '(' '{' bis::BlockItemList_c '}' ')'

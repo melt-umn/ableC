@@ -245,13 +245,13 @@ concrete productions top::TypeSpecifier_c
 closed nonterminal TypeQualifier_c with location, typeQualifiers, mutateTypeSpecifiers; 
 concrete productions top::TypeQualifier_c
 | 'const'
-    { top.typeQualifiers = ast:foldQualifier([ast:constQualifier()]);
+    { top.typeQualifiers = ast:foldQualifier([ast:constQualifier(location=top.location)]);
       top.mutateTypeSpecifiers = []; }
 | 'volatile'
-    { top.typeQualifiers = ast:foldQualifier([ast:volatileQualifier()]);
+    { top.typeQualifiers = ast:foldQualifier([ast:volatileQualifier(location=top.location)]);
       top.mutateTypeSpecifiers = []; }
 | 'restrict'
-    { top.typeQualifiers = ast:foldQualifier([ast:restrictQualifier()]);
+    { top.typeQualifiers = ast:foldQualifier([ast:restrictQualifier(location=top.location)]);
       top.mutateTypeSpecifiers = []; }
 
 
