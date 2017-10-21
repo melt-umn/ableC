@@ -1,55 +1,53 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax:overloadable;
 
-import edu:umn:cs:melt:ableC:abstractsyntax:host;
-
 aspect default production
-top::UnaryOp ::=
+top::host:UnaryOp ::=
 {
   top.unaryProd = nothing();
 }
 
-aspect production preIncOp
-top::UnaryOp ::=
+aspect production host:preIncOp
+top::host:UnaryOp ::=
 {
-  top.unaryProd = getPreIncOpOverload(top.op.typerep, top.op.env);
+  top.unaryProd = getPreIncOpOverloadProd(top.host:op.host:typerep, top.host:op.env);
 }
-aspect production preDecOp
-top::UnaryOp ::= 
+aspect production host:preDecOp
+top::host:UnaryOp ::= 
 {
-  top.unaryProd = getPreDecOpOverload(top.op.typerep, top.op.env);
+  top.unaryProd = getPreDecOpOverloadProd(top.host:op.host:typerep, top.host:op.env);
 }
-aspect production postIncOp
-top::UnaryOp ::= 
+aspect production host:postIncOp
+top::host:UnaryOp ::= 
 {
-  top.unaryProd = getPostIncOpOverload(top.op.typerep, top.op.env);
+  top.unaryProd = getPostIncOpOverloadProd(top.host:op.host:typerep, top.host:op.env);
 }
-aspect production postDecOp
-top::UnaryOp ::= 
+aspect production host:postDecOp
+top::host:UnaryOp ::= 
 {
-  top.unaryProd = getPostDecOpOverload(top.op.typerep, top.op.env);
+  top.unaryProd = getPostDecOpOverloadProd(top.host:op.host:typerep, top.host:op.env);
 }
-aspect production addressOfOp
-top::UnaryOp ::=
+aspect production host:addressOfOp
+top::host:UnaryOp ::=
 {
-  top.unaryProd = getAddressOfOpOverload(top.op.typerep, top.op.env);
+  top.unaryProd = getAddressOfOpOverloadProd(top.host:op.host:typerep, top.host:op.env);
 }
-aspect production positiveOp
-top::UnaryOp ::=
+aspect production host:positiveOp
+top::host:UnaryOp ::=
 {
-  top.unaryProd = getPositiveOpOverload(top.op.typerep, top.op.env);
+  top.unaryProd = getPositiveOpOverloadProd(top.host:op.host:typerep, top.host:op.env);
 }
-aspect production negativeOp
-top::UnaryOp ::=
+aspect production host:negativeOp
+top::host:UnaryOp ::=
 {
-  top.unaryProd = getNegativeOpOverload(top.op.typerep, top.op.env);
+  top.unaryProd = getNegativeOpOverloadProd(top.host:op.host:typerep, top.host:op.env);
 }
-aspect production bitNegateOp
-top::UnaryOp ::=
+aspect production host:bitNegateOp
+top::host:UnaryOp ::=
 {
-  top.unaryProd = getBitNegateOpOverload(top.op.typerep, top.op.env);
+  top.unaryProd = getBitNegateOpOverloadProd(top.host:op.host:typerep, top.host:op.env);
 }
-aspect production notOp
-top::UnaryOp ::=
+aspect production host:notOp
+top::host:UnaryOp ::=
 {
-  top.unaryProd = getNotOpOverload(top.op.typerep, top.op.env);
+  top.unaryProd = getNotOpOverloadProd(top.host:op.host:typerep, top.host:op.env);
 }
