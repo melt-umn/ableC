@@ -1,53 +1,162 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax:overloadable;
 
-aspect default production
-top::host:UnaryOp ::=
+abstract production preIncExpr
+top::host:Expr ::= e::host:Expr
 {
-  top.unaryProd = nothing();
-}
+  top.pp = parens( cat( text("++"), e.pp ) );
+  production attribute lerrors :: [Message] with ++;
+  lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
-aspect production host:preIncOp
-top::host:UnaryOp ::=
-{
-  top.unaryProd = getPreIncOpOverloadProd(top.host:op.host:typerep, top.host:op.env);
+  local fwrd::host:Expr =
+    getUnaryOverload(
+       e, top.location,
+       top.env, top.host:returnType,
+       getPreIncOverloadProd,
+       inj:preIncExpr(_, location=_));
+
+  forwards to host:wrapWarnExpr(lerrors, fwrd, top.location);
 }
-aspect production host:preDecOp
-top::host:UnaryOp ::= 
+abstract production preDecExpr
+top::host:Expr ::= e::host:Expr
 {
-  top.unaryProd = getPreDecOpOverloadProd(top.host:op.host:typerep, top.host:op.env);
+  top.pp = parens( cat( text("--"), e.pp ) );
+  production attribute lerrors :: [Message] with ++;
+  lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+
+  local fwrd::host:Expr =
+    getUnaryOverload(
+       e, top.location,
+       top.env, top.host:returnType,
+       getPreDecOverloadProd,
+       inj:preDecExpr(_, location=_));
+
+  forwards to host:wrapWarnExpr(lerrors, fwrd, top.location);
 }
-aspect production host:postIncOp
-top::host:UnaryOp ::= 
+abstract production postIncExpr
+top::host:Expr ::= e::host:Expr
 {
-  top.unaryProd = getPostIncOpOverloadProd(top.host:op.host:typerep, top.host:op.env);
+  top.pp = parens( cat( e.pp, text("++") ) );
+  production attribute lerrors :: [Message] with ++;
+  lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+
+  local fwrd::host:Expr =
+    getUnaryOverload(
+       e, top.location,
+       top.env, top.host:returnType,
+       getPostIncOverloadProd,
+       inj:postIncExpr(_, location=_));
+
+  forwards to host:wrapWarnExpr(lerrors, fwrd, top.location);
 }
-aspect production host:postDecOp
-top::host:UnaryOp ::= 
+abstract production postDecExpr
+top::host:Expr ::= e::host:Expr
 {
-  top.unaryProd = getPostDecOpOverloadProd(top.host:op.host:typerep, top.host:op.env);
+  top.pp = parens( cat( e.pp, text("--") ) );
+  production attribute lerrors :: [Message] with ++;
+  lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+
+  local fwrd::host:Expr =
+    getUnaryOverload(
+       e, top.location,
+       top.env, top.host:returnType,
+       getPostDecOverloadProd,
+       inj:postDecExpr(_, location=_));
+
+  forwards to host:wrapWarnExpr(lerrors, fwrd, top.location);
 }
-aspect production host:addressOfOp
-top::host:UnaryOp ::=
+abstract production addressOfExpr
+top::host:Expr ::= e::host:Expr
 {
-  top.unaryProd = getAddressOfOpOverloadProd(top.host:op.host:typerep, top.host:op.env);
+  top.pp = parens( cat( text("&"), e.pp ) );
+  production attribute lerrors :: [Message] with ++;
+  lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+
+  local fwrd::host:Expr =
+    getUnaryOverload(
+       e, top.location,
+       top.env, top.host:returnType,
+       getAddressOfOverloadProd,
+       inj:addressOfExpr(_, location=_));
+
+  forwards to host:wrapWarnExpr(lerrors, fwrd, top.location);
 }
-aspect production host:positiveOp
-top::host:UnaryOp ::=
+abstract production dereferenceExpr
+top::host:Expr ::= e::host:Expr
 {
-  top.unaryProd = getPositiveOpOverloadProd(top.host:op.host:typerep, top.host:op.env);
+  top.pp = parens(cat(text("*"), e.pp));
+  production attribute lerrors :: [Message] with ++;
+  lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+
+  local fwrd::host:Expr =
+    getUnaryOverload(
+       e, top.location,
+       top.env, top.host:returnType,
+       getDereferenceOverloadProd,
+       inj:dereferenceExpr(_, location=_));
+
+  forwards to host:wrapWarnExpr(lerrors, fwrd, top.location);
 }
-aspect production host:negativeOp
-top::host:UnaryOp ::=
+abstract production positiveExpr
+top::host:Expr ::= e::host:Expr
 {
-  top.unaryProd = getNegativeOpOverloadProd(top.host:op.host:typerep, top.host:op.env);
+  top.pp = parens( cat( text("+"), e.pp ) );
+  production attribute lerrors :: [Message] with ++;
+  lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+
+  local fwrd::host:Expr =
+    getUnaryOverload(
+       e, top.location,
+       top.env, top.host:returnType,
+       getPositiveOverloadProd,
+       inj:positiveExpr(_, location=_));
+
+  forwards to host:wrapWarnExpr(lerrors, fwrd, top.location);
 }
-aspect production host:bitNegateOp
-top::host:UnaryOp ::=
+abstract production negativeExpr
+top::host:Expr ::= e::host:Expr
 {
-  top.unaryProd = getBitNegateOpOverloadProd(top.host:op.host:typerep, top.host:op.env);
+  top.pp = parens( cat( text("-"), e.pp ) );
+  production attribute lerrors :: [Message] with ++;
+  lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+
+  local fwrd::host:Expr =
+    getUnaryOverload(
+       e, top.location,
+       top.env, top.host:returnType,
+       getNegativeOverloadProd,
+       inj:negativeExpr(_, location=_));
+
+  forwards to host:wrapWarnExpr(lerrors, fwrd, top.location);
 }
-aspect production host:notOp
-top::host:UnaryOp ::=
+abstract production bitNegateExpr
+top::host:Expr ::= e::host:Expr
 {
-  top.unaryProd = getNotOpOverloadProd(top.host:op.host:typerep, top.host:op.env);
+  top.pp = parens( cat( text("~"), e.pp ) );
+  production attribute lerrors :: [Message] with ++;
+  lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+
+  local fwrd::host:Expr =
+    getUnaryOverload(
+       e, top.location,
+       top.env, top.host:returnType,
+       getBitNegateOverloadProd,
+       inj:bitNegateExpr(_, location=_));
+
+  forwards to host:wrapWarnExpr(lerrors, fwrd, top.location);
+}
+abstract production notExpr
+top::host:Expr ::= e::host:Expr
+{
+  top.pp = parens( cat( text("!"), e.pp ) );
+  production attribute lerrors :: [Message] with ++;
+  lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+
+  local fwrd::host:Expr =
+    getUnaryOverload(
+       e, top.location,
+       top.env, top.host:returnType,
+       getNotOverloadProd,
+       inj:notExpr(_, location=_));
+
+  forwards to host:wrapWarnExpr(lerrors, fwrd, top.location);
 }

@@ -42,10 +42,6 @@ imports edu:umn:cs:melt:ableC:abstractsyntax:injectable as inj;
  - subscript, function call, member access, assignment to array index, and call to a member access.
  -}
 
-synthesized attribute unaryProd::Maybe<(host:Expr ::= host:Expr Location)> occurs on host:UnaryOp;
-  
-flowtype unaryProd {decorate} on host:UnaryOp;
-
 -- host:Expressions
 function getArraySubscriptOverloadProd
 Maybe<(host:Expr ::= host:Expr host:Expr Location)> ::= t::host:Type env::Decorated Env
@@ -125,21 +121,56 @@ Maybe<(host:Expr ::= host:Expr Boolean host:Name (host:Expr ::= host:Expr host:E
     };
 }
 
+-- Unary operators
+function getPreIncOverloadProd
+Maybe<(host:Expr ::= host:Expr Location)> ::= t::host:Type env::Decorated Env
+{
+  production attribute overloads::[Pair<String (host:Expr ::= host:Expr Location)>] with ++;
+  overloads := [];
+  return getUnaryOverloadProd(t, env, overloads);
+}
+
+function getPreDecOverloadProd
+Maybe<(host:Expr ::= host:Expr Location)> ::= t::host:Type env::Decorated Env
+{
+  production attribute overloads::[Pair<String (host:Expr ::= host:Expr Location)>] with ++;
+  overloads := [];
+  return getUnaryOverloadProd(t, env, overloads);
+}
+
+function getPostIncOverloadProd
+Maybe<(host:Expr ::= host:Expr Location)> ::= t::host:Type env::Decorated Env
+{
+  production attribute overloads::[Pair<String (host:Expr ::= host:Expr Location)>] with ++;
+  overloads := [];
+  return getUnaryOverloadProd(t, env, overloads);
+}
+
+function getPostDecOverloadProd
+Maybe<(host:Expr ::= host:Expr Location)> ::= t::host:Type env::Decorated Env
+{
+  production attribute overloads::[Pair<String (host:Expr ::= host:Expr Location)>] with ++;
+  overloads := [];
+  return getUnaryOverloadProd(t, env, overloads);
+}
+
+function getAddressOfOverloadProd
+Maybe<(host:Expr ::= host:Expr Location)> ::= t::host:Type env::Decorated Env
+{
+  production attribute overloads::[Pair<String (host:Expr ::= host:Expr Location)>] with ++;
+  overloads := [];
+  return getUnaryOverloadProd(t, env, overloads);
+}
+
 function getDereferenceOverloadProd
 Maybe<(host:Expr ::= host:Expr Location)> ::= t::host:Type env::Decorated Env
 {
   production attribute overloads::[Pair<String (host:Expr ::= host:Expr Location)>] with ++;
   overloads := [];
-  return
-    do (bindMaybe, returnMaybe) {
-      n :: String <- host:moduleName(env, t);
-      prod :: (host:Expr ::= host:Expr Location) <- lookupBy(stringEq, n, overloads);
-      return prod;
-    };
+  return getUnaryOverloadProd(t, env, overloads);
 }
 
--- Unary operators
-function getPreIncOpOverloadProd
+function getPositiveOverloadProd
 Maybe<(host:Expr ::= host:Expr Location)> ::= t::host:Type env::Decorated Env
 {
   production attribute overloads::[Pair<String (host:Expr ::= host:Expr Location)>] with ++;
@@ -147,7 +178,7 @@ Maybe<(host:Expr ::= host:Expr Location)> ::= t::host:Type env::Decorated Env
   return getUnaryOverloadProd(t, env, overloads);
 }
 
-function getPreDecOpOverloadProd
+function getNegativeOverloadProd
 Maybe<(host:Expr ::= host:Expr Location)> ::= t::host:Type env::Decorated Env
 {
   production attribute overloads::[Pair<String (host:Expr ::= host:Expr Location)>] with ++;
@@ -155,7 +186,7 @@ Maybe<(host:Expr ::= host:Expr Location)> ::= t::host:Type env::Decorated Env
   return getUnaryOverloadProd(t, env, overloads);
 }
 
-function getPostIncOpOverloadProd
+function getBitNegateOverloadProd
 Maybe<(host:Expr ::= host:Expr Location)> ::= t::host:Type env::Decorated Env
 {
   production attribute overloads::[Pair<String (host:Expr ::= host:Expr Location)>] with ++;
@@ -163,55 +194,7 @@ Maybe<(host:Expr ::= host:Expr Location)> ::= t::host:Type env::Decorated Env
   return getUnaryOverloadProd(t, env, overloads);
 }
 
-function getPostDecOpOverloadProd
-Maybe<(host:Expr ::= host:Expr Location)> ::= t::host:Type env::Decorated Env
-{
-  production attribute overloads::[Pair<String (host:Expr ::= host:Expr Location)>] with ++;
-  overloads := [];
-  return getUnaryOverloadProd(t, env, overloads);
-}
-
-function getAddressOfOpOverloadProd
-Maybe<(host:Expr ::= host:Expr Location)> ::= t::host:Type env::Decorated Env
-{
-  production attribute overloads::[Pair<String (host:Expr ::= host:Expr Location)>] with ++;
-  overloads := [];
-  return getUnaryOverloadProd(t, env, overloads);
-}
-
-function getDereferenceOpOverloadProd
-Maybe<(host:Expr ::= host:Expr Location)> ::= t::host:Type env::Decorated Env
-{
-  production attribute overloads::[Pair<String (host:Expr ::= host:Expr Location)>] with ++;
-  overloads := [];
-  return getUnaryOverloadProd(t, env, overloads);
-}
-
-function getPositiveOpOverloadProd
-Maybe<(host:Expr ::= host:Expr Location)> ::= t::host:Type env::Decorated Env
-{
-  production attribute overloads::[Pair<String (host:Expr ::= host:Expr Location)>] with ++;
-  overloads := [];
-  return getUnaryOverloadProd(t, env, overloads);
-}
-
-function getNegativeOpOverloadProd
-Maybe<(host:Expr ::= host:Expr Location)> ::= t::host:Type env::Decorated Env
-{
-  production attribute overloads::[Pair<String (host:Expr ::= host:Expr Location)>] with ++;
-  overloads := [];
-  return getUnaryOverloadProd(t, env, overloads);
-}
-
-function getBitNegateOpOverloadProd
-Maybe<(host:Expr ::= host:Expr Location)> ::= t::host:Type env::Decorated Env
-{
-  production attribute overloads::[Pair<String (host:Expr ::= host:Expr Location)>] with ++;
-  overloads := [];
-  return getUnaryOverloadProd(t, env, overloads);
-}
-
-function getNotOpOverloadProd
+function getNotOverloadProd
 Maybe<(host:Expr ::= host:Expr Location)> ::= t::host:Type env::Decorated Env
 {
   production attribute overloads::[Pair<String (host:Expr ::= host:Expr Location)>] with ++;
@@ -646,6 +629,28 @@ Maybe<(host:Expr ::= host:Expr host:Expr Location)> ::=
   return orElse(option1, orElse(option2, option3));
 }
 
+function getUnaryOverload
+host:Expr ::=
+  -- AST components
+  e::host:Expr  loc::Location
+  -- Inherited attributes
+  env::Decorated Env  returnType::Maybe<host:Type>
+  -- Production-specfic overload parameters
+  overloadFn::(Maybe<(host:Expr ::= host:Expr Location)> ::= host:Type Decorated Env) -- Function getting the overload production
+  defaultProd::(host:Expr ::= host:Expr Location) -- Default production for no overload
+{
+  e.env = env;
+  e.host:returnType = returnType;
+  
+  -- Option 1: Normal overloaded operator
+  local option1::Maybe<host:Expr> = applyMaybe2(overloadFn(e.host:typerep, env), e, loc);
+  
+  -- Option 2: No overload
+  local option2::host:Expr = defaultProd(e, loc);
+  
+  return fromMaybe(option2, option1);
+}
+
 function getBinaryOverload
 host:Expr ::=
   -- AST components
@@ -716,7 +721,7 @@ host:Expr ::=
           mkDecl(
             tmpName,
             host:pointerType(host:nilQualifier(), lhs.host:typerep),
-            host:unaryOpExpr(host:addressOfOp(location=loc), lhs, location=loc),
+            host:addressOfExpr(lhs, location=loc),
             loc),
           eqExpr(
             host:dereferenceExpr(
@@ -763,7 +768,7 @@ host:Expr ::=
       negatedOpProd :: (host:Expr ::= host:Expr host:Expr Location) <- negatedOverloadFn(lhs.host:typerep, rhs.host:typerep, env);
 
       -- !(${lhs} ${negatedOp} ${rhs})
-      return unaryOpExpr(host:notOp(location=loc), negatedOpProd(lhs, rhs, loc), location=loc);
+      return notExpr(negatedOpProd(lhs, rhs, loc), location=loc);
     };
   
   -- Option 3: No overload
@@ -809,8 +814,7 @@ host:Expr ::=
           host:seqStmt(
             mkDecl(lhsTmpName, lhs.host:typerep, lhs, loc),
             mkDecl(rhsTmpName, rhs.host:typerep, rhs, loc)),
-          unaryOpExpr(
-            host:notOp(location=loc),
+          notExpr(
             orExpr(
               ltOverloadProd(
                 host:declRefExpr(

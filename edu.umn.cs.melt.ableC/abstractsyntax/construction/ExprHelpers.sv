@@ -36,7 +36,7 @@ Expr ::= left::Expr  right::Expr  l::Location
 -- TODO: Deprecated, remove this!
 function mkAddressOf
 Expr ::= e::Expr l::Location
-{ return unaryOpExpr( addressOfOp(location=l), e, location=l );
+{ return addressOfExpr(e, location=l);
 }
 
 -- Expr --

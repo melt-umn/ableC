@@ -1,44 +1,5 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax:overloadable;
 
-abstract production unaryOpExpr
-top::host:Expr ::= op::host:UnaryOp  e::host:Expr
-{
-  top.pp = if op.host:preExpr
-           then parens( cat( op.pp, e.pp ) )
-           else parens( cat( e.pp, op.pp ) );
-  
-  top.host:typerep = host:addQualifiers(op.host:injectedQualifiers, forward.host:typerep);
-  op.host:op = e;
-  production attribute lerrors :: [Message] with ++;
-  {- TODO: Seed flow types properly on lerrors.
-    This equations exist only to seed dependencies on env and returnType so
-    extensions can freely compute lerrors based on them
-    while still passing the modular well-definedness analysis. -}
-  lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
-  
-  forwards to
-    host:wrapWarnExpr(lerrors,
-      case op.unaryProd of
-        just(prod) -> prod(e, top.location)
-      | nothing()  -> host:unaryOpExpr(op, e, location=top.location)
-      end,
-      top.location);
-}
-abstract production dereferenceExpr
-top::host:Expr ::= e::host:Expr
-{
-  top.pp = parens(cat(text("*"), e.pp));
-  production attribute lerrors :: [Message] with ++;
-  lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
-
-  forwards to
-    host:wrapWarnExpr(lerrors,
-      case getDereferenceOverloadProd(e.host:typerep, top.env) of
-        just(prod) -> prod(e, top.location)
-      | nothing()  -> inj:dereferenceExpr(e, location=top.location)
-      end,
-      top.location);
-}
 abstract production explicitCastExpr
 top::host:Expr ::= ty::host:TypeName  e::host:Expr
 {
