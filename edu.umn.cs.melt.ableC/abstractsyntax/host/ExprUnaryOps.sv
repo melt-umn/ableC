@@ -67,6 +67,7 @@ top::Expr ::= e::Expr
 abstract production addressOfExpr
 top::Expr ::= e::Expr
 {
+  propagate host, lifted;
   top.pp = parens( cat( text("&"), e.pp ) );
   top.errors := e.errors;
   top.globalDecls := e.globalDecls;

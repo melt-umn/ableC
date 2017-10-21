@@ -4,7 +4,7 @@ import edu:umn:cs:melt:ableC:abstractsyntax:overloadable as ovrld;
 
 nonterminal Expr with location, pp, host<Expr>, lifted<Expr>, globalDecls, errors, defs, env, returnType, freeVariables, typerep, isLValue;
 
-flowtype Expr = decorate {env, returnType};
+flowtype Expr = decorate {env, returnType}, isLValue {decorate};
 
 synthesized attribute integerConstantValue :: Maybe<Integer>; -- TODO: Is this actually used for anything
 synthesized attribute isLValue::Boolean;
