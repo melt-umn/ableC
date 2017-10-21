@@ -34,8 +34,20 @@ IOVal<Integer> ::= args::[String] ioIn::IO parse::(ParseResult<cst:Root> ::= Str
       nothing());
   local providers :: [ServiceProvider] =
     [ mkErrorProvider(parse)
+    , mkHighlightingProvider(parse, colorize)
     ];
 
   local svc :: Service = simpleService(version, providers);
   return ioval(runService(svc, port, ioIn), 0);
+}
+
+
+function colorize
+Maybe<Color> ::= td::TerminalDescriptor
+{
+  local n :: String = td.terminalName;
+  return if startsWith("edu:umn:cs:melt:ableC:concretesyntax", n) then
+    just(paletteColor(0))
+  else
+    unsafeTrace(nothing(), print("unknown terminal: " ++ n ++ "\n", unsafeIO()));
 }
