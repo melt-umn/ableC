@@ -7,9 +7,6 @@ Some common patterns are often repeated when writing abstract syntax, such as de
 * `mkDeclGeneral :: (Stmt ::= String Type Location)`: Create a statement that is the uninitialized declaration of a single variable with the given type.  
 * `mkAssign :: (Stmt ::= String Expr Location)`: Create a statement that assigns an expression to a name.
 * `mkIntConst :: (Expr ::= Integer Location)`: Create an integer literal.
-* `mkAdd :: (Expr ::= Expr Expr Location)`: Create an expression adding two expressions.
-* `mkAnd :: (Expr ::= Expr Expr Location)`: Create an expression anding two expressions.
-* `mkAddressOf :: (Expr ::= Expr Location)`: Create an expression that gets the address of an expression.
 * `mkErrorCheck :: (Expr ::= [Message] Expr)`: If the parameter messages are empty, return the expression.  If the parameter messages contain only warnings, wrap the messages and expression in `warnExpr`.  If the parameter messages contain errors, wrap the messages in `errorExpr`.  
 A number of helpers are also provided to fold various list nonterminals from lists of components, such as `foldExpr :: (Exprs ::= [Expr])` or `foldDecl :: (Decls ::= [Decl])`.  
 

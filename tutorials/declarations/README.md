@@ -29,7 +29,7 @@ Type expressions in C are somewhat strangely designed, since the language was cr
 ```c
 int a = 0, *b, *c[4][];
 ```
-Here `int` is the base type expression, common for all declarations, and each variable being declared (referred to as a 'declarator') has a corresponding type modifier expression.  Let's look at how these are represented in ableC, in the file [TypeExprs.sv](../../edu.umn.cs.melt.ableC/abstractsyntax/TypeExprs.sv).  
+Here `int` is the base type expression, common for all declarations, and each variable being declared (referred to as a 'declarator') has a corresponding type modifier expression.  Let's look at how these are represented in ableC, in the file [TypeExprs.sv](../../edu.umn.cs.melt.ableC/abstractsyntax/host/TypeExprs.sv).  
 
 The first nonterminal here, `TypeName`, has a single production `typeName :: (TypeName ::= BaseTypeExpr TypeModifierExpr)` that pairs together a `BaseTypeExpr` and a `TypeModifierExpr`.  This is used in contexts where a type expression is written by itself, such as in a typecast.  
 
