@@ -11,7 +11,6 @@ imports edu:umn:cs:melt:ableC:abstractsyntax:construction;
 imports edu:umn:cs:melt:ableC:abstractsyntax:host as host;
 imports edu:umn:cs:melt:ableC:abstractsyntax:injectable as inj;
 
--- TODO: This explanation is probably out of date
 {- Explaination of overloading
  - All standard unary and binary operators may be overloaded, in addition to function calls, array
  - subscripts, and field access.  
@@ -24,7 +23,7 @@ imports edu:umn:cs:melt:ableC:abstractsyntax:injectable as inj;
  - unions, or enums.  
  -
  - The module name of an operator argument, if set, can be accessed from its typerep via the
- - host:moduleName attribute and used to look up the forward for a dispatching production.  For binary
+ - moduleName attribute and used to look up the forward for a dispatching production.  For binary
  - operators, we must look at the module names of both the left and right children, and check if
  - there is an overload between those two extension types, an extension type on the left and a host
  - type on the right, or an host type on the left and an extension type on the right.  
@@ -42,16 +41,20 @@ imports edu:umn:cs:melt:ableC:abstractsyntax:injectable as inj;
  - subscript, function call, member access, assignment to array index, and call to a member access.
  -}
 
--- host:Expressions
+-- Useful defs to make signatures more managable
+type UnaryProd = (host:Expr ::= host:Expr Location);
+type BinaryProd = (host:Expr ::= host:Expr host:Expr Location);
+
+-- Expressions
 function getArraySubscriptOverloadProd
-Maybe<(host:Expr ::= host:Expr host:Expr Location)> ::= t::host:Type env::Decorated Env
+Maybe<BinaryProd> ::= t::host:Type env::Decorated Env
 {
-  production attribute overloads::[Pair<String (host:Expr ::= host:Expr host:Expr Location)>] with ++;
+  production attribute overloads::[Pair<String BinaryProd>] with ++;
   overloads := [];
   return
     do (bindMaybe, returnMaybe) {
       n :: String <- host:moduleName(env, t);
-      prod :: (host:Expr ::= host:Expr host:Expr Location) <- lookupBy(stringEq, n, overloads);
+      prod :: BinaryProd <- lookupBy(stringEq, n, overloads);
       return prod;
     };
 }
@@ -96,119 +99,119 @@ Maybe<(host:Expr ::= host:Expr Boolean host:Name Location)> ::= t::host:Type env
 }
 
 function getSubscriptAssignOverloadProd
-Maybe<(host:Expr ::= host:Expr host:Expr (host:Expr ::= host:Expr host:Expr Location) host:Expr Location)> ::= t::host:Type env::Decorated Env
+Maybe<(host:Expr ::= host:Expr host:Expr BinaryProd host:Expr Location)> ::= t::host:Type env::Decorated Env
 {
-  production attribute overloads::[Pair<String (host:Expr ::= host:Expr host:Expr (host:Expr ::= host:Expr host:Expr Location) host:Expr Location)>] with ++;
+  production attribute overloads::[Pair<String (host:Expr ::= host:Expr host:Expr BinaryProd host:Expr Location)>] with ++;
   overloads := [];
   return
     do (bindMaybe, returnMaybe) {
       n :: String <- host:moduleName(env, t);
-      prod :: (host:Expr ::= host:Expr host:Expr (host:Expr ::= host:Expr host:Expr Location) host:Expr Location) <- lookupBy(stringEq, n, overloads);
+      prod :: (host:Expr ::= host:Expr host:Expr BinaryProd host:Expr Location) <- lookupBy(stringEq, n, overloads);
       return prod;
     };
 }
 
 function getMemberAssignOverloadProd
-Maybe<(host:Expr ::= host:Expr Boolean host:Name (host:Expr ::= host:Expr host:Expr Location) host:Expr Location)> ::= t::host:Type env::Decorated Env
+Maybe<(host:Expr ::= host:Expr Boolean host:Name BinaryProd host:Expr Location)> ::= t::host:Type env::Decorated Env
 {
-  production attribute overloads::[Pair<String (host:Expr ::= host:Expr Boolean host:Name (host:Expr ::= host:Expr host:Expr Location) host:Expr Location)>] with ++;
+  production attribute overloads::[Pair<String (host:Expr ::= host:Expr Boolean host:Name BinaryProd host:Expr Location)>] with ++;
   overloads := [];
   return
     do (bindMaybe, returnMaybe) {
       n :: String <- host:moduleName(env, t);
-      prod :: (host:Expr ::= host:Expr Boolean host:Name (host:Expr ::= host:Expr host:Expr Location) host:Expr Location) <- lookupBy(stringEq, n, overloads);
+      prod :: (host:Expr ::= host:Expr Boolean host:Name BinaryProd host:Expr Location) <- lookupBy(stringEq, n, overloads);
       return prod;
     };
 }
 
 -- Unary operators
 function getPreIncOverloadProd
-Maybe<(host:Expr ::= host:Expr Location)> ::= t::host:Type env::Decorated Env
+Maybe<UnaryProd> ::= t::host:Type env::Decorated Env
 {
-  production attribute overloads::[Pair<String (host:Expr ::= host:Expr Location)>] with ++;
+  production attribute overloads::[Pair<String UnaryProd>] with ++;
   overloads := [];
   return getUnaryOverloadProd(t, env, overloads);
 }
 
 function getPreDecOverloadProd
-Maybe<(host:Expr ::= host:Expr Location)> ::= t::host:Type env::Decorated Env
+Maybe<UnaryProd> ::= t::host:Type env::Decorated Env
 {
-  production attribute overloads::[Pair<String (host:Expr ::= host:Expr Location)>] with ++;
+  production attribute overloads::[Pair<String UnaryProd>] with ++;
   overloads := [];
   return getUnaryOverloadProd(t, env, overloads);
 }
 
 function getPostIncOverloadProd
-Maybe<(host:Expr ::= host:Expr Location)> ::= t::host:Type env::Decorated Env
+Maybe<UnaryProd> ::= t::host:Type env::Decorated Env
 {
-  production attribute overloads::[Pair<String (host:Expr ::= host:Expr Location)>] with ++;
+  production attribute overloads::[Pair<String UnaryProd>] with ++;
   overloads := [];
   return getUnaryOverloadProd(t, env, overloads);
 }
 
 function getPostDecOverloadProd
-Maybe<(host:Expr ::= host:Expr Location)> ::= t::host:Type env::Decorated Env
+Maybe<UnaryProd> ::= t::host:Type env::Decorated Env
 {
-  production attribute overloads::[Pair<String (host:Expr ::= host:Expr Location)>] with ++;
+  production attribute overloads::[Pair<String UnaryProd>] with ++;
   overloads := [];
   return getUnaryOverloadProd(t, env, overloads);
 }
 
 function getAddressOfOverloadProd
-Maybe<(host:Expr ::= host:Expr Location)> ::= t::host:Type env::Decorated Env
+Maybe<UnaryProd> ::= t::host:Type env::Decorated Env
 {
-  production attribute overloads::[Pair<String (host:Expr ::= host:Expr Location)>] with ++;
+  production attribute overloads::[Pair<String UnaryProd>] with ++;
   overloads := [];
   return getUnaryOverloadProd(t, env, overloads);
 }
 
 function getDereferenceOverloadProd
-Maybe<(host:Expr ::= host:Expr Location)> ::= t::host:Type env::Decorated Env
+Maybe<UnaryProd> ::= t::host:Type env::Decorated Env
 {
-  production attribute overloads::[Pair<String (host:Expr ::= host:Expr Location)>] with ++;
+  production attribute overloads::[Pair<String UnaryProd>] with ++;
   overloads := [];
   return getUnaryOverloadProd(t, env, overloads);
 }
 
 function getPositiveOverloadProd
-Maybe<(host:Expr ::= host:Expr Location)> ::= t::host:Type env::Decorated Env
+Maybe<UnaryProd> ::= t::host:Type env::Decorated Env
 {
-  production attribute overloads::[Pair<String (host:Expr ::= host:Expr Location)>] with ++;
+  production attribute overloads::[Pair<String UnaryProd>] with ++;
   overloads := [];
   return getUnaryOverloadProd(t, env, overloads);
 }
 
 function getNegativeOverloadProd
-Maybe<(host:Expr ::= host:Expr Location)> ::= t::host:Type env::Decorated Env
+Maybe<UnaryProd> ::= t::host:Type env::Decorated Env
 {
-  production attribute overloads::[Pair<String (host:Expr ::= host:Expr Location)>] with ++;
+  production attribute overloads::[Pair<String UnaryProd>] with ++;
   overloads := [];
   return getUnaryOverloadProd(t, env, overloads);
 }
 
 function getBitNegateOverloadProd
-Maybe<(host:Expr ::= host:Expr Location)> ::= t::host:Type env::Decorated Env
+Maybe<UnaryProd> ::= t::host:Type env::Decorated Env
 {
-  production attribute overloads::[Pair<String (host:Expr ::= host:Expr Location)>] with ++;
+  production attribute overloads::[Pair<String UnaryProd>] with ++;
   overloads := [];
   return getUnaryOverloadProd(t, env, overloads);
 }
 
 function getNotOverloadProd
-Maybe<(host:Expr ::= host:Expr Location)> ::= t::host:Type env::Decorated Env
+Maybe<UnaryProd> ::= t::host:Type env::Decorated Env
 {
-  production attribute overloads::[Pair<String (host:Expr ::= host:Expr Location)>] with ++;
+  production attribute overloads::[Pair<String UnaryProd>] with ++;
   overloads := [];
   return getUnaryOverloadProd(t, env, overloads);
 }
 
 -- Binary operators
 function getEqOverloadProd
-Maybe<(host:Expr ::= host:Expr host:Expr Location)> ::= l::host:Type r::host:Type env::Decorated Env
+Maybe<BinaryProd> ::= l::host:Type r::host:Type env::Decorated Env
 {
-  production attribute overloads::[Pair<Pair<String String> (host:Expr ::= host:Expr host:Expr Location)>] with ++;
-  production attribute lOverloads::[Pair<String (host:Expr ::= host:Expr host:Expr Location)>] with ++;
-  production attribute rOverloads::[Pair<String (host:Expr ::= host:Expr host:Expr Location)>] with ++;
+  production attribute overloads::[Pair<Pair<String String> BinaryProd>] with ++;
+  production attribute lOverloads::[Pair<String BinaryProd>] with ++;
+  production attribute rOverloads::[Pair<String BinaryProd>] with ++;
   overloads := [];
   lOverloads := [];
   rOverloads := [];
@@ -217,11 +220,11 @@ Maybe<(host:Expr ::= host:Expr host:Expr Location)> ::= l::host:Type r::host:Typ
 }
 
 function getMulEqOverloadProd
-Maybe<(host:Expr ::= host:Expr host:Expr Location)> ::= l::host:Type r::host:Type env::Decorated Env
+Maybe<BinaryProd> ::= l::host:Type r::host:Type env::Decorated Env
 {
-  production attribute overloads::[Pair<Pair<String String> (host:Expr ::= host:Expr host:Expr Location)>] with ++;
-  production attribute lOverloads::[Pair<String (host:Expr ::= host:Expr host:Expr Location)>] with ++;
-  production attribute rOverloads::[Pair<String (host:Expr ::= host:Expr host:Expr Location)>] with ++;
+  production attribute overloads::[Pair<Pair<String String> BinaryProd>] with ++;
+  production attribute lOverloads::[Pair<String BinaryProd>] with ++;
+  production attribute rOverloads::[Pair<String BinaryProd>] with ++;
   overloads := [];
   lOverloads := [];
   rOverloads := [];
@@ -230,11 +233,11 @@ Maybe<(host:Expr ::= host:Expr host:Expr Location)> ::= l::host:Type r::host:Typ
 }
 
 function getDivEqOverloadProd
-Maybe<(host:Expr ::= host:Expr host:Expr Location)> ::= l::host:Type r::host:Type env::Decorated Env
+Maybe<BinaryProd> ::= l::host:Type r::host:Type env::Decorated Env
 {
-  production attribute overloads::[Pair<Pair<String String> (host:Expr ::= host:Expr host:Expr Location)>] with ++;
-  production attribute lOverloads::[Pair<String (host:Expr ::= host:Expr host:Expr Location)>] with ++;
-  production attribute rOverloads::[Pair<String (host:Expr ::= host:Expr host:Expr Location)>] with ++;
+  production attribute overloads::[Pair<Pair<String String> BinaryProd>] with ++;
+  production attribute lOverloads::[Pair<String BinaryProd>] with ++;
+  production attribute rOverloads::[Pair<String BinaryProd>] with ++;
   overloads := [];
   lOverloads := [];
   rOverloads := [];
@@ -243,11 +246,11 @@ Maybe<(host:Expr ::= host:Expr host:Expr Location)> ::= l::host:Type r::host:Typ
 }
 
 function getModEqOverloadProd
-Maybe<(host:Expr ::= host:Expr host:Expr Location)> ::= l::host:Type r::host:Type env::Decorated Env
+Maybe<BinaryProd> ::= l::host:Type r::host:Type env::Decorated Env
 {
-  production attribute overloads::[Pair<Pair<String String> (host:Expr ::= host:Expr host:Expr Location)>] with ++;
-  production attribute lOverloads::[Pair<String (host:Expr ::= host:Expr host:Expr Location)>] with ++;
-  production attribute rOverloads::[Pair<String (host:Expr ::= host:Expr host:Expr Location)>] with ++;
+  production attribute overloads::[Pair<Pair<String String> BinaryProd>] with ++;
+  production attribute lOverloads::[Pair<String BinaryProd>] with ++;
+  production attribute rOverloads::[Pair<String BinaryProd>] with ++;
   overloads := [];
   lOverloads := [];
   rOverloads := [];
@@ -256,11 +259,11 @@ Maybe<(host:Expr ::= host:Expr host:Expr Location)> ::= l::host:Type r::host:Typ
 }
 
 function getAddEqOverloadProd
-Maybe<(host:Expr ::= host:Expr host:Expr Location)> ::= l::host:Type r::host:Type env::Decorated Env
+Maybe<BinaryProd> ::= l::host:Type r::host:Type env::Decorated Env
 {
-  production attribute overloads::[Pair<Pair<String String> (host:Expr ::= host:Expr host:Expr Location)>] with ++;
-  production attribute lOverloads::[Pair<String (host:Expr ::= host:Expr host:Expr Location)>] with ++;
-  production attribute rOverloads::[Pair<String (host:Expr ::= host:Expr host:Expr Location)>] with ++;
+  production attribute overloads::[Pair<Pair<String String> BinaryProd>] with ++;
+  production attribute lOverloads::[Pair<String BinaryProd>] with ++;
+  production attribute rOverloads::[Pair<String BinaryProd>] with ++;
   overloads := [];
   lOverloads := [];
   rOverloads := [];
@@ -269,11 +272,11 @@ Maybe<(host:Expr ::= host:Expr host:Expr Location)> ::= l::host:Type r::host:Typ
 }
 
 function getSubEqOverloadProd
-Maybe<(host:Expr ::= host:Expr host:Expr Location)> ::= l::host:Type r::host:Type env::Decorated Env
+Maybe<BinaryProd> ::= l::host:Type r::host:Type env::Decorated Env
 {
-  production attribute overloads::[Pair<Pair<String String> (host:Expr ::= host:Expr host:Expr Location)>] with ++;
-  production attribute lOverloads::[Pair<String (host:Expr ::= host:Expr host:Expr Location)>] with ++;
-  production attribute rOverloads::[Pair<String (host:Expr ::= host:Expr host:Expr Location)>] with ++;
+  production attribute overloads::[Pair<Pair<String String> BinaryProd>] with ++;
+  production attribute lOverloads::[Pair<String BinaryProd>] with ++;
+  production attribute rOverloads::[Pair<String BinaryProd>] with ++;
   overloads := [];
   lOverloads := [];
   rOverloads := [];
@@ -282,11 +285,11 @@ Maybe<(host:Expr ::= host:Expr host:Expr Location)> ::= l::host:Type r::host:Typ
 }
 
 function getLshEqOverloadProd
-Maybe<(host:Expr ::= host:Expr host:Expr Location)> ::= l::host:Type r::host:Type env::Decorated Env
+Maybe<BinaryProd> ::= l::host:Type r::host:Type env::Decorated Env
 {
-  production attribute overloads::[Pair<Pair<String String> (host:Expr ::= host:Expr host:Expr Location)>] with ++;
-  production attribute lOverloads::[Pair<String (host:Expr ::= host:Expr host:Expr Location)>] with ++;
-  production attribute rOverloads::[Pair<String (host:Expr ::= host:Expr host:Expr Location)>] with ++;
+  production attribute overloads::[Pair<Pair<String String> BinaryProd>] with ++;
+  production attribute lOverloads::[Pair<String BinaryProd>] with ++;
+  production attribute rOverloads::[Pair<String BinaryProd>] with ++;
   overloads := [];
   lOverloads := [];
   rOverloads := [];
@@ -295,11 +298,11 @@ Maybe<(host:Expr ::= host:Expr host:Expr Location)> ::= l::host:Type r::host:Typ
 }
 
 function getRshEqOverloadProd
-Maybe<(host:Expr ::= host:Expr host:Expr Location)> ::= l::host:Type r::host:Type env::Decorated Env
+Maybe<BinaryProd> ::= l::host:Type r::host:Type env::Decorated Env
 {
-  production attribute overloads::[Pair<Pair<String String> (host:Expr ::= host:Expr host:Expr Location)>] with ++;
-  production attribute lOverloads::[Pair<String (host:Expr ::= host:Expr host:Expr Location)>] with ++;
-  production attribute rOverloads::[Pair<String (host:Expr ::= host:Expr host:Expr Location)>] with ++;
+  production attribute overloads::[Pair<Pair<String String> BinaryProd>] with ++;
+  production attribute lOverloads::[Pair<String BinaryProd>] with ++;
+  production attribute rOverloads::[Pair<String BinaryProd>] with ++;
   overloads := [];
   lOverloads := [];
   rOverloads := [];
@@ -308,11 +311,11 @@ Maybe<(host:Expr ::= host:Expr host:Expr Location)> ::= l::host:Type r::host:Typ
 }
 
 function getAndEqOverloadProd
-Maybe<(host:Expr ::= host:Expr host:Expr Location)> ::= l::host:Type r::host:Type env::Decorated Env
+Maybe<BinaryProd> ::= l::host:Type r::host:Type env::Decorated Env
 {
-  production attribute overloads::[Pair<Pair<String String> (host:Expr ::= host:Expr host:Expr Location)>] with ++;
-  production attribute lOverloads::[Pair<String (host:Expr ::= host:Expr host:Expr Location)>] with ++;
-  production attribute rOverloads::[Pair<String (host:Expr ::= host:Expr host:Expr Location)>] with ++;
+  production attribute overloads::[Pair<Pair<String String> BinaryProd>] with ++;
+  production attribute lOverloads::[Pair<String BinaryProd>] with ++;
+  production attribute rOverloads::[Pair<String BinaryProd>] with ++;
   overloads := [];
   lOverloads := [];
   rOverloads := [];
@@ -321,11 +324,11 @@ Maybe<(host:Expr ::= host:Expr host:Expr Location)> ::= l::host:Type r::host:Typ
 }
 
 function getXorEqOverloadProd
-Maybe<(host:Expr ::= host:Expr host:Expr Location)> ::= l::host:Type r::host:Type env::Decorated Env
+Maybe<BinaryProd> ::= l::host:Type r::host:Type env::Decorated Env
 {
-  production attribute overloads::[Pair<Pair<String String> (host:Expr ::= host:Expr host:Expr Location)>] with ++;
-  production attribute lOverloads::[Pair<String (host:Expr ::= host:Expr host:Expr Location)>] with ++;
-  production attribute rOverloads::[Pair<String (host:Expr ::= host:Expr host:Expr Location)>] with ++;
+  production attribute overloads::[Pair<Pair<String String> BinaryProd>] with ++;
+  production attribute lOverloads::[Pair<String BinaryProd>] with ++;
+  production attribute rOverloads::[Pair<String BinaryProd>] with ++;
   overloads := [];
   lOverloads := [];
   rOverloads := [];
@@ -334,11 +337,11 @@ Maybe<(host:Expr ::= host:Expr host:Expr Location)> ::= l::host:Type r::host:Typ
 }
 
 function getOrEqOverloadProd
-Maybe<(host:Expr ::= host:Expr host:Expr Location)> ::= l::host:Type r::host:Type env::Decorated Env
+Maybe<BinaryProd> ::= l::host:Type r::host:Type env::Decorated Env
 {
-  production attribute overloads::[Pair<Pair<String String> (host:Expr ::= host:Expr host:Expr Location)>] with ++;
-  production attribute lOverloads::[Pair<String (host:Expr ::= host:Expr host:Expr Location)>] with ++;
-  production attribute rOverloads::[Pair<String (host:Expr ::= host:Expr host:Expr Location)>] with ++;
+  production attribute overloads::[Pair<Pair<String String> BinaryProd>] with ++;
+  production attribute lOverloads::[Pair<String BinaryProd>] with ++;
+  production attribute rOverloads::[Pair<String BinaryProd>] with ++;
   overloads := [];
   lOverloads := [];
   rOverloads := [];
@@ -347,11 +350,11 @@ Maybe<(host:Expr ::= host:Expr host:Expr Location)> ::= l::host:Type r::host:Typ
 }
 
 function getAndOverloadProd
-Maybe<(host:Expr ::= host:Expr host:Expr Location)> ::= l::host:Type r::host:Type env::Decorated Env
+Maybe<BinaryProd> ::= l::host:Type r::host:Type env::Decorated Env
 {
-  production attribute overloads::[Pair<Pair<String String> (host:Expr ::= host:Expr host:Expr Location)>] with ++;
-  production attribute lOverloads::[Pair<String (host:Expr ::= host:Expr host:Expr Location)>] with ++;
-  production attribute rOverloads::[Pair<String (host:Expr ::= host:Expr host:Expr Location)>] with ++;
+  production attribute overloads::[Pair<Pair<String String> BinaryProd>] with ++;
+  production attribute lOverloads::[Pair<String BinaryProd>] with ++;
+  production attribute rOverloads::[Pair<String BinaryProd>] with ++;
   overloads := [];
   lOverloads := [];
   rOverloads := [];
@@ -360,11 +363,11 @@ Maybe<(host:Expr ::= host:Expr host:Expr Location)> ::= l::host:Type r::host:Typ
 }
 
 function getOrOverloadProd
-Maybe<(host:Expr ::= host:Expr host:Expr Location)> ::= l::host:Type r::host:Type env::Decorated Env
+Maybe<BinaryProd> ::= l::host:Type r::host:Type env::Decorated Env
 {
-  production attribute overloads::[Pair<Pair<String String> (host:Expr ::= host:Expr host:Expr Location)>] with ++;
-  production attribute lOverloads::[Pair<String (host:Expr ::= host:Expr host:Expr Location)>] with ++;
-  production attribute rOverloads::[Pair<String (host:Expr ::= host:Expr host:Expr Location)>] with ++;
+  production attribute overloads::[Pair<Pair<String String> BinaryProd>] with ++;
+  production attribute lOverloads::[Pair<String BinaryProd>] with ++;
+  production attribute rOverloads::[Pair<String BinaryProd>] with ++;
   overloads := [];
   lOverloads := [];
   rOverloads := [];
@@ -373,11 +376,11 @@ Maybe<(host:Expr ::= host:Expr host:Expr Location)> ::= l::host:Type r::host:Typ
 }
 
 function getAndBitOverloadProd
-Maybe<(host:Expr ::= host:Expr host:Expr Location)> ::= l::host:Type r::host:Type env::Decorated Env
+Maybe<BinaryProd> ::= l::host:Type r::host:Type env::Decorated Env
 {
-  production attribute overloads::[Pair<Pair<String String> (host:Expr ::= host:Expr host:Expr Location)>] with ++;
-  production attribute lOverloads::[Pair<String (host:Expr ::= host:Expr host:Expr Location)>] with ++;
-  production attribute rOverloads::[Pair<String (host:Expr ::= host:Expr host:Expr Location)>] with ++;
+  production attribute overloads::[Pair<Pair<String String> BinaryProd>] with ++;
+  production attribute lOverloads::[Pair<String BinaryProd>] with ++;
+  production attribute rOverloads::[Pair<String BinaryProd>] with ++;
   overloads := [];
   lOverloads := [];
   rOverloads := [];
@@ -386,11 +389,11 @@ Maybe<(host:Expr ::= host:Expr host:Expr Location)> ::= l::host:Type r::host:Typ
 }
 
 function getOrBitOverloadProd
-Maybe<(host:Expr ::= host:Expr host:Expr Location)> ::= l::host:Type r::host:Type env::Decorated Env
+Maybe<BinaryProd> ::= l::host:Type r::host:Type env::Decorated Env
 {
-  production attribute overloads::[Pair<Pair<String String> (host:Expr ::= host:Expr host:Expr Location)>] with ++;
-  production attribute lOverloads::[Pair<String (host:Expr ::= host:Expr host:Expr Location)>] with ++;
-  production attribute rOverloads::[Pair<String (host:Expr ::= host:Expr host:Expr Location)>] with ++;
+  production attribute overloads::[Pair<Pair<String String> BinaryProd>] with ++;
+  production attribute lOverloads::[Pair<String BinaryProd>] with ++;
+  production attribute rOverloads::[Pair<String BinaryProd>] with ++;
   overloads := [];
   lOverloads := [];
   rOverloads := [];
@@ -399,11 +402,11 @@ Maybe<(host:Expr ::= host:Expr host:Expr Location)> ::= l::host:Type r::host:Typ
 }
 
 function getXorOverloadProd
-Maybe<(host:Expr ::= host:Expr host:Expr Location)> ::= l::host:Type r::host:Type env::Decorated Env
+Maybe<BinaryProd> ::= l::host:Type r::host:Type env::Decorated Env
 {
-  production attribute overloads::[Pair<Pair<String String> (host:Expr ::= host:Expr host:Expr Location)>] with ++;
-  production attribute lOverloads::[Pair<String (host:Expr ::= host:Expr host:Expr Location)>] with ++;
-  production attribute rOverloads::[Pair<String (host:Expr ::= host:Expr host:Expr Location)>] with ++;
+  production attribute overloads::[Pair<Pair<String String> BinaryProd>] with ++;
+  production attribute lOverloads::[Pair<String BinaryProd>] with ++;
+  production attribute rOverloads::[Pair<String BinaryProd>] with ++;
   overloads := [];
   lOverloads := [];
   rOverloads := [];
@@ -412,11 +415,11 @@ Maybe<(host:Expr ::= host:Expr host:Expr Location)> ::= l::host:Type r::host:Typ
 }
 
 function getLshOverloadProd
-Maybe<(host:Expr ::= host:Expr host:Expr Location)> ::= l::host:Type r::host:Type env::Decorated Env
+Maybe<BinaryProd> ::= l::host:Type r::host:Type env::Decorated Env
 {
-  production attribute overloads::[Pair<Pair<String String> (host:Expr ::= host:Expr host:Expr Location)>] with ++;
-  production attribute lOverloads::[Pair<String (host:Expr ::= host:Expr host:Expr Location)>] with ++;
-  production attribute rOverloads::[Pair<String (host:Expr ::= host:Expr host:Expr Location)>] with ++;
+  production attribute overloads::[Pair<Pair<String String> BinaryProd>] with ++;
+  production attribute lOverloads::[Pair<String BinaryProd>] with ++;
+  production attribute rOverloads::[Pair<String BinaryProd>] with ++;
   overloads := [];
   lOverloads := [];
   rOverloads := [];
@@ -425,11 +428,11 @@ Maybe<(host:Expr ::= host:Expr host:Expr Location)> ::= l::host:Type r::host:Typ
 }
 
 function getRshOverloadProd
-Maybe<(host:Expr ::= host:Expr host:Expr Location)> ::= l::host:Type r::host:Type env::Decorated Env
+Maybe<BinaryProd> ::= l::host:Type r::host:Type env::Decorated Env
 {
-  production attribute overloads::[Pair<Pair<String String> (host:Expr ::= host:Expr host:Expr Location)>] with ++;
-  production attribute lOverloads::[Pair<String (host:Expr ::= host:Expr host:Expr Location)>] with ++;
-  production attribute rOverloads::[Pair<String (host:Expr ::= host:Expr host:Expr Location)>] with ++;
+  production attribute overloads::[Pair<Pair<String String> BinaryProd>] with ++;
+  production attribute lOverloads::[Pair<String BinaryProd>] with ++;
+  production attribute rOverloads::[Pair<String BinaryProd>] with ++;
   overloads := [];
   lOverloads := [];
   rOverloads := [];
@@ -438,11 +441,11 @@ Maybe<(host:Expr ::= host:Expr host:Expr Location)> ::= l::host:Type r::host:Typ
 }
 
 function getEqualsOverloadProd
-Maybe<(host:Expr ::= host:Expr host:Expr Location)> ::= l::host:Type r::host:Type env::Decorated Env
+Maybe<BinaryProd> ::= l::host:Type r::host:Type env::Decorated Env
 {
-  production attribute overloads::[Pair<Pair<String String> (host:Expr ::= host:Expr host:Expr Location)>] with ++;
-  production attribute lOverloads::[Pair<String (host:Expr ::= host:Expr host:Expr Location)>] with ++;
-  production attribute rOverloads::[Pair<String (host:Expr ::= host:Expr host:Expr Location)>] with ++;
+  production attribute overloads::[Pair<Pair<String String> BinaryProd>] with ++;
+  production attribute lOverloads::[Pair<String BinaryProd>] with ++;
+  production attribute rOverloads::[Pair<String BinaryProd>] with ++;
   overloads := [];
   lOverloads := [];
   rOverloads := [];
@@ -451,11 +454,11 @@ Maybe<(host:Expr ::= host:Expr host:Expr Location)> ::= l::host:Type r::host:Typ
 }
 
 function getNotEqualsOverloadProd
-Maybe<(host:Expr ::= host:Expr host:Expr Location)> ::= l::host:Type r::host:Type env::Decorated Env
+Maybe<BinaryProd> ::= l::host:Type r::host:Type env::Decorated Env
 {
-  production attribute overloads::[Pair<Pair<String String> (host:Expr ::= host:Expr host:Expr Location)>] with ++;
-  production attribute lOverloads::[Pair<String (host:Expr ::= host:Expr host:Expr Location)>] with ++;
-  production attribute rOverloads::[Pair<String (host:Expr ::= host:Expr host:Expr Location)>] with ++;
+  production attribute overloads::[Pair<Pair<String String> BinaryProd>] with ++;
+  production attribute lOverloads::[Pair<String BinaryProd>] with ++;
+  production attribute rOverloads::[Pair<String BinaryProd>] with ++;
   overloads := [];
   lOverloads := [];
   rOverloads := [];
@@ -464,11 +467,11 @@ Maybe<(host:Expr ::= host:Expr host:Expr Location)> ::= l::host:Type r::host:Typ
 }
 
 function getLtOverloadProd
-Maybe<(host:Expr ::= host:Expr host:Expr Location)> ::= l::host:Type r::host:Type env::Decorated Env
+Maybe<BinaryProd> ::= l::host:Type r::host:Type env::Decorated Env
 {
-  production attribute overloads::[Pair<Pair<String String> (host:Expr ::= host:Expr host:Expr Location)>] with ++;
-  production attribute lOverloads::[Pair<String (host:Expr ::= host:Expr host:Expr Location)>] with ++;
-  production attribute rOverloads::[Pair<String (host:Expr ::= host:Expr host:Expr Location)>] with ++;
+  production attribute overloads::[Pair<Pair<String String> BinaryProd>] with ++;
+  production attribute lOverloads::[Pair<String BinaryProd>] with ++;
+  production attribute rOverloads::[Pair<String BinaryProd>] with ++;
   overloads := [];
   lOverloads := [];
   rOverloads := [];
@@ -477,11 +480,11 @@ Maybe<(host:Expr ::= host:Expr host:Expr Location)> ::= l::host:Type r::host:Typ
 }
 
 function getGtOverloadProd
-Maybe<(host:Expr ::= host:Expr host:Expr Location)> ::= l::host:Type r::host:Type env::Decorated Env
+Maybe<BinaryProd> ::= l::host:Type r::host:Type env::Decorated Env
 {
-  production attribute overloads::[Pair<Pair<String String> (host:Expr ::= host:Expr host:Expr Location)>] with ++;
-  production attribute lOverloads::[Pair<String (host:Expr ::= host:Expr host:Expr Location)>] with ++;
-  production attribute rOverloads::[Pair<String (host:Expr ::= host:Expr host:Expr Location)>] with ++;
+  production attribute overloads::[Pair<Pair<String String> BinaryProd>] with ++;
+  production attribute lOverloads::[Pair<String BinaryProd>] with ++;
+  production attribute rOverloads::[Pair<String BinaryProd>] with ++;
   overloads := [];
   lOverloads := [];
   rOverloads := [];
@@ -490,11 +493,11 @@ Maybe<(host:Expr ::= host:Expr host:Expr Location)> ::= l::host:Type r::host:Typ
 }
 
 function getLteOverloadProd
-Maybe<(host:Expr ::= host:Expr host:Expr Location)> ::= l::host:Type r::host:Type env::Decorated Env
+Maybe<BinaryProd> ::= l::host:Type r::host:Type env::Decorated Env
 {
-  production attribute overloads::[Pair<Pair<String String> (host:Expr ::= host:Expr host:Expr Location)>] with ++;
-  production attribute lOverloads::[Pair<String (host:Expr ::= host:Expr host:Expr Location)>] with ++;
-  production attribute rOverloads::[Pair<String (host:Expr ::= host:Expr host:Expr Location)>] with ++;
+  production attribute overloads::[Pair<Pair<String String> BinaryProd>] with ++;
+  production attribute lOverloads::[Pair<String BinaryProd>] with ++;
+  production attribute rOverloads::[Pair<String BinaryProd>] with ++;
   overloads := [];
   lOverloads := [];
   rOverloads := [];
@@ -503,11 +506,11 @@ Maybe<(host:Expr ::= host:Expr host:Expr Location)> ::= l::host:Type r::host:Typ
 }
 
 function getGteOverloadProd
-Maybe<(host:Expr ::= host:Expr host:Expr Location)> ::= l::host:Type r::host:Type env::Decorated Env
+Maybe<BinaryProd> ::= l::host:Type r::host:Type env::Decorated Env
 {
-  production attribute overloads::[Pair<Pair<String String> (host:Expr ::= host:Expr host:Expr Location)>] with ++;
-  production attribute lOverloads::[Pair<String (host:Expr ::= host:Expr host:Expr Location)>] with ++;
-  production attribute rOverloads::[Pair<String (host:Expr ::= host:Expr host:Expr Location)>] with ++;
+  production attribute overloads::[Pair<Pair<String String> BinaryProd>] with ++;
+  production attribute lOverloads::[Pair<String BinaryProd>] with ++;
+  production attribute rOverloads::[Pair<String BinaryProd>] with ++;
   overloads := [];
   lOverloads := [];
   rOverloads := [];
@@ -516,11 +519,11 @@ Maybe<(host:Expr ::= host:Expr host:Expr Location)> ::= l::host:Type r::host:Typ
 }
 
 function getAddOverloadProd
-Maybe<(host:Expr ::= host:Expr host:Expr Location)> ::= l::host:Type r::host:Type env::Decorated Env
+Maybe<BinaryProd> ::= l::host:Type r::host:Type env::Decorated Env
 {
-  production attribute overloads::[Pair<Pair<String String> (host:Expr ::= host:Expr host:Expr Location)>] with ++;
-  production attribute lOverloads::[Pair<String (host:Expr ::= host:Expr host:Expr Location)>] with ++;
-  production attribute rOverloads::[Pair<String (host:Expr ::= host:Expr host:Expr Location)>] with ++;
+  production attribute overloads::[Pair<Pair<String String> BinaryProd>] with ++;
+  production attribute lOverloads::[Pair<String BinaryProd>] with ++;
+  production attribute rOverloads::[Pair<String BinaryProd>] with ++;
   overloads := [];
   lOverloads := [];
   rOverloads := [];
@@ -529,11 +532,11 @@ Maybe<(host:Expr ::= host:Expr host:Expr Location)> ::= l::host:Type r::host:Typ
 }
 
 function getSubOverloadProd
-Maybe<(host:Expr ::= host:Expr host:Expr Location)> ::= l::host:Type r::host:Type env::Decorated Env
+Maybe<BinaryProd> ::= l::host:Type r::host:Type env::Decorated Env
 {
-  production attribute overloads::[Pair<Pair<String String> (host:Expr ::= host:Expr host:Expr Location)>] with ++;
-  production attribute lOverloads::[Pair<String (host:Expr ::= host:Expr host:Expr Location)>] with ++;
-  production attribute rOverloads::[Pair<String (host:Expr ::= host:Expr host:Expr Location)>] with ++;
+  production attribute overloads::[Pair<Pair<String String> BinaryProd>] with ++;
+  production attribute lOverloads::[Pair<String BinaryProd>] with ++;
+  production attribute rOverloads::[Pair<String BinaryProd>] with ++;
   overloads := [];
   lOverloads := [];
   rOverloads := [];
@@ -542,11 +545,11 @@ Maybe<(host:Expr ::= host:Expr host:Expr Location)> ::= l::host:Type r::host:Typ
 }
 
 function getMulOverloadProd
-Maybe<(host:Expr ::= host:Expr host:Expr Location)> ::= l::host:Type r::host:Type env::Decorated Env
+Maybe<BinaryProd> ::= l::host:Type r::host:Type env::Decorated Env
 {
-  production attribute overloads::[Pair<Pair<String String> (host:Expr ::= host:Expr host:Expr Location)>] with ++;
-  production attribute lOverloads::[Pair<String (host:Expr ::= host:Expr host:Expr Location)>] with ++;
-  production attribute rOverloads::[Pair<String (host:Expr ::= host:Expr host:Expr Location)>] with ++;
+  production attribute overloads::[Pair<Pair<String String> BinaryProd>] with ++;
+  production attribute lOverloads::[Pair<String BinaryProd>] with ++;
+  production attribute rOverloads::[Pair<String BinaryProd>] with ++;
   overloads := [];
   lOverloads := [];
   rOverloads := [];
@@ -555,11 +558,11 @@ Maybe<(host:Expr ::= host:Expr host:Expr Location)> ::= l::host:Type r::host:Typ
 }
 
 function getDivOverloadProd
-Maybe<(host:Expr ::= host:Expr host:Expr Location)> ::= l::host:Type r::host:Type env::Decorated Env
+Maybe<BinaryProd> ::= l::host:Type r::host:Type env::Decorated Env
 {
-  production attribute overloads::[Pair<Pair<String String> (host:Expr ::= host:Expr host:Expr Location)>] with ++;
-  production attribute lOverloads::[Pair<String (host:Expr ::= host:Expr host:Expr Location)>] with ++;
-  production attribute rOverloads::[Pair<String (host:Expr ::= host:Expr host:Expr Location)>] with ++;
+  production attribute overloads::[Pair<Pair<String String> BinaryProd>] with ++;
+  production attribute lOverloads::[Pair<String BinaryProd>] with ++;
+  production attribute rOverloads::[Pair<String BinaryProd>] with ++;
   overloads := [];
   lOverloads := [];
   rOverloads := [];
@@ -568,11 +571,11 @@ Maybe<(host:Expr ::= host:Expr host:Expr Location)> ::= l::host:Type r::host:Typ
 }
 
 function getModOverloadProd
-Maybe<(host:Expr ::= host:Expr host:Expr Location)> ::= l::host:Type r::host:Type env::Decorated Env
+Maybe<BinaryProd> ::= l::host:Type r::host:Type env::Decorated Env
 {
-  production attribute overloads::[Pair<Pair<String String> (host:Expr ::= host:Expr host:Expr Location)>] with ++;
-  production attribute lOverloads::[Pair<String (host:Expr ::= host:Expr host:Expr Location)>] with ++;
-  production attribute rOverloads::[Pair<String (host:Expr ::= host:Expr host:Expr Location)>] with ++;
+  production attribute overloads::[Pair<Pair<String String> BinaryProd>] with ++;
+  production attribute lOverloads::[Pair<String BinaryProd>] with ++;
+  production attribute rOverloads::[Pair<String BinaryProd>] with ++;
   overloads := [];
   lOverloads := [];
   rOverloads := [];
@@ -582,47 +585,47 @@ Maybe<(host:Expr ::= host:Expr host:Expr Location)> ::= l::host:Type r::host:Typ
 
 -- Helper functions
 function getUnaryOverloadProd
-Maybe<(host:Expr ::= host:Expr Location)> ::= t::host:Type env::Decorated Env overloads::[Pair<String (host:Expr ::= host:Expr Location)>]
+Maybe<UnaryProd> ::= t::host:Type env::Decorated Env overloads::[Pair<String UnaryProd>]
 {
   return
     do (bindMaybe, returnMaybe) {
       n :: String <- host:moduleName(env, t);
-      prod :: (host:Expr ::= host:Expr Location) <- lookupBy(stringEq, n, overloads);
+      prod :: UnaryProd <- lookupBy(stringEq, n, overloads);
       return prod;
     };
 }
 
 function getBinaryOverloadProd
-Maybe<(host:Expr ::= host:Expr host:Expr Location)> ::=
+Maybe<BinaryProd> ::=
   l::host:Type r::host:Type
   env::Decorated Env
-  overloads::[Pair<Pair<String String> (host:Expr ::= host:Expr host:Expr Location)>]
-  lOverloads::[Pair<String (host:Expr ::= host:Expr host:Expr Location)>]
-  rOverloads::[Pair<String (host:Expr ::= host:Expr host:Expr Location)>]
+  overloads::[Pair<Pair<String String> BinaryProd>]
+  lOverloads::[Pair<String BinaryProd>]
+  rOverloads::[Pair<String BinaryProd>]
 {
   local lModuleName :: Maybe<String> = host:moduleName(env, l);
   local rModuleName :: Maybe<String> = host:moduleName(env, r);
 
   -- Option 1: overload for a left extension type and a right extension type
-  local option1::Maybe<(host:Expr ::= host:Expr host:Expr Location)> =
+  local option1::Maybe<BinaryProd> =
     do (bindMaybe, returnMaybe) {
       n1 :: String <- lModuleName;
       n2 :: String <- rModuleName;
-      prod :: (host:Expr ::= host:Expr host:Expr Location) <- lookupBy(stringPairEq, pair(n1, n2), overloads);
+      prod :: BinaryProd <- lookupBy(stringPairEq, pair(n1, n2), overloads);
       return prod;
     };
   -- Option 2: overload for a left extension type and any type
-  local option2::Maybe<(host:Expr ::= host:Expr host:Expr Location)> =
+  local option2::Maybe<BinaryProd> =
     do (bindMaybe, returnMaybe) {
       n :: String <- lModuleName;
-      prod :: (host:Expr ::= host:Expr host:Expr Location) <- lookupBy(stringEq, n, lOverloads);
+      prod :: BinaryProd <- lookupBy(stringEq, n, lOverloads);
       return prod;
     };
   -- Option 2: overload for any type and a right extension type
-  local option3::Maybe<(host:Expr ::= host:Expr host:Expr Location)> =
+  local option3::Maybe<BinaryProd> =
     do (bindMaybe, returnMaybe) {
       n :: String <- rModuleName;
-      prod :: (host:Expr ::= host:Expr host:Expr Location) <- lookupBy(stringEq, n, rOverloads);
+      prod :: BinaryProd <- lookupBy(stringEq, n, rOverloads);
       return prod;
     };
   
@@ -636,8 +639,8 @@ host:Expr ::=
   -- Inherited attributes
   env::Decorated Env  returnType::Maybe<host:Type>
   -- Production-specfic overload parameters
-  overloadFn::(Maybe<(host:Expr ::= host:Expr Location)> ::= host:Type Decorated Env) -- Function getting the overload production
-  defaultProd::(host:Expr ::= host:Expr Location) -- Default production for no overload
+  overloadFn::(Maybe<UnaryProd> ::= host:Type Decorated Env) -- Function getting the overload production
+  defaultProd::UnaryProd -- Default production for no overload
 {
   e.env = env;
   e.host:returnType = returnType;
@@ -658,8 +661,8 @@ host:Expr ::=
   -- Inherited attributes
   env::Decorated Env  returnType::Maybe<host:Type>
   -- Production-specfic overload parameters
-  overloadFn::(Maybe<(host:Expr ::= host:Expr host:Expr Location)> ::= host:Type host:Type Decorated Env) -- Function getting the overload production
-  defaultProd::(host:Expr ::= host:Expr host:Expr Location) -- Default production for no overload
+  overloadFn::(Maybe<BinaryProd> ::= host:Type host:Type Decorated Env) -- Function getting the overload production
+  defaultProd::BinaryProd -- Default production for no overload
 {
   lhs.env = env;
   lhs.host:returnType = returnType;
@@ -683,10 +686,10 @@ host:Expr ::=
   -- Inherited attributes
   env::Decorated Env  returnType::Maybe<host:Type>
   -- Production-specfic overload parameters
-  prod::(host:Expr ::= host:Expr host:Expr Location) -- Overloaded production
-  overloadFn::(Maybe<(host:Expr ::= host:Expr host:Expr Location)> ::= host:Type host:Type Decorated Env) -- Function getting the overload production
-  maybeBaseOpOverloadFn::Maybe<(Maybe<(host:Expr ::= host:Expr host:Expr Location)> ::= host:Type host:Type Decorated Env)> -- Function getting the base operator overload production, if it exists
-  defaultProd::(host:Expr ::= host:Expr host:Expr Location) -- Default production for no overload
+  prod::BinaryProd -- Overloaded production
+  overloadFn::(Maybe<BinaryProd> ::= host:Type host:Type Decorated Env) -- Function getting the overload production
+  maybeBaseOpOverloadFn::Maybe<(Maybe<BinaryProd> ::= host:Type host:Type Decorated Env)> -- Function getting the base operator overload production, if it exists
+  defaultProd::BinaryProd -- Default production for no overload
 {
   lhs.env = env;
   lhs.host:returnType = returnType;
@@ -710,9 +713,8 @@ host:Expr ::=
   -- Option 3: Rewrite using overloaded = and the base operator
   local option3::Maybe<host:Expr> =
     do (bindMaybe, returnMaybe) {
-      baseOpOverloadFn :: (Maybe<(host:Expr ::= host:Expr host:Expr Location)> ::= host:Type host:Type Decorated Env) <-
-        maybeBaseOpOverloadFn;
-      baseOpProd :: (host:Expr ::= host:Expr host:Expr Location) <- baseOpOverloadFn(lhs.host:typerep, rhs.host:typerep, env);
+      baseOpOverloadFn :: (Maybe<BinaryProd> ::= host:Type host:Type Decorated Env) <- maybeBaseOpOverloadFn;
+      baseOpProd :: BinaryProd <- baseOpOverloadFn(lhs.host:typerep, rhs.host:typerep, env);
       tmpName::String = "_tmp" ++ toString(genInt());
 
       -- ({${lhs.host:typerep} *${tmpName} = &${lhs}; *${tmpName} = *${tmpName} ${baseOp} ${rhs}})
@@ -749,9 +751,9 @@ host:Expr ::=
   -- Inherited attributes
   env::Decorated Env  returnType::Maybe<host:Type>
   -- Production-specfic overload parameters
-  overloadFn::(Maybe<(host:Expr ::= host:Expr host:Expr Location)> ::= host:Type host:Type Decorated Env) -- Function getting the overload production
-  negatedOverloadFn::(Maybe<(host:Expr ::= host:Expr host:Expr Location)> ::= host:Type host:Type Decorated Env) -- Function getting the negated version of the overload production
-  defaultProd::(host:Expr ::= host:Expr host:Expr Location) -- Default production for no overload
+  overloadFn::(Maybe<BinaryProd> ::= host:Type host:Type Decorated Env) -- Function getting the overload production
+  negatedOverloadFn::(Maybe<BinaryProd> ::= host:Type host:Type Decorated Env) -- Function getting the negated version of the overload production
+  defaultProd::BinaryProd -- Default production for no overload
 {
   lhs.env = env;
   lhs.host:returnType = returnType;
@@ -765,7 +767,7 @@ host:Expr ::=
   -- Option 2: Rewrite using ! and the overloaded negated version of the operator
   local option2::Maybe<host:Expr> =
     do (bindMaybe, returnMaybe) {
-      negatedOpProd :: (host:Expr ::= host:Expr host:Expr Location) <- negatedOverloadFn(lhs.host:typerep, rhs.host:typerep, env);
+      negatedOpProd :: BinaryProd <- negatedOverloadFn(lhs.host:typerep, rhs.host:typerep, env);
 
       -- !(${lhs} ${negatedOp} ${rhs})
       return notExpr(negatedOpProd(lhs, rhs, loc), location=loc);
@@ -798,10 +800,8 @@ host:Expr ::=
   -- Option 2: Rewrite using !, || and the overloaded ==, < operators
   local option2::Maybe<host:Expr> =
     do (bindMaybe, returnMaybe) {
-      ltOverloadProd :: (host:Expr ::= host:Expr host:Expr Location) <-
-        getLtOverloadProd(lhs.host:typerep, rhs.host:typerep, env);
-      eqOverloadProd :: (host:Expr ::= host:Expr host:Expr Location) <-
-        getEqOverloadProd(lhs.host:typerep, rhs.host:typerep, env);
+      ltOverloadProd :: BinaryProd <- getLtOverloadProd(lhs.host:typerep, rhs.host:typerep, env);
+      eqOverloadProd :: BinaryProd <- getEqOverloadProd(lhs.host:typerep, rhs.host:typerep, env);
       lhsTmpName::String = "_tmp" ++ toString(genInt());
       rhsTmpName::String = "_tmp" ++ toString(genInt());
 
