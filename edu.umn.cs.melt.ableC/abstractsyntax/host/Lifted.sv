@@ -141,7 +141,7 @@ top::Expr ::= decls::Decls lifted::Expr
 
   lifted.env = addEnv([globalDefsDef(decls.defs)], top.env);
 
-  top.isLValue = false;
+  top.isLValue = lifted.isLValue;
 }
 
 -- Same as injectGlobalDeclsExpr, but on Stmt
