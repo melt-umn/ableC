@@ -1,6 +1,6 @@
 grammar edu:umn:cs:melt:tutorials:ableC:average:abstractsyntax;
 
-imports edu:umn:cs:melt:ableC:abstractsyntax;
+imports edu:umn:cs:melt:ableC:abstractsyntax:host;
 imports edu:umn:cs:melt:ableC:abstractsyntax:construction;
 imports edu:umn:cs:melt:ableC:abstractsyntax:substitution;
 
@@ -21,21 +21,14 @@ top::Expr ::= l::Expr r::Expr
      then [err(l.location, s"Average operand must have arithmetic type (got ${showType(r.typerep)})")]
      else []);
   local fwrd::Expr =
-    binaryOpExpr(
-      binaryOpExpr(
-        l,
-        numOp(addOp(location=builtin), location=builtin),
-        r,
-        location=builtin),
-      numOp(divOp(location=builtin), location=builtin),
-      mkIntConst(2, builtin),
-      location=builtin);
-  forwards to mkErrorCheck(localErrors, fwrd);
+    divExpr(addExpr(l, r, location=builtin), mkIntConst(2, builtin), location=builtin);
+  
   {- Same as
   forwards to
     if !null(localErrors)
     then errorExpr(localErrors, location=top.location)
     else fwrd;-}
+  forwards to mkErrorCheck(localErrors, fwrd);
 }
 
 global builtin::Location = builtinLoc("average");

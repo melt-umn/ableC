@@ -27,6 +27,8 @@ The parsing mechanism by itself is insufficient in most cases when an AST must s
 * `parametersSubstitution :: (Substitution ::= String Parameters)`: Replace a parameter list consisting just of a single unnamed parameter with a `typedef`ed name as the type expression with a new parameter list.  
 * `refIdSubstitution :: (Substitution ::= String Parameters)`: Replace the refId specified on a `struct` via GCC `__attribute__`s with a new refId.  This is used when generating a struct to implement a parametric type, such as in the [closure extension](https://github.com/melt-umn/ableC-closure).  
 
+A number of helper functions are available that use the attributes to actually perform a subsititution on a nonterminal, such as `substExpr :: (Expr ::= subs::[Substitution] base::Expr)`.  These are defined in [Util.sv](../../edu.umn.cs.melt.ableC/abstractsyntax/substitution/Util.sv).  
+
 It is important that a substitution can be performed without specifying the environment, and preferable that this transformation is performed on an AST before forwarding occurs.  To allow this, the `substituted` attribute should be propagated on all forwarding extension productions.  Note that `substituted` and `pp` are essentially the only exceptions to the rule that synthesized equations should only be written on non-forwarding productions.  
 
 A convention when performing substitutions on an AST built by the parsing helpers is to write names to be substituted with leading and trailing underscores, such as `__foo__`, in order to distinguish these from names that are actually names.  

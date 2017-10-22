@@ -1,6 +1,6 @@
 grammar edu:umn:cs:melt:tutorials:ableC:helloworld:abstractsyntax;
 
-imports edu:umn:cs:melt:ableC:abstractsyntax;
+imports edu:umn:cs:melt:ableC:abstractsyntax:host;
 
 abstract production hello
 s::Stmt ::=
