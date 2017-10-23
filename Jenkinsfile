@@ -115,10 +115,10 @@ node {
         },
         "ableC-dimensionalAnalysis": {
           buildExtension("/melt-umn/ableC-dimensionalAnalysis")
-        }
+        },
         "ableC_sample_projects": {
           buildExtension("/melt-umn/ableC_sample_projects", "master")
-        },
+        }
       )
     }
 
