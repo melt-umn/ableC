@@ -66,13 +66,12 @@ node {
     }*/
 
     stage ("Extensions") {
-      echo "${scm.branches}"
       parallel(
         "ableC-skeleton": {
-          buildExtension("/melt-umn/ableC-skeleton", scm.branches[0].name)
+          buildExtension("/melt-umn/ableC-skeleton", scm)
         },
         "ableC-lib-skeleton": {
-          buildExtension("/melt-umn/ableC-lib-skeleton", scm.branches[0].name)
+          buildExtension("/melt-umn/ableC-lib-skeleton", scm)
         },
         /*
         "ableC-sqlite": {
@@ -197,7 +196,10 @@ node {
   }
 }
 
-def buildExtension(String extension, String branch = 'develop') {
+def buildExtension(String extension, GitSCM scm) {
+    def branch = scm.branches[0].name
+    echo(extension)
+    echo(branch)
     try {
         build job: "$extension/$branch", parameters:
             [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: params.SILVER_BASE],
