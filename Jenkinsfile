@@ -68,17 +68,12 @@ node {
     stage ("Extensions") {
       parallel(
         "ableC-skeleton": {
-//          build job: '/melt-umn/ableC-skeleton/develop', parameters:
-          build job: "/melt-umn/ableC-skeleton/feature%2Ftype_qualifiers", parameters:
-            [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: params.SILVER_BASE],
-             [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
+          buildExtension("/melt-umn/ableC-skeleton", scm.branches[0].name)
         },
         "ableC-lib-skeleton": {
-//          build job: '/melt-umn/ableC-lib-skeleton/develop', parameters:
-          build job: "/melt-umn/ableC-lib-skeleton/feature%2Ftype_qualifiers", parameters:
-            [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: params.SILVER_BASE],
-             [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
+          buildExtension("/melt-umn/ableC-lib-skeleton", scm.branches[0].name)
         },
+        /*
         "ableC-sqlite": {
 //          build job: '/melt-umn/ableC-sqlite/develop', parameters:
           build job: "/melt-umn/ableC-sqlite/feature%2Ftype_qualifiers", parameters:
@@ -166,7 +161,7 @@ node {
           build job: '/melt-umn/ableC-dimensionalAnalysis/develop', parameters:
             [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: params.SILVER_BASE],
              [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
-        }
+        }*/
       )
     }
 
@@ -199,6 +194,19 @@ node {
       notifyBuild('BACK_TO_NORMAL')
     }
   }
+}
+
+def buildExtension(String extension, String branch = 'develop') {
+    try {
+        build job: "$extension/$branch", parameters:
+            [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: params.SILVER_BASE],
+             [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
+    }
+    catch (e) {
+        build job: "$extension/develop", parameters:
+            [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: params.SILVER_BASE],
+             [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
+    }
 }
 
 /* Slack / email notification
