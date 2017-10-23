@@ -154,15 +154,14 @@ node {
 }
 
 def buildExtension(String extension, String defaultBranch = 'develop') {
-    echo("Called buildExtension")
     try {
-        echo("Trying to build ${extension}/${env.JOB_BASE_NAME}")
+//        echo("Trying to build ${extension}/${env.JOB_BASE_NAME}")
         build job: "${extension}/${env.JOB_BASE_NAME}", parameters:
             [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: params.SILVER_BASE],
              [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
     }
     catch (e) {
-        echo("Falling back to build ${extension}/${defaultBranch}")
+        echo("Falling back to build ${extension}/${defaultBranch} because ${extension}/${env.JOB_BASE_NAME} does not exist")
         build job: "${extension}/${defaultBranch}", parameters:
             [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: params.SILVER_BASE],
              [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
