@@ -66,7 +66,7 @@ node {
     }*/
 
     stage ("Extensions") {
-      sh "echo ${scm.branches[0].name}"
+      echo "test"
             
       parallel(
         "ableC-skeleton": {
