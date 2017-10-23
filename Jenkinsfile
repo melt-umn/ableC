@@ -197,6 +197,7 @@ node {
 }
 
 def buildExtension(String extension) {
+    echo("Called buildExtension")
     def branch = scm.branches[0].name
     echo(extension)
     echo(branch)
