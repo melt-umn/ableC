@@ -78,7 +78,7 @@ node {
           buildExtension("/melt-umn/ableC-sqlite")
         },
         "ableC-condition-tables": {
-          buildExtension("/melt-umn/ableC-ableC-condition-tables")
+          buildExtension("/melt-umn/ableC-condition-tables")
         },
         "ableC-interval": {
           buildExtension("/melt-umn/ableC-interval")
