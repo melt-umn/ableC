@@ -68,10 +68,10 @@ node {
     stage ("Extensions") {
       parallel(
         "ableC-skeleton": {
-          buildExtension("/melt-umn/ableC-skeleton", scm)
+          buildExtension("/melt-umn/ableC-skeleton")
         },
         "ableC-lib-skeleton": {
-          buildExtension("/melt-umn/ableC-lib-skeleton", scm)
+          buildExtension("/melt-umn/ableC-lib-skeleton")
         },
         /*
         "ableC-sqlite": {
@@ -196,7 +196,7 @@ node {
   }
 }
 
-def buildExtension(String extension, GitSCM scm) {
+def buildExtension(String extension) {
     def branch = scm.branches[0].name
     echo(extension)
     echo(branch)
