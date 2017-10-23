@@ -56,14 +56,14 @@ node {
         sh "./build -G generated --warn-all --warn-error"
       }
     }
-    
+    /*
     stage ("Tutorials") {
       dir("tutorials") {
         withEnv(["PATH=${params.SILVER_BASE}/support/bin/:${env.PATH}"]) {
           sh "./build-all"
         }
       }
-    }
+    }*/
 
     stage ("Extensions") {
       parallel(
