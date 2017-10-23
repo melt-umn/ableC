@@ -146,12 +146,14 @@ node {
              [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
         },
         "ableC-nonnull": {
-          build job: '/melt-umn/ableC-nonnull/develop', parameters:
+//          build job: '/melt-umn/ableC-nonnull/develop', parameters:
+          build job: '/melt-umn/ableC-nonnull/feature%2Ftype_qualifiers', parameters:
             [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: params.SILVER_BASE],
              [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
         },
         "ableC-checkBounds": {
-          build job: '/melt-umn/ableC-checkBounds/develop', parameters:
+//          build job: '/melt-umn/ableC-checkBounds/develop', parameters:
+          build job: '/melt-umn/ableC-checkBounds/feature%2Ftype_qualifiers', parameters:
             [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: params.SILVER_BASE],
              [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
         },
