@@ -196,18 +196,18 @@ node {
   }
 }
 
-def buildExtension(String extension) {
+def buildExtension(String extension, String defaultBranch = 'develop') {
     echo("Called buildExtension")
-    def branch = scm.branches[0].name
+    def branch = env.BRANCH_NAME
     echo(extension)
     echo(branch)
     try {
-        build job: "$extension/$branch", parameters:
+        build job: "${extension}/${env.BRANCH_NAME}", parameters:
             [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: params.SILVER_BASE],
              [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
     }
     catch (e) {
-        build job: "$extension/develop", parameters:
+        build job: "${extension}/${defaultBranch}", parameters:
             [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: params.SILVER_BASE],
              [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
     }
