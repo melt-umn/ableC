@@ -66,9 +66,9 @@ node {
     }*/
 
     stage ("Extensions") {
+      echo "${scm.branches[0].name}"
       parallel(
         "ableC-skeleton": {
-          echo "${scm.branches[0].name}"
           buildExtension("/melt-umn/ableC-skeleton", scm.branches[0].name)
         },
         "ableC-lib-skeleton": {
