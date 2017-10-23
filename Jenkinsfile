@@ -199,8 +199,8 @@ node {
 def buildExtension(String extension, String defaultBranch = 'develop') {
     echo("Called buildExtension")
     try {
-        echo("Trying to build ${extension}/${env.BRANCH_NAME}")
-        build job: "${extension}/${env.BRANCH_NAME}", parameters:
+        echo("Trying to build ${extension}/${env.JOB_BASE_NAME}")
+        build job: "${extension}/${env.JOB_BASE_NAME}", parameters:
             [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: params.SILVER_BASE],
              [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
     }
