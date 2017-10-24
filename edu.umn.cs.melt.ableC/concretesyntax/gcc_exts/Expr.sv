@@ -22,19 +22,19 @@ concrete productions top::ConditionalExpr_c
 
 concrete productions top::UnaryExpr_c
 | '__alignof' e::UnaryExpr_c
-    { top.ast = ast:unaryExprOrTypeTraitExpr(ast:alignofOp(location=$1.location), ast:exprExpr(e.ast), location=top.location); }
+    { top.ast = ast:alignofExpr(ast:exprExpr(e.ast), location=top.location); }
 | '__alignof' '(' t::TypeName_c ')'
-    { top.ast = ast:unaryExprOrTypeTraitExpr(ast:alignofOp(location=$1.location), ast:typeNameExpr(t.ast), location=top.location); }
+    { top.ast = ast:alignofExpr(ast:typeNameExpr(t.ast), location=top.location); }
 | '__alignof__' e::UnaryExpr_c
-    { top.ast = ast:unaryExprOrTypeTraitExpr(ast:alignofOp(location=$1.location), ast:exprExpr(e.ast), location=top.location); }
+    { top.ast = ast:alignofExpr(ast:exprExpr(e.ast), location=top.location); }
 | '__alignof__' '(' t::TypeName_c ')'
-    { top.ast = ast:unaryExprOrTypeTraitExpr(ast:alignofOp(location=$1.location), ast:typeNameExpr(t.ast), location=top.location); }
+    { top.ast = ast:alignofExpr(ast:typeNameExpr(t.ast), location=top.location); }
 | '&&' Identifier_t
     { top.ast = ast:errorExpr([err(top.location, "Address of labels not yet supported")], location=top.location); }
 
 concrete productions top::UnaryOp_c
 | '__extension__'
-    { top.ast = ovrld:unaryOpExpr(ast:warnNoOp([], location=top.location), top.expr, location=top.location); } -- Discard and ignore these annotations
+    { top.ast = top.expr; } -- Discard and ignore these annotations
 
 concrete productions top::PrimaryExpr_c
 | '(' '{' bis::BlockItemList_c '}' ')'

@@ -359,28 +359,28 @@ concrete productions top::UnaryExpr_c
     { top.ast = e.ast;
       top.directName = e.directName; }
 | '++' e::UnaryExpr_c
-    { top.ast = ovrld:unaryOpExpr(ast:preIncOp(location=$1.location), e.ast, location=top.location); }
+    { top.ast = ovrld:preIncExpr(e.ast, location=top.location); }
 | '--' e::UnaryExpr_c
-    { top.ast = ovrld:unaryOpExpr(ast:preDecOp(location=$1.location), e.ast, location=top.location); }
+    { top.ast = ovrld:preDecExpr(e.ast, location=top.location); }
 | op::UnaryOp_c e::CastExpr_c
     { top.ast = op.ast;
       op.expr = e.ast; }
 | 'sizeof' e::UnaryExpr_c
-    { top.ast = ast:unaryExprOrTypeTraitExpr(ast:sizeofOp(location=$1.location), ast:exprExpr(e.ast), location=top.location); }
- | 'sizeof' '(' ty::TypeName_c ')'
-    { top.ast = ast:unaryExprOrTypeTraitExpr(ast:sizeofOp(location=$1.location), ast:typeNameExpr(ty.ast), location=top.location); }
+    { top.ast = ast:sizeofExpr(ast:exprExpr(e.ast), location=top.location); }
+| 'sizeof' '(' ty::TypeName_c ')'
+    { top.ast = ast:sizeofExpr(ast:typeNameExpr(ty.ast), location=top.location); }
 
 
 closed nonterminal UnaryOp_c with location, ast<ast:Expr>, expr;
 inherited attribute expr :: ast:Expr;
 
 concrete productions top::UnaryOp_c
-| '&'  { top.ast = ovrld:unaryOpExpr(ast:addressOfOp(location=top.location), top.expr, location=top.location); }
+| '&'  { top.ast = ovrld:addressOfExpr(top.expr, location=top.location); }
 | '*'  { top.ast = ovrld:dereferenceExpr(top.expr, location=top.location); }
-| '+'  { top.ast = ovrld:unaryOpExpr(ast:positiveOp(location=top.location), top.expr, location=top.location); }
-| '-'  { top.ast = ovrld:unaryOpExpr(ast:negativeOp(location=top.location), top.expr, location=top.location); }
-| '~'  { top.ast = ovrld:unaryOpExpr(ast:bitNegateOp(location=top.location), top.expr, location=top.location); }
-| '!'  { top.ast = ovrld:unaryOpExpr(ast:notOp(location=top.location), top.expr, location=top.location); }
+| '+'  { top.ast = ovrld:positiveExpr(top.expr, location=top.location); }
+| '-'  { top.ast = ovrld:negativeExpr(top.expr, location=top.location); }
+| '~'  { top.ast = ovrld:bitNegateExpr(top.expr, location=top.location); }
+| '!'  { top.ast = ovrld:notExpr(top.expr, location=top.location); }
 
 -- Needed for constructing calls correctly
 synthesized attribute directName::Maybe<Identifier_t>;
@@ -421,9 +421,9 @@ concrete productions top::PostfixExpr_c
 | e::PostfixExpr_c '->' id::Identifier_t
     { top.ast = ovrld:memberExpr(e.ast, true, ast:fromId(id), location=top.location); }
 | e::PostfixExpr_c '++'
-    { top.ast = ovrld:unaryOpExpr(ast:postIncOp(location=$2.location), e.ast, location=top.location); }
+    { top.ast = ovrld:postIncExpr(e.ast, location=top.location); }
 | e::PostfixExpr_c '--'
-    { top.ast = ovrld:unaryOpExpr(ast:postDecOp(location=$2.location), e.ast, location=top.location); }
+    { top.ast = ovrld:postDecExpr(e.ast, location=top.location); }
 | '(' ty::TypeName_c ')' '{' il::InitializerList_c '}'
     { top.ast = ast:compoundLiteralExpr(ty.ast, ast:foldInit(il.ast), location=top.location); }
 | '(' ty::TypeName_c ')' '{' il::InitializerList_c ',' '}'

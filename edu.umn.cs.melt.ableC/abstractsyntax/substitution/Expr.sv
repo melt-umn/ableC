@@ -1,12 +1,5 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax:substitution;
 
-
-aspect production seedingForwardsToEquationDependencies
-top::Expr ::=
-{
-  top.substituted = error("hack");
-}
-
 aspect production errorExpr
 top::Expr ::= msg::[Message]
 {
@@ -35,21 +28,6 @@ top::Expr ::= l::String
 }
 aspect production parenExpr
 top::Expr ::= e::Expr
-{
-  propagate substituted;
-}
-aspect production dereferenceExpr
-top::Expr ::= e::Expr
-{
-  propagate substituted;
-}
-aspect production unaryOpExpr
-top::Expr ::= op::UnaryOp  e::Expr
-{
-  propagate substituted;
-}
-aspect production unaryExprOrTypeTraitExpr
-top::Expr ::= op::UnaryTypeOp  e::ExprOrTypeName
 {
   propagate substituted;
 }
@@ -138,17 +116,6 @@ top::Expr ::= s::String
 {
   propagate substituted;
 }
-
-aspect production ovrld:unaryOpExpr
-top::Expr ::= op::UnaryOp  e::Expr
-{
-  propagate substituted;
-}
-aspect production ovrld:dereferenceExpr
-top::Expr ::= e::Expr
-{
-  propagate substituted;
-}
 aspect production ovrld:explicitCastExpr
 top::Expr ::= ty::TypeName e::Expr
 {
@@ -170,16 +137,6 @@ top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
   propagate substituted;
 }
 
-aspect production inj:unaryOpExpr
-top::Expr ::= op::UnaryOp  e::Expr
-{
-  propagate substituted;
-}
-aspect production inj:dereferenceExpr
-top::Expr ::= e::Expr
-{
-  propagate substituted;
-}
 aspect production inj:explicitCastExpr
 top::Expr ::= ty::TypeName e::Expr
 {

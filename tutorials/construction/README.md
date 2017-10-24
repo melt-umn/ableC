@@ -7,9 +7,6 @@ Some common patterns are often repeated when writing abstract syntax, such as de
 * `mkDeclGeneral :: (Stmt ::= String Type Location)`: Create a statement that is the uninitialized declaration of a single variable with the given type.  
 * `mkAssign :: (Stmt ::= String Expr Location)`: Create a statement that assigns an expression to a name.
 * `mkIntConst :: (Expr ::= Integer Location)`: Create an integer literal.
-* `mkAdd :: (Expr ::= Expr Expr Location)`: Create an expression adding two expressions.
-* `mkAnd :: (Expr ::= Expr Expr Location)`: Create an expression anding two expressions.
-* `mkAddressOf :: (Expr ::= Expr Location)`: Create an expression that gets the address of an expression.
 * `mkErrorCheck :: (Expr ::= [Message] Expr)`: If the parameter messages are empty, return the expression.  If the parameter messages contain only warnings, wrap the messages and expression in `warnExpr`.  If the parameter messages contain errors, wrap the messages in `errorExpr`.  
 A number of helpers are also provided to fold various list nonterminals from lists of components, such as `foldExpr :: (Exprs ::= [Expr])` or `foldDecl :: (Decls ::= [Decl])`.  
 
@@ -29,6 +26,8 @@ The parsing mechanism by itself is insufficient in most cases when an AST must s
 * `exprsSubstitution :: (Substitution ::= String Exprs)`: Replace an expression list consisting just of a single name with another expression list.
 * `parametersSubstitution :: (Substitution ::= String Parameters)`: Replace a parameter list consisting just of a single unnamed parameter with a `typedef`ed name as the type expression with a new parameter list.  
 * `refIdSubstitution :: (Substitution ::= String Parameters)`: Replace the refId specified on a `struct` via GCC `__attribute__`s with a new refId.  This is used when generating a struct to implement a parametric type, such as in the [closure extension](https://github.com/melt-umn/ableC-closure).  
+
+A number of helper functions are available that use the attributes to actually perform a subsititution on a nonterminal, such as `substExpr :: (Expr ::= subs::[Substitution] base::Expr)`.  These are defined in [Util.sv](../../edu.umn.cs.melt.ableC/abstractsyntax/substitution/Util.sv).  
 
 It is important that a substitution can be performed without specifying the environment, and preferable that this transformation is performed on an AST before forwarding occurs.  To allow this, the `substituted` attribute should be propagated on all forwarding extension productions.  Note that `substituted` and `pp` are essentially the only exceptions to the rule that synthesized equations should only be written on non-forwarding productions.  
 

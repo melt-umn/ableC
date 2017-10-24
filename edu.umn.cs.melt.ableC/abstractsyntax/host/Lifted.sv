@@ -64,7 +64,6 @@ flowtype lifted {decorate} on
   NumericConstant,
   MaybeExpr, Exprs, ExprOrTypeName,
   Stmt,
-  UnaryOp, UnaryTypeOp,
   Name, MaybeName,
   MaybeInitializer, Initializer, InitList, Init, Designator;
 flowtype globalDecls {decorate} on
@@ -142,7 +141,7 @@ top::Expr ::= decls::Decls lifted::Expr
 
   lifted.env = addEnv([globalDefsDef(decls.defs)], top.env);
 
-  top.isLValue = false;
+  top.isLValue = lifted.isLValue;
 }
 
 -- Same as injectGlobalDeclsExpr, but on Stmt
