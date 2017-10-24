@@ -117,7 +117,7 @@ node {
           buildExtension("/melt-umn/ableC-dimensionalAnalysis")
         },
         "ableC_sample_projects": {
-          buildExtension("/melt-umn/ableC_sample_projects", "master")
+          buildExtension("/melt-umn/ableC_sample_projects")
         }
       )
     }
@@ -153,6 +153,9 @@ node {
   }
 }
 
+/*
+ * Try building the extension branch with the same name as the current branch,
+ * or else fall back to building a default branch. */
 def buildExtension(String extension, String defaultBranch = 'develop') {
     try {
 //        echo("Trying to build ${extension}/${env.JOB_BASE_NAME}")
@@ -161,7 +164,7 @@ def buildExtension(String extension, String defaultBranch = 'develop') {
              [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
     }
     catch (e) {
-        echo("Falling back to build ${extension}/${defaultBranch} because ${extension}/${env.JOB_BASE_NAME} does not exist")
+        echo("Falling back to build ${extension}/${defaultBranch} because ${extension}/${env.JOB_BASE_NAME} failed or does not exist")
         build job: "${extension}/${defaultBranch}", parameters:
             [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: params.SILVER_BASE],
              [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
