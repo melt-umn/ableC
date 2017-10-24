@@ -9,33 +9,34 @@ Expr ::= n::Integer l::Location
 }
 
 -- left + right
+-- TODO: Deprecated, remove this!
 function mkAdd
 Expr ::= left::Expr  right::Expr  l::Location
 { return
-    binaryOpExpr (
+    addExpr (
       left,
-      numOp(addOp(location=l),location=l),
       right,
       location=l
    ) ;
 }
 
 -- left && right
+-- TODO: Deprecated, remove this!
 function mkAnd
 Expr ::= left::Expr  right::Expr  l::Location
 { return
-    binaryOpExpr (
+    andExpr (
       left,
-      boolOp(andBoolOp(location=l),location=l),
       right,
       location=l
    ) ;
 }
 
 -- & e
+-- TODO: Deprecated, remove this!
 function mkAddressOf
 Expr ::= e::Expr l::Location
-{ return unaryOpExpr( addressOfOp(location=l), e, location=l );
+{ return addressOfExpr(e, location=l);
 }
 
 -- Expr --

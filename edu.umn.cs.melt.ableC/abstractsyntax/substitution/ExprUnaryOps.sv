@@ -1,80 +1,184 @@
 
-
-aspect production preIncOp
-top::UnaryOp ::=
+aspect production preIncExpr
+top::Expr ::= e::Expr
 {
   propagate substituted;
 }
-aspect production preDecOp
-top::UnaryOp ::= 
+aspect production preDecExpr
+top::Expr ::= e::Expr 
 {
   propagate substituted;
 }
-aspect production postIncOp
-top::UnaryOp ::= 
+aspect production postIncExpr
+top::Expr ::= e::Expr 
 {
   propagate substituted;
 }
-aspect production postDecOp
-top::UnaryOp ::= 
+aspect production postDecExpr
+top::Expr ::= e::Expr 
 {
   propagate substituted;
 }
-aspect production addressOfOp
-top::UnaryOp ::=
+aspect production addressOfExpr
+top::Expr ::= e::Expr
 {
   propagate substituted;
 }
-aspect production dereferenceOp
-top::UnaryOp ::=
+aspect production dereferenceExpr
+top::Expr ::= e::Expr
 {
   propagate substituted;
 }
-aspect production positiveOp
-top::UnaryOp ::=
+aspect production positiveExpr
+top::Expr ::= e::Expr
 {
   propagate substituted;
 }
-aspect production negativeOp
-top::UnaryOp ::=
+aspect production negativeExpr
+top::Expr ::= e::Expr
 {
   propagate substituted;
 }
-aspect production bitNegateOp
-top::UnaryOp ::=
+aspect production bitNegateExpr
+top::Expr ::= e::Expr
 {
   propagate substituted;
 }
-aspect production notOp
-top::UnaryOp ::=
+aspect production notExpr
+top::Expr ::= e::Expr
 {
   propagate substituted;
 }
-
-aspect production warnNoOp
-top::UnaryOp ::= msg::[Message]
+aspect production realExpr
+top::Expr ::= e::Expr
 {
   propagate substituted;
 }
-
-aspect production realOp
-top::UnaryOp ::=
-{
-  propagate substituted;
-}
-aspect production imagOp
-top::UnaryOp ::=
+aspect production imagExpr
+top::Expr ::= e::Expr
 {
   propagate substituted;
 }
 
-aspect production sizeofOp
-top::UnaryTypeOp ::=
+aspect production ovrld:preIncExpr
+top::Expr ::= e::Expr
 {
   propagate substituted;
 }
-aspect production alignofOp
-top::UnaryTypeOp ::=
+aspect production ovrld:preDecExpr
+top::Expr ::= e::Expr 
+{
+  propagate substituted;
+}
+aspect production ovrld:postIncExpr
+top::Expr ::= e::Expr 
+{
+  propagate substituted;
+}
+aspect production ovrld:postDecExpr
+top::Expr ::= e::Expr 
+{
+  propagate substituted;
+}
+aspect production ovrld:addressOfExpr
+top::Expr ::= e::Expr
+{
+  propagate substituted;
+}
+aspect production ovrld:dereferenceExpr
+top::Expr ::= e::Expr
+{
+  propagate substituted;
+}
+aspect production ovrld:positiveExpr
+top::Expr ::= e::Expr
+{
+  propagate substituted;
+}
+aspect production ovrld:negativeExpr
+top::Expr ::= e::Expr
+{
+  propagate substituted;
+}
+aspect production ovrld:bitNegateExpr
+top::Expr ::= e::Expr
+{
+  propagate substituted;
+}
+aspect production ovrld:notExpr
+top::Expr ::= e::Expr
+{
+  propagate substituted;
+}
+
+aspect production inj:preIncExpr
+top::Expr ::= e::Expr
+{
+  propagate substituted;
+}
+aspect production inj:preDecExpr
+top::Expr ::= e::Expr 
+{
+  propagate substituted;
+}
+aspect production inj:postIncExpr
+top::Expr ::= e::Expr 
+{
+  propagate substituted;
+}
+aspect production inj:postDecExpr
+top::Expr ::= e::Expr 
+{
+  propagate substituted;
+}
+aspect production inj:addressOfExpr
+top::Expr ::= e::Expr
+{
+  propagate substituted;
+}
+aspect production inj:dereferenceExpr
+top::Expr ::= e::Expr
+{
+  propagate substituted;
+}
+aspect production inj:positiveExpr
+top::Expr ::= e::Expr
+{
+  propagate substituted;
+}
+aspect production inj:negativeExpr
+top::Expr ::= e::Expr
+{
+  propagate substituted;
+}
+aspect production inj:bitNegateExpr
+top::Expr ::= e::Expr
+{
+  propagate substituted;
+}
+aspect production inj:notExpr
+top::Expr ::= e::Expr
+{
+  propagate substituted;
+}
+aspect production inj:realExpr
+top::Expr ::= e::Expr
+{
+  propagate substituted;
+}
+aspect production inj:imagExpr
+top::Expr ::= e::Expr
+{
+  propagate substituted;
+}
+
+aspect production sizeofExpr
+top::Expr ::= e::ExprOrTypeName
+{
+  propagate substituted;
+}
+aspect production alignofExpr
+top::Expr ::= e::ExprOrTypeName
 {
   propagate substituted;
 }

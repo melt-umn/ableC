@@ -1,5 +1,5 @@
 
-import edu:umn:cs:melt:ableC:abstractsyntax;
+import edu:umn:cs:melt:ableC:abstractsyntax:host;
 import edu:umn:cs:melt:ableC:abstractsyntax:env;
 import silver:langutil;
 import silver:testing;

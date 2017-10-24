@@ -16,7 +16,7 @@ exports edu:umn:cs:melt:ableC:concretesyntax:gcc_exts;
 imports silver:langutil only ast, errors, err, wrn;
 
 -- errors it prefixed with ast, to avoid any name clashes.
-imports edu:umn:cs:melt:ableC:abstractsyntax as ast;
+imports edu:umn:cs:melt:ableC:abstractsyntax:host as ast;
 
 -- easier construction of ast nodes
 imports edu:umn:cs:melt:ableC:abstractsyntax:construction as ast;

@@ -1,7 +1,7 @@
 grammar edu:umn:cs:melt:ableC:concretesyntax:c11;
 
 imports edu:umn:cs:melt:ableC:concretesyntax;
-imports edu:umn:cs:melt:ableC:abstractsyntax as ast;
+imports edu:umn:cs:melt:ableC:abstractsyntax:host as ast;
 imports edu:umn:cs:melt:ableC:abstractsyntax:construction as ast;
 imports silver:langutil;
 
@@ -37,8 +37,7 @@ concrete productions top::AlignmentSpecifier_c
 | '_Alignas' '(' t::TypeName_c ')' -- equivalent to _Alignas( _Alignof( tn ) )
     { top.specialSpecifiers = 
         [ast:alignasSpecifier(
-          ast:unaryExprOrTypeTraitExpr(
-            ast:alignofOp(location=$1.location),
+          ast:alignofExpr(
             ast:typeNameExpr(t.ast),
             location=top.location))]; }
 | '_Alignas' '(' e::ConstantExpr_c ')'
@@ -153,7 +152,7 @@ terminal C11_Alignof_t '_Alignof' lexer classes {Ckeyword};
 
 concrete productions top::UnaryExpr_c
 | '_Alignof' '(' t::TypeName_c ')'
-    { top.ast = ast:unaryExprOrTypeTraitExpr(ast:alignofOp(location=$1.location), ast:typeNameExpr(t.ast), location=top.location); }
+    { top.ast = ast:alignofExpr(ast:typeNameExpr(t.ast), location=top.location); }
 
 
 

@@ -36,7 +36,6 @@ concrete productions top::FunctionDefinition_c
       context = lh:closeScope(context); -- Opened by InitialFunctionDefinition.
     }
 
-
 closed nonterminal Declaration_c with location, ast<ast:Decl>;
 concrete productions top::Declaration_c
 | ds::DeclarationSpecifiers_c  idcl::InitDeclaratorList_c  ';'
@@ -296,27 +295,37 @@ concrete productions top::DirectDeclarator_c
       dd.givenType = ast:arrayTypeExprWithoutExpr(top.givenType, ast:nilQualifier(), ast:starArraySize());
       top.ast = dd.ast;
     }
-| dd::DirectDeclarator_c '(' ptl::ParameterTypeList_c ')'
+| dd::DirectDeclarator_c '(' ptl::ParameterTypeList_c ')' q::OptTypeQualifierList_c
     { top.declaredIdent = dd.declaredIdent;
       top.declaredParamIdents = -- use the inner one if it exists!
         orElse(dd.declaredParamIdents, just(ptl.declaredIdents));
-      dd.givenType = ast:functionTypeExprWithArgs(top.givenType, ast:foldParameterDecl(ptl.ast), ptl.isVariadic);
+      dd.givenType = ast:functionTypeExprWithArgs(top.givenType, ast:foldParameterDecl(ptl.ast), ptl.isVariadic, q.typeQualifiers);
       top.ast = dd.ast;
     }
-| dd::DirectDeclarator_c '(' idl::IdentifierList_c ')'
+| dd::DirectDeclarator_c '(' idl::IdentifierList_c ')' q::OptTypeQualifierList_c
     { top.declaredIdent = dd.declaredIdent;
       top.declaredParamIdents =
         orElse(dd.declaredParamIdents, just(idl.declaredIdents));
-      dd.givenType = ast:functionTypeExprWithoutArgs(top.givenType, idl.declaredIdents);
+      dd.givenType = ast:functionTypeExprWithoutArgs(top.givenType, idl.declaredIdents, q.typeQualifiers);
       top.ast = dd.ast;
     }
-| dd::DirectDeclarator_c '(' ')'
+| dd::DirectDeclarator_c '(' ')' q::OptTypeQualifierList_c
     { top.declaredIdent = dd.declaredIdent;
       top.declaredParamIdents =
         orElse(dd.declaredParamIdents, just([]));
-      dd.givenType = ast:functionTypeExprWithoutArgs(top.givenType, []);
+      dd.givenType = ast:functionTypeExprWithoutArgs(top.givenType, [], q.typeQualifiers);
       top.ast = dd.ast;
     }
+
+-- TODO: any better proposal for concrete syntax for qualifiers on functional types?
+terminal FunctionQualifiers_t '__function_qualifiers' lexer classes {Ckeyword};
+
+closed nonterminal OptTypeQualifierList_c with location, typeQualifiers;
+concrete productions top::OptTypeQualifierList_c
+|
+    { top.typeQualifiers = ast:nilQualifier(); }
+| '__function_qualifiers' '(' q::TypeQualifierList_c ')'
+    { top.typeQualifiers = q.typeQualifiers; }
 
 
 closed nonterminal AbstractDeclarator_c with location, ast<ast:TypeModifierExpr>, givenType;
@@ -370,23 +379,23 @@ concrete productions top::DirectAbstractDeclarator_c
     {
       top.ast = ast:arrayTypeExprWithoutExpr(top.givenType, ast:nilQualifier(), ast:starArraySize());
     }
-| dd::DirectAbstractDeclarator_c  '(' ptl::ParameterTypeList_c ')'
+| dd::DirectAbstractDeclarator_c  '(' ptl::ParameterTypeList_c ')' q::OptTypeQualifierList_c
     {
-      dd.givenType = ast:functionTypeExprWithArgs(top.givenType, ast:foldParameterDecl(ptl.ast), ptl.isVariadic);
+      dd.givenType = ast:functionTypeExprWithArgs(top.givenType, ast:foldParameterDecl(ptl.ast), ptl.isVariadic, q.typeQualifiers);
       top.ast = dd.ast;
     }
-| '(' ptl::ParameterTypeList_c ')'
+| '(' ptl::ParameterTypeList_c ')' q::OptTypeQualifierList_c
     {
-      top.ast = ast:functionTypeExprWithArgs(top.givenType, ast:foldParameterDecl(ptl.ast), ptl.isVariadic);
+      top.ast = ast:functionTypeExprWithArgs(top.givenType, ast:foldParameterDecl(ptl.ast), ptl.isVariadic, q.typeQualifiers);
     }
-| dd::DirectAbstractDeclarator_c  '(' ')'
+| dd::DirectAbstractDeclarator_c  '(' ')' q::OptTypeQualifierList_c
     {
-      dd.givenType = ast:functionTypeExprWithoutArgs(top.givenType, []);
+      dd.givenType = ast:functionTypeExprWithoutArgs(top.givenType, [], q.typeQualifiers);
       top.ast = dd.ast;
     }
-| '(' ')'
+| '(' ')' q::OptTypeQualifierList_c
     {
-      top.ast = ast:functionTypeExprWithoutArgs(top.givenType, []);
+      top.ast = ast:functionTypeExprWithoutArgs(top.givenType, [], q.typeQualifiers);
     }
 
 

@@ -3,10 +3,11 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax:substitution;
 imports silver:langutil;
 imports silver:langutil:pp;
 
-imports edu:umn:cs:melt:ableC:abstractsyntax;
+imports edu:umn:cs:melt:ableC:abstractsyntax:host;
 imports edu:umn:cs:melt:ableC:abstractsyntax:env;
 imports edu:umn:cs:melt:ableC:abstractsyntax:construction;
-imports edu:umn:cs:melt:ableC:abstractsyntax:overload as ovrld;
+imports edu:umn:cs:melt:ableC:abstractsyntax:overloadable as ovrld;
+imports edu:umn:cs:melt:ableC:abstractsyntax:injectable as inj;
 
 {--
  - Framework for performing substitutions on ASTs
@@ -143,11 +144,9 @@ attribute substitutions occurs on
     StructDecl, UnionDecl, EnumDecl, StructItemList, EnumItemList,
     StructItem, StructDeclarators, StructDeclarator, EnumItem,
   Expr, GenericAssocs, GenericAssoc,
-  BinOp, AssignOp, BoolOp, BitOp, CompareOp, NumOp,
   MemberDesignator,
   NumericConstant,
   MaybeExpr, Exprs, ExprOrTypeName,
-  UnaryOp, UnaryTypeOp,
   MaybeInitializer, Initializer, InitList, Init, Designator,
   Name, MaybeName,
   Stmt,
@@ -185,19 +184,11 @@ attribute substituted<EnumItem> occurs on EnumItem;
 attribute substituted<Expr> occurs on Expr;
 attribute substituted<GenericAssocs> occurs on GenericAssocs;
 attribute substituted<GenericAssoc> occurs on GenericAssoc;
-attribute substituted<BinOp> occurs on BinOp;
-attribute substituted<AssignOp> occurs on AssignOp;
-attribute substituted<BoolOp> occurs on BoolOp;
-attribute substituted<BitOp> occurs on BitOp;
-attribute substituted<CompareOp> occurs on CompareOp;
-attribute substituted<NumOp> occurs on NumOp;
 attribute substituted<MemberDesignator> occurs on MemberDesignator;
 attribute substituted<NumericConstant> occurs on NumericConstant;
 attribute substituted<MaybeExpr> occurs on MaybeExpr;
 attribute substituted<Exprs> occurs on Exprs;
 attribute substituted<ExprOrTypeName> occurs on ExprOrTypeName;
-attribute substituted<UnaryOp> occurs on UnaryOp;
-attribute substituted<UnaryTypeOp> occurs on UnaryTypeOp;
 attribute substituted<MaybeInitializer> occurs on MaybeInitializer;
 attribute substituted<Initializer> occurs on Initializer;
 attribute substituted<InitList> occurs on InitList;
@@ -229,11 +220,9 @@ flowtype substituted {substitutions} on
     StructDecl, UnionDecl, EnumDecl, StructItemList, EnumItemList,
     StructItem, StructDeclarators, StructDeclarator, EnumItem,
   Expr, GenericAssocs, GenericAssoc,
-  BinOp, AssignOp, BoolOp, BitOp, CompareOp, NumOp,
   MemberDesignator,
   NumericConstant,
   MaybeExpr, Exprs, ExprOrTypeName,
-  UnaryOp, UnaryTypeOp,
   MaybeInitializer, Initializer, InitList, Init, Designator,
   Name, MaybeName,
   Stmt,

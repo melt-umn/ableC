@@ -93,7 +93,7 @@ top::Builtin ::= BUILTIN '(' id::Identifier ',' '"' t::Types dots::MaybeDots '"'
     a:functionType(head(t.signature),
       a:protoFunctionType(
         tail(t.signature),
-        dots.hasdots));
+        dots.hasdots), a:nilQualifier());
 }
 concrete production ignoredLIBBUILTIN
 top::Builtin ::= LIBBUILTIN_NotProcessed
@@ -249,8 +249,8 @@ top::TypeSuffix ::=
 concrete productions top::TypeSuffix
 | '*' {-pointer-} { top.pointercount = 1; }
 | '&' {-C++-} { top.ignoreMe = true; } -- ignore these
-| 'C' {-const-} { top.qualifiers = a:consQualifier(a:constQualifier(), a:nilQualifier()); }
-| 'D' {-volatile-} { top.qualifiers = a:consQualifier(a:volatileQualifier(), a:nilQualifier()); }
+| 'C' {-const-} { top.qualifiers = a:consQualifier(a:constQualifier(location=builtinLoc("host")), a:nilQualifier()); }
+| 'D' {-volatile-} { top.qualifiers = a:consQualifier(a:volatileQualifier(location=builtinLoc("host")), a:nilQualifier()); }
 
 
 nonterminal MaybeDots with hasdots;

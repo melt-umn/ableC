@@ -1,7 +1,7 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax:construction;
 
 imports silver:langutil;
-imports edu:umn:cs:melt:ableC:abstractsyntax;
+imports edu:umn:cs:melt:ableC:abstractsyntax:host;
 imports edu:umn:cs:melt:ableC:concretesyntax as cst;
 
 

@@ -11,6 +11,8 @@ OBJECTS=$(XC_FILES:.xc=.o)
 EXECUTABLES=$(XC_FILES:.xc=.out)
 TESTS=$(XC_FILES:.xc=.test)
 
+JAVAFLAGS=-Xss6M
+
 all: $(ABLEC_JAR) $(C_FILES) $(OBJECTS) $(EXECUTABLES) $(TESTS)
 
 $(ABLEC_JAR): $(GRAMMAR_SOURCES)
@@ -18,7 +20,7 @@ $(ABLEC_JAR): $(GRAMMAR_SOURCES)
 	silver -o $@ $(SVFLAGS) $(ARTIFACT)
 
 %.c: %.xc $(ABLEC_JAR)
-	java -jar $(ABLEC_JAR) $< $(XCFLAGS)
+	java $(JAVAFLAGS) -jar $(ABLEC_JAR) $< $(XCFLAGS)
 
 %.out: %.o
 	$(CC) $(LDFLAGS) $< $(LOADLIBES) $(LDLIBS) -o $@

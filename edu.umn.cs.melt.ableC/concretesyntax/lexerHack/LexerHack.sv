@@ -1,6 +1,6 @@
 grammar edu:umn:cs:melt:ableC:concretesyntax:lexerHack;
 
-imports edu:umn:cs:melt:ableC:abstractsyntax as ast;
+imports edu:umn:cs:melt:ableC:abstractsyntax:host as ast;
 
 nonterminal IdentType;
 abstract production identType_c     top::IdentType ::= {}

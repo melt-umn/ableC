@@ -2,7 +2,7 @@ grammar edu:umn:cs:melt:ableC:concretesyntax:debug;
 
 imports edu:umn:cs:melt:ableC:concretesyntax;
 
-imports edu:umn:cs:melt:ableC:abstractsyntax as ast;
+imports edu:umn:cs:melt:ableC:abstractsyntax:host as ast;
 
 imports silver:langutil only ast; --, errors, err, wrn;
 
