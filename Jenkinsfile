@@ -39,7 +39,12 @@ properties([
 /* a node allocates an executor to actually do work */
 node {
   try {
-//    notifyBuild('STARTED')
+    //    notifyBuild('STARTED')
+    
+    def env = [
+      "PATH=${params.SILVER_BASE}/support/bin/:${env.PATH}",
+      "SVFLAGS=-G ${WORKSPACE}/generated"
+    ]
 
     /* stages are pretty much just labels about what's going on */
     stage ("Build") {
@@ -52,15 +57,15 @@ node {
       sh "mkdir -p generated"
 
       /* env.PATH is the master's path, not the executor's */
-      withEnv(["PATH=${params.SILVER_BASE}/support/bin/:${env.PATH}"]) {
-        sh "./build -G generated --warn-all --warn-error"
+      withEnv(env) {
+        sh "./build -G ${WORKSPACE}/generated --warn-all --warn-error"
       }
     }
 
     /* Make sure the tutorials compile before bothering to build all the other extensions */
     stage ("Tutorials") {
       dir("tutorials") {
-        withEnv(["PATH=${params.SILVER_BASE}/support/bin/:${env.PATH}"]) {
+        withEnv(env) {
           sh "./build-all"
         }
       }

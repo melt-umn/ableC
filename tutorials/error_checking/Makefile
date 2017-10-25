@@ -3,7 +3,7 @@ ABLEC_JAR=ableC.jar
 ARTIFACT=artifact
 GRAMMAR_DIRS=. ../../
 GRAMMAR_SOURCES=$(shell find $(GRAMMAR_DIRS) -name *.sv -print0 | xargs -0)
-SVFLAGS=$(addprefix -I , $(GRAMMAR_DIRS))
+override SVFLAGS+=$(addprefix -I , $(GRAMMAR_DIRS))
 
 XC_FILES=$(wildcard *.xc)
 C_FILES=$(XC_FILES:.xc=.c)
@@ -11,7 +11,7 @@ OBJECTS=$(XC_FILES:.xc=.o)
 EXECUTABLES=$(XC_FILES:.xc=.out)
 TESTS=$(XC_FILES:.xc=.test)
 
-JAVAFLAGS=-Xss6M
+override JAVAFLAGS+=-Xss6M
 
 all: $(ABLEC_JAR) $(C_FILES) $(OBJECTS) $(EXECUTABLES) $(TESTS)
 
