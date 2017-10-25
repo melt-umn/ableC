@@ -86,7 +86,7 @@ top::Expr ::= e::Expr
   propagate host, lifted;
   top.pp = parens( cat(text("*"), e.pp) );
   top.typerep =
-    case e.typerep of
+    case e.typerep.defaultFunctionArrayLvalueConversion of
     | pointerType(_, innerty) -> innerty
     | _ -> errorType()
     end;
@@ -97,7 +97,7 @@ top::Expr ::= e::Expr
   top.isLValue = true;
   
   top.errors <-
-     -- TODO: This error check will need to change for ext host types
+     -- TODO: This error check may need to change for ext host types
     case e.typerep.defaultFunctionArrayLvalueConversion of
     | pointerType(_, _) -> []
     | _ -> [err(top.location, "invalid type argument of unary ‘*’ (have ‘" ++
