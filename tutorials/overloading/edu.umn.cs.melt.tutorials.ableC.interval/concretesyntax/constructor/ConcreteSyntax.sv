@@ -3,7 +3,7 @@ grammar edu:umn:cs:melt:tutorials:ableC:interval:concretesyntax:constructor;
 imports edu:umn:cs:melt:ableC:concretesyntax;
 imports silver:langutil only ast;
 
-imports edu:umn:cs:melt:ableC:abstractsyntax;
+imports edu:umn:cs:melt:ableC:abstractsyntax:host;
 imports edu:umn:cs:melt:ableC:abstractsyntax:construction;
 imports edu:umn:cs:melt:ableC:abstractsyntax:env;
 --imports edu:umn:cs:melt:ableC:abstractsyntax:debug;

@@ -1,13 +1,9 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 
 nonterminal Qualifiers with mangledName, qualifiers, pps, host<Qualifiers>, typeToQualify, errors;
+flowtype Qualifiers = decorate {}, qualifiers {}, errors {typeToQualify};
 
 autocopy attribute typeToQualify :: Type;
-
-synthesized attribute injectedQualifiers :: [Qualifier] with ++;
-flowtype injectedQualifiers {op} on UnaryOp;
-
-flowtype Qualifiers = decorate {}, qualifiers {}, errors {typeToQualify};
 
 synthesized attribute qualifiers :: [Qualifier];
 

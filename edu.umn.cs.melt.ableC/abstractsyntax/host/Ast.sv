@@ -23,7 +23,6 @@ flowtype pp {} on
   NumericConstant,
   MaybeExpr, ExprOrTypeName,
   Stmt,
-  UnaryOp, UnaryTypeOp,
   Name, MaybeName,
   MaybeInitializer, Initializer, Init, Designator;
 flowtype pps {} on 
@@ -51,10 +50,9 @@ flowtype errors {decorate} on
   NumericConstant,
   MaybeExpr, Exprs, ExprOrTypeName,
   Stmt,
-  UnaryOp, UnaryTypeOp,
   MaybeInitializer, Initializer, InitList, Init, Designator,
   SpecialSpecifiers;
-  
+
 flowtype defs {decorate} on
   Decls, Decl, Declarators, Declarator, FunctionDecl, Parameters, ParameterDecl, StructDecl, UnionDecl, EnumDecl, StructItemList, EnumItemList, StructItem, EnumItem,
   MemberDesignator,
@@ -66,7 +64,7 @@ flowtype defs {decorate} on
   MaybeInitializer, Initializer, InitList, Init, Designator;
 flowtype localdefs {decorate} on
   StructItemList, StructItem, StructDeclarators, StructDeclarator;
-  
+
 -- Set all forward flowtypes on 'collection' and 'wrapper' nonterminals to be empty, since we
 -- typically don't forward on these, and may want to pattern match without providing all attributes
 flowtype forward {} on
@@ -79,7 +77,7 @@ flowtype forward {} on
   MaybeExpr, Exprs, ExprOrTypeName,
   MaybeName,
   MaybeInitializer, InitList;
-  
+
 -- Set all other forward flowtypes to be the same as reference sets
 flowtype forward {decorate} on
   Root, Compilation,
@@ -94,6 +92,5 @@ flowtype forward {decorate} on
   BuiltinType, RealType, IntegerType,
   NumericConstant,
   Stmt,
-  UnaryOp, UnaryTypeOp,
   Name,
   Initializer, Init, Designator;

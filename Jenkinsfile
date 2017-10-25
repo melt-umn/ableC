@@ -57,92 +57,67 @@ node {
       }
     }
 
+    /* Make sure the tutorials compile before bothering to build all the other extensions */
+    stage ("Tutorials") {
+      dir("tutorials") {
+        withEnv(["PATH=${params.SILVER_BASE}/support/bin/:${env.PATH}"]) {
+          sh "./build-all"
+        }
+      }
+    }
+
     stage ("Extensions") {
       parallel(
         "ableC-skeleton": {
-          build job: '/melt-umn/ableC-skeleton/develop', parameters:
-            [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: params.SILVER_BASE],
-             [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
+          buildExtension("/melt-umn/ableC-skeleton")
         },
         "ableC-lib-skeleton": {
-          build job: '/melt-umn/ableC-lib-skeleton/develop', parameters:
-            [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: params.SILVER_BASE],
-             [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
+          buildExtension("/melt-umn/ableC-lib-skeleton")
         },
         "ableC-sqlite": {
-          build job: '/melt-umn/ableC-sqlite/develop', parameters:
-            [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: params.SILVER_BASE],
-             [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
+          buildExtension("/melt-umn/ableC-sqlite")
         },
         "ableC-condition-tables": {
-          build job: '/melt-umn/ableC-condition-tables/develop', parameters:
-            [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: params.SILVER_BASE],
-             [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
+          buildExtension("/melt-umn/ableC-condition-tables")
         },
         "ableC-interval": {
-          build job: '/melt-umn/ableC-interval/develop', parameters:
-            [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: params.SILVER_BASE],
-             [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
+          buildExtension("/melt-umn/ableC-interval")
         },
         "ableC-cilk": {
-          build job: '/melt-umn/ableC-cilk/develop', parameters:
-            [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: params.SILVER_BASE],
-             [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
+          buildExtension("/melt-umn/ableC-cilk")
         },
         "ableC-halide": {
-          build job: '/melt-umn/ableC-halide/develop', parameters:
-            [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: params.SILVER_BASE],
-             [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
+          buildExtension("/melt-umn/ableC-halide")
         },
         "ableC-closure": {
-          build job: '/melt-umn/ableC-closure/develop', parameters:
-            [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: params.SILVER_BASE],
-             [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
+          buildExtension("/melt-umn/ableC-closure")
         },
         "ableC-templating": {
-          build job: '/melt-umn/ableC-templating/develop', parameters:
-            [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: params.SILVER_BASE],
-             [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
+          buildExtension("/melt-umn/ableC-templating")
         },
         "ableC-string": {
-          build job: '/melt-umn/ableC-string/develop', parameters:
-            [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: params.SILVER_BASE],
-             [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
+          buildExtension("/melt-umn/ableC-string")
         },
         "ableC-vector": {
-          build job: '/melt-umn/ableC-vector/develop', parameters:
-            [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: params.SILVER_BASE],
-             [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
+          buildExtension("/melt-umn/ableC-vector")
         },
         "ableC-algebraic-data-types": {
-          build job: '/melt-umn/ableC-algebraic-data-types/develop', parameters:
-            [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: params.SILVER_BASE],
-             [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
-        },
-        "ableC_sample_projects": {
-          build job: '/melt-umn/ableC_sample_projects/master', parameters:
-            [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: params.SILVER_BASE],
-             [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
+          buildExtension("/melt-umn/ableC-algebraic-data-types")
         },
         "ableC-nonnull": {
-          build job: '/melt-umn/ableC-nonnull/develop', parameters:
-            [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: params.SILVER_BASE],
-             [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
+          buildExtension("/melt-umn/ableC-nonnull")
         },
         "ableC-checkBounds": {
-          build job: '/melt-umn/ableC-checkBounds/develop', parameters:
-            [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: params.SILVER_BASE],
-             [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
+          buildExtension("/melt-umn/ableC-checkBounds")
         },
         "ableC-watch": {
-          build job: '/melt-umn/ableC-watch/develop', parameters:
-            [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: params.SILVER_BASE],
-             [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
+          buildExtension("/melt-umn/ableC-watch")
         },
         "ableC-dimensionalAnalysis": {
-          build job: '/melt-umn/ableC-dimensionalAnalysis/develop', parameters:
-            [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: params.SILVER_BASE],
-             [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
+          buildExtension("/melt-umn/ableC-dimensionalAnalysis")
+        },
+        "ableC_sample_projects": {
+          buildExtension("/melt-umn/ableC_sample_projects")
         }
       )
     }
@@ -176,6 +151,24 @@ node {
       notifyBuild('BACK_TO_NORMAL')
     }
   }
+}
+
+/*
+ * Try building the extension branch with the same name as the current branch,
+ * or else fall back to building a default branch. */
+def buildExtension(String extension, String defaultBranch = 'develop') {
+    try {
+//        echo("Trying to build ${extension}/${env.JOB_BASE_NAME}")
+        build job: "${extension}/${env.JOB_BASE_NAME}", parameters:
+            [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: params.SILVER_BASE],
+             [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
+    }
+    catch (e) {
+        echo("Falling back to build ${extension}/${defaultBranch} because ${extension}/${env.JOB_BASE_NAME} failed or does not exist")
+        build job: "${extension}/${defaultBranch}", parameters:
+            [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: params.SILVER_BASE],
+             [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
+    }
 }
 
 /* Slack / email notification

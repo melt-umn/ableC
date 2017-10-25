@@ -147,7 +147,6 @@ attribute substitutions occurs on
   MemberDesignator,
   NumericConstant,
   MaybeExpr, Exprs, ExprOrTypeName,
-  UnaryOp, UnaryTypeOp,
   MaybeInitializer, Initializer, InitList, Init, Designator,
   Name, MaybeName,
   Stmt,
@@ -190,8 +189,6 @@ attribute substituted<NumericConstant> occurs on NumericConstant;
 attribute substituted<MaybeExpr> occurs on MaybeExpr;
 attribute substituted<Exprs> occurs on Exprs;
 attribute substituted<ExprOrTypeName> occurs on ExprOrTypeName;
-attribute substituted<UnaryOp> occurs on UnaryOp;
-attribute substituted<UnaryTypeOp> occurs on UnaryTypeOp;
 attribute substituted<MaybeInitializer> occurs on MaybeInitializer;
 attribute substituted<Initializer> occurs on Initializer;
 attribute substituted<InitList> occurs on InitList;
@@ -226,7 +223,6 @@ flowtype substituted {substitutions} on
   MemberDesignator,
   NumericConstant,
   MaybeExpr, Exprs, ExprOrTypeName,
-  UnaryOp, UnaryTypeOp,
   MaybeInitializer, Initializer, InitList, Init, Designator,
   Name, MaybeName,
   Stmt,
