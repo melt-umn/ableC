@@ -63,7 +63,7 @@ node {
     }
 
     /* Make sure the tutorials compile before bothering to build all the other extensions */
-/*    stage ("Tutorials") {
+    stage ("Tutorials") {
       dir("tutorials") {
         withEnv(env) {
           sh "./build-all"
@@ -125,7 +125,7 @@ node {
           buildExtension("/melt-umn/ableC_sample_projects")
         }
       )
-    }*/
+    }
 
     /* TODO: use nailgun!
        sh ". ${params.SILVER_BASE}/support/nailgun/sv-nailgun"
