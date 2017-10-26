@@ -42,7 +42,7 @@ node {
     //    notifyBuild('STARTED')
     
     def env = [
-      "PATH=${params.SILVER_BASE}/support/bin/:${env.PATH}",
+      "PATH=${params.SILVER_BASE}/support/bin/:${params.SILVER_BASE}/support/nailgun/:${env.PATH}",
       "SVFLAGS=-G ${WORKSPACE}/generated"
     ]
 
@@ -63,7 +63,7 @@ node {
     }
 
     /* Make sure the tutorials compile before bothering to build all the other extensions */
-    stage ("Tutorials") {
+/*    stage ("Tutorials") {
       dir("tutorials") {
         withEnv(env) {
           sh "./build-all"
@@ -125,7 +125,7 @@ node {
           buildExtension("/melt-umn/ableC_sample_projects")
         }
       )
-    }
+    }*/
 
     /* TODO: use nailgun!
        sh ". ${params.SILVER_BASE}/support/nailgun/sv-nailgun"
