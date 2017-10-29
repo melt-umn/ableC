@@ -494,7 +494,7 @@ top::TypeModifierExpr ::= result::TypeModifierExpr  args::Parameters  variadic::
   top.globalDecls := result.globalDecls ++ args.globalDecls;
   top.freeVariables = result.freeVariables;
   
-  args.env = openScope(top.env);
+  args.env = openEnvScope(top.env);
 }
 abstract production functionTypeExprWithoutArgs
 top::TypeModifierExpr ::= result::TypeModifierExpr  ids::[Name]  q::Qualifiers --fnquals::[SpecialSpecifier]

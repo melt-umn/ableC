@@ -44,7 +44,7 @@ top::Stmt ::= s::Stmt
   top.freeVariables = s.freeVariables;
   top.functiondefs := s.functiondefs;
 
-  s.env = openScope(top.env);
+  s.env = openEnvScope(top.env);
 }
 
 -- ditto warnExternalDecl, if warning or empty, then this pretends it doesn't exist.
@@ -127,7 +127,7 @@ top::Stmt ::= c::Expr  t::Stmt  e::Stmt
     removeDefsFromNames(c.defs, t.freeVariables) ++
     removeDefsFromNames(c.defs, e.freeVariables);
   
-  c.env = openScope(top.env);
+  c.env = openEnvScope(top.env);
   t.env = addEnv(c.defs, c.env);
   e.env = addEnv(globalDeclsDefs(t.globalDecls), t.env);
   
@@ -163,7 +163,7 @@ top::Stmt ::= e::Expr  b::Stmt
     e.freeVariables ++
     removeDefsFromNames(e.defs, b.freeVariables);
   
-  e.env = openScope(top.env);
+  e.env = openEnvScope(top.env);
   b.env = addEnv(e.defs, e.env);
 
   top.errors <-
@@ -190,7 +190,7 @@ top::Stmt ::= b::Stmt  e::Expr
     b.freeVariables ++
     removeDefsFromNames(b.defs, e.freeVariables);
   
-  b.env = openScope(top.env);
+  b.env = openEnvScope(top.env);
   e.env = addEnv(globalDeclsDefs(b.globalDecls), b.env);
 
   top.errors <-
@@ -223,7 +223,7 @@ top::Stmt ::= i::MaybeExpr  c::MaybeExpr  s::MaybeExpr  b::Stmt
     removeDefsFromNames(i.defs ++ c.defs, s.freeVariables) ++
     removeDefsFromNames(i.defs ++ c.defs ++ s.defs, b.freeVariables);
   
-  i.env = openScope(top.env);
+  i.env = openEnvScope(top.env);
   c.env = addEnv(i.defs, i.env);
   s.env = addEnv(c.defs, c.env);
   b.env = addEnv(s.defs, s.env);
@@ -258,7 +258,7 @@ top::Stmt ::= i::Decl  c::MaybeExpr  s::MaybeExpr  b::Stmt
     removeDefsFromNames(i.defs ++ c.defs, s.freeVariables) ++
     removeDefsFromNames(i.defs ++ c.defs ++ s.defs, b.freeVariables);
   
-  i.env = openScope(top.env);
+  i.env = openEnvScope(top.env);
   c.env = addEnv(i.defs, i.env);
   s.env = addEnv(c.defs, c.env);
   b.env = addEnv(s.defs, s.env);
@@ -271,7 +271,7 @@ top::Stmt ::= i::Decl  c::MaybeExpr  s::MaybeExpr  b::Stmt
 }
 
 abstract production returnStmt
-top::Stmt ::= e::MaybeExpr
+top::Stmt ::= e::MaybeExpr {- loc::Location -} -- TODO: Add location to signature
 {
   propagate host, lifted;
   top.pp = ppConcat([text("return"), space(), e.pp, semi()]);
@@ -283,7 +283,7 @@ top::Stmt ::= e::MaybeExpr
                     else [err(case e of justExpr(e1) -> e1.location end,
                               "Incorrect return type, expected " ++ showType(expected) ++ " but found " ++ showType(actual))]
                 | nothing(), just(actual) -> [err(case e of justExpr(e1) -> e1.location end, "Unexpected return")]
-                | just(expected), nothing() -> [err(loc("TODOreturn",-1,-1,-1,-1,-1,-1), "Expected return value, but found valueless return")] -- TODO: location
+                | just(expected), nothing() -> [err({-loc-} loc("TODOreturn",-1,-1,-1,-1,-1,-1), "Expected return value, but found valueless return")] -- TODO: location
                 end ++ e.errors;
   top.globalDecls := e.globalDecls;
   top.defs := e.defs;
@@ -310,7 +310,7 @@ top::Stmt ::= e::Expr  b::Stmt
     e.freeVariables ++
     removeDefsFromNames(e.defs, b.freeVariables);
   
-  e.env = openScope(top.env);
+  e.env = openEnvScope(top.env);
   b.env = addEnv(e.defs, e.env);
 
   top.errors <-

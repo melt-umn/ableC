@@ -5,7 +5,7 @@ imports edu:umn:cs:melt:ableC:abstractsyntax:env;
 
 -- The environment used at the top-level.
 global initialEnv :: Decorated Env =
-  openScope(
+  openEnvScope(
     addEnv(getInitialEnvDefs(),
       emptyEnv()));
 
