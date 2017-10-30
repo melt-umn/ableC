@@ -73,6 +73,9 @@ top::Expr ::= id::Name
   top.isLValue = true;
   
   top.errors <- id.valueLookupCheck;
+  top.errors <-
+    if id.valueItem.isItemValue then []
+    else [err(id.location, "'" ++ id.name ++ "' does not refer to a value.")];
 }
 abstract production stringLiteral
 top::Expr ::= l::String
