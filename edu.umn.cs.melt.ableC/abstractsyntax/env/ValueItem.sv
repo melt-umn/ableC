@@ -1,6 +1,6 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax:env;
 
-nonterminal ValueItem with typerep, sourceLocation, directCallHandler, isItemValue, isItemTypedef;
+closed nonterminal ValueItem with typerep, sourceLocation, directCallHandler, isItemValue, isItemTypedef;
 
 synthesized attribute sourceLocation :: Location;
 synthesized attribute directCallHandler :: (Expr ::= Name Exprs Location);
