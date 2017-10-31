@@ -75,7 +75,7 @@ flowtype forward {} on
   GenericAssocs,
   TypeNames,
   MaybeExpr, Exprs, ExprOrTypeName,
-  MaybeName,
+  Name, MaybeName,
   MaybeInitializer, InitList;
 
 -- Set all other forward flowtypes to be the same as reference sets
@@ -92,5 +92,4 @@ flowtype forward {decorate} on
   BuiltinType, RealType, IntegerType,
   NumericConstant,
   Stmt,
-  Name,
   Initializer, Init, Designator;
