@@ -5,8 +5,8 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 -- Declaration is rooted in External, but also in stmts. Either a variableDecl or a typedefDecl.
 -- ParameterDecl should probably be something special, distinct from variableDecl.
 
-nonterminal GlobalDecls with pps, host<GlobalDecls>, lifted<GlobalDecls>, errors, env, returnType, freeVariables;
-flowtype GlobalDecls = decorate {env, returnType};
+nonterminal GlobalDecls with pps, host<GlobalDecls>, lifted<GlobalDecls>, errors, env, labelEnv, returnType, freeVariables;
+flowtype GlobalDecls = decorate {env, labelEnv, returnType}, forward {};
 
 {-- Mirrors Decls, used for lifting mechanism to insert new Decls at top level -}
 abstract production consGlobalDecl
@@ -19,7 +19,7 @@ top::GlobalDecls ::= h::Decl  t::GlobalDecls
     removeDefsFromNames(h.defs, t.freeVariables);
   
   -- host, lifted defined in Lifted.sv
-    
+  
   h.isTopLevel = true;
   
   t.env = addEnv(h.defs, top.env);
@@ -34,8 +34,8 @@ top::GlobalDecls ::=
   top.freeVariables = [];
 }
 
-nonterminal Decls with pps, host<Decls>, lifted<Decls>, errors, globalDecls, unfoldedGlobalDecls, defs, env, isTopLevel, returnType, freeVariables;
-flowtype Decls = decorate {env, isTopLevel, returnType};
+nonterminal Decls with pps, host<Decls>, lifted<Decls>, errors, globalDecls, unfoldedGlobalDecls, defs, env, labelEnv, isTopLevel, returnType, freeVariables;
+flowtype Decls = decorate {env, labelEnv, isTopLevel, returnType}, forward {env, isTopLevel, returnType};
 
 autocopy attribute isTopLevel :: Boolean;
 
@@ -74,8 +74,8 @@ Decls ::= d1::Decls d2::Decls
 }
 
 
-nonterminal Decl with pp, host<Decl>, lifted<Decl>, errors, globalDecls, unfoldedGlobalDecls, defs, env, isTopLevel, returnType, freeVariables;
-flowtype Decl = decorate {env, isTopLevel, returnType};
+nonterminal Decl with pp, host<Decl>, lifted<Decl>, errors, globalDecls, unfoldedGlobalDecls, defs, env, labelEnv, isTopLevel, returnType, freeVariables;
+flowtype Decl = decorate {env, labelEnv, isTopLevel, returnType};
 
 {-- Pass down from top-level declaration the list of attribute to each name-declaration -}
 autocopy attribute givenAttributes :: Attributes;
@@ -224,8 +224,8 @@ top::Decl ::= s::String
   -- but used to be the way to put c functions and such in custom sections.
 }
 
-nonterminal Declarators with pps, host<Declarators>, lifted<Declarators>, errors, globalDecls, defs, env, baseType, typeModifiersIn, isTopLevel, isTypedef, givenAttributes, returnType, freeVariables;
-flowtype Declarators = decorate {env, returnType, baseType, typeModifiersIn, givenAttributes, isTopLevel, isTypedef};
+nonterminal Declarators with pps, host<Declarators>, lifted<Declarators>, errors, globalDecls, defs, env, labelEnv, baseType, typeModifiersIn, isTopLevel, isTypedef, givenAttributes, returnType, freeVariables;
+flowtype Declarators = decorate {env, labelEnv, returnType, baseType, typeModifiersIn, givenAttributes, isTopLevel, isTypedef}, forward {};
 
 abstract production consDeclarator
 top::Declarators ::= h::Declarator  t::Declarators
@@ -252,8 +252,8 @@ top::Declarators ::=
   top.freeVariables = [];
 }
 
-nonterminal Declarator with pps, host<Declarator>, lifted<Declarator>, errors, globalDecls, defs, env, baseType, typeModifiersIn, typerep, sourceLocation, isTopLevel, isTypedef, givenAttributes, returnType, freeVariables;
-flowtype Declarator = decorate {env, returnType, baseType, typeModifiersIn, givenAttributes, isTopLevel, isTypedef};
+nonterminal Declarator with pps, host<Declarator>, lifted<Declarator>, errors, globalDecls, defs, env, labelEnv, baseType, typeModifiersIn, typerep, sourceLocation, isTopLevel, isTypedef, givenAttributes, returnType, freeVariables;
+flowtype Declarator = decorate {env, labelEnv, returnType, baseType, typeModifiersIn, givenAttributes, isTopLevel, isTypedef}, forward {env, returnType, baseType, typeModifiersIn, givenAttributes, isTopLevel, isTypedef};
 
 autocopy attribute isTypedef :: Boolean;
 
@@ -324,8 +324,8 @@ top::Declarator ::= msg::[Message]
   top.sourceLocation = loc("nowhere", -1, -1, -1, -1, -1, -1); -- TODO fix this? add locaiton maybe?
 }
 
-nonterminal FunctionDecl with pp, host<FunctionDecl>, lifted<FunctionDecl>, errors, globalDecls, defs, env, typerep, sourceLocation, returnType, freeVariables;
-flowtype FunctionDecl = decorate {env, returnType};
+nonterminal FunctionDecl with pp, host<FunctionDecl>, lifted<FunctionDecl>, errors, globalDecls, defs, env, labelEnv, typerep, sourceLocation, returnType, freeVariables;
+flowtype FunctionDecl = decorate {env, labelEnv, returnType}, forward {env, returnType};
 
 abstract production functionDecl
 top::FunctionDecl ::= storage::[StorageClass]  fnquals::SpecialSpecifiers  bty::BaseTypeExpr mty::TypeModifierExpr  name::Name  attrs::Attributes  decls::Decls  body::Stmt
@@ -367,7 +367,7 @@ top::FunctionDecl ::= storage::[StorageClass]  fnquals::SpecialSpecifiers  bty::
     bty.freeVariables ++
     removeDefsFromNames([thisFuncDef], mty.freeVariables) ++
     decls.freeVariables ++ --TODO?
-    removeDefsFromNames(top.defs ++ parameters.defs ++ decls.defs ++ body.functiondefs ++ fnquals.defs, body.freeVariables);
+    removeDefsFromNames(top.defs ++ parameters.defs ++ decls.defs ++ fnquals.defs, body.freeVariables);
   -- accumulate extension qualifiers on redeclaration
   top.typerep = name.valueMergeRedeclExtnQualifiers(mty.typerep);
   top.sourceLocation = name.location;
@@ -397,7 +397,9 @@ top::FunctionDecl ::= storage::[StorageClass]  fnquals::SpecialSpecifiers  bty::
 
   mty.env = addEnv([thisFuncDef], openEnvScope(addEnv(funcDefs, top.env)));
   decls.env = addEnv(parameters.defs, mty.env);
-  body.env = addEnv(decls.defs ++ body.functiondefs, decls.env);
+  body.env = addEnv(decls.defs, decls.env);
+  
+  body.labelEnv = addScope(body.labelDefs, top.labelEnv);
   
   decls.isTopLevel = false;
   
@@ -438,8 +440,8 @@ top::FunctionDecl ::= msg::[Message]
   top.sourceLocation = loc("nowhere", -1, -1, -1, -1, -1, -1); -- TODO fix this? add locaiton maybe?
 }
 
-nonterminal Parameters with typereps, pps, host<Parameters>, lifted<Parameters>, errors, globalDecls, defs, env, returnType, freeVariables;
-flowtype Parameters = decorate {env, returnType};
+nonterminal Parameters with typereps, pps, host<Parameters>, lifted<Parameters>, errors, globalDecls, defs, env, labelEnv, returnType, freeVariables;
+flowtype Parameters = decorate {env, labelEnv, returnType}, forward {};
 
 abstract production consParameters
 top::Parameters ::= h::ParameterDecl  t::Parameters
@@ -472,8 +474,8 @@ top::Parameters ::=
 -- TODO: move these, later
 synthesized attribute paramname :: Maybe<Name>;
 
-nonterminal ParameterDecl with paramname, typerep, pp, host<ParameterDecl>, lifted<ParameterDecl>, errors, globalDecls, defs, env, sourceLocation, returnType, freeVariables;
-flowtype ParameterDecl = decorate {env, returnType};
+nonterminal ParameterDecl with paramname, typerep, pp, host<ParameterDecl>, lifted<ParameterDecl>, errors, globalDecls, defs, env, labelEnv, sourceLocation, returnType, freeVariables;
+flowtype ParameterDecl = decorate {env, labelEnv, returnType}, forward {env, returnType};
 
 abstract production parameterDecl
 top::ParameterDecl ::= storage::[StorageClass]  bty::BaseTypeExpr  mty::TypeModifierExpr  name::MaybeName  attrs::Attributes
@@ -509,8 +511,8 @@ synthesized attribute refId :: String; -- TODO move this later?
 -- Name of the extension that declared this struct/union
 synthesized attribute moduleName :: Maybe<String>;
 
-nonterminal StructDecl with location, pp, host<StructDecl>, lifted<StructDecl>, maybename, errors, globalDecls, defs, env, tagEnv, givenRefId, refId, moduleName, returnType, freeVariables;
-flowtype StructDecl = decorate {env, givenRefId, returnType};
+nonterminal StructDecl with location, pp, host<StructDecl>, lifted<StructDecl>, maybename, errors, globalDecls, defs, env, labelEnv, tagEnv, givenRefId, refId, moduleName, returnType, freeVariables;
+flowtype StructDecl = decorate {env, labelEnv, givenRefId, returnType}, forward {env, givenRefId, returnType};
 
 abstract production structDecl
 top::StructDecl ::= attrs::Attributes  name::MaybeName  dcls::StructItemList
@@ -570,8 +572,8 @@ top::StructDecl ::= attrs::Attributes  name::MaybeName  dcls::StructItemList
     else [err(top.location, "Redeclaration of struct " ++ name.maybename.fromJust.name)];
 }
 
-nonterminal UnionDecl with location, pp, host<UnionDecl>, lifted<UnionDecl>, maybename, errors, globalDecls, defs, env, tagEnv, givenRefId, refId, moduleName, returnType, freeVariables;
-flowtype UnionDecl = decorate {env, givenRefId, returnType};
+nonterminal UnionDecl with location, pp, host<UnionDecl>, lifted<UnionDecl>, maybename, errors, globalDecls, defs, env, labelEnv, tagEnv, givenRefId, refId, moduleName, returnType, freeVariables;
+flowtype UnionDecl = decorate {env, labelEnv, givenRefId, returnType}, forward {env, givenRefId, returnType};
 
 abstract production unionDecl
 top::UnionDecl ::= attrs::Attributes  name::MaybeName  dcls::StructItemList
@@ -614,8 +616,8 @@ top::UnionDecl ::= attrs::Attributes  name::MaybeName  dcls::StructItemList
     else [err(top.location, "Redeclaration of union " ++ name.maybename.fromJust.name)];
 }
 
-nonterminal EnumDecl with location, pp, host<EnumDecl>, lifted<EnumDecl>, maybename, errors, globalDecls, defs, env, givenRefId, returnType, freeVariables;
-flowtype EnumDecl = decorate {env, givenRefId, returnType};
+nonterminal EnumDecl with location, pp, host<EnumDecl>, lifted<EnumDecl>, maybename, errors, globalDecls, defs, env, labelEnv, givenRefId, returnType, freeVariables;
+flowtype EnumDecl = decorate {env, labelEnv, givenRefId, returnType}, forward {env, givenRefId, returnType};
 
 abstract production enumDecl
 top::EnumDecl ::= name::MaybeName  dcls::EnumItemList
@@ -647,8 +649,8 @@ top::EnumDecl ::= name::MaybeName  dcls::EnumItemList
 }
 
 
-nonterminal StructItemList with pps, host<StructItemList>, lifted<StructItemList>, errors, globalDecls, defs, env, localdefs, returnType, freeVariables;
-flowtype StructItemList = decorate {env, returnType};
+nonterminal StructItemList with pps, host<StructItemList>, lifted<StructItemList>, errors, globalDecls, defs, env, labelEnv, localdefs, returnType, freeVariables;
+flowtype StructItemList = decorate {env, labelEnv, returnType}, forward {};
 
 abstract production consStructItem
 top::StructItemList ::= h::StructItem  t::StructItemList
@@ -678,8 +680,8 @@ top::StructItemList ::=
   top.localdefs := [];
 }
 
-nonterminal EnumItemList with pps, host<EnumItemList>, lifted<EnumItemList>, errors, globalDecls, defs, env, containingEnum, returnType, freeVariables;
-flowtype EnumItemList = decorate {env, containingEnum, returnType};
+nonterminal EnumItemList with pps, host<EnumItemList>, lifted<EnumItemList>, errors, globalDecls, defs, env, labelEnv, containingEnum, returnType, freeVariables;
+flowtype EnumItemList = decorate {env, labelEnv, containingEnum, returnType}, forward {};
 
 autocopy attribute containingEnum :: Type;
 
@@ -709,8 +711,8 @@ top::EnumItemList ::=
   top.freeVariables = [];
 }
 
-nonterminal StructItem with pp, host<StructItem>, lifted<StructItem>, errors, globalDecls, defs, env, localdefs, returnType, freeVariables;
-flowtype StructItem = decorate {env, returnType};
+nonterminal StructItem with pp, host<StructItem>, lifted<StructItem>, errors, globalDecls, defs, env, labelEnv, localdefs, returnType, freeVariables;
+flowtype StructItem = decorate {env, labelEnv, returnType}, forward {env, returnType};
 
 abstract production structItem
 top::StructItem ::= attrs::Attributes  ty::BaseTypeExpr  dcls::StructDeclarators
@@ -742,8 +744,8 @@ top::StructItem ::= msg::[Message]
 }
 
 
-nonterminal StructDeclarators with pps, host<StructDeclarators>, lifted<StructDeclarators>, errors, globalDecls, localdefs, env, baseType, typeModifiersIn, givenAttributes, returnType, freeVariables;
-flowtype StructDeclarators = decorate {env, returnType, baseType, typeModifiersIn, givenAttributes};
+nonterminal StructDeclarators with pps, host<StructDeclarators>, lifted<StructDeclarators>, errors, globalDecls, localdefs, env, labelEnv, baseType, typeModifiersIn, givenAttributes, returnType, freeVariables;
+flowtype StructDeclarators = decorate {env, labelEnv, returnType, baseType, typeModifiersIn, givenAttributes}, forward {};
 
 abstract production consStructDeclarator
 top::StructDeclarators ::= h::StructDeclarator  t::StructDeclarators
@@ -770,8 +772,8 @@ top::StructDeclarators ::=
   top.freeVariables = [];
 }
 
-nonterminal StructDeclarator with pps, host<StructDeclarator>, lifted<StructDeclarator>, errors, globalDecls, localdefs, env, typerep, sourceLocation, baseType, typeModifiersIn, givenAttributes, returnType, freeVariables;
-flowtype StructDeclarator = decorate {env, returnType, baseType, typeModifiersIn, givenAttributes};
+nonterminal StructDeclarator with pps, host<StructDeclarator>, lifted<StructDeclarator>, errors, globalDecls, localdefs, env, labelEnv, typerep, sourceLocation, baseType, typeModifiersIn, givenAttributes, returnType, freeVariables;
+flowtype StructDeclarator = decorate {env, labelEnv, returnType, baseType, typeModifiersIn, givenAttributes}, forward {env, returnType, baseType, typeModifiersIn, givenAttributes};
 
 abstract production structField
 top::StructDeclarator ::= name::Name  ty::TypeModifierExpr  attrs::Attributes
@@ -831,8 +833,8 @@ top::StructDeclarator ::= msg::[Message]
   top.sourceLocation = loc("nowhere", -1, -1, -1, -1, -1, -1); -- TODO fix this? add locaiton maybe?
 }
 
-nonterminal EnumItem with pp, host<EnumItem>, lifted<EnumItem>, errors, globalDecls, defs, env, containingEnum, typerep, sourceLocation, returnType, freeVariables;
-flowtype EnumItem = decorate {env, containingEnum, returnType};
+nonterminal EnumItem with pp, host<EnumItem>, lifted<EnumItem>, errors, globalDecls, defs, env, labelEnv, containingEnum, typerep, sourceLocation, returnType, freeVariables;
+flowtype EnumItem = decorate {env, labelEnv, containingEnum, returnType}, forward {env, containingEnum, returnType};
 
 abstract production enumItem
 top::EnumItem ::= name::Name  e::MaybeExpr
@@ -853,7 +855,7 @@ top::EnumItem ::= name::Name  e::MaybeExpr
 
 -- TODO: Also make a StorageClasses nonterminal
 nonterminal StorageClass with pp;
-flowtype StorageClass = decorate {};
+flowtype StorageClass = decorate {}, forward {};
 
 abstract production externStorageClass
 top::StorageClass ::= { top.pp = text("extern"); }

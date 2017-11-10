@@ -637,12 +637,13 @@ host:Expr ::=
   -- AST components
   e::host:Expr  loc::Location
   -- Inherited attributes
-  env::Decorated Env  returnType::Maybe<host:Type>
+  env::Decorated Env  labelEnv::Scopes<LabelItem>  returnType::Maybe<host:Type>
   -- Production-specfic overload parameters
   overloadFn::(Maybe<UnaryProd> ::= host:Type Decorated Env) -- Function getting the overload production
   defaultProd::UnaryProd -- Default production for no overload
 {
   e.env = env;
+  e.labelEnv = labelEnv;
   e.host:returnType = returnType;
   
   -- Option 1: Normal overloaded operator
@@ -659,14 +660,16 @@ host:Expr ::=
   -- AST components
   lhs::host:Expr  rhs::host:Expr  loc::Location
   -- Inherited attributes
-  env::Decorated Env  returnType::Maybe<host:Type>
+  env::Decorated Env  labelEnv::Scopes<LabelItem>  returnType::Maybe<host:Type>
   -- Production-specfic overload parameters
   overloadFn::(Maybe<BinaryProd> ::= host:Type host:Type Decorated Env) -- Function getting the overload production
   defaultProd::BinaryProd -- Default production for no overload
 {
   lhs.env = env;
+  lhs.labelEnv = labelEnv;
   lhs.host:returnType = returnType;
   rhs.env = env;
+  rhs.labelEnv = labelEnv;
   rhs.host:returnType = returnType;
   
   -- Option 1: Normal overloaded operator
@@ -684,7 +687,7 @@ host:Expr ::=
   -- AST components
   lhs::host:Expr  rhs::host:Expr  loc::Location
   -- Inherited attributes
-  env::Decorated Env  returnType::Maybe<host:Type>
+  env::Decorated Env  labelEnv::Scopes<LabelItem>  returnType::Maybe<host:Type>
   -- Production-specfic overload parameters
   prod::BinaryProd -- Overloaded production
   overloadFn::(Maybe<BinaryProd> ::= host:Type host:Type Decorated Env) -- Function getting the overload production
@@ -692,8 +695,10 @@ host:Expr ::=
   defaultProd::BinaryProd -- Default production for no overload
 {
   lhs.env = env;
+  lhs.labelEnv = labelEnv;
   lhs.host:returnType = returnType;
   rhs.env = env;
+  rhs.labelEnv = labelEnv;
   rhs.host:returnType = returnType;
 
   -- Option 1: Assign to a member or subscript (e.g. a.foo = b, a[i] += b)
@@ -749,15 +754,17 @@ host:Expr ::=
   -- AST components
   lhs::host:Expr  rhs::host:Expr  loc::Location
   -- Inherited attributes
-  env::Decorated Env  returnType::Maybe<host:Type>
+  env::Decorated Env  labelEnv::Scopes<LabelItem>  returnType::Maybe<host:Type>
   -- Production-specfic overload parameters
   overloadFn::(Maybe<BinaryProd> ::= host:Type host:Type Decorated Env) -- Function getting the overload production
   negatedOverloadFn::(Maybe<BinaryProd> ::= host:Type host:Type Decorated Env) -- Function getting the negated version of the overload production
   defaultProd::BinaryProd -- Default production for no overload
 {
   lhs.env = env;
+  lhs.labelEnv = labelEnv;
   lhs.host:returnType = returnType;
   rhs.env = env;
+  rhs.labelEnv = labelEnv;
   rhs.host:returnType = returnType;
   
   -- Option 1: Normal overloaded operator
@@ -784,11 +791,13 @@ host:Expr ::=
   -- AST components
   lhs::host:Expr  rhs::host:Expr  loc::Location
   -- Inherited attributes
-  env::Decorated Env  returnType::Maybe<host:Type>
+  env::Decorated Env  labelEnv::Scopes<LabelItem>  returnType::Maybe<host:Type>
 {
   lhs.env = env;
+  lhs.labelEnv = labelEnv;
   lhs.host:returnType = returnType;
   rhs.env = env;
+  rhs.labelEnv = labelEnv;
   rhs.host:returnType = returnType;
   
   -- Option 1: Normal overloaded operator

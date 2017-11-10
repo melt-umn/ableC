@@ -1,7 +1,7 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 
 nonterminal Qualifiers with mangledName, qualifiers, pps, host<Qualifiers>, typeToQualify, errors;
-flowtype Qualifiers = decorate {}, qualifiers {}, errors {typeToQualify};
+flowtype Qualifiers = decorate {}, forward {}, qualifiers {}, errors {typeToQualify};
 
 autocopy attribute typeToQualify :: Type;
 
@@ -43,7 +43,7 @@ Qualifiers ::= q1::[Qualifier]  q2::[Qualifier]
 
 {-- Type qualifiers (cv or cvr qualifiers) -}
 closed nonterminal Qualifier with location, pp, qualIsPositive, qualIsNegative, qualAppliesWithinRef, qualCompat, qualIsHost, mangledName, typeToQualify, errors;
-flowtype Qualifier = decorate {}, qualIsPositive {}, qualIsNegative {}, qualAppliesWithinRef {}, qualCompat {}, qualIsHost {}, errors {typeToQualify};
+flowtype Qualifier = decorate {}, forward {}, qualIsPositive {}, qualIsNegative {}, qualAppliesWithinRef {}, qualCompat {}, qualIsHost {}, errors {typeToQualify};
 
 synthesized attribute qualIsPositive :: Boolean;
 synthesized attribute qualIsNegative :: Boolean;
@@ -141,8 +141,8 @@ top::Qualifier ::=
  - e.g. Function specifiers (inline, _Noreturn)
  -      Alignment specifiers (_Alignas)
  -}
-nonterminal SpecialSpecifier with pp, host<SpecialSpecifier>, lifted<SpecialSpecifier>, env, returnType, errors, globalDecls, defs;
-flowtype SpecialSpecifier = decorate {env, returnType};
+nonterminal SpecialSpecifier with pp, host<SpecialSpecifier>, lifted<SpecialSpecifier>, env, labelEnv, returnType, errors, globalDecls, defs;
+flowtype SpecialSpecifier = decorate {env, labelEnv, returnType}, forward {env, returnType};
 
 abstract production inlineQualifier
 top::SpecialSpecifier ::=
@@ -176,8 +176,8 @@ top::SpecialSpecifier ::= e::Expr
   top.defs := e.defs;
 }
 
-nonterminal SpecialSpecifiers with pps, host<SpecialSpecifiers>, lifted<SpecialSpecifiers>, env, returnType, errors, globalDecls, defs;
-flowtype SpecialSpecifiers = decorate {env, returnType};
+nonterminal SpecialSpecifiers with pps, host<SpecialSpecifiers>, lifted<SpecialSpecifiers>, env, labelEnv, returnType, errors, globalDecls, defs;
+flowtype SpecialSpecifiers = decorate {env, labelEnv, returnType}, forward {};
 
 abstract production consSpecialSpecifier
 top::SpecialSpecifiers ::= h::SpecialSpecifier t::SpecialSpecifiers

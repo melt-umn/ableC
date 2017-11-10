@@ -56,6 +56,7 @@ Type ::= attr::Attribs  ty::Type
 
 synthesized attribute maybeRefId::Maybe<String> occurs on Attributes, Attribute, Attribs, Attrib;
 attribute moduleName occurs on Attributes, Attribute, Attribs, Attrib;
+flowtype maybeRefId {decorate} on Attributes, Attribute, Attribs, Attrib;
 
 aspect production consAttribute
 top::Attributes ::= h::Attribute t::Attributes
@@ -100,6 +101,7 @@ top::Attribs ::=
 }
 
 synthesized attribute isHostAttrib::Boolean occurs on Attrib;
+flowtype isHostAttrib {decorate} on Attrib;
 
 aspect default production
 top::Attrib ::=

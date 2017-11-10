@@ -21,7 +21,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   local fwrd::host:Expr =
     getAssignOverload(
       modLhsRhs.fst, modLhsRhs.snd, top.location,
-      top.env, top.host:returnType,
+      top.env, top.labelEnv, top.host:returnType,
       eqExpr(_, _, location=_),
       getEqOverloadProd,
       nothing(),
@@ -51,7 +51,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   local fwrd::host:Expr =
     getAssignOverload(
       modLhsRhs.fst, modLhsRhs.snd, top.location,
-      top.env, top.host:returnType,
+      top.env, top.labelEnv, top.host:returnType,
       mulEqExpr(_, _, location=_),
       getMulEqOverloadProd,
       just(getMulOverloadProd),
@@ -81,7 +81,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   local fwrd::host:Expr =
     getAssignOverload(
       modLhsRhs.fst, modLhsRhs.snd, top.location,
-      top.env, top.host:returnType,
+      top.env, top.labelEnv, top.host:returnType,
       divEqExpr(_, _, location=_),
       getDivEqOverloadProd,
       just(getDivOverloadProd),
@@ -111,7 +111,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   local fwrd::host:Expr =
     getAssignOverload(
       modLhsRhs.fst, modLhsRhs.snd, top.location,
-      top.env, top.host:returnType,
+      top.env, top.labelEnv, top.host:returnType,
       modEqExpr(_, _, location=_),
       getModEqOverloadProd,
       just(getModOverloadProd),
@@ -141,7 +141,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   local fwrd::host:Expr =
     getAssignOverload(
       modLhsRhs.fst, modLhsRhs.snd, top.location,
-      top.env, top.host:returnType,
+      top.env, top.labelEnv, top.host:returnType,
       addEqExpr(_, _, location=_),
       getAddEqOverloadProd,
       just(getAddOverloadProd),
@@ -171,7 +171,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   local fwrd::host:Expr =
     getAssignOverload(
       modLhsRhs.fst, modLhsRhs.snd, top.location,
-      top.env, top.host:returnType,
+      top.env, top.labelEnv, top.host:returnType,
       subEqExpr(_, _, location=_),
       getSubEqOverloadProd,
       just(getSubOverloadProd),
@@ -201,7 +201,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   local fwrd::host:Expr =
     getAssignOverload(
       modLhsRhs.fst, modLhsRhs.snd, top.location,
-      top.env, top.host:returnType,
+      top.env, top.labelEnv, top.host:returnType,
       lshEqExpr(_, _, location=_),
       getLshEqOverloadProd,
       just(getLshOverloadProd),
@@ -231,7 +231,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   local fwrd::host:Expr =
     getAssignOverload(
       modLhsRhs.fst, modLhsRhs.snd, top.location,
-      top.env, top.host:returnType,
+      top.env, top.labelEnv, top.host:returnType,
       rshEqExpr(_, _, location=_),
       getRshEqOverloadProd,
       just(getRshOverloadProd),
@@ -261,7 +261,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   local fwrd::host:Expr =
     getAssignOverload(
       modLhsRhs.fst, modLhsRhs.snd, top.location,
-      top.env, top.host:returnType,
+      top.env, top.labelEnv, top.host:returnType,
       andEqExpr(_, _, location=_),
       getAndEqOverloadProd,
       just(getAndOverloadProd),
@@ -291,7 +291,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   local fwrd::host:Expr =
     getAssignOverload(
       modLhsRhs.fst, modLhsRhs.snd, top.location,
-      top.env, top.host:returnType,
+      top.env, top.labelEnv, top.host:returnType,
       xorEqExpr(_, _, location=_),
       getXorEqOverloadProd,
       just(getXorOverloadProd),
@@ -321,7 +321,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   local fwrd::host:Expr =
     getAssignOverload(
       modLhsRhs.fst, modLhsRhs.snd, top.location,
-      top.env, top.host:returnType,
+      top.env, top.labelEnv, top.host:returnType,
       orEqExpr(_, _, location=_),
       getOrEqOverloadProd,
       just(getOrOverloadProd),
@@ -353,7 +353,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   local fwrd::host:Expr = 
     getBinaryOverload(
       modLhsRhs.fst, modLhsRhs.snd, top.location,
-      top.env, top.host:returnType,
+      top.env, top.labelEnv, top.host:returnType,
       getAndOverloadProd,
       inj:andExpr(_, _, location=_));
 
@@ -381,7 +381,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   local fwrd::host:Expr = 
     getBinaryOverload(
       modLhsRhs.fst, modLhsRhs.snd, top.location,
-      top.env, top.host:returnType,
+      top.env, top.labelEnv, top.host:returnType,
       getOrOverloadProd,
       inj:orExpr(_, _, location=_));
 
@@ -409,7 +409,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   local fwrd::host:Expr = 
     getBinaryOverload(
       modLhsRhs.fst, modLhsRhs.snd, top.location,
-      top.env, top.host:returnType,
+      top.env, top.labelEnv, top.host:returnType,
       getAndBitOverloadProd,
       inj:andBitExpr(_, _, location=_));
 
@@ -437,7 +437,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   local fwrd::host:Expr = 
     getBinaryOverload(
       modLhsRhs.fst, modLhsRhs.snd, top.location,
-      top.env, top.host:returnType,
+      top.env, top.labelEnv, top.host:returnType,
       getOrBitOverloadProd,
       inj:orBitExpr(_, _, location=_));
 
@@ -465,7 +465,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   local fwrd::host:Expr = 
     getBinaryOverload(
       modLhsRhs.fst, modLhsRhs.snd, top.location,
-      top.env, top.host:returnType,
+      top.env, top.labelEnv, top.host:returnType,
       getXorOverloadProd,
       inj:xorExpr(_, _, location=_));
 
@@ -493,7 +493,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   local fwrd::host:Expr = 
     getBinaryOverload(
       modLhsRhs.fst, modLhsRhs.snd, top.location,
-      top.env, top.host:returnType,
+      top.env, top.labelEnv, top.host:returnType,
       getLshOverloadProd,
       inj:lshExpr(_, _, location=_));
 
@@ -521,7 +521,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   local fwrd::host:Expr = 
     getBinaryOverload(
       modLhsRhs.fst, modLhsRhs.snd, top.location,
-      top.env, top.host:returnType,
+      top.env, top.labelEnv, top.host:returnType,
       getRshOverloadProd,
       inj:rshExpr(_, _, location=_));
 
@@ -549,7 +549,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   local fwrd::host:Expr = 
     getBinaryOverload(
       modLhsRhs.fst, modLhsRhs.snd, top.location,
-      top.env, top.host:returnType,
+      top.env, top.labelEnv, top.host:returnType,
       getEqualsOverloadProd,
       inj:equalsExpr(_, _, location=_));
 
@@ -577,7 +577,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   local fwrd::host:Expr = 
     getNegatedBinaryOverload(
       modLhsRhs.fst, modLhsRhs.snd, top.location,
-      top.env, top.host:returnType,
+      top.env, top.labelEnv, top.host:returnType,
       getNotEqualsOverloadProd,
       getEqualsOverloadProd,
       inj:notEqualsExpr(_, _, location=_));
@@ -606,7 +606,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   local fwrd::host:Expr = 
     getBinaryOverload(
       modLhsRhs.fst, modLhsRhs.snd, top.location,
-      top.env, top.host:returnType,
+      top.env, top.labelEnv, top.host:returnType,
       getLtOverloadProd,
       inj:ltExpr(_, _, location=_));
 
@@ -634,7 +634,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   local fwrd::host:Expr = 
     getGtOverload(
       modLhsRhs.fst, modLhsRhs.snd, top.location,
-      top.env, top.host:returnType);
+      top.env, top.labelEnv, top.host:returnType);
 
   forwards to
     host:wrapWarnExpr(
@@ -660,7 +660,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   local fwrd::host:Expr = 
     getNegatedBinaryOverload(
       modLhsRhs.fst, modLhsRhs.snd, top.location,
-      top.env, top.host:returnType,
+      top.env, top.labelEnv, top.host:returnType,
       getLteOverloadProd,
       getGtOverloadProd,
       inj:lteExpr(_, _, location=_));
@@ -689,7 +689,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   local fwrd::host:Expr = 
     getNegatedBinaryOverload(
       modLhsRhs.fst, modLhsRhs.snd, top.location,
-      top.env, top.host:returnType,
+      top.env, top.labelEnv, top.host:returnType,
       getGteOverloadProd,
       getLtOverloadProd,
       inj:gteExpr(_, _, location=_));
@@ -718,7 +718,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   local fwrd::host:Expr = 
     getBinaryOverload(
       modLhsRhs.fst, modLhsRhs.snd, top.location,
-      top.env, top.host:returnType,
+      top.env, top.labelEnv, top.host:returnType,
       getAddOverloadProd,
       inj:addExpr(_, _, location=_));
 
@@ -746,7 +746,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   local fwrd::host:Expr = 
     getBinaryOverload(
       modLhsRhs.fst, modLhsRhs.snd, top.location,
-      top.env, top.host:returnType,
+      top.env, top.labelEnv, top.host:returnType,
       getSubOverloadProd,
       inj:subExpr(_, _, location=_));
 
@@ -774,7 +774,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   local fwrd::host:Expr = 
     getBinaryOverload(
       modLhsRhs.fst, modLhsRhs.snd, top.location,
-      top.env, top.host:returnType,
+      top.env, top.labelEnv, top.host:returnType,
       getMulOverloadProd,
       inj:mulExpr(_, _, location=_));
 
@@ -802,7 +802,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   local fwrd::host:Expr = 
     getBinaryOverload(
       modLhsRhs.fst, modLhsRhs.snd, top.location,
-      top.env, top.host:returnType,
+      top.env, top.labelEnv, top.host:returnType,
       getDivOverloadProd,
       inj:divExpr(_, _, location=_));
 
@@ -830,7 +830,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   local fwrd::host:Expr = 
     getBinaryOverload(
       modLhsRhs.fst, modLhsRhs.snd, top.location,
-      top.env, top.host:returnType,
+      top.env, top.labelEnv, top.host:returnType,
       getModOverloadProd,
       inj:modExpr(_, _, location=_));
 

@@ -1,7 +1,7 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 
 nonterminal BuiltinType with pp, host<BuiltinType>, mangledName, integerPromotionsBuiltin, defaultArgumentPromotionsBuiltin, isIntegerType, isArithmeticType;
-flowtype BuiltinType = decorate {}, integerPromotionsBuiltin {}, defaultArgumentPromotionsBuiltin {}, isIntegerType {}, isArithmeticType {};
+flowtype BuiltinType = decorate {}, forward {}, integerPromotionsBuiltin {}, defaultArgumentPromotionsBuiltin {}, isIntegerType {}, isArithmeticType {};
 
 synthesized attribute integerPromotionsBuiltin :: BuiltinType;
 synthesized attribute defaultArgumentPromotionsBuiltin :: BuiltinType;
@@ -154,7 +154,7 @@ top::BuiltinType ::= it::IntegerType
 
 {-- Floating types, for which there is a normal and complex variant -}
 nonterminal RealType with pp, host<RealType>, mangledName;
-flowtype RealType = decorate {};
+flowtype RealType = decorate {}, forward {};
 
 abstract production floatType
 top::RealType ::=
@@ -183,7 +183,7 @@ top::RealType ::=
 
 {-- Integer types, for which there is a signed and unsigned variant -}
 nonterminal IntegerType with pp, host<IntegerType>, mangledName, integerConversionRank;
-flowtype IntegerType = decorate {}, integerConversionRank {};
+flowtype IntegerType = decorate {}, forward {}, integerConversionRank {};
 
 synthesized attribute integerConversionRank :: Integer;
 

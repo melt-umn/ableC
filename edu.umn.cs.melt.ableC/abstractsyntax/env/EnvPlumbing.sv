@@ -7,14 +7,12 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax:env;
  - build up contributions to each individual scope in an Env.  
  -}
 
-synthesized attribute labels :: Scopes<LabelItem>;
 synthesized attribute tags :: Scopes<TagItem>;
 synthesized attribute values :: Scopes<ValueItem>;
 synthesized attribute refIds :: Scopes<RefIdItem>;
 synthesized attribute misc :: Scopes<MiscItem>;
 synthesized attribute globalEnv :: Decorated Env;
 
-synthesized attribute labelContribs :: Contribs<LabelItem>;
 synthesized attribute tagContribs :: Contribs<TagItem>;
 synthesized attribute valueContribs :: Contribs<ValueItem>;
 synthesized attribute refIdContribs :: Contribs<RefIdItem>;
@@ -31,7 +29,6 @@ synthesized attribute globalDefs :: [Def];
 abstract production emptyEnv_i
 top::Env ::=
 {
-  top.labels = emptyScope();
   top.tags = emptyScope();
   top.values = emptyScope();
   top.refIds = emptyScope();
@@ -42,7 +39,6 @@ top::Env ::= d::Defs  e::Decorated Env
 {
   production gd::Defs = foldr(consDefs, nilDefs(), d.globalDefs);
 
-  top.labels = addGlobalScope(gd.labelContribs, addScope(d.labelContribs, e.labels));
   top.tags = addGlobalScope(gd.tagContribs, addScope(d.tagContribs, e.tags));
   top.values = addGlobalScope(gd.valueContribs, addScope(d.valueContribs, e.values));
   top.refIds = addGlobalScope(gd.refIdContribs, addScope(d.refIdContribs, e.refIds));
@@ -51,7 +47,6 @@ top::Env ::= d::Defs  e::Decorated Env
 abstract production openEnvScope_i
 top::Env ::= e::Decorated Env
 {
-  top.labels = openScope(e.labels);
   top.tags = openScope(e.tags);
   top.values = openScope(e.values);
   top.refIds = openScope(e.refIds);
@@ -60,7 +55,6 @@ top::Env ::= e::Decorated Env
 abstract production globalEnv_i
 top::Env ::= e::Decorated Env
 {
-  top.labels = globalScope(e.labels);
   top.tags = globalScope(e.tags);
   top.values = globalScope(e.values);
   top.refIds = globalScope(e.refIds);
@@ -73,7 +67,6 @@ top::Env ::= e::Decorated Env
 abstract production nilDefs
 top::Defs ::=
 {
-  top.labelContribs = [];
   top.tagContribs = [];
   top.valueContribs = [];
   top.refIdContribs = [];
@@ -84,7 +77,6 @@ top::Defs ::=
 abstract production consDefs
 top::Defs ::= h::Def  t::Defs
 {
-  top.labelContribs = h.labelContribs ++ t.labelContribs;
   top.tagContribs = h.tagContribs ++ t.tagContribs;
   top.valueContribs = h.valueContribs ++ t.valueContribs;
   top.refIdContribs = h.refIdContribs ++ t.refIdContribs;
@@ -97,7 +89,6 @@ top::Defs ::= h::Def  t::Defs
 aspect default production
 top::Def ::=
 {
-  top.labelContribs = [];
   top.tagContribs = [];
   top.valueContribs = [];
   top.refIdContribs = [];

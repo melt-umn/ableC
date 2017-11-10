@@ -21,8 +21,8 @@ Attributes ::= l1::Attributes l2::Attributes
     end;
 }
 
-nonterminal Attributes with pps, host<Attributes>, lifted<Attributes>, env, returnType;
-flowtype Attributes = decorate {env, returnType};
+nonterminal Attributes with pps, host<Attributes>, lifted<Attributes>, env, labelEnv, returnType;
+flowtype Attributes = decorate {env, labelEnv, returnType}, forward {};
 
 abstract production consAttribute
 top::Attributes ::= h::Attribute t::Attributes
@@ -39,8 +39,8 @@ top::Attributes ::=
 }
 
 {-- __attribute__ syntax representation -}
-nonterminal Attribute with pp, host<Attribute>, lifted<Attribute>, env, returnType;
-flowtype Attribute = decorate {env, returnType};
+nonterminal Attribute with pp, host<Attribute>, lifted<Attribute>, env, labelEnv, returnType;
+flowtype Attribute = decorate {env, labelEnv, returnType}, forward {env, returnType};
 
 abstract production gccAttribute
 top::Attribute ::= l::Attribs
@@ -56,8 +56,8 @@ top::Attribute ::= s::String
   top.pp = text("__asm__(" ++ s ++ ")");
 }
 
-nonterminal Attribs with pp, host<Attribs>, lifted<Attribs>, env, returnType;
-flowtype Attribs = decorate {env, returnType};
+nonterminal Attribs with pp, host<Attribs>, lifted<Attribs>, env, labelEnv, returnType;
+flowtype Attribs = decorate {env, labelEnv, returnType}, forward {};
 
 abstract production consAttrib
 top::Attribs ::= h::Attrib t::Attribs
@@ -78,8 +78,8 @@ top::Attribs ::=
   top.pp = text("");
 }
 
-nonterminal Attrib with pp, host<Attrib>, lifted<Attrib>, env, returnType;
-flowtype Attrib = decorate {env, returnType};
+nonterminal Attrib with pp, host<Attrib>, lifted<Attrib>, env, labelEnv, returnType;
+flowtype Attrib = decorate {env, labelEnv, returnType}, forward {env, returnType};
 
 -- e.g. __attribute__(())
 abstract production emptyAttrib
@@ -114,7 +114,7 @@ top::Attrib ::= n::AttribName  id::Name  e::Exprs
 
 
 nonterminal AttribName with pp, env, host<AttribName>, lifted<AttribName>;
-flowtype AttribName = decorate {env};
+flowtype AttribName = decorate {env}, forward {};
 
 abstract production attribName
 top::AttribName ::= n::Name
