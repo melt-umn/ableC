@@ -1,7 +1,7 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 
 nonterminal Stmt with pp, host<Stmt>, lifted<Stmt>, errors, globalDecls, defs, env, labelDefs, labelEnv, returnType, freeVariables;
-flowtype Stmt = decorate {env, labelEnv, returnType}, labelDefs {env, returnType};
+flowtype Stmt = decorate {env, labelEnv, returnType}, labelDefs {decorate};
 
 autocopy attribute returnType :: Maybe<Type>;
 
@@ -368,11 +368,7 @@ top::Stmt ::= l::Name  s::Stmt
   top.labelDefs := s.labelDefs;
   
   top.errors <- l.labelRedeclarationCheck;
-  top.labelDefs <-
-    [pair(
-      l.name,
-      -- TODO: Ugly hack to get a refrence to a labelStmt that doesn't depend on labelEnv
-      labelItem(decorate top with {env = top.env; labelEnv = []; returnType = top.returnType;}))];
+  top.labelDefs <- [pair(l.name, labelItem(top))];
 }
 
 abstract production caseLabelStmt
