@@ -365,9 +365,14 @@ top::Stmt ::= l::Name  s::Stmt
   top.globalDecls := s.globalDecls;
   top.defs := s.defs;
   top.freeVariables = s.freeVariables;
-  top.labelDefs := pair(l.name, labelItem(top)) :: s.labelDefs;
+  top.labelDefs := s.labelDefs;
   
   top.errors <- l.labelRedeclarationCheck;
+  top.labelDefs <-
+    [pair(
+      l.name,
+      -- TODO: Ugly hack to get a refrence to a labelStmt that doesn't depend on labelEnv
+      labelItem(decorate top with {env = top.env; labelEnv = []; returnType = top.returnType;}))];
 }
 
 abstract production caseLabelStmt
