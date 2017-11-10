@@ -6,7 +6,7 @@ import edu:umn:cs:melt:ableC:abstractsyntax:builtins as builtinfunctions;
 global fullErrorCheck::Boolean = true;
 
 nonterminal Root with pp, host<Root>, lifted<Root>, errors, env;
-flowtype Root = decorate {env}, forward {};
+flowtype Root = decorate {env};
 
 abstract production root
 top::Root ::= d::GlobalDecls
@@ -34,7 +34,7 @@ synthesized attribute srcErrorFilters::[(Boolean ::= Message)] with ++;
 synthesized attribute hostErrorFilters::[(Boolean ::= Message)] with ++;
 synthesized attribute liftedErrorFilters::[(Boolean ::= Message)] with ++;
 nonterminal Compilation with srcAst, hostAst, liftedAst, srcPP, hostPP, liftedPP, finalPP, errors, env, srcErrorFilters, hostErrorFilters, liftedErrorFilters;
-flowtype Compilation = decorate {env}, forward {}, srcAst {}, hostAst {env}, liftedAst {env}, srcPP {}, hostPP {env}, liftedPP {env}, finalPP {env};
+flowtype Compilation = decorate {env}, srcAst {}, hostAst {env}, liftedAst {env}, srcPP {}, hostPP {env}, liftedPP {env}, finalPP {env};
 
 abstract production compilation
 top::Compilation ::= srcAst::Root

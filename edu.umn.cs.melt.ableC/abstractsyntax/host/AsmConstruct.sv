@@ -1,6 +1,6 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 nonterminal AsmStatement with location, pp, host<AsmStatement>, lifted<AsmStatement>, env, labelEnv, returnType, freeVariables;
-flowtype AsmStatement = decorate {env, labelEnv, returnType}, forward {env, returnType};
+flowtype AsmStatement = decorate {env, labelEnv, returnType};
 
 abstract production asmStatement
 a::AsmStatement ::= arg::AsmArgument
@@ -19,7 +19,7 @@ a::AsmStatement ::= tq::Qualifier arg::AsmArgument
 }
 
 nonterminal AsmArgument with location, pp, host<AsmArgument>, lifted<AsmArgument>, env, labelEnv, returnType, freeVariables;
-flowtype AsmArgument = decorate {env, labelEnv, returnType}, forward {env, returnType};
+flowtype AsmArgument = decorate {env, labelEnv, returnType};
 
 abstract production asmArgument
 top::AsmArgument ::= s::String asmOps1::AsmOperands asmOps2::AsmOperands asmC::AsmClobbers
@@ -39,7 +39,7 @@ top::AsmArgument ::= s::String asmOps1::AsmOperands asmOps2::AsmOperands asmC::A
 synthesized attribute exists::Boolean;
 
 nonterminal AsmClobbers with location, pp, exists, host<AsmClobbers>, lifted<AsmClobbers>;
-flowtype AsmClobbers = decorate {}, forward {}, exists {};
+flowtype AsmClobbers = decorate {}, exists {};
 
 abstract production noneAsmClobbers 
 top::AsmClobbers ::=
@@ -64,7 +64,7 @@ top::AsmClobbers ::= asmC::AsmClobbers s::String
 }
 
 nonterminal AsmOperands with location, pp, exists, host<AsmOperands>, lifted<AsmOperands>, env, labelEnv, returnType, freeVariables;
-flowtype AsmOperands = decorate {env, labelEnv, returnType}, forward {}, exists {};
+flowtype AsmOperands = decorate {env, labelEnv, returnType}, exists {};
 
 abstract production noneAsmOps
 top::AsmOperands ::= 
@@ -92,7 +92,7 @@ top::AsmOperands ::= asmOps::AsmOperands asmOp::AsmOperand
 }
 
 nonterminal AsmOperand with location, pp, host<AsmOperand>, lifted<AsmOperand>, env, labelEnv, returnType, freeVariables;
-flowtype AsmOperand = decorate {env, labelEnv, returnType}, forward {env, returnType};
+flowtype AsmOperand = decorate {env, labelEnv, returnType};
 
 abstract production asmOperand
 top::AsmOperand ::= s::String e::Expr

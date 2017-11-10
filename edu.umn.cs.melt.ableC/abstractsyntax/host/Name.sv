@@ -22,7 +22,7 @@ synthesized attribute tagItem :: Decorated TagItem;
 synthesized attribute labelItem :: Decorated LabelItem;
 
 nonterminal Name with location, name, pp, host<Name>, lifted<Name>, env, labelEnv, valueLocalLookup, labelRedeclarationCheck, valueLookupCheck, tagLookupCheck, labelLookupCheck, valueItem, tagItem, labelItem, tagLocalLookup, tagHasForwardDcl, tagRefId, valueRedeclarationCheck, valueRedeclarationCheckNoCompatible, valueMergeRedeclExtnQualifiers;
-flowtype Name = decorate {env, labelEnv}, forward {}, name {}, valueLocalLookup {env}, labelRedeclarationCheck {labelEnv}, valueLookupCheck {env}, tagLookupCheck {env}, labelLookupCheck {labelEnv}, valueItem {env}, tagItem {env}, labelItem {labelEnv}, tagLocalLookup {env}, tagHasForwardDcl {env}, tagRefId {env}, valueRedeclarationCheck {decorate}, valueRedeclarationCheckNoCompatible {decorate}, valueMergeRedeclExtnQualifiers {decorate};
+flowtype Name = decorate {env, labelEnv}, name {}, valueLocalLookup {env}, labelRedeclarationCheck {labelEnv}, valueLookupCheck {env}, tagLookupCheck {env}, labelLookupCheck {labelEnv}, valueItem {env}, tagItem {env}, labelItem {labelEnv}, tagLocalLookup {env}, tagHasForwardDcl {env}, tagRefId {env}, valueRedeclarationCheck {decorate}, valueRedeclarationCheckNoCompatible {decorate}, valueMergeRedeclExtnQualifiers {decorate};
 
 abstract production name
 top::Name ::= n::String
@@ -86,7 +86,7 @@ synthesized attribute maybename :: Maybe<Name>;
 synthesized attribute hasName :: Boolean;
 
 nonterminal MaybeName with maybename, pp, host<MaybeName>, lifted<MaybeName>, env, labelEnv, valueLocalLookup, tagLocalLookup, tagHasForwardDcl, tagRefId, hasName, valueRedeclarationCheckNoCompatible, valueRedeclarationCheck, valueMergeRedeclExtnQualifiers;
-flowtype MaybeName = decorate {env, labelEnv}, forward {}, maybename {}, hasName {}, valueLocalLookup {env}, tagLocalLookup {env}, tagHasForwardDcl {env}, tagRefId {env}, valueRedeclarationCheckNoCompatible {env}, valueRedeclarationCheck {env}, valueMergeRedeclExtnQualifiers {env};
+flowtype MaybeName = decorate {env, labelEnv}, maybename {}, hasName {}, valueLocalLookup {env}, tagLocalLookup {env}, tagHasForwardDcl {env}, tagRefId {env}, valueRedeclarationCheckNoCompatible {decorate}, valueRedeclarationCheck {decorate}, valueMergeRedeclExtnQualifiers {decorate};
 
 abstract production justName
 top::MaybeName ::= n::Name

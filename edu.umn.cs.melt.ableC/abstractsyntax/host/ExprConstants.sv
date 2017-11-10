@@ -46,7 +46,7 @@ top::Expr ::= num::String  c::CharPrefix
 }
 
 nonterminal NumericConstant with location, pp, host<NumericConstant>, lifted<NumericConstant>, errors, env, constanttyperep;
-flowtype NumericConstant = decorate {env}, forward {env}, constanttyperep {decorate};
+flowtype NumericConstant = decorate {env}, constanttyperep {decorate};
 
 synthesized attribute constanttyperep :: BuiltinType;
 

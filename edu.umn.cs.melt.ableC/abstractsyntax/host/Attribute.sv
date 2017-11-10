@@ -22,7 +22,7 @@ Attributes ::= l1::Attributes l2::Attributes
 }
 
 nonterminal Attributes with pps, host<Attributes>, lifted<Attributes>, env, labelEnv, returnType;
-flowtype Attributes = decorate {env, labelEnv, returnType}, forward {};
+flowtype Attributes = decorate {env, labelEnv, returnType};
 
 abstract production consAttribute
 top::Attributes ::= h::Attribute t::Attributes
@@ -40,7 +40,7 @@ top::Attributes ::=
 
 {-- __attribute__ syntax representation -}
 nonterminal Attribute with pp, host<Attribute>, lifted<Attribute>, env, labelEnv, returnType;
-flowtype Attribute = decorate {env, labelEnv, returnType}, forward {env, returnType};
+flowtype Attribute = decorate {env, labelEnv, returnType};
 
 abstract production gccAttribute
 top::Attribute ::= l::Attribs
@@ -57,7 +57,7 @@ top::Attribute ::= s::String
 }
 
 nonterminal Attribs with pp, host<Attribs>, lifted<Attribs>, env, labelEnv, returnType;
-flowtype Attribs = decorate {env, labelEnv, returnType}, forward {};
+flowtype Attribs = decorate {env, labelEnv, returnType};
 
 abstract production consAttrib
 top::Attribs ::= h::Attrib t::Attribs
@@ -79,7 +79,7 @@ top::Attribs ::=
 }
 
 nonterminal Attrib with pp, host<Attrib>, lifted<Attrib>, env, labelEnv, returnType;
-flowtype Attrib = decorate {env, labelEnv, returnType}, forward {env, returnType};
+flowtype Attrib = decorate {env, labelEnv, returnType};
 
 -- e.g. __attribute__(())
 abstract production emptyAttrib
@@ -112,9 +112,9 @@ top::Attrib ::= n::AttribName  id::Name  e::Exprs
   top.isHostAttrib = true;
 }
 
-
-nonterminal AttribName with pp, env, host<AttribName>, lifted<AttribName>;
-flowtype AttribName = decorate {env}, forward {};
+-- labelEnv only here due to flow constraints
+nonterminal AttribName with pp, env, labelEnv, host<AttribName>, lifted<AttribName>;
+flowtype AttribName = decorate {env, labelEnv};
 
 abstract production attribName
 top::AttribName ::= n::Name

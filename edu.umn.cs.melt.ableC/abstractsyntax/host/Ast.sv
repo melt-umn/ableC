@@ -64,3 +64,32 @@ flowtype defs {decorate} on
   MaybeInitializer, Initializer, InitList, Init, Designator;
 flowtype localdefs {decorate} on
   StructItemList, StructItem, StructDeclarators, StructDeclarator;
+
+-- Set all forward flowtypes on 'collection' and 'wrapper' nonterminals to be empty, since we
+-- typically don't forward on these, and may want to pattern match without providing all attributes
+flowtype forward {} on
+  Attributes, Attribs, AttribName,
+  Decls, Declarators, Parameters, StructItemList, EnumItemList, StructDeclarators,
+  AsmClobbers, AsmOperands,
+  Qualifiers, SpecialSpecifiers,
+  GenericAssocs,
+  TypeNames,
+  MaybeExpr, Exprs, ExprOrTypeName,
+  Name, MaybeName,
+  MaybeInitializer, InitList;
+
+-- Set all other forward flowtypes to be the same as reference sets
+flowtype forward {decorate} on
+  Root, Compilation,
+  Attribute, Attrib,
+  GlobalDecls, Decl, Declarator, FunctionDecl, ParameterDecl, StructDecl, UnionDecl, EnumDecl, StructItem, StructDeclarator, EnumItem, StorageClass,
+  MemberDesignator,
+  Type, ArrayType, ArraySizeModifier, FunctionType, TagType, NoncanonicalType,
+  AsmStatement, AsmArgument, AsmOperand,
+  Qualifier, SpecialSpecifier,
+  Expr, GenericAssoc,
+  TypeName, BaseTypeExpr, TypeModifierExpr,
+  BuiltinType, RealType, IntegerType,
+  NumericConstant,
+  Stmt,
+  Initializer, Init, Designator;

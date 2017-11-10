@@ -4,7 +4,7 @@ import edu:umn:cs:melt:ableC:abstractsyntax:overloadable as ovrld;
 
 nonterminal Expr with location, pp, host<Expr>, lifted<Expr>, globalDecls, errors, defs, env, labelEnv, returnType, freeVariables, typerep, isLValue;
 
-flowtype Expr = decorate {env, labelEnv, returnType}, forward {env, returnType}, isLValue {decorate};
+flowtype Expr = decorate {env, labelEnv, returnType}, isLValue {decorate};
 
 synthesized attribute integerConstantValue :: Maybe<Integer>; -- TODO: Is this actually used for anything
 synthesized attribute isLValue::Boolean;
@@ -365,7 +365,7 @@ top::Expr ::= e::Expr  gl::GenericAssocs  def::MaybeExpr
 }
 
 nonterminal GenericAssocs with pps, host<GenericAssocs>, lifted<GenericAssocs>, errors, globalDecls, defs, env, labelEnv, selectionType, compatibleSelections, returnType, freeVariables;
-flowtype GenericAssocs = decorate {env, labelEnv, returnType}, forward {}, compatibleSelections {decorate, selectionType};
+flowtype GenericAssocs = decorate {env, labelEnv, returnType}, compatibleSelections {decorate, selectionType};
 
 autocopy attribute selectionType :: Type;
 synthesized attribute compatibleSelections :: [Decorated Expr];
@@ -394,7 +394,7 @@ top::GenericAssocs ::=
 }
 
 nonterminal GenericAssoc with location, pp, host<GenericAssoc>, lifted<GenericAssoc>, globalDecls, errors, defs, env, labelEnv, selectionType, compatibleSelections, returnType, freeVariables;
-flowtype GenericAssoc = decorate {env, labelEnv, returnType}, forward {env, returnType}, compatibleSelections {decorate, selectionType};
+flowtype GenericAssoc = decorate {env, labelEnv, returnType}, compatibleSelections {decorate, selectionType};
 
 abstract production genericAssoc
 top::GenericAssoc ::= ty::TypeName  fun::Expr

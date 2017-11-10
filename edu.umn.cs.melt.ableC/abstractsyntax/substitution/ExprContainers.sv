@@ -17,6 +17,7 @@ top::Exprs ::= h::Expr  t::Exprs
   -- We don't really care about these, since all we want to know is whether h is a declRefExpr.
   local h1::Expr = h;
   h1.env = emptyEnv();
+  h1.labelEnv = [];
   h1.returnType = nothing();
   
   local substitutions::Substitutions = top.substitutions;

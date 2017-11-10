@@ -1,7 +1,7 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 
 nonterminal Stmt with pp, host<Stmt>, lifted<Stmt>, errors, globalDecls, defs, env, labelDefs, labelEnv, returnType, freeVariables;
-flowtype Stmt = decorate {env, labelEnv, returnType}, forward {env, returnType}, labelDefs {env, returnType};
+flowtype Stmt = decorate {env, labelEnv, returnType}, labelDefs {env, returnType};
 
 autocopy attribute returnType :: Maybe<Type>;
 

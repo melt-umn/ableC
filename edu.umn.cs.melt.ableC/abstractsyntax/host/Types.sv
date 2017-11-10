@@ -10,7 +10,7 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
  - Noncanonical forwards, and so doesn't need any attributes, etc attached to it.
  -}
 nonterminal Type with lpp, rpp, host<Type>, baseTypeExpr, typeModifierExpr, mangledName, integerPromotions, defaultArgumentPromotions, defaultLvalueConversion, defaultFunctionArrayLvalueConversion, isIntegerType, isScalarType, isArithmeticType, withoutAttributes, withoutTypeQualifiers, withoutExtensionQualifiers<Type>, withTypeQualifiers, addedTypeQualifiers, qualifiers, mergeQualifiers<Type>, errors;
-flowtype Type = decorate {}, forward {}, baseTypeExpr {}, typeModifierExpr {}, integerPromotions {}, defaultArgumentPromotions {}, defaultLvalueConversion {}, defaultFunctionArrayLvalueConversion {}, isIntegerType {}, isScalarType {}, isArithmeticType {}, withoutAttributes {}, withoutTypeQualifiers {}, withoutExtensionQualifiers {}, withTypeQualifiers {addedTypeQualifiers}, qualifiers {}, mergeQualifiers {};
+flowtype Type = decorate {}, baseTypeExpr {}, typeModifierExpr {}, integerPromotions {}, defaultArgumentPromotions {}, defaultLvalueConversion {}, defaultFunctionArrayLvalueConversion {}, isIntegerType {}, isScalarType {}, isArithmeticType {}, withoutAttributes {}, withoutTypeQualifiers {}, withoutExtensionQualifiers {}, withTypeQualifiers {addedTypeQualifiers}, qualifiers {}, mergeQualifiers {};
 
 -- Used to turn a Type back into a TypeName
 synthesized attribute baseTypeExpr :: BaseTypeExpr;
@@ -237,7 +237,7 @@ top::Type ::= element::Type  indexQualifiers::Qualifiers  sizeModifier::ArraySiz
 
 {-- The subtypes of arrays -}
 nonterminal ArrayType with pp, host<ArrayType>;
-flowtype ArrayType = decorate {}, forward {};
+flowtype ArrayType = decorate {};
 
 abstract production constantArrayType
 top::ArrayType ::= size::Integer
@@ -255,13 +255,16 @@ top::ArrayType ::=
 abstract production variableArrayType
 top::ArrayType ::= size::Decorated Expr
 {
-  top.host = variableArrayType(decorate size.host with {env = size.env; returnType = size.returnType;});
+  top.host =
+    variableArrayType(
+      decorate size.host
+      with {env = size.env; labelEnv = size.labelEnv; returnType = size.returnType;});
   top.pp = size.pp;
 }
 
 {-- Modifiers attached to array types that are function parameters -}
 nonterminal ArraySizeModifier with pps;
-flowtype ArraySizeModifier = decorate {}, forward {};
+flowtype ArraySizeModifier = decorate {};
 
 {-- Normal array. -}
 abstract production normalArraySize
@@ -313,7 +316,7 @@ top::Type ::= result::Type  sub::FunctionType  q::Qualifiers
 
 {-- The subtypes of functions -}
 nonterminal FunctionType with lpp, rpp, host<FunctionType>, mangledName, errors, withoutExtensionQualifiers<FunctionType>, mergeQualifiers<FunctionType>;
-flowtype FunctionType = decorate {}, forward {};
+flowtype FunctionType = decorate {};
 -- clang has an 'extinfo' structure with calling convention, noreturn, 'produces'?, regparam
 
 abstract production protoFunctionType
@@ -410,7 +413,7 @@ top::Type ::= q::Qualifiers  sub::TagType
 
 {-- Structs, unions and enums -}
 nonterminal TagType with pp, host<TagType>, mangledName, isIntegerType;
-flowtype TagType = decorate {}, forward {}, isIntegerType {};
+flowtype TagType = decorate {}, isIntegerType {};
 
 abstract production enumTagType
 top::TagType ::= ref::Decorated EnumDecl
@@ -525,6 +528,7 @@ top::Type ::= attrs::Attributes  bt::Type
   
   -- Whatever...
   attrs.env = emptyEnv();
+  attrs.labelEnv = [];
   attrs.returnType = nothing();
 }
 
@@ -599,7 +603,7 @@ top::Type ::= sub::NoncanonicalType
 
 {-- Types that resolve to other types. -}
 nonterminal NoncanonicalType with canonicalType, lpp, rpp, host<NoncanonicalType>, baseTypeExpr, typeModifierExpr;
-flowtype NoncanonicalType = decorate {}, forward {}, canonicalType {}, baseTypeExpr {}, typeModifierExpr {};
+flowtype NoncanonicalType = decorate {}, canonicalType {}, baseTypeExpr {}, typeModifierExpr {};
 
 synthesized attribute canonicalType :: Type;
 

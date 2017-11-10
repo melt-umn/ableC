@@ -46,6 +46,7 @@ top::Stmt ::= d::Expr
   -- We don't really care about these, since all we want to know is whether d is a declRefExpr.
   local d1::Expr = d;
   d1.env = emptyEnv();
+  d1.labelEnv = [];
   d1.returnType = nothing();
 
   local substitutions::Substitutions = top.substitutions;
