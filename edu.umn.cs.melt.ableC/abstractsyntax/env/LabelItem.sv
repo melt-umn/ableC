@@ -1,17 +1,16 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax:env;
 
-nonterminal LabelItem;
-
--- TODO: Should consider whether we want to change the Stmt abstract syntax
--- to have a LabelStmt, so we can be more specific here
+nonterminal LabelItem with sourceLocation;
 
 abstract production labelItem
-top::LabelItem ::= s::Decorated Stmt
+top::LabelItem ::= sourceLocation::Location
 {
+  top.sourceLocation = sourceLocation;
 }
 
 abstract production errorLabelItem
 top::LabelItem ::=
 {
+  top.sourceLocation = loc("nowhere", -1, -1, -1, -1, -1, -1);
 }
 
