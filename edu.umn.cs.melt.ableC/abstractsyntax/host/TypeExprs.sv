@@ -299,7 +299,7 @@ top::BaseTypeExpr ::= q::Qualifiers  name::Name
 
   top.errors <- name.valueLookupCheck;
   top.errors <-
-    if name.valueItem.isItemTypedef then []
+    if name.valueItem.isItemType then []
     else [err(name.location, "'" ++ name.name ++ "' does not refer to a type.")];
   q.typeToQualify = top.typerep;
 }

@@ -1,18 +1,18 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax:env;
 
-closed nonterminal ValueItem with typerep, sourceLocation, directCallHandler, isItemValue, isItemTypedef;
+closed nonterminal ValueItem with typerep, sourceLocation, directCallHandler, isItemValue, isItemType;
 
 synthesized attribute sourceLocation :: Location;
 synthesized attribute directCallHandler :: (Expr ::= Name Exprs Location);
 synthesized attribute isItemValue :: Boolean;
-synthesized attribute isItemTypedef :: Boolean;
+synthesized attribute isItemType :: Boolean;
 
 aspect default production
 top::ValueItem ::=
 {
   top.directCallHandler = ordinaryFunctionHandler;
   top.isItemValue = false;
-  top.isItemTypedef = false;
+  top.isItemType = false;
 }
 
 -- TODO: we might consider splitting this into values and typedef names.
@@ -23,7 +23,7 @@ top::ValueItem ::= s::Decorated Declarator
   top.typerep = s.typerep;
   top.sourceLocation = s.sourceLocation;
   top.isItemValue = !s.isTypedef;
-  top.isItemTypedef = s.isTypedef;
+  top.isItemType = s.isTypedef;
 }
 -- Btw, although it seems like typedef names should be in a different namespace
 -- than values, they are not. And this is important for getting C semantics
@@ -76,7 +76,7 @@ top::ValueItem ::=
   top.typerep = errorType();
   top.sourceLocation = loc("nowhere", -1, -1, -1, -1, -1, -1);
   top.isItemValue = true;
-  top.isItemTypedef = true;
+  top.isItemType = true;
 }
 
 
