@@ -65,7 +65,7 @@ abstract production declStmt
 top::Stmt ::= d::Decl
 {
   propagate host, lifted;
-  top.pp = cat( d.pp, semi() );
+  top.pp = d.pp;
   top.errors := d.errors;
   top.globalDecls := d.globalDecls;
   top.defs := d.defs;
