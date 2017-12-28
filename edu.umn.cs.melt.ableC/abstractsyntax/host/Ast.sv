@@ -62,7 +62,9 @@ flowtype defs {decorate} on
   MaybeExpr, Exprs, ExprOrTypeName,
   Stmt,
   MaybeInitializer, Initializer, InitList, Init, Designator;
-flowtype localdefs {decorate} on
+flowtype functionDefs {} on
+  Stmt;
+flowtype localDefs {decorate} on
   StructItemList, StructItem, StructDeclarators, StructDeclarator;
 
 -- Set all forward flowtypes on 'collection' and 'wrapper' nonterminals to be empty, since we

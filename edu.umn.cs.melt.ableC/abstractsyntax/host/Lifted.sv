@@ -160,7 +160,7 @@ top::Stmt ::= decls::Decls lifted::Stmt
   top.lifted = lifted.lifted;
   
   -- Define other attributes to be the same as on lifted
-  top.labelDefs := lifted.labelDefs;
+  top.functionDefs := lifted.functionDefs;
   top.freeVariables = lifted.freeVariables;
   
   decls.env = globalEnv(top.env);

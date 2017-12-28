@@ -5,19 +5,19 @@ imports edu:umn:cs:melt:ableC:abstractsyntax:host;
 {--
  - The environment values that get passed around and used to look up names.
  -}
-nonterminal Env with tags, values, refIds, misc;
+nonterminal Env with labels, tags, values, refIds, misc;
 
 {--
  - A list of definitions, only used in contributing new names to the environment.
  -}
 nonterminal Defs 
-  with tagContribs, valueContribs, refIdContribs, miscContribs, globalDefs;
+  with labelContribs, tagContribs, valueContribs, refIdContribs, miscContribs, globalDefs;
 
 {--
  - An individual definition of a name.
  -}
 closed nonterminal Def 
-  with tagContribs, valueContribs, refIdContribs, miscContribs, globalDefs;
+  with labelContribs, tagContribs, valueContribs, refIdContribs, miscContribs, globalDefs;
 
 
 {--
@@ -32,6 +32,12 @@ closed nonterminal Def
  -}
 synthesized attribute defs :: [Def] with ++;
 {--
+ - For Function-Scope definitions (e.g. Labels in functions)
+ - Note that since the env may determine the forward, and functionDefs on a production determine the env provided to that
+ - production, functionDefs must be computed without using the forward. 
+ -}
+synthesized attribute functionDefs :: [Def] with ++;
+{--
  - For local-scope only definitions (e.g. struct and union fields)
  - Used in conjunction with 'tagEnv'.
  - Distinct from 'defs' because nested structs should all have their names
@@ -40,8 +46,7 @@ synthesized attribute defs :: [Def] with ++;
  -
  - @see defs for normal definitions
  -}
- -- TODO: Rename to localDefs to be consistant with our naming scheme everywhere else
-synthesized attribute localdefs :: [Def] with ++;
+synthesized attribute localDefs :: [Def] with ++;
 {--
  - The environment, on which all lookups are performed.
  -}
@@ -50,14 +55,6 @@ autocopy attribute env :: Decorated Env;
  - The local environment for a struct or enum. Could be a different type, I suppose. TODO
  -}
 synthesized attribute tagEnv :: Decorated Env;
-
-{--
- - For label definitions, seperate from normal environment because these are whole-function-scope,
- - to avoid circular flow dependancies of forward -> functionDefs -> env -> forward.
- -}
-synthesized attribute labelDefs :: Contribs<LabelItem> with ++;
-autocopy attribute labelEnv :: Scopes<LabelItem>;
-
 
 -- Environment manipulation functions
 
@@ -69,7 +66,7 @@ Decorated Env ::=
 function openEnvScope
 Decorated Env ::= e::Decorated Env
 {
-  return decorate openEnvScope_i(e) with {};
+  return decorate openScopeEnv_i(e) with {};
 }
 function addEnv
 Decorated Env ::= d::[Def]  e::Decorated Env
@@ -98,6 +95,11 @@ function lookupTag
 [TagItem] ::= n::String  e::Decorated Env
 {
   return lookupScope(n, e.tags);
+}
+function lookupLabel
+[LabelItem] ::= n::String  e::Decorated Env
+{
+  return lookupScope(n, e.labels);
 }
 function lookupRefId 
 [RefIdItem] ::= n::String  e::Decorated Env

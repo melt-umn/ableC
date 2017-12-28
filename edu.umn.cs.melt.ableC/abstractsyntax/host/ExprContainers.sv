@@ -1,8 +1,8 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 
-nonterminal MaybeExpr with pp, host<MaybeExpr>, lifted<MaybeExpr>, isJust, errors, globalDecls, defs, env, labelEnv, maybeTyperep, returnType, freeVariables, justTheExpr, isLValue;
+nonterminal MaybeExpr with pp, host<MaybeExpr>, lifted<MaybeExpr>, isJust, errors, globalDecls, defs, env, maybeTyperep, returnType, freeVariables, justTheExpr, isLValue;
 
-flowtype MaybeExpr = decorate {env, labelEnv, returnType}, isJust {}, justTheExpr {}, maybeTyperep {decorate};
+flowtype MaybeExpr = decorate {env, returnType}, isJust {}, justTheExpr {}, maybeTyperep {decorate};
 
 synthesized attribute maybeTyperep :: Maybe<Type>;
 synthesized attribute justTheExpr :: Maybe<Expr>;
@@ -40,9 +40,9 @@ top::MaybeExpr ::=
 synthesized attribute pps :: [Document];
 
 
-nonterminal Exprs with pps, host<Exprs>, lifted<Exprs>, errors, globalDecls, defs, env, labelEnv, expectedTypes, argumentPosition, callExpr, argumentErrors, typereps, count, callVariadic, returnType, freeVariables, appendedExprs, appendedRes, isLValue;
+nonterminal Exprs with pps, host<Exprs>, lifted<Exprs>, errors, globalDecls, defs, env, expectedTypes, argumentPosition, callExpr, argumentErrors, typereps, count, callVariadic, returnType, freeVariables, appendedExprs, appendedRes, isLValue;
 
-flowtype Exprs = decorate {env, labelEnv, returnType}, argumentErrors {decorate, expectedTypes, argumentPosition, callExpr, callVariadic}, count {}, appendedRes {appendedExprs};
+flowtype Exprs = decorate {env, returnType}, argumentErrors {decorate, expectedTypes, argumentPosition, callExpr, callVariadic}, count {}, appendedRes {appendedExprs};
 
 inherited attribute expectedTypes :: [Type];
 {-- Initially 1. -}
@@ -113,9 +113,9 @@ Exprs ::= e1::Exprs e2::Exprs
   return e1.appendedRes;
 }
 
-nonterminal ExprOrTypeName with pp, host<ExprOrTypeName>, lifted<ExprOrTypeName>, errors, globalDecls, defs, env, labelEnv, typerep, returnType, freeVariables, isLValue;
+nonterminal ExprOrTypeName with pp, host<ExprOrTypeName>, lifted<ExprOrTypeName>, errors, globalDecls, defs, env, typerep, returnType, freeVariables, isLValue;
 
-flowtype ExprOrTypeName = decorate {env, labelEnv, returnType};
+flowtype ExprOrTypeName = decorate {env, returnType};
 
 abstract production exprExpr
 top::ExprOrTypeName ::= e::Expr

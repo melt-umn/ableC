@@ -18,7 +18,6 @@ top::Root ::= d::GlobalDecls
   
 --  d.env = addEnv(builtinfunctions:initialEnv;
   d.env = addEnv(builtinfunctions:getInitialEnvDefs(), top.env);
-  d.labelEnv = [];
   d.returnType = nothing();
 }
 

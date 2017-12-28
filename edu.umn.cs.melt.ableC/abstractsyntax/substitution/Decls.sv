@@ -111,7 +111,6 @@ top::Parameters ::= h::ParameterDecl  t::Parameters
   -- We don't really care about these, since all we want to know is whether e is a parameterDecl.
   local h1::ParameterDecl = h;
   h1.env = emptyEnv();
-  h1.labelEnv = [];
   h1.returnType = nothing();
   
   local substitutions::Substitutions = top.substitutions;

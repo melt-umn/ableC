@@ -53,8 +53,8 @@ autocopy attribute givenRefId :: Maybe<String>;
 synthesized attribute bty :: BaseTypeExpr;
 synthesized attribute mty :: TypeModifierExpr;
 
-nonterminal TypeName with env, labelEnv, typerep, bty, mty, pp, host<TypeName>, lifted<TypeName>, errors, globalDecls, defs, returnType, freeVariables;
-flowtype TypeName = decorate {env, labelEnv, returnType}, bty {}, mty {};
+nonterminal TypeName with env, typerep, bty, mty, pp, host<TypeName>, lifted<TypeName>, errors, globalDecls, defs, returnType, freeVariables;
+flowtype TypeName = decorate {env, returnType}, bty {}, mty {};
 
 abstract production typeName
 top::TypeName ::= bty::BaseTypeExpr  mty::TypeModifierExpr
@@ -77,8 +77,8 @@ top::TypeName ::= bty::BaseTypeExpr  mty::TypeModifierExpr
 {--
  - Corresponds to types obtainable from a TypeSpecifiers.
  -}
-nonterminal BaseTypeExpr with env, labelEnv, typerep, pp, host<BaseTypeExpr>, lifted<BaseTypeExpr>, errors, globalDecls, typeModifiers, defs, givenRefId, returnType, freeVariables;
-flowtype BaseTypeExpr = decorate {env, labelEnv, givenRefId, returnType}, typeModifiers {decorate};
+nonterminal BaseTypeExpr with env, typerep, pp, host<BaseTypeExpr>, lifted<BaseTypeExpr>, errors, globalDecls, typeModifiers, defs, givenRefId, returnType, freeVariables;
+flowtype BaseTypeExpr = decorate {env, givenRefId, returnType}, typeModifiers {decorate};
 
 abstract production errorTypeExpr
 top::BaseTypeExpr ::= msg::[Message]
@@ -382,8 +382,8 @@ top::BaseTypeExpr ::= q::Qualifiers  e::ExprOrTypeName
  - Typically, these are just anchored somewhere to obtain the env,
  - and then turn into an environment-independent Type.
  -}
-nonterminal TypeModifierExpr with env, labelEnv, typerep, lpp, rpp, host<TypeModifierExpr>, lifted<TypeModifierExpr>, isFunctionTypeExpr, baseType, typeModifiersIn, errors, globalDecls, returnType, freeVariables;
-flowtype TypeModifierExpr = decorate {env, labelEnv, baseType, typeModifiersIn, returnType}, isFunctionTypeExpr {};
+nonterminal TypeModifierExpr with env, typerep, lpp, rpp, host<TypeModifierExpr>, lifted<TypeModifierExpr>, isFunctionTypeExpr, baseType, typeModifiersIn, errors, globalDecls, returnType, freeVariables;
+flowtype TypeModifierExpr = decorate {env, baseType, typeModifiersIn, returnType}, isFunctionTypeExpr {};
 
 synthesized attribute isFunctionTypeExpr::Boolean;
 
@@ -408,7 +408,6 @@ top::TypeModifierExpr ::=
   
   local mty::TypeModifierExpr = head(top.typeModifiersIn);
   mty.env = top.env;
-  mty.labelEnv = top.labelEnv;
   mty.baseType = top.typerep;
   mty.typeModifiersIn = tail(top.typeModifiersIn);
   mty.returnType = top.returnType;
@@ -526,8 +525,8 @@ top::TypeModifierExpr ::= wrapped::TypeModifierExpr
   top.freeVariables = wrapped.freeVariables;
 }
 
-nonterminal TypeNames with pps, host<TypeNames>, lifted<TypeNames>, env, labelEnv, typereps, count, errors, globalDecls, defs, returnType, freeVariables;
-flowtype TypeNames = decorate {env, labelEnv, returnType}, count {};
+nonterminal TypeNames with pps, host<TypeNames>, lifted<TypeNames>, env, typereps, count, errors, globalDecls, defs, returnType, freeVariables;
+flowtype TypeNames = decorate {env, returnType}, count {};
 
 abstract production consTypeName
 top::TypeNames ::= h::TypeName t::TypeNames

@@ -54,7 +54,6 @@ top::Attrib ::= n::AttribName  e::Exprs
   -- We don't really care about these, since all we want to know is whether e is a stringLiteral.
   local e1 :: Exprs = e;
   e1.env = emptyEnv();
-  e1.labelEnv = [];
   e1.returnType = nothing();
   
   local substitutions::Substitutions = top.substitutions;

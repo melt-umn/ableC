@@ -256,9 +256,7 @@ abstract production variableArrayType
 top::ArrayType ::= size::Decorated Expr
 {
   top.host =
-    variableArrayType(
-      decorate size.host
-      with {env = size.env; labelEnv = size.labelEnv; returnType = size.returnType;});
+    variableArrayType(decorate size.host with {env = size.env; returnType = size.returnType;});
   top.pp = size.pp;
 }
 
@@ -528,7 +526,6 @@ top::Type ::= attrs::Attributes  bt::Type
   
   -- Whatever...
   attrs.env = emptyEnv();
-  attrs.labelEnv = [];
   attrs.returnType = nothing();
 }
 

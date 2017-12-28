@@ -142,7 +142,6 @@ top::Attrib ::= n::AttribName  e::Exprs
   -- Needed since we are matching on Expr
   -- Not a big deal since these are pretty much just constants
   e.env = emptyEnv();
-  e.labelEnv = [];
   e.returnType = nothing();
 }
 -- e.g. __attribute__((something(foo, "well whatever")))

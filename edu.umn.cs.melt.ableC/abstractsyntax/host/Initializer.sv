@@ -1,6 +1,6 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
-nonterminal MaybeInitializer with pp, host<MaybeInitializer>, lifted<MaybeInitializer>, errors, globalDecls, defs, env, labelEnv, freeVariables, returnType;
-flowtype MaybeInitializer = decorate {env, labelEnv, returnType};
+nonterminal MaybeInitializer with pp, host<MaybeInitializer>, lifted<MaybeInitializer>, errors, globalDecls, defs, env, freeVariables, returnType;
+flowtype MaybeInitializer = decorate {env, returnType};
 
 abstract production nothingInitializer
 top::MaybeInitializer ::=
@@ -23,8 +23,8 @@ top::MaybeInitializer ::= i::Initializer
   top.freeVariables = i.freeVariables;
 }
 
-nonterminal Initializer with pp, host<Initializer>, lifted<Initializer>, errors, globalDecls, defs, env, labelEnv, freeVariables, returnType;
-flowtype Initializer = decorate {env, labelEnv, returnType};
+nonterminal Initializer with pp, host<Initializer>, lifted<Initializer>, errors, globalDecls, defs, env, freeVariables, returnType;
+flowtype Initializer = decorate {env, returnType};
 
 abstract production exprInitializer
 top::Initializer ::= e::Expr
@@ -48,8 +48,8 @@ top::Initializer ::= l::InitList
   top.freeVariables = l.freeVariables;
 }
 
-nonterminal InitList with pps, host<InitList>, lifted<InitList>, errors, globalDecls, defs, env, labelEnv, freeVariables, returnType;
-flowtype InitList = decorate {env, labelEnv, returnType};
+nonterminal InitList with pps, host<InitList>, lifted<InitList>, errors, globalDecls, defs, env, freeVariables, returnType;
+flowtype InitList = decorate {env, returnType};
 
 abstract production consInit
 top::InitList ::= h::Init  t::InitList
@@ -75,8 +75,8 @@ top::InitList ::=
   top.freeVariables = [];
 }
 
-nonterminal Init with pp, host<Init>, lifted<Init>, errors, globalDecls, defs, env, labelEnv, freeVariables, returnType;
-flowtype Init = decorate {env, labelEnv, returnType};
+nonterminal Init with pp, host<Init>, lifted<Init>, errors, globalDecls, defs, env, freeVariables, returnType;
+flowtype Init = decorate {env, returnType};
 
 abstract production init
 top::Init ::= i::Initializer
@@ -106,8 +106,8 @@ top::Init ::= d::Designator  i::Initializer
  - Tree access pattern for designators.
  - e.g.  "[1].d[0] = e" gives "array(0, field(d, array(1, initial)))"
  -}
-nonterminal Designator with pp, host<Designator>, lifted<Designator>, errors, globalDecls, defs, env, labelEnv, freeVariables, returnType;
-flowtype Designator = decorate {env, labelEnv, returnType};
+nonterminal Designator with pp, host<Designator>, lifted<Designator>, errors, globalDecls, defs, env, freeVariables, returnType;
+flowtype Designator = decorate {env, returnType};
 
 abstract production initialDesignator
 top::Designator ::=

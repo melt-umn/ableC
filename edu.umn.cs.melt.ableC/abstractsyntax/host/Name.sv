@@ -21,8 +21,8 @@ synthesized attribute valueItem :: Decorated ValueItem;
 synthesized attribute tagItem :: Decorated TagItem;
 synthesized attribute labelItem :: Decorated LabelItem;
 
-nonterminal Name with location, name, pp, host<Name>, lifted<Name>, env, labelEnv, valueLocalLookup, labelRedeclarationCheck, valueLookupCheck, tagLookupCheck, labelLookupCheck, valueItem, tagItem, labelItem, tagLocalLookup, tagHasForwardDcl, tagRefId, valueRedeclarationCheck, valueRedeclarationCheckNoCompatible, valueMergeRedeclExtnQualifiers;
-flowtype Name = decorate {env, labelEnv}, name {}, valueLocalLookup {env}, labelRedeclarationCheck {labelEnv}, valueLookupCheck {env}, tagLookupCheck {env}, labelLookupCheck {labelEnv}, valueItem {env}, tagItem {env}, labelItem {labelEnv}, tagLocalLookup {env}, tagHasForwardDcl {env}, tagRefId {env}, valueRedeclarationCheck {decorate}, valueRedeclarationCheckNoCompatible {decorate}, valueMergeRedeclExtnQualifiers {decorate};
+nonterminal Name with location, name, pp, host<Name>, lifted<Name>, env, valueLocalLookup, labelRedeclarationCheck, valueLookupCheck, tagLookupCheck, labelLookupCheck, valueItem, tagItem, labelItem, tagLocalLookup, tagHasForwardDcl, tagRefId, valueRedeclarationCheck, valueRedeclarationCheckNoCompatible, valueMergeRedeclExtnQualifiers;
+flowtype Name = decorate {env}, name {}, valueLocalLookup {env}, labelRedeclarationCheck {env}, valueLookupCheck {env}, tagLookupCheck {env}, labelLookupCheck {env}, valueItem {env}, tagItem {env}, labelItem {env}, tagLocalLookup {env}, tagHasForwardDcl {env}, tagRefId {env}, valueRedeclarationCheck {decorate}, valueRedeclarationCheckNoCompatible {decorate}, valueMergeRedeclExtnQualifiers {decorate};
 
 abstract production name
 top::Name ::= n::String
@@ -46,7 +46,7 @@ top::Name ::= n::String
   top.tagHasForwardDcl = refIdIfOld.isJust;
   top.tagRefId = fromMaybe(toString(genInt()), refIdIfOld);
   
-  local labdcls :: [LabelItem] = lookupScope(n, top.labelEnv);
+  local labdcls :: [LabelItem] = lookupLabel(n, top.env);
   top.labelRedeclarationCheck =
     case labdcls of
     | [] -> [err(top.location, "INTERNAL compiler error: expected to find label in function scope, was missing.")] -- TODO?
@@ -56,7 +56,7 @@ top::Name ::= n::String
   
   local values :: [ValueItem] = lookupValue(n, top.env);
   local tags :: [TagItem] = lookupTag(n, top.env);
-  local labels :: [LabelItem] = lookupScope(n, top.labelEnv);
+  local labels :: [LabelItem] = lookupLabel(n, top.env);
   top.valueLookupCheck =
     case values of
     | [] -> [err(top.location, "Undeclared value " ++ n)]
@@ -85,8 +85,8 @@ top::Name ::= n::String
 synthesized attribute maybename :: Maybe<Name>;
 synthesized attribute hasName :: Boolean;
 
-nonterminal MaybeName with maybename, pp, host<MaybeName>, lifted<MaybeName>, env, labelEnv, valueLocalLookup, tagLocalLookup, tagHasForwardDcl, tagRefId, hasName, valueRedeclarationCheckNoCompatible, valueRedeclarationCheck, valueMergeRedeclExtnQualifiers;
-flowtype MaybeName = decorate {env, labelEnv}, maybename {}, hasName {}, valueLocalLookup {env}, tagLocalLookup {env}, tagHasForwardDcl {env}, tagRefId {env}, valueRedeclarationCheckNoCompatible {decorate}, valueRedeclarationCheck {decorate}, valueMergeRedeclExtnQualifiers {decorate};
+nonterminal MaybeName with maybename, pp, host<MaybeName>, lifted<MaybeName>, env, valueLocalLookup, tagLocalLookup, tagHasForwardDcl, tagRefId, hasName, valueRedeclarationCheckNoCompatible, valueRedeclarationCheck, valueMergeRedeclExtnQualifiers;
+flowtype MaybeName = decorate {env}, maybename {}, hasName {}, valueLocalLookup {env}, tagLocalLookup {env}, tagHasForwardDcl {env}, tagRefId {env}, valueRedeclarationCheckNoCompatible {decorate}, valueRedeclarationCheck {decorate}, valueMergeRedeclExtnQualifiers {decorate};
 
 abstract production justName
 top::MaybeName ::= n::Name

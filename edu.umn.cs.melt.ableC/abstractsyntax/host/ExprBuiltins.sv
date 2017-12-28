@@ -38,8 +38,8 @@ top::Expr ::= ty::TypeName  e::MemberDesignator
   top.isLValue = false;
 }
 
-nonterminal MemberDesignator with pp, host<MemberDesignator>, lifted<MemberDesignator>, errors, globalDecls, defs, env, labelEnv, returnType, freeVariables;
-flowtype MemberDesignator = decorate {env, labelEnv, returnType};
+nonterminal MemberDesignator with pp, host<MemberDesignator>, lifted<MemberDesignator>, errors, globalDecls, defs, env, returnType, freeVariables;
+flowtype MemberDesignator = decorate {env, returnType};
 
 abstract production initialMemberDesignator
 top::MemberDesignator ::= id::Name

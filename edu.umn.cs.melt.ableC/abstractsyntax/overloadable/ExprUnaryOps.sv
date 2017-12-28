@@ -10,7 +10,7 @@ top::host:Expr ::= e::host:Expr
   local fwrd::host:Expr =
     getUnaryOverload(
        e, top.location,
-       top.env, top.labelEnv, top.host:returnType,
+       top.env, top.host:returnType,
        getPreIncOverloadProd,
        inj:preIncExpr(_, location=_));
 
@@ -26,7 +26,7 @@ top::host:Expr ::= e::host:Expr
   local fwrd::host:Expr =
     getUnaryOverload(
        e, top.location,
-       top.env, top.labelEnv, top.host:returnType,
+       top.env, top.host:returnType,
        getPreDecOverloadProd,
        inj:preDecExpr(_, location=_));
 
@@ -42,7 +42,7 @@ top::host:Expr ::= e::host:Expr
   local fwrd::host:Expr =
     getUnaryOverload(
        e, top.location,
-       top.env, top.labelEnv, top.host:returnType,
+       top.env, top.host:returnType,
        getPostIncOverloadProd,
        inj:postIncExpr(_, location=_));
 
@@ -58,7 +58,7 @@ top::host:Expr ::= e::host:Expr
   local fwrd::host:Expr =
     getUnaryOverload(
        e, top.location,
-       top.env, top.labelEnv, top.host:returnType,
+       top.env, top.host:returnType,
        getPostDecOverloadProd,
        inj:postDecExpr(_, location=_));
 
@@ -74,7 +74,7 @@ top::host:Expr ::= e::host:Expr
   local fwrd::host:Expr =
     getUnaryOverload(
        e, top.location,
-       top.env, top.labelEnv, top.host:returnType,
+       top.env, top.host:returnType,
        getAddressOfOverloadProd,
        inj:addressOfExpr(_, location=_));
 
@@ -90,7 +90,7 @@ top::host:Expr ::= e::host:Expr
   local fwrd::host:Expr =
     getUnaryOverload(
        e, top.location,
-       top.env, top.labelEnv, top.host:returnType,
+       top.env, top.host:returnType,
        getDereferenceOverloadProd,
        inj:dereferenceExpr(_, location=_));
 
@@ -106,7 +106,7 @@ top::host:Expr ::= e::host:Expr
   local fwrd::host:Expr =
     getUnaryOverload(
        e, top.location,
-       top.env, top.labelEnv, top.host:returnType,
+       top.env, top.host:returnType,
        getPositiveOverloadProd,
        inj:positiveExpr(_, location=_));
 
@@ -122,7 +122,7 @@ top::host:Expr ::= e::host:Expr
   local fwrd::host:Expr =
     getUnaryOverload(
        e, top.location,
-       top.env, top.labelEnv, top.host:returnType,
+       top.env, top.host:returnType,
        getNegativeOverloadProd,
        inj:negativeExpr(_, location=_));
 
@@ -138,7 +138,7 @@ top::host:Expr ::= e::host:Expr
   local fwrd::host:Expr =
     getUnaryOverload(
        e, top.location,
-       top.env, top.labelEnv, top.host:returnType,
+       top.env, top.host:returnType,
        getBitNegateOverloadProd,
        inj:bitNegateExpr(_, location=_));
 
@@ -154,7 +154,7 @@ top::host:Expr ::= e::host:Expr
   local fwrd::host:Expr =
     getUnaryOverload(
        e, top.location,
-       top.env, top.labelEnv, top.host:returnType,
+       top.env, top.host:returnType,
        getNotOverloadProd,
        inj:notExpr(_, location=_));
 

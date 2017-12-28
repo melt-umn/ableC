@@ -141,8 +141,8 @@ top::Qualifier ::=
  - e.g. Function specifiers (inline, _Noreturn)
  -      Alignment specifiers (_Alignas)
  -}
-nonterminal SpecialSpecifier with pp, host<SpecialSpecifier>, lifted<SpecialSpecifier>, env, labelEnv, returnType, errors, globalDecls, defs;
-flowtype SpecialSpecifier = decorate {env, labelEnv, returnType};
+nonterminal SpecialSpecifier with pp, host<SpecialSpecifier>, lifted<SpecialSpecifier>, env, returnType, errors, globalDecls, defs;
+flowtype SpecialSpecifier = decorate {env, returnType};
 
 abstract production inlineQualifier
 top::SpecialSpecifier ::=
@@ -176,8 +176,8 @@ top::SpecialSpecifier ::= e::Expr
   top.defs := e.defs;
 }
 
-nonterminal SpecialSpecifiers with pps, host<SpecialSpecifiers>, lifted<SpecialSpecifiers>, env, labelEnv, returnType, errors, globalDecls, defs;
-flowtype SpecialSpecifiers = decorate {env, labelEnv, returnType};
+nonterminal SpecialSpecifiers with pps, host<SpecialSpecifiers>, lifted<SpecialSpecifiers>, env, returnType, errors, globalDecls, defs;
+flowtype SpecialSpecifiers = decorate {env, returnType};
 
 abstract production consSpecialSpecifier
 top::SpecialSpecifiers ::= h::SpecialSpecifier t::SpecialSpecifiers

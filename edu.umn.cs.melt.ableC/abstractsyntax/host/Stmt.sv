@@ -1,7 +1,7 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 
-nonterminal Stmt with pp, host<Stmt>, lifted<Stmt>, errors, globalDecls, defs, env, labelDefs, labelEnv, returnType, freeVariables;
-flowtype Stmt = decorate {env, labelEnv, returnType}, labelDefs {};
+nonterminal Stmt with pp, host<Stmt>, lifted<Stmt>, errors, globalDecls, defs, env, functionDefs, returnType, freeVariables;
+flowtype Stmt = decorate {env, returnType};
 
 autocopy attribute returnType :: Maybe<Type>;
 
@@ -14,7 +14,7 @@ top::Stmt ::=
   top.globalDecls := [];
   top.defs := [];
   top.freeVariables = [];
-  top.labelDefs := [];
+  top.functionDefs := [];
 }
 
 abstract production seqStmt
@@ -28,7 +28,7 @@ top::Stmt ::= h::Stmt  t::Stmt
   top.freeVariables =
     h.freeVariables ++
     removeDefsFromNames(h.defs, t.freeVariables);
-  top.labelDefs := h.labelDefs ++ t.labelDefs;
+  top.functionDefs := h.functionDefs ++ t.functionDefs;
   
   t.env = addEnv(h.defs, top.env);
 }
@@ -42,7 +42,7 @@ top::Stmt ::= s::Stmt
   top.globalDecls := s.globalDecls;
   top.defs := globalDeclsDefs(s.globalDecls); -- compound prevents defs from bubbling up
   top.freeVariables = s.freeVariables;
-  top.labelDefs := s.labelDefs;
+  top.functionDefs := s.functionDefs;
 
   s.env = openEnvScope(top.env);
 }
@@ -58,7 +58,7 @@ top::Stmt ::= msg::[Message]
   top.globalDecls := [];
   top.defs := [];
   top.freeVariables = [];
-  top.labelDefs := [];
+  top.functionDefs := [];
 }
 
 abstract production declStmt
@@ -70,7 +70,7 @@ top::Stmt ::= d::Decl
   top.globalDecls := d.globalDecls;
   top.defs := d.defs;
   top.freeVariables = d.freeVariables;
-  top.labelDefs := [];
+  top.functionDefs := [];
   d.isTopLevel = false;
 }
 
@@ -103,7 +103,7 @@ top::Stmt ::= d::Expr
   top.globalDecls := d.globalDecls;
   top.defs := d.defs;
   top.freeVariables = d.freeVariables;
-  top.labelDefs := [];
+  top.functionDefs := [];
 }
 
 abstract production ifStmt
@@ -116,7 +116,7 @@ top::Stmt ::= c::Expr  t::Stmt  e::Stmt
     text(" else "), braces(nestlines(2, e.pp))]);
   top.errors := c.errors ++ t.errors ++ e.errors;
   top.globalDecls := c.globalDecls ++ t.globalDecls ++ e.globalDecls;
-  top.labelDefs := t.labelDefs ++ e.labelDefs;
+  top.functionDefs := t.functionDefs ++ e.functionDefs;
   
   -- A selection statement is a block whose scope is a strict subset of the scope of its
   -- enclosing block. Each associated substatement is also a block whose scope is a strict
@@ -153,7 +153,7 @@ top::Stmt ::= e::Expr  b::Stmt
                     braces(nestlines(2, b.pp)) ]);
   top.errors := e.errors ++ b.errors;
   top.globalDecls := e.globalDecls ++ b.globalDecls;
-  top.labelDefs := b.labelDefs;
+  top.functionDefs := b.functionDefs;
   
   -- An iteration statement is a block whose scope is a strict subset of the scope of its
   -- enclosing block. The loop body is also a block whose scope is a strict subset of the scope
@@ -180,7 +180,7 @@ top::Stmt ::= b::Stmt  e::Expr
                     text("while"), space(), parens(e.pp), semi()]);
   top.errors := b.errors ++ e.errors;
   top.globalDecls := b.globalDecls ++ e.globalDecls;
-  top.labelDefs := b.labelDefs;
+  top.functionDefs := b.functionDefs;
   
   -- An iteration statement is a block whose scope is a strict subset of the scope of its
   -- enclosing block. The loop body is also a block whose scope is a strict subset of the scope
@@ -207,7 +207,7 @@ top::Stmt ::= i::MaybeExpr  c::MaybeExpr  s::MaybeExpr  b::Stmt
       braces(nestlines(2, b.pp)) ]);
   top.errors := i.errors ++ c.errors ++ s.errors ++ b.errors;
   top.globalDecls := i.globalDecls ++ c.globalDecls ++ s.globalDecls ++ b.globalDecls;
-  top.labelDefs := b.labelDefs;
+  top.functionDefs := b.functionDefs;
   
   -- An iteration statement is a block whose scope is a strict subset of the scope of its
   -- enclosing block. The loop body is also a block whose scope is a strict subset of the scope
@@ -242,7 +242,7 @@ top::Stmt ::= i::Decl  c::MaybeExpr  s::MaybeExpr  b::Stmt
                     line(), braces(nestlines(2, b.pp)) ]);
   top.errors := i.errors ++ c.errors ++ s.errors ++ b.errors;
   top.globalDecls := i.globalDecls ++ c.globalDecls ++ s.globalDecls ++ b.globalDecls;
-  top.labelDefs := b.labelDefs;
+  top.functionDefs := b.functionDefs;
   
   -- An iteration statement is a block whose scope is a strict subset of the scope of its
   -- enclosing block. The loop body is also a block whose scope is a strict subset of the scope
@@ -288,7 +288,7 @@ top::Stmt ::= e::MaybeExpr {- loc::Location -} -- TODO: Add location to signatur
   top.globalDecls := e.globalDecls;
   top.defs := e.defs;
   top.freeVariables = e.freeVariables;
-  top.labelDefs := [];
+  top.functionDefs := [];
   -- TODO: this needs to follow the same rules as assignment. We should try to factor that out.
 }
 
@@ -300,7 +300,7 @@ top::Stmt ::= e::Expr  b::Stmt
                     braces(nestlines(2, b.pp)) ]);
   top.errors := e.errors ++ b.errors;
   top.globalDecls := e.globalDecls ++ b.globalDecls;
-  top.labelDefs := b.labelDefs;
+  top.functionDefs := b.functionDefs;
   
   -- A selection statement is a block whose scope is a strict subset of the scope of its
   -- enclosing block. Each associated substatement is also a block whose scope is a strict
@@ -327,7 +327,7 @@ top::Stmt ::= l::Name
   top.globalDecls := [];
   top.defs := [];
   top.freeVariables = [];
-  top.labelDefs := [];
+  top.functionDefs := [];
   
   top.errors <- l.labelLookupCheck;
 }
@@ -341,7 +341,7 @@ top::Stmt ::=
   top.globalDecls := [];
   top.defs := [];
   top.freeVariables = [];
-  top.labelDefs := [];
+  top.functionDefs := [];
 }
 
 abstract production breakStmt
@@ -353,7 +353,7 @@ top::Stmt ::=
   top.globalDecls := [];
   top.defs := [];
   top.freeVariables = [];
-  top.labelDefs := [];
+  top.functionDefs := [];
 }
 
 abstract production labelStmt
@@ -365,10 +365,10 @@ top::Stmt ::= l::Name  s::Stmt
   top.globalDecls := s.globalDecls;
   top.defs := s.defs;
   top.freeVariables = s.freeVariables;
-  top.labelDefs := s.labelDefs;
+  top.functionDefs := s.functionDefs;
   
   top.errors <- l.labelRedeclarationCheck;
-  top.labelDefs <- [pair(l.name, labelItem(l.location))];
+  top.functionDefs <- [labelDef(l.name, labelItem(l.location))];
 }
 
 abstract production caseLabelStmt
@@ -382,7 +382,7 @@ top::Stmt ::= v::Expr  s::Stmt
   top.freeVariables =
     v.freeVariables ++
     removeDefsFromNames(v.defs, s.freeVariables);
-  top.labelDefs := s.labelDefs; -- ??
+  top.functionDefs := s.functionDefs; -- ??
   
   s.env = addEnv(v.defs, v.env);
 }
@@ -396,7 +396,7 @@ top::Stmt ::= s::Stmt
   top.globalDecls := s.globalDecls;
   top.defs := s.defs;
   top.freeVariables = s.freeVariables;
-  top.labelDefs := s.labelDefs; -- ??
+  top.functionDefs := s.functionDefs; -- ??
 }
 
 -- GCC extension:
@@ -409,7 +409,7 @@ top::Stmt ::= d::FunctionDecl
   top.globalDecls := d.globalDecls;
   top.defs := d.defs;
   top.freeVariables = d.freeVariables;
-  top.labelDefs := [];
+  top.functionDefs := [];
 }
 
 -- GCC extension:
@@ -422,7 +422,7 @@ top::Stmt ::= l::Expr  u::Expr  s::Stmt
   top.globalDecls := l.globalDecls ++ u.globalDecls ++ s.globalDecls;
   top.defs := l.defs ++ u.defs ++ s.defs;
   top.freeVariables = l.freeVariables ++ u.freeVariables ++ s.freeVariables;
-  top.labelDefs := s.labelDefs;
+  top.functionDefs := s.functionDefs;
 }
 
 abstract production asmStmt
@@ -434,7 +434,7 @@ top::Stmt ::= asm::AsmStatement
   top.globalDecls := [];
   top.defs := [];
   top.freeVariables = asm.freeVariables;
-  top.labelDefs := [];
+  top.functionDefs := [];
 }
 
 {-
@@ -444,7 +444,7 @@ top::Stmt ::= c::Document
   top.pp = ppConcat([ text("/* "), c, text(" */") ]);
   top.errors := [];
   top.defs := [];
-  top.labelDefs := [];
+  top.functionDefs := [];
 }-}
 
 

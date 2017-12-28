@@ -68,7 +68,7 @@ Parameters ::= l::[ParameterDecl]
   -- A special case.  "type name(void)"  means no parameters.
   | [d] ->
   -- TODO: Possible bug with flow analysis, doesn't complain if this decorate is removed
-    case decorate d with {env = emptyEnv(); labelEnv = []; returnType = nothing();} of
+    case decorate d with {env = emptyEnv(); returnType = nothing();} of
       parameterDecl([], builtinTypeExpr(nilQualifier(), voidType()), baseTypeExpr(), nothingName(), nilAttribute()) -> nilParameters()
     | _ -> foldr(consParameters, nilParameters(), l)
     end
