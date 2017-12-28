@@ -421,7 +421,7 @@ top::Expr ::= body::Stmt result::Expr
   top.freeVariables = body.freeVariables ++ removeDefsFromNames(body.defs, result.freeVariables);
   top.typerep = result.typerep;
   
-  body.env = openEnvScope(top.env);
+  body.env = openScopeEnv(top.env);
   result.env = addEnv(body.defs, body.env);
 }
 

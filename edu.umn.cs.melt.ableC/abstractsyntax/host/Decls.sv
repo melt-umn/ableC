@@ -398,7 +398,7 @@ top::FunctionDecl ::= storage::[StorageClass]  fnquals::SpecialSpecifiers  bty::
     | _ -> nothing() -- Don't error here, this is caught in type checking
     end;
 
-  mty.env = addEnv([thisFuncDef], openEnvScope(addEnv(funcDefs, top.env)));
+  mty.env = addEnv([thisFuncDef], openScopeEnv(addEnv(funcDefs, top.env)));
   decls.env = addEnv(parameters.defs, mty.env);
   body.env = addEnv(decls.defs ++ body.functionDefs, decls.env);
   
@@ -564,7 +564,7 @@ top::StructDecl ::= attrs::Attributes  name::MaybeName  dcls::StructItemList
   top.defs := preDefs ++ dcls.defs ++ postDefs;
   top.freeVariables = dcls.freeVariables;
   
-  dcls.env = openEnvScope(addEnv(preDefs, top.env));
+  dcls.env = openScopeEnv(addEnv(preDefs, top.env));
   
   
   -- Redeclaration error if there IS a forward declaration AND an existing refid declaration.
@@ -608,7 +608,7 @@ top::UnionDecl ::= attrs::Attributes  name::MaybeName  dcls::StructItemList
   top.defs := preDefs ++ dcls.defs ++ postDefs;
   top.freeVariables = dcls.freeVariables;
   
-  dcls.env = openEnvScope(addEnv(preDefs, top.env));
+  dcls.env = openScopeEnv(addEnv(preDefs, top.env));
   
   
   -- Redeclaration error if there IS a forward declaration AND an existing refid declaration.

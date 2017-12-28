@@ -44,7 +44,7 @@ top::Stmt ::= s::Stmt
   top.freeVariables = s.freeVariables;
   top.functionDefs := s.functionDefs;
 
-  s.env = openEnvScope(top.env);
+  s.env = openScopeEnv(top.env);
 }
 
 -- ditto warnExternalDecl, if warning or empty, then this pretends it doesn't exist.
@@ -127,7 +127,7 @@ top::Stmt ::= c::Expr  t::Stmt  e::Stmt
     removeDefsFromNames(c.defs, t.freeVariables) ++
     removeDefsFromNames(c.defs, e.freeVariables);
   
-  c.env = openEnvScope(top.env);
+  c.env = openScopeEnv(top.env);
   t.env = addEnv(c.defs, c.env);
   e.env = addEnv(globalDeclsDefs(t.globalDecls), t.env);
   
@@ -163,7 +163,7 @@ top::Stmt ::= e::Expr  b::Stmt
     e.freeVariables ++
     removeDefsFromNames(e.defs, b.freeVariables);
   
-  e.env = openEnvScope(top.env);
+  e.env = openScopeEnv(top.env);
   b.env = addEnv(e.defs, e.env);
 
   top.errors <-
@@ -190,7 +190,7 @@ top::Stmt ::= b::Stmt  e::Expr
     b.freeVariables ++
     removeDefsFromNames(b.defs, e.freeVariables);
   
-  b.env = openEnvScope(top.env);
+  b.env = openScopeEnv(top.env);
   e.env = addEnv(globalDeclsDefs(b.globalDecls), b.env);
 
   top.errors <-
@@ -223,7 +223,7 @@ top::Stmt ::= i::MaybeExpr  c::MaybeExpr  s::MaybeExpr  b::Stmt
     removeDefsFromNames(i.defs ++ c.defs, s.freeVariables) ++
     removeDefsFromNames(i.defs ++ c.defs ++ s.defs, b.freeVariables);
   
-  i.env = openEnvScope(top.env);
+  i.env = openScopeEnv(top.env);
   c.env = addEnv(i.defs, i.env);
   s.env = addEnv(c.defs, c.env);
   b.env = addEnv(s.defs, s.env);
@@ -258,7 +258,7 @@ top::Stmt ::= i::Decl  c::MaybeExpr  s::MaybeExpr  b::Stmt
     removeDefsFromNames(i.defs ++ c.defs, s.freeVariables) ++
     removeDefsFromNames(i.defs ++ c.defs ++ s.defs, b.freeVariables);
   
-  i.env = openEnvScope(top.env);
+  i.env = openScopeEnv(top.env);
   c.env = addEnv(i.defs, i.env);
   s.env = addEnv(c.defs, c.env);
   b.env = addEnv(s.defs, s.env);
@@ -310,7 +310,7 @@ top::Stmt ::= e::Expr  b::Stmt
     e.freeVariables ++
     removeDefsFromNames(e.defs, b.freeVariables);
   
-  e.env = openEnvScope(top.env);
+  e.env = openScopeEnv(top.env);
   b.env = addEnv(e.defs, e.env);
 
   top.errors <-

@@ -63,7 +63,7 @@ Decorated Env ::=
 {
   return decorate emptyEnv_i() with {};
 }
-function openEnvScope
+function openScopeEnv
 Decorated Env ::= e::Decorated Env
 {
   return decorate openScopeEnv_i(e) with {};
