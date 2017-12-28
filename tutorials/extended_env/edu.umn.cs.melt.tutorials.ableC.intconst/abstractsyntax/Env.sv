@@ -35,7 +35,7 @@ top::Env ::= d::Defs  e::Decorated Env
 {
   top.intConsts = addGlobalScope(gd.intConstContribs, addScope(d.intConstContribs, e.intConsts));
 }
-aspect production openEnvScope_i
+aspect production openScopeEnv_i
 top::Env ::= e::Decorated Env
 {
   top.intConsts = tm:empty(compareString) :: e.intConsts;
