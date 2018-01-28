@@ -109,21 +109,22 @@ top::RuntimeMods ::=
 function applyMods
 Expr ::= l::[RuntimeMod] e::Decorated Expr
 {
+  -- copy to tmp to prevent being evaluated more than once, but only if type is known (it is not anon)
+  local createTmp :: Boolean = true;
+
   local tmpName :: String = "_tmp" ++ toString(genInt());
   local tmp :: Expr = declRefExpr(name(tmpName, location=e.location), location=e.location);
+  local tmpDecl :: Stmt =
+    if createTmp
+    then mkDecl(tmpName, e.typerep, new(e), e.location)
+    else nullStmt();
 
   local mods :: RuntimeMods = foldr(consRuntimeMod, nilRuntimeMod(), l);
-  mods.exprToModify = tmp;
+  mods.exprToModify = if createTmp then tmp else new(e);
 
-  -- copy to tmp to prevent being evaluated more than once
   local modExpr :: Expr =
     if null(l) then new(e)
-    else
-      stmtExpr(
-        mkDecl(tmpName, e.typerep, new(e), e.location),
-        mods.modExpr,
-        location=e.location
-      );
+    else stmtExpr(tmpDecl, mods.modExpr, location=e.location);
 
   return modExpr;
 }

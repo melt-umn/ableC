@@ -37,10 +37,20 @@ top::host:Expr ::= lhs::host:Expr  deref::Boolean  rhs::host:Name
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
   injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
+  -- to ensure modified lhs is an lvalue in case this memberExpr is enclosed in
+  --  an eqExpr, replace x.m with (&x)->m
+  local preModLhs :: host:Expr =
+    if null(runtimeMods) then lhs
+    else mkAddressOf(lhs, lhs.location);
+  preModLhs.env = lhs.env;
+  preModLhs.host:returnType = lhs.host:returnType;
+
+  local preModDeref :: Boolean = deref || !null(runtimeMods);
+
   forwards to
     host:wrapWarnExpr(lerrors,
       host:wrapQualifiedExpr(injectedQualifiers,
-        host:memberExpr(applyMods(runtimeMods, lhs), deref, rhs, location=top.location),
+        host:memberExpr(applyMods(runtimeMods, preModLhs), preModDeref, rhs, location=top.location),
         top.location),
       top.location);
 }

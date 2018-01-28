@@ -317,14 +317,11 @@ concrete productions top::DirectDeclarator_c
       top.ast = dd.ast;
     }
 
--- TODO: any better proposal for concrete syntax for qualifiers on functional types?
-terminal FunctionQualifiers_t '__function_qualifiers' lexer classes {Ckeyword};
-
 closed nonterminal OptTypeQualifierList_c with location, typeQualifiers;
 concrete productions top::OptTypeQualifierList_c
 |
     { top.typeQualifiers = ast:nilQualifier(); }
-| '__function_qualifiers' '(' q::TypeQualifierList_c ')'
+| '<' q::TypeQualifierList_c '>'
     { top.typeQualifiers = q.typeQualifiers; }
 
 
