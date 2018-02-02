@@ -152,3 +152,8 @@ top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
 {
   propagate substituted;
 }
+aspect production inj:directCallExpr
+top::Expr ::= f::Name  a::Exprs
+{
+  propagate substituted;
+}
