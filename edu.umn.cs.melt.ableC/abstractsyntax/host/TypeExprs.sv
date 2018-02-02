@@ -20,7 +20,7 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
  - several identifiers each with their own TypeModifierExpr.
  - This way, the struct appears once in the abstract syntax.
  -
- - TypeModifiersExpr are terminated by "baseTypeExpr" which provides a typerep
+ - TypeModifierExpr are terminated by "baseTypeExpr" which provides a typerep
  - value that is equal to the Type obtained from the corresponding BaseTypeExpr.
  - 
  - Invariant: a BaseTypeExpr and its corresponding TypeModifierExpr should have
