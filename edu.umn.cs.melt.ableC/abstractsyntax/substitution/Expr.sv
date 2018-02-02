@@ -43,7 +43,7 @@ top::Expr ::= f::Name  a::Exprs
   substitutions.nameIn = f.name;
   top.substituted =
     case substitutions.declRefSub of
-      just(sub) -> callExpr(sub, a, location=top.location)
+      just(sub) -> callExpr(sub, a.substituted, location=top.location)
     | nothing() -> directCallExpr(f.substituted, a.substituted, location=top.location)
     end;
 }
