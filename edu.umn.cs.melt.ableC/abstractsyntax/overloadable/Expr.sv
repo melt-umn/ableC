@@ -30,7 +30,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 abstract production callExpr
 top::host:Expr ::= f::host:Expr  a::host:Exprs
 {
-  top.pp = parens( ppConcat([ f.pp, parens( ppImplode( cat( comma(), space() ), a.host:pps ))]) );
+  top.pp = parens( ppConcat([ f.pp, parens( ppImplode( cat( comma(), space() ), a.pps ))]) );
 
   a.env = addEnv(f.defs, f.env);
   -- Option 1: Apply a member to arguments (e.g. a.foo(b))
