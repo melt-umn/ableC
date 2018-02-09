@@ -42,46 +42,7 @@ parser exprParser :: cst:Expr_c {
 }
 
 -- Wrapper functions to call parsers and return asts
-function parseDecls
-Decls ::= text::String
-{
-  local result::ParseResult<cst:TranslationUnit_c> =
-    declsParser(text, s"parseDecls(\"\"\"\n${foldLineNums(text)}\n\"\"\")");
-  return
-    if result.parseSuccess
-    then foldDecl(result.parseTree.ast)
-    else error("Syntax errors in parseDecls string:\n" ++ result.parseErrors);
-}
-
-function parseDecl
-Decl ::= text::String
-{
-  local result::ParseResult<cst:ExternalDeclaration_c> =
- declParser(text, s"parseDecl(\"\"\"\n${foldLineNums(text)}\n\"\"\")");
-  return
-    if result.parseSuccess
-    then result.parseTree.ast
-    else error("Syntax errors in parseDecl string:\n" ++ result.parseErrors);
-}
-
-function parseStmt
-Stmt ::= text::String
-{
-  local result::ParseResult<cst:BlockItemList_c> =
-    stmtParser(text, s"parseStmt(\"\"\"\n${foldLineNums(text)}\n\"\"\")");
-  return
-    if result.parseSuccess
-    then foldStmt(result.parseTree.ast)
-    else error("Syntax errors in parseStmt string:\n" ++ result.parseErrors);
-}
-
-function parseExpr
-Expr ::= text::String
-{
-  local result::ParseResult<cst:Expr_c> =
-    exprParser(text, s"parseExpr(\"\"\"\n${foldLineNums(text)}\n\"\"\")");
-  return
-    if result.parseSuccess
-    then result.parseTree.ast
-    else error("Syntax errors in parseExpr string:\n" ++ result.parseErrors);
-}
+global parseDecls::(Decls ::= String) = \ text::String -> foldDecl(parseInline("Decls", declsParser, text).ast);
+global parseDecl::(Decl ::= String) = \ text::String -> parseInline("Decl", declParser, text).ast;
+global parseStmt::(Stmt ::= String) = \ text::String -> foldStmt(parseInline("Stmt", stmtParser, text).ast);
+global parseExpr::(Expr ::= String) = \ text::String -> parseInline("Expr", exprParser, text).ast;

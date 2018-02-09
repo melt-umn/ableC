@@ -1,7 +1,6 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax:env;
 
 imports edu:umn:cs:melt:ableC:abstractsyntax:host;
-imports silver:util:raw:treemap as tm;
 
 {--
  - The environment values that get passed around and used to look up names.
@@ -34,9 +33,10 @@ closed nonterminal Def
 synthesized attribute defs :: [Def] with ++;
 {--
  - For Function-Scope definitions (e.g. Labels in functions)
- - @see defs for normal definitions
+ - Note that since the env may determine the forward, and functionDefs on a production determine the env provided to that
+ - production, functionDefs must be computed without using the forward. 
  -}
-synthesized attribute functiondefs :: [Def] with ++;
+synthesized attribute functionDefs :: [Def] with ++;
 {--
  - For local-scope only definitions (e.g. struct and union fields)
  - Used in conjunction with 'tagEnv'.
@@ -46,7 +46,7 @@ synthesized attribute functiondefs :: [Def] with ++;
  -
  - @see defs for normal definitions
  -}
-synthesized attribute localdefs :: [Def] with ++;
+synthesized attribute localDefs :: [Def] with ++;
 {--
  - The environment, on which all lookups are performed.
  -}
@@ -56,13 +56,17 @@ autocopy attribute env :: Decorated Env;
  -}
 synthesized attribute tagEnv :: Decorated Env;
 
-
 -- Environment manipulation functions
 
 function emptyEnv
 Decorated Env ::=
 {
   return decorate emptyEnv_i() with {};
+}
+function openScopeEnv
+Decorated Env ::= e::Decorated Env
+{
+  return decorate openScopeEnv_i(e) with {};
 }
 function addEnv
 Decorated Env ::= d::[Def]  e::Decorated Env
@@ -73,11 +77,6 @@ function addEnvDefs
 Decorated Env ::= d::Defs  e::Decorated Env
 {
   return decorate addEnv_i(d, e) with {};
-}
-function openScope
-Decorated Env ::= e::Decorated Env
-{
-  return decorate openScope_i(e) with {};
 }
 function globalEnv
 Decorated Env ::= e::Decorated Env
@@ -90,50 +89,43 @@ Decorated Env ::= e::Decorated Env
 function lookupValue
 [ValueItem] ::= n::String  e::Decorated Env
 {
-  return readScope_i(n, e.values);
+  return lookupScope(n, e.values);
 }
 function lookupTag
 [TagItem] ::= n::String  e::Decorated Env
 {
-  return readScope_i(n, e.tags);
+  return lookupScope(n, e.tags);
 }
 function lookupLabel
 [LabelItem] ::= n::String  e::Decorated Env
 {
-  return readScope_i(n, e.labels);
+  return lookupScope(n, e.labels);
 }
 function lookupRefId 
 [RefIdItem] ::= n::String  e::Decorated Env
 {
-  return readScope_i(n, e.refIds);
+  return lookupScope(n, e.refIds);
 }
-
 function lookupMisc 
 [MiscItem] ::= n::String  e::Decorated Env
 {
-  return readScope_i(n, e.misc);
+  return lookupScope(n, e.misc);
 }
 
 
 function lookupValueInLocalScope
 [ValueItem] ::= n::String  e::Decorated Env
 {
-  return tm:lookup(n, head(e.values));
+  return lookupInLocalScope(n, e.values);
 }
 function lookupTagInLocalScope
 [TagItem] ::= n::String  e::Decorated Env
 {
-  return tm:lookup(n, head(e.tags));
+  return lookupInLocalScope(n, e.tags);
 }
-function lookupLabelInLocalScope
-[LabelItem] ::= n::String  e::Decorated Env
-{
-  return tm:lookup(n, head(e.labels));
-}
-
 function lookupMiscInLocalScope
 [MiscItem] ::= n::String  e::Decorated Env
 {
-  return tm:lookup(n, head(e.misc));
+  return lookupInLocalScope(n, e.misc);
 }
 

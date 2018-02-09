@@ -1,6 +1,5 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax:env;
 
-
 abstract production labelDef
 top::Def ::= s::String  l::LabelItem
 {

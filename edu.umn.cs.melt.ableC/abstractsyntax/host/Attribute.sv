@@ -112,7 +112,6 @@ top::Attrib ::= n::AttribName  id::Name  e::Exprs
   top.isHostAttrib = true;
 }
 
-
 nonterminal AttribName with pp, env, host<AttribName>, lifted<AttribName>;
 flowtype AttribName = decorate {env};
 

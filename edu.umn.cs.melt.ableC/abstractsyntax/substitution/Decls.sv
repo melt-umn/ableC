@@ -108,7 +108,7 @@ aspect production consParameters
 top::Parameters ::= h::ParameterDecl  t::Parameters
 {
   -- Since we pattern match on h, we need to supply its forward dependancies
-  -- We don't really care about these, since all we want to know is whether d is a typedefTypeExpr.
+  -- We don't really care about these, since all we want to know is whether e is a parameterDecl.
   local h1::ParameterDecl = h;
   h1.env = emptyEnv();
   h1.returnType = nothing();

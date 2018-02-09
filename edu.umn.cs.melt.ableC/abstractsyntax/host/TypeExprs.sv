@@ -20,7 +20,7 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
  - several identifiers each with their own TypeModifierExpr.
  - This way, the struct appears once in the abstract syntax.
  -
- - TypeModifiersExpr are terminated by "baseTypeExpr" which provides a typerep
+ - TypeModifierExpr are terminated by "baseTypeExpr" which provides a typerep
  - value that is equal to the Type obtained from the corresponding BaseTypeExpr.
  - 
  - Invariant: a BaseTypeExpr and its corresponding TypeModifierExpr should have
@@ -299,7 +299,7 @@ top::BaseTypeExpr ::= q::Qualifiers  name::Name
 
   top.errors <- name.valueLookupCheck;
   top.errors <-
-    if name.valueItem.isItemTypedef then []
+    if name.valueItem.isItemType then []
     else [err(name.location, "'" ++ name.name ++ "' does not refer to a type.")];
   q.typeToQualify = top.typerep;
 }
@@ -494,7 +494,7 @@ top::TypeModifierExpr ::= result::TypeModifierExpr  args::Parameters  variadic::
   top.globalDecls := result.globalDecls ++ args.globalDecls;
   top.freeVariables = result.freeVariables;
   
-  args.env = openScope(top.env);
+  args.env = openScopeEnv(top.env);
 }
 abstract production functionTypeExprWithoutArgs
 top::TypeModifierExpr ::= result::TypeModifierExpr  ids::[Name]  q::Qualifiers --fnquals::[SpecialSpecifier]

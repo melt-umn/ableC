@@ -22,7 +22,7 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax:env;
  -
  - This unfortunately complicates the types a bit, since
  -}
-nonterminal RefIdItem with moduleName, tagEnv;
+closed nonterminal RefIdItem with moduleName, tagEnv;
 
 {-- Name resolves to a full struct declaration -}
 abstract production structRefIdItem

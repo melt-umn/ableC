@@ -19,7 +19,7 @@ top::GlobalDecls ::= h::Decl  t::GlobalDecls
     removeDefsFromNames(h.defs, t.freeVariables);
   
   -- host, lifted defined in Lifted.sv
-    
+  
   h.isTopLevel = true;
   
   t.env = addEnv(h.defs, top.env);
@@ -303,6 +303,9 @@ top::Declarator ::= name::Name  ty::TypeModifierExpr  attrs::Attributes  initial
       name.valueRedeclarationCheckNoCompatible;
 
   local allAttrs :: Attributes = appendAttribute(top.givenAttributes, attrs);
+  allAttrs.env = top.env;
+  allAttrs.returnType = top.returnType;
+  
   local animatedTyperep :: Type = animateAttributeOnType(allAttrs, ty.typerep);
 
   -- accumulate extension qualifiers on redeclaration
@@ -367,7 +370,7 @@ top::FunctionDecl ::= storage::[StorageClass]  fnquals::SpecialSpecifiers  bty::
     bty.freeVariables ++
     removeDefsFromNames([thisFuncDef], mty.freeVariables) ++
     decls.freeVariables ++ --TODO?
-    removeDefsFromNames(top.defs ++ parameters.defs ++ decls.defs ++ body.functiondefs ++ fnquals.defs, body.freeVariables);
+    removeDefsFromNames(top.defs ++ parameters.defs ++ decls.defs ++ fnquals.defs, body.freeVariables);
   -- accumulate extension qualifiers on redeclaration
   top.typerep = name.valueMergeRedeclExtnQualifiers(mty.typerep);
   top.sourceLocation = name.location;
@@ -395,9 +398,9 @@ top::FunctionDecl ::= storage::[StorageClass]  fnquals::SpecialSpecifiers  bty::
     | _ -> nothing() -- Don't error here, this is caught in type checking
     end;
 
-  mty.env = addEnv([thisFuncDef], openScope(addEnv(funcDefs, top.env)));
+  mty.env = addEnv([thisFuncDef], openScopeEnv(addEnv(funcDefs, top.env)));
   decls.env = addEnv(parameters.defs, mty.env);
-  body.env = addEnv(decls.defs ++ body.functiondefs, decls.env);
+  body.env = addEnv(decls.defs ++ body.functionDefs, decls.env);
   
   decls.isTopLevel = false;
   
@@ -548,7 +551,7 @@ top::StructDecl ::= attrs::Attributes  name::MaybeName  dcls::StructItemList
   
   top.moduleName = attrs.moduleName;
   
-  top.tagEnv = addEnv(dcls.localdefs, emptyEnv());
+  top.tagEnv = addEnv(dcls.localDefs, emptyEnv());
   
   -- If there is no forward declaration, and we have a name, then add a tag dcl for the refid.
   local preDefs :: [Def] = 
@@ -561,7 +564,7 @@ top::StructDecl ::= attrs::Attributes  name::MaybeName  dcls::StructItemList
   top.defs := preDefs ++ dcls.defs ++ postDefs;
   top.freeVariables = dcls.freeVariables;
   
-  dcls.env = openScope(addEnv(preDefs, top.env));
+  dcls.env = openScopeEnv(addEnv(preDefs, top.env));
   
   
   -- Redeclaration error if there IS a forward declaration AND an existing refid declaration.
@@ -592,7 +595,7 @@ top::UnionDecl ::= attrs::Attributes  name::MaybeName  dcls::StructItemList
   
   top.moduleName = attrs.moduleName;
   
-  top.tagEnv = addEnv(dcls.localdefs, emptyEnv());
+  top.tagEnv = addEnv(dcls.localDefs, emptyEnv());
   
   -- If there is no forward declaration, and we have a name, then add a tag dcl for the refid.
   local preDefs :: [Def] = 
@@ -605,7 +608,7 @@ top::UnionDecl ::= attrs::Attributes  name::MaybeName  dcls::StructItemList
   top.defs := preDefs ++ dcls.defs ++ postDefs;
   top.freeVariables = dcls.freeVariables;
   
-  dcls.env = openScope(addEnv(preDefs, top.env));
+  dcls.env = openScopeEnv(addEnv(preDefs, top.env));
   
   
   -- Redeclaration error if there IS a forward declaration AND an existing refid declaration.
@@ -647,7 +650,7 @@ top::EnumDecl ::= name::MaybeName  dcls::EnumItemList
 }
 
 
-nonterminal StructItemList with pps, host<StructItemList>, lifted<StructItemList>, errors, globalDecls, defs, env, localdefs, returnType, freeVariables;
+nonterminal StructItemList with pps, host<StructItemList>, lifted<StructItemList>, errors, globalDecls, defs, env, localDefs, returnType, freeVariables;
 flowtype StructItemList = decorate {env, returnType};
 
 abstract production consStructItem
@@ -661,9 +664,9 @@ top::StructItemList ::= h::StructItem  t::StructItemList
   top.freeVariables =
     h.freeVariables ++
     removeDefsFromNames(h.defs, t.freeVariables);
-  top.localdefs := h.localdefs ++ t.localdefs;
+  top.localDefs := h.localDefs ++ t.localDefs;
   
-  t.env = addEnv(h.defs ++ h.localdefs, h.env);
+  t.env = addEnv(h.defs ++ h.localDefs, h.env);
 }
 
 abstract production nilStructItem
@@ -675,7 +678,7 @@ top::StructItemList ::=
   top.globalDecls := [];
   top.defs := [];
   top.freeVariables = [];
-  top.localdefs := [];
+  top.localDefs := [];
 }
 
 nonterminal EnumItemList with pps, host<EnumItemList>, lifted<EnumItemList>, errors, globalDecls, defs, env, containingEnum, returnType, freeVariables;
@@ -709,7 +712,7 @@ top::EnumItemList ::=
   top.freeVariables = [];
 }
 
-nonterminal StructItem with pp, host<StructItem>, lifted<StructItem>, errors, globalDecls, defs, env, localdefs, returnType, freeVariables;
+nonterminal StructItem with pp, host<StructItem>, lifted<StructItem>, errors, globalDecls, defs, env, localDefs, returnType, freeVariables;
 flowtype StructItem = decorate {env, returnType};
 
 abstract production structItem
@@ -721,7 +724,7 @@ top::StructItem ::= attrs::Attributes  ty::BaseTypeExpr  dcls::StructDeclarators
   top.globalDecls := ty.globalDecls ++ dcls.globalDecls;
   top.defs := ty.defs;
   top.freeVariables = ty.freeVariables ++ dcls.freeVariables;
-  top.localdefs := dcls.localdefs;
+  top.localDefs := dcls.localDefs;
   
   ty.givenRefId = attrs.maybeRefId;
   dcls.env = addEnv(ty.defs, ty.env);
@@ -738,11 +741,11 @@ top::StructItem ::= msg::[Message]
   top.globalDecls := [];
   top.defs := [];
   top.freeVariables = [];
-  top.localdefs := [];
+  top.localDefs := [];
 }
 
 
-nonterminal StructDeclarators with pps, host<StructDeclarators>, lifted<StructDeclarators>, errors, globalDecls, localdefs, env, baseType, typeModifiersIn, givenAttributes, returnType, freeVariables;
+nonterminal StructDeclarators with pps, host<StructDeclarators>, lifted<StructDeclarators>, errors, globalDecls, localDefs, env, baseType, typeModifiersIn, givenAttributes, returnType, freeVariables;
 flowtype StructDeclarators = decorate {env, returnType, baseType, typeModifiersIn, givenAttributes};
 
 abstract production consStructDeclarator
@@ -752,12 +755,12 @@ top::StructDeclarators ::= h::StructDeclarator  t::StructDeclarators
   top.pps = h.pps ++ t.pps;
   top.errors := h.errors ++ t.errors;
   top.globalDecls := h.globalDecls ++ t.globalDecls;
-  top.localdefs := h.localdefs ++ t.localdefs;
+  top.localDefs := h.localDefs ++ t.localDefs;
   top.freeVariables =
     h.freeVariables ++
-    removeDefsFromNames(h.localdefs, t.freeVariables);
+    removeDefsFromNames(h.localDefs, t.freeVariables);
   
-  t.env = addEnv(h.localdefs, h.env);
+  t.env = addEnv(h.localDefs, h.env);
 }
 abstract production nilStructDeclarator
 top::StructDeclarators ::=
@@ -766,11 +769,11 @@ top::StructDeclarators ::=
   top.pps = [];
   top.errors := [];
   top.globalDecls := [];
-  top.localdefs := [];
+  top.localDefs := [];
   top.freeVariables = [];
 }
 
-nonterminal StructDeclarator with pps, host<StructDeclarator>, lifted<StructDeclarator>, errors, globalDecls, localdefs, env, typerep, sourceLocation, baseType, typeModifiersIn, givenAttributes, returnType, freeVariables;
+nonterminal StructDeclarator with pps, host<StructDeclarator>, lifted<StructDeclarator>, errors, globalDecls, localDefs, env, typerep, sourceLocation, baseType, typeModifiersIn, givenAttributes, returnType, freeVariables;
 flowtype StructDeclarator = decorate {env, returnType, baseType, typeModifiersIn, givenAttributes};
 
 abstract production structField
@@ -780,7 +783,7 @@ top::StructDeclarator ::= name::Name  ty::TypeModifierExpr  attrs::Attributes
   top.pps = [ppConcat([ty.lpp, name.pp, ty.rpp, ppAttributesRHS(attrs)])];
   top.errors := ty.errors;
   top.globalDecls := ty.globalDecls;
-  top.localdefs := [valueDef(name.name, fieldValueItem(top))];
+  top.localDefs := [valueDef(name.name, fieldValueItem(top))];
   top.freeVariables = ty.freeVariables;
   top.typerep = animateAttributeOnType(allAttrs, ty.typerep);
   top.sourceLocation = name.location;
@@ -789,6 +792,8 @@ top::StructDeclarator ::= name::Name  ty::TypeModifierExpr  attrs::Attributes
   top.errors <- name.valueRedeclarationCheckNoCompatible;
   
   local allAttrs :: Attributes = appendAttribute(top.givenAttributes, attrs);
+  allAttrs.env = top.env;
+  allAttrs.returnType = top.returnType;
 }
 abstract production structBitfield
 top::StructDeclarator ::= name::MaybeName  ty::TypeModifierExpr  e::Expr  attrs::Attributes
@@ -803,7 +808,7 @@ top::StructDeclarator ::= name::MaybeName  ty::TypeModifierExpr  e::Expr  attrs:
     | just(n) -> [valueDef(n.name, fieldValueItem(top))]
     | _ -> []
     end;
-  top.localdefs := thisdcl;
+  top.localDefs := thisdcl;
   top.freeVariables = ty.freeVariables ++ e.freeVariables;
   top.typerep = animateAttributeOnType(allAttrs, ty.typerep);
   top.sourceLocation = 
@@ -816,6 +821,8 @@ top::StructDeclarator ::= name::MaybeName  ty::TypeModifierExpr  e::Expr  attrs:
   top.errors <- name.valueRedeclarationCheckNoCompatible;
 
   local allAttrs :: Attributes = appendAttribute(top.givenAttributes, attrs);
+  allAttrs.env = top.env;
+  allAttrs.returnType = top.returnType;
 }
 -- Similar to external declarations, this pretends not to exist if it's only a warning
 abstract production warnStructField
@@ -825,7 +832,7 @@ top::StructDeclarator ::= msg::[Message]
   top.pps = [];
   top.errors := msg;
   top.globalDecls := [];
-  top.localdefs := [];
+  top.localDefs := [];
   top.freeVariables = [];
   top.typerep = errorType();
   top.sourceLocation = loc("nowhere", -1, -1, -1, -1, -1, -1); -- TODO fix this? add locaiton maybe?

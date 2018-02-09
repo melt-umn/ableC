@@ -4,7 +4,7 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
  - Type representations, with qualifiers on appropriate constructors,
  - distinct from type expressions which are environment-independent.
  -
- - Host is included, we might want that, but lifted doesn't make sense in this context.
+ - host is included, we might want that, but lifted doesn't make sense in this context.
  -
  - Variants: builtin, pointer, array, function, tagged, noncanonical.
  - Noncanonical forwards, and so doesn't need any attributes, etc attached to it.
@@ -255,7 +255,8 @@ top::ArrayType ::=
 abstract production variableArrayType
 top::ArrayType ::= size::Decorated Expr
 {
-  top.host = variableArrayType(decorate size.host with {env = size.env; returnType = size.returnType;});
+  top.host =
+    variableArrayType(decorate size.host with {env = size.env; returnType = size.returnType;});
   top.pp = size.pp;
 }
 

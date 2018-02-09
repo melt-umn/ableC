@@ -50,14 +50,15 @@ top::Attrib ::= n::AttribName
 aspect production appliedAttrib
 top::Attrib ::= n::AttribName  e::Exprs
 {
-  -- TODO: These are hacks we should probably improve upon.
-  local treat_e_syntactically :: Exprs = e;
-  treat_e_syntactically.env = emptyEnv();
-  treat_e_syntactically.returnType = nothing();
+  -- Since we pattern match on e, we need to supply its forward dependancies
+  -- We don't really care about these, since all we want to know is whether e is a stringLiteral.
+  local e1 :: Exprs = e;
+  e1.env = emptyEnv();
+  e1.returnType = nothing();
   
   local substitutions::Substitutions = top.substitutions;
   substitutions.nameIn =
-    case n, treat_e_syntactically of
+    case n, e1 of
       attribName(n), consExpr(stringLiteral(s), nilExpr()) ->
         if n.name == "refId" then substring(1, length(s) - 1, s) else ""
     | _, _ -> ""

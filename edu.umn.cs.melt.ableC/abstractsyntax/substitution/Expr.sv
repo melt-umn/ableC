@@ -39,7 +39,13 @@ top::Expr ::= lhs::Expr  rhs::Expr
 aspect production directCallExpr
 top::Expr ::= f::Name  a::Exprs
 {
-  propagate substituted;
+  local substitutions::Substitutions = top.substitutions;
+  substitutions.nameIn = f.name;
+  top.substituted =
+    case substitutions.declRefSub of
+      just(sub) -> callExpr(sub, a.substituted, location=top.location)
+    | nothing() -> directCallExpr(f.substituted, a.substituted, location=top.location)
+    end;
 }
 aspect production callExpr
 top::Expr ::= f::Expr  a::Exprs

@@ -62,7 +62,9 @@ flowtype defs {decorate} on
   MaybeExpr, Exprs, ExprOrTypeName,
   Stmt,
   MaybeInitializer, Initializer, InitList, Init, Designator;
-flowtype localdefs {decorate} on
+flowtype functionDefs {} on
+  Stmt;
+flowtype localDefs {decorate} on
   StructItemList, StructItem, StructDeclarators, StructDeclarator;
 
 -- Set all forward flowtypes on 'collection' and 'wrapper' nonterminals to be empty, since we
@@ -75,7 +77,7 @@ flowtype forward {} on
   GenericAssocs,
   TypeNames,
   MaybeExpr, Exprs, ExprOrTypeName,
-  MaybeName,
+  Name, MaybeName,
   MaybeInitializer, InitList;
 
 -- Set all other forward flowtypes to be the same as reference sets
@@ -92,5 +94,4 @@ flowtype forward {decorate} on
   BuiltinType, RealType, IntegerType,
   NumericConstant,
   Stmt,
-  Name,
   Initializer, Init, Designator;

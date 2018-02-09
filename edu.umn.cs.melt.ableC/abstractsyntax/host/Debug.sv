@@ -31,8 +31,8 @@ s::Stmt ::= txt::String
   s.errors := [];
   s.globalDecls := [];
   s.defs := [];
+  s.functionDefs := [];
   s.freeVariables = [];
-  s.functiondefs := [];
 }
 
 abstract production txtDecl
@@ -77,22 +77,29 @@ Document ::= e::Decorated Env
     text(" Environment:"),
     nestlines(5, 
       ppConcat([
-       --text("Labels:"),line(),
+       text("Labels:"),line(),
+         nestlines(5, labelsD),
        text("Values:"),line(),
          nestlines(5, valuesD),
        text("Tags:"),line(),
          nestlines(5, tagsD),
        text("RefIDs:"),
-         nestlines(5, refIDsD)
+         nestlines(5, refIDsD),
+       text("Misc:"),
+         nestlines(5, miscD)
        ]) )
    ] );
 
+  local labelsD :: Document
+    = ppImplode(line(), map( showScope(_,showLabelItemBinding), map( tm:toList, e.labels )));
   local valuesD :: Document
     = ppImplode(line(), map( showScope(_,showValueItemBinding), map( tm:toList, e.values )));
   local tagsD :: Document
     = ppImplode(line(), map( showScope(_,showTagItemBinding), map( tm:toList, e.tags )));
   local refIDsD :: Document
     = ppImplode(line(), map( showScope(_,showRefIdItemBinding), map( tm:toList, e.refIds )));
+  local miscD :: Document
+    = ppImplode(line(), map( showScope(_,showMiscItemBinding), map( tm:toList, e.misc )));
 }
 
 function showScope
@@ -102,6 +109,11 @@ Document ::= scope::[Pair<String a>] showFunc::(Document ::= Pair<String a>)
 }
 
 
+function showLabelItemBinding
+Document ::= bnd::Pair<String LabelItem>
+{
+ return ppConcat( [ text(bnd.fst), text(" -> ") ]);
+}
 function showValueItemBinding
 Document ::= bnd::Pair<String ValueItem>
 {
@@ -116,4 +128,9 @@ function showRefIdItemBinding
 Document ::= bnd::Pair<String RefIdItem>
 {
  return ppConcat( [ text(bnd.fst), text(" -> "), nestlines(10,bnd.snd.pp) ]);
+}
+function showMiscItemBinding
+Document ::= bnd::Pair<String MiscItem>
+{
+ return ppConcat( [ text(bnd.fst), text(" -> ") ]);
 }

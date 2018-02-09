@@ -6,7 +6,7 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax:env;
  - until that type is completed at the closing '}'.
  - refIds are our solution for as-yet-incomplete types.
  -}
-nonterminal TagItem;
+closed nonterminal TagItem;
 
 {-- Name resolves to an enum declaration -}
 abstract production enumTagItem

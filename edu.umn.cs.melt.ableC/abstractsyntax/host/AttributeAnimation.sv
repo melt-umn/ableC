@@ -1,11 +1,8 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 
 function animateAttributeOnType
-Type ::= attr::Attributes  ty::Type
+Type ::= attr::Decorated Attributes  ty::Type
 {
-  -- TODO: These are hacks we should probably improve upon.
-  attr.env = emptyEnv();
-  attr.returnType = nothing();
   return
     case attr of
     | consAttribute(gccAttribute(l), t) -> animateAttribOnType(l, animateAttributeOnType(t, ty))
@@ -20,11 +17,8 @@ Type ::= attr::Attributes  ty::Type
 
 
 function animateAttribOnType
-Type ::= attr::Attribs  ty::Type
+Type ::= attr::Decorated Attribs  ty::Type
 {
-  -- TODO: These are hacks we should probably improve upon.
-  attr.env = emptyEnv();
-  attr.returnType = nothing();
   return case attr of
   -- Attribs that specify new types (i.e. not type-compatible with what is wrapped)
   -- __vector_size__(num)
@@ -55,7 +49,9 @@ Type ::= attr::Attribs  ty::Type
 }
 
 synthesized attribute maybeRefId::Maybe<String> occurs on Attributes, Attribute, Attribs, Attrib;
+flowtype maybeRefId {} on Attributes, Attribute, Attribs, Attrib;
 attribute moduleName occurs on Attributes, Attribute, Attribs, Attrib;
+flowtype moduleName {} on Attributes, Attribute, Attribs, Attrib;
 
 aspect production consAttribute
 top::Attributes ::= h::Attribute t::Attributes
@@ -100,6 +96,7 @@ top::Attribs ::=
 }
 
 synthesized attribute isHostAttrib::Boolean occurs on Attrib;
+flowtype isHostAttrib {} on Attrib;
 
 aspect default production
 top::Attrib ::=
@@ -141,6 +138,11 @@ top::Attrib ::= n::AttribName  e::Exprs
         just(substring(1, length(s) - 1, s))
     | _, _ -> nothing()
     end;
+  
+  -- Needed since we are matching on Expr
+  -- Not a big deal since these are pretty much just constants
+  e.env = emptyEnv();
+  e.returnType = nothing();
 }
 -- e.g. __attribute__((something(foo, "well whatever")))
 -- OR __attribute__((something(foo)))

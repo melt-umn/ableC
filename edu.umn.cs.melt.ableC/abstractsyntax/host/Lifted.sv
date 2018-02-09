@@ -3,7 +3,7 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 {--
  - Extensions that want to specify declartions to lift to a global scope
  - do so by forwarding to the host production `injectGlobalDecls` (or one
- - of the corresponding ones for Stmt, Type or BaseTypeExpr.)  
+ - of the corresponding ones for Stmt or BaseTypeExpr.)  
  - 
  - After extracting the `host` tree, there are no extension constructs, but
  - the AST contains constructs that cannot be directly translated into C, for
@@ -38,10 +38,11 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
  - something that defines the 'missing' item.  To assist with this, an
  - extension may use the production 'maybeDecl', which takes a function to look
  - at the env and return true or false, determining whether the given decl is
- - to be kept.  
+ - to be kept.
  -
  - If there are ever errors reported about something being redefined in the
- - lifted tree, then there is a bug in the host where something that 
+ - lifted tree, then there is a bug in the host where the env was not provided
+ - properly somewhere to contain all injected declarations defined so far.
  - 
  - TODO:
  - It would be nice to move all of this to its own grammar, but aspecting
@@ -160,7 +161,7 @@ top::Stmt ::= decls::Decls lifted::Stmt
   top.lifted = lifted.lifted;
   
   -- Define other attributes to be the same as on lifted
-  top.functiondefs := lifted.functiondefs;
+  top.functionDefs := lifted.functionDefs;
   top.freeVariables = lifted.freeVariables;
   
   decls.env = globalEnv(top.env);
