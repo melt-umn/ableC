@@ -246,15 +246,19 @@ top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
       errorType()
     else addQualifiers(quals_refid.fst.qualifiers, head(valueitems).typerep);
   top.errors <-
-    if null(refids) then 
-      [err(lhs.location, "expression does not have defined fields (got " ++ showType(lhs.typerep) ++ ")")]
-    else if isPointer != deref then 
-      if deref
-      then [err(lhs.location, "expression does not have pointer to struct or union type (got " ++ showType(lhs.typerep) ++ ")")]
-      else [err(lhs.location, "expression does not have struct or union type (got " ++ showType(lhs.typerep) ++ ", did you mean to use -> ?)")]
-    else if null(valueitems) then
-      [err(lhs.location, "expression does not field " ++ rhs.name)]
-    else [];
+    case lhs.typerep of
+      errorType() -> []
+    | _ ->
+      if null(refids) then 
+        [err(lhs.location, "expression does not have defined fields (got " ++ showType(lhs.typerep) ++ ")")]
+      else if isPointer != deref then 
+        if deref
+        then [err(lhs.location, "expression does not have pointer to struct or union type (got " ++ showType(lhs.typerep) ++ ")")]
+        else [err(lhs.location, "expression does not have struct or union type (got " ++ showType(lhs.typerep) ++ ", did you mean to use -> ?)")]
+      else if null(valueitems) then
+        [err(lhs.location, "expression does not field " ++ rhs.name)]
+      else []
+    end;
 }
 
 abstract production conditionalExpr
