@@ -8,7 +8,7 @@ a ::= nt::String parser::(ParseResult<a> ::= String String) text::String
   return
     if result.parseSuccess
     then result.parseTree
-    else error("Syntax errors in parse${nt} string:\n" ++ result.parseErrors);
+    else error(s"Syntax errors in parse${nt} string:\n" ++ result.parseErrors);
 }
 
 -- TODO: Maybe these belong in core or langutil?
