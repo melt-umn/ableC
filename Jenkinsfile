@@ -84,7 +84,7 @@ finally {
 def task_extension(extension_name, ABLEC_BASE, ABLEC_GEN) {
   return {
     def jobname = "/melt-umn/${extension_name}/${env.BRANCH_NAME}"
-    if (!melt.doesJobExist(jobname)) {
+    if (env.BRANCH_NAME != 'develop' && !melt.doesJobExist(jobname)) {
       jobname = "/melt-umn/${extension_name}/develop"
     }
     // SILVER_BASE should get inherited automatically
