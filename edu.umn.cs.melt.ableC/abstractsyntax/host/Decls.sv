@@ -291,7 +291,10 @@ top::Declarator ::= name::Name  ty::TypeModifierExpr  attrs::Attributes  initial
     | _ -> []
     end ++ ty.errors ++ initializer.errors;
   top.globalDecls := ty.globalDecls ++ initializer.globalDecls;
-  top.defs := [valueDef(name.name, declaratorValueItem(top))] ++ initializer.defs;
+  top.defs :=
+    [valueDef(name.name, declaratorValueItem(top))] ++ 
+    globalDeclsDefs(ty.globalDecls) ++
+    initializer.defs;
   top.freeVariables = ty.freeVariables ++ initializer.freeVariables;
   top.typerep = typerepWithAllExtnQuals;
   top.sourceLocation = name.location;

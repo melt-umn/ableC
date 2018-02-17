@@ -42,8 +42,8 @@ top::ValueItem ::= t::Type  handler::(Expr ::= Name Exprs Location)
 {
   top.typerep = t;
   top.sourceLocation = loc("<builtin>", 1, 0, 1, 0, 0, 1);
-
   top.directCallHandler = handler;
+  top.isItemValue = true; -- TODO: Workaround to let us use ordinaryFunctionHandler here
 }
 
 abstract production fieldValueItem

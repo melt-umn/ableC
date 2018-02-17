@@ -1,5 +1,16 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax:construction:parsing;
 
+function parseInline
+a ::= nt::String parser::(ParseResult<a> ::= String String) text::String
+{
+  local result::ParseResult<a> =
+    parser(text, s"parse${nt}(\"\"\"\n${foldLineNums(text)}\n\"\"\")");
+  return
+    if result.parseSuccess
+    then result.parseTree
+    else error(s"Syntax errors in parse${nt} string:\n" ++ result.parseErrors);
+}
+
 -- TODO: Maybe these belong in core or langutil?
 function padRight
 String ::= len::Integer s::String
