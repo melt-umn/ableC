@@ -15,7 +15,23 @@ top::MaybeInitializer ::= i::Initializer
 aspect production exprInitializer
 top::Initializer ::= e::Expr
 {
-  propagate substituted;
+  -- Since we pattern match on e, we need to supply its forward dependancies
+  -- We don't really care about these, since all we want to know is whether e is a declRefExpr.
+  local e1::Expr = e;
+  e1.env = emptyEnv();
+  e1.returnType = nothing();
+
+  local substitutions::Substitutions = top.substitutions;
+  substitutions.nameIn =
+    case e1 of
+      declRefExpr(id) -> id.name
+    | _ -> ""
+    end;
+  top.substituted =
+    case substitutions.initializerSub of
+      just(sub) -> sub
+    | nothing() -> exprInitializer(e.substituted)
+    end;
 }
 
 aspect production objectInitializer

@@ -41,11 +41,12 @@ synthesized attribute declRefSub::Maybe<Expr>;
 
 -- 'Indirect' substitutions that substitute something other than a production directly wrapping a name
 synthesized attribute stmtSub::Maybe<Stmt>;
+synthesized attribute initializerSub::Maybe<Initializer>;
 synthesized attribute exprsSub::Maybe<Exprs>;
 synthesized attribute parametersSub::Maybe<Parameters>;
 synthesized attribute refIdSub::Maybe<String>;
 
-nonterminal Substitutions with nameIn, nameSub, typedefSub, declRefSub, stmtSub, exprsSub, parametersSub, refIdSub;
+nonterminal Substitutions with nameIn, nameSub, typedefSub, declRefSub, stmtSub, initializerSub, exprsSub, parametersSub, refIdSub;
 flowtype Substitutions = nameSub {nameIn}, typedefSub {nameIn}, declRefSub {nameIn}, stmtSub {nameIn}, exprsSub {nameIn}, parametersSub {nameIn}, refIdSub {nameIn};
 
 abstract production consSubstitution
@@ -54,6 +55,7 @@ top::Substitutions ::= h::Substitution t::Substitutions
   top.nameSub = orElse(h.nameSub, t.nameSub);
   top.typedefSub = orElse(h.typedefSub, t.typedefSub);
   top.declRefSub = orElse(h.declRefSub, t.declRefSub);
+  top.initializerSub = orElse(h.initializerSub, t.initializerSub);
   top.stmtSub = orElse(h.stmtSub, t.stmtSub);
   top.exprsSub = orElse(h.exprsSub, t.exprsSub);
   top.parametersSub = orElse(h.parametersSub, t.parametersSub);
@@ -67,12 +69,13 @@ top::Substitutions ::=
   top.typedefSub = nothing();
   top.declRefSub = nothing();
   top.stmtSub = nothing();
+  top.initializerSub = nothing();
   top.exprsSub = nothing();
   top.parametersSub = nothing();
   top.refIdSub = nothing();
 }
 
-closed nonterminal Substitution with nameIn, nameSub, typedefSub, declRefSub, stmtSub, exprsSub, parametersSub, refIdSub;
+closed nonterminal Substitution with nameIn, nameSub, typedefSub, declRefSub, stmtSub, initializerSub, exprsSub, parametersSub, refIdSub;
 flowtype Substitution = nameSub {nameIn}, typedefSub {nameIn}, declRefSub {nameIn}, stmtSub {nameIn}, exprsSub {nameIn}, parametersSub {nameIn}, refIdSub {nameIn};
 
 aspect default production
@@ -82,6 +85,7 @@ top::Substitution ::=
   top.typedefSub = nothing();
   top.declRefSub = nothing();
   top.stmtSub = nothing();
+  top.initializerSub = nothing();
   top.exprsSub = nothing();
   top.parametersSub = nothing();
   top.refIdSub = nothing();
@@ -108,11 +112,18 @@ top::Substitution ::= name::String sub::Expr
   top.declRefSub = if top.nameIn == name then just(sub) else nothing();
 }
 
--- Substitutes an exprStmt that is a declRefExpr for another statment
+-- Substitutes an exprStmt that is a declRefExpr for another statement
 abstract production stmtSubstitution
 top::Substitution ::= name::String sub::Stmt
 {
   top.stmtSub = if top.nameIn == name then just(sub) else nothing();
+}
+
+-- Substitutes an exprInitializer that is a declRefExpr for another initializer
+abstract production initializerSubstitution
+top::Substitution ::= name::String sub::Initializer
+{
+  top.initializerSub = if top.nameIn == name then just(sub) else nothing();
 }
 
 -- Substitutes consExpr where the first element is a declRefExpr
