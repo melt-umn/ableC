@@ -132,9 +132,12 @@ top::Expr ::= decls::Decls lifted::Expr
   top.globalDecls := decls.unfoldedGlobalDecls ++ lifted.globalDecls;
   top.lifted = lifted.lifted;
   
+  -- Variables corresponing to lifted values are *not* considered free, since they are either bound
+  -- here (host tree) or available globally and shouldn't recieve special treatment (lifted tree).
+  top.freeVariables = removeDefsFromNames(decls.defs, lifted.freeVariables);
+  
   -- Define other attributes to be the same as on lifted
   top.typerep = lifted.typerep;
-  top.freeVariables = lifted.freeVariables;
 
   decls.env = globalEnv(top.env);
   decls.isTopLevel = true;
@@ -160,9 +163,12 @@ top::Stmt ::= decls::Decls lifted::Stmt
   top.globalDecls := decls.unfoldedGlobalDecls ++ lifted.globalDecls;
   top.lifted = lifted.lifted;
   
+  -- Variables corresponing to lifted values are *not* considered free, since they are either bound
+  -- here (host tree) or available globally and shouldn't recieve special treatment (lifted tree).
+  top.freeVariables = removeDefsFromNames(decls.defs, lifted.freeVariables);
+  
   -- Define other attributes to be the same as on lifted
   top.functionDefs := lifted.functionDefs;
-  top.freeVariables = lifted.freeVariables;
   
   decls.env = globalEnv(top.env);
   decls.isTopLevel = true;
@@ -178,7 +184,6 @@ top::BaseTypeExpr ::= decls::Decls lifted::BaseTypeExpr
   propagate host;
   top.pp = pp"injectGlobalDeclsTypeExpr ${braces(nestlines(2, ppImplode(line(), decls.pps)))} (${lifted.pp})";
   top.errors := decls.errors ++ lifted.errors;
-  top.typerep = lifted.typerep;
   
   -- Insert defs from decls at the global scope
   top.defs := globalDefsDef(decls.defs) :: lifted.defs;
@@ -187,9 +192,13 @@ top::BaseTypeExpr ::= decls::Decls lifted::BaseTypeExpr
   top.globalDecls := decls.unfoldedGlobalDecls ++ lifted.globalDecls;
   top.lifted = lifted.lifted;
   
+  -- Variables corresponing to lifted values are *not* considered free, since they are either bound
+  -- here (host tree) or available globally and shouldn't recieve special treatment (lifted tree).
+  top.freeVariables = removeDefsFromNames(decls.defs, lifted.freeVariables);
+  
   -- Define other attributes to be the same as on lifted
+  top.typerep = lifted.typerep;
   top.typeModifiers = lifted.typeModifiers;
-  top.freeVariables = lifted.freeVariables;
   
   decls.env = globalEnv(top.env);
   decls.isTopLevel = true;
