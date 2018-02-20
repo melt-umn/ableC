@@ -181,11 +181,22 @@ function assignErrors
 {
 	return
     (if typeAssignableTo(lhs.typerep, rhs.typerep)
-    then
-      if containsQualifier(constQualifier(location=bogusLoc()), lhs.typerep)
-      then [err(loc, "Assignment of read-only variable")]
-      else []
-    else [err(loc, "Incompatible type in rhs of assignment, expected " ++ showType(lhs.typerep) ++ " but found " ++ showType(rhs.typerep))]) ++
+     then
+       (if containsQualifier(constQualifier(location=bogusLoc()), lhs.typerep)
+        then [err(loc, "Assignment of read-only variable")]
+        else []) ++
+       case lhs.typerep of
+         tagType(_, refIdTagType(_, _, refId)) ->
+           case lookupRefId(refId, lhs.env) of
+             item :: _ ->
+               if item.hasConstField
+               then [err(loc, s"Assignment of read-only variable (${show(80, lhs.pp)} has const fields)")]
+               else []
+           | [] -> []
+           end 
+       | _ -> []
+       end
+     else [err(loc, "Incompatible type in rhs of assignment, expected " ++ showType(lhs.typerep) ++ " but found " ++ showType(rhs.typerep))]) ++
     if lhs.isLValue then []
       else [err(lhs.location, "lvalue required as left operand of assignment")];
 }
