@@ -296,7 +296,10 @@ top::Declarator ::= name::Name  ty::TypeModifierExpr  attrs::Attributes  initial
     globalDeclsDefs(ty.globalDecls) ++
     initializer.defs;
   top.freeVariables = ty.freeVariables ++ initializer.freeVariables;
-  top.typerep = typerepWithAllExtnQuals;
+  top.typerep =
+    if top.isTypedef
+    then noncanonicalType(typedefType(nilQualifier(), name.name, typerepWithAllExtnQuals))
+    else typerepWithAllExtnQuals;
   top.sourceLocation = name.location;
   
   top.errors <- 
