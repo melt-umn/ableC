@@ -79,7 +79,7 @@ finally {
 def task_extension(extension_name, ABLEC_BASE, ABLEC_GEN) {
   return {
     // Try to build a branch with the same name, otherwise fallback to develop
-    def jobname = "/melt-umn/${extension_name}/${env.BRANCH_NAME}"
+    def jobname = "/melt-umn/${extension_name}/${hudson.Util.rawEncode(env.BRANCH_NAME)}"
     if (env.BRANCH_NAME != 'develop' && !melt.doesJobExist(jobname)) {
       jobname = "/melt-umn/${extension_name}/develop"
     }
