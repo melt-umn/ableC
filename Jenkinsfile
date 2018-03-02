@@ -9,18 +9,13 @@ try {
 
   def ABLEC_BASE = pwd()
   def ABLEC_GEN = "${ABLEC_BASE}/generated"
-  def newenv = [
-    "PATH+silver=${params.SILVER_BASE}/support/bin/",
-    "PATH+nailgun=:${params.SILVER_BASE}/support/nailgun/",
-    "SVFLAGS=-G ${ABLEC_GEN}"
-  ]
+  def newenv = melt.getSilverEnv()
 
   stage ("Build") {
 
     checkout scm
 
-    sh "rm -rf generated/* || true"
-    sh "mkdir -p generated"
+    melt.clearGenerated()
 
     withEnv(newenv) {
       sh './build ${SVFLAGS} --warn-all --warn-error'
@@ -69,7 +64,7 @@ try {
   }
 
   /* If we've gotten all this way with a successful build, don't take up disk space */
-  sh "rm -rf generated/* || true"
+  melt.clearGenerated()
 
 }
 catch (e) {
@@ -83,7 +78,8 @@ finally {
 
 def task_extension(extension_name, ABLEC_BASE, ABLEC_GEN) {
   return {
-    def jobname = "/melt-umn/${extension_name}/${env.BRANCH_NAME}"
+    // Try to build a branch with the same name, otherwise fallback to develop
+    def jobname = "/melt-umn/${extension_name}/${hudson.Util.rawEncode(env.BRANCH_NAME)}"
     if (env.BRANCH_NAME != 'develop' && !melt.doesJobExist(jobname)) {
       jobname = "/melt-umn/${extension_name}/develop"
     }
