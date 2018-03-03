@@ -22,6 +22,14 @@ try {
     }
   }
 
+  stage ("Test") {
+    dir("testing/expected-results") {
+      withEnv(newenv) {
+        sh "./runTests"
+      }
+    }
+  }
+
   stage ("Tutorials") {
     dir("tutorials") {
       withEnv(newenv) {
@@ -53,14 +61,6 @@ try {
     for (t in extensions) { tasks[t] = task_extension(t, ABLEC_BASE, ABLEC_GEN) }
 
     parallel tasks
-  }
-
-  stage ("Test") {
-    dir("testing/expected-results") {
-      withEnv(newenv) {
-        sh "./runTests"
-      }
-    }
   }
 
   /* If we've gotten all this way with a successful build, don't take up disk space */
