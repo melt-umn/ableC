@@ -4,7 +4,7 @@ import edu:umn:cs:melt:ableC:abstractsyntax:env only env;
 import edu:umn:cs:melt:ableC:abstractsyntax:overloadable as ovrld;
 -- "Exported" nonterminals
 
-closed nonterminal Expr_c with location, ast<ast:Expr>; 
+closed nonterminal Expr_c with location, ast<ast:Expr>;
 concrete productions top::Expr_c
 | e::AssignExpr_c
     { top.ast = e.ast; }
@@ -12,7 +12,7 @@ concrete productions top::Expr_c
     { top.ast = ast:commaExpr(l.ast, r.ast, location=top.location); }
 
 
-closed nonterminal AssignExpr_c with location, ast<ast:Expr>, directName; 
+closed nonterminal AssignExpr_c with location, ast<ast:Expr>, directName;
 aspect default production
 top::AssignExpr_c ::=
 {
@@ -23,7 +23,7 @@ concrete productions top::AssignExpr_c
     { top.ast = e.ast;
       top.directName = e.directName; }
 | l::UnaryExpr_c op::AssignOp_c  r::AssignExpr_c
-    { top.ast = op.ast; 
+    { top.ast = op.ast;
       op.leftExpr=l.ast; op.rightExpr=r.ast; op.exprLocation=top.location; }
 
 
@@ -33,13 +33,13 @@ concrete productions top::ConstantExpr_c
     { top.ast = e.ast; }
 
 
-closed nonterminal Initializer_c with location, ast<ast:Initializer>; 
+closed nonterminal Initializer_c with location, ast<ast:Initializer>;
 concrete productions top::Initializer_c
 | e::AssignExpr_c
     { top.ast = ast:exprInitializer(e.ast); }
 | '{' il::InitializerList_c '}'
     { top.ast = ast:objectInitializer(ast:foldInit(il.ast)); }
-| '{' il::InitializerList_c ',' '}' 
+| '{' il::InitializerList_c ',' '}'
     { top.ast = ast:objectInitializer(ast:foldInit(il.ast)); }
 
 
@@ -171,7 +171,7 @@ concrete productions top::RelationalExpr_c
 | e::ShiftExpr_c
     { top.ast = e.ast;
       top.directName = e.directName; }
-| l::RelationalExpr_c '<' r::ShiftExpr_c 
+| l::RelationalExpr_c '<' r::ShiftExpr_c
     { top.ast = ovrld:ltExpr(l.ast, r.ast, location=top.location); }
 | l::RelationalExpr_c '>' r::ShiftExpr_c
     { top.ast = ovrld:gtExpr(l.ast, r.ast, location=top.location); }
@@ -205,7 +205,7 @@ top::AdditiveExpr_c ::=
 {
   top.directName = nothing();
 }
-{- Below is the previous implementation of AdditiveExpr_c.  
+{- Below is the previous implementation of AdditiveExpr_c.
 concrete productions top::AdditiveExpr_c
 | e::MultiplicativeExpr_c
     { top.ast = e.ast; }
@@ -214,18 +214,18 @@ concrete productions top::AdditiveExpr_c
 | l::AdditiveExpr_c  '-'  r::MultiplicativeExpr_c
     { top.ast = ovrld:binaryOpExpr(l.ast, ast:numOp(ast:subOp(location=$2.location), location=$2.location), r.ast, location=top.location); }           -}
 concrete productions top::AdditiveExpr_c
-| e::AddMulLeft_c 
+| e::AddMulLeft_c
     { top.ast = e.ast;
       top.directName = e.directName; }
-| l::AdditiveExpr_c  op::AdditiveOp_c  r::AddMulLeft_c 
-    { top.ast = op.ast; 
+| l::AdditiveExpr_c  op::AdditiveOp_c  r::AddMulLeft_c
+    { top.ast = op.ast;
       op.leftExpr=l.ast; op.rightExpr=r.ast; op.exprLocation=top.location; }
 
 inherited attribute leftExpr :: ast:Expr;
 inherited attribute rightExpr :: ast:Expr;
 inherited attribute exprLocation :: Location;
 
-closed nonterminal AdditiveOp_c 
+closed nonterminal AdditiveOp_c
   with location, ast<ast:Expr>, leftExpr, rightExpr, exprLocation ;
 
 -- Additive Operators
@@ -249,7 +249,7 @@ concrete productions top::AddMulLeft_c
     { top.ast = e.ast;
       top.directName = e.directName; }
 | l::AddMulLeft_c  op::AddMulLeftOp_c r::AddMulRight_c
-    { top.ast = op.ast; 
+    { top.ast = op.ast;
       op.leftExpr=l.ast; op.rightExpr=r.ast; op.exprLocation=top.location; }
 
 closed nonterminal AddMulLeftOp_c
@@ -273,8 +273,8 @@ concrete productions top::AddMulRight_c
 | e::AddMulNone_c
     { top.ast = e.ast;
       top.directName = e.directName; }
-| l::AddMulNone_c  op::AddMulRightOp_c r::AddMulRight_c 
-    { top.ast = op.ast; 
+| l::AddMulNone_c  op::AddMulRightOp_c r::AddMulRight_c
+    { top.ast = op.ast;
       op.leftExpr=l.ast; op.rightExpr=r.ast; op.exprLocation=top.location; }
 
 closed nonterminal AddMulRightOp_c
@@ -298,8 +298,8 @@ concrete productions top::AddMulNone_c
 | e::MultiplicativeExpr_c
     { top.ast = e.ast;
       top.directName = e.directName; }
-| l::MultiplicativeExpr_c  op::AddMulNoneOp_c r::MultiplicativeExpr_c 
-    { top.ast = op.ast; 
+| l::MultiplicativeExpr_c  op::AddMulNoneOp_c r::MultiplicativeExpr_c
+    { top.ast = op.ast;
       op.leftExpr=l.ast; op.rightExpr=r.ast; op.exprLocation=top.location; }
 
 closed nonterminal AddMulNoneOp_c
@@ -399,19 +399,19 @@ concrete productions top::PostfixExpr_c
 | e::PostfixExpr_c '[' index::Expr_c ']'
     { top.ast = ovrld:arraySubscriptExpr(e.ast, index.ast, location=top.location); }
 | e::PostfixExpr_c '(' args::ArgumentExprList_c ')'
-    { top.ast = 
+    { top.ast =
         case e.directName of
           just(id) -> ast:directCallExpr(ast:fromId(id), ast:foldExpr(args.ast), location=top.location)
         | nothing() -> ovrld:callExpr(e.ast, ast:foldExpr(args.ast), location=top.location)
         end; }
 | e::PostfixExpr_c '(' args::ArgumentExprList_c ',' ')'
-    { top.ast = 
+    { top.ast =
         case e.directName of
           just(id) -> ast:directCallExpr(ast:fromId(id), ast:foldExpr(args.ast), location=top.location)
         | nothing() -> ovrld:callExpr(e.ast, ast:foldExpr(args.ast), location=top.location)
         end; }
 | e::PostfixExpr_c '(' ')'
-    { top.ast = 
+    { top.ast =
         case e.directName of
           just(id) -> ast:directCallExpr(ast:fromId(id), ast:nilExpr(), location=top.location)
         | nothing() -> ovrld:callExpr(e.ast, ast:nilExpr(), location=top.location)
@@ -464,14 +464,14 @@ concrete productions top::PrimaryExpr_c
     { top.ast = ast:parenExpr(e.ast, location=top.location); }
 
 
-closed nonterminal InitializerList_c with location, ast<[ast:Init]>;
+closed nonterminal InitializerList_c with location, ast<[ast:InitItem]>;
 concrete productions top::InitializerList_c
-| i::Initializer_c 
-    { top.ast = [ast:init(i.ast)]; }
-| d::Designation_c  i::Initializer_c 
+| i::Initializer_c
+    { top.ast = [ast:initItem(i.ast)]; }
+| d::Designation_c  i::Initializer_c
     { top.ast = [ast:designatedInit(d.ast, i.ast)]; }
 | il::InitializerList_c ',' i::Initializer_c
-    { top.ast = il.ast ++ [ast:init(i.ast)]; }
+    { top.ast = il.ast ++ [ast:initItem(i.ast)]; }
 | il::InitializerList_c ',' d::Designation_c  i::Initializer_c
     { top.ast = il.ast ++ [ast:designatedInit(d.ast, i.ast)]; }
 
@@ -529,7 +529,7 @@ concrete productions top::StringLiteral_c
     { top.ast = s.lexeme; }
 | s::StringConstantUBig_t   -- U""
     { top.ast = s.lexeme; }
-    
+
 
 closed nonterminal Constant_c with location, ast<ast:Expr>;
 concrete productions top::Constant_c

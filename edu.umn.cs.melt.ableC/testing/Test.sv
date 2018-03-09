@@ -73,7 +73,7 @@ Boolean ::= f::(Boolean ::= a a) l::[a]  r::[a]
 
 -- Now for the meat!
 
-derive Arbitrary on ArraySizeModifier, ArrayType, AsmArgument, AsmClobbers, AsmOperand, AsmOperands, AsmStatement, AssignOp, Attrib, AttribName, Attribute, BaseTypeExpr, BinOp, BitOp, BoolOp, BuiltinType, CharPrefix, CompareOp, Decl, Declarator, Declarators, Decls, Designator, EnumDecl, EnumItem, EnumItemList, Expr, ExprOrTypeName, Exprs, FloatSuffix, FunctionDecl, FunctionType, GenericAssoc, GenericAssocs, Init, Initializer, InitList, IntegerType, IntSuffix, MaybeExpr, MaybeInitializer, MaybeName, MemberDesignator, Name, NoncanonicalType, NumericConstant, NumOp, ParameterDecl, Parameters, Qualifier, RealType, Root, SpecialSpecifier, Stmt, StorageClass, StructDecl, StructDeclarator, StructDeclarators, StructItem, StructItemList, StructOrEnumOrUnion, TagType, Type, TypeModifierExpr, TypeName, UnaryOp, UnaryTypeOp, UnionDecl;
+derive Arbitrary on ArraySizeModifier, ArrayType, AsmArgument, AsmClobbers, AsmOperand, AsmOperands, AsmStatement, AssignOp, Attrib, AttribName, Attribute, BaseTypeExpr, BinOp, BitOp, BoolOp, BuiltinType, CharPrefix, CompareOp, Decl, Declarator, Declarators, Decls, Designator, EnumDecl, EnumItem, EnumItemList, Expr, ExprOrTypeName, Exprs, FloatSuffix, FunctionDecl, FunctionType, GenericAssoc, GenericAssocs, InitItem, Initializer, InitList, IntegerType, IntSuffix, MaybeExpr, MaybeInitializer, MaybeName, MemberDesignator, Name, NoncanonicalType, NumericConstant, NumOp, ParameterDecl, Parameters, Qualifier, RealType, Root, SpecialSpecifier, Stmt, StorageClass, StructDecl, StructDeclarator, StructDeclarators, StructItem, StructItemList, StructOrEnumOrUnion, TagType, Type, TypeModifierExpr, TypeName, UnaryOp, UnaryTypeOp, UnionDecl;
 
 -- Custom stuff to make the above work!
 function generateArbitraryListQualifier
@@ -136,7 +136,7 @@ Decorated EnumDecl ::= current__depth::Integer
 
 -- Equality checking?
 
-derive Eq on ArraySizeModifier, ArrayType, AsmArgument, AsmClobbers, AsmOperand, AsmOperands, AsmStatement, AssignOp, Attrib, AttribName, Attribute, BaseTypeExpr, BinOp, BitOp, BoolOp, BuiltinType, CharPrefix, CompareOp, Decl, Declarator, Declarators, Decls, Designator, EnumDecl, EnumItem, EnumItemList, Expr, ExprOrTypeName, Exprs, FloatSuffix, FunctionDecl, FunctionType, GenericAssoc, GenericAssocs, Init, Initializer, InitList, IntegerType, IntSuffix, MaybeExpr, MaybeInitializer, MaybeName, MemberDesignator, Name, NoncanonicalType, NumericConstant, NumOp, ParameterDecl, Parameters, Qualifier, RealType, Root, SpecialSpecifier, Stmt, StorageClass, StructDecl, StructDeclarator, StructDeclarators, StructItem, StructItemList, StructOrEnumOrUnion, TagType, Type, TypeModifierExpr, TypeName, UnaryOp, UnaryTypeOp, UnionDecl;
+derive Eq on ArraySizeModifier, ArrayType, AsmArgument, AsmClobbers, AsmOperand, AsmOperands, AsmStatement, AssignOp, Attrib, AttribName, Attribute, BaseTypeExpr, BinOp, BitOp, BoolOp, BuiltinType, CharPrefix, CompareOp, Decl, Declarator, Declarators, Decls, Designator, EnumDecl, EnumItem, EnumItemList, Expr, ExprOrTypeName, Exprs, FloatSuffix, FunctionDecl, FunctionType, GenericAssoc, GenericAssocs, InitItem, Initializer, InitList, IntegerType, IntSuffix, MaybeExpr, MaybeInitializer, MaybeName, MemberDesignator, Name, NoncanonicalType, NumericConstant, NumOp, ParameterDecl, Parameters, Qualifier, RealType, Root, SpecialSpecifier, Stmt, StorageClass, StructDecl, StructDeclarator, StructDeclarators, StructItem, StructItemList, StructOrEnumOrUnion, TagType, Type, TypeModifierExpr, TypeName, UnaryOp, UnaryTypeOp, UnionDecl;
 
 
 -- Custom stuff to make the above work!
@@ -203,7 +203,7 @@ mainTestSuite ablec_tests;
 --equalityTest( checkEqListMessage(generateArbitraryRoot().errors, []) , true, Boolean, ablec_tests );
 
 
-testFor ablec_tests: x :: Expr, 
+testFor ablec_tests: x :: Expr,
   let y :: Decorated Expr = decorate x with {env = emptyEnv();}
   in checkEqListMessage(y.errors, y.forward.errors)
   end;

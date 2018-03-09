@@ -24,8 +24,8 @@ flowtype pp {} on
   MaybeExpr, ExprOrTypeName,
   Stmt,
   Name, MaybeName,
-  MaybeInitializer, Initializer, Init, Designator;
-flowtype pps {} on 
+  MaybeInitializer, Initializer, InitItem, Designator;
+flowtype pps {} on
   Attributes,
   GlobalDecls, Decls, Declarators, Declarator, Parameters, StructItemList, EnumItemList, StructDeclarators, StructDeclarator,
   ArraySizeModifier,
@@ -50,7 +50,7 @@ flowtype errors {decorate} on
   NumericConstant,
   MaybeExpr, Exprs, ExprOrTypeName,
   Stmt,
-  MaybeInitializer, Initializer, InitList, Init, Designator,
+  MaybeInitializer, Initializer, InitList, InitItem, Designator,
   SpecialSpecifiers;
 
 flowtype defs {decorate} on
@@ -61,7 +61,7 @@ flowtype defs {decorate} on
   TypeName, BaseTypeExpr, TypeNames,
   MaybeExpr, Exprs, ExprOrTypeName,
   Stmt,
-  MaybeInitializer, Initializer, InitList, Init, Designator;
+  MaybeInitializer, Initializer, InitList, InitItem, Designator;
 flowtype functionDefs {} on
   Stmt;
 flowtype localDefs {decorate} on
@@ -94,4 +94,4 @@ flowtype forward {decorate} on
   BuiltinType, RealType, IntegerType,
   NumericConstant,
   Stmt,
-  Initializer, Init, Designator;
+  Initializer, InitItem, Designator;
