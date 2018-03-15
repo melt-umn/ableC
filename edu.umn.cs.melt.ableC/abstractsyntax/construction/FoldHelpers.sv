@@ -26,7 +26,7 @@ GlobalDecls ::= l::[Decl]
 }
 
 function foldInit
-InitList ::= l::[Init]
+InitList ::= l::[InitItem]
 {
   return foldr(consInit, nilInit(), l);
 }

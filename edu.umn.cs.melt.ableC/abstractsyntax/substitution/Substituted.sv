@@ -15,20 +15,20 @@ imports edu:umn:cs:melt:ableC:abstractsyntax:injectable as inj;
  - The functor attribute 'substituted' computes a transformation to generate a tree with the
  - rewrites specified by the 'substitutions' attribute.  substitutions is a list of Substitutions,
  - which each can receive inherited attributes to see what is being substituted, and synthesized
- - attributes corresponding to the result of performing a substitution.  
+ - attributes corresponding to the result of performing a substitution.
  -
  - In every production that would potentially want to perform a substitution, the incoming
  - subsitutions are decorated with the relevant parameters and the corresponding Maybe attribute
- - is accessed, to possibly find a value for substituted different than the current node.  
+ - is accessed, to possibly find a value for substituted different than the current node.
  -
  - Since this transformation is env-independent, productions that forward based on the env must
  - propagate substituted.  It is recommended, however, that all productions do this anyway, similar
- - to pp.  
- - 
+ - to pp.
+ -
  - Substitution is a closed nonterminal in the same way as Def, as extensions may wish to specify
  - new substitutions to perform on extension productions.  However, extensions cannot specify a new
  - substitution for a host production, since there is no way of specifying a new equation for the
- - substituted attribute on a host production.   
+ - substituted attribute on a host production.
  -}
 
 autocopy attribute substitutions::Substitutions;
@@ -63,7 +63,7 @@ top::Substitutions ::= h::Substitution t::Substitutions
 }
 
 abstract production nilSubstitution
-top::Substitutions ::= 
+top::Substitutions ::=
 {
   top.nameSub = nothing();
   top.typedefSub = nothing();
@@ -79,7 +79,7 @@ closed nonterminal Substitution with nameIn, nameSub, typedefSub, declRefSub, st
 flowtype Substitution = nameSub {nameIn}, typedefSub {nameIn}, declRefSub {nameIn}, stmtSub {nameIn}, exprsSub {nameIn}, parametersSub {nameIn}, refIdSub {nameIn};
 
 aspect default production
-top::Substitution ::= 
+top::Substitution ::=
 {
   top.nameSub = nothing();
   top.typedefSub = nothing();
@@ -158,7 +158,7 @@ attribute substitutions occurs on
   MemberDesignator,
   NumericConstant,
   MaybeExpr, Exprs, ExprOrTypeName,
-  MaybeInitializer, Initializer, InitList, Init, Designator,
+  MaybeInitializer, Initializer, InitList, InitItem, Designator,
   Name, MaybeName,
   Stmt,
   TypeName, BaseTypeExpr, TypeModifierExpr, TypeNames,
@@ -203,7 +203,7 @@ attribute substituted<ExprOrTypeName> occurs on ExprOrTypeName;
 attribute substituted<MaybeInitializer> occurs on MaybeInitializer;
 attribute substituted<Initializer> occurs on Initializer;
 attribute substituted<InitList> occurs on InitList;
-attribute substituted<Init> occurs on Init;
+attribute substituted<InitItem> occurs on InitItem;
 attribute substituted<Designator> occurs on Designator;
 attribute substituted<Name> occurs on Name;
 attribute substituted<MaybeName> occurs on MaybeName;
@@ -234,11 +234,11 @@ flowtype substituted {substitutions} on
   MemberDesignator,
   NumericConstant,
   MaybeExpr, Exprs, ExprOrTypeName,
-  MaybeInitializer, Initializer, InitList, Init, Designator,
+  MaybeInitializer, Initializer, InitList, InitItem, Designator,
   Name, MaybeName,
   Stmt,
   TypeName, BaseTypeExpr, TypeModifierExpr, TypeNames,
   Qualifier, SpecialSpecifier,
   Type, ArrayType, FunctionType, TagType, NoncanonicalType,
   BuiltinType, RealType, IntegerType;
-  
+

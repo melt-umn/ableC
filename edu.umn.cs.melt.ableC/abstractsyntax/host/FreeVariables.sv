@@ -1,7 +1,7 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 
--- For effeciency and simplicity, duplicates are not removed automaticly.  
--- This must be done at the top level, where the attribute is used, by calling removeDuplicateNames.  
+-- For efficiency and simplicity, duplicates are not removed automatically.
+-- This must be done at the top level, where the attribute is used, by calling removeDuplicateNames.
 synthesized attribute freeVariables::[Name];
 flowtype freeVariables {decorate} on
   GlobalDecls, Decls, Decl, Declarators, Declarator, FunctionDecl, Parameters, ParameterDecl, StructDecl, UnionDecl, EnumDecl, StructItemList, EnumItemList, StructItem, StructDeclarators, StructDeclarator, EnumItem,
@@ -11,7 +11,7 @@ flowtype freeVariables {decorate} on
   TypeName, BaseTypeExpr, TypeModifierExpr, TypeNames,
   MaybeExpr, Exprs, ExprOrTypeName,
   Stmt,
-  MaybeInitializer, Initializer, InitList, Init, Designator;
+  MaybeInitializer, Initializer, InitList, InitItem, Designator;
 
 function removeDefsFromNames
 [Name] ::= defs::[Def] names::[Name]

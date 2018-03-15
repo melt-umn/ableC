@@ -52,7 +52,7 @@ nonterminal InitList with pps, host<InitList>, lifted<InitList>, errors, globalD
 flowtype InitList = decorate {env, returnType};
 
 abstract production consInit
-top::InitList ::= h::Init  t::InitList
+top::InitList ::= h::InitItem  t::InitList
 {
   propagate host, lifted;
   top.pps = h.pp :: t.pps;
@@ -60,7 +60,7 @@ top::InitList ::= h::Init  t::InitList
   top.globalDecls := h.globalDecls ++ t.globalDecls;
   top.defs := h.defs ++ t.defs;
   top.freeVariables = h.freeVariables ++ removeDefsFromNames(h.defs, t.freeVariables);
-  
+
   t.env = addEnv(h.defs, h.env);
 }
 
@@ -75,11 +75,11 @@ top::InitList ::=
   top.freeVariables = [];
 }
 
-nonterminal Init with pp, host<Init>, lifted<Init>, errors, globalDecls, defs, env, freeVariables, returnType;
-flowtype Init = decorate {env, returnType};
+nonterminal InitItem with pp, host<InitItem>, lifted<InitItem>, errors, globalDecls, defs, env, freeVariables, returnType;
+flowtype InitItem = decorate {env, returnType};
 
-abstract production init
-top::Init ::= i::Initializer
+abstract production initItem
+top::InitItem ::= i::Initializer
 {
   propagate host, lifted;
   top.pp = i.pp;
@@ -90,7 +90,7 @@ top::Init ::= i::Initializer
 }
 
 abstract production designatedInit
-top::Init ::= d::Designator  i::Initializer
+top::InitItem ::= d::Designator  i::Initializer
 {
   propagate host, lifted;
   top.pp = ppConcat([d.pp, text(" = "), i.pp]);
@@ -98,7 +98,7 @@ top::Init ::= d::Designator  i::Initializer
   top.globalDecls := d.globalDecls ++ i.globalDecls;
   top.defs := d.defs ++ i.defs;
   top.freeVariables = d.freeVariables ++ i.freeVariables;
-  
+
   i.env = addEnv(d.defs, d.env);
 }
 
@@ -140,7 +140,7 @@ top::Designator ::= d::Designator  e::Expr
   top.globalDecls := d.globalDecls ++ e.globalDecls;
   top.defs := d.defs ++ e.defs; -- Yep...
   top.freeVariables = d.freeVariables ++ e.freeVariables;
-  
+
   e.env = addEnv(d.defs, d.env);
 }
 

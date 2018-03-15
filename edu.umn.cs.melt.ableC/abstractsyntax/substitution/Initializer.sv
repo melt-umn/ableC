@@ -42,7 +42,7 @@ top::Initializer ::= l::InitList
 
 
 aspect production consInit
-top::InitList ::= h::Init  t::InitList
+top::InitList ::= h::InitItem  t::InitList
 {
   propagate substituted;
 }
@@ -54,14 +54,14 @@ top::InitList ::=
 }
 
 
-aspect production init
-top::Init ::= i::Initializer
+aspect production initItem
+top::InitItem ::= i::Initializer
 {
   propagate substituted;
 }
 
 aspect production designatedInit
-top::Init ::= d::Designator  i::Initializer
+top::InitItem ::= d::Designator  i::Initializer
 {
   propagate substituted;
 }
