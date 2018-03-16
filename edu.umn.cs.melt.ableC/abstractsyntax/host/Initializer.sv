@@ -78,7 +78,7 @@ top::InitList ::=
 nonterminal Init with pp, host<Init>, lifted<Init>, errors, globalDecls, defs, env, freeVariables, returnType;
 flowtype Init = decorate {env, returnType};
 
-abstract production init
+abstract production positionalInit
 top::Init ::= i::Initializer
 {
   propagate host, lifted;

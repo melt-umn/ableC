@@ -467,11 +467,11 @@ concrete productions top::PrimaryExpr_c
 closed nonterminal InitializerList_c with location, ast<[ast:Init]>;
 concrete productions top::InitializerList_c
 | i::Initializer_c 
-    { top.ast = [ast:init(i.ast)]; }
+    { top.ast = [ast:positionalInit(i.ast)]; }
 | d::Designation_c  i::Initializer_c 
     { top.ast = [ast:designatedInit(d.ast, i.ast)]; }
 | il::InitializerList_c ',' i::Initializer_c
-    { top.ast = il.ast ++ [ast:init(i.ast)]; }
+    { top.ast = il.ast ++ [ast:positionalInit(i.ast)]; }
 | il::InitializerList_c ',' d::Designation_c  i::Initializer_c
     { top.ast = il.ast ++ [ast:designatedInit(d.ast, i.ast)]; }
 

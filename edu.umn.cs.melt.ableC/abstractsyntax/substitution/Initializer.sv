@@ -54,7 +54,7 @@ top::InitList ::=
 }
 
 
-aspect production init
+aspect production positionalInit
 top::Init ::= i::Initializer
 {
   propagate substituted;
