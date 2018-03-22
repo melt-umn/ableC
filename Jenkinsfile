@@ -45,6 +45,7 @@ try {
       "ableC-checkBounds",
       "ableC-cilk",
       "ableC-closure",
+      "ableC-refcount-closure",
       "ableC-condition-tables",
       "ableC-dimensionalAnalysis",
       "ableC-halide",
