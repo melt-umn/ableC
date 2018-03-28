@@ -214,9 +214,8 @@ aspect production consGlobalDecl
 top::GlobalDecls ::= h::Decl  t::GlobalDecls
 {
   propagate host;
-  
-  local newDecls::Decls = foldDecl(map(\ d::Decorated Decl -> d.lifted, h.globalDecls));
-  top.lifted = consGlobalDecl(decls(newDecls), consGlobalDecl(h.lifted, t.lifted));
+  top.lifted =
+    foldr(consGlobalDecl, t.lifted, map(\ d::Decorated Decl -> d.lifted, h.unfoldedGlobalDecls));
 }
 
 -- Utility functions
