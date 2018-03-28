@@ -256,7 +256,7 @@ top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
         then [err(lhs.location, "expression does not have pointer to struct or union type (got " ++ showType(lhs.typerep) ++ ")")]
         else [err(lhs.location, "expression does not have struct or union type (got " ++ showType(lhs.typerep) ++ ", did you mean to use -> ?)")]
       else if null(valueitems) then
-        [err(lhs.location, "expression does not field " ++ rhs.name)]
+        [err(lhs.location, "expression does not have field " ++ rhs.name)]
       else []
     end;
 }
