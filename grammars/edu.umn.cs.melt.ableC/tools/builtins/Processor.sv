@@ -1,6 +1,6 @@
-grammar tools:builtins;
+grammar edu:umn:cs:melt:ableC:tools:builtins;
 
-import edu:umn:cs:melt:ableC:abstractsyntax as a;
+import edu:umn:cs:melt:ableC:abstractsyntax:host as a;
 import edu:umn:cs:melt:ableC:abstractsyntax:env as a;
 import silver:langutil:pp as debugging;
 
@@ -85,7 +85,7 @@ top::Builtin ::= BUILTIN '(' id::Identifier ',' '"' t::Types dots::MaybeDots '"'
     if t.ignoreMe || indexOf("t", x.lexeme) != -1 || indexOf("u", x.lexeme) != -1 then
       ["-- Ignored " ++ id.lexeme ++ " on line " ++ toString(id.location.line)]
       --[]
-    else ["d <- [valueDef(\"" ++ id.lexeme ++ "\", builtinFunctionValueItem( {- " ++ debugprint ++ " -}\n    " ++ substitute("edu:umn:cs:melt:ableC:abstractsyntax:", "", hackUnparse(sig)) ++ ",\n    ordinaryFunctionHandler))];" ];
+    else ["d <- [valueDef(\"" ++ id.lexeme ++ "\", builtinFunctionValueItem( {- " ++ debugprint ++ " -}\n    " ++ substitute("edu:umn:cs:melt:ableC:abstractsyntax:host:", "", hackUnparse(sig)) ++ ",\n    ordinaryFunctionHandler))];" ];
   
   local debugprint :: String =
     debugging:show(80, debugging:cat(sig.a:lpp, sig.a:rpp));
@@ -265,7 +265,7 @@ concrete productions top::MaybeDots
 
 
 parser parseDef :: Builtins {
-  tools:builtins;
+  edu:umn:cs:melt:ableC:tools:builtins;
 }
 
 
