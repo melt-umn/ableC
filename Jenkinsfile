@@ -63,7 +63,7 @@ try {
 
     def tasks = [:]
     for (t in extensions) { tasks[t] = task_extension(t, ABLEC_BASE, ABLEC_GEN) }
-    for (t in specific_jobs) { tasks[t] = task_job(t, WS) }
+    for (t in specific_jobs) { tasks[t] = melt.buildJob(t) }
     
     parallel tasks
   }
