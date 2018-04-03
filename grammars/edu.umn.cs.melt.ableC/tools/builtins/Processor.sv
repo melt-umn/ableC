@@ -1,8 +1,9 @@
-grammar tools:builtins;
+grammar edu:umn:cs:melt:ableC:tools:builtins;
 
-import edu:umn:cs:melt:ableC:abstractsyntax as a;
+import edu:umn:cs:melt:ableC:abstractsyntax:host as a;
 import edu:umn:cs:melt:ableC:abstractsyntax:env as a;
 import silver:langutil:pp as debugging;
+import silver:reflect;
 
 -- This grammar parses parts of the *.def files and translates them to something suitable for AbleC.
 
@@ -58,10 +59,8 @@ terminal Volatile 'D';
 -- Extra annotations we ignore right now, so...
 terminal IgnoredStuff /[nrctFfipP:NPsSeju0-9]*/;
 
-
-
+-- Actual builtin translation stuff
 synthesized attribute ignoredBuiltins :: [String];
-
 
 nonterminal Builtins with ignoredBuiltins;
 
@@ -85,7 +84,7 @@ top::Builtin ::= BUILTIN '(' id::Identifier ',' '"' t::Types dots::MaybeDots '"'
     if t.ignoreMe || indexOf("t", x.lexeme) != -1 || indexOf("u", x.lexeme) != -1 then
       ["-- Ignored " ++ id.lexeme ++ " on line " ++ toString(id.location.line)]
       --[]
-    else ["d <- [valueDef(\"" ++ id.lexeme ++ "\", builtinFunctionValueItem( {- " ++ debugprint ++ " -}\n    " ++ substitute("edu:umn:cs:melt:ableC:abstractsyntax:", "", hackUnparse(sig)) ++ ",\n    ordinaryFunctionHandler))];" ];
+    else ["d <- [valueDef(\"" ++ id.lexeme ++ "\", builtinFunctionValueItem( {- " ++ debugprint ++ " -}\n    " ++ reflect(new(sig)).translation ++ ",\n    ordinaryFunctionHandler))];" ];
   
   local debugprint :: String =
     debugging:show(80, debugging:cat(sig.a:lpp, sig.a:rpp));
@@ -262,12 +261,99 @@ concrete productions top::MaybeDots
 | { top.hasdots = false; }
 
 
+-- Reflection helper stuff
+synthesized attribute translation<a>::a;
 
+attribute translation<String> occurs on AST;
 
-parser parseDef :: Builtins {
-  tools:builtins;
+aspect production nonterminalAST
+top::AST ::= prodName::String children::ASTs annotations::NamedASTs
+{
+  local prodShortName::String = last(explode(":", prodName));
+  top.translation = 
+    s"${prodShortName}(${implode(", ", children.translation ++ annotations.translation)})";
 }
 
+aspect production listAST
+top::AST ::= vals::ASTs
+{
+  top.translation = s"[${implode(", ", vals.translation)}]";
+}
+
+aspect production stringAST
+top::AST ::= s::String
+{
+  top.translation = s"\"${escapeString(s)}\"";
+}
+
+aspect production integerAST
+top::AST ::= i::Integer
+{
+  top.translation = toString(i);
+}
+
+aspect production floatAST
+top::AST ::= f::Float
+{
+  top.translation = toString(f);
+}
+
+aspect production booleanAST
+top::AST ::= b::Boolean
+{
+  top.translation = toString(b);
+}
+
+aspect production anyAST
+top::AST ::= x::a
+{
+  top.translation =
+    case reflectTypeName(x) of
+      just(n) -> error(s"Can't translate anyAST (type ${n})")
+    | nothing() -> error("Can't translate anyAST")
+    end;
+}
+
+attribute translation<[String]> occurs on ASTs;
+
+aspect production consAST
+top::ASTs ::= h::AST t::ASTs
+{
+  top.translation = h.translation :: t.translation;
+}
+
+aspect production nilAST
+top::ASTs ::=
+{
+  top.translation = [];
+}
+
+attribute translation<[String]> occurs on NamedASTs;
+
+aspect production consNamedAST
+top::NamedASTs ::= h::NamedAST t::NamedASTs
+{
+  top.translation = h.translation :: t.translation;
+}
+
+aspect production nilNamedAST
+top::NamedASTs ::=
+{
+  top.translation = [];
+}
+
+attribute translation<String> occurs on NamedAST;
+
+aspect production namedAST
+top::NamedAST ::= n::String v::AST
+{
+  top.translation = s"${last(explode(":", n))}=${v.translation}";
+}
+
+-- Main driver
+parser parseDef :: Builtins {
+  edu:umn:cs:melt:ableC:tools:builtins;
+}
 
 function main
 IOVal<Integer> ::= args::[String]  ioin::IO
@@ -280,7 +366,7 @@ IOVal<Integer> ::= args::[String]  ioin::IO
   
   local onsuccess :: IOVal<Integer> = ioval(print(
     "grammar edu:umn:cs:melt:ableC:abstractsyntax:builtins;\n" ++
-    "--GENERATED FILE, DO NOT EDIT. see :tools:builtins\n" ++
+    "--GENERATED FILE, DO NOT EDIT. see edu:umn:cs:melt:ableC:tools:builtins\n" ++
     "aspect function getInitialEnvDefs [Def] ::= {\n" ++
       implode("\n", parseresult.parseTree.ignoredBuiltins) ++ "\n" ++
     "}\n", file.io), 0);

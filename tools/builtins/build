@@ -1,4 +1,3 @@
 #!/bin/bash
 
-silver -o builtins.jar -I ../.. $@ tools:builtins
-
+silver -o builtins.jar -I ../../grammars $@ edu:umn:cs:melt:ableC:tools:builtins

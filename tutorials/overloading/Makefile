@@ -1,7 +1,7 @@
 
 ABLEC_JAR=ableC.jar
 ARTIFACT=artifact
-GRAMMAR_DIRS=. ../../
+GRAMMAR_DIRS=. ../../grammars
 GRAMMAR_SOURCES=$(shell find $(GRAMMAR_DIRS) -name *.sv -print0 | xargs -0)
 override SVFLAGS+=$(addprefix -I , $(GRAMMAR_DIRS))
 

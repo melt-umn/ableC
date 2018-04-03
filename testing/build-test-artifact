@@ -6,13 +6,13 @@ if hash silver 2>/dev/null; then
   # If 'silver' is in $PATH, this was run from the command line, presumably.
   SV="silver"
   SVTHEN="true"
-  SVARGS="-I .. --clean --warn-all"
+  SVARGS="-I ../grammars --clean --warn-all"
 elif [[ -e "/export/scratch/melt-jenkins/custom-silver/jars/RunSilver.jar" ]]; then
   # this is what we run from jenkins
   exit 1 # FIXME
   #SV="java -Xmx2000M -Xss4M -jar /export/scratch/melt-jenkins/custom-silver/jars/RunSilver.jar"
   #SVTHEN="ant"
-  #SVARGS="-I .. -G ../../.. --copperdump --warn-all --clean"
+  #SVARGS="-I ../grammars -G ../../.. --copperdump --warn-all --clean"
   #cd grammars/edu.umn.cs.ableC/testing
 else
   echo "Can't find silver to invoke"
@@ -20,7 +20,7 @@ else
 fi
 
 # basic sanity check
-if [[ ! -d "../edu.umn.cs.melt.ableC" ]]; then
+if [[ ! -d "../grammars/edu.umn.cs.melt.ableC" ]]; then
   echo "Can't find ableC grammar"
   exit 1
 fi
