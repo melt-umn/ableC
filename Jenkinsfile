@@ -38,7 +38,8 @@ try {
     }
   }
 
-  stage ("Extensions") {
+  stage ("Integration") {
+    // All known, stable extensions to build downstream
     def extensions = [
       "ableC-skeleton", "ableC-lib-skeleton", "ableC-sample-projects",
       "ableC-algebraic-data-types",
@@ -57,10 +58,13 @@ try {
       "ableC-vector",
       "ableC-watch"
     ]
+    // Specific other jobs to build
+    def specific_jobs = ["/melt-umn/ableP/master"]
 
     def tasks = [:]
     for (t in extensions) { tasks[t] = task_extension(t, ABLEC_BASE, ABLEC_GEN) }
-
+    for (t in specific_jobs) { tasks[t] = task_job(t, WS) }
+    
     parallel tasks
   }
 
