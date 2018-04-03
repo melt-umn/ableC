@@ -40,7 +40,7 @@ try {
 
   stage ("Extensions") {
     def extensions = [
-      "ableC-skeleton", "ableC-lib-skeleton", "ableC_sample_projects",
+      "ableC-skeleton", "ableC-lib-skeleton", "ableC-sample-projects",
       "ableC-algebraic-data-types",
       "ableC-checkBounds",
       "ableC-cilk",
