@@ -59,11 +59,11 @@ try {
       "ableC-watch"
     ]
     // Specific other jobs to build
-    def specific_jobs = ["/melt-umn/ableP/master"]
+    def specific_jobs = ["/melt-umn/ableP/master"] // TODO: Set ABLEC_BASE here?
 
     def tasks = [:]
     for (t in extensions) { tasks[t] = task_extension(t, ABLEC_BASE, ABLEC_GEN) }
-    for (t in specific_jobs) { tasks[t] = melt.buildJob(t) }
+    for (t in specific_jobs) { tasks[t] = task_job(t) }
     
     parallel tasks
   }
@@ -80,8 +80,8 @@ finally {
 }
 } // node
 
-
-def task_extension(extension_name, ABLEC_BASE, ABLEC_GEN) {
+// Build extension (from /melt-umn/${repo}/develop OR current branch, if it exists
+def task_extension(extension_name, String ABLEC_BASE, String ABLEC_GEN) {
   return {
     // Try to build a branch with the same name, otherwise fallback to develop
     def jobname = "/melt-umn/${extension_name}/${hudson.Util.rawEncode(env.BRANCH_NAME)}"
@@ -90,6 +90,13 @@ def task_extension(extension_name, ABLEC_BASE, ABLEC_GEN) {
     }
     // SILVER_BASE should get inherited automatically
     melt.buildJob(jobname, [ABLEC_BASE: ABLEC_BASE, ABLEC_GEN: ABLEC_GEN])
+  }
+}
+// Build generic job
+def task_job(String jobname) {
+  return {
+    // SILVER_BASE should get inherited automatically
+    melt.buildJob(jobname)
   }
 }
 
