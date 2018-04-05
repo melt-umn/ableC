@@ -17,6 +17,10 @@ aspect production functionValueItem
 top::ValueItem ::= s::Decorated FunctionDecl
 { top.pp = text("FunctionDecl"); } --s.pp; }
 
+aspect production builtinValueItem
+top::ValueItem ::= t::Type
+{ top.pp = text("BuiltinValueItem"); }
+
 aspect production builtinFunctionValueItem
 top::ValueItem ::= t::Type  handler::(Expr ::= Name Exprs Location)
 { top.pp = text("BuiltinFunctionValueItem"); }
