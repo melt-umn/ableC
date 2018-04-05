@@ -37,6 +37,14 @@ top::ValueItem ::= s::Decorated FunctionDecl
   top.isItemValue = true;
 }
 
+abstract production builtinValueItem
+top::ValueItem ::= t::Type
+{
+  top.typerep = t;
+  top.sourceLocation = loc("<builtin>", 1, 0, 1, 0, 0, 1);
+  top.isItemValue = true;
+}
+
 abstract production builtinFunctionValueItem
 top::ValueItem ::= t::Type  handler::(Expr ::= Name Exprs Location)
 {
