@@ -120,7 +120,7 @@ Positive test       - PASS:             tests/headers/positive/termcap.c
 Positive test       - PASS:             tests/headers/positive/termio.c
 Positive test       - PASS:             tests/headers/positive/termios.c
 Positive test       - PASS:             tests/headers/positive/tgmath.c
-Positive test       - FAIL: ERROR       tests/headers/positive/thread_db.c
+Positive test       - PASS:             tests/headers/positive/thread_db.c
 Positive test       - PASS:             tests/headers/positive/tic.c
 Positive test       - PASS:             tests/headers/positive/time.c
 Positive test       - PASS:             tests/headers/positive/ttyent.c
@@ -340,7 +340,6 @@ Failures:
                         tests/headers/positive/mmintrin.c
                         tests/headers/positive/regex.c
                         tests/headers/positive/resolv.c
-                        tests/headers/positive/thread_db.c
                         tests/headers/positive/ucontext.c
                         tests/headers/positive/x86intrin.c
                         tests/headers/positive/xmmintrin.c
@@ -350,14 +349,14 @@ Failures:
                         tests/kframework/positive/j079h.c
 
 Positive tests:
-Pass: 307
-Fail: 20
+Pass: 308
+Fail: 19
 
 Negative tests:
 Pass: 0
 Fail: 0
 
 Summary:
-Pass: 307
-Fail: 20
+Pass: 308
+Fail: 19
 

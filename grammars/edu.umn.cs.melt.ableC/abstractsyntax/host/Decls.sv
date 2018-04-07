@@ -530,7 +530,7 @@ synthesized attribute moduleName :: Maybe<String>;
 
 synthesized attribute hasConstField::Boolean;
 
-nonterminal StructDecl with location, pp, host<StructDecl>, lifted<StructDecl>, maybename, errors, globalDecls, defs, env, tagEnv, givenRefId, refId, moduleName, hasConstField, returnType, freeVariables;
+nonterminal StructDecl with location, pp, host<StructDecl>, lifted<StructDecl>, maybename, errors, globalDecls, defs, env, localDefs, tagEnv, givenRefId, refId, moduleName, hasConstField, returnType, freeVariables;
 flowtype StructDecl = decorate {env, givenRefId, returnType};
 
 abstract production structDecl
@@ -571,6 +571,7 @@ top::StructDecl ::= attrs::Attributes  name::MaybeName  dcls::StructItemList
   
   top.hasConstField = dcls.hasConstField;
   
+  top.localDefs := dcls.localDefs;
   top.tagEnv = addEnv(dcls.localDefs, emptyEnv());
   
   -- If there is no forward declaration, and we have a name, then add a tag dcl for the refid.
@@ -593,7 +594,7 @@ top::StructDecl ::= attrs::Attributes  name::MaybeName  dcls::StructItemList
     else [err(top.location, "Redeclaration of struct " ++ name.maybename.fromJust.name)];
 }
 
-nonterminal UnionDecl with location, pp, host<UnionDecl>, lifted<UnionDecl>, maybename, errors, globalDecls, defs, env, tagEnv, givenRefId, refId, moduleName, hasConstField, returnType, freeVariables;
+nonterminal UnionDecl with location, pp, host<UnionDecl>, lifted<UnionDecl>, maybename, errors, globalDecls, defs, env, localDefs, tagEnv, givenRefId, refId, moduleName, hasConstField, returnType, freeVariables;
 flowtype UnionDecl = decorate {env, givenRefId, returnType};
 
 abstract production unionDecl
@@ -617,6 +618,7 @@ top::UnionDecl ::= attrs::Attributes  name::MaybeName  dcls::StructItemList
   
   top.hasConstField = dcls.hasConstField;
   
+  top.localDefs := dcls.localDefs;
   top.tagEnv = addEnv(dcls.localDefs, emptyEnv());
   
   -- If there is no forward declaration, and we have a name, then add a tag dcl for the refid.
@@ -756,6 +758,34 @@ top::StructItem ::= attrs::Attributes  ty::BaseTypeExpr  dcls::StructDeclarators
   dcls.baseType = ty.typerep;
   dcls.typeModifiersIn = ty.typeModifiers;
   dcls.givenAttributes = attrs;
+}
+abstract production anonStructStructItem
+top::StructItem ::= d::StructDecl
+{
+  propagate host, lifted;
+  top.pp = cat(d.pp, semi());
+  top.errors := d.errors;
+  top.globalDecls := d.globalDecls;
+  top.defs := d.defs;
+  top.freeVariables = d.freeVariables;
+  top.localDefs := d.localDefs;
+  top.hasConstField = d.hasConstField;
+  
+  d.givenRefId = nothing();
+}
+abstract production anonUnionStructItem
+top::StructItem ::= d::UnionDecl
+{
+  propagate host, lifted;
+  top.pp = cat(d.pp, semi());
+  top.errors := d.errors;
+  top.globalDecls := d.globalDecls;
+  top.defs := d.defs;
+  top.freeVariables = d.freeVariables;
+  top.localDefs := d.localDefs;
+  top.hasConstField = d.hasConstField;
+  
+  d.givenRefId = nothing();
 }
 abstract production warnStructItem
 top::StructItem ::= msg::[Message]
