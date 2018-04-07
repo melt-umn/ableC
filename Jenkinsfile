@@ -81,7 +81,7 @@ finally {
 } // node
 
 // Build extension (from /melt-umn/${repo}/develop OR current branch, if it exists
-def task_extension(extension_name, String ABLEC_BASE, String ABLEC_GEN) {
+def task_extension(String extension_name, String ABLEC_BASE, String ABLEC_GEN) {
   return {
     // Try to build a branch with the same name, otherwise fallback to develop
     def jobname = "/melt-umn/${extension_name}/${hudson.Util.rawEncode(env.BRANCH_NAME)}"

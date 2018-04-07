@@ -361,7 +361,17 @@ top::FunctionDecl ::= storage::[StorageClass]  fnquals::SpecialSpecifiers  bty::
     end;
   
   local funcDefs::[Def] = bty.defs ++ [valueDef(name.name, functionValueItem(top))];
-  local thisFuncDef :: Def = miscDef("this_func", currentFunctionItem(name, top));
+  production attribute implicitDefs::[Def] with ++;
+  implicitDefs := [miscDef("this_func", currentFunctionItem(name, top))];
+  
+  local nameValueItem::ValueItem =
+    builtinValueItem(
+      pointerType(
+        nilQualifier(),
+        builtinType(
+          consQualifier(constQualifier(location=builtinLoc("host")), nilQualifier()),
+          signedType(charType()))));
+  implicitDefs <- map(valueDef(_, nameValueItem), ["__func__", "__FUNCTION__", "__PRETTY_FUNCTION__"]);
   
   top.errors := bty.errors ++ mty.errors ++ body.errors ++ fnquals.errors;
   top.globalDecls := bty.globalDecls ++ mty.globalDecls ++ decls.globalDecls ++ 
@@ -374,7 +384,7 @@ top::FunctionDecl ::= storage::[StorageClass]  fnquals::SpecialSpecifiers  bty::
     globalDeclsDefs(fnquals.globalDecls);
   top.freeVariables =
     bty.freeVariables ++
-    removeDefsFromNames([thisFuncDef], mty.freeVariables) ++
+    removeDefsFromNames(implicitDefs, mty.freeVariables) ++
     decls.freeVariables ++ --TODO?
     removeDefsFromNames(top.defs ++ parameters.defs ++ decls.defs ++ fnquals.defs, body.freeVariables);
   -- accumulate extension qualifiers on redeclaration
@@ -404,7 +414,7 @@ top::FunctionDecl ::= storage::[StorageClass]  fnquals::SpecialSpecifiers  bty::
     | _ -> nothing() -- Don't error here, this is caught in type checking
     end;
 
-  mty.env = addEnv([thisFuncDef], openScopeEnv(addEnv(funcDefs, top.env)));
+  mty.env = addEnv(implicitDefs, openScopeEnv(addEnv(funcDefs, top.env)));
   decls.env = addEnv(parameters.defs, mty.env);
   body.env = addEnv(decls.defs ++ body.functionDefs, decls.env);
   

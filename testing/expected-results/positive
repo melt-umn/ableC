@@ -186,8 +186,8 @@ Positive test       - PASS:             tests/kframework/positive/j022a.c
 Positive test       - PASS:             tests/kframework/positive/j026a.c
 Positive test       - PASS:             tests/kframework/positive/j027a.c
 Positive test       - PASS:             tests/kframework/positive/j027b.c
-Positive test       - FAIL: ERROR       tests/kframework/positive/j032a.c
-Positive test       - FAIL: ERROR       tests/kframework/positive/j032b.c
+Positive test       - PASS:             tests/kframework/positive/j032a.c
+Positive test       - PASS:             tests/kframework/positive/j032b.c
 Positive test       - PASS:             tests/kframework/positive/j033a.c
 Positive test       - FAIL: ERROR       tests/kframework/positive/j033b.c
 Positive test       - PASS:             tests/kframework/positive/j033c.c
@@ -345,21 +345,19 @@ Failures:
                         tests/headers/positive/x86intrin.c
                         tests/headers/positive/xmmintrin.c
                         tests/kframework/positive/j020b.c
-                        tests/kframework/positive/j032a.c
-                        tests/kframework/positive/j032b.c
                         tests/kframework/positive/j033b.c
                         tests/kframework/positive/j049c.c
                         tests/kframework/positive/j079h.c
 
 Positive tests:
-Pass: 305
-Fail: 22
+Pass: 307
+Fail: 20
 
 Negative tests:
 Pass: 0
 Fail: 0
 
 Summary:
-Pass: 305
-Fail: 22
+Pass: 307
+Fail: 20
 
