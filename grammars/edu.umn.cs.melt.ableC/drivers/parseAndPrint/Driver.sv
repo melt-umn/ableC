@@ -16,7 +16,8 @@ IOVal<Integer> ::= args::[String] ioIn::IO
   local fileName :: String = head(args);
   local splitFileName :: Pair<String String> = splitFileNameAndExtension(fileName);
   local baseFileName :: String = splitFileName.fst;
-  local cppFileName :: String = baseFileName ++ ".gen_cpp";
+  local skipCpp :: Boolean = containsBy(stringEq, "--skip-cpp", args);
+  local cppFileName :: String = if skipCpp then fileName else baseFileName ++ ".gen_cpp";
   local ppFileName :: String = baseFileName ++ ".pp_out.c";
 
   local partitionedArgs :: Pair<[String] [String]> = partition( partitionArg, tail(args) );
@@ -40,8 +41,8 @@ IOVal<Integer> ::= args::[String] ioIn::IO
         if containsBy(stringEq, "--show-cpp", args) then
           printM("CPP command: " ++ fullCppCmd ++ "\n");
         mkCppFile::Integer <-
-          systemM(
-          fullCppCmd);
+          if skipCpp then returnIO(0)
+          else systemM(fullCppCmd);
         if mkCppFile != 0 then {
           printM("CPP call failed: " ++ fullCppCmd ++ "\n");
           return 3;
@@ -112,6 +113,7 @@ Boolean ::= arg::String
     arg=="--show-lifted-pp" ||
     arg=="--show-cpp" ||
     arg=="--force-trans" ||
+    arg=="--skip-cpp" ||
     startsWith("--xc-", arg) ;
 }
 
