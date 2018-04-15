@@ -70,7 +70,7 @@ top::Expr ::= id::Name
   top.globalDecls := [];
   top.defs := [];
   top.typerep = id.valueItem.typerep;
-  top.freeVariables = [id];
+  top.freeVariables = top.typerep.freeVariables ++ [id];
   top.isLValue = true;
   
   top.errors <- id.valueLookupCheck;

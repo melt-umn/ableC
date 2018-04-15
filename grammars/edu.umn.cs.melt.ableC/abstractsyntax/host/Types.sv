@@ -9,7 +9,7 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
  - Variants: builtin, pointer, array, function, tagged, noncanonical.
  - Noncanonical forwards, and so doesn't need any attributes, etc attached to it.
  -}
-nonterminal Type with lpp, rpp, host<Type>, baseTypeExpr, typeModifierExpr, mangledName, integerPromotions, defaultArgumentPromotions, defaultLvalueConversion, defaultFunctionArrayLvalueConversion, isIntegerType, isScalarType, isArithmeticType, withoutAttributes, withoutTypeQualifiers, withoutExtensionQualifiers<Type>, withTypeQualifiers, addedTypeQualifiers, qualifiers, mergeQualifiers<Type>, errors;
+nonterminal Type with lpp, rpp, host<Type>, baseTypeExpr, typeModifierExpr, mangledName, integerPromotions, defaultArgumentPromotions, defaultLvalueConversion, defaultFunctionArrayLvalueConversion, isIntegerType, isScalarType, isArithmeticType, withoutAttributes, withoutTypeQualifiers, withoutExtensionQualifiers<Type>, withTypeQualifiers, addedTypeQualifiers, qualifiers, mergeQualifiers<Type>, errors, freeVariables;
 flowtype Type = decorate {}, baseTypeExpr {}, typeModifierExpr {}, integerPromotions {}, defaultArgumentPromotions {}, defaultLvalueConversion {}, defaultFunctionArrayLvalueConversion {}, isIntegerType {}, isScalarType {}, isArithmeticType {}, withoutAttributes {}, withoutTypeQualifiers {}, withoutExtensionQualifiers {}, withTypeQualifiers {addedTypeQualifiers}, qualifiers {}, mergeQualifiers {};
 
 -- Used to turn a Type back into a TypeName
@@ -83,6 +83,7 @@ top::Type ::=
   top.mergeQualifiers = \t2::Type -> errorType();
   top.qualifiers = [];
   top.errors := [];
+  top.freeVariables = [];
 
   -- The semantics for all flags is that they should be TRUE is no error is to be
   -- raised. Thus, all should be true here, to suppress errors.
@@ -125,6 +126,7 @@ top::Type ::= q::Qualifiers  bt::BuiltinType
   top.qualifiers = q.qualifiers;
   top.errors := q.errors;
   q.typeToQualify = top;
+  top.freeVariables = [];
 }
 
 
@@ -161,6 +163,7 @@ top::Type ::= q::Qualifiers  target::Type
   
   top.isScalarType = true;
   q.typeToQualify = top;
+  top.freeVariables = target.freeVariables;
 }
 
 
@@ -232,11 +235,12 @@ top::Type ::= element::Type  indexQualifiers::Qualifiers  sizeModifier::ArraySiz
     end;
   top.qualifiers = indexQualifiers.qualifiers;
   top.errors := element.errors ++ indexQualifiers.errors;
+  top.freeVariables = element.freeVariables ++ sub.freeVariables;
   indexQualifiers.typeToQualify = top;
 }
 
 {-- The subtypes of arrays -}
-nonterminal ArrayType with pp, host<ArrayType>;
+nonterminal ArrayType with pp, host<ArrayType>, freeVariables;
 flowtype ArrayType = decorate {};
 
 abstract production constantArrayType
@@ -244,6 +248,7 @@ top::ArrayType ::= size::Integer
 {
   propagate host;
   top.pp = text(toString(size));
+  top.freeVariables = [];
   -- TODO: include the Decorated Expr here too maybe?
 }
 abstract production incompleteArrayType
@@ -251,6 +256,7 @@ top::ArrayType ::=
 {
   propagate host;
   top.pp = notext();
+  top.freeVariables = [];
 }
 abstract production variableArrayType
 top::ArrayType ::= size::Decorated Expr
@@ -258,6 +264,7 @@ top::ArrayType ::= size::Decorated Expr
   top.host =
     variableArrayType(decorate size.host with {env = size.env; returnType = size.returnType;});
   top.pp = size.pp;
+  top.freeVariables = size.freeVariables;
 }
 
 {-- Modifiers attached to array types that are function parameters -}
@@ -310,10 +317,11 @@ top::Type ::= result::Type  sub::FunctionType  q::Qualifiers
     end;
   top.qualifiers = q.qualifiers;
   top.errors := result.errors ++ sub.errors;
+  top.freeVariables = result.freeVariables ++ sub.freeVariables;
 }
 
 {-- The subtypes of functions -}
-nonterminal FunctionType with lpp, rpp, host<FunctionType>, mangledName, errors, withoutExtensionQualifiers<FunctionType>, mergeQualifiers<FunctionType>;
+nonterminal FunctionType with lpp, rpp, host<FunctionType>, mangledName, withoutExtensionQualifiers<FunctionType>, mergeQualifiers<FunctionType>, errors, freeVariables;
 flowtype FunctionType = decorate {};
 -- clang has an 'extinfo' structure with calling convention, noreturn, 'produces'?, regparam
 
@@ -341,6 +349,7 @@ top::FunctionType ::= args::[Type]  variadic::Boolean
       map((.rpp), args)) ++ if variadic then [text("...")] else [];
   top.mangledName = implode("_", map((.mangledName), args)) ++ if variadic then "_variadic" else "";
   top.errors := concat(map((.errors), args));
+  top.freeVariables = concat(map((.freeVariables), args));
 }
 -- Evidently, old K&R C functions don't have args as part of function type
 abstract production noProtoFunctionType
@@ -352,6 +361,7 @@ top::FunctionType ::=
   top.rpp = text("()");
   top.mangledName = "noproto";
   top.errors := [];
+  top.freeVariables = [];
 }
 
 function argTypesToParameters
@@ -401,6 +411,7 @@ top::Type ::= q::Qualifiers  sub::TagType
     end;
   top.qualifiers = q.qualifiers;
   top.errors := q.errors;
+  top.freeVariables = [];
   
   top.isIntegerType = sub.isIntegerType;
   top.isArithmeticType = sub.isIntegerType;
@@ -485,6 +496,7 @@ top::Type ::= q::Qualifiers  bt::Type
     end;
   top.qualifiers = q.qualifiers;
   top.errors := q.errors ++ bt.errors;
+  top.freeVariables = bt.freeVariables;
   q.typeToQualify = top;
 }
 
@@ -523,6 +535,7 @@ top::Type ::= attrs::Attributes  bt::Type
   top.isScalarType = bt.isScalarType;
   top.isArithmeticType = bt.isArithmeticType;
   top.errors := bt.errors;
+  top.freeVariables = bt.freeVariables;
   
   -- Whatever...
   attrs.env = emptyEnv();
@@ -572,6 +585,7 @@ top::Type ::= bt::Type  bytes::Integer
   top.isScalarType = false;
   top.isArithmeticType = false;
   top.errors := bt.errors;
+  top.freeVariables = bt.freeVariables;
 }
 
 {-------------------------------------------------------------------------------

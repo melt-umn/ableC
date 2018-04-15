@@ -9,6 +9,7 @@ flowtype freeVariables {decorate} on
   AsmStatement, AsmArgument, AsmOperands, AsmOperand,
   Expr, GenericAssocs, GenericAssoc,
   TypeName, BaseTypeExpr, TypeModifierExpr, TypeNames,
+  Type, ArrayType, FunctionType,
   MaybeExpr, Exprs, ExprOrTypeName,
   Stmt,
   MaybeInitializer, Initializer, InitList, Init, Designator;
