@@ -124,7 +124,6 @@ ast:BaseTypeExpr ::= q::ast:Qualifiers bt::ast:BaseTypeExpr
   return ast:atomicTypeExpr(q, ast:typeName(bt, ast:baseTypeExpr()));
 }
 
-
 -- Thread_local
 terminal C11_Thread_local_t '_Thread_local' lexer classes {Ckeyword};
 
@@ -132,7 +131,6 @@ concrete productions top::StorageClassSpecifier_c
 | '_Thread_local'
     { top.isTypedef = false;
       top.storageClass = [ast:threadLocalStorageClass()]; } -- Storage class MODIFIER of some sort. only with 'static' or 'extern'.
-
 
 -- Static assert
 terminal C11_Static_assert_t '_Static_assert' lexer classes {Ckeyword};
@@ -146,7 +144,6 @@ concrete productions top::Declaration_c
 | s::StaticAssertDeclaration_c
     { top.ast = s.ast; }
 
-
 -- _Alignof
 terminal C11_Alignof_t '_Alignof' lexer classes {Ckeyword};
 
@@ -154,5 +151,17 @@ concrete productions top::UnaryExpr_c
 | '_Alignof' '(' t::TypeName_c ')'
     { top.ast = ast:alignofExpr(ast:typeNameExpr(t.ast), location=top.location); }
 
-
-
+-- Anonymous struct/union
+concrete productions top::StructDeclaration_c
+| su::StructOrUnion_c id::Identifier_t '{' ss::StructDeclarationList_c '}' ';'
+    { top.ast =
+        case su of
+        | struct_c(_) -> [ast:anonStructStructItem(ast:structDecl(ast:nilAttribute(), ast:justName(ast:fromId(id)), ast:foldStructItem(ss.ast), location=top.location))]
+        | union_c(_) -> [ast:anonUnionStructItem(ast:unionDecl(ast:nilAttribute(), ast:justName(ast:fromId(id)), ast:foldStructItem(ss.ast), location=top.location))]
+        end; }
+| su::StructOrUnion_c '{' ss::StructDeclarationList_c '}' ';'
+    { top.ast =
+        case su of
+        | struct_c(_) -> [ast:anonStructStructItem(ast:structDecl(ast:nilAttribute(), ast:nothingName(), ast:foldStructItem(ss.ast), location=top.location))]
+        | union_c(_) -> [ast:anonUnionStructItem(ast:unionDecl(ast:nilAttribute(), ast:nothingName(), ast:foldStructItem(ss.ast), location=top.location))]
+        end; }
