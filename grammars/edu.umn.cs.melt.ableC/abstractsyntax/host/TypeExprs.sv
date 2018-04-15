@@ -446,9 +446,13 @@ top::TypeModifierExpr ::= element::TypeModifierExpr  indexQualifiers::Qualifiers
     size.pp
     ])), element.rpp);
 
-  top.typerep = arrayType(element.typerep, indexQualifiers, sizeModifier,
-    -- TODO: this is a lie: we're not checking if it's constant sized!
-    variableArrayType(size));
+  top.typerep =
+    arrayType(
+      element.typerep, indexQualifiers, sizeModifier,
+      case size.integerConstantValue of
+        just(v) -> constantArrayType(v)
+      | nothing() -> variableArrayType(size)
+      end);
   top.errors := element.errors ++ size.errors;
   top.globalDecls := element.globalDecls ++ size.globalDecls;
   top.freeVariables = element.freeVariables ++ size.freeVariables;
