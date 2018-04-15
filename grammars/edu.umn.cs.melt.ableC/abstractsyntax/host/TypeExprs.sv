@@ -382,15 +382,15 @@ top::BaseTypeExpr ::= q::Qualifiers  e::ExprOrTypeName
  - Typically, these are just anchored somewhere to obtain the env,
  - and then turn into an environment-independent Type.
  -}
-nonterminal TypeModifierExpr with env, typerep, lpp, rpp, host<TypeModifierExpr>, lifted<TypeModifierExpr>, isFunctionTypeExpr, baseType, typeModifiersIn, errors, globalDecls, returnType, freeVariables;
-flowtype TypeModifierExpr = decorate {env, baseType, typeModifiersIn, returnType}, isFunctionTypeExpr {};
+nonterminal TypeModifierExpr with env, typerep, lpp, rpp, host<TypeModifierExpr>, lifted<TypeModifierExpr>, isFunctionArrayTypeExpr, baseType, typeModifiersIn, errors, globalDecls, returnType, freeVariables;
+flowtype TypeModifierExpr = decorate {env, baseType, typeModifiersIn, returnType}, isFunctionArrayTypeExpr {};
 
-synthesized attribute isFunctionTypeExpr::Boolean;
+synthesized attribute isFunctionArrayTypeExpr::Boolean;
 
 aspect default production
 top::TypeModifierExpr ::=
 {
-  top.isFunctionTypeExpr = false;
+  top.isFunctionArrayTypeExpr = false;
 }
 
 {--
@@ -424,9 +424,9 @@ top::TypeModifierExpr ::= q::Qualifiers  target::TypeModifierExpr
 {
   propagate host, lifted;
   top.lpp = ppConcat([ target.lpp, space(),
-                     if target.isFunctionTypeExpr then text("(*)") else text("*"),
+                     if target.isFunctionArrayTypeExpr then text("(*") else text("*"),
                      terminate(space(), q.pps) ]);
-  top.rpp = target.rpp;
+  top.rpp = cat(if target.isFunctionArrayTypeExpr then text(")") else notext(), target.rpp);
   top.typerep = pointerType(q, target.typerep);
   top.errors := q.errors ++ target.errors;
   top.globalDecls := target.globalDecls;
@@ -445,6 +445,8 @@ top::TypeModifierExpr ::= element::TypeModifierExpr  indexQualifiers::Qualifiers
     terminate(space(), indexQualifiers.pps ++ sizeModifier.pps),
     size.pp
     ])), element.rpp);
+  
+  top.isFunctionArrayTypeExpr = true;
 
   top.typerep =
     arrayType(
@@ -466,6 +468,8 @@ top::TypeModifierExpr ::= element::TypeModifierExpr  indexQualifiers::Qualifiers
   top.rpp = cat(brackets(
     ppImplode(space(), indexQualifiers.pps ++ sizeModifier.pps)
     ), element.rpp);
+  
+  top.isFunctionArrayTypeExpr = true;
 
   top.typerep = arrayType(element.typerep, indexQualifiers, sizeModifier, incompleteArrayType());
   top.errors := element.errors ++ indexQualifiers.errors;
@@ -490,7 +494,7 @@ top::TypeModifierExpr ::= result::TypeModifierExpr  args::Parameters  variadic::
            )
      ), result.rpp);
   
-  top.isFunctionTypeExpr = true;
+  top.isFunctionArrayTypeExpr = true;
   
   top.typerep = functionType(result.typerep, 
                              protoFunctionType(args.typereps, variadic), q);
@@ -507,7 +511,7 @@ top::TypeModifierExpr ::= result::TypeModifierExpr  ids::[Name]  q::Qualifiers -
   top.lpp = result.lpp;
   top.rpp = cat( parens(ppImplode(text(", "), map((.pp), ids))), result.rpp );
   
-  top.isFunctionTypeExpr = true;
+  top.isFunctionArrayTypeExpr = true;
   
   top.typerep = functionType(result.typerep, noProtoFunctionType(), q);
   top.errors := result.errors;

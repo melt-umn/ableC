@@ -139,8 +139,22 @@ abstract production pointerType
 top::Type ::= q::Qualifiers  target::Type
 {
   propagate host;
-  top.lpp = ppConcat([ target.lpp, space(), text("*"), space(), ppImplode(space(), q.pps) ]);
-  top.rpp = target.rpp;
+  
+  local wrapTarget::Boolean = 
+    case target of
+      noncanonicalType(parenType(_)) -> false
+    | noncanonicalType(typedefType(_, _, _)) -> false
+    | noncanonicalType(typeofType(_, _)) -> false
+    | arrayType(_, _, _, _) -> true
+    | functionType(_, _, _) -> true
+    | _ -> false
+    end;
+  top.lpp =
+    ppConcat([
+      target.lpp, space(),
+      if wrapTarget then text("(*") else text("*"),
+      space(), ppImplode(space(), q.pps)]);
+  top.rpp = cat(if wrapTarget then text(")") else notext(), target.rpp);
   top.baseTypeExpr = target.baseTypeExpr;
   top.typeModifierExpr = pointerTypeExpr(q, target.typeModifierExpr);
   top.mangledName = s"${q.mangledName}_pointer_${target.mangledName}_";
