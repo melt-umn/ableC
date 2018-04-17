@@ -83,6 +83,11 @@ Decorated Env ::= e::Decorated Env
 {
   return decorate globalEnv_i(e) with {};
 }
+function nonGlobalEnv
+Decorated Env ::= e::Decorated Env
+{
+  return decorate nonGlobalEnv_i(e) with {};
+}
 
 -- Environment lookup functions
 

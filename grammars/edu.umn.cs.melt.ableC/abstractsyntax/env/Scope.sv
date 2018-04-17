@@ -44,11 +44,17 @@ Scopes<a> ::= s::Scopes<a>
 {
   return tm:empty(compareString) :: s;
 }
-{-- Create a new innermost scope -}
+{-- Get the outermost scope -}
 function globalScope
 Scopes<a> ::= s::Scopes<a>
 {
   return [last(s)];
+}
+{-- Get all but the outermost scope -}
+function nonGlobalScope
+Scopes<a> ::= s::Scopes<a>
+{
+  return init(s);
 }
 {-- Looks up an identifier in the closest scope that has a match -}
 function lookupScope
