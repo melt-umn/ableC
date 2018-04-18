@@ -7,7 +7,7 @@ imports edu:umn:cs:melt:ableC:abstractsyntax:host as ast;
 imports edu:umn:cs:melt:ableC:abstractsyntax:construction as ast;
 imports silver:langutil;
 
-terminal CPP_Extension_t '__extension__' lexer classes {Ckeyword};
+terminal CPP_Extension_t '__extension__' lexer classes {Ckeyword}, precedence=0;
 terminal CPP_Inline_OneSided_t '__inline' lexer classes {Ckeyword};
 terminal CPP_Inline_t '__inline__' lexer classes {Ckeyword};
 terminal CPP_Signed_t '__signed__' lexer classes {Ckeyword};
