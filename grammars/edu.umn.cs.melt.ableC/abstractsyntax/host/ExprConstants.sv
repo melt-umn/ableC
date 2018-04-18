@@ -15,6 +15,7 @@ top::Expr ::= c::NumericConstant
   top.freeVariables = [];
   top.typerep = builtinType(nilQualifier(), c.constanttyperep);
   top.isLValue = false;
+  top.integerConstantValue = c.integerConstantValue;
 }
 abstract production imaginaryConstant
 top::Expr ::= c::NumericConstant
@@ -45,8 +46,8 @@ top::Expr ::= num::String  c::CharPrefix
   top.isLValue = false;
 }
 
-nonterminal NumericConstant with location, pp, host<NumericConstant>, lifted<NumericConstant>, errors, env, constanttyperep;
-flowtype NumericConstant = decorate {env}, constanttyperep {decorate};
+nonterminal NumericConstant with location, pp, host<NumericConstant>, lifted<NumericConstant>, errors, env, constanttyperep, integerConstantValue;
+flowtype NumericConstant = decorate {env}, constanttyperep {decorate}, integerConstantValue {decorate};
 
 synthesized attribute constanttyperep :: BuiltinType;
 
@@ -57,6 +58,7 @@ top::NumericConstant ::= num::String  unsigned::Boolean  suffix::IntSuffix
   top.pp = text(num);
   top.errors := [];
   top.constanttyperep = if unsigned then unsignedType(suffix.constinttyperep) else signedType(suffix.constinttyperep);
+  top.integerConstantValue = just(toInt(num));
 }
 abstract production hexIntegerConstant
 top::NumericConstant ::= num::String  unsigned::Boolean  suffix::IntSuffix
@@ -65,6 +67,7 @@ top::NumericConstant ::= num::String  unsigned::Boolean  suffix::IntSuffix
   top.pp = text(num);
   top.errors := [];
   top.constanttyperep = if unsigned then unsignedType(suffix.constinttyperep) else signedType(suffix.constinttyperep);
+  top.integerConstantValue = nothing(); -- TODO
 }
 abstract production octIntegerConstant
 top::NumericConstant ::= num::String  unsigned::Boolean  suffix::IntSuffix
@@ -73,6 +76,7 @@ top::NumericConstant ::= num::String  unsigned::Boolean  suffix::IntSuffix
   top.pp = text(num);
   top.errors := [];
   top.constanttyperep = if unsigned then unsignedType(suffix.constinttyperep) else signedType(suffix.constinttyperep);
+  top.integerConstantValue = nothing(); -- TODO
 }
 
 abstract production floatConstant
@@ -82,6 +86,7 @@ top::NumericConstant ::= num::String  suffix::FloatSuffix
   top.pp = text(num);
   top.errors := [];
   top.constanttyperep = realType(suffix.constfloattyperep);
+  top.integerConstantValue = nothing();
 }
 abstract production hexFloatConstant
 top::NumericConstant ::= num::String  suffix::FloatSuffix
@@ -90,6 +95,7 @@ top::NumericConstant ::= num::String  suffix::FloatSuffix
   top.pp = text(num);
   top.errors := [];
   top.constanttyperep = realType(suffix.constfloattyperep);
+  top.integerConstantValue = nothing();
 }
 
 nonterminal IntSuffix with constinttyperep; -- nothing, L, LL

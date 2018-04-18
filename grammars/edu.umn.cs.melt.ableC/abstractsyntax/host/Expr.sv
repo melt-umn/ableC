@@ -2,17 +2,18 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 
 import edu:umn:cs:melt:ableC:abstractsyntax:overloadable as ovrld;
 
-nonterminal Expr with location, pp, host<Expr>, lifted<Expr>, globalDecls, errors, defs, env, returnType, freeVariables, typerep, isLValue;
+nonterminal Expr with location, pp, host<Expr>, lifted<Expr>, globalDecls, errors, defs, env, returnType, freeVariables, typerep, isLValue, integerConstantValue;
 
-flowtype Expr = decorate {env, returnType}, isLValue {decorate};
+flowtype Expr = decorate {env, returnType}, isLValue {decorate}, integerConstantValue {decorate};
 
-synthesized attribute integerConstantValue :: Maybe<Integer>; -- TODO: Is this actually used for anything
 synthesized attribute isLValue::Boolean;
+synthesized attribute integerConstantValue::Maybe<Integer>;
 
 aspect default production
 top::Expr ::=
 {
   top.isLValue = false;
+  top.integerConstantValue = nothing();
 }
 
 abstract production errorExpr
@@ -69,7 +70,7 @@ top::Expr ::= id::Name
   top.globalDecls := [];
   top.defs := [];
   top.typerep = id.valueItem.typerep;
-  top.freeVariables = [id];
+  top.freeVariables = top.typerep.freeVariables ++ [id];
   top.isLValue = true;
   
   top.errors <- id.valueLookupCheck;
