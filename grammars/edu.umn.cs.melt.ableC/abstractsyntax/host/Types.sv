@@ -467,7 +467,8 @@ top::TagType ::= kwd::StructOrEnumOrUnion  name::String  refId::String
 {
   propagate host;
   top.pp = ppConcat([kwd.pp, space(), text(name)]);
-  top.mangledName = s"${kwd.mangledName}_${name}_${substitute(":", "_", refId)}";
+  top.mangledName =
+    s"${kwd.mangledName}_${if name == "<anon>" then "anon" else name}_${substitute(":", "_", refId)}";
   top.isIntegerType = false;
 }
 
