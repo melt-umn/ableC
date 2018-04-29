@@ -467,7 +467,8 @@ top::TagType ::= kwd::StructOrEnumOrUnion  name::String  refId::String
 {
   propagate host;
   top.pp = ppConcat([kwd.pp, space(), text(name)]);
-  top.mangledName = s"${kwd.mangledName}_${name}_${substitute(":", "_", refId)}";
+  top.mangledName =
+    s"${kwd.mangledName}_${if name == "<anon>" then "anon" else name}_${substitute(":", "_", refId)}";
   top.isIntegerType = false;
 }
 
@@ -615,6 +616,8 @@ top::Type ::= sub::NoncanonicalType
   top.rpp = sub.rpp;
   top.baseTypeExpr = sub.baseTypeExpr;
   top.typeModifierExpr = sub.typeModifierExpr;
+  top.withTypeQualifiers = sub.withTypeQualifiers;
+  sub.addedTypeQualifiers = top.addedTypeQualifiers;
 
   -- behavior? maybe it should be pushed down? TODO
   --top.mangledName = ;
@@ -627,8 +630,8 @@ top::Type ::= sub::NoncanonicalType
 }
 
 {-- Types that resolve to other types. -}
-nonterminal NoncanonicalType with canonicalType, lpp, rpp, host<NoncanonicalType>, baseTypeExpr, typeModifierExpr;
-flowtype NoncanonicalType = decorate {}, canonicalType {}, baseTypeExpr {}, typeModifierExpr {};
+nonterminal NoncanonicalType with canonicalType, lpp, rpp, host<NoncanonicalType>, baseTypeExpr, typeModifierExpr, withTypeQualifiers, addedTypeQualifiers;
+flowtype NoncanonicalType = decorate {}, canonicalType {}, baseTypeExpr {}, typeModifierExpr {}, withTypeQualifiers {addedTypeQualifiers};
 
 synthesized attribute canonicalType :: Type;
 
@@ -643,6 +646,8 @@ top::NoncanonicalType ::= resolved::Type
   top.rpp = resolved.rpp;
   top.baseTypeExpr = resolved.baseTypeExpr;
   top.typeModifierExpr = resolved.typeModifierExpr;
+  top.withTypeQualifiers = resolved.withTypeQualifiers;
+  resolved.addedTypeQualifiers = top.addedTypeQualifiers;
 
   top.canonicalType = resolved;
 }
@@ -668,6 +673,8 @@ top::NoncanonicalType ::= wrapped::Type
   top.rpp = cat( text(")"), wrapped.rpp );
   top.baseTypeExpr = wrapped.baseTypeExpr;
   top.typeModifierExpr = parenTypeExpr(wrapped.typeModifierExpr);
+  top.withTypeQualifiers = wrapped.withTypeQualifiers;
+  wrapped.addedTypeQualifiers = top.addedTypeQualifiers;
 
   top.canonicalType = wrapped;
 }
@@ -696,6 +703,8 @@ top::NoncanonicalType ::= original::Type  pointer::Type
   top.rpp = original.rpp;
   top.baseTypeExpr = original.baseTypeExpr;
   top.typeModifierExpr = original.typeModifierExpr;
+  top.withTypeQualifiers = pointer.withTypeQualifiers;
+  pointer.addedTypeQualifiers = top.addedTypeQualifiers;
 
   top.canonicalType = pointer;
 }
@@ -717,6 +726,9 @@ top::NoncanonicalType ::= q::Qualifiers  n::String  resolved::Type
   top.rpp = notext();
   top.baseTypeExpr = typedefTypeExpr(q, name(n, location=builtinLoc("host")));
   top.typeModifierExpr = baseTypeExpr();
+  top.withTypeQualifiers =
+    noncanonicalType(
+      typedefType(foldQualifier(top.addedTypeQualifiers ++ q.qualifiers), n, resolved));
 
   top.canonicalType = resolved;
 }
@@ -732,6 +744,9 @@ top::NoncanonicalType ::= q::Qualifiers  resolved::Type
   top.baseTypeExpr =
     typeofTypeExpr(q, typeNameExpr(typeName(resolved.baseTypeExpr, resolved.typeModifierExpr)));
   top.typeModifierExpr = baseTypeExpr();
+  top.withTypeQualifiers =
+    noncanonicalType(
+      typeofType(foldQualifier(top.addedTypeQualifiers ++ q.qualifiers), resolved));
 }
 
 function filterExtensionQualifiers

@@ -66,6 +66,15 @@ top::Env ::= e::Decorated Env
   top.refIds = globalScope(e.refIds);
   top.misc = globalScope(e.misc);
 }
+abstract production nonGlobalEnv_i
+top::Env ::= e::Decorated Env
+{
+  top.labels = nonGlobalScope(e.labels);
+  top.tags = nonGlobalScope(e.tags);
+  top.values = nonGlobalScope(e.values);
+  top.refIds = nonGlobalScope(e.refIds);
+  top.misc = nonGlobalScope(e.misc);
+}
 
 {- Definition list productions provide a way of folding up defs into Contribs lists
  -}

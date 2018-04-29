@@ -9,7 +9,7 @@ abstract production nullStmt
 top::Stmt ::=
 {
   propagate host, lifted;
-  top.pp = notext();
+  top.pp = semi();
   top.errors := [];
   top.globalDecls := [];
   top.defs := [];
