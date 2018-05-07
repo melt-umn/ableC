@@ -56,7 +56,8 @@ try {
       "ableC-string",
       "ableC-templating",
       "ableC-vector",
-      "ableC-watch"
+      "ableC-watch",
+      "ableC-nondeterministic-search", "ableC-nondeterministic-search-benchmarks"
     ]
     // Specific other jobs to build
     def specific_jobs = ["/melt-umn/ableP/master"] // TODO: Set ABLEC_BASE here?
