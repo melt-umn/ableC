@@ -9,7 +9,7 @@ exports edu:umn:cs:melt:ableC:concretesyntax;
 
 concrete productions top::Expr
 | 'ableC_Stmt' edu:umn:cs:melt:ableC:concretesyntax:LCurly_t cst::Stmt_c edu:umn:cs:melt:ableC:concretesyntax:RCurly_t
-  layout {LineComment, BlockComment, Spaces_t, NewLine_t}
+--  layout {LineComment, BlockComment, Spaces_t, NewLine_t}
   { forwards to ableCStmtLiteral(cst.ast, location=top.location); }
 
 

@@ -34,7 +34,7 @@ lexer class Csymbol font = font_special_symbol;
 
 --
 
-
+{-
 ignore terminal LineComment
   /[\/][\/].*/ 
   lexer classes {Ccomment};
@@ -42,21 +42,21 @@ ignore terminal LineComment
 ignore terminal BlockComment 
   /[\/][\*]([^\*]|[\r\n]|([\*]+([^\*\/]|[\r\n])))*[\*]+[\/]/ 
   lexer classes {Ccomment};
-
-{-
-ignore terminal WhiteSpace
-  /[\n\t\ ]+/ 
-  lexer classes {Ccomment};
 -}
+
+ignore terminal WhiteSpace
+  /[\n\r\t\ ]+/ 
+  lexer classes {Ccomment};
+
 
 -- The following need to be separated for tables without white space
 -- to work.  See edu:umn:cs:melt:exts:ableC:tablesWS.
-ignore terminal Spaces_t 
+{-ignore terminal Spaces_t 
   /[\t\ ]+/ 
   lexer classes {Ccomment};
 
 ignore terminal NewLine_t /[\n\r]+/ 
-  lexer classes {Ccomment};
+  lexer classes {Ccomment};-}
 
 {--
  - Identifiers: normal or type name.

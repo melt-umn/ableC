@@ -17,15 +17,33 @@ terminal EscapeBaseTypeExpr_t '$BaseTypeExpr' lexer classes {Ckeyword};
 terminal EscapeRefId_t        '$RefId'        lexer classes {Ckeyword};
 
 -- Workarounds for weirdness with ignore terminals
-disambiguate NewLine_t, RegexChar_t, WhiteSpace
+{-disambiguate NewLine_t, RegexChar_t, WhiteSpace
 {
   pluck NewLine_t;
 }
 disambiguate Spaces_t, RegexChar_t, WhiteSpace
 {
   pluck Spaces_t;
+}-}
+disambiguate edu:umn:cs:melt:ableC:concretesyntax:WhiteSpace, silver:definition:core:WhiteSpace, RegexChar_t
+{
+  pluck silver:definition:core:WhiteSpace;
 }
 disambiguate DEC_OP, Comments
 {
   pluck DEC_OP;
+}
+
+-- TODO: Needed because of copper bugs?
+{-disambiguate NewLine_t, WhiteSpace
+{
+  pluck NewLine_t;
+}
+disambiguate Spaces_t, WhiteSpace
+{
+  pluck Spaces_t;
+}-}
+disambiguate edu:umn:cs:melt:ableC:concretesyntax:WhiteSpace, silver:definition:core:WhiteSpace
+{
+  pluck silver:definition:core:WhiteSpace;
 }
