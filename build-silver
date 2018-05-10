@@ -1,3 +1,0 @@
-#!/bin/bash
-
-silver -o ableCSilver.jar -I grammars $@ edu:umn:cs:melt:exts:silver:ableC:artifact

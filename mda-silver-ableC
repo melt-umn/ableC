@@ -1,3 +1,0 @@
-#!/bin/bash
-
-silver -o ableCSilverMDA.jar -I grammars $@ edu:umn:cs:melt:exts:silver:ableC:mda_test
