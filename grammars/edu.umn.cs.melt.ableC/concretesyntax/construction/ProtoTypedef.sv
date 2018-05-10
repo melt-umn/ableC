@@ -8,7 +8,7 @@ imports edu:umn:cs:melt:ableC:abstractsyntax:construction;
 imports edu:umn:cs:melt:ableC:abstractsyntax:host;
 
 -- Needed for the lexer hack to work, allows specification of type names to add to lexer scope
-marking terminal LexerHackTypedefProto_t 'proto_typedef' lexer classes {Ckeyword};
+terminal LexerHackTypedefProto_t 'proto_typedef' lexer classes {Ckeyword};
 
 concrete production lexerHackTypedefProto
 top::Declaration_c ::= 'proto_typedef' ids::IdentifierList_c ';'
