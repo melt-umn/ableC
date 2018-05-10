@@ -4,10 +4,8 @@ library "github.com/melt-umn/jenkins-lib"
 
 melt.setProperties(silverBase: true)
 
-node {
-try {
-
-  def ABLEC_BASE = pwd()
+melt.trynode('ableC') {
+  def ABLEC_BASE = env.WORKSPACE
   def ABLEC_GEN = "${ABLEC_BASE}/generated"
   def newenv = melt.getSilverEnv()
 
@@ -60,44 +58,21 @@ try {
       "ableC-nondeterministic-search", "ableC-nondeterministic-search-benchmarks"
     ]
     // Specific other jobs to build
-    def specific_jobs = ["/melt-umn/ableP/master"] // TODO: Set ABLEC_BASE here?
+    def specific_jobs = ["/melt-umn/ableP/master"]
 
     def tasks = [:]
-    for (t in extensions) { tasks[t] = task_extension(t, ABLEC_BASE, ABLEC_GEN) }
-    for (t in specific_jobs) { tasks[t] = task_job(t) }
+    def newargs = [ABLEC_BASE: ABLEC_BASE, ABLEC_GEN: ABLEC_GEN] // SILVER_BASE inherited
+    for (t in extensions) {
+      tasks[t] = { melt.buildProject("/melt-umn/${t}", newargs) }
+    }
+    for (t in specific_jobs) {
+      tasks[t] = { melt.buildJob(t, newargs) }
+    }
     
     parallel tasks
   }
 
   /* If we've gotten all this way with a successful build, don't take up disk space */
   melt.clearGenerated()
-
-}
-catch (e) {
-  melt.handle(e)
-}
-finally {
-  melt.notify(job: 'ableC')
-}
-} // node
-
-// Build extension (from /melt-umn/${repo}/develop OR current branch, if it exists
-def task_extension(String extension_name, String ABLEC_BASE, String ABLEC_GEN) {
-  return {
-    // Try to build a branch with the same name, otherwise fallback to develop
-    def jobname = "/melt-umn/${extension_name}/${hudson.Util.rawEncode(env.BRANCH_NAME)}"
-    if (env.BRANCH_NAME != 'develop' && !melt.doesJobExist(jobname)) {
-      jobname = "/melt-umn/${extension_name}/develop"
-    }
-    // SILVER_BASE should get inherited automatically
-    melt.buildJob(jobname, [ABLEC_BASE: ABLEC_BASE, ABLEC_GEN: ABLEC_GEN])
-  }
-}
-// Build generic job
-def task_job(String jobname) {
-  return {
-    // SILVER_BASE should get inherited automatically
-    melt.buildJob(jobname)
-  }
 }
 
