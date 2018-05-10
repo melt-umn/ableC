@@ -10,20 +10,43 @@ aspect production nonterminalAST
 top::AST ::= prodName::String children::ASTs annotations::NamedASTs
 {
   top.translation =
+    -- "Direct" escape productions
     if
       containsBy(
         stringEq, prodName,
-        ["edu:umn:cs:melt:exts:silver:ableC:abstractsyntax:escapeExpr"])
+        ["edu:umn:cs:melt:exts:silver:ableC:abstractsyntax:escapeStmt",
+         "edu:umn:cs:melt:exts:silver:ableC:abstractsyntax:escapeInitializer",
+         "edu:umn:cs:melt:exts:silver:ableC:abstractsyntax:escapeExpr",
+         "edu:umn:cs:melt:exts:silver:ableC:abstractsyntax:escapeBaseTypeExpr",
+         "edu:umn:cs:melt:exts:silver:ableC:abstractsyntax:escapeAttrib"])
     then
-      case children, annotations of
-      | consAST(a, nilAST()), nilNamedAST() ->
+      case children of
+      | consAST(a, nilAST()) ->
           case reify(a) of
           | right(e) -> e
           | left(msg) -> error(s"Error in reifying child of production ${prodName}:\n${msg}")
           end
-      | _, _ -> error(s"Unexpected escape production call: ${show(80, top.pp)}")
+      | _ -> error(s"Unexpected escape production arguments: ${show(80, top.pp)}")
       end
-    else
+    else case prodName, children of
+    -- "Indirect" escape productions
+    | "edu:umn:cs:melt:ableC:abstractsyntax:host:consExpr",
+      consAST(
+        nonterminalAST(
+          "edu:umn:cs:melt:exts:silver:ableC:abstractsyntax:escapeExprs", consAST(a, nilAST()), _),
+        consAST(rest, nilAST())) ->
+        case reify(a) of
+        | right(e) ->
+            mkStrFunctionInvocation(
+              builtin,
+              "edu:umn:cs:melt:ableC:abstractsyntax:host:appendExprs",
+              [e, rest.translation])
+        | left(msg) -> error(s"Error in reifying child of production ${prodName}:\n${msg}")
+        end
+    | "edu:umn:cs:melt:exts:silver:ableC:abstractsyntax:escapeExprs", _ ->
+      error(s"Unexpected escape production: ${show(80, top.pp)}")
+    -- Default
+    | _, _ ->
       application(
         baseExpr(makeQName(prodName), location=builtin),
         '(',
@@ -33,7 +56,8 @@ top::AST ::= prodName::String children::ASTs annotations::NamedASTs
           snocAnnoAppExprs(_, ',', _, location=builtin),
           emptyAnnoAppExprs(location=builtin),
           reverse(annotations.translation)),
-        ')', location=builtin);
+        ')', location=builtin)
+     end;
 }
 
 aspect production listAST
@@ -121,22 +145,25 @@ top::NamedAST ::= n::String v::AST
 {
   top.translation =
     annoExpr(
-      makeQName(n), 
+      qNameId(makeName(last(explode(":", n))), location=builtin), 
       '=',
       presentAppExpr(v.translation, location=builtin),
       location=builtin);
 }
 
+function makeName
+Name ::= n::String
+{
+  return
+    if isUpper(head(explode("", n)))
+    then nameIdUpper(terminal(IdUpper_t, n, builtin), location=builtin)
+    else nameIdLower(terminal(IdLower_t, n, builtin), location=builtin);
+}
+
 function makeQName
 QName ::= n::String
 {
-  local ns::[Name] =
-    map(
-      \ n::String ->
-        if isUpper(head(explode("", n)))
-        then nameIdUpper(terminal(IdUpper_t, n, builtin), location=builtin)
-        else nameIdLower(terminal(IdLower_t, n, builtin), location=builtin),
-      explode(":", n));
+  local ns::[Name] = map(makeName, explode(":", n));
   return
     foldr(
       qNameCons(_, ':', _, location=builtin),

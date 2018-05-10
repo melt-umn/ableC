@@ -14,36 +14,32 @@ terminal EscapeExpr_t         '$Expr'         lexer classes {Ckeyword};
 terminal EscapeName_t         '$Name'         lexer classes {Ckeyword};
 terminal EscapeParameters_t   '$Parameters'   lexer classes {Ckeyword};
 terminal EscapeBaseTypeExpr_t '$BaseTypeExpr' lexer classes {Ckeyword};
-terminal EscapeRefId_t        '$RefId'        lexer classes {Ckeyword};
+terminal EscapeAttrib_t       '$Attrib'       lexer classes {Ckeyword}, dominates {AttributeNameUnfetterdByKeywords_t};
 
 -- Workarounds for weirdness with ignore terminals
-{-disambiguate NewLine_t, RegexChar_t, WhiteSpace
+parser attribute inAbleC::Boolean action { inAbleC = false; };
+terminal InAbleC '' action { inAbleC = true; };
+terminal NotInAbleC '' action { inAbleC = false; };
+
+disambiguate NewLine_t, RegexChar_t, WhiteSpace
 {
-  pluck NewLine_t;
+  pluck if inAbleC then NewLine_t else WhiteSpace;
 }
 disambiguate Spaces_t, RegexChar_t, WhiteSpace
 {
-  pluck Spaces_t;
-}-}
-disambiguate edu:umn:cs:melt:ableC:concretesyntax:WhiteSpace, silver:definition:core:WhiteSpace, RegexChar_t
-{
-  pluck silver:definition:core:WhiteSpace;
+  pluck if inAbleC then Spaces_t else WhiteSpace;
 }
 disambiguate DEC_OP, Comments
 {
-  pluck DEC_OP;
+  pluck if inAbleC then DEC_OP else Comments;
 }
 
--- TODO: Needed because of copper bugs?
-{-disambiguate NewLine_t, WhiteSpace
+-- TODO: Needed because of copper bug?
+disambiguate NewLine_t, WhiteSpace
 {
-  pluck NewLine_t;
+  pluck if inAbleC then NewLine_t else WhiteSpace;
 }
 disambiguate Spaces_t, WhiteSpace
 {
-  pluck Spaces_t;
-}-}
-disambiguate edu:umn:cs:melt:ableC:concretesyntax:WhiteSpace, silver:definition:core:WhiteSpace
-{
-  pluck silver:definition:core:WhiteSpace;
+  pluck if inAbleC then Spaces_t else WhiteSpace;
 }

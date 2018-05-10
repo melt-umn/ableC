@@ -5,7 +5,7 @@ import edu:umn:cs:melt:ableC:abstractsyntax:env only env;
 -- We have AttrList in Lists of other stuff, this precedence is here to each it up in one go
 terminal CPP_Attribute_t '__attribute__' lexer classes {Ckeyword}, precedence=10;
 terminal CPP_UUAttribute_t '__attribute' lexer classes {Ckeyword}, precedence=10;
-terminal CPP_Attr_LowerPrec_t // precedence=5;
+terminal CPP_Attr_LowerPrec_t '' precedence=5;
 
 closed nonterminal Attributes_c with location, ast<ast:Attributes>;
 concrete productions top::Attributes_c
