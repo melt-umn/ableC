@@ -22,7 +22,7 @@ action {
 nonterminal IdentifierList_c with declaredIdents;
 
 concrete productions top::IdentifierList_c
-| id::Identifier_t
-    { top.declaredIdents = [fromId(id)]; }
-| h::IdentifierList_c ',' t::Identifier_t
-    { top.declaredIdents = fromId(t) :: h.declaredIdents; }
+| id::Identifier_c
+    { top.declaredIdents = [id.ast]; }
+| h::IdentifierList_c ',' t::Identifier_c
+    { top.declaredIdents = t.ast :: h.declaredIdents; }

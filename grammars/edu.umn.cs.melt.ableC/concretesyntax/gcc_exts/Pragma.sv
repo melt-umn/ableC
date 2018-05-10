@@ -12,7 +12,7 @@ concrete productions top::ExternalDeclaration_c
 | '#' 'pragma' Pack_t
     layout { Space_t }
     { top.ast = ast:warnDecl([wrn(top.location, "Ignored pack pragma")]); }
-| '#' 'pragma' 'redefine_extname' Identifier_t Identifier_t
+| '#' 'pragma' 'redefine_extname' Identifier_c Identifier_c
     layout { Space_t }
     { top.ast = ast:warnDecl([wrn(top.location, "Ignored redefine_extname pragma")]); }
 

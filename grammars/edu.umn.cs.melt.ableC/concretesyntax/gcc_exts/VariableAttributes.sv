@@ -47,7 +47,7 @@ concrete productions top::Attrib_c
     { top.ast = case e.ast of
       | [] -> ast:appliedAttrib(n.ast, ast:foldExpr([]))
       | hd::tl -> case e.directName of
-                    just(id) -> ast:idAppliedAttrib(n.ast, ast:fromId(id), ast:foldExpr(tl))
+                    just(id) -> ast:idAppliedAttrib(n.ast, id.ast, ast:foldExpr(tl))
                   | nothing() -> ast:appliedAttrib(n.ast, ast:foldExpr(e.ast))
                   end
       end; 
