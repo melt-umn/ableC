@@ -19,11 +19,10 @@ prefix separator "::";
  - dominates relationship
  -}
 
---Andrew's Part, taken from the Simple terminals file and possibly modified 
-temp_imp_ide_font font_all color(123, 0, 82) bold;
-temp_imp_ide_font font_comments color(63, 95, 191) italic;
+temp_imp_ide_font font_all color(82, 0, 123) bold;
+temp_imp_ide_font font_comments color(82, 121, 150) italic;
 temp_imp_ide_font font_special_symbol color(71, 71, 141);
-temp_imp_ide_font font_equal color(63, 127, 95);
+temp_imp_ide_font font_equal color(71, 71, 141) bold;
 
 
 lexer class Ccomment font = font_comments;
