@@ -23,10 +23,6 @@ synthesized attribute tagIsSystem :: Boolean;
 --     wrapped in an implicit `extern "C"' block.
 synthesized attribute tagIsExternC :: Boolean;
 
-terminal Space_t /[\ ]+/;
-terminal Hash_t '#';
-
-
 -- I give up!
 ignore terminal CPP_Location_Tag_t /\#\ [0-9]+\ \"[^\"]+\"[\ 0-9]*([\r]?[\n]?)/
   action {
