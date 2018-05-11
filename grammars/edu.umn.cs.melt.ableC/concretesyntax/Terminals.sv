@@ -286,7 +286,7 @@ concrete productions top::Identifier_c
 | id::Identifier_t
     { top.ast = ast:fromId(id); }
 
-closed nonterminal IdTypeName_c with location, ast<ast:Name>;
-concrete productions top::IdTypeName_c
+closed nonterminal TypeIdName_c with location, ast<ast:Name>;
+concrete productions top::TypeIdName_c
 | t::TypeName_t
     { top.ast = ast:fromTy(t); }

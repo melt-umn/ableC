@@ -237,7 +237,7 @@ concrete productions top::TypeSpecifier_c
 | e::EnumSpecifier_c
     { top.realTypeSpecifiers = e.realTypeSpecifiers;
       top.preTypeSpecifiers = []; }
-| t::IdTypeName_c
+| t::TypeIdName_c
     { top.realTypeSpecifiers = [ast:typedefTypeExpr(top.givenQualifiers, t.ast)];
       top.preTypeSpecifiers = []; }
 
