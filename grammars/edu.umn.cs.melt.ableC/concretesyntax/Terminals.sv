@@ -19,14 +19,16 @@ prefix separator "::";
  - dominates relationship
  -}
 
-temp_imp_ide_font font_all color(82, 0, 123) bold;
-temp_imp_ide_font font_comments color(82, 121, 150) italic;
+temp_imp_ide_font font_all color(160, 32, 240) bold;
+temp_imp_ide_font font_type color(34, 139, 34) bold;
+temp_imp_ide_font font_comments color(178, 34, 34) italic;
 temp_imp_ide_font font_special_symbol color(71, 71, 141);
 temp_imp_ide_font font_equal color(71, 71, 141) bold;
 
 
 lexer class Ccomment font = font_comments;
 lexer class Ckeyword font = font_all;
+lexer class Ctype font = font_type;
 lexer class Cassignment font = font_equal;
 lexer class Csymbol font = font_special_symbol;
 
@@ -62,7 +64,7 @@ ignore terminal NewLine_t /[\n\r]+/
 lexer class Cidentifier submits to Ckeyword;
 
 terminal Identifier_t /[A-Za-z_\$][A-Za-z_0-9\$]*/ lexer classes {Cidentifier};
-terminal TypeName_t   /[A-Za-z_\$][A-Za-z_0-9\$]*/ lexer classes {Cidentifier};
+terminal TypeName_t   /[A-Za-z_\$][A-Za-z_0-9\$]*/ lexer classes {Cidentifier, Ctype};
 -- See LexerHack.sv for code related to disambiguation of these terminals.
 
 
@@ -160,18 +162,18 @@ terminal CharConstantUBig_t /U[\']([^\']|[\\].)[\']/ lexer classes {Cliteral};
 
 
 -- types
-terminal Char_t     'char'     lexer classes {Ckeyword};
-terminal Double_t   'double'   lexer classes {Ckeyword};
-terminal Float_t    'float'    lexer classes {Ckeyword};
-terminal Int_t      'int'      lexer classes {Ckeyword};
-terminal Long_t     'long'     lexer classes {Ckeyword};
-terminal Short_t    'short'    lexer classes {Ckeyword};
-terminal Signed_t   'signed'   lexer classes {Ckeyword};
-terminal Unsigned_t 'unsigned' lexer classes {Ckeyword};
-terminal Void_t     'void'     lexer classes {Ckeyword};
-terminal Bool_t     '_Bool'      lexer classes {Ckeyword}; -- c99
-terminal Complex_t  '_Complex'   lexer classes {Ckeyword}; -- c99
-terminal Imagin_t   '_Imaginary' lexer classes {Ckeyword}; -- c99
+terminal Char_t     'char'     lexer classes {Ctype, Ckeyword};
+terminal Double_t   'double'   lexer classes {Ctype, Ckeyword};
+terminal Float_t    'float'    lexer classes {Ctype, Ckeyword};
+terminal Int_t      'int'      lexer classes {Ctype, Ckeyword};
+terminal Long_t     'long'     lexer classes {Ctype, Ckeyword};
+terminal Short_t    'short'    lexer classes {Ctype, Ckeyword};
+terminal Signed_t   'signed'   lexer classes {Ctype, Ckeyword};
+terminal Unsigned_t 'unsigned' lexer classes {Ctype, Ckeyword};
+terminal Void_t     'void'     lexer classes {Ctype, Ckeyword};
+terminal Bool_t     '_Bool'      lexer classes {Ctype, Ckeyword}; -- c99
+terminal Complex_t  '_Complex'   lexer classes {Ctype, Ckeyword}; -- c99
+terminal Imagin_t   '_Imaginary' lexer classes {Ctype, Ckeyword}; -- c99
 
 -- Er, Specifiers?
 terminal ENUM   'enum'   lexer classes {Ckeyword};
