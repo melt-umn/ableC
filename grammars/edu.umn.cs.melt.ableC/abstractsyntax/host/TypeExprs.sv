@@ -118,7 +118,7 @@ top::BaseTypeExpr ::= msg::[Message]  ty::BaseTypeExpr
 abstract production directTypeExpr
 top::BaseTypeExpr ::= result::Type
 {
-  ---propagate host;
+  --propagate host;
   
   top.pp = parens(cat(result.lpp, result.rpp));
   top.typerep = result;

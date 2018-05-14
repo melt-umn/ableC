@@ -21,6 +21,7 @@ prefix separator "::";
 
 temp_imp_ide_font font_all color(160, 32, 240) bold;
 temp_imp_ide_font font_type color(34, 139, 34) bold;
+temp_imp_ide_font font_string color(139, 34, 82) italic;
 temp_imp_ide_font font_comments color(178, 34, 34) italic;
 temp_imp_ide_font font_special_symbol color(71, 71, 141);
 temp_imp_ide_font font_equal color(71, 71, 141) bold;
@@ -29,6 +30,7 @@ temp_imp_ide_font font_equal color(71, 71, 141) bold;
 lexer class Ccomment font = font_comments;
 lexer class Ckeyword font = font_all;
 lexer class Ctype font = font_type;
+lexer class Cstring font = font_string;
 lexer class Cassignment font = font_equal;
 lexer class Csymbol font = font_special_symbol;
 
@@ -144,16 +146,16 @@ terminal HexFloatConstantLongDouble_t /
 	[Ll]
 	/ lexer classes {Cliteral};
 
-terminal StringConstant_t      /[\"]([^\"\\]|[\\].)*[\"]/ lexer classes {Cliteral};
-terminal StringConstantU8_t  /u8[\"]([^\"\\]|[\\].)*[\"]/ lexer classes {Cliteral};
-terminal StringConstantL_t    /L[\"]([^\"\\]|[\\].)*[\"]/ lexer classes {Cliteral};
-terminal StringConstantU_t    /u[\"]([^\"\\]|[\\].)*[\"]/ lexer classes {Cliteral};
-terminal StringConstantUBig_t /U[\"]([^\"\\]|[\\].)*[\"]/ lexer classes {Cliteral};
+terminal StringConstant_t      /[\"]([^\"\\]|[\\].)*[\"]/ lexer classes {Cstring, Cliteral};
+terminal StringConstantU8_t  /u8[\"]([^\"\\]|[\\].)*[\"]/ lexer classes {Cstring, Cliteral};
+terminal StringConstantL_t    /L[\"]([^\"\\]|[\\].)*[\"]/ lexer classes {Cstring, Cliteral};
+terminal StringConstantU_t    /u[\"]([^\"\\]|[\\].)*[\"]/ lexer classes {Cstring, Cliteral};
+terminal StringConstantUBig_t /U[\"]([^\"\\]|[\\].)*[\"]/ lexer classes {Cstring, Cliteral};
 
-terminal CharConstant_t      /[\']([^\']|[\\].)[\']/ lexer classes {Cliteral};
-terminal CharConstantL_t    /L[\']([^\']|[\\].)[\']/ lexer classes {Cliteral};
-terminal CharConstantU_t    /u[\']([^\']|[\\].)[\']/ lexer classes {Cliteral};
-terminal CharConstantUBig_t /U[\']([^\']|[\\].)[\']/ lexer classes {Cliteral};
+terminal CharConstant_t      /[\']([^\']|[\\].)[\']/ lexer classes {Cstring, Cliteral};
+terminal CharConstantL_t    /L[\']([^\']|[\\].)[\']/ lexer classes {Cstring, Cliteral};
+terminal CharConstantU_t    /u[\']([^\']|[\\].)[\']/ lexer classes {Cstring, Cliteral};
+terminal CharConstantUBig_t /U[\']([^\']|[\\].)[\']/ lexer classes {Cstring, Cliteral};
 
 
 {--
