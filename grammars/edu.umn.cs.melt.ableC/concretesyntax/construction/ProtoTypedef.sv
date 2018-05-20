@@ -8,16 +8,22 @@ imports edu:umn:cs:melt:ableC:abstractsyntax:construction;
 imports edu:umn:cs:melt:ableC:abstractsyntax:host;
 
 -- Needed for the lexer hack to work, allows specification of type names to add to lexer scope
-terminal LexerHackTypedefProto_t 'proto_typedef' lexer classes {Ckeyword};
-
-concrete production lexerHackTypedefProto
-top::Declaration_c ::= 'proto_typedef' ids::IdentifierList_c ';'
+concrete production lexerHackProtoTypedefDecl
+top::Declaration_c ::= ProtoTypedef_c
 {
   top.ast = decls(nilDecl());
 }
-action {
-  context = lh:addTypenamesToScope(ids.declaredIdents, context);
-}
+
+terminal LexerHackTypedefProto_t 'proto_typedef' lexer classes {Ckeyword};
+
+nonterminal ProtoTypedef_c with location;
+
+concrete productions top::ProtoTypedef_c
+| 'proto_typedef' ids::IdentifierList_c ';'
+  {}
+  action {
+    context = lh:addTypenamesToScope(ids.declaredIdents, context);
+  }
 
 nonterminal IdentifierList_c with declaredIdents;
 
