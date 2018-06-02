@@ -63,7 +63,7 @@ melt.trynode('ableC') {
     def tasks = [:]
     def newargs = [ABLEC_BASE: ABLEC_BASE, ABLEC_GEN: ABLEC_GEN] // SILVER_BASE inherited
     tasks << extensions.collectEntries { t ->
-      [t: { melt.buildProject("/melt-umn/${t}", newargs) }]
+            [(t): { melt.buildProject("/melt-umn/${t}", newargs) }]
     }
     /*tasks << specific_jobs.collectEntries { t ->
       [(t): { melt.buildJob(t, newargs) }]
