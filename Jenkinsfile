@@ -20,7 +20,7 @@ melt.trynode('ableC') {
     }
   }
 
-  stage ("Test") {
+  /*stage ("Test") {
     dir("testing/expected-results") {
       withEnv(newenv) {
         sh "./runTests"
@@ -34,7 +34,7 @@ melt.trynode('ableC') {
         sh "./build-all"
       }
     }
-  }
+  }*/
 
   stage ("Integration") {
     // All known, stable extensions to build downstream
@@ -62,12 +62,14 @@ melt.trynode('ableC') {
 
     def tasks = [:]
     def newargs = [ABLEC_BASE: ABLEC_BASE, ABLEC_GEN: ABLEC_GEN] // SILVER_BASE inherited
-    tasks << extensions.collectEntries { t ->
+    tasks << (extensions.collectEntries { t ->
       [t: { melt.buildProject("/melt-umn/${t}", newargs) }]
-    }
-    tasks << specific_jobs.collectEntries { t ->
+    })
+    tasks << (specific_jobs.collectEntries { t ->
       [t: { melt.buildJob(t, newargs) }]
-    }
+    })
+
+    print tasks
     
     parallel tasks
   }
