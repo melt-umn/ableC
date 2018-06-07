@@ -62,11 +62,11 @@ melt.trynode('ableC') {
 
     def tasks = [:]
     def newargs = [ABLEC_BASE: ABLEC_BASE, ABLEC_GEN: ABLEC_GEN] // SILVER_BASE inherited
-    for (t in extensions) {
-      tasks[t] = { melt.buildProject("/melt-umn/${t}", newargs) }
+    tasks << extensions.collectEntries { t ->
+      [(t): { melt.buildProject("/melt-umn/${t}", newargs) }]
     }
-    for (t in specific_jobs) {
-      tasks[t] = { melt.buildJob(t, newargs) }
+    tasks << specific_jobs.collectEntries { t ->
+      [(t): { melt.buildJob(t, newargs) }]
     }
     
     parallel tasks
