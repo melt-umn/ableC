@@ -40,7 +40,7 @@ melt.trynode('ableC') {
     // All known, stable extensions to build downstream
     def extensions = [
       "silver-ableC",
-      "ableC-skeleton", "ableC-lib-skeleton", "ableC-sample-projects",
+      "ableC-skeleton", "ableC-lib-skeleton",
       "ableC-algebraic-data-types",
       "ableC-checkBounds",
       "ableC-cilk",
@@ -55,6 +55,7 @@ melt.trynode('ableC') {
       "ableC-watch",
     ]
     /* These are now downstream of silver-ableC, so we don't build them here:
+      "ableC-sample-projects",
       "ableC-closure",
       "ableC-refcount-closure",
       "ableC-vector",
