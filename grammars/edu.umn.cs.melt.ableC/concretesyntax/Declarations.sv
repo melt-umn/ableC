@@ -230,8 +230,8 @@ concrete productions top::Pointer_c
 
 closed nonterminal DirectDeclarator_c with location, declaredIdent, declaredParamIdents, ast<ast:TypeModifierExpr>, givenType;
 concrete productions top::DirectDeclarator_c
-| id::Identifier_t 
-    { top.declaredIdent = ast:fromId(id);
+| id::Identifier_c 
+    { top.declaredIdent = id.ast;
       top.declaredParamIdents = nothing();
       top.ast = top.givenType;
     }
@@ -454,10 +454,10 @@ concrete productions top::ParameterDeclaration_c
 
 closed nonterminal IdentifierList_c with location, declaredIdents;
 concrete productions top::IdentifierList_c
-| id::Identifier_t
-    { top.declaredIdents = [ast:fromId(id)]; }
-| l::IdentifierList_c ',' id::Identifier_t 
-    { top.declaredIdents = l.declaredIdents ++ [ast:fromId(id)]; }
+| id::Identifier_c
+    { top.declaredIdents = [id.ast]; }
+| l::IdentifierList_c ',' id::Identifier_c 
+    { top.declaredIdents = l.declaredIdents ++ [id.ast]; }
 
 
 closed nonterminal InitDeclaratorList_c with location, declaredIdents, ast<[ast:Declarator]>;

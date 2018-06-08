@@ -123,7 +123,6 @@ closed nonterminal AsmOperand_c with location, ast<ast:AsmOperand> ;
 concrete productions top::AsmOperand_c
 | s::StringConstant_t '(' e::Expr_c ')'
     { top.ast = ast:asmOperand( s.lexeme, e.ast, location=top.location ); }
-| '[' id::Identifier_t ']' s::StringConstant_t '(' e::Expr_c ')'
-    { top.ast = ast:asmOperandId ( ast:name(id.lexeme, location=top.location), s.lexeme, 
-                                   e.ast, location=top.location ); }
+| '[' id::Identifier_c ']' s::StringConstant_t '(' e::Expr_c ')'
+    { top.ast = ast:asmOperandId(id.ast, s.lexeme, e.ast, location=top.location); }
 

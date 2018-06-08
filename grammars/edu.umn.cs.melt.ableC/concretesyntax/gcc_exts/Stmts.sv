@@ -34,10 +34,10 @@ concrete productions top::JumpStmt_c
     { top.ast = ast:warnStmt([err(top.location, "Unable to handle computed goto, yet.")]); } -- TODO
 
 concrete productions top::LabeledStmt_c
-| id::Identifier_t ':' aa::Attributes_c s::Stmt_c
+| id::Identifier_c ':' aa::Attributes_c s::Stmt_c
     { top.ast = ast:seqStmt(
         ast:warnStmt([wrn(aa.location, "Ignoring attributes")]),
-        ast:labelStmt(ast:fromId(id), s.ast)); }
+        ast:labelStmt(id.ast, s.ast)); }
 | 'case' l::ConstantExpr_c '...' u::ConstantExpr_c ':' s::Stmt_c
     { top.ast = ast:caseLabelRangeStmt(l.ast, u.ast, s.ast); }
 

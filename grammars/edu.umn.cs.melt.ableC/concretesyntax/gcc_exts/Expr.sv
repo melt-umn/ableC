@@ -29,7 +29,7 @@ concrete productions top::UnaryExpr_c
     { top.ast = ast:alignofExpr(ast:exprExpr(e.ast), location=top.location); }
 | '__alignof__' '(' t::TypeName_c ')'
     { top.ast = ast:alignofExpr(ast:typeNameExpr(t.ast), location=top.location); }
-| '&&' Identifier_t
+| '&&' Identifier_c
     { top.ast = ast:errorExpr([err(top.location, "Address of labels not yet supported")], location=top.location); }
 
 concrete productions top::UnaryOp_c
@@ -61,20 +61,20 @@ concrete productions top::PrimaryExpr_c
     { top.ast = ast:vaArgPackExpr(location=top.location); }
 | '__builtin_expect'  '(' e::AssignExpr_c ',' v::ConstantExpr_c ')'
     { top.ast = ast:expectExpr(e.ast, v.ast, location=top.location); }
-| '__builtin_va_start'  '(' id::Identifier_t ',' id2::Identifier_t ')'
-    { top.ast = ast:vaStartExpr(ast:fromId(id), ast:fromId(id2), location=top.location); }
-| '__builtin_va_end'  '(' id::Identifier_t ')'
-    { top.ast = ast:vaEndExpr(ast:fromId(id), location=top.location); }
+| '__builtin_va_start'  '(' id::Identifier_c ',' id2::Identifier_c ')'
+    { top.ast = ast:vaStartExpr(id.ast, id2.ast, location=top.location); }
+| '__builtin_va_end'  '(' id::Identifier_c ')'
+    { top.ast = ast:vaEndExpr(id.ast, location=top.location); }
 
 
 closed nonterminal MemberDesignator_c with location, ast<ast:MemberDesignator>;
 concrete productions top::MemberDesignator_c
-| id::Identifier_t
-    { top.ast = ast:initialMemberDesignator(ast:fromId(id)); }
-| d::MemberDesignator_c '.' id::Identifier_t
-    { top.ast = ast:fieldMemberDesignator(d.ast, ast:fromId(id)); }
-| d::MemberDesignator_c '->' id::Identifier_t
-    { top.ast = ast:derefMemberDesignator(d.ast, ast:fromId(id)); }
+| id::Identifier_c
+    { top.ast = ast:initialMemberDesignator(id.ast); }
+| d::MemberDesignator_c '.' id::Identifier_c
+    { top.ast = ast:fieldMemberDesignator(d.ast, id.ast); }
+| d::MemberDesignator_c '->' id::Identifier_c
+    { top.ast = ast:derefMemberDesignator(d.ast, id.ast); }
 | d::MemberDesignator_c '[' e::ConstantExpr_c ']'
     { top.ast = ast:arrayMemberDesignator(d.ast, e.ast); }
 
@@ -86,8 +86,8 @@ concrete productions top::Designation_c
 | d::ArrayDesignator_c
     { top.ast = d.ast;
       d.givenDesignator = ast:initialDesignator(); }
-| id::Identifier_t ':'
-    { top.ast = ast:fieldDesignator(ast:initialDesignator(), ast:fromId(id)); }
+| id::Identifier_c ':'
+    { top.ast = ast:fieldDesignator(ast:initialDesignator(), id.ast); }
 
 concrete productions top::ArrayDesignator_c
 | '[' e1::ConstantExpr_c '...' e2::ConstantExpr_c ']'

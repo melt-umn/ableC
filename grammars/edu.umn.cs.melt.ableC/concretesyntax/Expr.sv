@@ -383,7 +383,7 @@ concrete productions top::UnaryOp_c
 | '!'  { top.ast = ovrld:notExpr(top.expr, location=top.location); }
 
 -- Needed for constructing calls correctly
-synthesized attribute directName::Maybe<Identifier_t>;
+synthesized attribute directName::Maybe<Identifier_c>;
 
 closed nonterminal PostfixExpr_c with location, ast<ast:Expr>, directName;
 aspect default production
@@ -401,25 +401,25 @@ concrete productions top::PostfixExpr_c
 | e::PostfixExpr_c '(' args::ArgumentExprList_c ')'
     { top.ast = 
         case e.directName of
-          just(id) -> ast:directCallExpr(ast:fromId(id), ast:foldExpr(args.ast), location=top.location)
+          just(id) -> ast:directCallExpr(id.ast, ast:foldExpr(args.ast), location=top.location)
         | nothing() -> ovrld:callExpr(e.ast, ast:foldExpr(args.ast), location=top.location)
         end; }
 | e::PostfixExpr_c '(' args::ArgumentExprList_c ',' ')'
     { top.ast = 
         case e.directName of
-          just(id) -> ast:directCallExpr(ast:fromId(id), ast:foldExpr(args.ast), location=top.location)
+          just(id) -> ast:directCallExpr(id.ast, ast:foldExpr(args.ast), location=top.location)
         | nothing() -> ovrld:callExpr(e.ast, ast:foldExpr(args.ast), location=top.location)
         end; }
 | e::PostfixExpr_c '(' ')'
     { top.ast = 
         case e.directName of
-          just(id) -> ast:directCallExpr(ast:fromId(id), ast:nilExpr(), location=top.location)
+          just(id) -> ast:directCallExpr(id.ast, ast:nilExpr(), location=top.location)
         | nothing() -> ovrld:callExpr(e.ast, ast:nilExpr(), location=top.location)
         end; }
-| e::PostfixExpr_c '.' id::Identifier_t
-    { top.ast = ovrld :memberExpr(e.ast, false, ast:fromId(id), location=top.location); }
-| e::PostfixExpr_c '->' id::Identifier_t
-    { top.ast = ovrld:memberExpr(e.ast, true, ast:fromId(id), location=top.location); }
+| e::PostfixExpr_c '.' id::Identifier_c
+    { top.ast = ovrld :memberExpr(e.ast, false, id.ast, location=top.location); }
+| e::PostfixExpr_c '->' id::Identifier_c
+    { top.ast = ovrld:memberExpr(e.ast, true, id.ast, location=top.location); }
 | e::PostfixExpr_c '++'
     { top.ast = ovrld:postIncExpr(e.ast, location=top.location); }
 | e::PostfixExpr_c '--'
@@ -453,8 +453,8 @@ top::PrimaryExpr_c ::=
 }
 
 concrete productions top::PrimaryExpr_c
-| id::Identifier_t
-    { top.ast = ast:declRefExpr(ast:fromId(id), location=top.location);
+| id::Identifier_c
+    { top.ast = ast:declRefExpr(id.ast, location=top.location);
       top.directName = just(id); }
 | c::Constant_c
     { top.ast = c.ast; }
@@ -498,8 +498,8 @@ closed nonterminal Designator_c with location, ast<ast:Designator>, givenDesigna
 concrete productions top::Designator_c
 | d::ArrayDesignator_c
     { top.ast = d.ast; }
-| '.' id::Identifier_t
-    { top.ast = ast:fieldDesignator(top.givenDesignator, ast:fromId(id)); }
+| '.' id::Identifier_c
+    { top.ast = ast:fieldDesignator(top.givenDesignator, id.ast); }
 
 
 -- This Nt not strictly part of C99. Exists for ease of extensions.

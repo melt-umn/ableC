@@ -224,18 +224,18 @@ concrete productions top::StructDeclarator_c
 
 
 concrete productions top::StructOrUnionSpecifier_c
-| su::StructOrUnion_c aa::Attributes_c id::Identifier_t '{' ss::StructDeclarationList_c '}'
+| su::StructOrUnion_c aa::Attributes_c id::Identifier_c '{' ss::StructDeclarationList_c '}'
     { top.realTypeSpecifiers =
         case su of
-        | struct_c(_) -> [ast:structTypeExpr(top.givenQualifiers, ast:structDecl(aa.ast, ast:justName(ast:fromId(id)), ast:foldStructItem(ss.ast), location=top.location))]
-        | union_c(_) -> [ast:unionTypeExpr(top.givenQualifiers, ast:unionDecl(aa.ast, ast:justName(ast:fromId(id)), ast:foldStructItem(ss.ast), location=top.location))]
+        | struct_c(_) -> [ast:structTypeExpr(top.givenQualifiers, ast:structDecl(aa.ast, ast:justName(id.ast), ast:foldStructItem(ss.ast), location=top.location))]
+        | union_c(_) -> [ast:unionTypeExpr(top.givenQualifiers, ast:unionDecl(aa.ast, ast:justName(id.ast), ast:foldStructItem(ss.ast), location=top.location))]
         end;
     }
-| su::StructOrUnion_c id::Identifier_t '{' '}'
+| su::StructOrUnion_c id::Identifier_c '{' '}'
     { top.realTypeSpecifiers =
         case su of
-        | struct_c(_) -> [ast:structTypeExpr(top.givenQualifiers, ast:structDecl(ast:nilAttribute(), ast:justName(ast:fromId(id)), ast:foldStructItem([]), location=top.location))]
-        | union_c(_) -> [ast:unionTypeExpr(top.givenQualifiers, ast:unionDecl(ast:nilAttribute(), ast:justName(ast:fromId(id)), ast:foldStructItem([]), location=top.location))]
+        | struct_c(_) -> [ast:structTypeExpr(top.givenQualifiers, ast:structDecl(ast:nilAttribute(), ast:justName(id.ast), ast:foldStructItem([]), location=top.location))]
+        | union_c(_) -> [ast:unionTypeExpr(top.givenQualifiers, ast:unionDecl(ast:nilAttribute(), ast:justName(id.ast), ast:foldStructItem([]), location=top.location))]
         end; }
 | su::StructOrUnion_c '{' '}'
     { top.realTypeSpecifiers =

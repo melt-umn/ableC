@@ -57,8 +57,8 @@ concrete productions top::Stmt_c
 
 closed nonterminal LabeledStmt_c with location, ast<ast:Stmt>;
 concrete productions top::LabeledStmt_c
-| id::Identifier_t ':' s::Stmt_c
-    { top.ast = ast:labelStmt(ast:fromId(id), s.ast); }
+| id::Identifier_c ':' s::Stmt_c
+    { top.ast = ast:labelStmt(id.ast, s.ast); }
 | 'case' ce::ConstantExpr_c ':' s::Stmt_c
     { top.ast = ast:caseLabelStmt(ce.ast, s.ast); }
 | 'default' ':' s::Stmt_c
@@ -112,8 +112,8 @@ concrete productions top::IterationStmt_c
 
 closed nonterminal JumpStmt_c with location, ast<ast:Stmt>;
 concrete productions top::JumpStmt_c
-| 'goto' id::Identifier_t ';'
-    { top.ast = ast:gotoStmt(ast:fromId(id)); }
+| 'goto' id::Identifier_c ';'
+    { top.ast = ast:gotoStmt(id.ast); }
 | 'continue' ';'
     { top.ast = ast:continueStmt(); }
 | 'break' ';'

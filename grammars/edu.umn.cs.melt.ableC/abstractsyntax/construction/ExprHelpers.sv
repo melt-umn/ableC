@@ -4,8 +4,13 @@ Expr ::= n::Integer l::Location
 { return
     realConstant(
       integerConstant (toString(n), false, noIntSuffix(),location=l),
-      location=l
-    );
+      location=l);
+}
+
+-- "s"
+function mkStringConst
+Expr ::= s::String l::Location
+{ return stringLiteral(s"\"${escapeString(s)}\"", location=l);
 }
 
 -- left + right

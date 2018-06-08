@@ -457,8 +457,11 @@ top::FunctionDecl ::= msg::[Message]
   top.sourceLocation = loc("nowhere", -1, -1, -1, -1, -1, -1); -- TODO fix this? add locaiton maybe?
 }
 
-nonterminal Parameters with typereps, pps, host<Parameters>, lifted<Parameters>, errors, globalDecls, defs, env, returnType, freeVariables;
-flowtype Parameters = decorate {env, returnType};
+nonterminal Parameters with typereps, pps, host<Parameters>, lifted<Parameters>, errors, globalDecls, defs, env, returnType, freeVariables, appendedParameters, appendedParametersRes;
+flowtype Parameters = decorate {env, returnType}, appendedParametersRes {appendedParameters};
+
+inherited attribute appendedParameters :: Parameters;
+synthesized attribute appendedParametersRes :: Parameters;
 
 abstract production consParameters
 top::Parameters ::= h::ParameterDecl  t::Parameters
@@ -472,8 +475,10 @@ top::Parameters ::= h::ParameterDecl  t::Parameters
   top.freeVariables =
     h.freeVariables ++
     removeDefsFromNames(h.defs, t.freeVariables);
+  top.appendedParametersRes = consParameters(h, t.appendedParametersRes);
   
   t.env = addEnv(h.defs, top.env);
+  t.appendedParameters = top.appendedParameters;
 }
 
 abstract production nilParameters
@@ -486,6 +491,14 @@ top::Parameters ::=
   top.globalDecls := [];
   top.defs := [];
   top.freeVariables = [];
+  top.appendedParametersRes = top.appendedParameters;
+}
+
+function appendParameters
+Parameters ::= p1::Parameters p2::Parameters
+{
+  p1.appendedParameters = p2;
+  return p1.appendedParametersRes;
 }
 
 -- TODO: move these, later
