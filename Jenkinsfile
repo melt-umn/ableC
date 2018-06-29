@@ -7,7 +7,7 @@ melt.setProperties(silverBase: true)
 melt.trynode('ableC') {
   def ABLEC_BASE = env.WORKSPACE
   def ABLEC_GEN = "${ABLEC_BASE}/generated"
-  def newenv = melt.getSilverEnv()
+  def newenv = silver.getSilverEnv()
 
   stage ("Build") {
 
