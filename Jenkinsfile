@@ -7,7 +7,8 @@ melt.setProperties(silverBase: true)
 melt.trynode('ableC') {
   def ABLEC_BASE = env.WORKSPACE
   def ABLEC_GEN = "${ABLEC_BASE}/generated"
-  def newenv = silver.getSilverEnv()
+  def SILVER_BASE = silver.resolveSilver()
+  def newenv = silver.getSilverEnv(SILVER_BASE)
 
   stage ("Build") {
 
@@ -65,7 +66,7 @@ melt.trynode('ableC') {
     def specific_jobs = ["/melt-umn/ableP/master"]
 
     def tasks = [:]
-    def newargs = [ABLEC_BASE: ABLEC_BASE, ABLEC_GEN: ABLEC_GEN] // SILVER_BASE inherited
+    def newargs = [SILVER_BASE: SILVER_BASE, ABLEC_BASE: ABLEC_BASE, ABLEC_GEN: ABLEC_GEN]
     tasks << extensions.collectEntries { t ->
       [(t): { melt.buildProject("/melt-umn/${t}", newargs) }]
     }
