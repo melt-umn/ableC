@@ -68,7 +68,7 @@ IOVal<Integer> ::= args::[String] ioIn::IO
   local xcArgs :: [String] = partitionedArgs.fst;
   
   local cppOptions :: String = if length(args) >= 2 then implode(" ", cppArgs) else "" ;
-  local cppCmd :: String = "gcc -E -x c -D _POSIX_C_SOURCE -std=gnu1x -I . " ++ cppOptions;
+  local cppCmd :: String = "gcc -E -x c -D _POSIX_C_SOURCE=200908L -std=gnu1x -I . " ++ cppOptions;
   local fullCppCmd :: String = cppCmd ++ " \"" ++ fileName ++ "\" > " ++ cppFileName;
   
   local result::IOMonad<Integer> = do (bindIO, returnIO) {
