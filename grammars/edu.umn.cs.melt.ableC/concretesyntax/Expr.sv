@@ -25,7 +25,19 @@ concrete productions top::AssignExpr_c
 | l::UnaryExpr_c op::AssignOp_c  r::AssignExpr_c
     { top.ast = op.ast; 
       op.leftExpr=l.ast; op.rightExpr=r.ast; op.exprLocation=top.location; }
+| op::UnaryAssignOp_c  e::UnaryExpr_c
+    { top.ast = op.ast; 
+      op.expr = e.ast;}
 
+closed nonterminal UnaryAssignOp_c with location, ast<ast:Expr>, expr;
+
+terminal UnaryAssignOp_NEVER_t 'UnaryAssignOp_Never!!!nevernever1234567890' ;
+concrete productions top::UnaryAssignOp_c
+| UnaryAssignOp_NEVER_t
+    { top.ast = ast:errorExpr ( [ err (top.location, "Internal Error. " ++
+        "Placeholder for UnaryAssignOp_c should not appear in the tree." ++
+        hackUnparse(top.expr))], -- TODO: flowtype hack, remove
+        location=top.location ) ; }
 
 closed nonterminal ConstantExpr_c with location, ast<ast:Expr>;
 concrete productions top::ConstantExpr_c
