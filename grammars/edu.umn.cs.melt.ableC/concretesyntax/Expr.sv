@@ -145,6 +145,11 @@ concrete productions top::AndExpr_c
     { top.ast = ovrld:andBitExpr(l.ast, r.ast, location=top.location); }
 
 
+closed nonterminal EqualityOp_c with location, ast<ast:Expr>, leftExpr, rightExpr, exprLocation;
+concrete productions top::EqualityOp_c
+| '=='   { top.ast = ovrld:equalsExpr(top.leftExpr, top.rightExpr, location=top.exprLocation); }
+| '!='   { top.ast = ovrld:notEqualsExpr(top.leftExpr, top.rightExpr, location=top.exprLocation); }
+
 closed nonterminal EqualityExpr_c with location, ast<ast:Expr>, directName;
 aspect default production
 top::EqualityExpr_c ::=
@@ -155,10 +160,9 @@ concrete productions top::EqualityExpr_c
 | e::RelationalExpr_c
     { top.ast = e.ast;
       top.directName = e.directName; }
-| l::EqualityExpr_c '==' r::RelationalExpr_c
-    { top.ast = ovrld:equalsExpr(l.ast, r.ast, location=top.location); }
-| l::EqualityExpr_c '!=' r::RelationalExpr_c
-    { top.ast = ovrld:notEqualsExpr(l.ast, r.ast, location=top.location); }
+| l::EqualityExpr_c op::EqualityOp_c  r::RelationalExpr_c
+    { top.ast = op.ast; 
+      op.leftExpr=l.ast; op.rightExpr=r.ast; op.exprLocation=top.location; } 
 
 
 closed nonterminal RelationalExpr_c with location, ast<ast:Expr>, directName;
