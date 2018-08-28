@@ -14,5 +14,5 @@ marking terminal Interval_t 'interval' lexer classes {Ckeyword};
 
 concrete productions top::TypeSpecifier_c
 | 'interval'
-    { top.realTypeSpecifiers = [intervalTypeExpr(top.givenQualifiers)];
+    { top.realTypeSpecifiers = [intervalTypeExpr(top.givenQualifiers, top.location)];
       top.preTypeSpecifiers = []; }

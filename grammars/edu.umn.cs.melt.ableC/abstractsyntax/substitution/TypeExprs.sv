@@ -31,6 +31,11 @@ top::BaseTypeExpr ::= q::Qualifiers  kwd::StructOrEnumOrUnion  name::Name
 {
   propagate substituted;
 }
+aspect production extTypeExpr
+top::BaseTypeExpr ::= q::Qualifiers  sub::ExtType
+{
+  propagate substituted;
+}
 aspect production structTypeExpr
 top::BaseTypeExpr ::= q::Qualifiers  def::StructDecl
 {

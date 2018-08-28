@@ -11,911 +11,556 @@ imports edu:umn:cs:melt:ableC:abstractsyntax:construction;
 imports edu:umn:cs:melt:ableC:abstractsyntax:host as host;
 imports edu:umn:cs:melt:ableC:abstractsyntax:injectable as inj;
 
-{- Explaination of overloading
- - All standard unary and binary operators may be overloaded, in addition to function calls, array
- - subscripts, and field access.  
- -
- - This method of overloading works by staticly building lists of possible overloads paired with
- - module names via collection production attributes.  Here the module name is a unique string
- - based on the grammar name of the extension, which can be set on a type via GCC's `__attribute__`
- - mechanism.  To avoid undefined behavior (similar to 'orphaned instances' in Haskell), we require
- - all overloaded types to be a 'new' type not compatible with any host types, such as structs,
- - unions, or enums.  
- -
- - The module name of an operator argument, if set, can be accessed from its typerep via the
- - moduleName attribute and used to look up the forward for a dispatching production.  For binary
- - operators, we must look at the module names of both the left and right children, and check if
- - there is an overload between those two extension types, an extension type on the left and a host
- - type on the right, or an host type on the left and an extension type on the right.  
- -
- - In order to define an overload, the extension writer must declare a new type with the
- - `module(<name>)` attribute.  For example
- -   struct __attribute__((module("org:ext:foo"))) foo { ... }
- - or
- -   typedef __attribute__((module("org:ext:bar"))) union bar_u bar;
- - The extension writer also writes an aspect function for the host dispatch function that they
- - wish to overload, and contribute a pair containing their extension module name and the overload
- - expression to the list of overloads.  
- -
- - Overloadable constructs include all numeric, logical, assignment and comparison operators, array
- - subscript, function call, member access, assignment to array index, and call to a member access.
- -}
-
 -- Useful defs to make signatures more managable
 type UnaryProd = (host:Expr ::= host:Expr Location);
 type BinaryProd = (host:Expr ::= host:Expr host:Expr Location);
 
--- Expressions
-function getArraySubscriptOverloadProd
-Maybe<BinaryProd> ::= t::host:Type env::Decorated Env
+synthesized attribute arraySubscriptProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
+flowtype arraySubscriptProd {} on host:Type, host:ExtType;
+
+synthesized attribute callProd<a>::Maybe<a>;
+attribute callProd<(host:Expr ::= host:Exprs Location)> occurs on host:Expr;
+attribute callProd<(host:Expr ::= host:Expr host:Exprs Location)> occurs on host:Type, host:ExtType;
+flowtype callProd {decorate} on host:Expr, host:Type, host:ExtType;
+
+inherited attribute isDeref::Boolean occurs on host:Type;
+synthesized attribute callMemberProd<a>::Maybe<a>;
+attribute callMemberProd<(host:Expr ::= host:Expr host:Name host:Exprs Location)> occurs on host:Type;
+attribute callMemberProd<(host:Expr ::= host:Expr Boolean host:Name host:Exprs Location)> occurs on host:ExtType;
+flowtype callMemberProd {isDeref} on host:Type;
+flowtype callMemberProd {} on host:ExtType;
+
+synthesized attribute memberProd<a>::Maybe<a>;
+attribute memberProd<(host:Expr ::= host:Expr host:Name Location)> occurs on host:Type;
+attribute memberProd<(host:Expr ::= host:Expr Boolean host:Name Location)> occurs on host:ExtType;
+flowtype memberProd {isDeref} on host:Type;
+flowtype memberProd {} on host:ExtType;
+
+synthesized attribute preIncProd::Maybe<UnaryProd> occurs on host:Type, host:ExtType;
+flowtype preIncProd {} on host:Type, host:ExtType;
+
+synthesized attribute preDecProd::Maybe<UnaryProd> occurs on host:Type, host:ExtType;
+flowtype preDecProd {} on host:Type, host:ExtType;
+
+synthesized attribute postIncProd::Maybe<UnaryProd> occurs on host:Type, host:ExtType;
+flowtype postIncProd {} on host:Type, host:ExtType;
+
+synthesized attribute postDecProd::Maybe<UnaryProd> occurs on host:Type, host:ExtType;
+flowtype postDecProd {} on host:Type, host:ExtType;
+
+synthesized attribute addressOfProd<a>::Maybe<a>;
+attribute addressOfProd<(host:Expr ::= Location)> occurs on host:Expr;
+attribute addressOfProd<UnaryProd> occurs on host:Type, host:ExtType;
+flowtype addressOfProd {decorate} on host:Expr, host:Type, host:ExtType;
+
+synthesized attribute addressOfArraySubscriptProd::Maybe<(host:Expr ::= host:Expr host:Expr Location)> occurs on host:Type, host:ExtType;
+flowtype addressOfArraySubscriptProd {} on host:Type, host:ExtType;
+
+synthesized attribute addressOfCallProd::Maybe<(host:Expr ::= host:Expr host:Exprs Location)> occurs on host:Type, host:ExtType;
+flowtype addressOfCallProd {} on host:Type, host:ExtType;
+
+synthesized attribute addressOfMemberProd<a>::Maybe<a>;
+attribute addressOfMemberProd<(host:Expr ::= host:Expr host:Name Location)> occurs on host:Type;
+attribute addressOfMemberProd<(host:Expr ::= host:Expr Boolean host:Name Location)> occurs on host:ExtType;
+flowtype addressOfMemberProd {isDeref} on host:Type;
+flowtype addressOfMemberProd {} on host:ExtType;
+
+synthesized attribute dereferenceProd::Maybe<UnaryProd> occurs on host:Type, host:ExtType;
+flowtype dereferenceProd {} on host:Type, host:ExtType;
+
+synthesized attribute positiveProd::Maybe<UnaryProd> occurs on host:Type, host:ExtType;
+flowtype positiveProd {} on host:Type, host:ExtType;
+
+synthesized attribute negativeProd::Maybe<UnaryProd> occurs on host:Type, host:ExtType;
+flowtype negativeProd {} on host:Type, host:ExtType;
+
+synthesized attribute bitNegateProd::Maybe<UnaryProd> occurs on host:Type, host:ExtType;
+flowtype bitNegateProd {} on host:Type, host:ExtType;
+
+synthesized attribute notProd::Maybe<UnaryProd> occurs on host:Type, host:ExtType;
+flowtype notProd {} on host:Type, host:ExtType;
+
+inherited attribute otherType::host:Type occurs on host:Type, host:ExtType;
+
+synthesized attribute lEqProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
+flowtype lEqProd {otherType} on host:Type, host:ExtType;
+synthesized attribute rEqProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
+flowtype rEqProd {otherType} on host:Type, host:ExtType;
+
+synthesized attribute lMulEqProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
+flowtype lMulEqProd {otherType} on host:Type, host:ExtType;
+synthesized attribute rMulEqProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
+flowtype rMulEqProd {otherType} on host:Type, host:ExtType;
+
+synthesized attribute lDivEqProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
+flowtype lDivEqProd {otherType} on host:Type, host:ExtType;
+synthesized attribute rDivEqProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
+flowtype rDivEqProd {otherType} on host:Type, host:ExtType;
+
+synthesized attribute lModEqProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
+flowtype lModEqProd {otherType} on host:Type, host:ExtType;
+synthesized attribute rModEqProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
+flowtype rModEqProd {otherType} on host:Type, host:ExtType;
+
+synthesized attribute lAddEqProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
+flowtype lAddEqProd {otherType} on host:Type, host:ExtType;
+synthesized attribute rAddEqProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
+flowtype rAddEqProd {otherType} on host:Type, host:ExtType;
+
+synthesized attribute lSubEqProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
+flowtype lSubEqProd {otherType} on host:Type, host:ExtType;
+synthesized attribute rSubEqProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
+flowtype rSubEqProd {otherType} on host:Type, host:ExtType;
+
+synthesized attribute lLshEqProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
+flowtype lLshEqProd {otherType} on host:Type, host:ExtType;
+synthesized attribute rLshEqProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
+flowtype rLshEqProd {otherType} on host:Type, host:ExtType;
+
+synthesized attribute lRshEqProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
+flowtype lRshEqProd {otherType} on host:Type, host:ExtType;
+synthesized attribute rRshEqProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
+flowtype rRshEqProd {otherType} on host:Type, host:ExtType;
+
+synthesized attribute lAndEqProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
+flowtype lAndEqProd {otherType} on host:Type, host:ExtType;
+synthesized attribute rAndEqProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
+flowtype rAndEqProd {otherType} on host:Type, host:ExtType;
+
+synthesized attribute lXorEqProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
+flowtype lXorEqProd {otherType} on host:Type, host:ExtType;
+synthesized attribute rXorEqProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
+flowtype rXorEqProd {otherType} on host:Type, host:ExtType;
+
+synthesized attribute lOrEqProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
+flowtype lOrEqProd {otherType} on host:Type, host:ExtType;
+synthesized attribute rOrEqProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
+flowtype rOrEqProd {otherType} on host:Type, host:ExtType;
+
+synthesized attribute lAndProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
+flowtype lAndProd {otherType} on host:Type, host:ExtType;
+synthesized attribute rAndProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
+flowtype rAndProd {otherType} on host:Type, host:ExtType;
+
+synthesized attribute lOrProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
+flowtype lOrProd {otherType} on host:Type, host:ExtType;
+synthesized attribute rOrProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
+flowtype rOrProd {otherType} on host:Type, host:ExtType;
+
+synthesized attribute lAndBitProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
+flowtype lAndBitProd {otherType} on host:Type, host:ExtType;
+synthesized attribute rAndBitProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
+flowtype rAndBitProd {otherType} on host:Type, host:ExtType;
+
+synthesized attribute lOrBitProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
+flowtype lOrBitProd {otherType} on host:Type, host:ExtType;
+synthesized attribute rOrBitProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
+flowtype rOrBitProd {otherType} on host:Type, host:ExtType;
+
+synthesized attribute lXorProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
+flowtype lXorProd {otherType} on host:Type, host:ExtType;
+synthesized attribute rXorProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
+flowtype rXorProd {otherType} on host:Type, host:ExtType;
+
+synthesized attribute lLshBitProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
+flowtype lLshBitProd {otherType} on host:Type, host:ExtType;
+synthesized attribute rLshBitProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
+flowtype rLshBitProd {otherType} on host:Type, host:ExtType;
+
+synthesized attribute lRshBitProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
+flowtype lRshBitProd {otherType} on host:Type, host:ExtType;
+synthesized attribute rRshBitProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
+flowtype rRshBitProd {otherType} on host:Type, host:ExtType;
+
+synthesized attribute lEqualsProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
+flowtype lEqualsProd {otherType} on host:Type, host:ExtType;
+synthesized attribute rEqualsProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
+flowtype rEqualsProd {otherType} on host:Type, host:ExtType;
+
+synthesized attribute lNotEqualsProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
+flowtype lNotEqualsProd {otherType} on host:Type, host:ExtType;
+synthesized attribute rNotEqualsProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
+flowtype rNotEqualsProd {otherType} on host:Type, host:ExtType;
+
+synthesized attribute lLtProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
+flowtype lLtProd {otherType} on host:Type, host:ExtType;
+synthesized attribute rLtProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
+flowtype rLtProd {otherType} on host:Type, host:ExtType;
+
+synthesized attribute lGtProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
+flowtype lGtProd {otherType} on host:Type, host:ExtType;
+synthesized attribute rGtProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
+flowtype rGtProd {otherType} on host:Type, host:ExtType;
+
+synthesized attribute lLteProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
+flowtype lLteProd {otherType} on host:Type, host:ExtType;
+synthesized attribute rLteProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
+flowtype rLteProd {otherType} on host:Type, host:ExtType;
+
+synthesized attribute lGteProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
+flowtype lGteProd {otherType} on host:Type, host:ExtType;
+synthesized attribute rGteProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
+flowtype rGteProd {otherType} on host:Type, host:ExtType;
+
+synthesized attribute lAddProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
+flowtype lAddProd {otherType} on host:Type, host:ExtType;
+synthesized attribute rAddProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
+flowtype rAddProd {otherType} on host:Type, host:ExtType;
+
+synthesized attribute lSubProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
+flowtype lSubProd {otherType} on host:Type, host:ExtType;
+synthesized attribute rSubProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
+flowtype rSubProd {otherType} on host:Type, host:ExtType;
+
+synthesized attribute lMulProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
+flowtype lMulProd {otherType} on host:Type, host:ExtType;
+synthesized attribute rMulProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
+flowtype rMulProd {otherType} on host:Type, host:ExtType;
+
+synthesized attribute lDivProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
+flowtype lDivProd {otherType} on host:Type, host:ExtType;
+synthesized attribute rDivProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
+flowtype rDivProd {otherType} on host:Type, host:ExtType;
+
+synthesized attribute lModProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
+flowtype lModProd {otherType} on host:Type, host:ExtType;
+synthesized attribute rModProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
+flowtype rModProd {otherType} on host:Type, host:ExtType;
+
+aspect default production
+top::host:Expr ::=
 {
-  production attribute overloads::[Pair<String BinaryProd>] with ++;
-  overloads := [];
-  return
-    do (bindMaybe, returnMaybe) {
-      n :: String <- host:moduleName(env, t);
-      prod :: BinaryProd <- lookupBy(stringEq, n, overloads);
-      return prod;
-    };
-}
-
-function getMemberCallOverloadProd
-Maybe<(host:Expr ::= host:Expr Boolean host:Name host:Exprs Location)> ::= t::host:Type env::Decorated Env
-{
-  production attribute overloads::[Pair<String (host:Expr ::= host:Expr Boolean host:Name host:Exprs Location)>] with ++;
-  overloads := [];
-  return
-    do (bindMaybe, returnMaybe) {
-      n :: String <- host:moduleName(env, t);
-      prod :: (host:Expr ::= host:Expr Boolean host:Name host:Exprs Location) <- lookupBy(stringEq, n, overloads);
-      return prod;
-    };
-}
-
-function getCallOverloadProd
-Maybe<(host:Expr ::= host:Expr host:Exprs Location)> ::= t::host:Type env::Decorated Env
-{
-  production attribute overloads::[Pair<String (host:Expr ::= host:Expr host:Exprs Location)>] with ++;
-  overloads := [];
-  return
-    do (bindMaybe, returnMaybe) {
-      n :: String <- host:moduleName(env, t);
-      prod :: (host:Expr ::= host:Expr host:Exprs Location) <- lookupBy(stringEq, n, overloads);
-      return prod;
-    };
-}
-
-function getMemberOverloadProd
-Maybe<(host:Expr ::= host:Expr Boolean host:Name Location)> ::= t::host:Type env::Decorated Env
-{
-  production attribute overloads::[Pair<String (host:Expr ::= host:Expr Boolean host:Name Location)>] with ++;
-  overloads := [];
-  return
-    do (bindMaybe, returnMaybe) {
-      n :: String <- host:moduleName(env, t);
-      prod :: (host:Expr ::= host:Expr Boolean host:Name Location) <- lookupBy(stringEq, n, overloads);
-      return prod;
-    };
-}
-
-function getSubscriptAssignOverloadProd
-Maybe<(host:Expr ::= host:Expr host:Expr BinaryProd host:Expr Location)> ::= t::host:Type env::Decorated Env
-{
-  production attribute overloads::[Pair<String (host:Expr ::= host:Expr host:Expr BinaryProd host:Expr Location)>] with ++;
-  overloads := [];
-  return
-    do (bindMaybe, returnMaybe) {
-      n :: String <- host:moduleName(env, t);
-      prod :: (host:Expr ::= host:Expr host:Expr BinaryProd host:Expr Location) <- lookupBy(stringEq, n, overloads);
-      return prod;
-    };
-}
-
-function getMemberAssignOverloadProd
-Maybe<(host:Expr ::= host:Expr Boolean host:Name BinaryProd host:Expr Location)> ::= t::host:Type env::Decorated Env
-{
-  production attribute overloads::[Pair<String (host:Expr ::= host:Expr Boolean host:Name BinaryProd host:Expr Location)>] with ++;
-  overloads := [];
-  return
-    do (bindMaybe, returnMaybe) {
-      n :: String <- host:moduleName(env, t);
-      prod :: (host:Expr ::= host:Expr Boolean host:Name BinaryProd host:Expr Location) <- lookupBy(stringEq, n, overloads);
-      return prod;
-    };
-}
-
--- Unary operators
-function getPreIncOverloadProd
-Maybe<UnaryProd> ::= t::host:Type env::Decorated Env
-{
-  production attribute overloads::[Pair<String UnaryProd>] with ++;
-  overloads := [];
-  return getUnaryOverloadProd(t, env, overloads);
-}
-
-function getPreDecOverloadProd
-Maybe<UnaryProd> ::= t::host:Type env::Decorated Env
-{
-  production attribute overloads::[Pair<String UnaryProd>] with ++;
-  overloads := [];
-  return getUnaryOverloadProd(t, env, overloads);
-}
-
-function getPostIncOverloadProd
-Maybe<UnaryProd> ::= t::host:Type env::Decorated Env
-{
-  production attribute overloads::[Pair<String UnaryProd>] with ++;
-  overloads := [];
-  return getUnaryOverloadProd(t, env, overloads);
-}
-
-function getPostDecOverloadProd
-Maybe<UnaryProd> ::= t::host:Type env::Decorated Env
-{
-  production attribute overloads::[Pair<String UnaryProd>] with ++;
-  overloads := [];
-  return getUnaryOverloadProd(t, env, overloads);
-}
-
-function getAddressOfOverloadProd
-Maybe<UnaryProd> ::= t::host:Type env::Decorated Env
-{
-  production attribute overloads::[Pair<String UnaryProd>] with ++;
-  overloads := [];
-  return getUnaryOverloadProd(t, env, overloads);
-}
-
-function getDereferenceOverloadProd
-Maybe<UnaryProd> ::= t::host:Type env::Decorated Env
-{
-  production attribute overloads::[Pair<String UnaryProd>] with ++;
-  overloads := [];
-  return getUnaryOverloadProd(t, env, overloads);
-}
-
-function getPositiveOverloadProd
-Maybe<UnaryProd> ::= t::host:Type env::Decorated Env
-{
-  production attribute overloads::[Pair<String UnaryProd>] with ++;
-  overloads := [];
-  return getUnaryOverloadProd(t, env, overloads);
-}
-
-function getNegativeOverloadProd
-Maybe<UnaryProd> ::= t::host:Type env::Decorated Env
-{
-  production attribute overloads::[Pair<String UnaryProd>] with ++;
-  overloads := [];
-  return getUnaryOverloadProd(t, env, overloads);
-}
-
-function getBitNegateOverloadProd
-Maybe<UnaryProd> ::= t::host:Type env::Decorated Env
-{
-  production attribute overloads::[Pair<String UnaryProd>] with ++;
-  overloads := [];
-  return getUnaryOverloadProd(t, env, overloads);
-}
-
-function getNotOverloadProd
-Maybe<UnaryProd> ::= t::host:Type env::Decorated Env
-{
-  production attribute overloads::[Pair<String UnaryProd>] with ++;
-  overloads := [];
-  return getUnaryOverloadProd(t, env, overloads);
-}
-
--- Binary operators
-function getEqOverloadProd
-Maybe<BinaryProd> ::= l::host:Type r::host:Type env::Decorated Env
-{
-  production attribute overloads::[Pair<Pair<String String> BinaryProd>] with ++;
-  production attribute lOverloads::[Pair<String BinaryProd>] with ++;
-  production attribute rOverloads::[Pair<String BinaryProd>] with ++;
-  overloads := [];
-  lOverloads := [];
-  rOverloads := [];
-
-  return getBinaryOverloadProd(l, r, env, overloads, lOverloads, rOverloads);
-}
-
-function getMulEqOverloadProd
-Maybe<BinaryProd> ::= l::host:Type r::host:Type env::Decorated Env
-{
-  production attribute overloads::[Pair<Pair<String String> BinaryProd>] with ++;
-  production attribute lOverloads::[Pair<String BinaryProd>] with ++;
-  production attribute rOverloads::[Pair<String BinaryProd>] with ++;
-  overloads := [];
-  lOverloads := [];
-  rOverloads := [];
-
-  return getBinaryOverloadProd(l, r, env, overloads, lOverloads, rOverloads);
-}
-
-function getDivEqOverloadProd
-Maybe<BinaryProd> ::= l::host:Type r::host:Type env::Decorated Env
-{
-  production attribute overloads::[Pair<Pair<String String> BinaryProd>] with ++;
-  production attribute lOverloads::[Pair<String BinaryProd>] with ++;
-  production attribute rOverloads::[Pair<String BinaryProd>] with ++;
-  overloads := [];
-  lOverloads := [];
-  rOverloads := [];
-
-  return getBinaryOverloadProd(l, r, env, overloads, lOverloads, rOverloads);
-}
-
-function getModEqOverloadProd
-Maybe<BinaryProd> ::= l::host:Type r::host:Type env::Decorated Env
-{
-  production attribute overloads::[Pair<Pair<String String> BinaryProd>] with ++;
-  production attribute lOverloads::[Pair<String BinaryProd>] with ++;
-  production attribute rOverloads::[Pair<String BinaryProd>] with ++;
-  overloads := [];
-  lOverloads := [];
-  rOverloads := [];
-
-  return getBinaryOverloadProd(l, r, env, overloads, lOverloads, rOverloads);
-}
-
-function getAddEqOverloadProd
-Maybe<BinaryProd> ::= l::host:Type r::host:Type env::Decorated Env
-{
-  production attribute overloads::[Pair<Pair<String String> BinaryProd>] with ++;
-  production attribute lOverloads::[Pair<String BinaryProd>] with ++;
-  production attribute rOverloads::[Pair<String BinaryProd>] with ++;
-  overloads := [];
-  lOverloads := [];
-  rOverloads := [];
-
-  return getBinaryOverloadProd(l, r, env, overloads, lOverloads, rOverloads);
-}
-
-function getSubEqOverloadProd
-Maybe<BinaryProd> ::= l::host:Type r::host:Type env::Decorated Env
-{
-  production attribute overloads::[Pair<Pair<String String> BinaryProd>] with ++;
-  production attribute lOverloads::[Pair<String BinaryProd>] with ++;
-  production attribute rOverloads::[Pair<String BinaryProd>] with ++;
-  overloads := [];
-  lOverloads := [];
-  rOverloads := [];
-
-  return getBinaryOverloadProd(l, r, env, overloads, lOverloads, rOverloads);
-}
-
-function getLshEqOverloadProd
-Maybe<BinaryProd> ::= l::host:Type r::host:Type env::Decorated Env
-{
-  production attribute overloads::[Pair<Pair<String String> BinaryProd>] with ++;
-  production attribute lOverloads::[Pair<String BinaryProd>] with ++;
-  production attribute rOverloads::[Pair<String BinaryProd>] with ++;
-  overloads := [];
-  lOverloads := [];
-  rOverloads := [];
-
-  return getBinaryOverloadProd(l, r, env, overloads, lOverloads, rOverloads);
-}
-
-function getRshEqOverloadProd
-Maybe<BinaryProd> ::= l::host:Type r::host:Type env::Decorated Env
-{
-  production attribute overloads::[Pair<Pair<String String> BinaryProd>] with ++;
-  production attribute lOverloads::[Pair<String BinaryProd>] with ++;
-  production attribute rOverloads::[Pair<String BinaryProd>] with ++;
-  overloads := [];
-  lOverloads := [];
-  rOverloads := [];
-
-  return getBinaryOverloadProd(l, r, env, overloads, lOverloads, rOverloads);
-}
-
-function getAndEqOverloadProd
-Maybe<BinaryProd> ::= l::host:Type r::host:Type env::Decorated Env
-{
-  production attribute overloads::[Pair<Pair<String String> BinaryProd>] with ++;
-  production attribute lOverloads::[Pair<String BinaryProd>] with ++;
-  production attribute rOverloads::[Pair<String BinaryProd>] with ++;
-  overloads := [];
-  lOverloads := [];
-  rOverloads := [];
-
-  return getBinaryOverloadProd(l, r, env, overloads, lOverloads, rOverloads);
-}
-
-function getXorEqOverloadProd
-Maybe<BinaryProd> ::= l::host:Type r::host:Type env::Decorated Env
-{
-  production attribute overloads::[Pair<Pair<String String> BinaryProd>] with ++;
-  production attribute lOverloads::[Pair<String BinaryProd>] with ++;
-  production attribute rOverloads::[Pair<String BinaryProd>] with ++;
-  overloads := [];
-  lOverloads := [];
-  rOverloads := [];
-
-  return getBinaryOverloadProd(l, r, env, overloads, lOverloads, rOverloads);
-}
-
-function getOrEqOverloadProd
-Maybe<BinaryProd> ::= l::host:Type r::host:Type env::Decorated Env
-{
-  production attribute overloads::[Pair<Pair<String String> BinaryProd>] with ++;
-  production attribute lOverloads::[Pair<String BinaryProd>] with ++;
-  production attribute rOverloads::[Pair<String BinaryProd>] with ++;
-  overloads := [];
-  lOverloads := [];
-  rOverloads := [];
-
-  return getBinaryOverloadProd(l, r, env, overloads, lOverloads, rOverloads);
-}
-
-function getAndOverloadProd
-Maybe<BinaryProd> ::= l::host:Type r::host:Type env::Decorated Env
-{
-  production attribute overloads::[Pair<Pair<String String> BinaryProd>] with ++;
-  production attribute lOverloads::[Pair<String BinaryProd>] with ++;
-  production attribute rOverloads::[Pair<String BinaryProd>] with ++;
-  overloads := [];
-  lOverloads := [];
-  rOverloads := [];
-
-  return getBinaryOverloadProd(l, r, env, overloads, lOverloads, rOverloads);
-}
-
-function getOrOverloadProd
-Maybe<BinaryProd> ::= l::host:Type r::host:Type env::Decorated Env
-{
-  production attribute overloads::[Pair<Pair<String String> BinaryProd>] with ++;
-  production attribute lOverloads::[Pair<String BinaryProd>] with ++;
-  production attribute rOverloads::[Pair<String BinaryProd>] with ++;
-  overloads := [];
-  lOverloads := [];
-  rOverloads := [];
-
-  return getBinaryOverloadProd(l, r, env, overloads, lOverloads, rOverloads);
-}
-
-function getAndBitOverloadProd
-Maybe<BinaryProd> ::= l::host:Type r::host:Type env::Decorated Env
-{
-  production attribute overloads::[Pair<Pair<String String> BinaryProd>] with ++;
-  production attribute lOverloads::[Pair<String BinaryProd>] with ++;
-  production attribute rOverloads::[Pair<String BinaryProd>] with ++;
-  overloads := [];
-  lOverloads := [];
-  rOverloads := [];
-
-  return getBinaryOverloadProd(l, r, env, overloads, lOverloads, rOverloads);
-}
-
-function getOrBitOverloadProd
-Maybe<BinaryProd> ::= l::host:Type r::host:Type env::Decorated Env
-{
-  production attribute overloads::[Pair<Pair<String String> BinaryProd>] with ++;
-  production attribute lOverloads::[Pair<String BinaryProd>] with ++;
-  production attribute rOverloads::[Pair<String BinaryProd>] with ++;
-  overloads := [];
-  lOverloads := [];
-  rOverloads := [];
-
-  return getBinaryOverloadProd(l, r, env, overloads, lOverloads, rOverloads);
-}
-
-function getXorOverloadProd
-Maybe<BinaryProd> ::= l::host:Type r::host:Type env::Decorated Env
-{
-  production attribute overloads::[Pair<Pair<String String> BinaryProd>] with ++;
-  production attribute lOverloads::[Pair<String BinaryProd>] with ++;
-  production attribute rOverloads::[Pair<String BinaryProd>] with ++;
-  overloads := [];
-  lOverloads := [];
-  rOverloads := [];
-
-  return getBinaryOverloadProd(l, r, env, overloads, lOverloads, rOverloads);
-}
-
-function getLshOverloadProd
-Maybe<BinaryProd> ::= l::host:Type r::host:Type env::Decorated Env
-{
-  production attribute overloads::[Pair<Pair<String String> BinaryProd>] with ++;
-  production attribute lOverloads::[Pair<String BinaryProd>] with ++;
-  production attribute rOverloads::[Pair<String BinaryProd>] with ++;
-  overloads := [];
-  lOverloads := [];
-  rOverloads := [];
-
-  return getBinaryOverloadProd(l, r, env, overloads, lOverloads, rOverloads);
-}
-
-function getRshOverloadProd
-Maybe<BinaryProd> ::= l::host:Type r::host:Type env::Decorated Env
-{
-  production attribute overloads::[Pair<Pair<String String> BinaryProd>] with ++;
-  production attribute lOverloads::[Pair<String BinaryProd>] with ++;
-  production attribute rOverloads::[Pair<String BinaryProd>] with ++;
-  overloads := [];
-  lOverloads := [];
-  rOverloads := [];
-
-  return getBinaryOverloadProd(l, r, env, overloads, lOverloads, rOverloads);
-}
-
-function getEqualsOverloadProd
-Maybe<BinaryProd> ::= l::host:Type r::host:Type env::Decorated Env
-{
-  production attribute overloads::[Pair<Pair<String String> BinaryProd>] with ++;
-  production attribute lOverloads::[Pair<String BinaryProd>] with ++;
-  production attribute rOverloads::[Pair<String BinaryProd>] with ++;
-  overloads := [];
-  lOverloads := [];
-  rOverloads := [];
-
-  return getBinaryOverloadProd(l, r, env, overloads, lOverloads, rOverloads);
-}
-
-function getNotEqualsOverloadProd
-Maybe<BinaryProd> ::= l::host:Type r::host:Type env::Decorated Env
-{
-  production attribute overloads::[Pair<Pair<String String> BinaryProd>] with ++;
-  production attribute lOverloads::[Pair<String BinaryProd>] with ++;
-  production attribute rOverloads::[Pair<String BinaryProd>] with ++;
-  overloads := [];
-  lOverloads := [];
-  rOverloads := [];
-
-  return getBinaryOverloadProd(l, r, env, overloads, lOverloads, rOverloads);
-}
-
-function getLtOverloadProd
-Maybe<BinaryProd> ::= l::host:Type r::host:Type env::Decorated Env
-{
-  production attribute overloads::[Pair<Pair<String String> BinaryProd>] with ++;
-  production attribute lOverloads::[Pair<String BinaryProd>] with ++;
-  production attribute rOverloads::[Pair<String BinaryProd>] with ++;
-  overloads := [];
-  lOverloads := [];
-  rOverloads := [];
-
-  return getBinaryOverloadProd(l, r, env, overloads, lOverloads, rOverloads);
-}
-
-function getGtOverloadProd
-Maybe<BinaryProd> ::= l::host:Type r::host:Type env::Decorated Env
-{
-  production attribute overloads::[Pair<Pair<String String> BinaryProd>] with ++;
-  production attribute lOverloads::[Pair<String BinaryProd>] with ++;
-  production attribute rOverloads::[Pair<String BinaryProd>] with ++;
-  overloads := [];
-  lOverloads := [];
-  rOverloads := [];
-
-  return getBinaryOverloadProd(l, r, env, overloads, lOverloads, rOverloads);
-}
-
-function getLteOverloadProd
-Maybe<BinaryProd> ::= l::host:Type r::host:Type env::Decorated Env
-{
-  production attribute overloads::[Pair<Pair<String String> BinaryProd>] with ++;
-  production attribute lOverloads::[Pair<String BinaryProd>] with ++;
-  production attribute rOverloads::[Pair<String BinaryProd>] with ++;
-  overloads := [];
-  lOverloads := [];
-  rOverloads := [];
-
-  return getBinaryOverloadProd(l, r, env, overloads, lOverloads, rOverloads);
-}
-
-function getGteOverloadProd
-Maybe<BinaryProd> ::= l::host:Type r::host:Type env::Decorated Env
-{
-  production attribute overloads::[Pair<Pair<String String> BinaryProd>] with ++;
-  production attribute lOverloads::[Pair<String BinaryProd>] with ++;
-  production attribute rOverloads::[Pair<String BinaryProd>] with ++;
-  overloads := [];
-  lOverloads := [];
-  rOverloads := [];
-
-  return getBinaryOverloadProd(l, r, env, overloads, lOverloads, rOverloads);
-}
-
-function getAddOverloadProd
-Maybe<BinaryProd> ::= l::host:Type r::host:Type env::Decorated Env
-{
-  production attribute overloads::[Pair<Pair<String String> BinaryProd>] with ++;
-  production attribute lOverloads::[Pair<String BinaryProd>] with ++;
-  production attribute rOverloads::[Pair<String BinaryProd>] with ++;
-  overloads := [];
-  lOverloads := [];
-  rOverloads := [];
-
-  return getBinaryOverloadProd(l, r, env, overloads, lOverloads, rOverloads);
-}
-
-function getSubOverloadProd
-Maybe<BinaryProd> ::= l::host:Type r::host:Type env::Decorated Env
-{
-  production attribute overloads::[Pair<Pair<String String> BinaryProd>] with ++;
-  production attribute lOverloads::[Pair<String BinaryProd>] with ++;
-  production attribute rOverloads::[Pair<String BinaryProd>] with ++;
-  overloads := [];
-  lOverloads := [];
-  rOverloads := [];
-
-  return getBinaryOverloadProd(l, r, env, overloads, lOverloads, rOverloads);
-}
-
-function getMulOverloadProd
-Maybe<BinaryProd> ::= l::host:Type r::host:Type env::Decorated Env
-{
-  production attribute overloads::[Pair<Pair<String String> BinaryProd>] with ++;
-  production attribute lOverloads::[Pair<String BinaryProd>] with ++;
-  production attribute rOverloads::[Pair<String BinaryProd>] with ++;
-  overloads := [];
-  lOverloads := [];
-  rOverloads := [];
-
-  return getBinaryOverloadProd(l, r, env, overloads, lOverloads, rOverloads);
-}
-
-function getDivOverloadProd
-Maybe<BinaryProd> ::= l::host:Type r::host:Type env::Decorated Env
-{
-  production attribute overloads::[Pair<Pair<String String> BinaryProd>] with ++;
-  production attribute lOverloads::[Pair<String BinaryProd>] with ++;
-  production attribute rOverloads::[Pair<String BinaryProd>] with ++;
-  overloads := [];
-  lOverloads := [];
-  rOverloads := [];
-
-  return getBinaryOverloadProd(l, r, env, overloads, lOverloads, rOverloads);
-}
-
-function getModOverloadProd
-Maybe<BinaryProd> ::= l::host:Type r::host:Type env::Decorated Env
-{
-  production attribute overloads::[Pair<Pair<String String> BinaryProd>] with ++;
-  production attribute lOverloads::[Pair<String BinaryProd>] with ++;
-  production attribute rOverloads::[Pair<String BinaryProd>] with ++;
-  overloads := [];
-  lOverloads := [];
-  rOverloads := [];
-
-  return getBinaryOverloadProd(l, r, env, overloads, lOverloads, rOverloads);
-}
-
--- Helper functions
-function getUnaryOverloadProd
-Maybe<UnaryProd> ::= t::host:Type env::Decorated Env overloads::[Pair<String UnaryProd>]
-{
-  return
-    do (bindMaybe, returnMaybe) {
-      n :: String <- host:moduleName(env, t);
-      prod :: UnaryProd <- lookupBy(stringEq, n, overloads);
-      return prod;
-    };
-}
-
-function getBinaryOverloadProd
-Maybe<BinaryProd> ::=
-  l::host:Type r::host:Type
-  env::Decorated Env
-  overloads::[Pair<Pair<String String> BinaryProd>]
-  lOverloads::[Pair<String BinaryProd>]
-  rOverloads::[Pair<String BinaryProd>]
-{
-  local lModuleName :: Maybe<String> = host:moduleName(env, l);
-  local rModuleName :: Maybe<String> = host:moduleName(env, r);
-
-  -- Option 1: overload for a left extension type and a right extension type
-  local option1::Maybe<BinaryProd> =
-    do (bindMaybe, returnMaybe) {
-      n1 :: String <- lModuleName;
-      n2 :: String <- rModuleName;
-      prod :: BinaryProd <- lookupBy(stringPairEq, pair(n1, n2), overloads);
-      return prod;
-    };
-  -- Option 2: overload for a left extension type and any type
-  local option2::Maybe<BinaryProd> =
-    do (bindMaybe, returnMaybe) {
-      n :: String <- lModuleName;
-      prod :: BinaryProd <- lookupBy(stringEq, n, lOverloads);
-      return prod;
-    };
-  -- Option 2: overload for any type and a right extension type
-  local option3::Maybe<BinaryProd> =
-    do (bindMaybe, returnMaybe) {
-      n :: String <- rModuleName;
-      prod :: BinaryProd <- lookupBy(stringEq, n, rOverloads);
-      return prod;
-    };
-  
-  return orElse(option1, orElse(option2, option3));
-}
-
-function getUnaryOverload
-host:Expr ::=
-  -- AST components
-  e::host:Expr  loc::Location
-  -- Inherited attributes
-  env::Decorated Env  returnType::Maybe<host:Type>
-  -- Production-specfic overload parameters
-  overloadFn::(Maybe<UnaryProd> ::= host:Type Decorated Env) -- Function getting the overload production
-  defaultProd::UnaryProd -- Default production for no overload
-{
-  e.env = env;
-  e.host:returnType = returnType;
-  
-  -- Option 1: Normal overloaded operator
-  local option1::Maybe<host:Expr> = applyMaybe2(overloadFn(e.host:typerep, env), e, loc);
-  
-  -- Option 2: No overload
-  local option2::host:Expr = defaultProd(e, loc);
-  
-  return fromMaybe(option2, option1);
-}
-
-function getBinaryOverload
-host:Expr ::=
-  -- AST components
-  lhs::host:Expr  rhs::host:Expr  loc::Location
-  -- Inherited attributes
-  env::Decorated Env  returnType::Maybe<host:Type>
-  -- Production-specfic overload parameters
-  overloadFn::(Maybe<BinaryProd> ::= host:Type host:Type Decorated Env) -- Function getting the overload production
-  defaultProd::BinaryProd -- Default production for no overload
-{
-  lhs.env = env;
-  lhs.host:returnType = returnType;
-  rhs.env = env;
-  rhs.host:returnType = returnType;
-  
-  -- Option 1: Normal overloaded operator
-  local option1::Maybe<host:Expr> =
-    applyMaybe3(overloadFn(lhs.host:typerep, rhs.host:typerep, env), lhs, rhs, loc);
-  
-  -- Option 2: No overload
-  local option2::host:Expr = defaultProd(lhs, rhs, loc);
-  
-  return fromMaybe(option2, option1);
-}
-
-function getAssignOverload
-host:Expr ::=
-  -- AST components
-  lhs::host:Expr  rhs::host:Expr  loc::Location
-  -- Inherited attributes
-  env::Decorated Env  returnType::Maybe<host:Type>
-  -- Production-specfic overload parameters
-  prod::BinaryProd -- Overloaded production
-  overloadFn::(Maybe<BinaryProd> ::= host:Type host:Type Decorated Env) -- Function getting the overload production
-  maybeBaseOpOverloadFn::Maybe<(Maybe<BinaryProd> ::= host:Type host:Type Decorated Env)> -- Function getting the base operator overload production, if it exists
-  defaultProd::BinaryProd -- Default production for no overload
-{
-  lhs.env = env;
-  lhs.host:returnType = returnType;
-  rhs.env = env;
-  rhs.host:returnType = returnType;
-
-  -- Option 1: Assign to a member or subscript (e.g. a.foo = b, a[i] += b)
-  local option1::Maybe<host:Expr> =
-    case lhs of
-      arraySubscriptExpr(l, r) ->
-      applyMaybe5(getSubscriptAssignOverloadProd(l.host:typerep, env), l, r, prod, rhs, loc)
-    | memberExpr(l, d, r) ->
-      applyMaybe6(getMemberAssignOverloadProd(l.host:typerep, env), l, d, r, prod, rhs, loc)
-    | _ -> nothing()
+  top.callProd =
+    case top.host:typerep.callProd of
+      just(prod) -> just(prod(top, _, _))
+    | nothing() -> nothing()
     end;
-  
-  -- Option 2: Normal overloaded assign operator
-  local option2::Maybe<host:Expr> =
-    applyMaybe3(overloadFn(lhs.host:typerep, rhs.host:typerep, env), lhs, rhs, loc);
-  
-  -- Option 3: Rewrite using overloaded = and the base operator
-  local option3::Maybe<host:Expr> =
-    do (bindMaybe, returnMaybe) {
-      baseOpOverloadFn :: (Maybe<BinaryProd> ::= host:Type host:Type Decorated Env) <- maybeBaseOpOverloadFn;
-      baseOpProd :: BinaryProd <- baseOpOverloadFn(lhs.host:typerep, rhs.host:typerep, env);
-      tmpName::String = "_tmp" ++ toString(genInt());
-
-      -- ({${lhs.host:typerep} *${tmpName} = &${lhs}; *${tmpName} = *${tmpName} ${baseOp} ${rhs}})
-      return
-        host:stmtExpr(
-          mkDecl(
-            tmpName,
-            host:pointerType(host:nilQualifier(), lhs.host:typerep),
-            host:addressOfExpr(lhs, location=loc),
-            loc),
-          eqExpr(
-            host:dereferenceExpr(
-              host:declRefExpr(host:name(tmpName, location=loc), location=loc),
-              location=loc),
-            baseOpProd(
-              host:dereferenceExpr(
-                host:declRefExpr(host:name(tmpName, location=loc), location=loc),
-                location=loc),
-              rhs, loc),
-            location=loc),
-          location=loc);
-    };
-  
-  -- Option 4: No overload
-  local option4::host:Expr = defaultProd(lhs, rhs, loc);
-  
-  return fromMaybe(option4, orElse(option1, orElse(option2, option3)));
-}
-
-function getNegatedBinaryOverload
-host:Expr ::=
-  -- AST components
-  lhs::host:Expr  rhs::host:Expr  loc::Location
-  -- Inherited attributes
-  env::Decorated Env  returnType::Maybe<host:Type>
-  -- Production-specfic overload parameters
-  overloadFn::(Maybe<BinaryProd> ::= host:Type host:Type Decorated Env) -- Function getting the overload production
-  negatedOverloadFn::(Maybe<BinaryProd> ::= host:Type host:Type Decorated Env) -- Function getting the negated version of the overload production
-  defaultProd::BinaryProd -- Default production for no overload
-{
-  lhs.env = env;
-  lhs.host:returnType = returnType;
-  rhs.env = env;
-  rhs.host:returnType = returnType;
-  
-  -- Option 1: Normal overloaded operator
-  local option1::Maybe<host:Expr> =
-    applyMaybe3(overloadFn(lhs.host:typerep, rhs.host:typerep, env), lhs, rhs, loc);
-  
-  -- Option 2: Rewrite using ! and the overloaded negated version of the operator
-  local option2::Maybe<host:Expr> =
-    do (bindMaybe, returnMaybe) {
-      negatedOpProd :: BinaryProd <- negatedOverloadFn(lhs.host:typerep, rhs.host:typerep, env);
-
-      -- !(${lhs} ${negatedOp} ${rhs})
-      return notExpr(negatedOpProd(lhs, rhs, loc), location=loc);
-    };
-  
-  -- Option 3: No overload
-  local option3::host:Expr = defaultProd(lhs, rhs, loc);
-  
-  return fromMaybe(option3, orElse(option1, option2));
-}
-
-function getGtOverload
-host:Expr ::=
-  -- AST components
-  lhs::host:Expr  rhs::host:Expr  loc::Location
-  -- Inherited attributes
-  env::Decorated Env  returnType::Maybe<host:Type>
-{
-  lhs.env = env;
-  lhs.host:returnType = returnType;
-  rhs.env = env;
-  rhs.host:returnType = returnType;
-  
-  -- Option 1: Normal overloaded operator
-  local option1::Maybe<host:Expr> =
-    applyMaybe3(
-      getGtOverloadProd(lhs.host:typerep, rhs.host:typerep, env),
-      lhs, rhs, loc);
-  
-  -- Option 2: Rewrite using !, || and the overloaded ==, < operators
-  local option2::Maybe<host:Expr> =
-    do (bindMaybe, returnMaybe) {
-      ltOverloadProd :: BinaryProd <- getLtOverloadProd(lhs.host:typerep, rhs.host:typerep, env);
-      eqOverloadProd :: BinaryProd <- getEqOverloadProd(lhs.host:typerep, rhs.host:typerep, env);
-      lhsTmpName::String = "_tmp" ++ toString(genInt());
-      rhsTmpName::String = "_tmp" ++ toString(genInt());
-
-      -- ({${lhs.host:typerep} ${lhsTmpName} = ${lhs};
-      --   ${rhs.host:typerep} ${rhsTmpName} = ${rhs};
-      --   !((${lhsTmpName} ${ltOverloadProd} ${rhsTmpName}) ||
-      --     (${lhsTmpName} ${eqOverloadProd} ${rhsTmpName}));})
-      return
-        host:stmtExpr(
-          host:seqStmt(
-            mkDecl(lhsTmpName, lhs.host:typerep, lhs, loc),
-            mkDecl(rhsTmpName, rhs.host:typerep, rhs, loc)),
-          notExpr(
-            orExpr(
-              ltOverloadProd(
-                host:declRefExpr(
-                  host:name(lhsTmpName, location=loc),
-                  location=loc),
-                host:declRefExpr(
-                  host:name(rhsTmpName, location=loc),
-                  location=loc),
-                loc),
-              eqOverloadProd(
-                host:declRefExpr(
-                  host:name(lhsTmpName, location=loc),
-                  location=loc),
-                host:declRefExpr(
-                  host:name(rhsTmpName, location=loc),
-                  location=loc),
-                loc),
-              location=loc),
-            location=loc),
-          location=loc);
-    };
-  
-  -- Option 3: No overload
-  local option3::host:Expr = inj:gtExpr(lhs, rhs, location=loc);
-  
-  return fromMaybe(option3, orElse(option1, option2));
-}
-
-function stringPairEq
-Boolean ::= p1::Pair<String String> p2::Pair<String String>
-{
-  return p1.fst == p2.fst && p1.snd == p2.snd;
-}
-
--- These helper functions apply maybeFn if it is a just() to the arguments, or otherwise return nothing() 
-function applyMaybe
-Maybe<a> ::= maybeFn::Maybe<(a ::= b)> a::b
-{
-  return
-    case maybeFn of
-      just(fn) -> just(fn(a))
+  top.addressOfProd = 
+    case top.host:typerep.addressOfProd of
+      just(prod) -> just(prod(top, _))
     | nothing() -> nothing()
     end;
 }
 
-function applyMaybe2
-Maybe<a> ::= maybeFn::Maybe<(a ::= b c)> a1::b a2::c
+aspect production host:arraySubscriptExpr
+top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 {
-  return
-    case maybeFn of
-      just(fn) -> just(fn(a1, a2))
-    | nothing() -> nothing()
-    end;
+  top.addressOfProd =
+    orElse(
+      case top.host:typerep.addressOfArraySubscriptProd of
+        just(prod) -> just(prod(lhs, rhs, _))
+      | nothing() -> nothing()
+      end,
+      case top.host:typerep.addressOfProd of
+        just(prod) -> just(prod(top, _))
+      | nothing() -> nothing()
+      end);
 }
 
-function applyMaybe3
-Maybe<a> ::= maybeFn::Maybe<(a ::= b c d)> a1::b a2::c a3::d
+aspect production host:callExpr
+top::host:Expr ::= f::host:Expr  a::host:Exprs
 {
-  return
-    case maybeFn of
-      just(fn) -> just(fn(a1, a2, a3))
-    | nothing() -> nothing()
-    end;
+  top.addressOfProd =
+    orElse(
+      case top.host:typerep.addressOfCallProd of
+        just(prod) -> just(prod(f, a, _))
+      | nothing() -> nothing()
+      end,
+      case top.host:typerep.addressOfProd of
+        just(prod) -> just(prod(top, _))
+      | nothing() -> nothing()
+      end);
 }
 
-function applyMaybe4
-Maybe<a> ::= maybeFn::Maybe<(a ::= b c d e)> a1::b a2::c a3::d a4::e
+aspect production host:memberExpr
+top::host:Expr ::= lhs::host:Expr  deref::Boolean  rhs::host:Name
 {
-  return
-    case maybeFn of
-      just(fn) -> just(fn(a1, a2, a3, a4))
-    | nothing() -> nothing()
-    end;
+  local t::host:Type = lhs.host:typerep;
+  t.isDeref = deref;
+  top.callProd =
+    orElse(
+      case t.callMemberProd of
+        just(prod) -> just(prod(lhs, rhs, _, _))
+      | nothing() -> nothing()
+      end,
+      case top.host:typerep.callProd of
+        just(prod) -> just(prod(top, _, _))
+      | nothing() -> nothing()
+      end);
+  top.addressOfProd =
+    orElse(
+      case t.addressOfMemberProd of
+        just(prod) -> just(prod(lhs, rhs, _))
+      | nothing() -> nothing()
+      end,
+      case top.host:typerep.addressOfProd of
+        just(prod) -> just(prod(top, _))
+      | nothing() -> nothing()
+      end);
 }
 
-function applyMaybe5
-Maybe<a> ::= maybeFn::Maybe<(a ::= b c d e f)> a1::b a2::c a3::d a4::e a5::f
+aspect default production
+top::host:Type ::=
 {
-  return
-    case maybeFn of
-      just(fn) -> just(fn(a1, a2, a3, a4, a5))
-    | nothing() -> nothing()
-    end;
+  top.arraySubscriptProd = nothing();
+  top.callProd = nothing();
+  top.callMemberProd = nothing();
+  top.memberProd = nothing();
+  top.preIncProd = nothing();
+  top.preDecProd = nothing();
+  top.postIncProd = nothing();
+  top.postDecProd = nothing();
+  top.addressOfProd = nothing();
+  top.addressOfArraySubscriptProd = nothing();
+  top.addressOfCallProd = nothing();
+  top.addressOfMemberProd = nothing();
+  top.dereferenceProd = nothing();
+  top.positiveProd = nothing();
+  top.negativeProd = nothing();
+  top.bitNegateProd = nothing();
+  top.notProd = nothing();
+  top.lEqProd = nothing();
+  top.rEqProd = nothing();
+  top.lMulEqProd = nothing();
+  top.rMulEqProd = nothing();
+  top.lDivEqProd = nothing();
+  top.rDivEqProd = nothing();
+  top.lModEqProd = nothing();
+  top.rModEqProd = nothing();
+  top.lAddEqProd = nothing();
+  top.rAddEqProd = nothing();
+  top.lSubEqProd = nothing();
+  top.rSubEqProd = nothing();
+  top.lLshEqProd = nothing();
+  top.rLshEqProd = nothing();
+  top.lRshEqProd = nothing();
+  top.rRshEqProd = nothing();
+  top.lAndEqProd = nothing();
+  top.rAndEqProd = nothing();
+  top.lXorEqProd = nothing();
+  top.rXorEqProd = nothing();
+  top.lOrEqProd = nothing();
+  top.rOrEqProd = nothing();
+  top.lAndProd = nothing();
+  top.rAndProd = nothing();
+  top.lOrProd = nothing();
+  top.rOrProd = nothing();
+  top.lAndBitProd = nothing();
+  top.rAndBitProd = nothing();
+  top.lOrBitProd = nothing();
+  top.rOrBitProd = nothing();
+  top.lXorProd = nothing();
+  top.rXorProd = nothing();
+  top.lLshBitProd = nothing();
+  top.rLshBitProd = nothing();
+  top.lRshBitProd = nothing();
+  top.rRshBitProd = nothing();
+  top.lEqualsProd = nothing();
+  top.rEqualsProd = nothing();
+  top.lNotEqualsProd = nothing();
+  top.rNotEqualsProd = nothing();
+  top.lLtProd = nothing();
+  top.rLtProd = nothing();
+  top.lGtProd = nothing();
+  top.rGtProd = nothing();
+  top.lLteProd = nothing();
+  top.rLteProd = nothing();
+  top.lGteProd = nothing();
+  top.rGteProd = nothing();
+  top.lAddProd = nothing();
+  top.rAddProd = nothing();
+  top.lSubProd = nothing();
+  top.rSubProd = nothing();
+  top.lMulProd = nothing();
+  top.rMulProd = nothing();
+  top.lDivProd = nothing();
+  top.rDivProd = nothing();
+  top.lModProd = nothing();
+  top.rModProd = nothing();
 }
 
-function applyMaybe6
-Maybe<a> ::= maybeFn::Maybe<(a ::= b c d e f g)> a1::b a2::c a3::d a4::e a5::f a6::g
+aspect production host:pointerType
+top::host:Type ::= q::host:Qualifiers target::host:Type
 {
-  return
-    case maybeFn of
-      just(fn) -> just(fn(a1, a2, a3, a4, a5, a6))
-    | nothing() -> nothing()
-    end;
+  top.callMemberProd = if top.isDeref then target.callMemberProd else nothing();
+  top.memberProd = if top.isDeref then target.memberProd else nothing();
+  top.addressOfMemberProd = if top.isDeref then target.addressOfMemberProd else nothing();
+  
+  target.isDeref = false;
 }
 
-function applyMaybe7
-Maybe<a> ::= maybeFn::Maybe<(a ::= b c d e f g h)> a1::b a2::c a3::d a4::e a5::f a6::g a7::h
+aspect production host:extType
+top::host:Type ::= q::host:Qualifiers  sub::host:ExtType
 {
-  return
-    case maybeFn of
-      just(fn) -> just(fn(a1, a2, a3, a4, a5, a6, a7))
+  top.arraySubscriptProd = sub.arraySubscriptProd;
+  top.callProd = sub.callProd;
+  top.callMemberProd =
+    case sub.callMemberProd of
+      just(prod) -> just(prod(_, top.isDeref, _, _, _))
     | nothing() -> nothing()
     end;
+  top.memberProd =
+    case sub.memberProd of
+      just(prod) -> just(prod(_, top.isDeref, _, _))
+    | nothing() -> nothing()
+    end;
+  
+  top.preIncProd = sub.preIncProd;
+  top.preDecProd = sub.preDecProd;
+  top.postIncProd = sub.postIncProd;
+  top.postDecProd = sub.postDecProd;
+  top.addressOfProd = sub.addressOfProd;
+  top.addressOfArraySubscriptProd = sub.addressOfArraySubscriptProd;
+  top.addressOfCallProd = sub.addressOfCallProd;
+  top.addressOfMemberProd =
+    case sub.addressOfMemberProd of
+      just(prod) -> just(prod(_, top.isDeref, _, _))
+    | nothing() -> nothing()
+    end;
+  top.dereferenceProd = sub.dereferenceProd;
+  top.positiveProd = sub.positiveProd;
+  top.negativeProd = sub.negativeProd;
+  top.bitNegateProd = sub.bitNegateProd;
+  top.notProd = sub.notProd;
+  
+  sub.otherType = top.otherType;
+  top.lEqProd = sub.lEqProd;
+  top.rEqProd = sub.lEqProd;
+  top.lMulEqProd = sub.lMulEqProd;
+  top.rMulEqProd = sub.lMulEqProd;
+  top.lDivEqProd = sub.lDivEqProd;
+  top.rDivEqProd = sub.rDivEqProd;
+  top.lModEqProd = sub.lModEqProd;
+  top.rModEqProd = sub.rModEqProd;
+  top.lAddEqProd = sub.lAddEqProd;
+  top.rAddEqProd = sub.rAddEqProd;
+  top.lSubEqProd = sub.lSubEqProd;
+  top.rSubEqProd = sub.rSubEqProd;
+  top.lLshEqProd = sub.lLshEqProd;
+  top.rLshEqProd = sub.rLshEqProd;
+  top.lRshEqProd = sub.lRshEqProd;
+  top.rRshEqProd = sub.rRshEqProd;
+  top.lAndEqProd = sub.lAndEqProd;
+  top.rAndEqProd = sub.rAndEqProd;
+  top.lXorEqProd = sub.lXorEqProd;
+  top.rXorEqProd = sub.rXorEqProd;
+  top.lOrEqProd = sub.lOrEqProd;
+  top.rOrEqProd = sub.rOrEqProd;
+  top.lAndProd = sub.lAndProd;
+  top.rAndProd = sub.rAndProd;
+  top.lOrProd = sub.lOrProd;
+  top.rOrProd = sub.rOrProd;
+  top.lAndBitProd = sub.lAndBitProd;
+  top.rAndBitProd = sub.rAndBitProd;
+  top.lOrBitProd = sub.lOrBitProd;
+  top.rOrBitProd = sub.rOrBitProd;
+  top.lXorProd = sub.lXorProd;
+  top.rXorProd = sub.rXorProd;
+  top.lLshBitProd = sub.lLshBitProd;
+  top.rLshBitProd = sub.rLshBitProd;
+  top.lRshBitProd = sub.lRshBitProd;
+  top.rRshBitProd = sub.rRshBitProd;
+  top.lEqualsProd = sub.lEqualsProd;
+  top.rEqualsProd = sub.rEqualsProd;
+  top.lNotEqualsProd = sub.lNotEqualsProd;
+  top.rNotEqualsProd = sub.rNotEqualsProd;
+  top.lLtProd = sub.lLtProd;
+  top.rLtProd = sub.rLtProd;
+  top.lGtProd = sub.lGtProd;
+  top.rGtProd = sub.rGtProd;
+  top.lLteProd = sub.lLteProd;
+  top.rLteProd = sub.rLteProd;
+  top.lGteProd = sub.lGteProd;
+  top.rGteProd = sub.rGteProd;
+  top.lAddProd = sub.lAddProd;
+  top.rAddProd = sub.rAddProd;
+  top.lSubProd = sub.lSubProd;
+  top.rSubProd = sub.rSubProd;
+  top.lMulProd = sub.lMulProd;
+  top.rMulProd = sub.rMulProd;
+  top.lDivProd = sub.lDivProd;
+  top.rDivProd = sub.rDivProd;
+  top.lModProd = sub.lModProd;
+  top.rModProd = sub.rModProd;
 }
+
+aspect default production
+top::host:ExtType ::=
+{
+  top.arraySubscriptProd = nothing();
+  top.callProd = nothing();
+  top.callMemberProd = nothing();
+  top.memberProd = nothing();
+  top.preIncProd = nothing();
+  top.preDecProd = nothing();
+  top.postIncProd = nothing();
+  top.postDecProd = nothing();
+  top.addressOfProd = nothing();
+  top.addressOfArraySubscriptProd = nothing();
+  top.addressOfCallProd = nothing();
+  top.addressOfMemberProd = nothing();
+  top.dereferenceProd = nothing();
+  top.positiveProd = nothing();
+  top.negativeProd = nothing();
+  top.bitNegateProd = nothing();
+  top.notProd = nothing();
+  top.lEqProd = nothing();
+  top.rEqProd = nothing();
+  top.lMulEqProd = nothing();
+  top.rMulEqProd = nothing();
+  top.lDivEqProd = nothing();
+  top.rDivEqProd = nothing();
+  top.lModEqProd = nothing();
+  top.rModEqProd = nothing();
+  top.lAddEqProd = nothing();
+  top.rAddEqProd = nothing();
+  top.lSubEqProd = nothing();
+  top.rSubEqProd = nothing();
+  top.lLshEqProd = nothing();
+  top.rLshEqProd = nothing();
+  top.lRshEqProd = nothing();
+  top.rRshEqProd = nothing();
+  top.lAndEqProd = nothing();
+  top.rAndEqProd = nothing();
+  top.lXorEqProd = nothing();
+  top.rXorEqProd = nothing();
+  top.lOrEqProd = nothing();
+  top.rOrEqProd = nothing();
+  top.lAndProd = nothing();
+  top.rAndProd = nothing();
+  top.lOrProd = nothing();
+  top.rOrProd = nothing();
+  top.lAndBitProd = nothing();
+  top.rAndBitProd = nothing();
+  top.lOrBitProd = nothing();
+  top.rOrBitProd = nothing();
+  top.lXorProd = nothing();
+  top.rXorProd = nothing();
+  top.lLshBitProd = nothing();
+  top.rLshBitProd = nothing();
+  top.lRshBitProd = nothing();
+  top.rRshBitProd = nothing();
+  top.lEqualsProd = nothing();
+  top.rEqualsProd = nothing();
+  top.lNotEqualsProd = nothing();
+  top.rNotEqualsProd = nothing();
+  top.lLtProd = nothing();
+  top.rLtProd = nothing();
+  top.lGtProd = nothing();
+  top.rGtProd = nothing();
+  top.lLteProd = nothing();
+  top.rLteProd = nothing();
+  top.lGteProd = nothing();
+  top.rGteProd = nothing();
+  top.lAddProd = nothing();
+  top.rAddProd = nothing();
+  top.lSubProd = nothing();
+  top.rSubProd = nothing();
+  top.lMulProd = nothing();
+  top.rMulProd = nothing();
+  top.lDivProd = nothing();
+  top.rDivProd = nothing();
+  top.lModProd = nothing();
+  top.rModProd = nothing();
+}
+

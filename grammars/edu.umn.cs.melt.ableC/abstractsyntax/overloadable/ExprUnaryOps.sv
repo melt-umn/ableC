@@ -8,11 +8,9 @@ top::host:Expr ::= e::host:Expr
   lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   local fwrd::host:Expr =
-    getUnaryOverload(
-       e, top.location,
-       top.env, top.host:returnType,
-       getPreIncOverloadProd,
-       inj:preIncExpr(_, location=_));
+    fromMaybe(
+      inj:preIncExpr(_, location=_),
+      e.host:typerep.preIncProd)(e, top.location);
 
   forwards to host:wrapWarnExpr(lerrors, fwrd, top.location);
 }
@@ -24,11 +22,9 @@ top::host:Expr ::= e::host:Expr
   lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   local fwrd::host:Expr =
-    getUnaryOverload(
-       e, top.location,
-       top.env, top.host:returnType,
-       getPreDecOverloadProd,
-       inj:preDecExpr(_, location=_));
+    fromMaybe(
+      inj:preDecExpr(_, location=_),
+      e.host:typerep.preDecProd)(e, top.location);
 
   forwards to host:wrapWarnExpr(lerrors, fwrd, top.location);
 }
@@ -40,11 +36,9 @@ top::host:Expr ::= e::host:Expr
   lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   local fwrd::host:Expr =
-    getUnaryOverload(
-       e, top.location,
-       top.env, top.host:returnType,
-       getPostIncOverloadProd,
-       inj:postIncExpr(_, location=_));
+    fromMaybe(
+      inj:postIncExpr(_, location=_),
+      e.host:typerep.postIncProd)(e, top.location);
 
   forwards to host:wrapWarnExpr(lerrors, fwrd, top.location);
 }
@@ -56,11 +50,9 @@ top::host:Expr ::= e::host:Expr
   lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   local fwrd::host:Expr =
-    getUnaryOverload(
-       e, top.location,
-       top.env, top.host:returnType,
-       getPostDecOverloadProd,
-       inj:postDecExpr(_, location=_));
+    fromMaybe(
+      inj:postDecExpr(_, location=_),
+      e.host:typerep.postDecProd)(e, top.location);
 
   forwards to host:wrapWarnExpr(lerrors, fwrd, top.location);
 }
@@ -72,11 +64,9 @@ top::host:Expr ::= e::host:Expr
   lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   local fwrd::host:Expr =
-    getUnaryOverload(
-       e, top.location,
-       top.env, top.host:returnType,
-       getAddressOfOverloadProd,
-       inj:addressOfExpr(_, location=_));
+    fromMaybe(
+      inj:addressOfExpr(e, location=_),
+      e.addressOfProd)(top.location);
 
   forwards to host:wrapWarnExpr(lerrors, fwrd, top.location);
 }
@@ -88,11 +78,9 @@ top::host:Expr ::= e::host:Expr
   lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   local fwrd::host:Expr =
-    getUnaryOverload(
-       e, top.location,
-       top.env, top.host:returnType,
-       getDereferenceOverloadProd,
-       inj:dereferenceExpr(_, location=_));
+    fromMaybe(
+      inj:dereferenceExpr(_, location=_),
+      e.host:typerep.dereferenceProd)(e, top.location);
 
   forwards to host:wrapWarnExpr(lerrors, fwrd, top.location);
 }
@@ -104,11 +92,9 @@ top::host:Expr ::= e::host:Expr
   lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   local fwrd::host:Expr =
-    getUnaryOverload(
-       e, top.location,
-       top.env, top.host:returnType,
-       getPositiveOverloadProd,
-       inj:positiveExpr(_, location=_));
+    fromMaybe(
+      inj:positiveExpr(_, location=_),
+      e.host:typerep.positiveProd)(e, top.location);
 
   forwards to host:wrapWarnExpr(lerrors, fwrd, top.location);
 }
@@ -120,11 +106,9 @@ top::host:Expr ::= e::host:Expr
   lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   local fwrd::host:Expr =
-    getUnaryOverload(
-       e, top.location,
-       top.env, top.host:returnType,
-       getNegativeOverloadProd,
-       inj:negativeExpr(_, location=_));
+    fromMaybe(
+      inj:negativeExpr(_, location=_),
+      e.host:typerep.negativeProd)(e, top.location);
 
   forwards to host:wrapWarnExpr(lerrors, fwrd, top.location);
 }
@@ -136,11 +120,9 @@ top::host:Expr ::= e::host:Expr
   lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   local fwrd::host:Expr =
-    getUnaryOverload(
-       e, top.location,
-       top.env, top.host:returnType,
-       getBitNegateOverloadProd,
-       inj:bitNegateExpr(_, location=_));
+    fromMaybe(
+      inj:bitNegateExpr(_, location=_),
+      e.host:typerep.bitNegateProd)(e, top.location);
 
   forwards to host:wrapWarnExpr(lerrors, fwrd, top.location);
 }
@@ -152,11 +134,9 @@ top::host:Expr ::= e::host:Expr
   lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   local fwrd::host:Expr =
-    getUnaryOverload(
-       e, top.location,
-       top.env, top.host:returnType,
-       getNotOverloadProd,
-       inj:notExpr(_, location=_));
+    fromMaybe(
+      inj:notExpr(_, location=_),
+      e.host:typerep.notProd)(e, top.location);
 
   forwards to host:wrapWarnExpr(lerrors, fwrd, top.location);
 }

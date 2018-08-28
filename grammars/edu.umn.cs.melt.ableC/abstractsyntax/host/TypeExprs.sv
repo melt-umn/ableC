@@ -281,6 +281,23 @@ top::BaseTypeExpr ::= q::Qualifiers  def::EnumDecl
   q.typeToQualify = top.typerep;
 }
 
+{-- Extension "new" types -}
+abstract production extTypeExpr
+top::BaseTypeExpr ::= q::Qualifiers  sub::ExtType
+{
+  top.typerep = extType(q, sub);
+  propagate lifted;
+  top.host = directTypeExpr(sub.host);
+  top.pp = sub.pp;
+  top.errors := q.errors;
+  top.globalDecls := [];
+  top.typeModifiers = [];
+  top.defs := [];
+  top.freeVariables = sub.freeVariables;
+  q.typeToQualify = top.typerep;
+  sub.givenQualifiers = q;
+}
+
 {-- A name, that needs to be looked up. -}
 abstract production typedefTypeExpr
 top::BaseTypeExpr ::= q::Qualifiers  name::Name
@@ -374,7 +391,6 @@ top::BaseTypeExpr ::= q::Qualifiers  e::ExprOrTypeName
   top.freeVariables = e.freeVariables;
   q.typeToQualify = top.typerep;
 }
-
 
 
 {--

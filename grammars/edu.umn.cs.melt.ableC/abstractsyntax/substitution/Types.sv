@@ -62,6 +62,11 @@ top::Type ::= q::Qualifiers  sub::TagType
 {
   propagate substituted;
 }
+aspect production extType
+top::Type ::= q::Qualifiers  sub::ExtType
+{
+  propagate substituted;
+}
 
 aspect production enumTagType
 top::TagType ::= ref::Decorated EnumDecl

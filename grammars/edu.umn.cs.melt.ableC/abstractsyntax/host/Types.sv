@@ -482,6 +482,64 @@ top::StructOrEnumOrUnion ::= { top.pp = text("enum"); top.mangledName = "enum"; 
 
 
 {-------------------------------------------------------------------------------
+ - Extension "new" types
+ -}
+abstract production extType
+top::Type ::= q::Qualifiers  sub::ExtType
+{
+  top.lpp = ppConcat([ terminate(space(), q.pps), sub.pp ]);
+  top.rpp = notext();
+  top.host = sub.host;
+  top.baseTypeExpr = extTypeExpr(q, sub);
+  top.typeModifierExpr = baseTypeExpr();
+  top.mangledName = s"${q.mangledName}_${sub.mangledName}_";
+  top.integerPromotions = sub.integerPromotions;
+  top.defaultArgumentPromotions = sub.defaultArgumentPromotions;
+  top.defaultLvalueConversion = sub.defaultLvalueConversion;
+  top.defaultFunctionArrayLvalueConversion = sub.defaultFunctionArrayLvalueConversion;
+  top.withoutTypeQualifiers = extType(nilQualifier(), sub);
+  top.withoutExtensionQualifiers = extType(filterExtensionQualifiers(q), sub);
+  top.withTypeQualifiers = extType(foldQualifier(top.addedTypeQualifiers ++
+    q.qualifiers), sub);
+  top.mergeQualifiers = \t2::Type ->
+    case t2 of
+      extType(q2, _) -> extType(unionQualifiers(q.qualifiers, q2.qualifiers), sub)
+    | _ -> top
+    end;
+  top.qualifiers = q.qualifiers;
+  top.errors := q.errors;
+  top.freeVariables = sub.freeVariables;
+  
+  top.isIntegerType = sub.isIntegerType;
+  top.isArithmeticType = sub.isIntegerType;
+  top.isScalarType = sub.isIntegerType;
+
+  q.typeToQualify = top;
+  sub.givenQualifiers = q;
+}
+
+inherited attribute givenQualifiers::Qualifiers;
+
+synthesized attribute isEqualTo::(Boolean ::= ExtType);
+
+closed nonterminal ExtType with givenQualifiers, pp, host<Type>, mangledName, integerPromotions, defaultArgumentPromotions, defaultLvalueConversion, defaultFunctionArrayLvalueConversion, isIntegerType, isScalarType, isArithmeticType, freeVariables, isEqualTo;
+flowtype ExtType = decorate {givenQualifiers}, host {decorate}, mangledName {}, integerPromotions {decorate}, defaultArgumentPromotions {decorate}, defaultLvalueConversion {decorate}, defaultFunctionArrayLvalueConversion {decorate}, isIntegerType {}, isScalarType {}, isArithmeticType {}, isEqualTo {};
+
+aspect default production
+top::ExtType ::=
+{
+  top.integerPromotions = extType(top.givenQualifiers, top);
+  top.defaultArgumentPromotions = extType(top.givenQualifiers, top);
+  top.defaultLvalueConversion = extType(top.givenQualifiers, top);
+  top.defaultFunctionArrayLvalueConversion = extType(top.givenQualifiers, top);
+  top.freeVariables = [];
+  
+  top.isIntegerType = false;
+  top.isArithmeticType = false;
+  top.isScalarType = false;
+}
+
+{-------------------------------------------------------------------------------
  - C11 atomic types.
  -}
 abstract production atomicType

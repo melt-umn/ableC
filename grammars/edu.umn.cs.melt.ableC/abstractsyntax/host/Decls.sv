@@ -538,12 +538,10 @@ top::ParameterDecl ::= storage::[StorageClass]  bty::BaseTypeExpr  mty::TypeModi
 }
 
 synthesized attribute refId :: String; -- TODO move this later?
--- Name of the extension that declared this struct/union
-synthesized attribute moduleName :: Maybe<String>;
 
 synthesized attribute hasConstField::Boolean;
 
-nonterminal StructDecl with location, pp, host<StructDecl>, lifted<StructDecl>, maybename, errors, globalDecls, defs, env, localDefs, tagEnv, givenRefId, refId, moduleName, hasConstField, returnType, freeVariables;
+nonterminal StructDecl with location, pp, host<StructDecl>, lifted<StructDecl>, maybename, errors, globalDecls, defs, env, localDefs, tagEnv, givenRefId, refId, hasConstField, returnType, freeVariables;
 flowtype StructDecl = decorate {env, givenRefId, returnType};
 
 abstract production structDecl
@@ -580,8 +578,6 @@ top::StructDecl ::= attrs::Attributes  name::MaybeName  dcls::StructItemList
   local maybeAttribRefIdName::Maybe<String> = orElse(attrs.maybeRefId, top.givenRefId);
   top.refId = fromMaybe(name.tagRefId, maybeAttribRefIdName);
   
-  top.moduleName = attrs.moduleName;
-  
   top.hasConstField = dcls.hasConstField;
   
   top.localDefs := dcls.localDefs;
@@ -607,7 +603,7 @@ top::StructDecl ::= attrs::Attributes  name::MaybeName  dcls::StructItemList
     else [err(top.location, "Redeclaration of struct " ++ name.maybename.fromJust.name)];
 }
 
-nonterminal UnionDecl with location, pp, host<UnionDecl>, lifted<UnionDecl>, maybename, errors, globalDecls, defs, env, localDefs, tagEnv, givenRefId, refId, moduleName, hasConstField, returnType, freeVariables;
+nonterminal UnionDecl with location, pp, host<UnionDecl>, lifted<UnionDecl>, maybename, errors, globalDecls, defs, env, localDefs, tagEnv, givenRefId, refId, hasConstField, returnType, freeVariables;
 flowtype UnionDecl = decorate {env, givenRefId, returnType};
 
 abstract production unionDecl
@@ -626,8 +622,6 @@ top::UnionDecl ::= attrs::Attributes  name::MaybeName  dcls::StructItemList
 
   local maybeAttribRefIdName::Maybe<String> = orElse(attrs.maybeRefId, top.givenRefId);
   top.refId = fromMaybe(name.tagRefId, maybeAttribRefIdName);
-  
-  top.moduleName = attrs.moduleName;
   
   top.hasConstField = dcls.hasConstField;
   
