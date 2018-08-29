@@ -299,6 +299,13 @@ top::host:Expr ::= lhs::host:Expr  deref::Boolean  rhs::host:Name
       end);
 }
 
+aspect production host:parenExpr
+top::host:Expr ::= e::host:Expr
+{
+  top.callProd = e.callProd;
+  top.addressOfProd = e.addressOfProd;
+}
+
 aspect default production
 top::host:Type ::=
 {

@@ -30,10 +30,7 @@ top::host:Expr ::= f::host:Expr  a::host:Exprs
 {
   top.pp = parens( ppConcat([ f.pp, parens( ppImplode( cat( comma(), space() ), a.pps ))]) );
   
-  forwards to
-    fromMaybe(
-      host:callExpr(f, _, location=_),
-      f.callProd)(a, top.location);
+  forwards to fromMaybe(host:callExpr(f, _, location=_), f.callProd)(a, top.location);
 }
 abstract production memberExpr
 top::host:Expr ::= lhs::host:Expr  deref::Boolean  rhs::host:Name
@@ -51,4 +48,3 @@ top::host:Expr ::= lhs::host:Expr  deref::Boolean  rhs::host:Name
   
   forwards to host:wrapWarnExpr(lerrors, fwrd, top.location);
 }
-
