@@ -912,7 +912,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   
   local fwrd::host:Expr =
     fromMaybe(
-      inj:addExpr(_, _, location=_),
+      inj:lteExpr(_, _, location=_),
       foldr1(
         orElse,
         [lType.lLteProd, rType.rLteProd, rewriteProd1, rewriteProd2, rewriteProd3]))
