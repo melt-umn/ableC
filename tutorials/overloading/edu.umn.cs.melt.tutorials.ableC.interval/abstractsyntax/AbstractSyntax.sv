@@ -159,7 +159,7 @@ function checkIntervalType
   return
     if typeAssignableTo(extType(nilQualifier(), intervalType()), t)
     then []
-    else [err(loc, s"Operand to ${op} expected interval type")];
+    else [err(loc, s"Operand to ${op} expected interval type (got ${showType(t)})")];
 }
 
 global builtin::Location = builtinLoc("interval");

@@ -10,6 +10,11 @@ top::Expr ::= msg::[Message] e::Expr
 {
   propagate substituted;
 }
+aspect production transformedExpr
+top::Expr ::= original::Expr  resolved::Expr
+{
+  propagate substituted;
+}
 aspect production declRefExpr
 top::Expr ::= id::Name
 {

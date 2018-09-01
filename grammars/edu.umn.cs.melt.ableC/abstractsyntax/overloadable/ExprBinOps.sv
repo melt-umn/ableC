@@ -28,11 +28,12 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
     then just(mkEqRewriteExpr(\ lhs::host:Expr rhs::host:Expr loc::Location -> rhs, _, _, _))
     else nothing();
   
+  local host::host:Expr = host:eqExpr(lhs, rhs, location=top.location);
   local fwrd::host:Expr =
-    fromMaybe(
-      inj:eqExpr(_, _, location=_),
-      orElse(lType.lEqProd, orElse(rType.rEqProd, rewriteProd)))
-        (modLhsRhs.fst, modLhsRhs.snd, top.location);
+    case orElse(lType.lEqProd, orElse(rType.rEqProd, rewriteProd)) of
+      just(prod) -> host:transformedExpr(host, prod(lhs, rhs, top.location), location=top.location)
+    | nothing() -> host
+    end;
   
   forwards to
     host:wrapWarnExpr(
@@ -65,11 +66,12 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
     then just(mkEqRewriteExpr(mulExpr(_, _, location=_), _, _, _))
     else nothing();
   
+  local host::host:Expr = host:mulEqExpr(lhs, rhs, location=top.location);
   local fwrd::host:Expr =
-    fromMaybe(
-      inj:mulEqExpr(_, _, location=_),
-      orElse(lType.lMulEqProd, orElse(rType.rMulEqProd, rewriteProd)))
-        (modLhsRhs.fst, modLhsRhs.snd, top.location);
+    case orElse(lType.lMulEqProd, orElse(rType.rMulEqProd, rewriteProd)) of
+      just(prod) -> host:transformedExpr(host, prod(lhs, rhs, top.location), location=top.location)
+    | nothing() -> host
+    end;
 
   forwards to
     host:wrapWarnExpr(
@@ -102,11 +104,12 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
     then just(mkEqRewriteExpr(divExpr(_, _, location=_), _, _, _))
     else nothing();
   
+  local host::host:Expr = host:divEqExpr(lhs, rhs, location=top.location);
   local fwrd::host:Expr =
-    fromMaybe(
-      inj:divEqExpr(_, _, location=_),
-      orElse(lType.lDivEqProd, orElse(rType.rDivEqProd, rewriteProd)))
-        (modLhsRhs.fst, modLhsRhs.snd, top.location);
+    case orElse(lType.lDivEqProd, orElse(rType.rDivEqProd, rewriteProd)) of
+      just(prod) -> host:transformedExpr(host, prod(lhs, rhs, top.location), location=top.location)
+    | nothing() -> host
+    end;
 
   forwards to
     host:wrapWarnExpr(
@@ -139,11 +142,12 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
     then just(mkEqRewriteExpr(modExpr(_, _, location=_), _, _, _))
     else nothing();
   
+  local host::host:Expr = host:modEqExpr(lhs, rhs, location=top.location);
   local fwrd::host:Expr =
-    fromMaybe(
-      inj:modEqExpr(_, _, location=_),
-      orElse(lType.lModEqProd, orElse(rType.rModEqProd, rewriteProd)))
-        (modLhsRhs.fst, modLhsRhs.snd, top.location);
+    case orElse(lType.lModEqProd, orElse(rType.rModEqProd, rewriteProd)) of
+      just(prod) -> host:transformedExpr(host, prod(lhs, rhs, top.location), location=top.location)
+    | nothing() -> host
+    end;
 
   forwards to
     host:wrapWarnExpr(
@@ -176,11 +180,12 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
     then just(mkEqRewriteExpr(addExpr(_, _, location=_), _, _, _))
     else nothing();
   
+  local host::host:Expr = host:addEqExpr(lhs, rhs, location=top.location);
   local fwrd::host:Expr =
-    fromMaybe(
-      inj:addEqExpr(_, _, location=_),
-      orElse(lType.lAddEqProd, orElse(rType.rAddEqProd, rewriteProd)))
-        (modLhsRhs.fst, modLhsRhs.snd, top.location);
+    case orElse(lType.lAddEqProd, orElse(rType.rAddEqProd, rewriteProd)) of
+      just(prod) -> host:transformedExpr(host, prod(lhs, rhs, top.location), location=top.location)
+    | nothing() -> host
+    end;
 
   forwards to
     host:wrapWarnExpr(
@@ -213,11 +218,12 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
     then just(mkEqRewriteExpr(subExpr(_, _, location=_), _, _, _))
     else nothing();
   
+  local host::host:Expr = host:subEqExpr(lhs, rhs, location=top.location);
   local fwrd::host:Expr =
-    fromMaybe(
-      inj:subEqExpr(_, _, location=_),
-      orElse(lType.lSubEqProd, orElse(rType.rSubEqProd, rewriteProd)))
-        (modLhsRhs.fst, modLhsRhs.snd, top.location);
+    case orElse(lType.lSubEqProd, orElse(rType.rSubEqProd, rewriteProd)) of
+      just(prod) -> host:transformedExpr(host, prod(lhs, rhs, top.location), location=top.location)
+    | nothing() -> host
+    end;
 
   forwards to
     host:wrapWarnExpr(
@@ -250,11 +256,12 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
     then just(mkEqRewriteExpr(lshExpr(_, _, location=_), _, _, _))
     else nothing();
   
+  local host::host:Expr = host:lshEqExpr(lhs, rhs, location=top.location);
   local fwrd::host:Expr =
-    fromMaybe(
-      inj:lshEqExpr(_, _, location=_),
-      orElse(lType.lLshEqProd, orElse(rType.rLshEqProd, rewriteProd)))
-        (modLhsRhs.fst, modLhsRhs.snd, top.location);
+    case orElse(lType.lLshEqProd, orElse(rType.rLshEqProd, rewriteProd)) of
+      just(prod) -> host:transformedExpr(host, prod(lhs, rhs, top.location), location=top.location)
+    | nothing() -> host
+    end;
 
   forwards to
     host:wrapWarnExpr(
@@ -287,11 +294,12 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
     then just(mkEqRewriteExpr(rshExpr(_, _, location=_), _, _, _))
     else nothing();
   
+  local host::host:Expr = host:rshEqExpr(lhs, rhs, location=top.location);
   local fwrd::host:Expr =
-    fromMaybe(
-      inj:rshEqExpr(_, _, location=_),
-      orElse(lType.lRshEqProd, orElse(rType.rRshEqProd, rewriteProd)))
-        (modLhsRhs.fst, modLhsRhs.snd, top.location);
+    case orElse(lType.lRshEqProd, orElse(rType.rRshEqProd, rewriteProd)) of
+      just(prod) -> host:transformedExpr(host, prod(lhs, rhs, top.location), location=top.location)
+    | nothing() -> host
+    end;
 
   forwards to
     host:wrapWarnExpr(
@@ -324,11 +332,12 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
     then just(mkEqRewriteExpr(andExpr(_, _, location=_), _, _, _))
     else nothing();
   
+  local host::host:Expr = host:andEqExpr(lhs, rhs, location=top.location);
   local fwrd::host:Expr =
-    fromMaybe(
-      inj:andEqExpr(_, _, location=_),
-      orElse(lType.lAndEqProd, orElse(rType.rAndEqProd, rewriteProd)))
-        (modLhsRhs.fst, modLhsRhs.snd, top.location);
+    case orElse(lType.lAndEqProd, orElse(rType.rAndEqProd, rewriteProd)) of
+      just(prod) -> host:transformedExpr(host, prod(lhs, rhs, top.location), location=top.location)
+    | nothing() -> host
+    end;
 
 
   forwards to
@@ -362,11 +371,12 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
     then just(mkEqRewriteExpr(xorExpr(_, _, location=_), _, _, _))
     else nothing();
   
+  local host::host:Expr = host:xorEqExpr(lhs, rhs, location=top.location);
   local fwrd::host:Expr =
-    fromMaybe(
-      inj:xorEqExpr(_, _, location=_),
-      orElse(lType.lAndEqProd, orElse(rType.rAndEqProd, rewriteProd)))
-        (modLhsRhs.fst, modLhsRhs.snd, top.location);
+    case orElse(lType.lAndEqProd, orElse(rType.rAndEqProd, rewriteProd)) of
+      just(prod) -> host:transformedExpr(host, prod(lhs, rhs, top.location), location=top.location)
+    | nothing() -> host
+    end;
 
   forwards to
     host:wrapWarnExpr(
@@ -399,11 +409,12 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
     then just(mkEqRewriteExpr(orExpr(_, _, location=_), _, _, _))
     else nothing();
   
+  local host::host:Expr = host:orEqExpr(lhs, rhs, location=top.location);
   local fwrd::host:Expr =
-    fromMaybe(
-      inj:orEqExpr(_, _, location=_),
-      orElse(lType.lOrEqProd, orElse(rType.rOrEqProd, rewriteProd)))
-        (modLhsRhs.fst, modLhsRhs.snd, top.location);
+    case orElse(lType.lOrEqProd, orElse(rType.rOrEqProd, rewriteProd)) of
+      just(prod) -> host:transformedExpr(host, prod(lhs, rhs, top.location), location=top.location)
+    | nothing() -> host
+    end;
 
   forwards to
     host:wrapWarnExpr(
@@ -432,11 +443,12 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   local rType::host:Type = rhs.host:typerep;
   rType.otherType = lType;
   
+  local host::host:Expr = host:andExpr(lhs, rhs, location=top.location);
   local fwrd::host:Expr =
-    fromMaybe(
-      inj:andExpr(_, _, location=_),
-      orElse(lType.lAndProd, rType.rAndProd))
-        (modLhsRhs.fst, modLhsRhs.snd, top.location);
+    case orElse(lType.lAndProd, rType.rAndProd) of
+      just(prod) -> host:transformedExpr(host, prod(lhs, rhs, top.location), location=top.location)
+    | nothing() -> host
+    end;
 
   forwards to
     host:wrapWarnExpr(
@@ -464,11 +476,12 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   local rType::host:Type = rhs.host:typerep;
   rType.otherType = lType;
   
+  local host::host:Expr = host:orExpr(lhs, rhs, location=top.location);
   local fwrd::host:Expr =
-    fromMaybe(
-      inj:orExpr(_, _, location=_),
-      orElse(lType.lOrProd, rType.rOrProd))
-        (modLhsRhs.fst, modLhsRhs.snd, top.location);
+    case orElse(lType.lOrProd, rType.rOrProd) of
+      just(prod) -> host:transformedExpr(host, prod(lhs, rhs, top.location), location=top.location)
+    | nothing() -> host
+    end;
 
   forwards to
     host:wrapWarnExpr(
@@ -496,11 +509,12 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   local rType::host:Type = rhs.host:typerep;
   rType.otherType = lType;
   
+  local host::host:Expr = host:andBitExpr(lhs, rhs, location=top.location);
   local fwrd::host:Expr =
-    fromMaybe(
-      inj:andBitExpr(_, _, location=_),
-      orElse(lType.lAndBitProd, rType.rAndBitProd))
-        (modLhsRhs.fst, modLhsRhs.snd, top.location);
+    case orElse(lType.lAndBitProd, rType.rAndBitProd) of
+      just(prod) -> host:transformedExpr(host, prod(lhs, rhs, top.location), location=top.location)
+    | nothing() -> host
+    end;
 
   forwards to
     host:wrapWarnExpr(
@@ -528,11 +542,12 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   local rType::host:Type = rhs.host:typerep;
   rType.otherType = lType;
   
+  local host::host:Expr = host:orBitExpr(lhs, rhs, location=top.location);
   local fwrd::host:Expr =
-    fromMaybe(
-      inj:orBitExpr(_, _, location=_),
-      orElse(lType.lOrBitProd, rType.rOrBitProd))
-        (modLhsRhs.fst, modLhsRhs.snd, top.location);
+    case orElse(lType.lOrBitProd, rType.rOrBitProd) of
+      just(prod) -> host:transformedExpr(host, prod(lhs, rhs, top.location), location=top.location)
+    | nothing() -> host
+    end;
 
   forwards to
     host:wrapWarnExpr(
@@ -560,11 +575,12 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   local rType::host:Type = rhs.host:typerep;
   rType.otherType = lType;
   
+  local host::host:Expr = host:xorExpr(lhs, rhs, location=top.location);
   local fwrd::host:Expr =
-    fromMaybe(
-      inj:xorExpr(_, _, location=_),
-      orElse(lType.lXorProd, rType.rXorProd))
-        (modLhsRhs.fst, modLhsRhs.snd, top.location);
+    case orElse(lType.lXorProd, rType.rXorProd) of
+      just(prod) -> host:transformedExpr(host, prod(lhs, rhs, top.location), location=top.location)
+    | nothing() -> host
+    end;
 
   forwards to
     host:wrapWarnExpr(
@@ -592,11 +608,12 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   local rType::host:Type = rhs.host:typerep;
   rType.otherType = lType;
   
+  local host::host:Expr = host:lshExpr(lhs, rhs, location=top.location);
   local fwrd::host:Expr =
-    fromMaybe(
-      inj:lshExpr(_, _, location=_),
-      orElse(lType.lLshBitProd, rType.rLshBitProd))
-        (modLhsRhs.fst, modLhsRhs.snd, top.location);
+    case orElse(lType.lLshBitProd, rType.rLshBitProd) of
+      just(prod) -> host:transformedExpr(host, prod(lhs, rhs, top.location), location=top.location)
+    | nothing() -> host
+    end;
 
   forwards to
     host:wrapWarnExpr(
@@ -624,11 +641,12 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   local rType::host:Type = rhs.host:typerep;
   rType.otherType = lType;
   
+  local host::host:Expr = host:rshExpr(lhs, rhs, location=top.location);
   local fwrd::host:Expr =
-    fromMaybe(
-      inj:rshExpr(_, _, location=_),
-      orElse(lType.lRshBitProd, rType.rRshBitProd))
-        (modLhsRhs.fst, modLhsRhs.snd, top.location);
+    case orElse(lType.lRshBitProd, rType.rRshBitProd) of
+      just(prod) -> host:transformedExpr(host, prod(lhs, rhs, top.location), location=top.location)
+    | nothing() -> host
+    end;
 
   forwards to
     host:wrapWarnExpr(
@@ -664,11 +682,12 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
          notExpr(notEqualsExpr(lhs, rhs, location=loc), location=loc)) 
     else nothing();
   
+  local host::host:Expr = host:equalsExpr(lhs, rhs, location=top.location);
   local fwrd::host:Expr =
-    fromMaybe(
-      inj:equalsExpr(_, _, location=_),
-      orElse(lType.lEqualsProd, orElse(rType.rEqualsProd, rewriteProd)))
-        (modLhsRhs.fst, modLhsRhs.snd, top.location);
+    case orElse(lType.lEqualsProd, orElse(rType.rEqualsProd, rewriteProd)) of
+      just(prod) -> host:transformedExpr(host, prod(lhs, rhs, top.location), location=top.location)
+    | nothing() -> host
+    end;
 
   forwards to
     host:wrapWarnExpr(
@@ -704,11 +723,12 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
          notExpr(equalsExpr(lhs, rhs, location=loc), location=loc)) 
     else nothing();
   
+  local host::host:Expr = host:notEqualsExpr(lhs, rhs, location=top.location);
   local fwrd::host:Expr =
-    fromMaybe(
-      inj:notEqualsExpr(_, _, location=_),
-      orElse(lType.lNotEqualsProd, orElse(rType.rNotEqualsProd, rewriteProd)))
-        (modLhsRhs.fst, modLhsRhs.snd, top.location);
+    case orElse(lType.lNotEqualsProd, orElse(rType.rNotEqualsProd, rewriteProd)) of
+      just(prod) -> host:transformedExpr(host, prod(lhs, rhs, top.location), location=top.location)
+    | nothing() -> host
+    end;
 
   forwards to
     host:wrapWarnExpr(
@@ -772,13 +792,12 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
          _, _, _))
     else nothing();
   
+  local host::host:Expr = host:ltExpr(lhs, rhs, location=top.location);
   local fwrd::host:Expr =
-    fromMaybe(
-      inj:ltExpr(_, _, location=_),
-      foldr1(
-        orElse,
-        [lType.lLtProd, rType.rLtProd, rewriteProd1, rewriteProd2, rewriteProd3]))
-          (modLhsRhs.fst, modLhsRhs.snd, top.location);
+    case foldr1(orElse, [lType.lLtProd, rType.rLtProd, rewriteProd1, rewriteProd2, rewriteProd3]) of
+      just(prod) -> host:transformedExpr(host, prod(lhs, rhs, top.location), location=top.location)
+    | nothing() -> host
+    end;
 
   forwards to
     host:wrapWarnExpr(
@@ -840,13 +859,12 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
          _, _, _))
     else nothing();
   
+  local host::host:Expr = host:gtExpr(lhs, rhs, location=top.location);
   local fwrd::host:Expr =
-    fromMaybe(
-      inj:gtExpr(_, _, location=_),
-      foldr1(
-        orElse,
-        [lType.lGtProd, rType.rGtProd, rewriteProd1, rewriteProd2, rewriteProd3]))
-          (modLhsRhs.fst, modLhsRhs.snd, top.location);
+    case foldr1(orElse, [lType.lGtProd, rType.rGtProd, rewriteProd1, rewriteProd2, rewriteProd3]) of
+      just(prod) -> host:transformedExpr(host, prod(lhs, rhs, top.location), location=top.location)
+    | nothing() -> host
+    end;
 
   forwards to
     host:wrapWarnExpr(
@@ -910,13 +928,12 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
          _, _, _))
     else nothing();
   
+  local host::host:Expr = host:gtExpr(lhs, rhs, location=top.location);
   local fwrd::host:Expr =
-    fromMaybe(
-      inj:lteExpr(_, _, location=_),
-      foldr1(
-        orElse,
-        [lType.lLteProd, rType.rLteProd, rewriteProd1, rewriteProd2, rewriteProd3]))
-          (modLhsRhs.fst, modLhsRhs.snd, top.location);
+    case foldr1(orElse, [lType.lGtProd, rType.rGtProd, rewriteProd1, rewriteProd2, rewriteProd3]) of
+      just(prod) -> host:transformedExpr(host, prod(lhs, rhs, top.location), location=top.location)
+    | nothing() -> host
+    end;
 
   forwards to
     host:wrapWarnExpr(
@@ -978,13 +995,12 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
          _, _, _))
     else nothing();
   
+  local host::host:Expr = host:gteExpr(lhs, rhs, location=top.location);
   local fwrd::host:Expr =
-    fromMaybe(
-      inj:gteExpr(_, _, location=_),
-      foldr1(
-        orElse,
-        [lType.lGteProd, rType.rGteProd, rewriteProd1, rewriteProd2, rewriteProd3]))
-          (modLhsRhs.fst, modLhsRhs.snd, top.location);
+    case foldr1(orElse, [lType.lGteProd, rType.rGteProd, rewriteProd1, rewriteProd2, rewriteProd3]) of
+      just(prod) -> host:transformedExpr(host, prod(lhs, rhs, top.location), location=top.location)
+    | nothing() -> host
+    end;
 
   forwards to
     host:wrapWarnExpr(
@@ -1012,11 +1028,12 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   local rType::host:Type = rhs.host:typerep;
   rType.otherType = lType;
   
+  local host::host:Expr = host:addExpr(lhs, rhs, location=top.location);
   local fwrd::host:Expr =
-    fromMaybe(
-      inj:addExpr(_, _, location=_),
-      orElse(lType.lAddProd, rType.rAddProd))
-        (modLhsRhs.fst, modLhsRhs.snd, top.location);
+    case orElse(lType.lAddProd, rType.rAddProd) of
+      just(prod) -> host:transformedExpr(host, prod(lhs, rhs, top.location), location=top.location)
+    | nothing() -> host
+    end;
 
   forwards to
     host:wrapWarnExpr(
@@ -1044,11 +1061,12 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   local rType::host:Type = rhs.host:typerep;
   rType.otherType = lType;
   
+  local host::host:Expr = host:subExpr(lhs, rhs, location=top.location);
   local fwrd::host:Expr =
-    fromMaybe(
-      inj:subExpr(_, _, location=_),
-      orElse(lType.lSubProd, rType.rSubProd))
-        (modLhsRhs.fst, modLhsRhs.snd, top.location);
+    case orElse(lType.lSubProd, rType.rSubProd) of
+      just(prod) -> host:transformedExpr(host, prod(lhs, rhs, top.location), location=top.location)
+    | nothing() -> host
+    end;
 
   forwards to
     host:wrapWarnExpr(
@@ -1076,11 +1094,12 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   local rType::host:Type = rhs.host:typerep;
   rType.otherType = lType;
   
+  local host::host:Expr = host:mulExpr(lhs, rhs, location=top.location);
   local fwrd::host:Expr =
-    fromMaybe(
-      inj:mulExpr(_, _, location=_),
-      orElse(lType.lMulProd, rType.rMulProd))
-        (modLhsRhs.fst, modLhsRhs.snd, top.location);
+    case orElse(lType.lMulProd, rType.rMulProd) of
+      just(prod) -> host:transformedExpr(host, prod(lhs, rhs, top.location), location=top.location)
+    | nothing() -> host
+    end;
 
   forwards to
     host:wrapWarnExpr(
@@ -1108,11 +1127,12 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   local rType::host:Type = rhs.host:typerep;
   rType.otherType = lType;
   
+  local host::host:Expr = host:divExpr(lhs, rhs, location=top.location);
   local fwrd::host:Expr =
-    fromMaybe(
-      inj:divExpr(_, _, location=_),
-      orElse(lType.lDivProd, rType.rDivProd))
-        (modLhsRhs.fst, modLhsRhs.snd, top.location);
+    case orElse(lType.lDivProd, rType.rDivProd) of
+      just(prod) -> host:transformedExpr(host, prod(lhs, rhs, top.location), location=top.location)
+    | nothing() -> host
+    end;
 
   forwards to
     host:wrapWarnExpr(
@@ -1140,11 +1160,12 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   local rType::host:Type = rhs.host:typerep;
   rType.otherType = lType;
   
+  local host::host:Expr = host:modExpr(lhs, rhs, location=top.location);
   local fwrd::host:Expr =
-    fromMaybe(
-      inj:modExpr(_, _, location=_),
-      orElse(lType.lModProd, rType.rModProd))
-        (modLhsRhs.fst, modLhsRhs.snd, top.location);
+    case orElse(lType.lModProd, rType.rModProd) of
+      just(prod) -> host:transformedExpr(host, prod(lhs, rhs, top.location), location=top.location)
+    | nothing() -> host
+    end;
 
   forwards to
     host:wrapWarnExpr(

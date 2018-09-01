@@ -7,10 +7,12 @@ top::host:Expr ::= e::host:Expr
   production attribute lerrors :: [Message] with ++;
   lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
+  local host::host:Expr = host:preIncExpr(e, location=top.location);
   local fwrd::host:Expr =
-    fromMaybe(
-      inj:preIncExpr(_, location=_),
-      e.host:typerep.preIncProd)(e, top.location);
+    case e.host:typerep.preIncProd of
+      just(prod) -> host:transformedExpr(host, prod(e, top.location), location=top.location)
+    | nothing() -> host
+    end;
 
   forwards to host:wrapWarnExpr(lerrors, fwrd, top.location);
 }
@@ -21,10 +23,12 @@ top::host:Expr ::= e::host:Expr
   production attribute lerrors :: [Message] with ++;
   lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
+  local host::host:Expr = host:preDecExpr(e, location=top.location);
   local fwrd::host:Expr =
-    fromMaybe(
-      inj:preDecExpr(_, location=_),
-      e.host:typerep.preDecProd)(e, top.location);
+    case e.host:typerep.preDecProd of
+      just(prod) -> host:transformedExpr(host, prod(e, top.location), location=top.location)
+    | nothing() -> host
+    end;
 
   forwards to host:wrapWarnExpr(lerrors, fwrd, top.location);
 }
@@ -35,10 +39,12 @@ top::host:Expr ::= e::host:Expr
   production attribute lerrors :: [Message] with ++;
   lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
+  local host::host:Expr = host:postIncExpr(e, location=top.location);
   local fwrd::host:Expr =
-    fromMaybe(
-      inj:postIncExpr(_, location=_),
-      e.host:typerep.postIncProd)(e, top.location);
+    case e.host:typerep.postIncProd of
+      just(prod) -> host:transformedExpr(host, prod(e, top.location), location=top.location)
+    | nothing() -> host
+    end;
 
   forwards to host:wrapWarnExpr(lerrors, fwrd, top.location);
 }
@@ -49,10 +55,12 @@ top::host:Expr ::= e::host:Expr
   production attribute lerrors :: [Message] with ++;
   lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
+  local host::host:Expr = host:postDecExpr(e, location=top.location);
   local fwrd::host:Expr =
-    fromMaybe(
-      inj:postDecExpr(_, location=_),
-      e.host:typerep.postDecProd)(e, top.location);
+    case e.host:typerep.postDecProd of
+      just(prod) -> host:transformedExpr(host, prod(e, top.location), location=top.location)
+    | nothing() -> host
+    end;
 
   forwards to host:wrapWarnExpr(lerrors, fwrd, top.location);
 }
@@ -63,10 +71,12 @@ top::host:Expr ::= e::host:Expr
   production attribute lerrors :: [Message] with ++;
   lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
+  local host::host:Expr = host:addressOfExpr(e, location=top.location);
   local fwrd::host:Expr =
-    fromMaybe(
-      inj:addressOfExpr(e, location=_),
-      e.addressOfProd)(top.location);
+    case e.addressOfProd of
+      just(prod) -> host:transformedExpr(host, prod(top.location), location=top.location)
+    | nothing() -> host
+    end;
 
   forwards to host:wrapWarnExpr(lerrors, fwrd, top.location);
 }
@@ -77,10 +87,12 @@ top::host:Expr ::= e::host:Expr
   production attribute lerrors :: [Message] with ++;
   lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
+  local host::host:Expr = host:dereferenceExpr(e, location=top.location);
   local fwrd::host:Expr =
-    fromMaybe(
-      inj:dereferenceExpr(_, location=_),
-      e.host:typerep.dereferenceProd)(e, top.location);
+    case e.host:typerep.dereferenceProd of
+      just(prod) -> host:transformedExpr(host, prod(e, top.location), location=top.location)
+    | nothing() -> host
+    end;
 
   forwards to host:wrapWarnExpr(lerrors, fwrd, top.location);
 }
@@ -91,10 +103,12 @@ top::host:Expr ::= e::host:Expr
   production attribute lerrors :: [Message] with ++;
   lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
+  local host::host:Expr = host:positiveExpr(e, location=top.location);
   local fwrd::host:Expr =
-    fromMaybe(
-      inj:positiveExpr(_, location=_),
-      e.host:typerep.positiveProd)(e, top.location);
+    case e.host:typerep.positiveProd of
+      just(prod) -> host:transformedExpr(host, prod(e, top.location), location=top.location)
+    | nothing() -> host
+    end;
 
   forwards to host:wrapWarnExpr(lerrors, fwrd, top.location);
 }
@@ -105,10 +119,12 @@ top::host:Expr ::= e::host:Expr
   production attribute lerrors :: [Message] with ++;
   lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
+  local host::host:Expr = host:negativeExpr(e, location=top.location);
   local fwrd::host:Expr =
-    fromMaybe(
-      inj:negativeExpr(_, location=_),
-      e.host:typerep.negativeProd)(e, top.location);
+    case e.host:typerep.negativeProd of
+      just(prod) -> host:transformedExpr(host, prod(e, top.location), location=top.location)
+    | nothing() -> host
+    end;
 
   forwards to host:wrapWarnExpr(lerrors, fwrd, top.location);
 }
@@ -119,10 +135,12 @@ top::host:Expr ::= e::host:Expr
   production attribute lerrors :: [Message] with ++;
   lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
+  local host::host:Expr = host:bitNegateExpr(e, location=top.location);
   local fwrd::host:Expr =
-    fromMaybe(
-      inj:bitNegateExpr(_, location=_),
-      e.host:typerep.bitNegateProd)(e, top.location);
+    case e.host:typerep.bitNegateProd of
+      just(prod) -> host:transformedExpr(host, prod(e, top.location), location=top.location)
+    | nothing() -> host
+    end;
 
   forwards to host:wrapWarnExpr(lerrors, fwrd, top.location);
 }
@@ -133,10 +151,12 @@ top::host:Expr ::= e::host:Expr
   production attribute lerrors :: [Message] with ++;
   lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
+  local host::host:Expr = host:notExpr(e, location=top.location);
   local fwrd::host:Expr =
-    fromMaybe(
-      inj:notExpr(_, location=_),
-      e.host:typerep.notProd)(e, top.location);
+    case e.host:typerep.notProd of
+      just(prod) -> host:transformedExpr(host, prod(e, top.location), location=top.location)
+    | nothing() -> host
+    end;
 
   forwards to host:wrapWarnExpr(lerrors, fwrd, top.location);
 }

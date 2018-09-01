@@ -18,10 +18,12 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   production attribute lerrors :: [Message] with ++;
   lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
   
+  local host::host:Expr = inj:arraySubscriptExpr(lhs, rhs, location=top.location);
   local fwrd::host:Expr =
-    fromMaybe(
-      inj:arraySubscriptExpr(_, _, location=_),
-      lhs.host:typerep.arraySubscriptProd)(lhs, rhs, top.location);
+    case lhs.host:typerep.arraySubscriptProd of
+      just(prod) -> host:transformedExpr(host, prod(lhs, rhs, top.location), location=top.location)
+    | nothing() -> host
+    end;
 
   forwards to host:wrapWarnExpr(lerrors, fwrd, top.location);
 }
@@ -30,7 +32,12 @@ top::host:Expr ::= f::host:Expr  a::host:Exprs
 {
   top.pp = parens( ppConcat([ f.pp, parens( ppImplode( cat( comma(), space() ), a.pps ))]) );
   
-  forwards to fromMaybe(host:callExpr(f, _, location=_), f.callProd)(a, top.location);
+  local host::host:Expr = host:callExpr(f, a, location=top.location);
+  forwards to
+    case f.callProd of
+      just(prod) -> host:transformedExpr(host, prod(a, top.location), location=top.location)
+    | nothing() -> host
+    end;
 }
 abstract production memberExpr
 top::host:Expr ::= lhs::host:Expr  deref::Boolean  rhs::host:Name
@@ -41,10 +48,12 @@ top::host:Expr ::= lhs::host:Expr  deref::Boolean  rhs::host:Name
 
   local t::host:Type = lhs.host:typerep;
   t.isDeref = deref;
+  local host::host:Expr = inj:memberExpr(lhs, deref, rhs, location=top.location);
   local fwrd::host:Expr =
-    fromMaybe(
-      inj:memberExpr(_, deref, _, location=_),
-      t.memberProd)(lhs, rhs, top.location);
+    case t.memberProd of
+      just(prod) -> host:transformedExpr(host, prod(lhs, rhs, top.location), location=top.location)
+    | nothing() -> host
+    end;
   
   forwards to host:wrapWarnExpr(lerrors, fwrd, top.location);
 }

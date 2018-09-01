@@ -61,6 +61,22 @@ Expr ::= q::[Qualifier]  e::Expr  l::Location
 {
   return if null(q) then e else qualifiedExpr(foldQualifier(q), e, location=l);
 }
+-- Wraps the result of a forwarding transformation (e.g. overloading or injection)
+-- to allow for "syntactic" analyses on the original host Expr.  Otherwise this
+-- is semantically equivalent to resolved. 
+abstract production transformedExpr
+top::Expr ::= original::Expr  resolved::Expr
+{
+  propagate lifted;
+  top.pp = original.pp;
+  top.host = resolved.host;
+  top.errors := resolved.errors;
+  top.globalDecls := resolved.globalDecls;
+  top.defs := resolved.defs;
+  top.typerep = resolved.typerep;
+  top.freeVariables = resolved.freeVariables;
+  top.isLValue = resolved.isLValue;
+}
 abstract production declRefExpr
 top::Expr ::= id::Name
 { -- Reference to a value. (Either a Decl or a EnumItem)

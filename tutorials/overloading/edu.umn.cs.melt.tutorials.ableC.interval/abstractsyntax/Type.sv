@@ -6,7 +6,7 @@ abstract production intervalTypeExpr
 top::BaseTypeExpr ::= q::Qualifiers loc::Location
 {
   forwards to
-    if !null(lookupRefId(s"edu:umn:cs:melt:tutorials:ableC:interval:interval", top.env))
+    if !null(lookupRefId("edu:umn:cs:melt:tutorials:ableC:interval:interval", top.env))
     then extTypeExpr(q, intervalType())
     else errorTypeExpr([err(loc, "Missing include of interval.xh")]);
 }

@@ -242,6 +242,13 @@ top::host:Expr ::=
     end;
 }
 
+aspect production host:transformedExpr
+top::host:Expr ::= original::host:Expr  resolved::host:Expr
+{
+  top.callProd = original.callProd;
+  top.addressOfProd = original.addressOfProd;
+}
+
 aspect production host:arraySubscriptExpr
 top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 {
