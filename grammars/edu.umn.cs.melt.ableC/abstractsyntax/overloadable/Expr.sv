@@ -18,9 +18,18 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   production attribute lerrors :: [Message] with ++;
   lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
   
+  local rewriteProd::Maybe<BinaryProd> =
+    case lhs.host:typerep.addressOfArraySubscriptProd of
+      just(prod) ->
+        just(
+          \ lhs::host:Expr rhs::host:Expr loc::Location ->
+            dereferenceExpr(prod(lhs, rhs, loc), location=loc))
+    | nothing() -> nothing()
+    end;
+  
   local host::host:Expr = inj:arraySubscriptExpr(lhs, rhs, location=top.location);
   local fwrd::host:Expr =
-    case lhs.host:typerep.arraySubscriptProd of
+    case orElse(lhs.host:typerep.arraySubscriptProd, rewriteProd) of
       just(prod) -> host:transformedExpr(host, prod(lhs, rhs, top.location), location=top.location)
     | nothing() -> host
     end;
@@ -32,9 +41,16 @@ top::host:Expr ::= f::host:Expr  a::host:Exprs
 {
   top.pp = parens( ppConcat([ f.pp, parens( ppImplode( cat( comma(), space() ), a.pps ))]) );
   
+  local rewriteProd::Maybe<(host:Expr ::= host:Exprs Location)> =
+    case f.host:typerep.addressOfCallProd of
+      just(prod) ->
+        just(\ a::host:Exprs loc::Location -> dereferenceExpr(prod(f, a, loc), location=loc))
+    | nothing() -> nothing()
+    end;
+  
   local host::host:Expr = host:callExpr(f, a, location=top.location);
   forwards to
-    case f.callProd of
+    case orElse(f.callProd, rewriteProd) of
       just(prod) -> host:transformedExpr(host, prod(a, top.location), location=top.location)
     | nothing() -> host
     end;
