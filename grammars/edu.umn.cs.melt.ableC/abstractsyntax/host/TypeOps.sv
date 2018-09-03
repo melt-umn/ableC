@@ -78,7 +78,7 @@ Boolean ::= a::[Type]  b::[Type]  allowSubtypes::Boolean  dropOuterQual::Boolean
 function usualAdditiveConversionsOnTypes
 Type ::= a::Type  b::Type
 {
-  return case a, b of
+  return case a.defaultFunctionArrayLvalueConversion, b.defaultFunctionArrayLvalueConversion of
   | builtinType(_, x), builtinType(_, y) ->
       case usualArithmeticConversions(x, y) of
       | nothing() -> errorType()
@@ -96,7 +96,7 @@ Type ::= a::Type  b::Type
 function usualSubtractiveConversionsOnTypes
 Type ::= a::Type  b::Type
 {
-  return case a, b of
+  return case a.defaultFunctionArrayLvalueConversion, b.defaultFunctionArrayLvalueConversion of
   | builtinType(_, x), builtinType(_, y) ->
       case usualArithmeticConversions(x, y) of
       | nothing() -> errorType()
