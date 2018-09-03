@@ -100,8 +100,9 @@ top::Expr ::= e::Expr
      -- TODO: This error check may need to change for ext host types
     case e.typerep.defaultFunctionArrayLvalueConversion of
     | pointerType(_, _) -> []
+    | errorType() -> []
     | _ -> [err(top.location, "invalid type argument of unary ‘*’ (have ‘" ++
-                               showType(e.typerep) ++ "’")]
+                               showType(e.typerep) ++ "’)")]
     end;
 }
 abstract production positiveExpr
