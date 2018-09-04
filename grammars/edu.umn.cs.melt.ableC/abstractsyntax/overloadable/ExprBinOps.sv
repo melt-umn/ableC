@@ -373,7 +373,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   
   local host::host:Expr = host:xorEqExpr(lhs, rhs, location=top.location);
   local fwrd::host:Expr =
-    case orElse(lType.lAndEqProd, orElse(rType.rAndEqProd, rewriteProd)) of
+    case orElse(lType.lXorEqProd, orElse(rType.rXorEqProd, rewriteProd)) of
       just(prod) -> host:transformedExpr(host, prod(lhs, rhs, top.location), location=top.location)
     | nothing() -> host
     end;
@@ -928,9 +928,9 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
          _, _, _))
     else nothing();
   
-  local host::host:Expr = host:gtExpr(lhs, rhs, location=top.location);
+  local host::host:Expr = host:lteExpr(lhs, rhs, location=top.location);
   local fwrd::host:Expr =
-    case foldr1(orElse, [lType.lGtProd, rType.rGtProd, rewriteProd1, rewriteProd2, rewriteProd3]) of
+    case foldr1(orElse, [lType.lLteProd, rType.rLteProd, rewriteProd1, rewriteProd2, rewriteProd3]) of
       just(prod) -> host:transformedExpr(host, prod(lhs, rhs, top.location), location=top.location)
     | nothing() -> host
     end;
