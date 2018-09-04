@@ -73,7 +73,7 @@ Negative test       - FAIL: NO ERROR    tests/kframework/negative/j048a.c
 Negative test       - FAIL: NO ERROR    tests/kframework/negative/j048b.c
 Negative test       - FAIL: NO ERROR    tests/kframework/negative/j049a.c
 Negative test       - FAIL: NO ERROR    tests/kframework/negative/j049b.c
-Negative test       - PASS:             tests/kframework/negative/j049c.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j049c.c
 Negative test       - FAIL: NO ERROR    tests/kframework/negative/j052a.c
 Negative test       - FAIL: NO ERROR    tests/kframework/negative/j052b.c
 Negative test       - FAIL: NO ERROR    tests/kframework/negative/j053a.c
@@ -273,6 +273,7 @@ Failures:
                         tests/kframework/negative/j048b.c
                         tests/kframework/negative/j049a.c
                         tests/kframework/negative/j049b.c
+                        tests/kframework/negative/j049c.c
                         tests/kframework/negative/j052a.c
                         tests/kframework/negative/j052b.c
                         tests/kframework/negative/j053a.c
@@ -363,10 +364,10 @@ Pass: 0
 Fail: 0
 
 Negative tests:
-Pass: 56
-Fail: 150
+Pass: 55
+Fail: 151
 
 Summary:
-Pass: 56
-Fail: 150
+Pass: 55
+Fail: 151
 
