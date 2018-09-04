@@ -215,7 +215,7 @@ Positive test       - PASS:             tests/kframework/positive/j048a.c
 Positive test       - PASS:             tests/kframework/positive/j048b.c
 Positive test       - PASS:             tests/kframework/positive/j049a.c
 Positive test       - PASS:             tests/kframework/positive/j049b.c
-Positive test       - FAIL: ERROR       tests/kframework/positive/j049c.c
+Positive test       - PASS:             tests/kframework/positive/j049c.c
 Positive test       - PASS:             tests/kframework/positive/j052a.c
 Positive test       - PASS:             tests/kframework/positive/j052b.c
 Positive test       - PASS:             tests/kframework/positive/j053a.c
@@ -345,18 +345,17 @@ Failures:
                         tests/headers/positive/xmmintrin.c
                         tests/kframework/positive/j020b.c
                         tests/kframework/positive/j033b.c
-                        tests/kframework/positive/j049c.c
                         tests/kframework/positive/j079h.c
 
 Positive tests:
-Pass: 308
-Fail: 19
+Pass: 309
+Fail: 18
 
 Negative tests:
 Pass: 0
 Fail: 0
 
 Summary:
-Pass: 308
-Fail: 19
+Pass: 309
+Fail: 18
 
