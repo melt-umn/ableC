@@ -17,9 +17,9 @@ top::ExtType ::=
   top.pp = pp"interval";
   -- Translate to a reference to the struct with the refId specified in the header file
   top.host =
-    tagType(
+    extType(
       top.givenQualifiers,
-      refIdTagType(
+      refIdExtType(
         structSEU(), "_interval_s",
         s"edu:umn:cs:melt:tutorials:ableC:interval:interval"));
   top.mangledName = "interval";
