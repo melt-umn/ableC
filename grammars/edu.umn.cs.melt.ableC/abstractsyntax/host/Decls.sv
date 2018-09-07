@@ -671,7 +671,7 @@ top::EnumDecl ::= name::MaybeName  dcls::EnumItemList
   top.freeVariables = dcls.freeVariables;
   
   dcls.env = addEnv(thisdcl, top.env);
-  dcls.containingEnum = tagType(nilQualifier(), enumTagType(top));
+  dcls.containingEnum = extType(nilQualifier(), enumExtType(top));
   
 
   top.errors <-

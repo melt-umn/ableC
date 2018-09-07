@@ -186,7 +186,7 @@ function assignErrors
         then [err(loc, "Assignment of read-only variable")]
         else []) ++
        case lhs.typerep of
-         tagType(_, refIdTagType(_, _, refId)) ->
+         extType(_, refIdExtType(_, _, refId)) ->
            case lookupRefId(refId, lhs.env) of
              item :: _ ->
                if item.hasConstField

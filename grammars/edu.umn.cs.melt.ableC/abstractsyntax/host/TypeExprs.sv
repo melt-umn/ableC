@@ -118,8 +118,6 @@ top::BaseTypeExpr ::= msg::[Message]  ty::BaseTypeExpr
 abstract production directTypeExpr
 top::BaseTypeExpr ::= result::Type
 {
-  --propagate host;
-  
   top.pp = parens(cat(result.lpp, result.rpp));
   top.typerep = result;
   
@@ -179,12 +177,12 @@ top::BaseTypeExpr ::= q::Qualifiers  kwd::StructOrEnumOrUnion  name::Name
   top.typerep =
     case kwd, tags of
     -- It's an enum and we see the declaration.
-    | enumSEU(), enumTagItem(d) :: _ -> tagType(q, enumTagType(d))
+    | enumSEU(), enumTagItem(d) :: _ -> extType(q, enumExtType(d))
     -- We don't see the declaration, so we're adding it.
-    | _, [] -> tagType(q, refIdTagType(kwd, name.name, fromMaybe(name.tagRefId, top.givenRefId)))
+    | _, [] -> extType(q, refIdExtType(kwd, name.name, fromMaybe(name.tagRefId, top.givenRefId)))
     -- It's a struct/union and the tag type agrees.
-    | structSEU(), refIdTagItem(structSEU(), rid) :: _ -> tagType(q, refIdTagType(kwd, name.name, rid))
-    | unionSEU(), refIdTagItem(unionSEU(), rid) :: _ -> tagType(q, refIdTagType(kwd, name.name, rid))
+    | structSEU(), refIdTagItem(structSEU(), rid) :: _ -> extType(q, refIdExtType(kwd, name.name, rid))
+    | unionSEU(), refIdTagItem(unionSEU(), rid) :: _ -> extType(q, refIdExtType(kwd, name.name, rid))
     -- Otherwise, error!
     | _, _ -> errorType()
     end;
@@ -237,7 +235,7 @@ top::BaseTypeExpr ::= q::Qualifiers  def::StructDecl
     | just(n) -> n.name
     | nothing() -> "<anon>"
     end;
-  top.typerep = tagType(q, refIdTagType(structSEU(), name, def.refId));
+  top.typerep = extType(q, refIdExtType(structSEU(), name, def.refId));
   top.errors := q.errors ++ def.errors;
   top.globalDecls := def.globalDecls;
   top.typeModifiers = [];
@@ -257,7 +255,7 @@ top::BaseTypeExpr ::= q::Qualifiers  def::UnionDecl
     | just(n) -> n.name
     | nothing() -> "<anon>"
     end;
-  top.typerep = tagType(q, refIdTagType(unionSEU(), name, def.refId));
+  top.typerep = extType(q, refIdExtType(unionSEU(), name, def.refId));
   top.errors := q.errors ++ def.errors;
   top.globalDecls := def.globalDecls;
   top.typeModifiers = [];
@@ -272,7 +270,7 @@ top::BaseTypeExpr ::= q::Qualifiers  def::EnumDecl
 {
   propagate host, lifted;
   top.pp = ppConcat([terminate(space(), q.pps), def.pp ]);
-  top.typerep = tagType(q, enumTagType(def));
+  top.typerep = extType(q, enumExtType(def));
   top.errors := q.errors ++ def.errors;
   top.globalDecls := def.globalDecls;
   top.typeModifiers = [];

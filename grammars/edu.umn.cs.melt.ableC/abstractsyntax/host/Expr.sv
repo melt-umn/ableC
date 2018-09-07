@@ -232,10 +232,10 @@ top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
     case lhs.typerep.withoutAttributes of
     | pointerType(_, sub) ->
         case sub.withoutAttributes of
-          tagType(q, refIdTagType(_, _, rid)) -> true
+          extType(q, refIdExtType(_, _, rid)) -> true
         | _ -> false
         end
-    | tagType(q, refIdTagType(_, _, rid)) -> false
+    | extType(q, refIdExtType(_, _, rid)) -> false
     | _ -> false
     end;
   
@@ -243,10 +243,10 @@ top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
     case lhs.typerep.withoutAttributes of
     | pointerType(_, sub) ->
         case sub.withoutAttributes of
-          tagType(q, refIdTagType(_, _, rid)) -> pair(q, rid)
+          extType(q, refIdExtType(_, _, rid)) -> pair(q, rid)
         | _ -> pair(nilQualifier(), "")
         end
-    | tagType(q, refIdTagType(_, _, rid)) -> pair(q, rid)
+    | extType(q, refIdExtType(_, _, rid)) -> pair(q, rid)
     | _ -> pair(nilQualifier(), "")
     end;
   

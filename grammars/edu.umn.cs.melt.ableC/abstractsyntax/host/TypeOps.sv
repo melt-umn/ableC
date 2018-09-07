@@ -32,8 +32,7 @@ Boolean ::= a::Type  b::Type  allowSubtypes::Boolean  dropOuterQual::Boolean
   | _, errorType() -> true
   -- Type specifiers
   | builtinType(q1, b1), builtinType(q2, b2) -> builtinCompatible(b1, b2, allowSubtypes) && compatibleQualifiers(q1, q2, allowSubtypes, dropOuterQual)
-  | tagType(q1, enumTagType(_)), tagType(q2, enumTagType(_)) -> true -- TODO: FIXME: enums should be handled the same as other tags
-  | tagType(q1, refIdTagType(_, _, r1)), tagType(q2, refIdTagType(_, _, r2)) -> r1 == r2 && compatibleQualifiers(q1, q2, allowSubtypes, dropOuterQual)
+  | extType(q1, s1), extType(q2, s2) -> s1.isEqualTo(s2) && compatibleQualifiers(q1, q2, allowSubtypes, dropOuterQual)
   -- Compound types
   | atomicType(q1, t1), atomicType(q2, t2) -> compatibleTypes(t1, t2, allowSubtypes, dropOuterQual) && compatibleQualifiers(q1, q2, allowSubtypes, dropOuterQual)
   | pointerType(q1, p1), pointerType(q2, p2) ->
@@ -58,7 +57,6 @@ Boolean ::= a::Type  b::Type  allowSubtypes::Boolean  dropOuterQual::Boolean
   | attributedType(_, t1), t2 -> compatibleTypes(t1, t2, allowSubtypes, dropOuterQual)
   | t1, attributedType(_, t2) -> compatibleTypes(t1, t2, allowSubtypes, dropOuterQual)
   | vectorType(b1, s1), vectorType(b2, s2) -> s1 == s2 && compatibleTypes(b1, b2, allowSubtypes, dropOuterQual)
-  | extType(q1, s1), extType(q2, s2) -> s1.isEqualTo(s2) && compatibleQualifiers(q1, q2, allowSubtypes, dropOuterQual)
   -- otherwise
   | noncanonicalType(s1), _ -> compatibleTypes(s1.canonicalType, b, allowSubtypes, dropOuterQual)
   | _, noncanonicalType(s2) -> compatibleTypes(a, s2.canonicalType, allowSubtypes, dropOuterQual)
@@ -321,8 +319,7 @@ Boolean ::= lval::Type  rval::Type
     end ||
 
     case lval.defaultFunctionArrayLvalueConversion, rval.defaultFunctionArrayLvalueConversion of
--- the left operand has an atomic, qualified, or unqualified version of a structure, union or extension type compatible with the type of the right;
-    | tagType(_, _), _ -> compatibleTypes(lval.defaultFunctionArrayLvalueConversion, rval.defaultFunctionArrayLvalueConversion, true, true)
+-- the left operand has an atomic, qualified, or unqualified version of a structure, enum, union or extension type compatible with the type
     | extType(_, _), _ -> compatibleTypes(lval.defaultFunctionArrayLvalueConversion, rval.defaultFunctionArrayLvalueConversion, true, true)
 -- the left operand has atomic, qualified, or unqualified pointer type, and (considering the type the left operand would have after lvalue conversion) both operands are pointers to qualified or unqualified versions of compatible types, and the type pointed to by the left has all the qualifiers of the type pointed to by the right;
     | pointerType(q1, p1), pointerType(q2, p2) ->
