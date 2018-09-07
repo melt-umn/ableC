@@ -16,7 +16,7 @@ type UnaryProd = (host:Expr ::= host:Expr Location);
 type BinaryProd = (host:Expr ::= host:Expr host:Expr Location);
 
 synthesized attribute arraySubscriptProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
-flowtype arraySubscriptProd {} on host:Type, host:ExtType;
+flowtype arraySubscriptProd {decorate} on host:Type, host:ExtType;
 
 synthesized attribute callProd<a>::Maybe<a>;
 attribute callProd<(host:Expr ::= host:Exprs Location)> occurs on host:Expr;
@@ -27,26 +27,26 @@ inherited attribute isDeref::Boolean occurs on host:Type;
 synthesized attribute callMemberProd<a>::Maybe<a>;
 attribute callMemberProd<(host:Expr ::= host:Expr host:Name host:Exprs Location)> occurs on host:Type;
 attribute callMemberProd<(host:Expr ::= host:Expr Boolean host:Name host:Exprs Location)> occurs on host:ExtType;
-flowtype callMemberProd {isDeref} on host:Type;
-flowtype callMemberProd {} on host:ExtType;
+flowtype callMemberProd {decorate, isDeref} on host:Type;
+flowtype callMemberProd {decorate} on host:ExtType;
 
 synthesized attribute memberProd<a>::Maybe<a>;
 attribute memberProd<(host:Expr ::= host:Expr host:Name Location)> occurs on host:Type;
 attribute memberProd<(host:Expr ::= host:Expr Boolean host:Name Location)> occurs on host:ExtType;
-flowtype memberProd {isDeref} on host:Type;
-flowtype memberProd {} on host:ExtType;
+flowtype memberProd {decorate, isDeref} on host:Type;
+flowtype memberProd {decorate} on host:ExtType;
 
 synthesized attribute preIncProd::Maybe<UnaryProd> occurs on host:Type, host:ExtType;
-flowtype preIncProd {} on host:Type, host:ExtType;
+flowtype preIncProd {decorate} on host:Type, host:ExtType;
 
 synthesized attribute preDecProd::Maybe<UnaryProd> occurs on host:Type, host:ExtType;
-flowtype preDecProd {} on host:Type, host:ExtType;
+flowtype preDecProd {decorate} on host:Type, host:ExtType;
 
 synthesized attribute postIncProd::Maybe<UnaryProd> occurs on host:Type, host:ExtType;
-flowtype postIncProd {} on host:Type, host:ExtType;
+flowtype postIncProd {decorate} on host:Type, host:ExtType;
 
 synthesized attribute postDecProd::Maybe<UnaryProd> occurs on host:Type, host:ExtType;
-flowtype postDecProd {} on host:Type, host:ExtType;
+flowtype postDecProd {decorate} on host:Type, host:ExtType;
 
 synthesized attribute addressOfProd<a>::Maybe<a>;
 attribute addressOfProd<(host:Expr ::= Location)> occurs on host:Expr;
@@ -54,178 +54,178 @@ attribute addressOfProd<UnaryProd> occurs on host:Type, host:ExtType;
 flowtype addressOfProd {decorate} on host:Expr, host:Type, host:ExtType;
 
 synthesized attribute addressOfArraySubscriptProd::Maybe<(host:Expr ::= host:Expr host:Expr Location)> occurs on host:Type, host:ExtType;
-flowtype addressOfArraySubscriptProd {} on host:Type, host:ExtType;
+flowtype addressOfArraySubscriptProd {decorate} on host:Type, host:ExtType;
 
 synthesized attribute addressOfCallProd::Maybe<(host:Expr ::= host:Expr host:Exprs Location)> occurs on host:Type, host:ExtType;
-flowtype addressOfCallProd {} on host:Type, host:ExtType;
+flowtype addressOfCallProd {decorate} on host:Type, host:ExtType;
 
 synthesized attribute addressOfMemberProd<a>::Maybe<a>;
 attribute addressOfMemberProd<(host:Expr ::= host:Expr host:Name Location)> occurs on host:Type;
 attribute addressOfMemberProd<(host:Expr ::= host:Expr Boolean host:Name Location)> occurs on host:ExtType;
-flowtype addressOfMemberProd {isDeref} on host:Type;
-flowtype addressOfMemberProd {} on host:ExtType;
+flowtype addressOfMemberProd {decorate, isDeref} on host:Type;
+flowtype addressOfMemberProd {decorate} on host:ExtType;
 
 synthesized attribute dereferenceProd::Maybe<UnaryProd> occurs on host:Type, host:ExtType;
-flowtype dereferenceProd {} on host:Type, host:ExtType;
+flowtype dereferenceProd {decorate} on host:Type, host:ExtType;
 
 synthesized attribute positiveProd::Maybe<UnaryProd> occurs on host:Type, host:ExtType;
-flowtype positiveProd {} on host:Type, host:ExtType;
+flowtype positiveProd {decorate} on host:Type, host:ExtType;
 
 synthesized attribute negativeProd::Maybe<UnaryProd> occurs on host:Type, host:ExtType;
-flowtype negativeProd {} on host:Type, host:ExtType;
+flowtype negativeProd {decorate} on host:Type, host:ExtType;
 
 synthesized attribute bitNegateProd::Maybe<UnaryProd> occurs on host:Type, host:ExtType;
-flowtype bitNegateProd {} on host:Type, host:ExtType;
+flowtype bitNegateProd {decorate} on host:Type, host:ExtType;
 
 synthesized attribute notProd::Maybe<UnaryProd> occurs on host:Type, host:ExtType;
-flowtype notProd {} on host:Type, host:ExtType;
+flowtype notProd {decorate} on host:Type, host:ExtType;
 
 inherited attribute otherType::host:Type occurs on host:Type, host:ExtType;
 
 synthesized attribute lEqProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
-flowtype lEqProd {otherType} on host:Type, host:ExtType;
+flowtype lEqProd {decorate, otherType} on host:Type, host:ExtType;
 synthesized attribute rEqProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
-flowtype rEqProd {otherType} on host:Type, host:ExtType;
+flowtype rEqProd {decorate, otherType} on host:Type, host:ExtType;
 
 synthesized attribute lMulEqProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
-flowtype lMulEqProd {otherType} on host:Type, host:ExtType;
+flowtype lMulEqProd {decorate, otherType} on host:Type, host:ExtType;
 synthesized attribute rMulEqProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
-flowtype rMulEqProd {otherType} on host:Type, host:ExtType;
+flowtype rMulEqProd {decorate, otherType} on host:Type, host:ExtType;
 
 synthesized attribute lDivEqProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
-flowtype lDivEqProd {otherType} on host:Type, host:ExtType;
+flowtype lDivEqProd {decorate, otherType} on host:Type, host:ExtType;
 synthesized attribute rDivEqProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
-flowtype rDivEqProd {otherType} on host:Type, host:ExtType;
+flowtype rDivEqProd {decorate, otherType} on host:Type, host:ExtType;
 
 synthesized attribute lModEqProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
-flowtype lModEqProd {otherType} on host:Type, host:ExtType;
+flowtype lModEqProd {decorate, otherType} on host:Type, host:ExtType;
 synthesized attribute rModEqProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
-flowtype rModEqProd {otherType} on host:Type, host:ExtType;
+flowtype rModEqProd {decorate, otherType} on host:Type, host:ExtType;
 
 synthesized attribute lAddEqProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
-flowtype lAddEqProd {otherType} on host:Type, host:ExtType;
+flowtype lAddEqProd {decorate, otherType} on host:Type, host:ExtType;
 synthesized attribute rAddEqProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
-flowtype rAddEqProd {otherType} on host:Type, host:ExtType;
+flowtype rAddEqProd {decorate, otherType} on host:Type, host:ExtType;
 
 synthesized attribute lSubEqProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
-flowtype lSubEqProd {otherType} on host:Type, host:ExtType;
+flowtype lSubEqProd {decorate, otherType} on host:Type, host:ExtType;
 synthesized attribute rSubEqProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
-flowtype rSubEqProd {otherType} on host:Type, host:ExtType;
+flowtype rSubEqProd {decorate, otherType} on host:Type, host:ExtType;
 
 synthesized attribute lLshEqProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
-flowtype lLshEqProd {otherType} on host:Type, host:ExtType;
+flowtype lLshEqProd {decorate, otherType} on host:Type, host:ExtType;
 synthesized attribute rLshEqProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
-flowtype rLshEqProd {otherType} on host:Type, host:ExtType;
+flowtype rLshEqProd {decorate, otherType} on host:Type, host:ExtType;
 
 synthesized attribute lRshEqProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
-flowtype lRshEqProd {otherType} on host:Type, host:ExtType;
+flowtype lRshEqProd {decorate, otherType} on host:Type, host:ExtType;
 synthesized attribute rRshEqProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
-flowtype rRshEqProd {otherType} on host:Type, host:ExtType;
+flowtype rRshEqProd {decorate, otherType} on host:Type, host:ExtType;
 
 synthesized attribute lAndEqProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
-flowtype lAndEqProd {otherType} on host:Type, host:ExtType;
+flowtype lAndEqProd {decorate, otherType} on host:Type, host:ExtType;
 synthesized attribute rAndEqProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
-flowtype rAndEqProd {otherType} on host:Type, host:ExtType;
+flowtype rAndEqProd {decorate, otherType} on host:Type, host:ExtType;
 
 synthesized attribute lXorEqProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
-flowtype lXorEqProd {otherType} on host:Type, host:ExtType;
+flowtype lXorEqProd {decorate, otherType} on host:Type, host:ExtType;
 synthesized attribute rXorEqProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
-flowtype rXorEqProd {otherType} on host:Type, host:ExtType;
+flowtype rXorEqProd {decorate, otherType} on host:Type, host:ExtType;
 
 synthesized attribute lOrEqProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
-flowtype lOrEqProd {otherType} on host:Type, host:ExtType;
+flowtype lOrEqProd {decorate, otherType} on host:Type, host:ExtType;
 synthesized attribute rOrEqProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
-flowtype rOrEqProd {otherType} on host:Type, host:ExtType;
+flowtype rOrEqProd {decorate, otherType} on host:Type, host:ExtType;
 
 synthesized attribute lAndProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
-flowtype lAndProd {otherType} on host:Type, host:ExtType;
+flowtype lAndProd {decorate, otherType} on host:Type, host:ExtType;
 synthesized attribute rAndProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
-flowtype rAndProd {otherType} on host:Type, host:ExtType;
+flowtype rAndProd {decorate, otherType} on host:Type, host:ExtType;
 
 synthesized attribute lOrProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
-flowtype lOrProd {otherType} on host:Type, host:ExtType;
+flowtype lOrProd {decorate, otherType} on host:Type, host:ExtType;
 synthesized attribute rOrProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
-flowtype rOrProd {otherType} on host:Type, host:ExtType;
+flowtype rOrProd {decorate, otherType} on host:Type, host:ExtType;
 
 synthesized attribute lAndBitProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
-flowtype lAndBitProd {otherType} on host:Type, host:ExtType;
+flowtype lAndBitProd {decorate, otherType} on host:Type, host:ExtType;
 synthesized attribute rAndBitProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
-flowtype rAndBitProd {otherType} on host:Type, host:ExtType;
+flowtype rAndBitProd {decorate, otherType} on host:Type, host:ExtType;
 
 synthesized attribute lOrBitProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
-flowtype lOrBitProd {otherType} on host:Type, host:ExtType;
+flowtype lOrBitProd {decorate, otherType} on host:Type, host:ExtType;
 synthesized attribute rOrBitProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
-flowtype rOrBitProd {otherType} on host:Type, host:ExtType;
+flowtype rOrBitProd {decorate, otherType} on host:Type, host:ExtType;
 
 synthesized attribute lXorProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
-flowtype lXorProd {otherType} on host:Type, host:ExtType;
+flowtype lXorProd {decorate, otherType} on host:Type, host:ExtType;
 synthesized attribute rXorProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
-flowtype rXorProd {otherType} on host:Type, host:ExtType;
+flowtype rXorProd {decorate, otherType} on host:Type, host:ExtType;
 
 synthesized attribute lLshBitProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
-flowtype lLshBitProd {otherType} on host:Type, host:ExtType;
+flowtype lLshBitProd {decorate, otherType} on host:Type, host:ExtType;
 synthesized attribute rLshBitProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
-flowtype rLshBitProd {otherType} on host:Type, host:ExtType;
+flowtype rLshBitProd {decorate, otherType} on host:Type, host:ExtType;
 
 synthesized attribute lRshBitProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
-flowtype lRshBitProd {otherType} on host:Type, host:ExtType;
+flowtype lRshBitProd {decorate, otherType} on host:Type, host:ExtType;
 synthesized attribute rRshBitProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
-flowtype rRshBitProd {otherType} on host:Type, host:ExtType;
+flowtype rRshBitProd {decorate, otherType} on host:Type, host:ExtType;
 
 synthesized attribute lEqualsProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
-flowtype lEqualsProd {otherType} on host:Type, host:ExtType;
+flowtype lEqualsProd {decorate, otherType} on host:Type, host:ExtType;
 synthesized attribute rEqualsProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
-flowtype rEqualsProd {otherType} on host:Type, host:ExtType;
+flowtype rEqualsProd {decorate, otherType} on host:Type, host:ExtType;
 
 synthesized attribute lNotEqualsProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
-flowtype lNotEqualsProd {otherType} on host:Type, host:ExtType;
+flowtype lNotEqualsProd {decorate, otherType} on host:Type, host:ExtType;
 synthesized attribute rNotEqualsProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
-flowtype rNotEqualsProd {otherType} on host:Type, host:ExtType;
+flowtype rNotEqualsProd {decorate, otherType} on host:Type, host:ExtType;
 
 synthesized attribute lLtProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
-flowtype lLtProd {otherType} on host:Type, host:ExtType;
+flowtype lLtProd {decorate, otherType} on host:Type, host:ExtType;
 synthesized attribute rLtProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
-flowtype rLtProd {otherType} on host:Type, host:ExtType;
+flowtype rLtProd {decorate, otherType} on host:Type, host:ExtType;
 
 synthesized attribute lGtProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
-flowtype lGtProd {otherType} on host:Type, host:ExtType;
+flowtype lGtProd {decorate, otherType} on host:Type, host:ExtType;
 synthesized attribute rGtProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
-flowtype rGtProd {otherType} on host:Type, host:ExtType;
+flowtype rGtProd {decorate, otherType} on host:Type, host:ExtType;
 
 synthesized attribute lLteProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
-flowtype lLteProd {otherType} on host:Type, host:ExtType;
+flowtype lLteProd {decorate, otherType} on host:Type, host:ExtType;
 synthesized attribute rLteProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
-flowtype rLteProd {otherType} on host:Type, host:ExtType;
+flowtype rLteProd {decorate, otherType} on host:Type, host:ExtType;
 
 synthesized attribute lGteProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
-flowtype lGteProd {otherType} on host:Type, host:ExtType;
+flowtype lGteProd {decorate, otherType} on host:Type, host:ExtType;
 synthesized attribute rGteProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
-flowtype rGteProd {otherType} on host:Type, host:ExtType;
+flowtype rGteProd {decorate, otherType} on host:Type, host:ExtType;
 
 synthesized attribute lAddProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
-flowtype lAddProd {otherType} on host:Type, host:ExtType;
+flowtype lAddProd {decorate, otherType} on host:Type, host:ExtType;
 synthesized attribute rAddProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
-flowtype rAddProd {otherType} on host:Type, host:ExtType;
+flowtype rAddProd {decorate, otherType} on host:Type, host:ExtType;
 
 synthesized attribute lSubProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
-flowtype lSubProd {otherType} on host:Type, host:ExtType;
+flowtype lSubProd {decorate, otherType} on host:Type, host:ExtType;
 synthesized attribute rSubProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
-flowtype rSubProd {otherType} on host:Type, host:ExtType;
+flowtype rSubProd {decorate, otherType} on host:Type, host:ExtType;
 
 synthesized attribute lMulProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
-flowtype lMulProd {otherType} on host:Type, host:ExtType;
+flowtype lMulProd {decorate, otherType} on host:Type, host:ExtType;
 synthesized attribute rMulProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
-flowtype rMulProd {otherType} on host:Type, host:ExtType;
+flowtype rMulProd {decorate, otherType} on host:Type, host:ExtType;
 
 synthesized attribute lDivProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
-flowtype lDivProd {otherType} on host:Type, host:ExtType;
+flowtype lDivProd {decorate, otherType} on host:Type, host:ExtType;
 synthesized attribute rDivProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
-flowtype rDivProd {otherType} on host:Type, host:ExtType;
+flowtype rDivProd {decorate, otherType} on host:Type, host:ExtType;
 
 synthesized attribute lModProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
-flowtype lModProd {otherType} on host:Type, host:ExtType;
+flowtype lModProd {decorate, otherType} on host:Type, host:ExtType;
 synthesized attribute rModProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
-flowtype rModProd {otherType} on host:Type, host:ExtType;
+flowtype rModProd {decorate, otherType} on host:Type, host:ExtType;
 
 aspect default production
 top::host:Expr ::=

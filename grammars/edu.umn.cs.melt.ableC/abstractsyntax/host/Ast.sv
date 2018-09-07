@@ -86,7 +86,7 @@ flowtype forward {decorate} on
   Attribute, Attrib,
   GlobalDecls, Decl, Declarator, FunctionDecl, ParameterDecl, StructDecl, UnionDecl, EnumDecl, StructItem, StructDeclarator, EnumItem, StorageClass,
   MemberDesignator,
-  Type, ArrayType, ArraySizeModifier, FunctionType, ExtType, NoncanonicalType,
+  Type, ArrayType, ArraySizeModifier, FunctionType, NoncanonicalType,
   AsmStatement, AsmArgument, AsmOperand,
   Qualifier, SpecialSpecifier,
   Expr, GenericAssoc,

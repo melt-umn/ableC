@@ -276,7 +276,8 @@ abstract production variableArrayType
 top::ArrayType ::= size::Decorated Expr
 {
   top.host =
-    variableArrayType(decorate size.host with {env = size.env; returnType = size.returnType;});
+    variableArrayType(
+      decorate size.host with {env = size.env; returnType = size.returnType;});
   top.pp = size.pp;
   top.freeVariables = size.freeVariables;
 }
@@ -436,6 +437,10 @@ synthesized attribute isEqualTo::(Boolean ::= ExtType);
 
 closed nonterminal ExtType with givenQualifiers, pp, host<Type>, baseTypeExpr, typeModifierExpr, mangledName, isEqualTo, integerPromotions, defaultArgumentPromotions, defaultLvalueConversion, defaultFunctionArrayLvalueConversion, isIntegerType, isScalarType, isArithmeticType, freeVariables;
 flowtype ExtType = decorate {givenQualifiers}, baseTypeExpr {decorate}, isEqualTo {}, integerPromotions {decorate}, defaultArgumentPromotions {decorate}, defaultLvalueConversion {decorate}, defaultFunctionArrayLvalueConversion {decorate}, isIntegerType {}, isScalarType {}, isArithmeticType {};
+
+-- Forward flowtype is empty, since extensions would primarilly introduce new non-forwarding
+-- productions on ExtType, and we would like to be able to pattern match on these.
+flowtype forward {} on ExtType;
 
 aspect default production
 top::ExtType ::=
