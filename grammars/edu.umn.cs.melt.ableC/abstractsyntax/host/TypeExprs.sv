@@ -233,6 +233,7 @@ top::BaseTypeExpr ::= q::Qualifiers  def::StructDecl
   local name :: String = 
     case def.maybename of
     | just(n) -> n.name
+    -- TODO: Figure out how to properly handle anon structs
     | nothing() -> "<anon>"
     end;
   top.typerep = extType(q, refIdExtType(structSEU(), name, def.refId));
@@ -253,6 +254,7 @@ top::BaseTypeExpr ::= q::Qualifiers  def::UnionDecl
   local name :: String = 
     case def.maybename of
     | just(n) -> n.name
+    -- TODO: Figure out how to properly handle anon unions
     | nothing() -> "<anon>"
     end;
   top.typerep = extType(q, refIdExtType(unionSEU(), name, def.refId));

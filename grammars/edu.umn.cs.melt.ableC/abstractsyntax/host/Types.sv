@@ -436,7 +436,7 @@ inherited attribute givenQualifiers::Qualifiers;
 synthesized attribute isEqualTo::(Boolean ::= ExtType);
 
 closed nonterminal ExtType with givenQualifiers, pp, host<Type>, baseTypeExpr, typeModifierExpr, mangledName, isEqualTo, integerPromotions, defaultArgumentPromotions, defaultLvalueConversion, defaultFunctionArrayLvalueConversion, isIntegerType, isScalarType, isArithmeticType, freeVariables;
-flowtype ExtType = decorate {givenQualifiers}, baseTypeExpr {decorate}, isEqualTo {}, integerPromotions {decorate}, defaultArgumentPromotions {decorate}, defaultLvalueConversion {decorate}, defaultFunctionArrayLvalueConversion {decorate}, isIntegerType {}, isScalarType {}, isArithmeticType {};
+flowtype ExtType = decorate {givenQualifiers}, baseTypeExpr {decorate}, typeModifierExpr {decorate}, isEqualTo {}, integerPromotions {decorate}, defaultArgumentPromotions {decorate}, defaultLvalueConversion {decorate}, defaultFunctionArrayLvalueConversion {decorate}, isIntegerType {}, isScalarType {}, isArithmeticType {};
 
 -- Forward flowtype is empty, since extensions would primarilly introduce new non-forwarding
 -- productions on ExtType, and we would like to be able to pattern match on these.
@@ -507,6 +507,8 @@ top::ExtType ::= ref::Decorated EnumDecl
  - the struct/union. This DOES give us equality (refIds equal), but not structural
  - information about the tag, without bailing out of type code and going back
  - to consult the environment about what's known about that tag.
+ -
+ - This production, despite its signature, only represents structs and unions, not enums.
  -} 
 abstract production refIdExtType
 top::ExtType ::= kwd::StructOrEnumOrUnion  n::String  refId::String

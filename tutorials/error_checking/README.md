@@ -7,7 +7,7 @@ Types in ableC are represented by a nonterminal `Type`.  The type of an expressi
 * `builtinType :: (Type ::= Qualifiers BuiltinType)`: Basic types built in to C, such as `int`, `float`, `char`, etc.  `BuiltinType`s may be found in [TypesBuiltin.sv](../../edu.umn.cs.melt.ableC/abstractsyntax/TypesBuiltin.sv).  
 * `pointerType :: (Type ::= Qualifiers Type)`: A pointer to another type, such as `int*`.
 * `functionType :: (Type ::= Type FunctionType)`: A function.  Note that in many cases, you will want to use a function pointer instead of `functionType` directly.  
-* `tagType :: (Type ::= Qualifiers TagType)`: A `struct`, `enum`, or `union` type.  More on these later.
+* `extType :: (Type ::= Qualifiers ExtType)`: An externally-introduced type, such as a `struct`, `enum` or `union`, or a type created by an extension.  More on these later.
 
 Many types in ableC take `Qualifiers` as arguments.  These are things such as `const`, `volatile`, etc.  
 
