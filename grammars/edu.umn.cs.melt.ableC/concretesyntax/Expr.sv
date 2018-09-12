@@ -408,7 +408,6 @@ concrete productions top::PostfixExpr_c
 | e::PostfixExpr_c '(' args::ArgumentExprList_c ',' ')'
     { top.ast = 
         case e.directName of
-          just(id) -> inj:directCallExpr(ast:fromId(id), ast:foldExpr(args.ast), location=top.location)
           just(id) -> inj:directCallExpr(id.ast, ast:foldExpr(args.ast), location=top.location)
         | nothing() -> ovrld:callExpr(e.ast, ast:foldExpr(args.ast), location=top.location)
         end; }

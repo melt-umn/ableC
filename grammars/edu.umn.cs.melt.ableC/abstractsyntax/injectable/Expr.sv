@@ -79,7 +79,7 @@ top::host:Expr ::= ty::host:TypeName  e::host:Expr
 abstract production directCallExpr
 top::host:Expr ::= f::host:Name  a::host:Exprs
 {
-  top.pp = parens( ppConcat([ f.pp, parens( ppImplode( cat( comma(), space() ), a.host:pps ))]) );
+  top.pp = parens( ppConcat([ f.pp, parens( ppImplode( cat( comma(), space() ), a.pps ))]) );
 
   production attribute lerrors :: [Message] with ++;
   lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
