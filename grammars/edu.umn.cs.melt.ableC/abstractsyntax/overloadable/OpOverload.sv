@@ -254,7 +254,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 {
   top.addressOfProd =
     orElse(
-      case top.host:typerep.addressOfArraySubscriptProd of
+      case lhs.host:typerep.addressOfArraySubscriptProd of
         just(prod) -> just(prod(lhs, rhs, _))
       | nothing() -> nothing()
       end,
@@ -269,7 +269,7 @@ top::host:Expr ::= f::host:Expr  a::host:Exprs
 {
   top.addressOfProd =
     orElse(
-      case top.host:typerep.addressOfCallProd of
+      case f.host:typerep.addressOfCallProd of
         just(prod) -> just(prod(f, a, _))
       | nothing() -> nothing()
       end,

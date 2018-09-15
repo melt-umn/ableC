@@ -21,7 +21,7 @@ top::ExtType ::=
       top.givenQualifiers,
       refIdExtType(
         structSEU(), "_interval_s",
-        s"edu:umn:cs:melt:tutorials:ableC:interval:interval"));
+        "edu:umn:cs:melt:tutorials:ableC:interval:interval"));
   top.mangledName = "interval";
   top.isEqualTo =
     \ other::ExtType -> case other of intervalType() -> true | _ -> false end;
