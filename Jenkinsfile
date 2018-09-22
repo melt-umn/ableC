@@ -66,6 +66,7 @@ melt.trynode('ableC') {
     def specific_jobs = ["/melt-umn/ableP/master"]
 
     def tasks = [:]
+    // SILVER_GEN should get inherited automatically
     def newargs = [SILVER_BASE: SILVER_BASE, ABLEC_BASE: ABLEC_BASE, ABLEC_GEN: ABLEC_GEN]
     tasks << extensions.collectEntries { t ->
       [(t): { melt.buildProject("/melt-umn/${t}", newargs) }]
