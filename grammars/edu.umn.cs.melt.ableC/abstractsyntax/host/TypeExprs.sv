@@ -124,6 +124,28 @@ top::BaseTypeExpr ::= result::Type
   forwards to typeModifierTypeExpr(result.baseTypeExpr, result.typeModifierExpr);
 }
 
+{-- A TypeExpr that contains extra extension defs to be placed in the environment
+ - This production should not occur in the host AST
+ -}
+abstract production defsTypeExpr
+top::BaseTypeExpr ::= d::[Def]  bty::BaseTypeExpr
+{
+  propagate lifted;
+  top.pp = ppConcat([pp"/* defsTypeExpr", showEnv(addEnv(d, emptyEnv())), pp"*/", bty.pp]);
+  -- This production goes away when the transformation to host occurs, this is a special case where
+  -- host is not simply propagated, because Def is a closed 'collection' nonterminal with special
+  -- semantics
+  top.host = bty.host;
+  top.typerep = bty.typerep;
+  top.errors := bty.errors;
+  top.globalDecls := bty.globalDecls;
+  top.typeModifiers = bty.typeModifiers;
+  top.defs := d ++ bty.defs;
+  top.freeVariables = bty.freeVariables;
+  
+  bty.env = addEnv(d, top.env);
+}
+
 {-- A TypeExpr that contains a type modifier which must be lifted out
  - This production should not occur in the lifted AST
  -}
