@@ -30,11 +30,12 @@ melt.trynode('ableC') {
   }
 
   stage ("Tutorials") {
-    dir("tutorials") {
-      withEnv(newenv) {
-        sh "./build-all"
-      }
-    }
+    def tuts = ["construction", "declarations", "embedded_dsl", "error_checking", "extended_env", "getting_started", "lifting", "overloading"]
+    
+    def tasks = [:]
+    tasks << tuts.collectEntries { t -> [(t): task_tutorial(t, WS)] }
+    
+    parallel tasks
   }
 
   stage ("Integration") {
@@ -82,3 +83,20 @@ melt.trynode('ableC') {
   melt.clearGenerated()
 }
 
+// Tutorial in local workspace
+def task_tutorial(String tutorialpath, String WS, String silver_base) {
+  return {
+    node {
+      sh "touch ensure_workspace" // convince jenkins to create our workspace
+      newenv = getSilverEnv(silver_base)
+      withEnv(newenv) {
+        // Go back to our "parent" workspace, into the tutorial
+        dir(WS + '/tutorials/' + tutorialpath) {
+          sh "make -j"
+        }
+      }
+      // Blow away these generated files in our private workspace
+      deleteDir()
+    }
+  }
+}
