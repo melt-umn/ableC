@@ -33,7 +33,7 @@ melt.trynode('ableC') {
     def tuts = ["construction", "declarations", "embedded_dsl", "error_checking", "extended_env", "getting_started", "lifting", "overloading"]
     
     def tasks = [:]
-    tasks << tuts.collectEntries { t -> [(t): task_tutorial(t, ABLEC_BASE, SILVER_BASE)] }
+    tasks << tuts.collectEntries { t -> [(t): task_tutorial(t, ABLEC_BASE, ABLEC_GEN, SILVER_BASE)] }
     
     parallel tasks
   }
@@ -84,14 +84,15 @@ melt.trynode('ableC') {
 }
 
 // Tutorial in local workspace
-def task_tutorial(String tutorialpath, String WS, String silver_base) {
+def task_tutorial(String tutorialpath, String ablec_base, String ablec_gen, String silver_base) {
   return {
     node {
       sh "mkdir generated" // convince jenkins to create our workspace
       newenv = silver.getSilverEnv(silver_base)
+      newenv << "SILVER_HOST_GEN=${ablec_gen}"
       withEnv(newenv) {
         // Go back to our "parent" workspace, into the tutorial
-        dir(WS + '/tutorials/' + tutorialpath) {
+        dir(ablec_base + '/tutorials/' + tutorialpath) {
           sh "make -j"
         }
       }
