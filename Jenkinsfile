@@ -87,7 +87,8 @@ melt.trynode('ableC') {
 def task_tutorial(String tutorialpath, String ablec_base, String ablec_gen, String silver_base) {
   return {
     node {
-      sh "mkdir generated" // convince jenkins to create our workspace
+      melt.clearGenerated()
+      
       newenv = silver.getSilverEnv(silver_base)
       newenv << "SILVER_HOST_GEN=${ablec_gen}"
       withEnv(newenv) {
