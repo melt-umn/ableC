@@ -33,7 +33,7 @@ melt.trynode('ableC') {
     def tuts = ["construction", "declarations", "embedded_dsl", "error_checking", "extended_env", "getting_started", "lifting", "overloading"]
     
     def tasks = [:]
-    tasks << tuts.collectEntries { t -> [(t): task_tutorial(t, WS)] }
+    tasks << tuts.collectEntries { t -> [(t): task_tutorial(t, ABLEC_BASE, SILVER_BASE)] }
     
     parallel tasks
   }
