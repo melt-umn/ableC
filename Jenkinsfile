@@ -88,7 +88,7 @@ def task_tutorial(String tutorialpath, String WS, String silver_base) {
   return {
     node {
       sh "touch ensure_workspace" // convince jenkins to create our workspace
-      newenv = getSilverEnv(silver_base)
+      newenv = silver.getSilverEnv(silver_base)
       withEnv(newenv) {
         // Go back to our "parent" workspace, into the tutorial
         dir(WS + '/tutorials/' + tutorialpath) {
