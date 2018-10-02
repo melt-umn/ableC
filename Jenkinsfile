@@ -30,11 +30,12 @@ melt.trynode('ableC') {
   }
 
   stage ("Tutorials") {
-    dir("tutorials") {
-      withEnv(newenv) {
-        sh "./build-all"
-      }
-    }
+    def tuts = ["construction", "declarations", "embedded_dsl", "error_checking", "extended_env", "getting_started", "lifting", "overloading"]
+    
+    def tasks = [:]
+    tasks << tuts.collectEntries { t -> [(t): task_tutorial(t, ABLEC_BASE, ABLEC_GEN, SILVER_BASE)] }
+    
+    parallel tasks
   }
 
   stage ("Integration") {
@@ -66,6 +67,7 @@ melt.trynode('ableC') {
     def specific_jobs = ["/melt-umn/ableP/master"]
 
     def tasks = [:]
+    // SILVER_GEN should get inherited automatically
     def newargs = [SILVER_BASE: SILVER_BASE, ABLEC_BASE: ABLEC_BASE, ABLEC_GEN: ABLEC_GEN]
     tasks << extensions.collectEntries { t ->
       [(t): { melt.buildProject("/melt-umn/${t}", newargs) }]
@@ -81,3 +83,22 @@ melt.trynode('ableC') {
   melt.clearGenerated()
 }
 
+// Tutorial in local workspace
+def task_tutorial(String tutorialpath, String ablec_base, String ablec_gen, String silver_base) {
+  return {
+    node {
+      melt.clearGenerated()
+      
+      newenv = silver.getSilverEnv(silver_base)
+      newenv << "SILVER_HOST_GEN=${ablec_gen}"
+      withEnv(newenv) {
+        // Go back to our "parent" workspace, into the tutorial
+        dir(ablec_base + '/tutorials/' + tutorialpath) {
+          sh "make -j"
+        }
+      }
+      // Blow away these generated files in our private workspace
+      deleteDir()
+    }
+  }
+}
