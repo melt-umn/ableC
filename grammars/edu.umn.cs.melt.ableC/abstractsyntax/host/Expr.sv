@@ -230,12 +230,7 @@ top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
   
   local isPointer::Boolean =
     case lhs.typerep.withoutAttributes of
-    | pointerType(_, sub) ->
-        case sub.withoutAttributes of
-          extType(q, refIdExtType(_, _, rid)) -> true
-        | _ -> false
-        end
-    | extType(q, refIdExtType(_, _, rid)) -> false
+    | pointerType(_, sub) -> true
     | _ -> false
     end;
   
@@ -243,10 +238,10 @@ top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
     case lhs.typerep.withoutAttributes of
     | pointerType(_, sub) ->
         case sub.withoutAttributes of
-          extType(q, refIdExtType(_, _, rid)) -> pair(q, rid)
+        | extType(q, e) -> pair(q, fromMaybe("", e.maybeRefId))
         | _ -> pair(nilQualifier(), "")
         end
-    | extType(q, refIdExtType(_, _, rid)) -> pair(q, rid)
+    | extType(q, e) -> pair(q, fromMaybe("", e.maybeRefId))
     | _ -> pair(nilQualifier(), "")
     end;
   

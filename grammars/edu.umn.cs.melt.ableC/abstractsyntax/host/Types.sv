@@ -435,8 +435,8 @@ inherited attribute givenQualifiers::Qualifiers;
 -- t1.isEqualTo(t2) iff t1.mangledName == t2.mangledName
 synthesized attribute isEqualTo::(Boolean ::= ExtType);
 
-closed nonterminal ExtType with givenQualifiers, pp, host<Type>, baseTypeExpr, typeModifierExpr, mangledName, isEqualTo, integerPromotions, defaultArgumentPromotions, defaultLvalueConversion, defaultFunctionArrayLvalueConversion, isIntegerType, isScalarType, isArithmeticType, freeVariables;
-flowtype ExtType = decorate {givenQualifiers}, baseTypeExpr {decorate}, typeModifierExpr {decorate}, isEqualTo {}, integerPromotions {decorate}, defaultArgumentPromotions {decorate}, defaultLvalueConversion {decorate}, defaultFunctionArrayLvalueConversion {decorate}, isIntegerType {}, isScalarType {}, isArithmeticType {};
+closed nonterminal ExtType with givenQualifiers, pp, host<Type>, baseTypeExpr, typeModifierExpr, mangledName, isEqualTo, integerPromotions, defaultArgumentPromotions, defaultLvalueConversion, defaultFunctionArrayLvalueConversion, isIntegerType, isScalarType, isArithmeticType, maybeRefId, freeVariables;
+flowtype ExtType = decorate {givenQualifiers}, baseTypeExpr {decorate}, typeModifierExpr {decorate}, isEqualTo {}, integerPromotions {decorate}, defaultArgumentPromotions {decorate}, defaultLvalueConversion {decorate}, defaultFunctionArrayLvalueConversion {decorate}, isIntegerType {}, isScalarType {}, isArithmeticType {}, maybeRefId {};
 
 -- Forward flowtype is empty, since extensions would primarilly introduce new non-forwarding
 -- productions on ExtType, and we would like to be able to pattern match on these.
@@ -457,6 +457,7 @@ top::ExtType ::=
   top.isIntegerType = false;
   top.isArithmeticType = false;
   top.isScalarType = false;
+  top.maybeRefId = nothing();
 }
 
 abstract production enumExtType
@@ -525,6 +526,7 @@ top::ExtType ::= kwd::StructOrEnumOrUnion  n::String  refId::String
       | refIdExtType(_, _, otherRefId) -> refId == otherRefId
       | _ -> false
       end;
+  top.maybeRefId = just(refId);
 }
 
 nonterminal StructOrEnumOrUnion with pp, mangledName; -- Silver enums would be nice.
