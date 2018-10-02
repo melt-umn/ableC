@@ -505,7 +505,7 @@ Parameters ::= p1::Parameters p2::Parameters
 synthesized attribute paramname :: Maybe<Name>;
 
 nonterminal ParameterDecl with paramname, typerep, pp, host<ParameterDecl>, lifted<ParameterDecl>, errors, globalDecls, defs, env, sourceLocation, returnType, freeVariables;
-flowtype ParameterDecl = decorate {env, returnType}, paramname {decorate};
+flowtype ParameterDecl = decorate {env, returnType}, paramname {};
 
 abstract production parameterDecl
 top::ParameterDecl ::= storage::[StorageClass]  bty::BaseTypeExpr  mty::TypeModifierExpr  name::MaybeName  attrs::Attributes
