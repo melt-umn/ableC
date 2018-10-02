@@ -460,7 +460,7 @@ top::FunctionDecl ::= msg::[Message]
 nonterminal Parameters with typereps, pps, host<Parameters>, lifted<Parameters>, errors, globalDecls, defs, env, returnType, freeVariables, appendedParameters, appendedParametersRes;
 flowtype Parameters = decorate {env, returnType}, appendedParametersRes {appendedParameters};
 
-inherited attribute appendedParameters :: Parameters;
+autocopy attribute appendedParameters :: Parameters;
 synthesized attribute appendedParametersRes :: Parameters;
 
 abstract production consParameters
@@ -478,7 +478,6 @@ top::Parameters ::= h::ParameterDecl  t::Parameters
   top.appendedParametersRes = consParameters(h, t.appendedParametersRes);
   
   t.env = addEnv(h.defs, top.env);
-  t.appendedParameters = top.appendedParameters;
 }
 
 abstract production nilParameters
@@ -680,9 +679,11 @@ top::EnumDecl ::= name::MaybeName  dcls::EnumItemList
     -- We can rely on the name being present if it's a redeclaration
 }
 
+autocopy attribute appendedStructItemList :: StructItemList;
+synthesized attribute appendedStructItemListRes :: StructItemList;
 
-nonterminal StructItemList with pps, host<StructItemList>, lifted<StructItemList>, errors, globalDecls, defs, env, localDefs, hasConstField, returnType, freeVariables;
-flowtype StructItemList = decorate {env, returnType};
+nonterminal StructItemList with pps, host<StructItemList>, lifted<StructItemList>, errors, globalDecls, defs, env, localDefs, hasConstField, returnType, freeVariables, appendedStructItemList, appendedStructItemListRes;
+flowtype StructItemList = decorate {env, returnType}, appendedStructItemListRes {appendedStructItemList};
 
 abstract production consStructItem
 top::StructItemList ::= h::StructItem  t::StructItemList
@@ -697,6 +698,7 @@ top::StructItemList ::= h::StructItem  t::StructItemList
     removeDefsFromNames(h.defs, t.freeVariables);
   top.localDefs := h.localDefs ++ t.localDefs;
   top.hasConstField = h.hasConstField || t.hasConstField;
+  top.appendedStructItemListRes = consStructItem(h, t.appendedStructItemListRes);
   
   t.env = addEnv(h.defs ++ h.localDefs, h.env);
 }
@@ -712,6 +714,14 @@ top::StructItemList ::=
   top.freeVariables = [];
   top.localDefs := [];
   top.hasConstField = false;
+  top.appendedStructItemListRes = top.appendedStructItemList;
+}
+
+function appendStructItemList
+StructItemList ::= s1::StructItemList s2::StructItemList
+{
+  s1.appendedStructItemList = s2;
+  return s1.appendedStructItemListRes;
 }
 
 nonterminal EnumItemList with pps, host<EnumItemList>, lifted<EnumItemList>, errors, globalDecls, defs, env, containingEnum, returnType, freeVariables;
