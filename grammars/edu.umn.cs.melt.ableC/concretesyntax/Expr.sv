@@ -2,7 +2,6 @@ grammar edu:umn:cs:melt:ableC:concretesyntax;
 
 import edu:umn:cs:melt:ableC:abstractsyntax:env only env;
 import edu:umn:cs:melt:ableC:abstractsyntax:overloadable as ovrld;
-import edu:umn:cs:melt:ableC:abstractsyntax:injectable as inj;
 -- "Exported" nonterminals
 
 closed nonterminal Expr_c with location, ast<ast:Expr>; 
@@ -402,19 +401,19 @@ concrete productions top::PostfixExpr_c
 | e::PostfixExpr_c '(' args::ArgumentExprList_c ')'
     { top.ast = 
         case e.directName of
-          just(id) -> inj:directCallExpr(id.ast, ast:foldExpr(args.ast), location=top.location)
+          just(id) -> ast:directCallExpr(id.ast, ast:foldExpr(args.ast), location=top.location)
         | nothing() -> ovrld:callExpr(e.ast, ast:foldExpr(args.ast), location=top.location)
         end; }
 | e::PostfixExpr_c '(' args::ArgumentExprList_c ',' ')'
     { top.ast = 
         case e.directName of
-          just(id) -> inj:directCallExpr(id.ast, ast:foldExpr(args.ast), location=top.location)
+          just(id) -> ast:directCallExpr(id.ast, ast:foldExpr(args.ast), location=top.location)
         | nothing() -> ovrld:callExpr(e.ast, ast:foldExpr(args.ast), location=top.location)
         end; }
 | e::PostfixExpr_c '(' ')'
     { top.ast = 
         case e.directName of
-          just(id) -> inj:directCallExpr(id.ast, ast:nilExpr(), location=top.location)
+          just(id) -> ast:directCallExpr(id.ast, ast:nilExpr(), location=top.location)
         | nothing() -> ovrld:callExpr(e.ast, ast:nilExpr(), location=top.location)
         end; }
 | e::PostfixExpr_c '.' id::Identifier_c

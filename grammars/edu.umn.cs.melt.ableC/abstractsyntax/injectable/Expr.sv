@@ -76,8 +76,8 @@ top::host:Expr ::= ty::host:TypeName  e::host:Expr
       top.location);
 }
 
-abstract production directCallExpr
-top::host:Expr ::= f::host:Name  a::host:Exprs
+abstract production callExpr
+top::host:Expr ::= f::host:Expr  a::host:Exprs
 {
   top.pp = parens( ppConcat([ f.pp, parens( ppImplode( cat( comma(), space() ), a.pps ))]) );
 
@@ -97,8 +97,7 @@ top::host:Expr ::= f::host:Name  a::host:Exprs
   tmpArgs.env = top.env;
   tmpArgs.host:returnType = top.host:returnType;
 
-  local callFunc :: host:Expr =
-    host:directCallExpr(f, tmpArgs, location=top.location);
+  local callFunc :: host:Expr = host:callExpr(f, tmpArgs, location=top.location);
   callFunc.env = top.env;
   callFunc.host:returnType = top.host:returnType;
 
@@ -135,7 +134,7 @@ top::host:Expr ::= f::host:Name  a::host:Exprs
   forwards to
     host:wrapWarnExpr(lerrors,
       if null(preInsertions) && null(postInsertions)
-      then host:directCallExpr(f, a, location=top.location)
+      then host:callExpr(f, a, location=top.location)
       else injExpr,
       top.location);
 }
