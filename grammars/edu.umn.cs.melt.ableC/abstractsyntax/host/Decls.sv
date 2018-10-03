@@ -724,8 +724,11 @@ StructItemList ::= s1::StructItemList s2::StructItemList
   return s1.appendedStructItemListRes;
 }
 
-nonterminal EnumItemList with pps, host<EnumItemList>, lifted<EnumItemList>, errors, globalDecls, defs, env, containingEnum, returnType, freeVariables;
-flowtype EnumItemList = decorate {env, containingEnum, returnType};
+autocopy attribute appendedEnumItemList :: EnumItemList;
+synthesized attribute appendedEnumItemListRes :: EnumItemList;
+
+nonterminal EnumItemList with pps, host<EnumItemList>, lifted<EnumItemList>, errors, globalDecls, defs, env, containingEnum, returnType, freeVariables, appendedEnumItemList, appendedEnumItemListRes;
+flowtype EnumItemList = decorate {env, containingEnum, returnType}, appendedEnumItemListRes {appendedEnumItemList};
 
 autocopy attribute containingEnum :: Type;
 
@@ -740,6 +743,7 @@ top::EnumItemList ::= h::EnumItem  t::EnumItemList
   top.freeVariables =
     h.freeVariables ++
     removeDefsFromNames(h.defs, t.freeVariables);
+  top.appendedEnumItemListRes = consEnumItem(h, t.appendedEnumItemListRes);
   
   t.env = addEnv(h.defs, h.env);
 }
@@ -753,6 +757,14 @@ top::EnumItemList ::=
   top.globalDecls := [];
   top.defs := [];
   top.freeVariables = [];
+  top.appendedEnumItemListRes = top.appendedEnumItemList;
+}
+
+function appendEnumItemList
+EnumItemList ::= e1::EnumItemList e2::EnumItemList
+{
+  e1.appendedEnumItemList = e2;
+  return e1.appendedEnumItemListRes;
 }
 
 nonterminal StructItem with pp, host<StructItem>, lifted<StructItem>, errors, globalDecls, defs, env, localDefs, hasConstField, returnType, freeVariables;
