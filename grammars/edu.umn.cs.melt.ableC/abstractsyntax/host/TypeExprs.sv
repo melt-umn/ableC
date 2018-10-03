@@ -119,8 +119,6 @@ abstract production directTypeExpr
 top::BaseTypeExpr ::= result::Type
 {
   top.pp = parens(cat(result.lpp, result.rpp));
-  top.typerep = result;
-  
   forwards to typeModifierTypeExpr(result.baseTypeExpr, result.typeModifierExpr);
 }
 
