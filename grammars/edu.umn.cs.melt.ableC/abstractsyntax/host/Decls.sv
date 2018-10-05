@@ -357,7 +357,7 @@ top::FunctionDecl ::= storage::[StorageClass]  fnquals::SpecialSpecifiers  bty::
     case mty of
     | functionTypeExprWithArgs(result, args, variadic, q) ->
         args
-    | _ -> decorate nilParameters() with { env = top.env; returnType = top.returnType; }
+    | _ -> decorate nilParameters() with { env = top.env; returnType = top.returnType; position = 0; }
     end;
   
   local funcDefs::[Def] = bty.defs ++ [valueDef(name.name, functionValueItem(top))];
@@ -457,8 +457,11 @@ top::FunctionDecl ::= msg::[Message]
   top.sourceLocation = loc("nowhere", -1, -1, -1, -1, -1, -1); -- TODO fix this? add locaiton maybe?
 }
 
-nonterminal Parameters with typereps, pps, host<Parameters>, lifted<Parameters>, errors, globalDecls, defs, env, returnType, freeVariables, appendedParameters, appendedParametersRes;
-flowtype Parameters = decorate {env, returnType}, appendedParametersRes {appendedParameters};
+synthesized attribute len::Integer;
+inherited attribute position::Integer;
+
+nonterminal Parameters with typereps, pps, count, host<Parameters>, lifted<Parameters>, errors, globalDecls, defs, env, returnType, position, freeVariables, appendedParameters, appendedParametersRes;
+flowtype Parameters = decorate {env, returnType, position}, appendedParametersRes {appendedParameters};
 
 autocopy attribute appendedParameters :: Parameters;
 synthesized attribute appendedParametersRes :: Parameters;
@@ -468,6 +471,7 @@ top::Parameters ::= h::ParameterDecl  t::Parameters
 {
   propagate host, lifted;
   top.pps = h.pp :: t.pps;
+  top.count = t.count + 1;
   top.typereps = h.typerep :: t.typereps;
   top.errors := h.errors ++ t.errors;
   top.globalDecls := h.globalDecls ++ t.globalDecls;
@@ -478,6 +482,8 @@ top::Parameters ::= h::ParameterDecl  t::Parameters
   top.appendedParametersRes = consParameters(h, t.appendedParametersRes);
   
   t.env = addEnv(h.defs, top.env);
+  h.position = top.position;
+  t.position = 1 + top.position;
 }
 
 abstract production nilParameters
@@ -485,6 +491,7 @@ top::Parameters ::=
 {
   propagate host, lifted;
   top.pps = [];
+  top.count = 0;
   top.typereps = [];
   top.errors := [];
   top.globalDecls := [];
@@ -503,8 +510,8 @@ Parameters ::= p1::Parameters p2::Parameters
 -- TODO: move these, later
 synthesized attribute paramname :: Maybe<Name>;
 
-nonterminal ParameterDecl with paramname, typerep, pp, host<ParameterDecl>, lifted<ParameterDecl>, errors, globalDecls, defs, env, sourceLocation, returnType, freeVariables;
-flowtype ParameterDecl = decorate {env, returnType}, paramname {};
+nonterminal ParameterDecl with paramname, typerep, pp, host<ParameterDecl>, lifted<ParameterDecl>, errors, globalDecls, defs, env, position, sourceLocation, returnType, freeVariables;
+flowtype ParameterDecl = decorate {env, returnType, position}, paramname {};
 
 abstract production parameterDecl
 top::ParameterDecl ::= storage::[StorageClass]  bty::BaseTypeExpr  mty::TypeModifierExpr  name::MaybeName  attrs::Attributes
