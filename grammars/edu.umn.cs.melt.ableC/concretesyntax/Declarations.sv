@@ -89,6 +89,20 @@ concrete productions top::Declarator_c
       dd.givenType = top.givenType;
       top.ast = dd.ast; }
 
+closed nonterminal FunctionDeclarator_c with location, declaredIdent, declaredParamIdents, ast<ast:TypeModifierExpr>, givenType; 
+concrete productions top::FunctionDeclarator_c
+| p::Pointer_c dd::DirectFunctionDeclarator_c
+    { top.declaredIdent = dd.declaredIdent; 
+      top.declaredParamIdents = dd.declaredParamIdents;
+      p.givenType = top.givenType;
+      dd.givenType = p.ast;
+      top.ast = dd.ast;}
+| dd::DirectFunctionDeclarator_c
+    { top.declaredIdent = dd.declaredIdent;
+      top.declaredParamIdents = dd.declaredParamIdents;
+      dd.givenType = top.givenType;
+      top.ast = dd.ast; }
+
 
 closed nonterminal TypeName_c with location, ast<ast:TypeName>;
 concrete productions top::TypeName_c
@@ -161,7 +175,7 @@ concrete productions top::Expr_c
  -}
 closed nonterminal InitialFunctionDefinition_c with location, ast<ast:FunctionDecl>, givenStmt;
 concrete productions top::InitialFunctionDefinition_c
-| ds::DeclarationSpecifiers_c  d::Declarator_c  l::DeclarationList_c
+| ds::DeclarationSpecifiers_c  d::FunctionDeclarator_c  l::DeclarationList_c
     {
       ds.givenQualifiers = ds.typeQualifiers;
       d.givenType = ast:baseTypeExpr();
@@ -180,7 +194,7 @@ concrete productions top::InitialFunctionDefinition_c
       -- parameters, and close it after the brace.
       context = lh:beginFunctionScope(d.declaredIdent, d.declaredParamIdents, context);
     }
-| d::Declarator_c  l::DeclarationList_c
+| d::FunctionDeclarator_c  l::DeclarationList_c
     {
       d.givenType = ast:baseTypeExpr();
       local bt :: ast:BaseTypeExpr =
@@ -188,6 +202,40 @@ concrete productions top::InitialFunctionDefinition_c
 
       top.ast = 
         ast:functionDecl([], ast:nilSpecialSpecifier(), bt, d.ast, d.declaredIdent, ast:nilAttribute(), ast:foldDecl(l.ast), top.givenStmt);
+    }
+    action {
+      -- Unfortunate duplication. This production is necessary for K&R compatibility
+      -- We can't make it a proper optional nonterminal, since that requires a reduce far too early.
+      -- (i.e. LALR conflicts)
+      context = lh:beginFunctionScope(d.declaredIdent, d.declaredParamIdents, context);
+    }
+| ds::DeclarationSpecifiers_c  d::FunctionDeclarator_c  q::TypeQualifierList_c
+    {
+      ds.givenQualifiers = ds.typeQualifiers;
+      d.givenType = ast:baseTypeExpr();
+      
+      local bt :: ast:BaseTypeExpr =
+        ast:figureOutTypeFromSpecifiers(ds.location, ds.typeQualifiers, ds.preTypeSpecifiers, ds.realTypeSpecifiers, ds.mutateTypeSpecifiers);
+
+      local specialSpecifiers :: ast:SpecialSpecifiers =
+        foldr(ast:consSpecialSpecifier, ast:nilSpecialSpecifier(), ds.specialSpecifiers);
+
+      top.ast = 
+        ast:functionDecl(ds.storageClass, specialSpecifiers, bt, d.ast, d.declaredIdent, ds.attributes, ast:nilDecl(), top.givenStmt);
+    }
+    action {
+      -- Function are annoying because we have to open a scope, then add the
+      -- parameters, and close it after the brace.
+      context = lh:beginFunctionScope(d.declaredIdent, d.declaredParamIdents, context);
+    }
+| d::FunctionDeclarator_c  q::TypeQualifierList_c
+    {
+      d.givenType = ast:baseTypeExpr();
+      local bt :: ast:BaseTypeExpr =
+        ast:figureOutTypeFromSpecifiers(d.location, ast:nilQualifier(), [], [], []);
+
+      top.ast = 
+        ast:functionDecl([], ast:nilSpecialSpecifier(), bt, d.ast, d.declaredIdent, ast:nilAttribute(), ast:nilDecl(), top.givenStmt);
     }
     action {
       -- Unfortunate duplication. This production is necessary for K&R compatibility
@@ -317,11 +365,103 @@ concrete productions top::DirectDeclarator_c
       top.ast = dd.ast;
     }
 
+closed nonterminal DirectFunctionDeclarator_c with location, declaredIdent, declaredParamIdents, ast<ast:TypeModifierExpr>, givenType;
+concrete productions top::DirectFunctionDeclarator_c
+| id::Identifier_c 
+    { top.declaredIdent = id.ast;
+      top.declaredParamIdents = nothing();
+      top.ast = top.givenType;
+    }
+| '(' d::Declarator_c ')'
+    { top.declaredIdent = d.declaredIdent;
+      top.declaredParamIdents = d.declaredParamIdents;
+      d.givenType = ast:parenTypeExpr(top.givenType);
+      top.ast = d.ast;
+    }
+| dd::DirectDeclarator_c '[' q::TypeQualifierList_c e::AssignExpr_c ']'
+    { top.declaredIdent = dd.declaredIdent;
+      top.declaredParamIdents = dd.declaredParamIdents;
+      dd.givenType = ast:arrayTypeExprWithExpr(top.givenType, q.typeQualifiers, ast:normalArraySize(), e.ast);
+      top.ast = dd.ast;
+    }
+| dd::DirectDeclarator_c '[' e::AssignExpr_c ']'
+    { top.declaredIdent = dd.declaredIdent;
+      top.declaredParamIdents = dd.declaredParamIdents;
+      dd.givenType = ast:arrayTypeExprWithExpr(top.givenType, ast:nilQualifier(), ast:normalArraySize(), e.ast);
+      top.ast = dd.ast;
+    }
+| dd::DirectDeclarator_c '[' q::TypeQualifierList_c ']'
+    { top.declaredIdent = dd.declaredIdent;
+      top.declaredParamIdents = dd.declaredParamIdents;
+      dd.givenType = ast:arrayTypeExprWithoutExpr(top.givenType, q.typeQualifiers, ast:normalArraySize());
+      top.ast = dd.ast;
+    }
+| dd::DirectDeclarator_c '[' ']'
+    { top.declaredIdent = dd.declaredIdent;
+      top.declaredParamIdents = dd.declaredParamIdents;
+      dd.givenType = ast:arrayTypeExprWithoutExpr(top.givenType, ast:nilQualifier(), ast:normalArraySize());
+      top.ast = dd.ast;
+    }
+| dd::DirectDeclarator_c '[' 'static' q::TypeQualifierList_c e::AssignExpr_c ']'
+    { top.declaredIdent = dd.declaredIdent;
+      top.declaredParamIdents = dd.declaredParamIdents;
+      dd.givenType = ast:arrayTypeExprWithExpr(top.givenType, q.typeQualifiers, ast:staticArraySize(), e.ast);
+      top.ast = dd.ast;
+    }
+| dd::DirectDeclarator_c '[' 'static' e::AssignExpr_c ']'
+    { top.declaredIdent = dd.declaredIdent;
+      top.declaredParamIdents = dd.declaredParamIdents;
+      dd.givenType = ast:arrayTypeExprWithExpr(top.givenType, ast:nilQualifier(), ast:staticArraySize(), e.ast);
+      top.ast = dd.ast;
+    }
+| dd::DirectDeclarator_c '[' q::TypeQualifierList_c 'static' e::AssignExpr_c ']'
+    { top.declaredIdent = dd.declaredIdent;
+      top.declaredParamIdents = dd.declaredParamIdents;
+      dd.givenType = ast:arrayTypeExprWithExpr(top.givenType, q.typeQualifiers, ast:staticArraySize(), e.ast);
+      top.ast = dd.ast;
+    }
+| dd::DirectDeclarator_c '[' q::TypeQualifierList_c '*' ']'
+    { top.declaredIdent = dd.declaredIdent;
+      top.declaredParamIdents = dd.declaredParamIdents;
+      dd.givenType = ast:arrayTypeExprWithoutExpr(top.givenType, q.typeQualifiers, ast:starArraySize());
+      top.ast = dd.ast;
+    }
+| dd::DirectDeclarator_c '[' '*' ']'
+    { top.declaredIdent = dd.declaredIdent;
+      top.declaredParamIdents = dd.declaredParamIdents;
+      dd.givenType = ast:arrayTypeExprWithoutExpr(top.givenType, ast:nilQualifier(), ast:starArraySize());
+      top.ast = dd.ast;
+    }
+| dd::DirectDeclarator_c '(' ptl::ParameterTypeList_c ')'
+    { top.declaredIdent = dd.declaredIdent;
+      top.declaredParamIdents = -- use the inner one if it exists!
+        orElse(dd.declaredParamIdents, just(ptl.declaredIdents));
+      dd.givenType = ast:functionTypeExprWithArgs(top.givenType,
+        ast:foldParameterDecl(ptl.ast), ptl.isVariadic, ast:nilQualifier());
+      top.ast = dd.ast;
+    }
+| dd::DirectDeclarator_c '(' idl::IdentifierList_c ')'
+    { top.declaredIdent = dd.declaredIdent;
+      top.declaredParamIdents =
+        orElse(dd.declaredParamIdents, just(idl.declaredIdents));
+      dd.givenType = ast:functionTypeExprWithoutArgs(top.givenType,
+        idl.declaredIdents, ast:nilQualifier());
+      top.ast = dd.ast;
+    }
+| dd::DirectDeclarator_c '(' ')'
+    { top.declaredIdent = dd.declaredIdent;
+      top.declaredParamIdents =
+        orElse(dd.declaredParamIdents, just([]));
+      dd.givenType = ast:functionTypeExprWithoutArgs(top.givenType, [],
+        ast:nilQualifier());
+      top.ast = dd.ast;
+    }
+
 closed nonterminal OptTypeQualifierList_c with location, typeQualifiers;
 concrete productions top::OptTypeQualifierList_c
 |
     { top.typeQualifiers = ast:nilQualifier(); }
-| '<' q::TypeQualifierList_c '>'
+| q::TypeQualifierList_c
     { top.typeQualifiers = q.typeQualifiers; }
 
 
