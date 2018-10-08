@@ -77,6 +77,21 @@ top::Expr ::= original::Expr  resolved::Expr
   top.freeVariables = resolved.freeVariables;
   top.isLValue = resolved.isLValue;
 }
+
+abstract production directRefExpr
+top::Expr ::= id::Name
+{
+  -- Forwarding depends on env. We must be able to compute a pp without using env.
+  top.pp = id.pp;
+
+  forwards to id.valueItem.directRefHandler(id, top.location);
+}
+-- If the identifier is an ordinary one, use the normal var reference production
+function ordinaryVariableHandler
+Expr ::= id::Name  l::Location
+{
+  return declRefExpr(id, location=l);
+}
 abstract production declRefExpr
 top::Expr ::= id::Name
 { -- Reference to a value. (Either a Decl or a EnumItem)
@@ -168,7 +183,6 @@ top::Expr ::= f::Name  a::Exprs
 function ordinaryFunctionHandler
 Expr ::= f::Name  a::Exprs  l::Location
 {
-  -- TODO: Figure out a better solution to integrating overloading
   return ovrld:callExpr(declRefExpr(f, location=f.location), a, location=l);
 }
 

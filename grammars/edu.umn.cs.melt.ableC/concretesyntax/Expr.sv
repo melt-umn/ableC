@@ -454,7 +454,7 @@ top::PrimaryExpr_c ::=
 
 concrete productions top::PrimaryExpr_c
 | id::Identifier_c
-    { top.ast = ast:declRefExpr(id.ast, location=top.location);
+    { top.ast = ast:directRefExpr(id.ast, location=top.location);
       top.directName = just(id); }
 | c::Constant_c
     { top.ast = c.ast; }
