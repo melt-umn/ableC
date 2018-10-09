@@ -214,7 +214,7 @@ top::Expr ::= f::Expr  a::Exprs
      | left(_) -> a.argumentErrors
      | right(r) -> r
     end;
-
+  
   a.expectedTypes =
     case subtype of
     | left(pair(_, protoFunctionType(args, _))) -> args
@@ -264,7 +264,7 @@ top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
   
   local valueitems :: [ValueItem] =
     lookupValue(rhs.name, head(refids).tagEnv);
-
+  
   top.isLValue = true;
   
   top.typerep =

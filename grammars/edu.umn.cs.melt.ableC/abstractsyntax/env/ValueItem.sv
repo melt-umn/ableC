@@ -88,5 +88,3 @@ top::ValueItem ::=
   top.isItemValue = true;
   top.isItemType = true;
 }
-
-
