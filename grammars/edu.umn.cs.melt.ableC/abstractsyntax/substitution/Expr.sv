@@ -15,6 +15,17 @@ top::Expr ::= original::Expr  resolved::Expr
 {
   propagate substituted;
 }
+aspect production directRefExpr
+top::Expr ::= id::Name
+{
+  local substitutions::Substitutions = top.substitutions;
+  substitutions.nameIn = id.name;
+  top.substituted =
+    case substitutions.declRefSub of
+      just(sub) -> sub
+    | nothing() -> directRefExpr(id.substituted, location=top.location)
+    end;
+}
 aspect production declRefExpr
 top::Expr ::= id::Name
 {
