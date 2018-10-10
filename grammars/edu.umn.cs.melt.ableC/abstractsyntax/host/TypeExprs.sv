@@ -563,4 +563,3 @@ top::TypeNames ::=
   top.defs := [];
   top.freeVariables = [];
 }
-
