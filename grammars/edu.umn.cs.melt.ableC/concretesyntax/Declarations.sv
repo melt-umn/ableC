@@ -121,8 +121,7 @@ concrete productions top::TypeName_c
     }
 
 -- Not actually used in the host language, just really useful for extensions
-nonterminal TypeNames_c with ast<ast:TypeNames>;
-
+closed nonterminal TypeNames_c with ast<ast:TypeNames>;
 concrete productions top::TypeNames_c
 | h::TypeName_c ',' t::TypeNames_c
     { top.ast = ast:consTypeName(h.ast, t.ast); }
@@ -131,9 +130,19 @@ concrete productions top::TypeNames_c
 | 
     { top.ast = ast:nilTypeName(); }
 
--- Ugly hack to add things to the follow set TypeNames_c
--- We set this to match what is allowed by C++ for extensions to use
-terminal TypeNames_NEVER_t 'TypeNames_NEVER_t!!!nevernever1234567890' ;
+closed nonterminal Names_c with location, ast<[ast:Name]>;
+concrete productions top::Names_c
+| h::Identifier_c ',' t::Names_c
+  { top.ast = h.ast :: t.ast; }
+| h::Identifier_c
+  { top.ast = [h.ast]; }
+| 
+  { top.ast = []; }
+
+-- Ugly hack to add things to the follow set TypeNames_c and Names_c
+-- We set this to include what is allowed by C++ for extensions to use
+terminal TypeNames_NEVER_t 'TypeNames_NEVER_t!!!nevernever1234567890';
+terminal Names_NEVER_t 'Names_NEVER_t!!!nevernever1234567890';
 concrete productions top::Expr_c
 | 'TypeNames_NEVER_t!!!nevernever1234567890' TypeNames_c ')'
     { top.ast = ast:errorExpr ( [ err (top.location, "Internal Error. " ++
@@ -147,7 +156,18 @@ concrete productions top::Expr_c
     { top.ast = ast:errorExpr ( [ err (top.location, "Internal Error. " ++
         "Placeholder for TypeNames_c should not appear in the tree.") ],
         location=top.location ) ; }
-
+| 'Names_NEVER_t!!!nevernever1234567890' Names_c ')'
+    { top.ast = ast:errorExpr ( [ err (top.location, "Internal Error. " ++
+        "Placeholder for Names_c should not appear in the tree.") ],
+        location=top.location ) ; }
+| 'Names_NEVER_t!!!nevernever1234567890' Names_c '>'
+    { top.ast = ast:errorExpr ( [ err (top.location, "Internal Error. " ++
+        "Placeholder for Names_c should not appear in the tree.") ],
+        location=top.location ) ; }
+| 'Names_NEVER_t!!!nevernever1234567890' Names_c ';'
+    { top.ast = ast:errorExpr ( [ err (top.location, "Internal Error. " ++
+        "Placeholder for Names_c should not appear in the tree.") ],
+        location=top.location ) ; }
 
 -- "Non-exported" nonterminals
 
