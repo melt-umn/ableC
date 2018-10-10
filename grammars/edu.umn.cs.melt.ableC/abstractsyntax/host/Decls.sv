@@ -344,15 +344,15 @@ top::FunctionDecl ::= storage::[StorageClass]  fnquals::SpecialSpecifiers  bty::
   top.pp = ppConcat([terminate(space(), map((.pp), storage)), terminate( space(), fnquals.pps ),
     bty.pp, space(), mty.lpp, name.pp, mty.rpp, ppAttributesRHS(attrs), line(), terminate(cat(semi(), line()), decls.pps),
     text("{"), line(), nestlines(2,body.pp), text("}")]);
-
+  
   -- TODO: consider changing signature of this production to take
   -- SpecialSpecifiers instead of [SpecialSpecifier]
   --local specialSpecifiers :: SpecialSpecifiers =
   --   foldr(consSpecialSpecifier, nilSpecialSpecifier(), fnquals);
   fnquals.env = top.env;
   fnquals.returnType = top.returnType;  
- 
-
+  
+  
   local parameters :: Decorated Parameters =
     case mty of
     | functionTypeExprWithArgs(result, args, variadic, q) ->
@@ -406,14 +406,14 @@ top::FunctionDecl ::= storage::[StorageClass]  fnquals::SpecialSpecifiers  bty::
   retMty.env = mty.env;
   retMty.returnType = mty.returnType;
   retMty.baseType = bty.typerep;
-    
+  
   body.returnType =
     case mty of
     | functionTypeExprWithArgs(ret, _, _, _) -> just(retMty.typerep)
     | functionTypeExprWithoutArgs(ret, _, _) -> just(retMty.typerep)
     | _ -> nothing() -- Don't error here, this is caught in type checking
     end;
-
+  
   mty.env = addEnv(implicitDefs, openScopeEnv(addEnv(funcDefs, top.env)));
   decls.env = addEnv(parameters.defs, mty.env);
   body.env = addEnv(decls.defs ++ body.functionDefs, decls.env);
