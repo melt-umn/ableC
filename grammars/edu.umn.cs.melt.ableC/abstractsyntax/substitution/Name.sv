@@ -23,3 +23,15 @@ top::MaybeName ::=
 {
   propagate substituted;
 }
+
+aspect production consName
+top::Names ::= h::Name t::Names
+{
+  propagate substituted;
+}
+
+aspect production nilName
+top::Names ::=
+{
+  propagate substituted;
+}

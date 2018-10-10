@@ -159,7 +159,7 @@ attribute substitutions occurs on
   NumericConstant,
   MaybeExpr, Exprs, ExprOrTypeName,
   MaybeInitializer, Initializer, InitList, Init, Designator,
-  Name, MaybeName,
+  Name, MaybeName, Names,
   Stmt,
   TypeName, BaseTypeExpr, TypeModifierExpr, TypeNames,
   Qualifier, SpecialSpecifier,
@@ -207,6 +207,7 @@ attribute substituted<Init> occurs on Init;
 attribute substituted<Designator> occurs on Designator;
 attribute substituted<Name> occurs on Name;
 attribute substituted<MaybeName> occurs on MaybeName;
+attribute substituted<Names> occurs on Names;
 attribute substituted<Stmt> occurs on Stmt;
 attribute substituted<TypeName> occurs on TypeName;
 attribute substituted<BaseTypeExpr> occurs on BaseTypeExpr;

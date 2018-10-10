@@ -122,6 +122,26 @@ top::MaybeName ::=
   top.tagRefId = toString(genInt());
 }
 
+synthesized attribute names::[String];
+nonterminal Names with env, pps, names, count;
+flowtype Names = decorate {env}, pps {}, names {}, count {};
+
+abstract production consName
+top::Names ::= h::Name t::Names
+{
+  top.pps = h.pp :: t.pps;
+  top.names = h.name :: t.names;
+  top.count = 1 + t.count;
+}
+
+abstract production nilName
+top::Names ::=
+{
+  top.pps = [];
+  top.names = [];
+  top.count = 0;
+}
+
 function doNotDoValueRedeclarationCheck
 [Message] ::= t::Type
 {

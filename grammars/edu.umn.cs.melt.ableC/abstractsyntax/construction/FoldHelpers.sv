@@ -37,6 +37,12 @@ Exprs ::= l::[Expr]
   return foldr(consExpr, nilExpr(), l);
 }
 
+function foldName
+Names ::= l::[Name]
+{
+  return foldr(consName, nilName(), l);
+}
+
 function foldGenericAssoc
 GenericAssocs ::= l::[GenericAssoc]
 {
