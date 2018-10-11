@@ -570,8 +570,11 @@ top::TypeModifierExpr ::= wrapped::TypeModifierExpr
   top.freeVariables = wrapped.freeVariables;
 }
 
-nonterminal TypeNames with pps, host<TypeNames>, lifted<TypeNames>, env, typereps, count, errors, globalDecls, defs, returnType, freeVariables;
-flowtype TypeNames = decorate {env, returnType}, count {};
+autocopy attribute appendedTypeNames :: TypeNames;
+synthesized attribute appendedTypeNamesRes :: TypeNames;
+
+nonterminal TypeNames with pps, host<TypeNames>, lifted<TypeNames>, env, typereps, count, errors, globalDecls, defs, returnType, freeVariables, appendedTypeNames, appendedTypeNamesRes;
+flowtype TypeNames = decorate {env, returnType}, count {}, appendedTypeNamesRes {appendedTypeNames};
 
 abstract production consTypeName
 top::TypeNames ::= h::TypeName t::TypeNames
@@ -584,6 +587,7 @@ top::TypeNames ::= h::TypeName t::TypeNames
   top.errors := h.errors ++ t.errors;
   top.defs := h.defs ++ t.defs;
   top.freeVariables = h.freeVariables ++ t.freeVariables;
+  top.appendedTypeNamesRes = t.appendedTypeNamesRes;
   
   t.env = addEnv(h.defs, h.env);
 }
@@ -599,4 +603,12 @@ top::TypeNames ::=
   top.errors := [];
   top.defs := [];
   top.freeVariables = [];
+  top.appendedTypeNamesRes = top.appendedTypeNames;
+}
+
+function appendTypeNames
+TypeNames ::= e1::TypeNames e2::TypeNames
+{
+  e1.appendedTypeNames = e2;
+  return e1.appendedTypeNamesRes;
 }
