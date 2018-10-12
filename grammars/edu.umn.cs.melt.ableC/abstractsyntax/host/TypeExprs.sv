@@ -587,7 +587,7 @@ top::TypeNames ::= h::TypeName t::TypeNames
   top.errors := h.errors ++ t.errors;
   top.defs := h.defs ++ t.defs;
   top.freeVariables = h.freeVariables ++ t.freeVariables;
-  top.appendedTypeNamesRes = t.appendedTypeNamesRes;
+  top.appendedTypeNamesRes = consTypeName(h, t.appendedTypeNamesRes);
   
   t.env = addEnv(h.defs, h.env);
 }

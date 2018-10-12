@@ -136,7 +136,7 @@ top::Names ::= h::Name t::Names
   top.pps = h.pp :: t.pps;
   top.names = h.name :: t.names;
   top.count = 1 + t.count;
-  top.appendedNamesRes = t.appendedNamesRes;
+  top.appendedNamesRes = consName(h, t.appendedNamesRes);
 }
 
 abstract production nilName
