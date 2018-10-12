@@ -333,8 +333,8 @@ top::Declarator ::= msg::[Message]
   top.sourceLocation = loc("nowhere", -1, -1, -1, -1, -1, -1); -- TODO fix this? add locaiton maybe?
 }
 
-nonterminal FunctionDecl with pp, host<FunctionDecl>, lifted<FunctionDecl>, errors, globalDecls, defs, env, typerep, sourceLocation, returnType, freeVariables;
-flowtype FunctionDecl = decorate {env, returnType};
+nonterminal FunctionDecl with pp, host<FunctionDecl>, lifted<FunctionDecl>, errors, globalDecls, defs, env, typerep, name, sourceLocation, returnType, freeVariables;
+flowtype FunctionDecl = decorate {env, returnType}, name {}, sourceLocation {};
 
 abstract production functionDecl
 top::FunctionDecl ::= storage::[StorageClass]  fnquals::SpecialSpecifiers  bty::BaseTypeExpr mty::TypeModifierExpr  name::Name  attrs::Attributes  decls::Decls  body::Stmt
@@ -389,6 +389,7 @@ top::FunctionDecl ::= storage::[StorageClass]  fnquals::SpecialSpecifiers  bty::
     removeDefsFromNames(top.defs ++ parameters.defs ++ decls.defs ++ fnquals.defs, body.freeVariables);
   -- accumulate extension qualifiers on redeclaration
   top.typerep = name.valueMergeRedeclExtnQualifiers(mty.typerep);
+  top.name = name.name;
   top.sourceLocation = name.location;
   
   bty.givenRefId = nothing();
@@ -454,6 +455,7 @@ top::FunctionDecl ::= msg::[Message]
   top.defs := [];
   top.freeVariables = [];
   top.typerep = errorType();
+  top.name = "badFunctionDecl";
   top.sourceLocation = loc("nowhere", -1, -1, -1, -1, -1, -1); -- TODO fix this? add locaiton maybe?
 }
 
