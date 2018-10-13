@@ -49,12 +49,16 @@ autocopy attribute typeModifiersIn :: [TypeModifierExpr];
 {-- Used to set the refId for a declaration via __attribute__ -}
 autocopy attribute givenRefId :: Maybe<String>;
 
+{-- The declarations contained in this TypeExpr, corresponding to defs -}
+-- TODO: Missing defs/decls contained inside Parameters?
+synthesized attribute decls :: [Decl];
+
 {-- Util attributes -}
 synthesized attribute bty :: BaseTypeExpr;
 synthesized attribute mty :: TypeModifierExpr;
 
-nonterminal TypeName with env, typerep, bty, mty, pp, host<TypeName>, lifted<TypeName>, errors, globalDecls, defs, returnType, freeVariables;
-flowtype TypeName = decorate {env, returnType}, bty {}, mty {};
+nonterminal TypeName with env, typerep, bty, mty, pp, host<TypeName>, lifted<TypeName>, errors, globalDecls, decls, defs, returnType, freeVariables;
+flowtype TypeName = decorate {env, returnType}, bty {}, mty {}, decls {decorate};
 
 abstract production typeName
 top::TypeName ::= bty::BaseTypeExpr  mty::TypeModifierExpr
@@ -69,6 +73,7 @@ top::TypeName ::= bty::BaseTypeExpr  mty::TypeModifierExpr
   mty.typeModifiersIn = bty.typeModifiers;
   top.errors := bty.errors ++ mty.errors;
   top.globalDecls := bty.globalDecls ++ mty.globalDecls;
+  top.decls = bty.decls;
   top.defs := bty.defs;
   top.freeVariables = bty.freeVariables ++ mty.freeVariables;
 }
@@ -77,8 +82,8 @@ top::TypeName ::= bty::BaseTypeExpr  mty::TypeModifierExpr
 {--
  - Corresponds to types obtainable from a TypeSpecifiers.
  -}
-nonterminal BaseTypeExpr with env, typerep, pp, host<BaseTypeExpr>, lifted<BaseTypeExpr>, errors, globalDecls, typeModifiers, defs, givenRefId, returnType, freeVariables;
-flowtype BaseTypeExpr = decorate {env, givenRefId, returnType}, typeModifiers {decorate};
+nonterminal BaseTypeExpr with env, typerep, pp, host<BaseTypeExpr>, lifted<BaseTypeExpr>, errors, globalDecls, typeModifiers, decls, defs, givenRefId, returnType, freeVariables;
+flowtype BaseTypeExpr = decorate {env, givenRefId, returnType}, typeModifiers {decorate}, decls {decorate};
 
 abstract production errorTypeExpr
 top::BaseTypeExpr ::= msg::[Message]
@@ -89,6 +94,7 @@ top::BaseTypeExpr ::= msg::[Message]
   top.errors := msg;
   top.globalDecls := [];
   top.typeModifiers = [];
+  top.decls = [];
   top.defs := [];
   top.freeVariables = [];
 }
@@ -103,6 +109,7 @@ top::BaseTypeExpr ::= msg::[Message]  ty::BaseTypeExpr
   top.errors := msg ++ ty.errors;
   top.globalDecls := ty.globalDecls;
   top.typeModifiers = ty.typeModifiers;
+  top.decls = ty.decls;
   top.defs := ty.defs;
   top.freeVariables = ty.freeVariables;
 }
@@ -138,6 +145,7 @@ top::BaseTypeExpr ::= d::[Def]  bty::BaseTypeExpr
   top.errors := bty.errors;
   top.globalDecls := bty.globalDecls;
   top.typeModifiers = bty.typeModifiers;
+  top.decls = defsDecl(d) :: bty.decls;
   top.defs := d ++ bty.defs;
   top.freeVariables = bty.freeVariables;
   
@@ -159,6 +167,7 @@ top::BaseTypeExpr ::= bty::BaseTypeExpr  mty::TypeModifierExpr
   top.errors := bty.errors ++ mty.errors;
   top.globalDecls := bty.globalDecls ++ mty.globalDecls;
   top.typeModifiers = mty :: bty.typeModifiers;
+  top.decls = bty.decls;
   top.defs := bty.defs;
   top.freeVariables = bty.freeVariables ++ mty.freeVariables;
 }
@@ -174,6 +183,7 @@ top::BaseTypeExpr ::= q::Qualifiers  result::BuiltinType
   top.errors := q.errors;
   top.globalDecls := [];
   top.typeModifiers = [];
+  top.decls = [];
   top.defs := [];
   top.freeVariables = [];
   q.typeToQualify = top.typerep;
@@ -225,6 +235,7 @@ top::BaseTypeExpr ::= q::Qualifiers  kwd::StructOrEnumOrUnion  name::Name
   
   top.globalDecls := [];
   top.typeModifiers = [];
+  top.decls = [];
   
   top.defs :=
     case kwd, tags of
@@ -260,6 +271,7 @@ top::BaseTypeExpr ::= q::Qualifiers  def::StructDecl
   top.errors := q.errors ++ def.errors;
   top.globalDecls := def.globalDecls;
   top.typeModifiers = [];
+  top.decls = [typeExprDecl(nilAttribute(), top)];
   top.defs := def.defs;
   top.freeVariables = [];
   q.typeToQualify = top.typerep;
@@ -281,6 +293,7 @@ top::BaseTypeExpr ::= q::Qualifiers  def::UnionDecl
   top.errors := q.errors ++ def.errors;
   top.globalDecls := def.globalDecls;
   top.typeModifiers = [];
+  top.decls = [typeExprDecl(nilAttribute(), top)];
   top.defs := def.defs;
   top.freeVariables = [];
   q.typeToQualify = top.typerep;
@@ -296,6 +309,7 @@ top::BaseTypeExpr ::= q::Qualifiers  def::EnumDecl
   top.errors := q.errors ++ def.errors;
   top.globalDecls := def.globalDecls;
   top.typeModifiers = [];
+  top.decls = [typeExprDecl(nilAttribute(), top)];
   top.defs := def.defs;
   top.freeVariables = [];
   q.typeToQualify = top.typerep;
@@ -312,6 +326,7 @@ top::BaseTypeExpr ::= q::Qualifiers  sub::ExtType
   top.errors := q.errors;
   top.globalDecls := [];
   top.typeModifiers = [];
+  top.decls = [];
   top.defs := [];
   top.freeVariables = sub.freeVariables;
   q.typeToQualify = top.typerep;
@@ -331,6 +346,7 @@ top::BaseTypeExpr ::= q::Qualifiers  name::Name
   top.errors := q.errors;
   top.globalDecls := [];
   top.typeModifiers = [];
+  top.decls = [];
   top.defs := [];
   top.freeVariables = [];
   
@@ -378,6 +394,7 @@ top::BaseTypeExpr ::= q::Qualifiers  wrapped::TypeName
   top.errors := q.errors ++ wrapped.errors;
   top.globalDecls := wrapped.globalDecls;
   top.typeModifiers = [];
+  top.decls = wrapped.decls;
   top.defs := wrapped.defs;
   top.freeVariables = wrapped.freeVariables;
   q.typeToQualify = top.typerep;
@@ -393,6 +410,7 @@ top::BaseTypeExpr ::=
   top.errors := [];
   top.globalDecls := [];
   top.typeModifiers = [];
+  top.decls = [];
   top.defs := [];
   top.freeVariables = [];
   
@@ -407,6 +425,7 @@ top::BaseTypeExpr ::= q::Qualifiers  e::ExprOrTypeName
   top.errors := q.errors ++ e.errors;
   top.globalDecls := e.globalDecls;
   top.typeModifiers = [];
+  top.decls = [];
   top.defs := e.defs;
   top.freeVariables = e.freeVariables;
   q.typeToQualify = top.typerep;
@@ -573,8 +592,8 @@ top::TypeModifierExpr ::= wrapped::TypeModifierExpr
 autocopy attribute appendedTypeNames :: TypeNames;
 synthesized attribute appendedTypeNamesRes :: TypeNames;
 
-nonterminal TypeNames with pps, host<TypeNames>, lifted<TypeNames>, env, typereps, count, errors, globalDecls, defs, returnType, freeVariables, appendedTypeNames, appendedTypeNamesRes;
-flowtype TypeNames = decorate {env, returnType}, count {}, appendedTypeNamesRes {appendedTypeNames};
+nonterminal TypeNames with pps, host<TypeNames>, lifted<TypeNames>, env, typereps, count, errors, globalDecls, decls, defs, returnType, freeVariables, appendedTypeNames, appendedTypeNamesRes;
+flowtype TypeNames = decorate {env, returnType}, decls {decorate}, count {}, appendedTypeNamesRes {appendedTypeNames};
 
 abstract production consTypeName
 top::TypeNames ::= h::TypeName t::TypeNames
@@ -583,8 +602,9 @@ top::TypeNames ::= h::TypeName t::TypeNames
   top.pps = h.pp :: t.pps;
   top.typereps = h.typerep :: t.typereps;
   top.count = t.count + 1;
-  top.globalDecls := h.globalDecls ++ t.globalDecls;
   top.errors := h.errors ++ t.errors;
+  top.globalDecls := h.globalDecls ++ t.globalDecls;
+  top.decls = h.decls ++ t.decls;
   top.defs := h.defs ++ t.defs;
   top.freeVariables = h.freeVariables ++ t.freeVariables;
   top.appendedTypeNamesRes = consTypeName(h, t.appendedTypeNamesRes);
@@ -599,8 +619,9 @@ top::TypeNames ::=
   top.pps = [];
   top.typereps = [];
   top.count = 0;
-  top.globalDecls := [];
   top.errors := [];
+  top.globalDecls := [];
+  top.decls = [];
   top.defs := [];
   top.freeVariables = [];
   top.appendedTypeNamesRes = top.appendedTypeNames;
