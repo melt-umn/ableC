@@ -165,15 +165,30 @@ concrete productions top::InitialFunctionDefinition_c
     {
       ds.givenQualifiers = ds.typeQualifiers;
       d.givenType = ast:baseTypeExpr();
-      
-      local bt :: ast:BaseTypeExpr =
-        ast:figureOutTypeFromSpecifiers(ds.location, ds.typeQualifiers, ds.preTypeSpecifiers, ds.realTypeSpecifiers, ds.mutateTypeSpecifiers);
+      l.givenQualifiers = 
+        case d.ast of
+        | ast:functionTypeExprWithArgs(t, p, v, q) -> q
+        | ast:functionTypeExprWithoutArgs(t, v, q) -> q
+        end;
 
       local specialSpecifiers :: ast:SpecialSpecifiers =
         foldr(ast:consSpecialSpecifier, ast:nilSpecialSpecifier(), ds.specialSpecifiers);
+      
+      local bt :: ast:BaseTypeExpr =
+        ast:figureOutTypeFromSpecifiers(ds.location, ds.typeQualifiers, ds.preTypeSpecifiers, ds.realTypeSpecifiers, ds.mutateTypeSpecifiers);
+      
+      -- If this is a K&R-style declaration, attatch any function qualifiers to the first declaration instead
+      local mt :: ast:TypeModifierExpr =
+        case l.isDeclListEmpty, d.ast of
+        | false, ast:functionTypeExprWithArgs(t, p, v, q) ->
+          ast:functionTypeExprWithArgs(t, p, v, ast:nilQualifier())
+        | false, ast:functionTypeExprWithoutArgs(t, v, q) ->
+          ast:functionTypeExprWithoutArgs(t, v, ast:nilQualifier())
+        | _, mt -> mt
+        end;
 
       top.ast = 
-        ast:functionDecl(ds.storageClass, specialSpecifiers, bt, d.ast, d.declaredIdent, ds.attributes, ast:foldDecl(l.ast), top.givenStmt);
+        ast:functionDecl(ds.storageClass, specialSpecifiers, bt, mt, d.declaredIdent, ds.attributes, ast:foldDecl(l.ast), top.givenStmt);
     }
     action {
       -- Function are annoying because we have to open a scope, then add the
@@ -183,11 +198,27 @@ concrete productions top::InitialFunctionDefinition_c
 | d::Declarator_c  l::InitiallyUnqualifiedDeclarationList_c
     {
       d.givenType = ast:baseTypeExpr();
+      l.givenQualifiers = 
+        case d.ast of
+        | ast:functionTypeExprWithArgs(t, p, v, q) -> q
+        | ast:functionTypeExprWithoutArgs(t, v, q) -> q
+        end;
+      
       local bt :: ast:BaseTypeExpr =
         ast:figureOutTypeFromSpecifiers(d.location, ast:nilQualifier(), [], [], []);
+      
+      -- If this is a K&R-style declaration, attatch any function qualifiers to the first declaration instead
+      local mt :: ast:TypeModifierExpr =
+        case l.isDeclListEmpty, d.ast of
+        | false, ast:functionTypeExprWithArgs(t, p, v, q) ->
+          ast:functionTypeExprWithArgs(t, p, v, ast:nilQualifier())
+        | false, ast:functionTypeExprWithoutArgs(t, v, q) ->
+          ast:functionTypeExprWithoutArgs(t, v, ast:nilQualifier())
+        | _, mt -> mt
+        end;
 
       top.ast = 
-        ast:functionDecl([], ast:nilSpecialSpecifier(), bt, d.ast, d.declaredIdent, ast:nilAttribute(), ast:foldDecl(l.ast), top.givenStmt);
+        ast:functionDecl([], ast:nilSpecialSpecifier(), bt, mt, d.declaredIdent, ast:nilAttribute(), ast:foldDecl(l.ast), top.givenStmt);
     }
     action {
       -- Unfortunate duplication. This production is necessary for K&R compatibility
@@ -196,17 +227,58 @@ concrete productions top::InitialFunctionDefinition_c
       context = lh:beginFunctionScope(d.declaredIdent, d.declaredParamIdents, context);
     }
 
-closed nonterminal InitiallyUnqualifiedDeclaration_c with location, ast<ast:Decl>;
+closed nonterminal InitiallyUnqualifiedDeclaration_c with location, ast<ast:Decl>, givenQualifiers;
 concrete productions top::InitiallyUnqualifiedDeclaration_c
-| InitiallyUnqualifiedDeclarationSpecifiers_c  InitDeclaratorList_c  ';'
-    {  }
-| InitiallyUnqualifiedDeclarationSpecifiers_c  ';'
-    {  }
+| ds::InitiallyUnqualifiedDeclarationSpecifiers_c  idcl::InitDeclaratorList_c  ';'
+    {
+      ds.givenQualifiers = ast:qualifierCat(top.givenQualifiers, ds.typeQualifiers);
+      
+      local bt :: ast:BaseTypeExpr =
+        ast:figureOutTypeFromSpecifiers(ds.location, ds.typeQualifiers, ds.preTypeSpecifiers, ds.realTypeSpecifiers, ds.mutateTypeSpecifiers);
+      local dcls :: ast:Declarators =
+        ast:foldDeclarator(idcl.ast);
+      
+      top.ast = 
+        if ds.isTypedef then
+          if !null(ds.storageClass) then
+            ast:typedefDecls(ds.attributes, 
+              ast:warnTypeExpr(
+                [err(ds.location, "Typedef declaration also claims another storage class")],
+                bt),
+              dcls)
+          else
+            ast:typedefDecls(ds.attributes, bt, dcls)
+        else
+          ast:variableDecls(ds.storageClass, ds.attributes, bt, dcls);
+    }
+    action {
+      context =
+        if ds.isTypedef
+        then lh:addTypenamesToScope(idcl.declaredIdents, context)
+        else lh:addIdentsToScope(idcl.declaredIdents, context);
+    }
+| ds::InitiallyUnqualifiedDeclarationSpecifiers_c  ';'
+    { ds.givenQualifiers = ds.typeQualifiers;
+      top.ast =
+        ast:typeExprDecl(
+          ds.attributes,
+          ast:figureOutTypeFromSpecifiers(
+            ds.location,
+            ast:qualifierCat(top.givenQualifiers, ds.typeQualifiers),
+            ds.preTypeSpecifiers,
+            ds.realTypeSpecifiers,
+            ds.mutateTypeSpecifiers));
+    }
 
 
 synthesized attribute isDeclListEmpty :: Boolean;
 
-closed nonterminal InitiallyUnqualifiedDeclarationList_c with location, ast<[ast:Decl]>, isDeclListEmpty;
+{--
+ - C99 requires at least one declaration. We change this to be 0 or more
+ - since it's only use is in (our) InitialFunctionDefinition,
+ - where it's optional.
+ -}
+closed nonterminal InitiallyUnqualifiedDeclarationList_c with location, ast<[ast:Decl]>, isDeclListEmpty, givenQualifiers;
 concrete productions top::InitiallyUnqualifiedDeclarationList_c
 |
     { top.ast = [];
@@ -215,11 +287,6 @@ concrete productions top::InitiallyUnqualifiedDeclarationList_c
     { top.ast = h.ast :: t.ast;
       top.isDeclListEmpty = false; }
 
-{--
- - C99 requires at least one declaration. We change this to be 0 or more
- - since it's only use is in (our) InitialFunctionDefinition,
- - where it's optional.
- -}
 closed nonterminal DeclarationList_c with location, ast<[ast:Decl]>, isDeclListEmpty;
 concrete productions top::DeclarationList_c
 |
