@@ -333,8 +333,8 @@ top::Declarator ::= msg::[Message]
   top.sourceLocation = loc("nowhere", -1, -1, -1, -1, -1, -1); -- TODO fix this? add locaiton maybe?
 }
 
-nonterminal FunctionDecl with pp, host<FunctionDecl>, lifted<FunctionDecl>, errors, globalDecls, defs, env, typerep, sourceLocation, returnType, freeVariables;
-flowtype FunctionDecl = decorate {env, returnType};
+nonterminal FunctionDecl with pp, host<FunctionDecl>, lifted<FunctionDecl>, errors, globalDecls, defs, env, typerep, name, sourceLocation, returnType, freeVariables;
+flowtype FunctionDecl = decorate {env, returnType}, name {}, sourceLocation {};
 
 abstract production functionDecl
 top::FunctionDecl ::= storage::[StorageClass]  fnquals::SpecialSpecifiers  bty::BaseTypeExpr mty::TypeModifierExpr  name::Name  attrs::Attributes  decls::Decls  body::Stmt
@@ -344,15 +344,15 @@ top::FunctionDecl ::= storage::[StorageClass]  fnquals::SpecialSpecifiers  bty::
   top.pp = ppConcat([terminate(space(), map((.pp), storage)), terminate( space(), fnquals.pps ),
     bty.pp, space(), mty.lpp, name.pp, mty.rpp, ppAttributesRHS(attrs), line(), terminate(cat(semi(), line()), decls.pps),
     text("{"), line(), nestlines(2,body.pp), text("}")]);
-
+  
   -- TODO: consider changing signature of this production to take
   -- SpecialSpecifiers instead of [SpecialSpecifier]
   --local specialSpecifiers :: SpecialSpecifiers =
   --   foldr(consSpecialSpecifier, nilSpecialSpecifier(), fnquals);
   fnquals.env = top.env;
   fnquals.returnType = top.returnType;  
- 
-
+  
+  
   local parameters :: Decorated Parameters =
     case mty of
     | functionTypeExprWithArgs(result, args, variadic, q) ->
@@ -389,6 +389,7 @@ top::FunctionDecl ::= storage::[StorageClass]  fnquals::SpecialSpecifiers  bty::
     removeDefsFromNames(top.defs ++ parameters.defs ++ decls.defs ++ fnquals.defs, body.freeVariables);
   -- accumulate extension qualifiers on redeclaration
   top.typerep = name.valueMergeRedeclExtnQualifiers(mty.typerep);
+  top.name = name.name;
   top.sourceLocation = name.location;
   
   bty.givenRefId = nothing();
@@ -406,14 +407,14 @@ top::FunctionDecl ::= storage::[StorageClass]  fnquals::SpecialSpecifiers  bty::
   retMty.env = mty.env;
   retMty.returnType = mty.returnType;
   retMty.baseType = bty.typerep;
-    
+  
   body.returnType =
     case mty of
     | functionTypeExprWithArgs(ret, _, _, _) -> just(retMty.typerep)
     | functionTypeExprWithoutArgs(ret, _, _) -> just(retMty.typerep)
     | _ -> nothing() -- Don't error here, this is caught in type checking
     end;
-
+  
   mty.env = addEnv(implicitDefs, openScopeEnv(addEnv(funcDefs, top.env)));
   decls.env = addEnv(parameters.defs, mty.env);
   body.env = addEnv(decls.defs ++ body.functionDefs, decls.env);
@@ -454,6 +455,7 @@ top::FunctionDecl ::= msg::[Message]
   top.defs := [];
   top.freeVariables = [];
   top.typerep = errorType();
+  top.name = "badFunctionDecl";
   top.sourceLocation = loc("nowhere", -1, -1, -1, -1, -1, -1); -- TODO fix this? add locaiton maybe?
 }
 

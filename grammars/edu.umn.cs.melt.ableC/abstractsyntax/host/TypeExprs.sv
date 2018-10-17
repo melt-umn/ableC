@@ -287,7 +287,7 @@ top::BaseTypeExpr ::= q::Qualifiers  name::Name
 {
   propagate host, lifted;
   top.pp = ppConcat([terminate(space(), q.pps), name.pp ]);
-
+  
   top.typerep = 
     if !null(name.valueLookupCheck) then errorType()
     else noncanonicalType(typedefType(q, name.name, addQualifiers(q.qualifiers, name.valueItem.typerep)));
@@ -296,7 +296,7 @@ top::BaseTypeExpr ::= q::Qualifiers  name::Name
   top.typeModifiers = [];
   top.defs := [];
   top.freeVariables = [];
-
+  
   top.errors <- name.valueLookupCheck;
   top.errors <-
     if name.valueItem.isItemType then []
@@ -563,4 +563,3 @@ top::TypeNames ::=
   top.defs := [];
   top.freeVariables = [];
 }
-

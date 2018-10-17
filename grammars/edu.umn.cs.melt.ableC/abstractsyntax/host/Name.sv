@@ -122,6 +122,39 @@ top::MaybeName ::=
   top.tagRefId = toString(genInt());
 }
 
+synthesized attribute names :: [String];
+
+autocopy attribute appendedNames :: Names;
+synthesized attribute appendedNamesRes :: Names;
+
+nonterminal Names with env, pps, names, count, appendedNames, appendedNamesRes;
+flowtype Names = decorate {env}, pps {}, names {}, count {}, appendedNamesRes {appendedNames};
+
+abstract production consName
+top::Names ::= h::Name t::Names
+{
+  top.pps = h.pp :: t.pps;
+  top.names = h.name :: t.names;
+  top.count = 1 + t.count;
+  top.appendedNamesRes = t.appendedNamesRes;
+}
+
+abstract production nilName
+top::Names ::=
+{
+  top.pps = [];
+  top.names = [];
+  top.count = 0;
+  top.appendedNamesRes = top.appendedNames;
+}
+
+function appendNames
+Names ::= e1::Names e2::Names
+{
+  e1.appendedNames = e2;
+  return e1.appendedNamesRes;
+}
+
 function doNotDoValueRedeclarationCheck
 [Message] ::= t::Type
 {

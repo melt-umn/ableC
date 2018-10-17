@@ -293,3 +293,12 @@ closed nonterminal TypeIdName_c with location, ast<ast:Name>;
 concrete productions top::TypeIdName_c
 | t::TypeName_t
     { top.ast = ast:fromTy(t); }
+
+-- Seed follow set with additional terminals useful for extensions
+-- We include < here since it is allowed in C++
+terminal TypeIdName_NEVER_t 'TypeIdName_Never!!!nevernever1234567890';
+concrete productions top::Expr_c
+| 'TypeIdName_Never!!!nevernever1234567890' TypeIdName_c '<'
+    { top.ast = ast:errorExpr ( [ err (top.location, "Internal Error. " ++
+        "Placeholder for TypeIdName_c should not appear in the tree.") ],
+        location=top.location ) ; }
