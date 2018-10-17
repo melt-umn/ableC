@@ -166,7 +166,7 @@ concrete productions top::InitialFunctionDefinition_c
       ds.givenQualifiers = ds.typeQualifiers;
       d.givenType = ast:baseTypeExpr();
       l.givenQualifiers = 
-        case d.ast of
+        case baseMT of
         | ast:functionTypeExprWithArgs(t, p, v, q) -> q
         | ast:functionTypeExprWithoutArgs(t, v, q) -> q
         end;
@@ -178,8 +178,12 @@ concrete productions top::InitialFunctionDefinition_c
         ast:figureOutTypeFromSpecifiers(ds.location, ds.typeQualifiers, ds.preTypeSpecifiers, ds.realTypeSpecifiers, ds.mutateTypeSpecifiers);
       
       -- If this is a K&R-style declaration, attatch any function qualifiers to the first declaration instead
+      local baseMT  :: ast:TypeModifierExpr = d.ast;
+      baseMT.ast:baseType = ast:errorType();
+      baseMT.ast:typeModifiersIn = [];
+      baseMT.ast:returnType = nothing();
       local mt :: ast:TypeModifierExpr =
-        case l.isDeclListEmpty, d.ast of
+        case l.isDeclListEmpty, baseMT of
         | false, ast:functionTypeExprWithArgs(t, p, v, q) ->
           ast:functionTypeExprWithArgs(t, p, v, ast:nilQualifier())
         | false, ast:functionTypeExprWithoutArgs(t, v, q) ->
@@ -199,7 +203,7 @@ concrete productions top::InitialFunctionDefinition_c
     {
       d.givenType = ast:baseTypeExpr();
       l.givenQualifiers = 
-        case d.ast of
+        case baseMT of
         | ast:functionTypeExprWithArgs(t, p, v, q) -> q
         | ast:functionTypeExprWithoutArgs(t, v, q) -> q
         end;
@@ -208,8 +212,12 @@ concrete productions top::InitialFunctionDefinition_c
         ast:figureOutTypeFromSpecifiers(d.location, ast:nilQualifier(), [], [], []);
       
       -- If this is a K&R-style declaration, attatch any function qualifiers to the first declaration instead
+      local baseMT  :: ast:TypeModifierExpr = d.ast;
+      baseMT.ast:baseType = ast:errorType();
+      baseMT.ast:typeModifiersIn = [];
+      baseMT.ast:returnType = nothing();
       local mt :: ast:TypeModifierExpr =
-        case l.isDeclListEmpty, d.ast of
+        case l.isDeclListEmpty, baseMT of
         | false, ast:functionTypeExprWithArgs(t, p, v, q) ->
           ast:functionTypeExprWithArgs(t, p, v, ast:nilQualifier())
         | false, ast:functionTypeExprWithoutArgs(t, v, q) ->
@@ -227,6 +235,21 @@ concrete productions top::InitialFunctionDefinition_c
       context = lh:beginFunctionScope(d.declaredIdent, d.declaredParamIdents, context);
     }
 
+{--
+ - Due to the addtion of our custom (C++-style) syntax for writing type
+ - qualifiers on functions, we must deal with the conflict of whether function
+ - qualifiers should actually be attatched to the first declaration in the
+ - declaration list. We want to always parse K&R-style programs correctly, but
+ - we don't care about allowing function qualifiers on K&R-style function
+ - declarations.
+ - To achieve this, we choose to disallow type qualifiers from ocurring at the
+ - beginning of the first declaration in the declaration list, and attaching
+ - any function qualifiers to the first declaration if there is a declaration
+ - list present while constructing the abstract syntax.  This is prefered to
+ - the approach of disallowing function qualifiers on function declarations and
+ - attaching any qualifiers from a single 'declaration' with no specifiers, as
+ - that would require significantly more invasive grammar modifications. 
+ -}
 closed nonterminal InitiallyUnqualifiedDeclaration_c with location, ast<ast:Decl>, givenQualifiers;
 concrete productions top::InitiallyUnqualifiedDeclaration_c
 | ds::InitiallyUnqualifiedDeclarationSpecifiers_c  idcl::InitDeclaratorList_c  ';'
