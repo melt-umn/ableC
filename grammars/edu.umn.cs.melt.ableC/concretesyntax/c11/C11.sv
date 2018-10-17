@@ -91,25 +91,21 @@ concrete productions top::GenericAssoc_c
 
 
 -- Atomic
-terminal C11_Atomic_t '_Atomic' lexer classes {Ckeyword};
-
 -- Whenever _Atomic is immediately followed by '(', it's a TypeSpecifier,
--- instead of a TypeQualifier. We accomplish this by recognizing '(' as
--- a different terminal in that parsing context.
-
--- NOTE: we use this kludge [\(] to make the regex different from '('
--- so that we don't break normal syntax using '(' in production signatures
--- (this terminal has a different, if equivalent, regex, so '(' doesn't resolve to it)
-terminal C11_Atomic_LParen_t /[\(]/;
-
-disambiguate C11_Atomic_LParen_t, LParen_t
-{ pluck C11_Atomic_LParen_t; }
-
+-- instead of a TypeQualifier. This leads to an ambiguity, since we must be
+-- able to distinguish between specifiers and qualifiers without lookahead
+-- (due to our new syntax for type qualifiers on functions.)
+-- We accomplish this by recognizing '_Atomic (' as
+-- a different terminal, that will be matched preferentially due to maximal
+-- munch.
 -- One could imagine an alternative solution involving terminal precedence,
 -- but that would require the original '(' to have a precedence!
 
+terminal C11_Atomic_t '_Atomic' lexer classes {Ckeyword};
+terminal C11_Atomic_Specifier_t /_Atomic[\t\ \r\n]*\(/ lexer classes {Ckeyword};
+
 concrete productions top::TypeSpecifier_c
-| '_Atomic' C11_Atomic_LParen_t  t::TypeName_c ')'
+| C11_Atomic_Specifier_t t::TypeName_c ')'
     { top.realTypeSpecifiers = [ast:atomicTypeExpr(top.givenQualifiers, t.ast)];
       top.preTypeSpecifiers = []; }
 
