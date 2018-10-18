@@ -181,39 +181,136 @@ concrete productions top::Expr_c
  -}
 closed nonterminal InitialFunctionDefinition_c with location, ast<ast:FunctionDecl>, givenStmt;
 concrete productions top::InitialFunctionDefinition_c
-| ds::DeclarationSpecifiers_c  d::Declarator_c  l::DeclarationList_c
+| ds::DeclarationSpecifiers_c  d::Declarator_c  l::InitiallyUnqualifiedDeclarationList_c
     {
       ds.givenQualifiers = ds.typeQualifiers;
       d.givenType = ast:baseTypeExpr();
-      
-      local bt :: ast:BaseTypeExpr =
-        ast:figureOutTypeFromSpecifiers(ds.location, ds.typeQualifiers, ds.preTypeSpecifiers, ds.realTypeSpecifiers, ds.mutateTypeSpecifiers);
+      l.givenQualifiers = 
+        case baseMT of
+        | ast:functionTypeExprWithArgs(t, p, v, q) -> q
+        | ast:functionTypeExprWithoutArgs(t, v, q) -> q
+        end;
 
       local specialSpecifiers :: ast:SpecialSpecifiers =
         foldr(ast:consSpecialSpecifier, ast:nilSpecialSpecifier(), ds.specialSpecifiers);
+      
+      local bt :: ast:BaseTypeExpr =
+        ast:figureOutTypeFromSpecifiers(ds.location, ds.typeQualifiers, ds.preTypeSpecifiers, ds.realTypeSpecifiers, ds.mutateTypeSpecifiers);
+      
+      -- If this is a K&R-style declaration, attatch any function qualifiers to the first declaration instead
+      local baseMT  :: ast:TypeModifierExpr = d.ast;
+      baseMT.ast:baseType = ast:errorType();
+      baseMT.ast:typeModifiersIn = [];
+      baseMT.ast:returnType = nothing();
+      local mt :: ast:TypeModifierExpr =
+        case l.isDeclListEmpty, baseMT of
+        | false, ast:functionTypeExprWithArgs(t, p, v, q) ->
+          ast:functionTypeExprWithArgs(t, p, v, ast:nilQualifier())
+        | false, ast:functionTypeExprWithoutArgs(t, v, q) ->
+          ast:functionTypeExprWithoutArgs(t, v, ast:nilQualifier())
+        | _, mt -> mt
+        end;
 
       top.ast = 
-        ast:functionDecl(ds.storageClass, specialSpecifiers, bt, d.ast, d.declaredIdent, ds.attributes, ast:foldDecl(l.ast), top.givenStmt);
+        ast:functionDecl(ds.storageClass, specialSpecifiers, bt, mt, d.declaredIdent, ds.attributes, ast:foldDecl(l.ast), top.givenStmt);
     }
     action {
       -- Function are annoying because we have to open a scope, then add the
       -- parameters, and close it after the brace.
       context = lh:beginFunctionScope(d.declaredIdent, d.declaredParamIdents, context);
     }
-| d::Declarator_c  l::DeclarationList_c
+| d::Declarator_c  l::InitiallyUnqualifiedDeclarationList_c
     {
       d.givenType = ast:baseTypeExpr();
+      l.givenQualifiers = 
+        case baseMT of
+        | ast:functionTypeExprWithArgs(t, p, v, q) -> q
+        | ast:functionTypeExprWithoutArgs(t, v, q) -> q
+        end;
+      
       local bt :: ast:BaseTypeExpr =
         ast:figureOutTypeFromSpecifiers(d.location, ast:nilQualifier(), [], [], []);
+      
+      -- If this is a K&R-style declaration, attatch any function qualifiers to the first declaration instead
+      local baseMT  :: ast:TypeModifierExpr = d.ast;
+      baseMT.ast:baseType = ast:errorType();
+      baseMT.ast:typeModifiersIn = [];
+      baseMT.ast:returnType = nothing();
+      local mt :: ast:TypeModifierExpr =
+        case l.isDeclListEmpty, baseMT of
+        | false, ast:functionTypeExprWithArgs(t, p, v, q) ->
+          ast:functionTypeExprWithArgs(t, p, v, ast:nilQualifier())
+        | false, ast:functionTypeExprWithoutArgs(t, v, q) ->
+          ast:functionTypeExprWithoutArgs(t, v, ast:nilQualifier())
+        | _, mt -> mt
+        end;
 
       top.ast = 
-        ast:functionDecl([], ast:nilSpecialSpecifier(), bt, d.ast, d.declaredIdent, ast:nilAttribute(), ast:foldDecl(l.ast), top.givenStmt);
+        ast:functionDecl([], ast:nilSpecialSpecifier(), bt, mt, d.declaredIdent, ast:nilAttribute(), ast:foldDecl(l.ast), top.givenStmt);
     }
     action {
       -- Unfortunate duplication. This production is necessary for K&R compatibility
       -- We can't make it a proper optional nonterminal, since that requires a reduce far too early.
       -- (i.e. LALR conflicts)
       context = lh:beginFunctionScope(d.declaredIdent, d.declaredParamIdents, context);
+    }
+
+{--
+ - Due to the addtion of our custom (C++-style) syntax for writing type
+ - qualifiers on functions, we must deal with the conflict of whether function
+ - qualifiers should actually be attatched to the first declaration in the
+ - declaration list. We want to always parse K&R-style programs correctly, but
+ - we don't care about allowing function qualifiers on K&R-style function
+ - declarations.
+ - To achieve this, we choose to disallow type qualifiers from ocurring at the
+ - beginning of the first declaration in the declaration list, and attaching
+ - any function qualifiers to the first declaration if there is a declaration
+ - list present while constructing the abstract syntax.  This is prefered to
+ - the approach of disallowing function qualifiers on function declarations and
+ - attaching any qualifiers from a single 'declaration' with no specifiers, as
+ - that would require significantly more invasive grammar modifications. 
+ -}
+closed nonterminal InitiallyUnqualifiedDeclaration_c with location, ast<ast:Decl>, givenQualifiers;
+concrete productions top::InitiallyUnqualifiedDeclaration_c
+| ds::InitiallyUnqualifiedDeclarationSpecifiers_c  idcl::InitDeclaratorList_c  ';'
+    {
+      ds.givenQualifiers = ast:qualifierCat(top.givenQualifiers, ds.typeQualifiers);
+      
+      local bt :: ast:BaseTypeExpr =
+        ast:figureOutTypeFromSpecifiers(ds.location, ds.typeQualifiers, ds.preTypeSpecifiers, ds.realTypeSpecifiers, ds.mutateTypeSpecifiers);
+      local dcls :: ast:Declarators =
+        ast:foldDeclarator(idcl.ast);
+      
+      top.ast = 
+        if ds.isTypedef then
+          if !null(ds.storageClass) then
+            ast:typedefDecls(ds.attributes, 
+              ast:warnTypeExpr(
+                [err(ds.location, "Typedef declaration also claims another storage class")],
+                bt),
+              dcls)
+          else
+            ast:typedefDecls(ds.attributes, bt, dcls)
+        else
+          ast:variableDecls(ds.storageClass, ds.attributes, bt, dcls);
+    }
+    action {
+      context =
+        if ds.isTypedef
+        then lh:addTypenamesToScope(idcl.declaredIdents, context)
+        else lh:addIdentsToScope(idcl.declaredIdents, context);
+    }
+| ds::InitiallyUnqualifiedDeclarationSpecifiers_c  ';'
+    { ds.givenQualifiers = ds.typeQualifiers;
+      top.ast =
+        ast:typeExprDecl(
+          ds.attributes,
+          ast:figureOutTypeFromSpecifiers(
+            ds.location,
+            ast:qualifierCat(top.givenQualifiers, ds.typeQualifiers),
+            ds.preTypeSpecifiers,
+            ds.realTypeSpecifiers,
+            ds.mutateTypeSpecifiers));
     }
 
 
@@ -224,6 +321,15 @@ synthesized attribute isDeclListEmpty :: Boolean;
  - since it's only use is in (our) InitialFunctionDefinition,
  - where it's optional.
  -}
+closed nonterminal InitiallyUnqualifiedDeclarationList_c with location, ast<[ast:Decl]>, isDeclListEmpty, givenQualifiers;
+concrete productions top::InitiallyUnqualifiedDeclarationList_c
+|
+    { top.ast = [];
+      top.isDeclListEmpty = true; }
+| h::InitiallyUnqualifiedDeclaration_c  t::DeclarationList_c
+    { top.ast = h.ast :: t.ast;
+      top.isDeclListEmpty = false; }
+
 closed nonterminal DeclarationList_c with location, ast<[ast:Decl]>, isDeclListEmpty;
 concrete productions top::DeclarationList_c
 |
@@ -337,14 +443,12 @@ concrete productions top::DirectDeclarator_c
       top.ast = dd.ast;
     }
 
--- TODO: any better proposal for concrete syntax for qualifiers on functional types?
-terminal FunctionQualifiers_t '__function_qualifiers' lexer classes {Ckeyword};
 
 closed nonterminal OptTypeQualifierList_c with location, typeQualifiers;
 concrete productions top::OptTypeQualifierList_c
 |
     { top.typeQualifiers = ast:nilQualifier(); }
-| '__function_qualifiers' '(' q::TypeQualifierList_c ')'
+| q::TypeQualifierList_c
     { top.typeQualifiers = q.typeQualifiers; }
 
 

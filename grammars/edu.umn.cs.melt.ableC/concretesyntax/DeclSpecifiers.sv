@@ -128,6 +128,62 @@ concrete productions top::DeclarationSpecifiers_c
       top.mutateTypeSpecifiers = [];
       top.attributes = ast:nilAttribute(); }
 
+closed nonterminal InitiallyUnqualifiedDeclarationSpecifiers_c with location, isTypedef, storageClass, preTypeSpecifiers, realTypeSpecifiers, typeQualifiers, specialSpecifiers, givenQualifiers, mutateTypeSpecifiers, attributes;
+concrete productions top::InitiallyUnqualifiedDeclarationSpecifiers_c
+| h::StorageClassSpecifier_c  t::DeclarationSpecifiers_c
+    { top.isTypedef = h.isTypedef || t.isTypedef;
+      top.storageClass = h.storageClass ++ t.storageClass;
+      top.preTypeSpecifiers = t.preTypeSpecifiers;
+      top.realTypeSpecifiers = t.realTypeSpecifiers;
+      top.typeQualifiers = t.typeQualifiers;
+      top.specialSpecifiers = t.specialSpecifiers;
+      top.mutateTypeSpecifiers = t.mutateTypeSpecifiers;
+      top.attributes = t.attributes; }
+| h::StorageClassSpecifier_c
+    { top.isTypedef = h.isTypedef;
+      top.storageClass = h.storageClass;
+      top.preTypeSpecifiers = [];
+      top.realTypeSpecifiers = [];
+      top.typeQualifiers = ast:nilQualifier();
+      top.specialSpecifiers = [];
+      top.mutateTypeSpecifiers = [];
+      top.attributes = ast:nilAttribute(); }
+| h::TypeSpecifier_c  t::DeclarationSpecifiers_c
+    { top.isTypedef = t.isTypedef;
+      top.storageClass = t.storageClass;
+      top.preTypeSpecifiers = h.preTypeSpecifiers ++ t.preTypeSpecifiers;
+      top.realTypeSpecifiers = h.realTypeSpecifiers ++ t.realTypeSpecifiers;
+      top.typeQualifiers = t.typeQualifiers;
+      top.specialSpecifiers = t.specialSpecifiers;
+      top.mutateTypeSpecifiers = t.mutateTypeSpecifiers;
+      top.attributes = t.attributes; }
+| h::TypeSpecifier_c
+    { top.isTypedef = false;
+      top.storageClass = [];
+      top.preTypeSpecifiers = h.preTypeSpecifiers;
+      top.realTypeSpecifiers = h.realTypeSpecifiers;
+      top.typeQualifiers = ast:nilQualifier();
+      top.specialSpecifiers = [];
+      top.mutateTypeSpecifiers = [];
+      top.attributes = ast:nilAttribute(); }
+| h::FunctionSpecifier_c  t::DeclarationSpecifiers_c
+    { top.isTypedef = t.isTypedef;
+      top.storageClass = t.storageClass;
+      top.preTypeSpecifiers = t.preTypeSpecifiers;
+      top.realTypeSpecifiers = t.realTypeSpecifiers;
+      top.typeQualifiers = t.typeQualifiers; 
+      top.specialSpecifiers = h.specialSpecifiers ++ t.specialSpecifiers;
+      top.mutateTypeSpecifiers = t.mutateTypeSpecifiers;
+      top.attributes = t.attributes; }
+| h::FunctionSpecifier_c
+    { top.isTypedef = false;
+      top.storageClass = [];
+      top.preTypeSpecifiers = [];
+      top.realTypeSpecifiers = [];
+      top.typeQualifiers = ast:nilQualifier();
+      top.specialSpecifiers = h.specialSpecifiers;
+      top.mutateTypeSpecifiers = [];
+      top.attributes = ast:nilAttribute(); }
 
 closed nonterminal SpecifierQualifierList_c with location, preTypeSpecifiers, realTypeSpecifiers, typeQualifiers, givenQualifiers, mutateTypeSpecifiers, specialSpecifiers, attributes;
 concrete productions top::SpecifierQualifierList_c

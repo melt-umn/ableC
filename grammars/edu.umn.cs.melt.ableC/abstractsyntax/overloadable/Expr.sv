@@ -48,7 +48,7 @@ top::host:Expr ::= f::host:Expr  a::host:Exprs
     | nothing() -> nothing()
     end;
   
-  local host::host:Expr = host:callExpr(f, a, location=top.location);
+  local host::host:Expr = inj:callExpr(f, a, location=top.location);
   forwards to
     case orElse(f.callProd, rewriteProd) of
       just(prod) -> host:transformedExpr(host, prod(a, top.location), location=top.location)
