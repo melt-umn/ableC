@@ -42,7 +42,7 @@ Pair<Expr Expr> ::= l::[LhsOrRhsRuntimeMod]  lhs::Decorated Expr  rhs::Decorated
   mods.lhsToModify = tmpLhs;
   mods.rhsToModify = tmpRhs;
 
-  -- copy lhs/rhs to temps to prevent being evaluated more than once
+  -- copy lhs/rhs to tmps to prevent being evaluated more than once
   local modLhs :: Expr =
     if null(filter((.isLhs), l))
     then new(lhs)
@@ -110,20 +110,14 @@ function applyMods
 Expr ::= l::[RuntimeMod] e::Decorated Expr
 {
   local tmpName :: String = "_tmp" ++ toString(genInt());
-  local tmp :: Expr = declRefExpr(name(tmpName, location=e.location), location=e.location);
+  local tmpDecl :: Stmt = mkDecl(tmpName, e.typerep, new(e), e.location);
 
   local mods :: RuntimeMods = foldr(consRuntimeMod, nilRuntimeMod(), l);
-  mods.exprToModify = tmp;
+  mods.exprToModify = declRefExpr(name(tmpName, location=e.location), location=e.location);
 
-  -- copy to temp to prevent being evaluated more than once
   local modExpr :: Expr =
     if null(l) then new(e)
-    else
-      stmtExpr(
-        mkDecl(tmpName, e.typerep, new(e), e.location),
-        mods.modExpr,
-        location=e.location
-      );
+    else stmtExpr(tmpDecl, mods.modExpr, location=e.location);
 
   return modExpr;
 }

@@ -46,7 +46,7 @@ top::host:Expr ::= f::host:Expr  a::host:Exprs
   forwards to
     if      option1.isJust then option1.fromJust
     else if option2.isJust then option2.fromJust
-    else host:callExpr(f, a, location=top.location);
+    else inj:callExpr(f, a, location=top.location);
 }
 abstract production memberExpr
 top::host:Expr ::= lhs::host:Expr  deref::Boolean  rhs::host:Name
