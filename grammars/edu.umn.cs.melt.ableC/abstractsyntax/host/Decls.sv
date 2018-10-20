@@ -360,7 +360,7 @@ top::FunctionDecl ::= storage::[StorageClass]  fnquals::SpecialSpecifiers  bty::
     | _ -> decorate nilParameters() with { env = top.env; returnType = top.returnType; position = 0; }
     end;
   
-  local funcDefs::[Def] = bty.defs ++ [valueDef(name.name, functionValueItem(top))];
+  local funcDefs::[Def] = bty.defs ++ mty.defs ++ [valueDef(name.name, functionValueItem(top))];
   production attribute implicitDefs::[Def] with ++;
   implicitDefs := [miscDef("this_func", currentFunctionItem(name, top))];
   
@@ -416,7 +416,7 @@ top::FunctionDecl ::= storage::[StorageClass]  fnquals::SpecialSpecifiers  bty::
     end;
   
   mty.env = addEnv(implicitDefs, openScopeEnv(addEnv(funcDefs, top.env)));
-  decls.env = addEnv(parameters.defs, mty.env);
+  decls.env = addEnv(parameters.functionDefs, mty.env);
   body.env = addEnv(decls.defs ++ body.functionDefs, decls.env);
   
   decls.isTopLevel = false;
@@ -462,7 +462,7 @@ top::FunctionDecl ::= msg::[Message]
 synthesized attribute len::Integer;
 inherited attribute position::Integer;
 
-nonterminal Parameters with typereps, pps, count, host<Parameters>, lifted<Parameters>, errors, globalDecls, defs, env, returnType, position, freeVariables, appendedParameters, appendedParametersRes;
+nonterminal Parameters with typereps, pps, count, host<Parameters>, lifted<Parameters>, errors, globalDecls, decls, defs, functionDefs, env, returnType, position, freeVariables, appendedParameters, appendedParametersRes;
 flowtype Parameters = decorate {env, returnType, position}, appendedParametersRes {appendedParameters};
 
 autocopy attribute appendedParameters :: Parameters;
@@ -477,7 +477,9 @@ top::Parameters ::= h::ParameterDecl  t::Parameters
   top.typereps = h.typerep :: t.typereps;
   top.errors := h.errors ++ t.errors;
   top.globalDecls := h.globalDecls ++ t.globalDecls;
+  top.decls = h.decls ++ t.decls;
   top.defs := h.defs ++ t.defs;
+  top.functionDefs := h.functionDefs ++ t.functionDefs;
   top.freeVariables =
     h.freeVariables ++
     removeDefsFromNames(h.defs, t.freeVariables);
@@ -497,7 +499,9 @@ top::Parameters ::=
   top.typereps = [];
   top.errors := [];
   top.globalDecls := [];
+  top.decls = [];
   top.defs := [];
+  top.functionDefs := [];
   top.freeVariables = [];
   top.appendedParametersRes = top.appendedParameters;
 }
@@ -512,7 +516,7 @@ Parameters ::= p1::Parameters p2::Parameters
 -- TODO: move these, later
 synthesized attribute paramname :: Maybe<Name>;
 
-nonterminal ParameterDecl with paramname, typerep, pp, host<ParameterDecl>, lifted<ParameterDecl>, errors, globalDecls, defs, env, position, sourceLocation, returnType, freeVariables;
+nonterminal ParameterDecl with paramname, typerep, pp, host<ParameterDecl>, lifted<ParameterDecl>, errors, globalDecls, decls, defs, functionDefs, env, position, sourceLocation, returnType, freeVariables;
 flowtype ParameterDecl = decorate {env, returnType, position}, paramname {};
 
 abstract production parameterDecl
@@ -530,7 +534,9 @@ top::ParameterDecl ::= storage::[StorageClass]  bty::BaseTypeExpr  mty::TypeModi
     end;
   top.errors := bty.errors ++ mty.errors;
   top.globalDecls := bty.globalDecls ++ mty.globalDecls;
-  top.defs := bty.defs ++
+  top.decls = bty.decls ++ mty.decls;
+  top.defs := bty.defs ++ mty.defs;
+  top.functionDefs :=
     case name.maybename of
     | just(n) -> [valueDef(n.name, parameterValueItem(top))]
     | _ -> []

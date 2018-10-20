@@ -62,6 +62,9 @@ flowtype defs {decorate} on
   MaybeExpr, Exprs, ExprOrTypeName,
   Stmt,
   MaybeInitializer, Initializer, InitList, Init, Designator;
+flowtype functionDefs {decorate} on
+  Parameters, ParameterDecl;
+-- Empty within function bodies since functionDefs is used in computing the env
 flowtype functionDefs {} on
   Stmt;
 flowtype localDefs {decorate} on
