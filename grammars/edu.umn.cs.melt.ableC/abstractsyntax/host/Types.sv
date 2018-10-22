@@ -399,8 +399,8 @@ Parameters ::= args::[Type]
 abstract production extType
 top::Type ::= q::Qualifiers  sub::ExtType
 {
-  top.lpp = ppConcat([ terminate(space(), q.pps), sub.pp ]);
-  top.rpp = notext();
+  top.lpp = sub.lpp;
+  top.rpp = sub.rpp;
   top.host = sub.host;
   top.baseTypeExpr = sub.baseTypeExpr;
   top.typeModifierExpr = sub.typeModifierExpr;
@@ -435,8 +435,8 @@ inherited attribute givenQualifiers::Qualifiers;
 -- t1.isEqualTo(t2) iff t1.mangledName == t2.mangledName
 synthesized attribute isEqualTo::(Boolean ::= ExtType);
 
-closed nonterminal ExtType with givenQualifiers, pp, host<Type>, baseTypeExpr, typeModifierExpr, mangledName, isEqualTo, integerPromotions, defaultArgumentPromotions, defaultLvalueConversion, defaultFunctionArrayLvalueConversion, isIntegerType, isScalarType, isArithmeticType, maybeRefId, freeVariables;
-flowtype ExtType = decorate {givenQualifiers}, baseTypeExpr {decorate}, typeModifierExpr {decorate}, isEqualTo {}, integerPromotions {decorate}, defaultArgumentPromotions {decorate}, defaultLvalueConversion {decorate}, defaultFunctionArrayLvalueConversion {decorate}, isIntegerType {}, isScalarType {}, isArithmeticType {}, maybeRefId {};
+closed nonterminal ExtType with givenQualifiers, pp, lpp, rpp, host<Type>, baseTypeExpr, typeModifierExpr, mangledName, isEqualTo, integerPromotions, defaultArgumentPromotions, defaultLvalueConversion, defaultFunctionArrayLvalueConversion, isIntegerType, isScalarType, isArithmeticType, maybeRefId, freeVariables;
+flowtype ExtType = decorate {givenQualifiers}, lpp {givenQualifiers}, rpp {givenQualifiers}, baseTypeExpr {decorate}, typeModifierExpr {decorate}, isEqualTo {}, integerPromotions {decorate}, defaultArgumentPromotions {decorate}, defaultLvalueConversion {decorate}, defaultFunctionArrayLvalueConversion {decorate}, isIntegerType {}, isScalarType {}, isArithmeticType {}, maybeRefId {};
 
 -- Forward flowtype is empty, since extensions would primarilly introduce new non-forwarding
 -- productions on ExtType, and we would like to be able to pattern match on these.
@@ -445,6 +445,8 @@ flowtype forward {} on ExtType;
 aspect default production
 top::ExtType ::=
 {
+  top.lpp = ppConcat([ terminate(space(), top.givenQualifiers.pps), top.pp ]);
+  top.rpp = notext();
   top.baseTypeExpr = extTypeExpr(top.givenQualifiers, top);
   top.typeModifierExpr = baseTypeExpr();
 
