@@ -78,6 +78,7 @@ nonterminal Decl with pp, host<Decl>, lifted<Decl>, errors, globalDecls, unfolde
 flowtype Decl = decorate {env, isTopLevel, returnType};
 
 {-- Pass down from top-level declaration the list of attribute to each name-declaration -}
+autocopy attribute givenStorageClasses :: [StorageClass];
 autocopy attribute givenAttributes :: Attributes;
 
 aspect default production
@@ -116,11 +117,15 @@ top::Decl ::= d::[Def]
 abstract production variableDecls
 top::Decl ::= storage::[StorageClass]  attrs::Attributes  ty::BaseTypeExpr  dcls::Declarators
 {
-  propagate host, lifted;
+  propagate host;
   top.pp = ppConcat(
     terminate(space(), map((.pp), storage)) ::
       ppAttributes(attrs) ::
       [ty.pp, space(), ppImplode(text(", "), dcls.pps), semi()]);
+  top.lifted =
+    if dcls.hasModifiedTypeExpr
+    then decls(foldDecl(ty.decls ++ dcls.liftedDecls))
+    else variableDecls(storage, attrs.lifted, ty.lifted, dcls.lifted);
   top.errors := ty.errors ++ dcls.errors;
   top.globalDecls := ty.globalDecls ++ dcls.globalDecls;
   top.defs := ty.defs ++ dcls.defs;
@@ -131,6 +136,7 @@ top::Decl ::= storage::[StorageClass]  attrs::Attributes  ty::BaseTypeExpr  dcls
   dcls.baseType = ty.typerep;
   dcls.typeModifiersIn = ty.typeModifiers;
   dcls.isTypedef = false;
+  dcls.givenStorageClasses = storage;
   dcls.givenAttributes = attrs;
 }
 
@@ -149,8 +155,12 @@ top::Decl ::= attrs::Attributes ty::BaseTypeExpr
 abstract production typedefDecls
 top::Decl ::= attrs::Attributes  ty::BaseTypeExpr  dcls::Declarators
 {
-  propagate host, lifted;
+  propagate host;
   top.pp = ppConcat([text("typedef "), ppAttributes(attrs), ty.pp, space(), ppImplode(text(", "), dcls.pps), semi()]);
+  top.lifted =
+    if dcls.hasModifiedTypeExpr
+    then decls(foldDecl(ty.decls ++ dcls.liftedDecls))
+    else typedefDecls(attrs.lifted, ty.lifted, dcls.lifted);
   top.errors := ty.errors ++ dcls.errors;
   top.globalDecls := ty.globalDecls ++ dcls.globalDecls;
   top.defs := ty.defs ++ dcls.defs;
@@ -161,13 +171,15 @@ top::Decl ::= attrs::Attributes  ty::BaseTypeExpr  dcls::Declarators
   dcls.baseType = ty.typerep;
   dcls.typeModifiersIn = ty.typeModifiers;
   dcls.isTypedef = true;
+  dcls.givenStorageClasses = [];
   dcls.givenAttributes = attrs;
 }
 
 abstract production functionDeclaration
 top::Decl ::= f::FunctionDecl
 {
-  propagate host, lifted;
+  propagate host;
+  top.lifted = f.lifted;
   top.pp = f.pp;
   top.errors := f.errors;
   top.globalDecls := f.globalDecls;
@@ -224,14 +236,19 @@ top::Decl ::= s::String
   -- but used to be the way to put c functions and such in custom sections.
 }
 
-nonterminal Declarators with pps, host<Declarators>, lifted<Declarators>, errors, globalDecls, defs, env, baseType, typeModifiersIn, isTopLevel, isTypedef, givenAttributes, returnType, freeVariables;
-flowtype Declarators = decorate {env, returnType, baseType, typeModifiersIn, givenAttributes, isTopLevel, isTypedef};
+synthesized attribute hasModifiedTypeExpr::Boolean;
+synthesized attribute liftedDecls::[Decl];
+
+nonterminal Declarators with pps, host<Declarators>, lifted<Declarators>, liftedDecls, hasModifiedTypeExpr, errors, globalDecls, defs, env, baseType, typeModifiersIn, isTopLevel, isTypedef, givenStorageClasses, givenAttributes, returnType, freeVariables;
+flowtype Declarators = decorate {env, returnType, baseType, typeModifiersIn, givenStorageClasses, givenAttributes, isTopLevel, isTypedef}, liftedDecls {decorate}, hasModifiedTypeExpr {decorate};
 
 abstract production consDeclarator
 top::Declarators ::= h::Declarator  t::Declarators
 {
   propagate host, lifted;
   top.pps = h.pps ++ t.pps;
+  top.liftedDecls = h.liftedDecl :: t.liftedDecls;
+  top.hasModifiedTypeExpr = h.hasModifiedTypeExpr || t.hasModifiedTypeExpr;
   top.errors := h.errors ++ t.errors;
   top.defs := h.defs ++ t.defs;
   top.globalDecls := h.globalDecls ++ t.globalDecls;
@@ -246,14 +263,18 @@ top::Declarators ::=
 {
   propagate host, lifted;
   top.pps = [];
+  top.liftedDecls = [];
+  top.hasModifiedTypeExpr = false;
   top.errors := [];
   top.globalDecls := [];
   top.defs := [];
   top.freeVariables = [];
 }
 
-nonterminal Declarator with pps, host<Declarator>, lifted<Declarator>, errors, globalDecls, defs, env, baseType, typeModifiersIn, typerep, sourceLocation, isTopLevel, isTypedef, givenAttributes, returnType, freeVariables;
-flowtype Declarator = decorate {env, returnType, baseType, typeModifiersIn, givenAttributes, isTopLevel, isTypedef};
+synthesized attribute liftedDecl::Decl;
+
+nonterminal Declarator with pps, host<Declarator>, lifted<Declarator>, liftedDecl, hasModifiedTypeExpr, errors, globalDecls, defs, env, baseType, typeModifiersIn, typerep, sourceLocation, isTopLevel, isTypedef, givenStorageClasses, givenAttributes, returnType, freeVariables;
+flowtype Declarator = decorate {env, returnType, baseType, typeModifiersIn, givenStorageClasses, givenAttributes, isTopLevel, isTypedef}, liftedDecl {decorate}, hasModifiedTypeExpr {decorate};
 
 autocopy attribute isTypedef :: Boolean;
 
@@ -282,7 +303,14 @@ top::Declarator ::= name::Name  ty::TypeModifierExpr  attrs::Attributes  initial
         result.rpp])]-}
     | _ -> [ppConcat([ty.lpp, name.pp, ty.rpp, ppAttributesRHS(attrs), initializer.pp])]
     end;
-
+  
+  local liftedTy::BaseTypeExpr = fromMaybe(directTypeExpr(top.baseType), ty.modifiedBaseTypeExpr);
+  top.liftedDecl =
+    if top.isTypedef
+    then typedefDecls(top.givenAttributes, liftedTy, consDeclarator(top.lifted, nilDeclarator()))
+    else variableDecls(top.givenStorageClasses, top.givenAttributes, liftedTy, consDeclarator(top.lifted, nilDeclarator()));
+  top.hasModifiedTypeExpr = ty.modifiedBaseTypeExpr.isJust;
+  
   top.errors :=
     case initializer of
       justInitializer(exprInitializer(e)) ->
@@ -325,6 +353,8 @@ top::Declarator ::= msg::[Message]
 {
   propagate host, lifted;
   top.pps = [];
+  top.liftedDecl = warnDecl(msg);
+  top.hasModifiedTypeExpr = false;
   top.errors := msg;
   top.globalDecls := [];
   top.defs := [];
@@ -333,17 +363,46 @@ top::Declarator ::= msg::[Message]
   top.sourceLocation = loc("nowhere", -1, -1, -1, -1, -1, -1); -- TODO fix this? add locaiton maybe?
 }
 
-nonterminal FunctionDecl with pp, host<FunctionDecl>, lifted<FunctionDecl>, errors, globalDecls, defs, env, typerep, name, sourceLocation, returnType, freeVariables;
+nonterminal FunctionDecl with pp, host<FunctionDecl>, lifted<Decl>, errors, globalDecls, defs, env, typerep, name, sourceLocation, returnType, freeVariables;
 flowtype FunctionDecl = decorate {env, returnType}, name {}, sourceLocation {};
 
 abstract production functionDecl
-top::FunctionDecl ::= storage::[StorageClass]  fnquals::SpecialSpecifiers  bty::BaseTypeExpr mty::TypeModifierExpr  name::Name  attrs::Attributes  decls::Decls  body::Stmt
+top::FunctionDecl ::= storage::[StorageClass]  fnquals::SpecialSpecifiers  bty::BaseTypeExpr mty::TypeModifierExpr  name::Name  attrs::Attributes  ds::Decls  body::Stmt
 {
-  propagate host, lifted;
+  propagate host;
   
   top.pp = ppConcat([terminate(space(), map((.pp), storage)), terminate( space(), fnquals.pps ),
-    bty.pp, space(), mty.lpp, name.pp, mty.rpp, ppAttributesRHS(attrs), line(), terminate(cat(semi(), line()), decls.pps),
+    bty.pp, space(), mty.lpp, name.pp, mty.rpp, ppAttributesRHS(attrs), line(), terminate(cat(semi(), line()), ds.pps),
     text("{"), line(), nestlines(2,body.pp), text("}")]);
+  
+  top.lifted =
+    case mty.modifiedBaseTypeExpr of
+    | just(mbty) ->
+      decls(
+        foldDecl(
+          bty.decls ++
+          [functionDeclaration(
+             functionDecl(
+               storage,
+               fnquals.lifted,
+               mbty,
+               mty.lifted,
+               name.lifted,
+               attrs.lifted,
+               ds.lifted,
+               body.lifted))]))
+    | nothing() ->
+      functionDeclaration(
+        functionDecl(
+          storage,
+          fnquals.lifted,
+          bty.lifted,
+          mty.lifted,
+          name.lifted,
+          attrs.lifted,
+          ds.lifted,
+          body.lifted))
+    end;
   
   -- TODO: consider changing signature of this production to take
   -- SpecialSpecifiers instead of [SpecialSpecifier]
@@ -374,19 +433,19 @@ top::FunctionDecl ::= storage::[StorageClass]  fnquals::SpecialSpecifiers  bty::
   implicitDefs <- map(valueDef(_, nameValueItem), ["__func__", "__FUNCTION__", "__PRETTY_FUNCTION__"]);
   
   top.errors := bty.errors ++ mty.errors ++ body.errors ++ fnquals.errors;
-  top.globalDecls := bty.globalDecls ++ mty.globalDecls ++ decls.globalDecls ++ 
+  top.globalDecls := bty.globalDecls ++ mty.globalDecls ++ ds.globalDecls ++ 
                      body.globalDecls ++ fnquals.globalDecls;
   top.defs :=
     funcDefs ++
     globalDeclsDefs(mty.globalDecls) ++
-    globalDeclsDefs(decls.globalDecls) ++
+    globalDeclsDefs(ds.globalDecls) ++
     globalDeclsDefs(body.globalDecls) ++
     globalDeclsDefs(fnquals.globalDecls);
   top.freeVariables =
     bty.freeVariables ++
     removeDefsFromNames(implicitDefs, mty.freeVariables) ++
-    decls.freeVariables ++ --TODO?
-    removeDefsFromNames(top.defs ++ parameters.defs ++ decls.defs ++ fnquals.defs, body.freeVariables);
+    ds.freeVariables ++ --TODO?
+    removeDefsFromNames(top.defs ++ parameters.defs ++ ds.defs ++ fnquals.defs, body.freeVariables);
   -- accumulate extension qualifiers on redeclaration
   top.typerep = name.valueMergeRedeclExtnQualifiers(mty.typerep);
   top.name = name.name;
@@ -416,10 +475,10 @@ top::FunctionDecl ::= storage::[StorageClass]  fnquals::SpecialSpecifiers  bty::
     end;
   
   mty.env = addEnv(implicitDefs, openScopeEnv(addEnv(funcDefs, top.env)));
-  decls.env = addEnv(parameters.functionDefs, mty.env);
-  body.env = addEnv(decls.defs ++ body.functionDefs, decls.env);
+  ds.env = addEnv(parameters.functionDefs, mty.env);
+  body.env = addEnv(ds.defs ++ body.functionDefs, ds.env);
   
-  decls.isTopLevel = false;
+  ds.isTopLevel = false;
   
   -- TODO: so long as the original wasn't also a definition
   top.errors <- name.valueRedeclarationCheck(top.typerep); 
@@ -434,22 +493,23 @@ top::FunctionDecl ::= storage::[StorageClass]  fnquals::SpecialSpecifiers  bty::
 -- Allows extensions to handle nested functions differently
 -- TODO: is this needed?  Should this be forwarding?  
 abstract production nestedFunctionDecl
-top::FunctionDecl ::= storage::[StorageClass]  fnquals::SpecialSpecifiers  bty::BaseTypeExpr mty::TypeModifierExpr  name::Name  attrs::Attributes  decls::Decls  body::Stmt
+top::FunctionDecl ::= storage::[StorageClass]  fnquals::SpecialSpecifiers  bty::BaseTypeExpr mty::TypeModifierExpr  name::Name  attrs::Attributes  ds::Decls  body::Stmt
 {
   --top.defs := bty.defs ++ [valueDef(name.name, functionValueItem(top))];
   
-  decls.isTopLevel = false;
+  ds.isTopLevel = false;
   
-  forwards to functionDecl(storage, fnquals, bty, mty, name, attrs, decls, body);
+  forwards to functionDecl(storage, fnquals, bty, mty, name, attrs, ds, body);
 }
 
 abstract production badFunctionDecl
 top::FunctionDecl ::= msg::[Message]
 {
-  propagate host, lifted;
+  propagate host;
   top.pp = ppConcat([text("/*"),
     ppImplode(line(), map(text, map((.output), msg))),
     text("*/")]);
+  top.lifted = functionDeclaration(top);
   top.errors := msg;
   top.globalDecls := [];
   top.defs := [];
@@ -522,9 +582,19 @@ flowtype ParameterDecl = decorate {env, returnType, position}, paramname {};
 abstract production parameterDecl
 top::ParameterDecl ::= storage::[StorageClass]  bty::BaseTypeExpr  mty::TypeModifierExpr  name::MaybeName  attrs::Attributes
 {
-  propagate host, lifted;
+  propagate host;
   top.pp = ppConcat([terminate(space(), map((.pp), storage)),
     bty.pp, space(), mty.lpp, space(), name.pp, mty.rpp, ppAttributesRHS(attrs)]);
+  top.lifted =
+    case mty.modifiedBaseTypeExpr of
+    | just(mbty) ->
+      -- TODO: Should be lifting decls to the closest scope, not global!
+      parameterDecl(
+        storage,
+        injectGlobalDeclsTypeExpr(foldDecl(bty.decls), mbty),
+        mty.lifted, name.lifted, attrs.lifted)
+    | _ -> parameterDecl(storage, bty.lifted, mty.lifted, name.lifted, attrs.lifted)
+    end;
   top.paramname = name.maybename;
   top.typerep = mty.typerep;
   top.sourceLocation = 

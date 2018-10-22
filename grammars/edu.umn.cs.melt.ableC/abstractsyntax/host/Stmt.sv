@@ -403,7 +403,8 @@ top::Stmt ::= s::Stmt
 abstract production functionDeclStmt
 top::Stmt ::= d::FunctionDecl
 {
-  propagate host, lifted;
+  propagate host;
+  top.lifted = declStmt(d.lifted);
   top.pp = d.pp;
   top.errors := d.errors;
   top.globalDecls := d.globalDecls;

@@ -65,8 +65,15 @@ flowtype TypeName = decorate {env, returnType}, bty {}, mty {};
 abstract production typeName
 top::TypeName ::= bty::BaseTypeExpr  mty::TypeModifierExpr
 {
-  propagate host, lifted;
+  propagate host;
   top.pp = ppConcat([bty.pp, mty.lpp, mty.rpp]);
+  top.lifted =
+    case mty.modifiedBaseTypeExpr of
+    | just(mbty) ->
+      -- TODO: Should be lifting decls to the closest scope, not global!
+      typeName(injectGlobalDeclsTypeExpr(foldDecl(bty.decls), mbty), mty.lifted)
+    | nothing() -> typeName(bty.lifted, mty.lifted)
+    end;
   top.typerep = mty.typerep;
   top.bty = bty;
   top.mty = mty;
@@ -439,9 +446,10 @@ top::BaseTypeExpr ::= q::Qualifiers  e::ExprOrTypeName
  - Typically, these are just anchored somewhere to obtain the env,
  - and then turn into an environment-independent Type.
  -}
-nonterminal TypeModifierExpr with env, typerep, lpp, rpp, host<TypeModifierExpr>, lifted<TypeModifierExpr>, isFunctionArrayTypeExpr, baseType, typeModifiersIn, errors, globalDecls, decls, defs, returnType, freeVariables;
-flowtype TypeModifierExpr = decorate {env, baseType, typeModifiersIn, returnType}, isFunctionArrayTypeExpr {};
+nonterminal TypeModifierExpr with env, typerep, lpp, rpp, host<TypeModifierExpr>, lifted<TypeModifierExpr>, modifiedBaseTypeExpr, isFunctionArrayTypeExpr, baseType, typeModifiersIn, errors, globalDecls, decls, defs, returnType, freeVariables;
+flowtype TypeModifierExpr = decorate {env, baseType, typeModifiersIn, returnType}, modifiedBaseTypeExpr {decorate}, isFunctionArrayTypeExpr {};
 
+synthesized attribute modifiedBaseTypeExpr::Maybe<BaseTypeExpr>;
 synthesized attribute isFunctionArrayTypeExpr::Boolean;
 
 aspect default production
@@ -461,7 +469,10 @@ top::TypeModifierExpr ::=
   propagate host;
   top.lpp = notext();
   top.rpp = notext();
-  top.lifted = if !null(top.typeModifiersIn) then mty.lifted else baseTypeExpr();
+  top.lifted =
+    if !null(top.typeModifiersIn) then mty.lifted else baseTypeExpr();
+  top.modifiedBaseTypeExpr =
+    if !null(top.typeModifiersIn) then mty.modifiedBaseTypeExpr else nothing();
   
   local mty::TypeModifierExpr = head(top.typeModifiersIn);
   mty.env = top.env;
@@ -477,6 +488,41 @@ top::TypeModifierExpr ::=
   top.freeVariables = [];
 }
 
+{--
+ - A TypeModifierExpr specifying a different BaseTypeExpr to use instead of the corresponding one
+ - referenced by baseTypeExpr(). This is transformed by lifted into baseTypeExpr(), while the
+ - corresponding BaseTypeExpr is replaced by this one, possibly splitting variableDecls and
+ - typedefDecls into mutiple declarations when needed.
+ - This is used when extensions may wish to introduce new type modifiers, transforming a type into
+ - some type not representable by host type modifiers.
+ -}
+abstract production modifiedTypeExpr
+top::TypeModifierExpr ::= bty::BaseTypeExpr
+{
+  propagate host;
+  top.lpp = parens(bty.pp);
+  top.rpp = notext();
+  top.lifted =
+    if !null(bty.typeModifiers) then mty.lifted else baseTypeExpr();
+  top.modifiedBaseTypeExpr =
+    if !null(bty.typeModifiers) then mty.modifiedBaseTypeExpr else just(bty.lifted);
+  
+  local mty::TypeModifierExpr = head(bty.typeModifiers);
+  mty.env = top.env;
+  mty.baseType = top.typerep;
+  mty.typeModifiersIn = tail(bty.typeModifiers);
+  mty.returnType = top.returnType;
+  
+  top.typerep = bty.typerep; 
+  top.errors := bty.errors;
+  top.globalDecls := bty.globalDecls;
+  top.defs := bty.defs;
+  top.decls = bty.decls;
+  top.freeVariables = bty.freeVariables;
+  
+  bty.givenRefId = nothing();
+}
+
 {-- Pointers -}
 abstract production pointerTypeExpr
 top::TypeModifierExpr ::= q::Qualifiers  target::TypeModifierExpr
@@ -486,6 +532,7 @@ top::TypeModifierExpr ::= q::Qualifiers  target::TypeModifierExpr
                      if target.isFunctionArrayTypeExpr then text("(*") else text("*"),
                      terminate(space(), q.pps) ]);
   top.rpp = cat(if target.isFunctionArrayTypeExpr then text(")") else notext(), target.rpp);
+  top.modifiedBaseTypeExpr = target.modifiedBaseTypeExpr;
   top.typerep = pointerType(q, target.typerep);
   top.errors := q.errors ++ target.errors;
   top.globalDecls := target.globalDecls;
@@ -506,6 +553,8 @@ top::TypeModifierExpr ::= element::TypeModifierExpr  indexQualifiers::Qualifiers
     terminate(space(), indexQualifiers.pps ++ sizeModifier.pps),
     size.pp
     ])), element.rpp);
+  
+  top.modifiedBaseTypeExpr = element.modifiedBaseTypeExpr;
   
   top.isFunctionArrayTypeExpr = true;
 
@@ -531,6 +580,8 @@ top::TypeModifierExpr ::= element::TypeModifierExpr  indexQualifiers::Qualifiers
   top.rpp = cat(brackets(
     ppImplode(space(), indexQualifiers.pps ++ sizeModifier.pps)
     ), element.rpp);
+  
+  top.modifiedBaseTypeExpr = element.modifiedBaseTypeExpr;
   
   top.isFunctionArrayTypeExpr = true;
 
@@ -559,6 +610,8 @@ top::TypeModifierExpr ::= result::TypeModifierExpr  args::Parameters  variadic::
            )
      ), result.rpp);
   
+  top.modifiedBaseTypeExpr = result.modifiedBaseTypeExpr;
+  
   top.isFunctionArrayTypeExpr = true;
   
   top.typerep = functionType(result.typerep, 
@@ -579,6 +632,8 @@ top::TypeModifierExpr ::= result::TypeModifierExpr  ids::[Name]  q::Qualifiers -
   top.lpp = result.lpp;
   top.rpp = cat( parens(ppImplode(text(", "), map((.pp), ids))), result.rpp );
   
+  top.modifiedBaseTypeExpr = result.modifiedBaseTypeExpr;
+  
   top.isFunctionArrayTypeExpr = true;
   
   top.typerep = functionType(result.typerep, noProtoFunctionType(), q);
@@ -596,6 +651,7 @@ top::TypeModifierExpr ::= wrapped::TypeModifierExpr
   --top.pp = parens( wrapped.pp );
   top.lpp = cat( wrapped.lpp, text("(") );
   top.rpp = cat( text(")"), wrapped.rpp );
+  top.modifiedBaseTypeExpr = wrapped.modifiedBaseTypeExpr;
 
   top.typerep = noncanonicalType(parenType(wrapped.typerep));
   top.errors := wrapped.errors;
