@@ -419,7 +419,7 @@ top::FunctionDecl ::= storage::[StorageClass]  fnquals::SpecialSpecifiers  bty::
     | _ -> decorate nilParameters() with { env = top.env; returnType = top.returnType; position = 0; }
     end;
   
-  local funcDefs::[Def] = bty.defs ++ mty.defs ++ [valueDef(name.name, functionValueItem(top))];
+  local funcDefs::[Def] = bty.defs ++ [valueDef(name.name, functionValueItem(top))];
   production attribute implicitDefs::[Def] with ++;
   implicitDefs := [miscDef("this_func", currentFunctionItem(name, top))];
   
@@ -475,7 +475,7 @@ top::FunctionDecl ::= storage::[StorageClass]  fnquals::SpecialSpecifiers  bty::
     end;
   
   mty.env = addEnv(implicitDefs, openScopeEnv(addEnv(funcDefs, top.env)));
-  ds.env = addEnv(parameters.functionDefs, mty.env);
+  ds.env = addEnv(mty.defs ++ parameters.functionDefs, mty.env);
   body.env = addEnv(ds.defs ++ body.functionDefs, ds.env);
   
   ds.isTopLevel = false;
