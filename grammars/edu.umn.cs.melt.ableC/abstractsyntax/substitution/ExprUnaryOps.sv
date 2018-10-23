@@ -183,3 +183,14 @@ top::Expr ::= e::ExprOrTypeName
   propagate substituted;
 }
 
+aspect production inj:sizeofExpr
+top::Expr ::= e::ExprOrTypeName
+{
+  propagate substituted;
+}
+aspect production inj:alignofExpr
+top::Expr ::= e::ExprOrTypeName
+{
+  propagate substituted;
+}
+
