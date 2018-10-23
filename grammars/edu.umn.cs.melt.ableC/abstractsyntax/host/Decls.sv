@@ -545,7 +545,7 @@ top::Parameters ::= h::ParameterDecl  t::Parameters
     removeDefsFromNames(h.defs, t.freeVariables);
   top.appendedParametersRes = consParameters(h, t.appendedParametersRes);
   
-  t.env = addEnv(h.defs, top.env);
+  t.env = addEnv(h.defs ++ h.functionDefs, top.env);
   h.position = top.position;
   t.position = 1 + top.position;
 }
