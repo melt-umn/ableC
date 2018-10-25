@@ -64,6 +64,12 @@ top::TypeQualifier_c ::= 'tainted'
 
 ## Abstract syntax
 
+To introduce a new type qualifier, an extension creates a new production for the `Qualifier`
+nonterminal. Unlike the nonterminals we've seen until now, `Qualifier` is a *closed* nonterminal.
+An extension may define a new non-forwarding production for a host-language nonterminal, but to
+pass the modular well-definedness analysis no extension can add new attributes to a closed
+host-language nonterminal.
+
 The following attributes on the `Qualifier` nonterminal specify the behavior of
 the qualifier:
 * `qualIsPositive` and `qualIsNegative` specify the sign of
