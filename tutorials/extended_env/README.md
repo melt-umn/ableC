@@ -31,4 +31,4 @@ An example of extending the environment with a new namespace can be found in [En
 
 This mechanism is also used in practice by the [template extension](https://github.com/melt-umn/ableC-templating) to store information about template function and type declarations in a seperate namespace.  
 
-*(Coming soon!)* [Next section: Type qualifiers](../type_qualifiers/)
+[Next section: Type qualifiers](../type_qualifiers/)
