@@ -22,7 +22,7 @@ top::IntConstItem ::=
 }
 
 -- Define a new namespace on the environment storing the new type of item
-synthesized attribute intConsts::Scope<IntConstItem> occurs on Env;
+synthesized attribute intConsts::Scopes<IntConstItem> occurs on Env;
 synthesized attribute intConstContribs::Contribs<IntConstItem> occurs on Defs, Def;
 
 aspect production emptyEnv_i
@@ -33,9 +33,9 @@ top::Env ::=
 aspect production addEnv_i
 top::Env ::= d::Defs  e::Decorated Env
 {
-  top.intConsts = augmentGlobalScope_i(gd.intConstContribs, augmentScope_i(d.intConstContribs, e.intConsts));
+  top.intConsts = addGlobalScope(gd.intConstContribs, addScope(d.intConstContribs, e.intConsts));
 }
-aspect production openScope_i
+aspect production openScopeEnv_i
 top::Env ::= e::Decorated Env
 {
   top.intConsts = tm:empty(compareString) :: e.intConsts;
@@ -72,7 +72,7 @@ top::Def ::= s::String  v::IntConstItem
 function lookupIntConst
 [IntConstItem] ::= n::String  e::Decorated Env
 {
-  return readScope_i(n, e.intConsts);
+  return lookupScope(n, e.intConsts);
 }
 
 -- We put these attributes on Name to have it do the actual lookup and error checking.

@@ -120,7 +120,7 @@ Positive test       - PASS:             tests/headers/positive/termcap.c
 Positive test       - PASS:             tests/headers/positive/termio.c
 Positive test       - PASS:             tests/headers/positive/termios.c
 Positive test       - PASS:             tests/headers/positive/tgmath.c
-Positive test       - FAIL: ERROR       tests/headers/positive/thread_db.c
+Positive test       - PASS:             tests/headers/positive/thread_db.c
 Positive test       - PASS:             tests/headers/positive/tic.c
 Positive test       - PASS:             tests/headers/positive/time.c
 Positive test       - PASS:             tests/headers/positive/ttyent.c
@@ -186,8 +186,8 @@ Positive test       - PASS:             tests/kframework/positive/j022a.c
 Positive test       - PASS:             tests/kframework/positive/j026a.c
 Positive test       - PASS:             tests/kframework/positive/j027a.c
 Positive test       - PASS:             tests/kframework/positive/j027b.c
-Positive test       - FAIL: ERROR       tests/kframework/positive/j032a.c
-Positive test       - FAIL: ERROR       tests/kframework/positive/j032b.c
+Positive test       - PASS:             tests/kframework/positive/j032a.c
+Positive test       - PASS:             tests/kframework/positive/j032b.c
 Positive test       - PASS:             tests/kframework/positive/j033a.c
 Positive test       - FAIL: ERROR       tests/kframework/positive/j033b.c
 Positive test       - PASS:             tests/kframework/positive/j033c.c
@@ -215,7 +215,7 @@ Positive test       - PASS:             tests/kframework/positive/j048a.c
 Positive test       - PASS:             tests/kframework/positive/j048b.c
 Positive test       - PASS:             tests/kframework/positive/j049a.c
 Positive test       - PASS:             tests/kframework/positive/j049b.c
-Positive test       - FAIL: ERROR       tests/kframework/positive/j049c.c
+Positive test       - PASS:             tests/kframework/positive/j049c.c
 Positive test       - PASS:             tests/kframework/positive/j052a.c
 Positive test       - PASS:             tests/kframework/positive/j052b.c
 Positive test       - PASS:             tests/kframework/positive/j053a.c
@@ -340,26 +340,22 @@ Failures:
                         tests/headers/positive/mmintrin.c
                         tests/headers/positive/regex.c
                         tests/headers/positive/resolv.c
-                        tests/headers/positive/thread_db.c
                         tests/headers/positive/ucontext.c
                         tests/headers/positive/x86intrin.c
                         tests/headers/positive/xmmintrin.c
                         tests/kframework/positive/j020b.c
-                        tests/kframework/positive/j032a.c
-                        tests/kframework/positive/j032b.c
                         tests/kframework/positive/j033b.c
-                        tests/kframework/positive/j049c.c
                         tests/kframework/positive/j079h.c
 
 Positive tests:
-Pass: 305
-Fail: 22
+Pass: 309
+Fail: 18
 
 Negative tests:
 Pass: 0
 Fail: 0
 
 Summary:
-Pass: 305
-Fail: 22
+Pass: 309
+Fail: 18
 
