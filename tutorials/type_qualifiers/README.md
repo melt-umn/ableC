@@ -75,3 +75,5 @@ top::Qualifier ::=
 }
 ```
 
+*(Coming soon!)* [Next section: Modular determinism](../mda/)
+
