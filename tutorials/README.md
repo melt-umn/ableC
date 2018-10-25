@@ -17,7 +17,9 @@ This tutorial is composed of 3 sections.  It is expected that you complete the f
 2. [Lifting](lifting/): Define a new expression to declare a global int constant
 3. [Operator overloading](overloading/): Define a new 'interval' type with overloads for host operators
 4. [Extensible env](extended_env/): Define a new environment namespace containing integer constants
-5. *(Coming soon!)* [Type qualifiers](type_qualifiers/): *Travis, can you write this section?*
+5. [Type qualifiers](type_qualifiers/): Define a new 'tainted' type qualifier
+   that raises compile-time errors to prevent string format vulnerabilities from
+   being exploited.
 
 ### Developing complete extensions
 1. *(Coming soon!)* [Modular determinism](mda/): Apply the modular determinism analysis to the previously-defined tuple extension
