@@ -6,7 +6,8 @@ induced by tradition qualifiers, type qualifiers in AbleC can generate code to
 be executed at runtime. See our GPCE '17
 [paper](https://www-users.cs.umn.edu/~evw/pubs/carlson17gpce/index.html) that
 first presented our formulation of type qualifiers as composable language
-extensions.
+extensions. We build upon [Jeffrey Foster's work](https://talks.cs.umd.edu:3000/display/publications)
+on type qualifiers, especially *A Theory of Type Qualifiers* (PLDI '99).
 
 ## Background
 Type qualifiers are written as annotations on types. To qualify a type `T` with
@@ -22,9 +23,23 @@ qualifiers `Q` is modeled as a lattice, where the addition of a positive
 qualifier annotation (removal of a negative qualifier annotation) on a type
 corresponds to a step up the lattice. The relation `Q1 T <= Q2 T` then holds if
 and only if the lattice element corresponding to `Q2` dominates that lattice
-element corresponding to `Q1`, in other words, that `Q2` contains all of the
-positive qualifiers annotating `Q1` and that `Q1` contains all of the negative
-qualifiers annotating `Q2`.
+element corresponding to `Q1`, in other words, that all qualifiers annotating `Q1`
+but not `Q2` are negative and that all qualifiers annotating `Q2` but not `Q1`
+are positive.
+
+The meaning of a variable reference in C differs depending whether the reference
+is used as an l-value (on the left-hand side of an assignment) or as an r-value.
+As an l-value, the reference refers to the memory location of the variable; as
+an r-value, it refers to the value stored at that memory location. Thus, a
+variable declared to be of type `T` can be thought of as being of type `reference T`
+and of being automatically dereferenced when used as an r-value. When annotating
+a type `T` with a qualifier, we may wish for the qualifier to be applied to this
+implicit reference (e.g. `const`) or we may wish for the qualifier to be applied
+directly on `T` (e.g. `nonnull`), but because the reference is implicit the
+programmer has no means to specify this. Thus, this behavior must be specified
+per qualifier. We say that a qualifier either applies at the *ref level* or at the
+*value level*.
+
 
 ## Concrete syntax
 
@@ -49,10 +64,25 @@ top::TypeQualifier_c ::= 'tainted'
 
 ## Abstract syntax
 
-The sign of a type qualifier is specified by the `qualIsPositive` and
-`qualIsNegative` Boolean attributes on the `Qualifier` nonterminal. Qualifiers
-that do not induce any subtyping restrictions can be specified by setting both
-attributes to true.
+The following attributes on the `Qualifier` nonterminal specify the behavior of
+the qualifier:
+* `qualIsPositive` and `qualIsNegative` specify the sign of
+  a type qualifier. Qualifiers that do not induce any subtyping restrictions
+  can be specified by setting both attributes to true.
+* `qualAppliesWithinRef` is set to `true` to specify that the qualifier
+  applies at the value level and is set to `false` to specify that it
+  applies at the reference level.
+* `qualCompat` is a function-valued attribute that, given a qualifier to compare
+  to, returns true if the qualifier is compatible with this qualifier. Often this
+  will simply pattern match to check that both qualifiers were constructed by the
+  same production, but more complex analyses are possible. For example, a dimensional
+  analysis qualifier may consider qualifiers of `units(km/s^2)` to be compatible with
+  `units(m^3/(s*s))`.
+* `errors` is used to restrict qualifiers from annotated certain types. The `tainted`
+  qualifier below raises an error if the type being qualified is also annotated with
+  `untainted`. The `typeToQualify` inherited attribute on `Qualifier` is useful here.
+
+The complete specification of the `tainted` qualifier is below.
 
 ```
 abstract production taintedQualifier
