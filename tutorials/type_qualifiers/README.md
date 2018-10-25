@@ -40,9 +40,7 @@ programmer has no means to specify this. Thus, this behavior must be specified
 per qualifier. We say that a qualifier either applies at the *ref level* or at the
 *value level*.
 
-
 ## Concrete syntax
-
 The concrete syntax of type qualifiers is traditionally very simple, consisting
 of a single keyword derived from the `TypeQualifier_c` nonterminal. The concrete
 syntax specification of such a qualifier is below. Although not shown here, the
@@ -63,12 +61,12 @@ top::TypeQualifier_c ::= 'tainted'
 ```
 
 ## Abstract syntax
-
 To introduce a new type qualifier, an extension creates a new production for the `Qualifier`
-nonterminal. Unlike the nonterminals we've seen until now, `Qualifier` is a *closed* nonterminal.
-An extension may define a new non-forwarding production for a host-language nonterminal, but to
-pass the modular well-definedness analysis no extension can add new attributes to a closed
-host-language nonterminal.
+nonterminal. Unlike most nonterminals in ableC's abstract syntax, `Qualifier` is a *closed*
+nonterminal, used in cases where we are primarily interested in extensions introducing new
+productions not defined in terms of existing ones, rather than introducing new analyses on
+existing productions. This is similar to the case of the `ExtType` nonterminal described in
+the section on [overloading](../overloading)
 
 The following attributes on the `Qualifier` nonterminal specify the behavior of
 the qualifier:
