@@ -16,6 +16,11 @@ top::BaseTypeExpr ::= msg::[Message]  ty::BaseTypeExpr
 {
   propagate substituted;
 }
+aspect production defsTypeExpr
+top::BaseTypeExpr ::= d::[Def]  bty::BaseTypeExpr
+{
+  propagate substituted;
+}
 aspect production typeModifierTypeExpr
 top::BaseTypeExpr ::= bty::BaseTypeExpr  mty::TypeModifierExpr
 {
@@ -28,6 +33,11 @@ top::BaseTypeExpr ::= q::Qualifiers  result::BuiltinType
 }
 aspect production tagReferenceTypeExpr
 top::BaseTypeExpr ::= q::Qualifiers  kwd::StructOrEnumOrUnion  name::Name
+{
+  propagate substituted;
+}
+aspect production extTypeExpr
+top::BaseTypeExpr ::= q::Qualifiers  sub::ExtType
 {
   propagate substituted;
 }
@@ -75,6 +85,11 @@ top::BaseTypeExpr ::= q::Qualifiers  e::ExprOrTypeName
 
 aspect production baseTypeExpr
 top::TypeModifierExpr ::=
+{
+  propagate substituted;
+}
+aspect production modifiedTypeExpr
+top::TypeModifierExpr ::= bty::BaseTypeExpr
 {
   propagate substituted;
 }

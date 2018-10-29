@@ -61,6 +61,37 @@ Expr ::= q::[Qualifier]  e::Expr  l::Location
 {
   return if null(q) then e else qualifiedExpr(foldQualifier(q), e, location=l);
 }
+-- Wraps the result of a forwarding transformation (e.g. overloading or injection)
+-- to allow for "syntactic" analyses on the original host Expr.  Otherwise this
+-- is semantically equivalent to resolved. 
+abstract production transformedExpr
+top::Expr ::= original::Expr  resolved::Expr
+{
+  propagate lifted;
+  top.pp = original.pp;
+  top.host = resolved.host;
+  top.errors := resolved.errors;
+  top.globalDecls := resolved.globalDecls;
+  top.defs := resolved.defs;
+  top.typerep = resolved.typerep;
+  top.freeVariables = resolved.freeVariables;
+  top.isLValue = resolved.isLValue;
+}
+
+abstract production directRefExpr
+top::Expr ::= id::Name
+{
+  -- Forwarding depends on env. We must be able to compute a pp without using env.
+  top.pp = id.pp;
+
+  forwards to id.valueItem.directRefHandler(id, top.location);
+}
+-- If the identifier is an ordinary one, use the normal var reference production
+function ordinaryVariableHandler
+Expr ::= id::Name  l::Location
+{
+  return declRefExpr(id, location=l);
+}
 abstract production declRefExpr
 top::Expr ::= id::Name
 { -- Reference to a value. (Either a Decl or a EnumItem)
@@ -152,7 +183,6 @@ top::Expr ::= f::Name  a::Exprs
 function ordinaryFunctionHandler
 Expr ::= f::Name  a::Exprs  l::Location
 {
-  -- TODO: Figure out a better solution to integrating overloading
   return ovrld:callExpr(declRefExpr(f, location=f.location), a, location=l);
 }
 
@@ -184,7 +214,7 @@ top::Expr ::= f::Expr  a::Exprs
      | left(_) -> a.argumentErrors
      | right(r) -> r
     end;
-
+  
   a.expectedTypes =
     case subtype of
     | left(pair(_, protoFunctionType(args, _))) -> args
@@ -214,12 +244,7 @@ top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
   
   local isPointer::Boolean =
     case lhs.typerep.withoutAttributes of
-    | pointerType(_, sub) ->
-        case sub.withoutAttributes of
-          tagType(q, refIdTagType(_, _, rid)) -> true
-        | _ -> false
-        end
-    | tagType(q, refIdTagType(_, _, rid)) -> false
+    | pointerType(_, sub) -> true
     | _ -> false
     end;
   
@@ -227,10 +252,10 @@ top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
     case lhs.typerep.withoutAttributes of
     | pointerType(_, sub) ->
         case sub.withoutAttributes of
-          tagType(q, refIdTagType(_, _, rid)) -> pair(q, rid)
+        | extType(q, e) -> pair(q, fromMaybe("", e.maybeRefId))
         | _ -> pair(nilQualifier(), "")
         end
-    | tagType(q, refIdTagType(_, _, rid)) -> pair(q, rid)
+    | extType(q, e) -> pair(q, fromMaybe("", e.maybeRefId))
     | _ -> pair(nilQualifier(), "")
     end;
   
@@ -239,7 +264,7 @@ top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
   
   local valueitems :: [ValueItem] =
     lookupValue(rhs.name, head(refids).tagEnv);
-
+  
   top.isLValue = true;
   
   top.typerep =

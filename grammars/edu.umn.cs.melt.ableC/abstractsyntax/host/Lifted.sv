@@ -154,7 +154,7 @@ top::Stmt ::= decls::Decls lifted::Stmt
 {
   propagate host;
   top.errors := decls.errors ++ lifted.errors;
-  top.pp = pp"injectGlobalDeclsStmt ${braces(nestlines(2, ppImplode(line(), decls.pps)))} (${lifted.pp})";
+  top.pp = pp"injectGlobalDeclsStmt ${braces(nestlines(2, ppImplode(line(), decls.pps)))} ${braces(nestlines(2, lifted.pp))}";
   
   -- Insert defs from decls at the global scope
   top.defs := globalDefsDef(decls.defs) :: lifted.defs;
@@ -196,6 +196,9 @@ top::BaseTypeExpr ::= decls::Decls lifted::BaseTypeExpr
   -- here (host tree) or available globally and shouldn't recieve special treatment (lifted tree).
   top.freeVariables = removeDefsFromNames(decls.defs, lifted.freeVariables);
   
+  -- Preserve injected decls when transforming to and back from typerep
+  top.decls = [injectGlobalDeclsDecl(decls)];
+  
   -- Define other attributes to be the same as on lifted
   top.typerep = lifted.typerep;
   top.typeModifiers = lifted.typeModifiers;
@@ -205,6 +208,29 @@ top::BaseTypeExpr ::= decls::Decls lifted::BaseTypeExpr
   decls.returnType = nothing();
 
   lifted.env = addEnv([globalDefsDef(decls.defs)], top.env);
+}
+
+-- Just lift a list of Decls
+abstract production injectGlobalDeclsDecl
+top::Decl ::= decls::Decls
+{
+  propagate host;
+  top.errors := decls.errors;
+  top.pp = pp"injectGlobalDeclsDecl ${braces(nestlines(2, ppImplode(line(), decls.pps)))}";
+  
+  -- Insert defs from decls at the global scope
+  top.defs := [globalDefsDef(decls.defs)];
+
+  -- Note that the invariant over `globalDecls` and `lifted` is maintained.
+  top.globalDecls := decls.unfoldedGlobalDecls;
+  top.lifted = edu:umn:cs:melt:ableC:abstractsyntax:host:decls(nilDecl());
+  
+  -- Define other attributes to be the same as on "lifted" (i.e. nilDecl())
+  top.freeVariables = [];
+  
+  decls.env = globalEnv(top.env);
+  decls.isTopLevel = true;
+  decls.returnType = nothing();
 }
 
 {--

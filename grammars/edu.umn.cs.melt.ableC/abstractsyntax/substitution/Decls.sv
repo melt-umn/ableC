@@ -112,6 +112,7 @@ top::Parameters ::= h::ParameterDecl  t::Parameters
   local h1::ParameterDecl = h;
   h1.env = emptyEnv();
   h1.returnType = nothing();
+  h1.position = 0;
   
   local substitutions::Substitutions = top.substitutions;
   substitutions.nameIn =
