@@ -101,7 +101,7 @@ concrete productions top::TypeName_c
         ast:typeName(
           case decorate sqs.attributes with { ast:returnType = nothing(); } of
           | ast:nilAttribute() -> bt
-          | _ -> ast:warnTypeExpr([wrn(top.location, "Ignoring attributes in type name1")], bt)
+          | _ -> ast:warnTypeExpr([wrn(top.location, "Ignoring attributes in type name")], bt)
           end,
           ast:baseTypeExpr());
     }
@@ -115,7 +115,7 @@ concrete productions top::TypeName_c
         ast:typeName(
           case decorate sqs.attributes with { ast:returnType = nothing(); } of
           | ast:nilAttribute() -> bt
-          | _ -> ast:warnTypeExpr([wrn(top.location, "Ignoring attributes in type name1")], bt)
+          | _ -> ast:warnTypeExpr([wrn(top.location, "Ignoring attributes in type name")], bt)
           end,
           d.ast);
     }
