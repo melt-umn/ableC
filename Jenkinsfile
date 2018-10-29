@@ -43,6 +43,7 @@ melt.trynode('ableC') {
     def extensions = [
       "silver-ableC",
       "ableC-skeleton", "ableC-lib-skeleton",
+      "ableC-constructor",
       "ableC-checkBounds",
       "ableC-cilk",
       "ableC-condition-tables",
