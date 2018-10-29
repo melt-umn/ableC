@@ -6,12 +6,14 @@ imports silver:langutil:pp;
 imports edu:umn:cs:melt:ableC:abstractsyntax:host;
 imports edu:umn:cs:melt:ableC:abstractsyntax:construction;
 imports edu:umn:cs:melt:ableC:abstractsyntax:env;
+imports edu:umn:cs:melt:ableC:abstractsyntax:substitution;
 
 -- Bridge production from host abstract syntax to extension abstract syntax
 abstract production prefixExpr
 top::Expr ::= pe::PrefixExpr
 {
   top.pp = pp"prefix (${pe.pp})";
+  propagate substituted;
 
   -- Check for errors on the EDSL AST
   -- Either forward to an error production or the computed translation

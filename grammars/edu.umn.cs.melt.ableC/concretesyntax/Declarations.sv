@@ -148,6 +148,10 @@ concrete productions top::Expr_c
     { top.ast = ast:errorExpr ( [ err (top.location, "Internal Error. " ++
         "Placeholder for TypeNames_c should not appear in the tree.") ],
         location=top.location ) ; }
+| 'TypeNames_NEVER_t!!!nevernever1234567890' TypeNames_c '}'
+    { top.ast = ast:errorExpr ( [ err (top.location, "Internal Error. " ++
+        "Placeholder for TypeNames_c should not appear in the tree.") ],
+        location=top.location ) ; }
 | 'TypeNames_NEVER_t!!!nevernever1234567890' TypeNames_c '>'
     { top.ast = ast:errorExpr ( [ err (top.location, "Internal Error. " ++
         "Placeholder for TypeNames_c should not appear in the tree.") ],
@@ -157,6 +161,10 @@ concrete productions top::Expr_c
         "Placeholder for TypeNames_c should not appear in the tree.") ],
         location=top.location ) ; }
 | 'Names_NEVER_t!!!nevernever1234567890' Names_c ')'
+    { top.ast = ast:errorExpr ( [ err (top.location, "Internal Error. " ++
+        "Placeholder for Names_c should not appear in the tree.") ],
+        location=top.location ) ; }
+| 'Names_NEVER_t!!!nevernever1234567890' Names_c '}'
     { top.ast = ast:errorExpr ( [ err (top.location, "Internal Error. " ++
         "Placeholder for Names_c should not appear in the tree.") ],
         location=top.location ) ; }

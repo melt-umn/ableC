@@ -1,5 +1,6 @@
 grammar edu:umn:cs:melt:tutorials:ableC:average:abstractsyntax;
 
+imports edu:umn:cs:melt:ableC:abstractsyntax:env; -- TODO: Why is this import needed?
 imports edu:umn:cs:melt:ableC:abstractsyntax:host;
 imports edu:umn:cs:melt:ableC:abstractsyntax:construction;
 imports edu:umn:cs:melt:ableC:abstractsyntax:substitution;
