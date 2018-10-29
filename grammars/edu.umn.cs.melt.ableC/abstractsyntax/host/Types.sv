@@ -19,7 +19,7 @@ synthesized attribute typeModifierExpr :: TypeModifierExpr;
 -- Compute a unique name for a type that is a valid C identifier
 synthesized attribute mangledName :: String;
 flowtype mangledName {} on
-  Type, FunctionType, TagType, StructOrEnumOrUnion,
+  Type, FunctionType, ExtType, StructOrEnumOrUnion,
   Qualifiers, Qualifier,
   BuiltinType, RealType, IntegerType;
 
@@ -276,7 +276,8 @@ abstract production variableArrayType
 top::ArrayType ::= size::Decorated Expr
 {
   top.host =
-    variableArrayType(decorate size.host with {env = size.env; returnType = size.returnType;});
+    variableArrayType(
+      decorate size.host with {env = size.env; returnType = size.returnType;});
   top.pp = size.pp;
   top.freeVariables = size.freeVariables;
 }
@@ -391,61 +392,91 @@ Parameters ::= args::[Type]
     end;
 }
 
-
 {-------------------------------------------------------------------------------
- - Tagged types: enum, struct, union
+ - "New" types: structs, unions and enums, but also new types defined by extensions.
  -}
-abstract production tagType
-top::Type ::= q::Qualifiers  sub::TagType
+
+abstract production extType
+top::Type ::= q::Qualifiers  sub::ExtType
 {
-  propagate host;
-  top.lpp = ppConcat([ terminate(space(), q.pps), sub.pp ]);
-  top.rpp = notext();
-  top.baseTypeExpr =
-    case sub of
-      enumTagType(ref) -> enumTypeExpr(q, new(ref))
-    | refIdTagType(kwd, n, refId) ->
-      tagReferenceTypeExpr(q, kwd, name(n, location=builtinLoc("host")))
-    end;
-  top.typeModifierExpr = baseTypeExpr();
-  top.mangledName = s"${q.mangledName}_tag_${sub.mangledName}_";
-  top.integerPromotions = top;
-  top.defaultArgumentPromotions = top;
-  top.defaultLvalueConversion = tagType(nilQualifier(), sub);
-  top.defaultFunctionArrayLvalueConversion = top;
-  top.withoutTypeQualifiers = tagType(nilQualifier(), sub);
-  top.withoutExtensionQualifiers = tagType(filterExtensionQualifiers(q), sub);
-  top.withTypeQualifiers = tagType(foldQualifier(top.addedTypeQualifiers ++
+  top.lpp = sub.lpp;
+  top.rpp = sub.rpp;
+  top.host = sub.host;
+  top.baseTypeExpr = sub.baseTypeExpr;
+  top.typeModifierExpr = sub.typeModifierExpr;
+  top.mangledName = s"${q.mangledName}_${sub.mangledName}_";
+  top.integerPromotions = sub.integerPromotions;
+  top.defaultArgumentPromotions = sub.defaultArgumentPromotions;
+  top.defaultLvalueConversion = sub.defaultLvalueConversion;
+  top.defaultFunctionArrayLvalueConversion = sub.defaultFunctionArrayLvalueConversion;
+  top.withoutTypeQualifiers = extType(nilQualifier(), sub);
+  top.withoutExtensionQualifiers = extType(filterExtensionQualifiers(q), sub);
+  top.withTypeQualifiers = extType(foldQualifier(top.addedTypeQualifiers ++
     q.qualifiers), sub);
   top.mergeQualifiers = \t2::Type ->
     case t2 of
-      tagType(q2, _) ->
-        tagType(unionQualifiers(top.qualifiers, q2.qualifiers), sub)
-    | _ -> tagType(q, sub)
+      extType(q2, _) -> extType(unionQualifiers(q.qualifiers, q2.qualifiers), sub)
+    | _ -> top
     end;
   top.qualifiers = q.qualifiers;
   top.errors := q.errors;
-  top.freeVariables = [];
+  top.freeVariables = sub.freeVariables;
   
   top.isIntegerType = sub.isIntegerType;
   top.isArithmeticType = sub.isIntegerType;
   top.isScalarType = sub.isIntegerType;
 
   q.typeToQualify = top;
+  sub.givenQualifiers = q;
 }
 
-{-- Structs, unions and enums -}
-nonterminal TagType with pp, host<TagType>, mangledName, isIntegerType;
-flowtype TagType = decorate {}, isIntegerType {};
+inherited attribute givenQualifiers::Qualifiers;
 
-abstract production enumTagType
-top::TagType ::= ref::Decorated EnumDecl
+-- t1.isEqualTo(t2) iff t1.mangledName == t2.mangledName
+synthesized attribute isEqualTo::(Boolean ::= ExtType);
+
+closed nonterminal ExtType with givenQualifiers, pp, lpp, rpp, host<Type>, baseTypeExpr, typeModifierExpr, mangledName, isEqualTo, integerPromotions, defaultArgumentPromotions, defaultLvalueConversion, defaultFunctionArrayLvalueConversion, isIntegerType, isScalarType, isArithmeticType, maybeRefId, freeVariables;
+flowtype ExtType = decorate {givenQualifiers}, lpp {givenQualifiers}, rpp {givenQualifiers}, baseTypeExpr {decorate}, typeModifierExpr {decorate}, isEqualTo {}, integerPromotions {decorate}, defaultArgumentPromotions {decorate}, defaultLvalueConversion {decorate}, defaultFunctionArrayLvalueConversion {decorate}, isIntegerType {}, isScalarType {}, isArithmeticType {}, maybeRefId {};
+
+-- Forward flowtype is empty, since extensions would primarilly introduce new non-forwarding
+-- productions on ExtType, and we would like to be able to pattern match on these.
+flowtype forward {} on ExtType;
+
+aspect default production
+top::ExtType ::=
 {
-  propagate host;
+  top.lpp = ppConcat([ terminate(space(), top.givenQualifiers.pps), top.pp ]);
+  top.rpp = notext();
+  top.baseTypeExpr = extTypeExpr(top.givenQualifiers, top);
+  top.typeModifierExpr = baseTypeExpr();
+
+  top.integerPromotions = extType(top.givenQualifiers, top);
+  top.defaultArgumentPromotions = extType(top.givenQualifiers, top);
+  top.defaultLvalueConversion = extType(top.givenQualifiers, top);
+  top.defaultFunctionArrayLvalueConversion = extType(top.givenQualifiers, top);
+  top.freeVariables = [];
+  
+  top.isIntegerType = false;
+  top.isArithmeticType = false;
+  top.isScalarType = false;
+  top.maybeRefId = nothing();
+}
+
+abstract production enumExtType
+top::ExtType ::= ref::Decorated EnumDecl
+{
+  top.host = extType(top.givenQualifiers, top);
+  top.baseTypeExpr =
+    case ref.maybename of
+    | just(n) -> tagReferenceTypeExpr(top.givenQualifiers, enumSEU(), n)
+    -- TODO: Technically this should be whatever integer type is large enough to
+    -- hold all the enumerated values
+    | nothing() -> builtinTypeExpr(top.givenQualifiers, unsignedType(intType()))
+    end;
   top.pp =
     case ref.maybename of
     | just(n) -> cat(text("enum "), n.pp)
-    | nothing() -> text("int/*anon enum*/") -- TODO: location
+    | nothing() -> text("enum <anon>") -- TODO: location
     end;
   top.mangledName =
     "enum_" ++
@@ -453,6 +484,24 @@ top::TagType ::= ref::Decorated EnumDecl
     | just(n) -> n.name
     | nothing() -> "anon"
     end;
+  top.isEqualTo =
+    \ other::ExtType ->
+      case other of
+      | enumExtType(otherRef) ->
+        -- TODO: This code is slightly broken, since our representation of
+        -- enum types lacks a method of uniquely identifying each type.
+        -- For now, we just check that the tags are the same.
+        -- This isn't quite correct (due to name shadowing), but is close enough for now. 
+        -- Properly fixing this would require giving enums refIds.
+        case ref.maybename, otherRef.maybename of
+        -- Check that tag names are equal
+        | just(n1), just(n2) -> n1.name == n2.name
+        -- For now, assuming all anon enums have the same type.
+        | nothing(), nothing() -> true
+        | _, _ -> false
+        end
+      | _ -> false
+      end;
     
   top.isIntegerType = true;
 }
@@ -461,15 +510,25 @@ top::TagType ::= ref::Decorated EnumDecl
  - the struct/union. This DOES give us equality (refIds equal), but not structural
  - information about the tag, without bailing out of type code and going back
  - to consult the environment about what's known about that tag.
+ -
+ - This production, despite its signature, only represents structs and unions, not enums.
  -} 
-abstract production refIdTagType
-top::TagType ::= kwd::StructOrEnumOrUnion  name::String  refId::String
+abstract production refIdExtType
+top::ExtType ::= kwd::StructOrEnumOrUnion  n::String  refId::String
 {
-  propagate host;
-  top.pp = ppConcat([kwd.pp, space(), text(name)]);
+  top.host = extType(top.givenQualifiers, top);
+  top.baseTypeExpr =
+    tagReferenceTypeExpr(top.givenQualifiers, kwd, name(n, location=builtinLoc("host")));
+  top.pp = ppConcat([kwd.pp, space(), text(n)]);
   top.mangledName =
-    s"${kwd.mangledName}_${if name == "<anon>" then "anon" else name}_${substitute(":", "_", refId)}";
-  top.isIntegerType = false;
+    s"${kwd.mangledName}_${if n == "<anon>" then "anon" else n}_${substitute(":", "_", refId)}";
+  top.isEqualTo =
+    \ other::ExtType ->
+      case other of
+      | refIdExtType(_, _, otherRefId) -> refId == otherRefId
+      | _ -> false
+      end;
+  top.maybeRefId = just(refId);
 }
 
 nonterminal StructOrEnumOrUnion with pp, mangledName; -- Silver enums would be nice.
@@ -479,7 +538,6 @@ abstract production unionSEU
 top::StructOrEnumOrUnion ::= { top.pp = text("union"); top.mangledName = "union"; }
 abstract production enumSEU
 top::StructOrEnumOrUnion ::= { top.pp = text("enum"); top.mangledName = "enum"; }
-
 
 {-------------------------------------------------------------------------------
  - C11 atomic types.

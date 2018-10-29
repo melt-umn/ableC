@@ -9,16 +9,14 @@
 #define MAX4(a, b, c, d) MAX(MAX(a, b), MAX(c, d))
 
 // refId: identifier to use when referring to the struct type
-// module: identifier to use for looking up the overload
-struct __attribute__((refId("edu:umn:cs:melt:tutorials:ableC:interval:interval"),
-                      module("edu:umn:cs:melt:tutorials:ableC:interval:interval"))) _interval_s {
+struct __attribute__((refId("edu:umn:cs:melt:tutorials:ableC:interval:interval"))) _interval_s {
   double min;
   double max;
 };
 
 // Construct a new interval
 static interval new_interval(double min, double max) {
-  return (struct _interval_s){min, max};
+  return (interval){min, max};
 }
 
 // Negate an interval
@@ -53,7 +51,7 @@ static interval div_interval(interval x, interval y) {
 }
 
 // Check if two intervals are equal
-static bool eq_interval(interval x, interval y) {
+static bool equals_interval(interval x, interval y) {
   return x.min == y.min && x.max == y.max;
 }
   

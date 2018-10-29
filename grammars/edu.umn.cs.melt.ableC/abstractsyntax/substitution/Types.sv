@@ -57,19 +57,19 @@ top::FunctionType ::=
   propagate substituted;
 }
 
-aspect production tagType
-top::Type ::= q::Qualifiers  sub::TagType
+aspect production extType
+top::Type ::= q::Qualifiers  sub::ExtType
 {
   propagate substituted;
 }
 
-aspect production enumTagType
-top::TagType ::= ref::Decorated EnumDecl
+aspect production enumExtType
+top::ExtType ::= ref::Decorated EnumDecl
 {
   propagate substituted;
 }
-aspect production refIdTagType
-top::TagType ::= kwd::StructOrEnumOrUnion  name::String  refId::String
+aspect production refIdExtType
+top::ExtType ::= kwd::StructOrEnumOrUnion  name::String  refId::String
 {
   propagate substituted;
 }

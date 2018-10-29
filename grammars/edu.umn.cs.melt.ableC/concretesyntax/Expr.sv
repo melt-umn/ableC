@@ -254,6 +254,7 @@ concrete productions top::AddMulLeft_c
 
 closed nonterminal AddMulLeftOp_c
   with location, ast<ast:Expr>, leftExpr, rightExpr, exprLocation ;
+flowtype AddMulLeftOp_c = ast {leftExpr, rightExpr, exprLocation};
 
 terminal AddMulLeft_NEVER_t 'AddMulLeft_Never!!!nevernever1234567890' ;
 concrete productions top::AddMulLeftOp_c
@@ -279,6 +280,7 @@ concrete productions top::AddMulRight_c
 
 closed nonterminal AddMulRightOp_c
   with location, ast<ast:Expr>, leftExpr, rightExpr, exprLocation ;
+flowtype AddMulRightOp_c = ast {leftExpr, rightExpr, exprLocation};
 
 terminal AddMulRight_NEVER_t 'AddMulRight_Never!!!nevernever1234567890' ;
 concrete productions top::AddMulRightOp_c
@@ -304,13 +306,13 @@ concrete productions top::AddMulNone_c
 
 closed nonterminal AddMulNoneOp_c
   with location, ast<ast:Expr>, leftExpr, rightExpr, exprLocation ;
+flowtype AddMulNoneOp_c = ast {leftExpr, rightExpr, exprLocation};
 
 terminal AddMulNone_NEVER_t 'AddMulNone_Never!!!nevernever1234567890' ;
 concrete productions top::AddMulNoneOp_c
 | AddMulNone_NEVER_t
     { top.ast = ast:errorExpr ( [ err (top.location, "Internal Error. " ++
-        "Placeholder for AddMulNoneOp_c should not appear in the tree." ++
-        hackUnparse(pair(pair(top.leftExpr, top.rightExpr), top.exprLocation))) ], -- TODO: flowtype hack, remove
+        "Placeholder for AddMulNoneOp_c should not appear in the tree." ) ],
         location=top.location ) ; }
 
 
@@ -454,7 +456,7 @@ top::PrimaryExpr_c ::=
 
 concrete productions top::PrimaryExpr_c
 | id::Identifier_c
-    { top.ast = ast:declRefExpr(id.ast, location=top.location);
+    { top.ast = ast:directRefExpr(id.ast, location=top.location);
       top.directName = just(id); }
 | c::Constant_c
     { top.ast = c.ast; }

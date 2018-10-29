@@ -14,7 +14,7 @@ flowtype host {decorate} on
   Attributes, Attribute, Attribs, Attrib, AttribName,
   GlobalDecls, Decls, Decl, Declarators, Declarator, FunctionDecl, Parameters, ParameterDecl, StructDecl, UnionDecl, EnumDecl, StructItemList, EnumItemList, StructItem, StructDeclarators, StructDeclarator, EnumItem,
   MemberDesignator,
-  Type, ArrayType, FunctionType, TagType, NoncanonicalType,
+  Type, ArrayType, FunctionType, ExtType, NoncanonicalType,
   AsmStatement, AsmArgument, AsmClobbers, AsmOperands, AsmOperand,
   Qualifiers, SpecialSpecifier, SpecialSpecifiers,
   Expr, GenericAssocs, GenericAssoc,

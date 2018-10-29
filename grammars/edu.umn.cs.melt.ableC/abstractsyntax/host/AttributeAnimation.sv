@@ -50,49 +50,41 @@ Type ::= attr::Decorated Attribs  ty::Type
 
 synthesized attribute maybeRefId::Maybe<String> occurs on Attributes, Attribute, Attribs, Attrib;
 flowtype maybeRefId {} on Attributes, Attribute, Attribs, Attrib;
-attribute moduleName occurs on Attributes, Attribute, Attribs, Attrib;
-flowtype moduleName {} on Attributes, Attribute, Attribs, Attrib;
 
 aspect production consAttribute
 top::Attributes ::= h::Attribute t::Attributes
 {
   top.maybeRefId = orElse(h.maybeRefId, t.maybeRefId);
-  top.moduleName = orElse(h.moduleName, t.moduleName);
 }
 
 aspect production nilAttribute
 top::Attributes ::= 
 {
   top.maybeRefId = nothing();
-  top.moduleName = nothing();
 }
 
 aspect production gccAttribute
 top::Attribute ::= l::Attribs
 {
   top.maybeRefId = l.maybeRefId;
-  top.moduleName = l.moduleName;
 }
 
 aspect production simpleAsm
 top::Attribute ::= s::String
 {
   top.maybeRefId = nothing();
-  top.moduleName = nothing();
 }
 
 aspect production consAttrib
 top::Attribs ::= h::Attrib t::Attribs
 {
   top.maybeRefId = orElse(h.maybeRefId, t.maybeRefId);
-  top.moduleName = orElse(h.moduleName, t.moduleName);
 }
 
 aspect production nilAttrib
 top::Attribs ::= 
 {
   top.maybeRefId = nothing();
-  top.moduleName = nothing();
 }
 
 synthesized attribute isHostAttrib::Boolean occurs on Attrib;
@@ -103,7 +95,6 @@ top::Attrib ::=
 {
   top.isHostAttrib = true;
   top.maybeRefId = nothing();
-  top.moduleName = nothing();
 }
 
 -- e.g. __attribute__(())
@@ -123,18 +114,11 @@ top::Attrib ::= n::AttribName  e::Exprs
   top.isHostAttrib =
     case n of
       attribName(name("refId")) -> false
-    | attribName(name("module")) -> false
     | _ -> true
     end;
   top.maybeRefId =
     case n, e of
       attribName(name("refId")), consExpr(stringLiteral(s), nilExpr()) ->
-        just(substring(1, length(s) - 1, s))
-    | _, _ -> nothing()
-    end;
-  top.moduleName =
-    case n, e of
-      attribName(name("module")), consExpr(stringLiteral(s), nilExpr()) ->
         just(substring(1, length(s) - 1, s))
     | _, _ -> nothing()
     end;

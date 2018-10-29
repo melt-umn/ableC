@@ -1,3 +1,7 @@
+import edu:umn:cs:melt:ableC:abstractsyntax:env;
+import edu:umn:cs:melt:ableC:abstractsyntax:substitution;
+import silver:langutil:pp;
+
 -- Decl --
 
 -- int n ;
@@ -121,4 +125,21 @@ Stmt ::= n::String type: init::MaybeInitializer l::Location
           ) ;
 }
  -}  
+ 
+abstract production autoDecl
+top::Decl ::= n::Name e::Expr
+{
+  propagate substituted;
+  top.pp = pp"auto ${n.pp} = ${e.pp};";
 
+  local bty::BaseTypeExpr = directTypeExpr(e.typerep);
+
+  forwards to
+    variableDecls(
+      [], nilAttribute(), bty,
+      consDeclarator(
+        declarator(
+          n, baseTypeExpr(), nilAttribute(),
+          justInitializer(exprInitializer(e))),
+        nilDeclarator()));
+}

@@ -163,7 +163,7 @@ attribute substitutions occurs on
   Stmt,
   TypeName, BaseTypeExpr, TypeModifierExpr, TypeNames,
   Qualifier, SpecialSpecifier,
-  Type, ArrayType, FunctionType, TagType, NoncanonicalType,
+  Type, ArrayType, FunctionType, ExtType, NoncanonicalType,
   BuiltinType, RealType, IntegerType;
 
 attribute substituted<AsmStatement> occurs on AsmStatement;
@@ -218,7 +218,7 @@ attribute substituted<SpecialSpecifier> occurs on SpecialSpecifier;
 attribute substituted<Type> occurs on Type;
 attribute substituted<ArrayType> occurs on ArrayType;
 attribute substituted<FunctionType> occurs on FunctionType;
-attribute substituted<TagType> occurs on TagType;
+attribute substituted<ExtType> occurs on ExtType;
 attribute substituted<NoncanonicalType> occurs on NoncanonicalType;
 attribute substituted<BuiltinType> occurs on BuiltinType;
 attribute substituted<RealType> occurs on RealType;
@@ -240,6 +240,6 @@ flowtype substituted {substitutions} on
   Stmt,
   TypeName, BaseTypeExpr, TypeModifierExpr, TypeNames,
   Qualifier, SpecialSpecifier,
-  Type, ArrayType, FunctionType, TagType, NoncanonicalType,
+  Type, ArrayType, FunctionType, ExtType, NoncanonicalType,
   BuiltinType, RealType, IntegerType;
   
