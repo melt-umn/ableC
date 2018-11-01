@@ -52,7 +52,6 @@ melt.trynode('ableC') {
       "ableC-interval",
       "ableC-nonnull",
       "ableC-sqlite",
-      "ableC-string",
       "ableC-templating",
       "ableC-watch",
     ]
@@ -60,6 +59,7 @@ melt.trynode('ableC') {
       "ableC-sample-projects",
       "ableC-closure",
       "ableC-refcount-closure",
+      "ableC-string",
       "ableC-vector",
       "ableC-nondeterministic-search", "ableC-nondeterministic-search-benchmarks",
       "ableC-algebraic-data-types", "ableC-template-algebraic-data-types"
