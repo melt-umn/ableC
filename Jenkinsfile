@@ -49,11 +49,9 @@ melt.trynode('ableC') {
       "ableC-condition-tables",
       "ableC-dimensionalAnalysis",
       "ableC-halide",
-      "ableC-interval",
       "ableC-nonnull",
       "ableC-sqlite",
       "ableC-templating",
-      "ableC-watch",
     ]
     /* These are now downstream of silver-ableC, so we don't build them here:
       "ableC-sample-projects",
@@ -61,6 +59,8 @@ melt.trynode('ableC') {
       "ableC-refcount-closure",
       "ableC-string",
       "ableC-vector",
+      "ableC-interval",
+      "ableC-watch",
       "ableC-nondeterministic-search", "ableC-nondeterministic-search-benchmarks",
       "ableC-algebraic-data-types", "ableC-template-algebraic-data-types"
      */
