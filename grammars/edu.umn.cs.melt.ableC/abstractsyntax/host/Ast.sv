@@ -56,9 +56,9 @@ flowtype errors {decorate} on
 flowtype defs {decorate} on
   Decls, Decl, Declarators, Declarator, FunctionDecl, Parameters, ParameterDecl, StructDecl, UnionDecl, EnumDecl, StructItemList, EnumItemList, StructItem, EnumItem,
   MemberDesignator,
-  SpecialSpecifiers,
+  SpecialSpecifier, SpecialSpecifiers,
   Expr, GenericAssocs, GenericAssoc,
-  TypeName, BaseTypeExpr, TypeNames,
+  TypeName, BaseTypeExpr, TypeModifierExpr, TypeNames,
   MaybeExpr, Exprs, ExprOrTypeName,
   Stmt,
   MaybeInitializer, Initializer, InitList, Init, Designator;
@@ -69,6 +69,12 @@ flowtype functionDefs {} on
   Stmt;
 flowtype localDefs {decorate} on
   StructItemList, StructItem, StructDeclarators, StructDeclarator;
+
+flowtype typerep {decorate} on
+  Declarator, FunctionDecl, ParameterDecl, StructDeclarator, EnumItem,
+  Expr,
+  TypeName, BaseTypeExpr, TypeModifierExpr,
+  ExprOrTypeName;
 
 -- Set all forward flowtypes on 'collection' and 'wrapper' nonterminals to be empty, since we
 -- typically don't forward on these, and may want to pattern match without providing all attributes

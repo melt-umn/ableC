@@ -466,6 +466,7 @@ top::FunctionDecl ::= storage::[StorageClass]  fnquals::SpecialSpecifiers  bty::
   retMty.env = mty.env;
   retMty.returnType = mty.returnType;
   retMty.baseType = bty.typerep;
+  retMty.typeModifiersIn = bty.typeModifiers;
   
   body.returnType =
     case mty of
