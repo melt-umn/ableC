@@ -69,9 +69,7 @@ top::TypeName ::= bty::BaseTypeExpr  mty::TypeModifierExpr
   top.pp = ppConcat([bty.pp, mty.lpp, mty.rpp]);
   top.lifted =
     case mty.modifiedBaseTypeExpr of
-    | just(mbty) ->
-      -- TODO: Should be lifting decls to the closest scope, not global!
-      typeName(injectGlobalDeclsTypeExpr(foldDecl(bty.decls), mbty), mty.lifted)
+    | just(mbty) -> typeName(mbty, mty.lifted)
     | nothing() -> typeName(bty.lifted, mty.lifted)
     end;
   top.typerep = mty.typerep;
@@ -81,7 +79,16 @@ top::TypeName ::= bty::BaseTypeExpr  mty::TypeModifierExpr
   mty.baseType = bty.typerep;
   mty.typeModifiersIn = bty.typeModifiers;
   top.errors := bty.errors ++ mty.errors;
-  top.globalDecls := bty.globalDecls ++ mty.globalDecls;
+  top.globalDecls :=
+    case mty.modifiedBaseTypeExpr of
+    | just(_) ->
+      -- TODO: Should be lifting decls to the closest scope, not global!
+      map(
+        \ d::Decl ->
+          decorate d with {env = top.env; returnType = top.returnType; isTopLevel = true;},
+          bty.decls)
+    | nothing() -> []
+    end ++ bty.globalDecls ++ mty.globalDecls;
   top.decls = bty.decls ++ mty.decls;
   top.defs := bty.defs ++ mty.defs;
   top.freeVariables = bty.freeVariables ++ mty.freeVariables;
@@ -505,7 +512,10 @@ top::TypeModifierExpr ::= bty::BaseTypeExpr
   top.lifted =
     if !null(bty.typeModifiers) then mty.lifted else baseTypeExpr();
   top.modifiedBaseTypeExpr =
-    if !null(bty.typeModifiers) then mty.modifiedBaseTypeExpr else just(bty.lifted);
+    just(
+      fromMaybe(
+        bty.lifted,
+        if !null(bty.typeModifiers) then mty.modifiedBaseTypeExpr else nothing()));
   
   local mty::TypeModifierExpr = head(bty.typeModifiers);
   mty.env = top.env;

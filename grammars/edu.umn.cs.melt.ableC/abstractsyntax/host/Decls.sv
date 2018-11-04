@@ -304,7 +304,7 @@ top::Declarator ::= name::Name  ty::TypeModifierExpr  attrs::Attributes  initial
     | _ -> [ppConcat([ty.lpp, name.pp, ty.rpp, ppAttributesRHS(attrs), initializer.pp])]
     end;
   
-  local liftedTy::BaseTypeExpr = fromMaybe(directTypeExpr(top.baseType), ty.modifiedBaseTypeExpr);
+  local liftedTy::BaseTypeExpr = fromMaybe(top.baseType.baseTypeExpr, ty.modifiedBaseTypeExpr);
   top.liftedDecl =
     if top.isTypedef
     then typedefDecls(top.givenAttributes, liftedTy, consDeclarator(top.lifted, nilDeclarator()))
@@ -588,13 +588,8 @@ top::ParameterDecl ::= storage::[StorageClass]  bty::BaseTypeExpr  mty::TypeModi
     bty.pp, space(), mty.lpp, space(), name.pp, mty.rpp, ppAttributesRHS(attrs)]);
   top.lifted =
     case mty.modifiedBaseTypeExpr of
-    | just(mbty) ->
-      -- TODO: Should be lifting decls to the closest scope, not global!
-      parameterDecl(
-        storage,
-        injectGlobalDeclsTypeExpr(foldDecl(bty.decls), mbty),
-        mty.lifted, name.lifted, attrs.lifted)
-    | _ -> parameterDecl(storage, bty.lifted, mty.lifted, name.lifted, attrs.lifted)
+    | just(mbty) -> parameterDecl(storage, mbty, mty.lifted, name.lifted, attrs.lifted)
+    | nothing() -> parameterDecl(storage, bty.lifted, mty.lifted, name.lifted, attrs.lifted)
     end;
   top.paramname = name.maybename;
   top.typerep = mty.typerep;
@@ -604,7 +599,16 @@ top::ParameterDecl ::= storage::[StorageClass]  bty::BaseTypeExpr  mty::TypeModi
     | nothing() -> loc("??",-1,-1,-1,-1,-1,-1) -- TODO: bug? probably okay, since only used to lookup names from env
     end;
   top.errors := bty.errors ++ mty.errors;
-  top.globalDecls := bty.globalDecls ++ mty.globalDecls;
+  top.globalDecls :=
+    {-case mty.modifiedBaseTypeExpr of
+    | just(_) ->
+      -- TODO: Should be lifting decls to the closest scope, not global!
+      map(
+        \ d::Decl ->
+          decorate d with {env = top.env; returnType = top.returnType; isTopLevel = true;},
+          bty.decls)
+    | nothing() -> []
+    end ++-} bty.globalDecls ++ mty.globalDecls;
   top.decls = bty.decls ++ mty.decls;
   top.defs := bty.defs ++ mty.defs;
   top.functionDefs :=
@@ -859,11 +863,16 @@ flowtype StructItem = decorate {env, returnType};
 abstract production structItem
 top::StructItem ::= attrs::Attributes  ty::BaseTypeExpr  dcls::StructDeclarators
 {
-  propagate host, lifted;
+  propagate host;
   top.pp = ppConcat([ppAttributes(attrs), ty.pp, space(), ppImplode(text(", "), dcls.pps)]);
+  top.lifted =
+    if dcls.hasModifiedTypeExpr
+    -- TODO: Discarding ty.decls!
+    then structItems(foldStructItem(dcls.liftedStructItems))
+    else structItem(attrs.lifted, ty.lifted, dcls.lifted);
   top.errors := ty.errors ++ dcls.errors;
   top.globalDecls := ty.globalDecls ++ dcls.globalDecls;
-  top.defs := ty.defs;
+  top.defs := ty.defs ++ dcls.defs;
   top.freeVariables = ty.freeVariables ++ dcls.freeVariables;
   top.localDefs := dcls.localDefs;
   top.hasConstField = dcls.hasConstField;
@@ -873,6 +882,18 @@ top::StructItem ::= attrs::Attributes  ty::BaseTypeExpr  dcls::StructDeclarators
   dcls.baseType = ty.typerep;
   dcls.typeModifiersIn = ty.typeModifiers;
   dcls.givenAttributes = attrs;
+}
+abstract production structItems
+top::StructItem ::= dcls::StructItemList
+{
+  propagate host, lifted;
+  top.pp = terminate(line(), dcls.pps);
+  top.errors := dcls.errors;
+  top.globalDecls := dcls.globalDecls;
+  top.defs := dcls.defs;
+  top.freeVariables = dcls.freeVariables;
+  top.localDefs := dcls.localDefs;
+  top.hasConstField = dcls.hasConstField;
 }
 abstract production anonStructStructItem
 top::StructItem ::= d::StructDecl
@@ -915,17 +936,21 @@ top::StructItem ::= msg::[Message]
   top.hasConstField = false;
 }
 
+synthesized attribute liftedStructItems::[StructItem];
 
-nonterminal StructDeclarators with pps, host<StructDeclarators>, lifted<StructDeclarators>, errors, globalDecls, localDefs, hasConstField, env, baseType, typeModifiersIn, givenAttributes, returnType, freeVariables;
-flowtype StructDeclarators = decorate {env, returnType, baseType, typeModifiersIn, givenAttributes};
+nonterminal StructDeclarators with pps, host<StructDeclarators>, lifted<StructDeclarators>, liftedStructItems, hasModifiedTypeExpr, errors, globalDecls, defs, localDefs, hasConstField, env, baseType, typeModifiersIn, givenAttributes, returnType, freeVariables;
+flowtype StructDeclarators = decorate {env, returnType, baseType, typeModifiersIn, givenAttributes}, liftedStructItems {decorate}, hasModifiedTypeExpr {decorate};
 
 abstract production consStructDeclarator
 top::StructDeclarators ::= h::StructDeclarator  t::StructDeclarators
 {
   propagate host, lifted;
   top.pps = h.pps ++ t.pps;
+  top.liftedStructItems = h.liftedStructItem :: t.liftedStructItems;
+  top.hasModifiedTypeExpr = h.hasModifiedTypeExpr || t.hasModifiedTypeExpr;
   top.errors := h.errors ++ t.errors;
   top.globalDecls := h.globalDecls ++ t.globalDecls;
+  top.defs := h.defs ++ t.defs;
   top.localDefs := h.localDefs ++ t.localDefs;
   top.hasConstField = h.hasConstField || t.hasConstField;
   top.freeVariables =
@@ -939,23 +964,37 @@ top::StructDeclarators ::=
 {
   propagate host, lifted;
   top.pps = [];
+  top.liftedStructItems = [];
+  top.hasModifiedTypeExpr = false;
   top.errors := [];
   top.globalDecls := [];
+  top.defs := [];
   top.localDefs := [];
   top.hasConstField = false;
   top.freeVariables = [];
 }
 
-nonterminal StructDeclarator with pps, host<StructDeclarator>, lifted<StructDeclarator>, errors, globalDecls, localDefs, hasConstField, env, typerep, sourceLocation, baseType, typeModifiersIn, givenAttributes, returnType, freeVariables;
-flowtype StructDeclarator = decorate {env, returnType, baseType, typeModifiersIn, givenAttributes};
+synthesized attribute liftedStructItem::StructItem;
+
+nonterminal StructDeclarator with pps, host<StructDeclarator>, lifted<StructDeclarator>, liftedStructItem, hasModifiedTypeExpr, errors, globalDecls, defs, localDefs, hasConstField, env, typerep, sourceLocation, baseType, typeModifiersIn, givenAttributes, returnType, freeVariables;
+flowtype StructDeclarator = decorate {env, returnType, baseType, typeModifiersIn, givenAttributes}, liftedStructItem {decorate}, hasModifiedTypeExpr {decorate};
 
 abstract production structField
 top::StructDeclarator ::= name::Name  ty::TypeModifierExpr  attrs::Attributes
 {
   propagate host, lifted;
   top.pps = [ppConcat([ty.lpp, name.pp, ty.rpp, ppAttributesRHS(attrs)])];
+  
+  top.liftedStructItem =
+    structItem(
+      top.givenAttributes,
+      fromMaybe(top.baseType.baseTypeExpr, ty.modifiedBaseTypeExpr),
+      consStructDeclarator(top.lifted, nilStructDeclarator()));
+  top.hasModifiedTypeExpr = ty.modifiedBaseTypeExpr.isJust;
+  
   top.errors := ty.errors;
   top.globalDecls := ty.globalDecls;
+  top.defs := ty.defs;
   top.localDefs := [valueDef(name.name, fieldValueItem(top))];
   top.hasConstField = containsQualifier(constQualifier(location=bogusLoc()), ty.typerep);
   top.freeVariables = ty.freeVariables;
@@ -974,9 +1013,18 @@ top::StructDeclarator ::= name::MaybeName  ty::TypeModifierExpr  e::Expr  attrs:
 {
   propagate host, lifted;
   top.pps = [ppConcat([ty.lpp, name.pp, ty.rpp, text(" : "), e.pp, ppAttributesRHS(attrs)])];
+  
+  top.liftedStructItem =
+    structItem(
+      top.givenAttributes,
+      fromMaybe(top.baseType.baseTypeExpr, ty.modifiedBaseTypeExpr),
+      consStructDeclarator(top.lifted, nilStructDeclarator()));
+  top.hasModifiedTypeExpr = ty.modifiedBaseTypeExpr.isJust;
+  
   top.errors := ty.errors ++ e.errors;
   top.globalDecls := ty.globalDecls ++ e.globalDecls;
 
+  top.defs := ty.defs ++ e.defs;
   local thisdcl :: [Def] =
     case name.maybename of
     | just(n) -> [valueDef(n.name, fieldValueItem(top))]
@@ -1005,8 +1053,11 @@ top::StructDeclarator ::= msg::[Message]
 {
   propagate host, lifted;
   top.pps = [];
+  top.liftedStructItem = warnStructItem(msg);
+  top.hasModifiedTypeExpr = false;
   top.errors := msg;
   top.globalDecls := [];
+  top.defs := [];
   top.localDefs := [];
   top.hasConstField = false;
   top.freeVariables = [];
@@ -1024,7 +1075,7 @@ top::EnumItem ::= name::Name  e::MaybeExpr
   top.pp = ppConcat([name.pp] ++ if e.isJust then [text(" = "), e.pp] else []);
   top.errors := e.errors;
   top.globalDecls := e.globalDecls;
-  top.defs := [valueDef(name.name, enumValueItem(top))];
+  top.defs := valueDef(name.name, enumValueItem(top)) :: e.defs;
   top.freeVariables = e.freeVariables;
   top.typerep = top.containingEnum;
   top.sourceLocation = name.location;
