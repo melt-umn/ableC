@@ -51,7 +51,7 @@ top::TagItem ::= s::Decorated EnumDecl
 
 aspect production refIdTagItem
 top::TagItem ::= tag::StructOrEnumOrUnion  refId::String
-{ top.pp = text("Struct|Enum, refId = " ++ refId); }
+{ top.pp = text("Struct|Union, refId = " ++ refId); }
 
 aspect production errorTagItem
 top::TagItem ::=
