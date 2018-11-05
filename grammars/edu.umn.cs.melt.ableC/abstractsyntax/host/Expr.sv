@@ -260,7 +260,7 @@ top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
     end;
   
   local refids :: [RefIdItem] =
-    lookupRefId(quals_refid.snd, top.env);
+    lookupRefId(quals_refid.snd, addEnv(lhs.defs, lhs.env));
   
   local valueitems :: [ValueItem] =
     lookupValue(rhs.name, head(refids).tagEnv);

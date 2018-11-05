@@ -76,6 +76,7 @@ top::TypeName ::= bty::BaseTypeExpr  mty::TypeModifierExpr
   top.bty = bty;
   top.mty = mty;
   bty.givenRefId = nothing();
+  mty.env = addEnv(bty.defs, bty.env);
   mty.baseType = bty.typerep;
   mty.typeModifiersIn = bty.typeModifiers;
   top.errors := bty.errors ++ mty.errors;
