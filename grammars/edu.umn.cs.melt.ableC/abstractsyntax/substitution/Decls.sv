@@ -53,6 +53,13 @@ top::Decl ::= msg::[Message]
 {
   propagate substituted;
 }
+aspect production decDecl
+top::Decl ::= d::Decorated Decl
+{
+  local newD::Decl = new(d);
+  newD.substitutions = top.substitutions;
+  top.substituted = newD.substituted;
+}
 
 aspect production staticAssertDecl
 top::Decl ::= e::Expr  s::String

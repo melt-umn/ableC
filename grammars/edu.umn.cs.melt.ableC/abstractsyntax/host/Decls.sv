@@ -209,6 +209,26 @@ top::Decl ::= msg::[Message]
   top.freeVariables = [];
 }
 
+{--
+ - The purpose of this production is for an extension production to use to wrap
+ - children that have already been decorated during error checking, etc. when
+ - computing a forward tree, to avoid re-decoration and potential exponential
+ - performance hits.  When using this production, one must be very careful to
+ - ensure that the inherited attributes recieved by the wrapped tree are equivalent
+ - to the ones that would have been passed down in the forward tree.
+ -}
+abstract production decDecl
+top::Decl ::= d::Decorated Decl
+{
+  top.pp = pp"dec{${d.pp}}";
+  top.host = d.host;
+  top.lifted = d.lifted;
+  top.errors := d.errors;
+  top.globalDecls := d.globalDecls;
+  top.defs := d.defs;
+  top.freeVariables = top.freeVariables;
+}
+
 -- C11
 abstract production staticAssertDecl
 top::Decl ::= e::Expr  s::String
