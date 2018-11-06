@@ -27,7 +27,7 @@ flowtype pp {} on
   MaybeInitializer, Initializer, Init, Designator;
 flowtype pps {} on 
   Attributes,
-  GlobalDecls, Decls, Declarators, Declarator, Parameters, StructItemList, EnumItemList, StructDeclarators, StructDeclarator,
+  GlobalDecls, Decls, Declarators, Declarator, Parameters, StructItemList, EnumItemList, StructDeclarators, StructDeclarator, StorageClasses,
   ArraySizeModifier,
   Qualifiers, SpecialSpecifiers,
   GenericAssocs,

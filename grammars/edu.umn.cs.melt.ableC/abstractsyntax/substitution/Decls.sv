@@ -25,7 +25,7 @@ top::Decl ::= d::[Def]
 }
 
 aspect production variableDecls
-top::Decl ::= storage::[StorageClass]  attrs::Attributes  ty::BaseTypeExpr  dcls::Declarators
+top::Decl ::= storage::StorageClasses  attrs::Attributes  ty::BaseTypeExpr  dcls::Declarators
 {
   propagate substituted;
 }
@@ -92,7 +92,7 @@ top::Declarator ::= msg::[Message]
 }
 
 aspect production functionDecl
-top::FunctionDecl ::= storage::[StorageClass]  fnquals::SpecialSpecifiers  bty::BaseTypeExpr mty::TypeModifierExpr  name::Name  attrs::Attributes  decls::Decls  body::Stmt
+top::FunctionDecl ::= storage::StorageClasses  fnquals::SpecialSpecifiers  bty::BaseTypeExpr mty::TypeModifierExpr  name::Name  attrs::Attributes  decls::Decls  body::Stmt
 {
   propagate substituted;
 }
@@ -117,7 +117,7 @@ top::Parameters ::= h::ParameterDecl  t::Parameters
   local substitutions::Substitutions = top.substitutions;
   substitutions.nameIn =
     case h1 of
-      parameterDecl([], typedefTypeExpr(nilQualifier(), id), baseTypeExpr(), nothingName(), nilAttribute()) -> id.name
+      parameterDecl(nilStorageClass(), typedefTypeExpr(nilQualifier(), id), baseTypeExpr(), nothingName(), nilAttribute()) -> id.name
     | _ -> ""
     end;
   top.substituted =
@@ -134,7 +134,7 @@ top::Parameters ::=
 
 
 aspect production parameterDecl
-top::ParameterDecl ::= storage::[StorageClass]  bty::BaseTypeExpr  mty::TypeModifierExpr  name::MaybeName  attrs::Attributes
+top::ParameterDecl ::= storage::StorageClasses  bty::BaseTypeExpr  mty::TypeModifierExpr  name::MaybeName  attrs::Attributes
 {
   propagate substituted;
 }

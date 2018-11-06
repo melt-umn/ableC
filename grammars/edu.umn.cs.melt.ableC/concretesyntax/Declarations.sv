@@ -58,7 +58,7 @@ concrete productions top::Declaration_c
           else
             ast:typedefDecls(ds.attributes, bt, dcls)
         else
-          ast:variableDecls(ds.storageClass, ds.attributes, bt, dcls);
+          ast:variableDecls(ast:foldStorageClass(ds.storageClass), ds.attributes, bt, dcls);
     }
     action {
       context =
@@ -220,7 +220,7 @@ concrete productions top::InitialFunctionDefinition_c
         end;
 
       top.ast = 
-        ast:functionDecl(ds.storageClass, specialSpecifiers, bt, mt, d.declaredIdent, ds.attributes, ast:foldDecl(l.ast), top.givenStmt);
+        ast:functionDecl(ast:foldStorageClass(ds.storageClass), specialSpecifiers, bt, mt, d.declaredIdent, ds.attributes, ast:foldDecl(l.ast), top.givenStmt);
     }
     action {
       -- Function are annoying because we have to open a scope, then add the
@@ -254,7 +254,7 @@ concrete productions top::InitialFunctionDefinition_c
         end;
 
       top.ast = 
-        ast:functionDecl([], ast:nilSpecialSpecifier(), bt, mt, d.declaredIdent, ast:nilAttribute(), ast:foldDecl(l.ast), top.givenStmt);
+        ast:functionDecl(ast:nilStorageClass(), ast:nilSpecialSpecifier(), bt, mt, d.declaredIdent, ast:nilAttribute(), ast:foldDecl(l.ast), top.givenStmt);
     }
     action {
       -- Unfortunate duplication. This production is necessary for K&R compatibility
@@ -300,7 +300,7 @@ concrete productions top::InitiallyUnqualifiedDeclaration_c
           else
             ast:typedefDecls(ds.attributes, bt, dcls)
         else
-          ast:variableDecls(ds.storageClass, ds.attributes, bt, dcls);
+          ast:variableDecls(ast:foldStorageClass(ds.storageClass), ds.attributes, bt, dcls);
     }
     action {
       context =
@@ -565,7 +565,7 @@ concrete productions top::ParameterDeclaration_c
       d.givenType = ast:baseTypeExpr();
       local bt :: ast:BaseTypeExpr =
         ast:figureOutTypeFromSpecifiers(ds.location, ds.typeQualifiers, ds.preTypeSpecifiers, ds.realTypeSpecifiers, ds.mutateTypeSpecifiers);
-      top.ast = ast:parameterDecl(ds.storageClass, bt, d.ast, ast:justName(d.declaredIdent), ds.attributes);
+      top.ast = ast:parameterDecl(ast:foldStorageClass(ds.storageClass), bt, d.ast, ast:justName(d.declaredIdent), ds.attributes);
       }
 | ds::DeclarationSpecifiers_c d::AbstractDeclarator_c 
     { top.declaredIdents = [];
@@ -573,14 +573,14 @@ concrete productions top::ParameterDeclaration_c
       d.givenType = ast:baseTypeExpr();
       local bt :: ast:BaseTypeExpr =
         ast:figureOutTypeFromSpecifiers(ds.location, ds.typeQualifiers, ds.preTypeSpecifiers, ds.realTypeSpecifiers, ds.mutateTypeSpecifiers);
-      top.ast = ast:parameterDecl(ds.storageClass, bt, d.ast, ast:nothingName(), ds.attributes);
+      top.ast = ast:parameterDecl(ast:foldStorageClass(ds.storageClass), bt, d.ast, ast:nothingName(), ds.attributes);
     }
 | ds::DeclarationSpecifiers_c 
     { top.declaredIdents = [];
       ds.givenQualifiers = ds.typeQualifiers;
       local bt :: ast:BaseTypeExpr =
         ast:figureOutTypeFromSpecifiers(ds.location, ds.typeQualifiers, ds.preTypeSpecifiers, ds.realTypeSpecifiers, ds.mutateTypeSpecifiers);
-      top.ast = ast:parameterDecl(ds.storageClass, bt, ast:baseTypeExpr(), ast:nothingName(), ds.attributes);
+      top.ast = ast:parameterDecl(ast:foldStorageClass(ds.storageClass), bt, ast:baseTypeExpr(), ast:nothingName(), ds.attributes);
     }
 
 
