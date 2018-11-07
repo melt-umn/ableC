@@ -187,6 +187,11 @@ top::StructItem ::= attrs::Attributes  ty::BaseTypeExpr  dcls::StructDeclarators
 {
   propagate substituted;
 }
+aspect production structItems
+top::StructItem ::= dcls::StructItemList
+{
+  propagate substituted;
+}
 aspect production anonStructStructItem
 top::StructItem ::= d::StructDecl
 {

@@ -54,7 +54,7 @@ flowtype errors {decorate} on
   SpecialSpecifiers;
 
 flowtype defs {decorate} on
-  Decls, Decl, Declarators, Declarator, FunctionDecl, Parameters, ParameterDecl, StructDecl, UnionDecl, EnumDecl, StructItemList, EnumItemList, StructItem, EnumItem,
+  Decls, Decl, Declarators, Declarator, FunctionDecl, Parameters, ParameterDecl, StructDecl, UnionDecl, EnumDecl, StructItemList, EnumItemList, StructItem, StructDeclarators, StructDeclarator, EnumItem,
   MemberDesignator,
   SpecialSpecifier, SpecialSpecifiers,
   Expr, GenericAssocs, GenericAssoc,
