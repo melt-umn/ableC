@@ -82,7 +82,7 @@ top::Stmt ::= t::Type n::Name init::Expr
   forwards to
     declStmt(
       variableDecls(
-        [], nilAttribute(),
+        nilStorageClass(), nilAttribute(),
         directTypeExpr(t),
         consDeclarator(
           declarator(
