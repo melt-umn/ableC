@@ -216,6 +216,7 @@ top::Decl ::= msg::[Message]
  - performance hits.  When using this production, one must be very careful to
  - ensure that the inherited attributes recieved by the wrapped tree are equivalent
  - to the ones that would have been passed down in the forward tree.
+ - See https://github.com/melt-umn/silver/issues/86
  -}
 abstract production decDecl
 top::Decl ::= d::Decorated Decl
@@ -226,7 +227,7 @@ top::Decl ::= d::Decorated Decl
   top.errors := d.errors;
   top.globalDecls := d.globalDecls;
   top.defs := d.defs;
-  top.freeVariables = top.freeVariables;
+  top.freeVariables = d.freeVariables;
 }
 
 -- C11
