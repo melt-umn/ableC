@@ -103,7 +103,7 @@ concrete productions top::InitialNestedFunctionDefinition_c
         foldr(ast:consSpecialSpecifier, ast:nilSpecialSpecifier(), ds.specialSpecifiers);
 
       top.ast =
-        ast:nestedFunctionDecl(ds.storageClass, specialSpecifiers, bt, d.ast, d.declaredIdent, ds.attributes, ast:foldDecl([]), top.givenStmt);
+        ast:nestedFunctionDecl(ast:foldStorageClass(ds.storageClass), specialSpecifiers, bt, d.ast, d.declaredIdent, ds.attributes, ast:foldDecl([]), top.givenStmt);
     }
     action {
       -- TODO: we have to duplicate this more. yaaay...
@@ -288,7 +288,7 @@ concrete productions top::ParameterDeclaration_c
       d.givenType = ast:baseTypeExpr();
       local bt :: ast:BaseTypeExpr =
         ast:figureOutTypeFromSpecifiers(ds.location, ds.typeQualifiers, ds.preTypeSpecifiers, ds.realTypeSpecifiers, ds.mutateTypeSpecifiers);
-      top.ast = ast:parameterDecl(ds.storageClass, bt, d.ast, ast:justName(d.declaredIdent), ast:appendAttribute(ds.attributes, aa.ast));
+      top.ast = ast:parameterDecl(ast:foldStorageClass(ds.storageClass), bt, d.ast, ast:justName(d.declaredIdent), ast:appendAttribute(ds.attributes, aa.ast));
       }
 | ds::DeclarationSpecifiers_c  d::AbstractDeclarator_c  aa::Attributes_c
     { top.declaredIdents = [];
@@ -296,7 +296,7 @@ concrete productions top::ParameterDeclaration_c
       d.givenType = ast:baseTypeExpr();
       local bt :: ast:BaseTypeExpr =
         ast:figureOutTypeFromSpecifiers(ds.location, ds.typeQualifiers, ds.preTypeSpecifiers, ds.realTypeSpecifiers, ds.mutateTypeSpecifiers);
-      top.ast = ast:parameterDecl(ds.storageClass, bt, d.ast, ast:nothingName(), ast:appendAttribute(ds.attributes, aa.ast));
+      top.ast = ast:parameterDecl(ast:foldStorageClass(ds.storageClass), bt, d.ast, ast:nothingName(), ast:appendAttribute(ds.attributes, aa.ast));
     }
 -- wtf gcc, first declspecs have attributes and then they're supposed to appear here??
 --| dspecs::DeclarationSpecifiers_c Attributes_c

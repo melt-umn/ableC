@@ -78,7 +78,7 @@ nonterminal Decl with pp, host<Decl>, lifted<Decl>, errors, globalDecls, unfolde
 flowtype Decl = decorate {env, isTopLevel, returnType};
 
 {-- Pass down from top-level declaration the list of attribute to each name-declaration -}
-autocopy attribute givenStorageClasses :: [StorageClass];
+autocopy attribute givenStorageClasses :: StorageClasses;
 autocopy attribute givenAttributes :: Attributes;
 
 aspect default production
@@ -115,11 +115,11 @@ top::Decl ::= d::[Def]
 }
 
 abstract production variableDecls
-top::Decl ::= storage::[StorageClass]  attrs::Attributes  ty::BaseTypeExpr  dcls::Declarators
+top::Decl ::= storage::StorageClasses  attrs::Attributes  ty::BaseTypeExpr  dcls::Declarators
 {
   propagate host;
   top.pp = ppConcat(
-    terminate(space(), map((.pp), storage)) ::
+    terminate(space(), storage.pps) ::
       ppAttributes(attrs) ::
       [ty.pp, space(), ppImplode(text(", "), dcls.pps), semi()]);
   top.lifted =
@@ -171,7 +171,7 @@ top::Decl ::= attrs::Attributes  ty::BaseTypeExpr  dcls::Declarators
   dcls.baseType = ty.typerep;
   dcls.typeModifiersIn = ty.typeModifiers;
   dcls.isTypedef = true;
-  dcls.givenStorageClasses = [];
+  dcls.givenStorageClasses = nilStorageClass();
   dcls.givenAttributes = attrs;
 }
 
@@ -391,11 +391,11 @@ nonterminal FunctionDecl with pp, host<FunctionDecl>, lifted<Decl>, errors, glob
 flowtype FunctionDecl = decorate {env, returnType}, name {}, sourceLocation {};
 
 abstract production functionDecl
-top::FunctionDecl ::= storage::[StorageClass]  fnquals::SpecialSpecifiers  bty::BaseTypeExpr mty::TypeModifierExpr  name::Name  attrs::Attributes  ds::Decls  body::Stmt
+top::FunctionDecl ::= storage::StorageClasses  fnquals::SpecialSpecifiers  bty::BaseTypeExpr mty::TypeModifierExpr  name::Name  attrs::Attributes  ds::Decls  body::Stmt
 {
   propagate host;
   
-  top.pp = ppConcat([terminate(space(), map((.pp), storage)), terminate( space(), fnquals.pps ),
+  top.pp = ppConcat([terminate(space(), storage.pps), terminate( space(), fnquals.pps ),
     bty.pp, space(), mty.lpp, name.pp, mty.rpp, ppAttributesRHS(attrs), line(), terminate(cat(semi(), line()), ds.pps),
     text("{"), line(), nestlines(2,body.pp), text("}")]);
   
@@ -518,7 +518,7 @@ top::FunctionDecl ::= storage::[StorageClass]  fnquals::SpecialSpecifiers  bty::
 -- Allows extensions to handle nested functions differently
 -- TODO: is this needed?  Should this be forwarding?  
 abstract production nestedFunctionDecl
-top::FunctionDecl ::= storage::[StorageClass]  fnquals::SpecialSpecifiers  bty::BaseTypeExpr mty::TypeModifierExpr  name::Name  attrs::Attributes  ds::Decls  body::Stmt
+top::FunctionDecl ::= storage::StorageClasses  fnquals::SpecialSpecifiers  bty::BaseTypeExpr mty::TypeModifierExpr  name::Name  attrs::Attributes  ds::Decls  body::Stmt
 {
   --top.defs := bty.defs ++ [valueDef(name.name, functionValueItem(top))];
   
@@ -605,10 +605,10 @@ nonterminal ParameterDecl with paramname, typerep, pp, host<ParameterDecl>, lift
 flowtype ParameterDecl = decorate {env, returnType, position}, paramname {};
 
 abstract production parameterDecl
-top::ParameterDecl ::= storage::[StorageClass]  bty::BaseTypeExpr  mty::TypeModifierExpr  name::MaybeName  attrs::Attributes
+top::ParameterDecl ::= storage::StorageClasses  bty::BaseTypeExpr  mty::TypeModifierExpr  name::MaybeName  attrs::Attributes
 {
   propagate host;
-  top.pp = ppConcat([terminate(space(), map((.pp), storage)),
+  top.pp = ppConcat([terminate(space(), storage.pps),
     bty.pp, space(), mty.lpp, space(), name.pp, mty.rpp, ppAttributesRHS(attrs)]);
   top.lifted =
     case mty.modifiedBaseTypeExpr of
@@ -1108,8 +1108,33 @@ top::EnumItem ::= name::Name  e::MaybeExpr
   top.errors <- name.valueRedeclarationCheckNoCompatible;
 }
 
+autocopy attribute appendedStorageClasses :: StorageClasses;
+synthesized attribute appendedStorageClassesRes :: StorageClasses;
 
--- TODO: Also make a StorageClasses nonterminal
+nonterminal StorageClasses with pps, appendedStorageClasses, appendedStorageClassesRes;
+flowtype StorageClasses = decorate {}, appendedStorageClassesRes {appendedStorageClasses};
+
+abstract production consStorageClass
+top::StorageClasses ::= h::StorageClass  t::StorageClasses
+{
+  top.pps = h.pp :: t.pps;
+  top.appendedStorageClassesRes = consStorageClass(h, t.appendedStorageClassesRes);
+}
+
+abstract production nilStorageClass
+top::StorageClasses ::=
+{
+  top.pps = [];
+  top.appendedStorageClassesRes = top.appendedStorageClasses;
+}
+
+function appendStorageClasses
+StorageClasses ::= s1::StorageClasses s2::StorageClasses
+{
+  s1.appendedStorageClasses = s2;
+  return s1.appendedStorageClassesRes;
+}
+
 nonterminal StorageClass with pp;
 flowtype StorageClass = decorate {};
 

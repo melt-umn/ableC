@@ -74,11 +74,17 @@ Parameters ::= l::[ParameterDecl]
   -- A special case.  "type name(void)"  means no parameters.
   | [d] ->
     case decorate d with {env = emptyEnv(); returnType = nothing(); position = 0;} of
-      parameterDecl([], builtinTypeExpr(nilQualifier(), voidType()), baseTypeExpr(), nothingName(), nilAttribute()) -> nilParameters()
+      parameterDecl(nilStorageClass(), builtinTypeExpr(nilQualifier(), voidType()), baseTypeExpr(), nothingName(), nilAttribute()) -> nilParameters()
     | _ -> foldr(consParameters, nilParameters(), l)
     end
   | _ -> foldr(consParameters, nilParameters(), l)
   end;
+}
+
+function foldStorageClass
+StorageClasses ::= l::[StorageClass]
+{
+  return foldr(consStorageClass, nilStorageClass(), l);
 }
 
 function foldAttribute
