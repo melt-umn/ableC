@@ -87,7 +87,10 @@ top::TypeName ::= bty::BaseTypeExpr  mty::TypeModifierExpr
       map(
         \ d::Decl ->
           decorate d with {env = top.env; returnType = top.returnType; isTopLevel = true;},
-          bty.decls)
+        -- decorate needed here because of flowtype for decls
+        decorate bty.lifted with {
+          env = bty.env; returnType = bty.returnType; givenRefId = bty.givenRefId;
+        }.decls)
     | nothing() -> []
     end ++ bty.globalDecls ++ mty.globalDecls;
   top.decls = bty.decls ++ mty.decls;
