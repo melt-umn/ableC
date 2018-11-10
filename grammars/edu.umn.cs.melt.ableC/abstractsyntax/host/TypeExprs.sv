@@ -280,7 +280,10 @@ top::BaseTypeExpr ::= q::Qualifiers  kwd::StructOrEnumOrUnion  name::Name
   top.globalDecls := [];
   top.typeModifiers = [];
   -- Avoid re-decorating and re-generating refIds
-  top.decls = [typeExprDecl(nilAttribute(), decTypeExpr(top))];
+  top.decls =
+    if null(lookupTag(name.name, top.env))
+    then [typeExprDecl(nilAttribute(), decTypeExpr(top))]
+    else [];
   
   top.defs :=
     case kwd, tags of
