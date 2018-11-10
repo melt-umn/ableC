@@ -149,6 +149,30 @@ top::BaseTypeExpr ::= result::Type
   forwards to typeModifierTypeExpr(result.baseTypeExpr, result.typeModifierExpr);
 }
 
+{--
+ - The purpose of this production is for an extension production to use to wrap
+ - children that have already been decorated during error checking, etc. when
+ - computing a forward tree, to avoid re-decoration and potential exponential
+ - performance hits.  When using this production, one must be very careful to
+ - ensure that the inherited attributes recieved by the wrapped tree are equivalent
+ - to the ones that would have been passed down in the forward tree.
+ - See https://github.com/melt-umn/silver/issues/86
+ -}
+abstract production decTypeExpr
+top::BaseTypeExpr ::= ty::Decorated BaseTypeExpr
+{
+  top.pp = pp"dec{${ty.pp}}";
+  top.host = ty.host;
+  top.lifted = ty.lifted;
+  top.typerep = ty.typerep;
+  top.errors := ty.errors;
+  top.globalDecls := ty.globalDecls;
+  top.typeModifiers = ty.typeModifiers;
+  top.decls = ty.decls;
+  top.defs := ty.defs;
+  top.freeVariables = ty.freeVariables;
+}
+
 {-- A TypeExpr that contains extra extension defs to be placed in the environment
  - This production should not occur in the host AST
  -}
@@ -255,7 +279,8 @@ top::BaseTypeExpr ::= q::Qualifiers  kwd::StructOrEnumOrUnion  name::Name
   
   top.globalDecls := [];
   top.typeModifiers = [];
-  top.decls = [];
+  -- Avoid re-decorating and re-generating refIds
+  top.decls = [typeExprDecl(nilAttribute(), decTypeExpr(top))];
   
   top.defs :=
     case kwd, tags of
@@ -291,7 +316,8 @@ top::BaseTypeExpr ::= q::Qualifiers  def::StructDecl
   top.errors := q.errors ++ def.errors;
   top.globalDecls := def.globalDecls;
   top.typeModifiers = [];
-  top.decls = [typeExprDecl(nilAttribute(), top)];
+  -- Avoid re-decorating and re-generating refIds
+  top.decls = [typeExprDecl(nilAttribute(), decTypeExpr(top))];
   top.defs := def.defs;
   top.freeVariables = [];
   q.typeToQualify = top.typerep;
@@ -313,7 +339,8 @@ top::BaseTypeExpr ::= q::Qualifiers  def::UnionDecl
   top.errors := q.errors ++ def.errors;
   top.globalDecls := def.globalDecls;
   top.typeModifiers = [];
-  top.decls = [typeExprDecl(nilAttribute(), top)];
+  -- Avoid re-decorating and re-generating refIds
+  top.decls = [typeExprDecl(nilAttribute(), decTypeExpr(top))];
   top.defs := def.defs;
   top.freeVariables = [];
   q.typeToQualify = top.typerep;
