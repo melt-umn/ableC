@@ -13,7 +13,7 @@ top::Stmt ::=
   top.errors := [];
   top.globalDecls := [];
   top.defs := [];
-  top.freeVariables = [];
+  top.freeVariables := [];
   top.functionDefs := [];
 }
 
@@ -25,7 +25,7 @@ top::Stmt ::= h::Stmt  t::Stmt
   top.errors := h.errors ++ t.errors;
   top.globalDecls := h.globalDecls ++ t.globalDecls;
   top.defs := h.defs ++ t.defs;
-  top.freeVariables =
+  top.freeVariables :=
     h.freeVariables ++
     removeDefsFromNames(h.defs, t.freeVariables);
   top.functionDefs := h.functionDefs ++ t.functionDefs;
@@ -41,7 +41,7 @@ top::Stmt ::= s::Stmt
   top.errors := s.errors;
   top.globalDecls := s.globalDecls;
   top.defs := globalDeclsDefs(s.globalDecls); -- compound prevents defs from bubbling up
-  top.freeVariables = s.freeVariables;
+  top.freeVariables := s.freeVariables;
   top.functionDefs := s.functionDefs;
 
   s.env = openScopeEnv(top.env);
@@ -57,7 +57,7 @@ top::Stmt ::= msg::[Message]
   top.errors := msg;
   top.globalDecls := [];
   top.defs := [];
-  top.freeVariables = [];
+  top.freeVariables := [];
   top.functionDefs := [];
 }
 
@@ -79,7 +79,7 @@ top::Stmt ::= s::Decorated Stmt
   top.errors := s.errors;
   top.globalDecls := s.globalDecls;
   top.defs := s.defs;
-  top.freeVariables = s.freeVariables;
+  top.freeVariables := s.freeVariables;
   top.functionDefs := s.functionDefs;
 }
 
@@ -91,7 +91,7 @@ top::Stmt ::= d::Decl
   top.errors := d.errors;
   top.globalDecls := d.globalDecls;
   top.defs := d.defs;
-  top.freeVariables = d.freeVariables;
+  top.freeVariables := d.freeVariables;
   top.functionDefs := [];
   d.isTopLevel = false;
 }
@@ -124,7 +124,7 @@ top::Stmt ::= d::Expr
   top.errors := d.errors;
   top.globalDecls := d.globalDecls;
   top.defs := d.defs;
-  top.freeVariables = d.freeVariables;
+  top.freeVariables := d.freeVariables;
   top.functionDefs := [];
 }
 
@@ -144,7 +144,7 @@ top::Stmt ::= c::Expr  t::Stmt  e::Stmt
   -- enclosing block. Each associated substatement is also a block whose scope is a strict
   -- subset of the scope of the selection statement.
   top.defs := globalDeclsDefs(c.globalDecls) ++ globalDeclsDefs(t.globalDecls) ++ globalDeclsDefs(e.globalDecls);
-  top.freeVariables =
+  top.freeVariables :=
     c.freeVariables ++
     removeDefsFromNames(c.defs, t.freeVariables) ++
     removeDefsFromNames(c.defs, e.freeVariables);
@@ -181,7 +181,7 @@ top::Stmt ::= e::Expr  b::Stmt
   -- enclosing block. The loop body is also a block whose scope is a strict subset of the scope
   -- of the iteration statement.
   top.defs := globalDeclsDefs(e.globalDecls) ++ globalDeclsDefs(b.globalDecls);
-  top.freeVariables =
+  top.freeVariables :=
     e.freeVariables ++
     removeDefsFromNames(e.defs, b.freeVariables);
   
@@ -208,7 +208,7 @@ top::Stmt ::= b::Stmt  e::Expr
   -- enclosing block. The loop body is also a block whose scope is a strict subset of the scope
   -- of the iteration statement.
   top.defs := globalDeclsDefs(b.globalDecls) ++ globalDeclsDefs(e.globalDecls);
-  top.freeVariables =
+  top.freeVariables :=
     b.freeVariables ++
     removeDefsFromNames(b.defs, e.freeVariables);
   
@@ -239,7 +239,7 @@ top::Stmt ::= i::MaybeExpr  c::MaybeExpr  s::MaybeExpr  b::Stmt
     globalDeclsDefs(c.globalDecls) ++
     globalDeclsDefs(s.globalDecls) ++
     globalDeclsDefs(b.globalDecls);
-  top.freeVariables =
+  top.freeVariables :=
     i.freeVariables ++
     removeDefsFromNames(i.defs, c.freeVariables) ++
     removeDefsFromNames(i.defs ++ c.defs, s.freeVariables) ++
@@ -274,7 +274,7 @@ top::Stmt ::= i::Decl  c::MaybeExpr  s::MaybeExpr  b::Stmt
     globalDeclsDefs(c.globalDecls) ++
     globalDeclsDefs(s.globalDecls) ++
     globalDeclsDefs(b.globalDecls);
-  top.freeVariables =
+  top.freeVariables :=
     i.freeVariables ++
     removeDefsFromNames(i.defs, c.freeVariables) ++
     removeDefsFromNames(i.defs ++ c.defs, s.freeVariables) ++
@@ -309,7 +309,7 @@ top::Stmt ::= e::MaybeExpr {- loc::Location -} -- TODO: Add location to signatur
                 end ++ e.errors;
   top.globalDecls := e.globalDecls;
   top.defs := e.defs;
-  top.freeVariables = e.freeVariables;
+  top.freeVariables := e.freeVariables;
   top.functionDefs := [];
   -- TODO: this needs to follow the same rules as assignment. We should try to factor that out.
 }
@@ -328,7 +328,7 @@ top::Stmt ::= e::Expr  b::Stmt
   -- enclosing block. Each associated substatement is also a block whose scope is a strict
   -- subset of the scope of the selection statement.
   top.defs := globalDeclsDefs(e.globalDecls) ++ globalDeclsDefs(b.globalDecls);
-  top.freeVariables =
+  top.freeVariables :=
     e.freeVariables ++
     removeDefsFromNames(e.defs, b.freeVariables);
   
@@ -348,7 +348,7 @@ top::Stmt ::= l::Name
   top.errors := [];
   top.globalDecls := [];
   top.defs := [];
-  top.freeVariables = [];
+  top.freeVariables := [];
   top.functionDefs := [];
   
   top.errors <- l.labelLookupCheck;
@@ -362,7 +362,7 @@ top::Stmt ::=
   top.errors := [];
   top.globalDecls := [];
   top.defs := [];
-  top.freeVariables = [];
+  top.freeVariables := [];
   top.functionDefs := [];
 }
 
@@ -374,7 +374,7 @@ top::Stmt ::=
   top.errors := [];
   top.globalDecls := [];
   top.defs := [];
-  top.freeVariables = [];
+  top.freeVariables := [];
   top.functionDefs := [];
 }
 
@@ -386,7 +386,7 @@ top::Stmt ::= l::Name  s::Stmt
   top.errors := s.errors;
   top.globalDecls := s.globalDecls;
   top.defs := s.defs;
-  top.freeVariables = s.freeVariables;
+  top.freeVariables := s.freeVariables;
   top.functionDefs := s.functionDefs;
   
   top.errors <- l.labelRedeclarationCheck;
@@ -401,7 +401,7 @@ top::Stmt ::= v::Expr  s::Stmt
   top.errors := v.errors ++ s.errors;
   top.globalDecls := v.globalDecls ++ s.globalDecls;
   top.defs := v.defs ++ s.defs;
-  top.freeVariables =
+  top.freeVariables :=
     v.freeVariables ++
     removeDefsFromNames(v.defs, s.freeVariables);
   top.functionDefs := s.functionDefs; -- ??
@@ -417,7 +417,7 @@ top::Stmt ::= s::Stmt
   top.errors := s.errors;
   top.globalDecls := s.globalDecls;
   top.defs := s.defs;
-  top.freeVariables = s.freeVariables;
+  top.freeVariables := s.freeVariables;
   top.functionDefs := s.functionDefs; -- ??
 }
 
@@ -431,7 +431,7 @@ top::Stmt ::= d::FunctionDecl
   top.errors := d.errors;
   top.globalDecls := d.globalDecls;
   top.defs := d.defs;
-  top.freeVariables = d.freeVariables;
+  top.freeVariables := d.freeVariables;
   top.functionDefs := [];
 }
 
@@ -444,7 +444,7 @@ top::Stmt ::= l::Expr  u::Expr  s::Stmt
   top.errors := l.errors ++ u.errors ++ s.errors;
   top.globalDecls := l.globalDecls ++ u.globalDecls ++ s.globalDecls;
   top.defs := l.defs ++ u.defs ++ s.defs;
-  top.freeVariables = l.freeVariables ++ u.freeVariables ++ s.freeVariables;
+  top.freeVariables := l.freeVariables ++ u.freeVariables ++ s.freeVariables;
   top.functionDefs := s.functionDefs;
 }
 
@@ -456,7 +456,7 @@ top::Stmt ::= asm::AsmStatement
   top.errors := [];
   top.globalDecls := [];
   top.defs := [];
-  top.freeVariables = asm.freeVariables;
+  top.freeVariables := asm.freeVariables;
   top.functionDefs := [];
 }
 

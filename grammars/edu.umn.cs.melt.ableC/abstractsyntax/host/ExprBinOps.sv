@@ -8,7 +8,7 @@ top::Expr ::= lhs::Expr rhs::Expr
   top.errors := lhs.errors ++ assignErrors(lhs, rhs, top.location) ++ rhs.errors;
   top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
   top.defs := lhs.defs ++ rhs.defs;
-  top.freeVariables =
+  top.freeVariables :=
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = lhs.typerep.defaultLvalueConversion;
@@ -24,7 +24,7 @@ top::Expr ::= lhs::Expr rhs::Expr
   top.errors := lhs.errors ++ assignErrors(lhs, rhs, top.location) ++ rhs.errors;
   top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
   top.defs := lhs.defs ++ rhs.defs;
-  top.freeVariables =
+  top.freeVariables :=
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = lhs.typerep.defaultLvalueConversion;
@@ -40,7 +40,7 @@ top::Expr ::= lhs::Expr rhs::Expr
   top.errors := lhs.errors ++ assignErrors(lhs, rhs, top.location) ++ rhs.errors;
   top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
   top.defs := lhs.defs ++ rhs.defs;
-  top.freeVariables =
+  top.freeVariables :=
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = lhs.typerep.defaultLvalueConversion;
@@ -56,7 +56,7 @@ top::Expr ::= lhs::Expr rhs::Expr
   top.errors := lhs.errors ++ assignErrors(lhs, rhs, top.location) ++ rhs.errors;
   top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
   top.defs := lhs.defs ++ rhs.defs;
-  top.freeVariables =
+  top.freeVariables :=
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = lhs.typerep.defaultLvalueConversion;
@@ -72,7 +72,7 @@ top::Expr ::= lhs::Expr rhs::Expr
   top.errors := lhs.errors ++ assignErrors(lhs, rhs, top.location) ++ rhs.errors;
   top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
   top.defs := lhs.defs ++ rhs.defs;
-  top.freeVariables =
+  top.freeVariables :=
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = lhs.typerep.defaultLvalueConversion;
@@ -88,7 +88,7 @@ top::Expr ::= lhs::Expr rhs::Expr
   top.errors := lhs.errors ++ assignErrors(lhs, rhs, top.location) ++ rhs.errors;
   top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
   top.defs := lhs.defs ++ rhs.defs;
-  top.freeVariables =
+  top.freeVariables :=
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = lhs.typerep.defaultLvalueConversion;
@@ -104,7 +104,7 @@ top::Expr ::= lhs::Expr rhs::Expr
   top.errors := lhs.errors ++ assignErrors(lhs, rhs, top.location) ++ rhs.errors;
   top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
   top.defs := lhs.defs ++ rhs.defs;
-  top.freeVariables =
+  top.freeVariables :=
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = lhs.typerep.defaultLvalueConversion;
@@ -120,7 +120,7 @@ top::Expr ::= lhs::Expr rhs::Expr
   top.errors := lhs.errors ++ assignErrors(lhs, rhs, top.location) ++ rhs.errors;
   top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
   top.defs := lhs.defs ++ rhs.defs;
-  top.freeVariables =
+  top.freeVariables :=
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = lhs.typerep.defaultLvalueConversion;
@@ -136,7 +136,7 @@ top::Expr ::= lhs::Expr rhs::Expr
   top.errors := lhs.errors ++ assignErrors(lhs, rhs, top.location) ++ rhs.errors;
   top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
   top.defs := lhs.defs ++ rhs.defs;
-  top.freeVariables =
+  top.freeVariables :=
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = lhs.typerep.defaultLvalueConversion;
@@ -152,7 +152,7 @@ top::Expr ::= lhs::Expr rhs::Expr
   top.errors := lhs.errors ++ assignErrors(lhs, rhs, top.location) ++ rhs.errors;
   top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
   top.defs := lhs.defs ++ rhs.defs;
-  top.freeVariables =
+  top.freeVariables :=
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = lhs.typerep.defaultLvalueConversion;
@@ -168,7 +168,7 @@ top::Expr ::= lhs::Expr rhs::Expr
   top.errors := lhs.errors ++ assignErrors(lhs, rhs, top.location) ++ rhs.errors;
   top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
   top.defs := lhs.defs ++ rhs.defs;
-  top.freeVariables =
+  top.freeVariables :=
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = lhs.typerep.defaultLvalueConversion;
@@ -209,7 +209,7 @@ top::Expr ::= lhs::Expr rhs::Expr
   top.errors := lhs.errors ++ rhs.errors;
   top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
   top.defs := lhs.defs ++ rhs.defs;
-  top.freeVariables =
+  top.freeVariables :=
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = builtinType(nilQualifier(), signedType(intType()));
@@ -225,7 +225,7 @@ top::Expr ::= lhs::Expr rhs::Expr
   top.errors := lhs.errors ++ rhs.errors;
   top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
   top.defs := lhs.defs ++ rhs.defs;
-  top.freeVariables =
+  top.freeVariables :=
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = builtinType(nilQualifier(), signedType(intType()));
@@ -241,7 +241,7 @@ top::Expr ::= lhs::Expr rhs::Expr
   top.errors := lhs.errors ++ rhs.errors;
   top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
   top.defs := lhs.defs ++ rhs.defs;
-  top.freeVariables =
+  top.freeVariables :=
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = usualArithmeticConversionsOnTypes(lhs.typerep, rhs.typerep);
@@ -257,7 +257,7 @@ top::Expr ::= lhs::Expr rhs::Expr
   top.errors := lhs.errors ++ rhs.errors;
   top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
   top.defs := lhs.defs ++ rhs.defs;
-  top.freeVariables =
+  top.freeVariables :=
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = usualArithmeticConversionsOnTypes(lhs.typerep, rhs.typerep);
@@ -273,7 +273,7 @@ top::Expr ::= lhs::Expr rhs::Expr
   top.errors := lhs.errors ++ rhs.errors;
   top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
   top.defs := lhs.defs ++ rhs.defs;
-  top.freeVariables =
+  top.freeVariables :=
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = usualArithmeticConversionsOnTypes(lhs.typerep, rhs.typerep);
@@ -289,7 +289,7 @@ top::Expr ::= lhs::Expr rhs::Expr
   top.errors := lhs.errors ++ rhs.errors;
   top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
   top.defs := lhs.defs ++ rhs.defs;
-  top.freeVariables =
+  top.freeVariables :=
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = usualArithmeticConversionsOnTypes(lhs.typerep, rhs.typerep);
@@ -305,7 +305,7 @@ top::Expr ::= lhs::Expr rhs::Expr
   top.errors := lhs.errors ++ rhs.errors;
   top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
   top.defs := lhs.defs ++ rhs.defs;
-  top.freeVariables =
+  top.freeVariables :=
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = usualArithmeticConversionsOnTypes(lhs.typerep, rhs.typerep);
@@ -321,7 +321,7 @@ top::Expr ::= lhs::Expr rhs::Expr
   top.errors := lhs.errors ++ rhs.errors;
   top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
   top.defs := lhs.defs ++ rhs.defs;
-  top.freeVariables =
+  top.freeVariables :=
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = builtinType(nilQualifier(), signedType(intType()));
@@ -337,7 +337,7 @@ top::Expr ::= lhs::Expr rhs::Expr
   top.errors := lhs.errors ++ rhs.errors;
   top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
   top.defs := lhs.defs ++ rhs.defs;
-  top.freeVariables =
+  top.freeVariables :=
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = builtinType(nilQualifier(), signedType(intType()));
@@ -353,7 +353,7 @@ top::Expr ::= lhs::Expr rhs::Expr
   top.errors := lhs.errors ++ rhs.errors;
   top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
   top.defs := lhs.defs ++ rhs.defs;
-  top.freeVariables =
+  top.freeVariables :=
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = builtinType(nilQualifier(), signedType(intType()));
@@ -369,7 +369,7 @@ top::Expr ::= lhs::Expr rhs::Expr
   top.errors := lhs.errors ++ rhs.errors;
   top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
   top.defs := lhs.defs ++ rhs.defs;
-  top.freeVariables =
+  top.freeVariables :=
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = builtinType(nilQualifier(), signedType(intType()));
@@ -385,7 +385,7 @@ top::Expr ::= lhs::Expr rhs::Expr
   top.errors := lhs.errors ++ rhs.errors;
   top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
   top.defs := lhs.defs ++ rhs.defs;
-  top.freeVariables =
+  top.freeVariables :=
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = builtinType(nilQualifier(), signedType(intType()));
@@ -401,7 +401,7 @@ top::Expr ::= lhs::Expr rhs::Expr
   top.errors := lhs.errors ++ rhs.errors;
   top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
   top.defs := lhs.defs ++ rhs.defs;
-  top.freeVariables =
+  top.freeVariables :=
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = builtinType(nilQualifier(), signedType(intType()));
@@ -417,7 +417,7 @@ top::Expr ::= lhs::Expr rhs::Expr
   top.errors := lhs.errors ++ rhs.errors;
   top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
   top.defs := lhs.defs ++ rhs.defs;
-  top.freeVariables =
+  top.freeVariables :=
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = usualAdditiveConversionsOnTypes(lhs.typerep, rhs.typerep);
@@ -433,7 +433,7 @@ top::Expr ::= lhs::Expr rhs::Expr
   top.errors := lhs.errors ++ rhs.errors;
   top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
   top.defs := lhs.defs ++ rhs.defs;
-  top.freeVariables =
+  top.freeVariables :=
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = usualSubtractiveConversionsOnTypes(lhs.typerep, rhs.typerep);
@@ -449,7 +449,7 @@ top::Expr ::= lhs::Expr rhs::Expr
   top.errors := lhs.errors ++ rhs.errors;
   top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
   top.defs := lhs.defs ++ rhs.defs;
-  top.freeVariables =
+  top.freeVariables :=
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = usualArithmeticConversionsOnTypes(lhs.typerep, rhs.typerep);
@@ -465,7 +465,7 @@ top::Expr ::= lhs::Expr rhs::Expr
   top.errors := lhs.errors ++ rhs.errors;
   top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
   top.defs := lhs.defs ++ rhs.defs;
-  top.freeVariables =
+  top.freeVariables :=
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = usualArithmeticConversionsOnTypes(lhs.typerep, rhs.typerep);
@@ -481,7 +481,7 @@ top::Expr ::= lhs::Expr rhs::Expr
   top.errors := lhs.errors ++ rhs.errors;
   top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
   top.defs := lhs.defs ++ rhs.defs;
-  top.freeVariables =
+  top.freeVariables :=
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = usualArithmeticConversionsOnTypes(lhs.typerep, rhs.typerep);
@@ -497,7 +497,7 @@ top::Expr ::= lhs::Expr rhs::Expr
   top.errors := lhs.errors ++ rhs.errors;
   top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
   top.defs := lhs.defs ++ rhs.defs;
-  top.freeVariables =
+  top.freeVariables :=
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = rhs.typerep;

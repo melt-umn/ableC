@@ -5,19 +5,19 @@ imports edu:umn:cs:melt:ableC:abstractsyntax:host;
 {--
  - The environment values that get passed around and used to look up names.
  -}
-nonterminal Env with labels, tags, values, refIds, misc;
+nonterminal Env with labels, tags, values, refIds, deferredDecls, misc;
 
 {--
  - A list of definitions, only used in contributing new names to the environment.
  -}
 nonterminal Defs 
-  with labelContribs, tagContribs, valueContribs, refIdContribs, miscContribs, globalDefs;
+  with labelContribs, tagContribs, valueContribs, refIdContribs, deferredDeclContribs, miscContribs, globalDefs;
 
 {--
  - An individual definition of a name.
  -}
 closed nonterminal Def 
-  with labelContribs, tagContribs, valueContribs, refIdContribs, miscContribs, globalDefs;
+  with labelContribs, tagContribs, valueContribs, refIdContribs, deferredDeclContribs, miscContribs, globalDefs;
 
 
 {--
@@ -106,12 +106,17 @@ function lookupLabel
 {
   return lookupScope(n, e.labels);
 }
-function lookupRefId 
+function lookupRefId
 [RefIdItem] ::= n::String  e::Decorated Env
 {
   return lookupScope(n, e.refIds);
 }
-function lookupMisc 
+function lookupDeferredDecls
+[Decl] ::= n::String  e::Decorated Env
+{
+  return lookupScope(n, e.deferredDecls);
+}
+function lookupMisc
 [MiscItem] ::= n::String  e::Decorated Env
 {
   return lookupScope(n, e.misc);

@@ -134,7 +134,7 @@ top::Expr ::= decls::Decls lifted::Expr
   
   -- Variables corresponing to lifted values are *not* considered free, since they are either bound
   -- here (host tree) or available globally and shouldn't recieve special treatment (lifted tree).
-  top.freeVariables = removeDefsFromNames(decls.defs, lifted.freeVariables);
+  top.freeVariables := removeDefsFromNames(decls.defs, lifted.freeVariables);
   
   -- Define other attributes to be the same as on lifted
   top.typerep = lifted.typerep;
@@ -142,7 +142,6 @@ top::Expr ::= decls::Decls lifted::Expr
   decls.env = globalEnv(top.env);
   decls.isTopLevel = true;
   decls.returnType = nothing();
-  decls.givenDeferredDecls = [];
 
   lifted.env = addEnv([globalDefsDef(decls.defs)], top.env);
 
@@ -166,7 +165,7 @@ top::Stmt ::= decls::Decls lifted::Stmt
   
   -- Variables corresponing to lifted values are *not* considered free, since they are either bound
   -- here (host tree) or available globally and shouldn't recieve special treatment (lifted tree).
-  top.freeVariables = removeDefsFromNames(decls.defs, lifted.freeVariables);
+  top.freeVariables := removeDefsFromNames(decls.defs, lifted.freeVariables);
   
   -- Define other attributes to be the same as on lifted
   top.functionDefs := lifted.functionDefs;
@@ -174,7 +173,6 @@ top::Stmt ::= decls::Decls lifted::Stmt
   decls.env = globalEnv(top.env);
   decls.isTopLevel = true;
   decls.returnType = nothing();
-  decls.givenDeferredDecls = [];
   
   lifted.env = addEnv([globalDefsDef(decls.defs)], top.env);
 }
@@ -196,7 +194,7 @@ top::BaseTypeExpr ::= decls::Decls lifted::BaseTypeExpr
   
   -- Variables corresponing to lifted values are *not* considered free, since they are either bound
   -- here (host tree) or available globally and shouldn't recieve special treatment (lifted tree).
-  top.freeVariables = removeDefsFromNames(decls.defs, lifted.freeVariables);
+  top.freeVariables := removeDefsFromNames(decls.defs, lifted.freeVariables);
   
   -- Preserve injected decls when transforming to and back from typerep
   top.decls = [injectGlobalDeclsDecl(decls)];
@@ -208,7 +206,6 @@ top::BaseTypeExpr ::= decls::Decls lifted::BaseTypeExpr
   decls.env = globalEnv(top.env);
   decls.isTopLevel = true;
   decls.returnType = nothing();
-  decls.givenDeferredDecls = [];
 
   lifted.env = addEnv([globalDefsDef(decls.defs)], top.env);
 }
@@ -229,16 +226,15 @@ top::Decl ::= decls::Decls
   top.lifted = edu:umn:cs:melt:ableC:abstractsyntax:host:decls(nilDecl());
   
   -- Define other attributes to be the same as on "lifted" (i.e. nilDecl())
-  top.freeVariables = [];
+  top.freeVariables := [];
   
   decls.env = globalEnv(top.env);
   decls.isTopLevel = true;
   decls.returnType = nothing();
-  decls.givenDeferredDecls = [];
 }
 
 {--
- - Inserts globalDecls and instantiated deferred decls before h
+ - Inserts globalDecls before h
  -}
 aspect production consGlobalDecl
 top::GlobalDecls ::= h::Decl  t::GlobalDecls
@@ -248,20 +244,7 @@ top::GlobalDecls ::= h::Decl  t::GlobalDecls
     foldr(
       consGlobalDecl,
       t.lifted,
-      map(
-        \ d::Decorated Decl -> d.lifted,
-        concat(map((.unfoldedGlobalDecls), partDeferredDecls.fst ++ [h]))));
-}
-
-aspect production nilGlobalDecl
-top::GlobalDecls ::=
-{
-  propagate host;
-  top.lifted =
-    foldGlobalDecl(
-      map(
-        \ d::Decorated Decl -> d.lifted,
-        concat(map((.unfoldedGlobalDecls), partDeferredDecls.fst))));
+      map(\ d::Decorated Decl -> d.lifted, h.unfoldedGlobalDecls));
 }
 
 -- Utility functions

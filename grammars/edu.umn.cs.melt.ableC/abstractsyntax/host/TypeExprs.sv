@@ -95,7 +95,7 @@ top::TypeName ::= bty::BaseTypeExpr  mty::TypeModifierExpr
     end ++ bty.globalDecls ++ mty.globalDecls;
   top.decls = bty.decls ++ mty.decls;
   top.defs := bty.defs ++ mty.defs;
-  top.freeVariables = bty.freeVariables ++ mty.freeVariables;
+  top.freeVariables := bty.freeVariables ++ mty.freeVariables;
 }
 
 
@@ -116,7 +116,7 @@ top::BaseTypeExpr ::= msg::[Message]
   top.typeModifiers = [];
   top.decls = [];
   top.defs := [];
-  top.freeVariables = [];
+  top.freeVariables := [];
 }
 
 {-- Raise messages about something syntactic but return ty as the reported type. -}
@@ -131,7 +131,7 @@ top::BaseTypeExpr ::= msg::[Message]  ty::BaseTypeExpr
   top.typeModifiers = ty.typeModifiers;
   top.decls = ty.decls;
   top.defs := ty.defs;
-  top.freeVariables = ty.freeVariables;
+  top.freeVariables := ty.freeVariables;
 }
 
 {-- A TypeExpr that converts a Type back into a TypeExpr
@@ -170,7 +170,7 @@ top::BaseTypeExpr ::= ty::Decorated BaseTypeExpr
   top.typeModifiers = ty.typeModifiers;
   top.decls = ty.decls;
   top.defs := ty.defs;
-  top.freeVariables = ty.freeVariables;
+  top.freeVariables := ty.freeVariables;
 }
 
 {-- A TypeExpr that contains extra extension defs to be placed in the environment
@@ -191,7 +191,7 @@ top::BaseTypeExpr ::= d::[Def]  bty::BaseTypeExpr
   top.typeModifiers = bty.typeModifiers;
   top.decls = defsDecl(d) :: bty.decls;
   top.defs := d ++ bty.defs;
-  top.freeVariables = bty.freeVariables;
+  top.freeVariables := bty.freeVariables;
   
   bty.env = addEnv(d, top.env);
 }
@@ -213,7 +213,7 @@ top::BaseTypeExpr ::= bty::BaseTypeExpr  mty::TypeModifierExpr
   top.typeModifiers = mty :: bty.typeModifiers;
   top.decls = bty.decls ++ mty.decls;
   top.defs := bty.defs ++ mty.defs;
-  top.freeVariables = bty.freeVariables ++ mty.freeVariables;
+  top.freeVariables := bty.freeVariables ++ mty.freeVariables;
 }
 
 {-- Builtin C types: void, unsigned int, signed char, float, bool, etc.
@@ -229,7 +229,7 @@ top::BaseTypeExpr ::= q::Qualifiers  result::BuiltinType
   top.typeModifiers = [];
   top.decls = [];
   top.defs := [];
-  top.freeVariables = [];
+  top.freeVariables := [];
   q.typeToQualify = top.typerep;
 }
 
@@ -298,7 +298,7 @@ top::BaseTypeExpr ::= q::Qualifiers  kwd::StructOrEnumOrUnion  name::Name
     | _, _ -> []
     end;
   
-  top.freeVariables = [];
+  top.freeVariables := [];
   
   q.typeToQualify = top.typerep;
 }
@@ -322,7 +322,7 @@ top::BaseTypeExpr ::= q::Qualifiers  def::StructDecl
   -- Avoid re-decorating and re-generating refIds
   top.decls = [typeExprDecl(nilAttribute(), decTypeExpr(top))];
   top.defs := def.defs;
-  top.freeVariables = [];
+  top.freeVariables := [];
   q.typeToQualify = top.typerep;
 }
 
@@ -345,7 +345,7 @@ top::BaseTypeExpr ::= q::Qualifiers  def::UnionDecl
   -- Avoid re-decorating and re-generating refIds
   top.decls = [typeExprDecl(nilAttribute(), decTypeExpr(top))];
   top.defs := def.defs;
-  top.freeVariables = [];
+  top.freeVariables := [];
   q.typeToQualify = top.typerep;
 }
 
@@ -361,7 +361,7 @@ top::BaseTypeExpr ::= q::Qualifiers  def::EnumDecl
   top.typeModifiers = [];
   top.decls = [typeExprDecl(nilAttribute(), top)];
   top.defs := def.defs;
-  top.freeVariables = [];
+  top.freeVariables := [];
   q.typeToQualify = top.typerep;
 }
 
@@ -378,7 +378,7 @@ top::BaseTypeExpr ::= q::Qualifiers  sub::ExtType
   top.typeModifiers = [];
   top.decls = [];
   top.defs := [];
-  top.freeVariables = sub.freeVariables;
+  top.freeVariables := sub.freeVariables;
   q.typeToQualify = top.typerep;
   sub.givenQualifiers = q;
 }
@@ -398,7 +398,7 @@ top::BaseTypeExpr ::= q::Qualifiers  name::Name
   top.typeModifiers = [];
   top.decls = [];
   top.defs := [];
-  top.freeVariables = [];
+  top.freeVariables := [];
   
   top.errors <- name.valueLookupCheck;
   top.errors <-
@@ -446,7 +446,7 @@ top::BaseTypeExpr ::= q::Qualifiers  wrapped::TypeName
   top.typeModifiers = [];
   top.decls = wrapped.decls;
   top.defs := wrapped.defs;
-  top.freeVariables = wrapped.freeVariables;
+  top.freeVariables := wrapped.freeVariables;
   q.typeToQualify = top.typerep;
 }
 {-- GCC builtin type -}
@@ -462,7 +462,7 @@ top::BaseTypeExpr ::=
   top.typeModifiers = [];
   top.decls = [];
   top.defs := [];
-  top.freeVariables = [];
+  top.freeVariables := [];
   
 }
 {-- GCC typeof type -}
@@ -477,7 +477,7 @@ top::BaseTypeExpr ::= q::Qualifiers  e::ExprOrTypeName
   top.typeModifiers = [];
   top.decls = [];
   top.defs := e.defs;
-  top.freeVariables = e.freeVariables;
+  top.freeVariables := e.freeVariables;
   q.typeToQualify = top.typerep;
 }
 
@@ -526,7 +526,7 @@ top::TypeModifierExpr ::=
   top.globalDecls := [];
   top.defs := [];
   top.decls = [];
-  top.freeVariables = [];
+  top.freeVariables := [];
 }
 
 {--
@@ -562,7 +562,7 @@ top::TypeModifierExpr ::= bty::BaseTypeExpr
   top.globalDecls := bty.globalDecls;
   top.defs := bty.defs;
   top.decls = bty.decls;
-  top.freeVariables = bty.freeVariables;
+  top.freeVariables := bty.freeVariables;
   
   bty.givenRefId = nothing();
 }
@@ -582,7 +582,7 @@ top::TypeModifierExpr ::= q::Qualifiers  target::TypeModifierExpr
   top.globalDecls := target.globalDecls;
   top.defs := target.defs;
   top.decls = target.decls;
-  top.freeVariables = target.freeVariables;
+  top.freeVariables := target.freeVariables;
   q.typeToQualify = top.typerep;
 }
 
@@ -613,7 +613,7 @@ top::TypeModifierExpr ::= element::TypeModifierExpr  indexQualifiers::Qualifiers
   top.globalDecls := element.globalDecls ++ size.globalDecls;
   top.defs := element.defs ++ size.defs;
   top.decls = element.decls;
-  top.freeVariables = element.freeVariables ++ size.freeVariables;
+  top.freeVariables := element.freeVariables ++ size.freeVariables;
 }
 abstract production arrayTypeExprWithoutExpr
 top::TypeModifierExpr ::= element::TypeModifierExpr  indexQualifiers::Qualifiers  sizeModifier::ArraySizeModifier
@@ -634,7 +634,7 @@ top::TypeModifierExpr ::= element::TypeModifierExpr  indexQualifiers::Qualifiers
   top.globalDecls := element.globalDecls;
   top.defs := element.defs;
   top.decls = element.decls;
-  top.freeVariables = element.freeVariables;
+  top.freeVariables := element.freeVariables;
   indexQualifiers.typeToQualify = top.typerep;
 }
 
@@ -664,7 +664,7 @@ top::TypeModifierExpr ::= result::TypeModifierExpr  args::Parameters  variadic::
   top.globalDecls := result.globalDecls ++ args.globalDecls;
   top.defs := result.defs ++ args.defs;
   top.decls = result.decls ++ args.decls;
-  top.freeVariables = result.freeVariables;
+  top.freeVariables := result.freeVariables;
   
   args.env = openScopeEnv(top.env);
   args.position = 0;
@@ -685,7 +685,7 @@ top::TypeModifierExpr ::= result::TypeModifierExpr  ids::[Name]  q::Qualifiers -
   top.globalDecls := result.globalDecls;
   top.defs := result.defs;
   top.decls = result.decls;
-  top.freeVariables = result.freeVariables;
+  top.freeVariables := result.freeVariables;
 }
 {-- Parens -}
 abstract production parenTypeExpr
@@ -702,7 +702,7 @@ top::TypeModifierExpr ::= wrapped::TypeModifierExpr
   top.globalDecls := wrapped.globalDecls;
   top.defs := wrapped.defs;
   top.decls = wrapped.decls;
-  top.freeVariables = wrapped.freeVariables;
+  top.freeVariables := wrapped.freeVariables;
 }
 
 autocopy attribute appendedTypeNames :: TypeNames;
@@ -722,7 +722,7 @@ top::TypeNames ::= h::TypeName t::TypeNames
   top.globalDecls := h.globalDecls ++ t.globalDecls;
   top.decls = h.decls ++ t.decls;
   top.defs := h.defs ++ t.defs;
-  top.freeVariables = h.freeVariables ++ t.freeVariables;
+  top.freeVariables := h.freeVariables ++ t.freeVariables;
   top.appendedTypeNamesRes = consTypeName(h, t.appendedTypeNamesRes);
   
   t.env = addEnv(h.defs, h.env);
@@ -739,7 +739,7 @@ top::TypeNames ::=
   top.globalDecls := [];
   top.decls = [];
   top.defs := [];
-  top.freeVariables = [];
+  top.freeVariables := [];
   top.appendedTypeNamesRes = top.appendedTypeNames;
 }
 

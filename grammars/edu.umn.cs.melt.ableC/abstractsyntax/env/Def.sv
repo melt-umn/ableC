@@ -24,6 +24,13 @@ top::Def ::= s::String  l::RefIdItem
   top.refIdContribs = [pair(s, l)];
 }
 
+abstract production deferredDeclDef
+top::Def ::= s::String  d::Decl
+{
+  top.deferredDeclContribs = [pair(s, d)];
+}
+
+
 abstract production miscDef
 top::Def ::= s::String  l::MiscItem
 {
