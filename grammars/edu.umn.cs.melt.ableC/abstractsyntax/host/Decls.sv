@@ -5,8 +5,8 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 -- Declaration is rooted in External, but also in stmts. Either a variableDecl or a typedefDecl.
 -- ParameterDecl should probably be something special, distinct from variableDecl.
 
-nonterminal GlobalDecls with pps, host<GlobalDecls>, lifted<GlobalDecls>, errors, env, returnType, freeVariables;
-flowtype GlobalDecls = decorate {env, returnType};
+nonterminal GlobalDecls with pps, host<GlobalDecls>, lifted<GlobalDecls>, errors, env, returnType, givenDeferredDecls, freeVariables;
+flowtype GlobalDecls = decorate {env, returnType, givenDeferredDecls};
 
 {-- Mirrors Decls, used for lifting mechanism to insert new Decls at top level -}
 abstract production consGlobalDecl
@@ -21,8 +21,12 @@ top::GlobalDecls ::= h::Decl  t::GlobalDecls
   -- host, lifted defined in Lifted.sv
   
   h.isTopLevel = true;
+  production partDeferredDecls::Pair<[Decorated Decl] [Pair<(Boolean ::= Decorated Env) Decorated Decl>]> =
+    partitionDeferredDecls(top.givenDeferredDecls, top.env);
+  h.env = addEnv(concat(map((.defs), partDeferredDecls.fst)), top.env);
   
-  t.env = addEnv(h.defs, top.env);
+  t.env = addEnv(h.defs, h.env);
+  t.givenDeferredDecls = partDeferredDecls.snd ++ h.deferredDecls;
 }
 
 abstract production nilGlobalDecl
@@ -34,15 +38,15 @@ top::GlobalDecls ::=
   top.freeVariables = [];
 }
 
-nonterminal Decls with pps, host<Decls>, lifted<Decls>, errors, globalDecls, unfoldedGlobalDecls, defs, env, isTopLevel, returnType, freeVariables;
-flowtype Decls = decorate {env, isTopLevel, returnType};
+nonterminal Decls with pps, host<Decls>, lifted<Decls>, errors, globalDecls, unfoldedGlobalDecls, defs, env, isTopLevel, returnType, givenDeferredDecls, deferredDecls, freeVariables;
+flowtype Decls = decorate {env, isTopLevel, returnType, givenDeferredDecls};
 
 autocopy attribute isTopLevel :: Boolean;
 
 abstract production consDecl
 top::Decls ::= h::Decl  t::Decls
 {
-  propagate host, lifted;
+  propagate host;
   top.pps = h.pp :: t.pps;
   top.errors := h.errors ++ t.errors;
   top.defs := h.defs ++ t.defs;
@@ -52,7 +56,20 @@ top::Decls ::= h::Decl  t::Decls
     h.freeVariables ++
     removeDefsFromNames(h.defs, t.freeVariables);
   
-  t.env = addEnv(h.defs, top.env);
+  production partDeferredDecls::Pair<[Decorated Decl] [Pair<(Boolean ::= Decorated Env) Decorated Decl>]> =
+    partitionDeferredDecls(top.givenDeferredDecls, top.env);
+  h.env = addEnv(concat(map((.defs), partDeferredDecls.fst)), top.env);
+  
+  t.env = addEnv(h.defs, h.env);
+  t.givenDeferredDecls = h.deferredDecls;
+  
+  top.lifted =
+    foldr(
+      consDecl,
+      t.lifted,
+      map(\ d::Decorated Decl -> d.lifted, partDeferredDecls.fst ++ [h]));
+  top.globalDecls <- concat(map((.globalDecls), partDeferredDecls.fst));
+  top.deferredDecls = t.deferredDecls;
 }
 
 abstract production nilDecl
@@ -65,6 +82,7 @@ top::Decls ::=
   top.unfoldedGlobalDecls = [];
   top.defs := [];
   top.freeVariables = [];
+  top.deferredDecls = top.givenDeferredDecls;
 }
 
 function appendDecls
@@ -74,7 +92,7 @@ Decls ::= d1::Decls d2::Decls
 }
 
 
-nonterminal Decl with pp, host<Decl>, lifted<Decl>, errors, globalDecls, unfoldedGlobalDecls, defs, env, isTopLevel, returnType, freeVariables;
+nonterminal Decl with pp, host<Decl>, lifted<Decl>, errors, globalDecls, unfoldedGlobalDecls, defs, env, isTopLevel, returnType, deferredDecls, freeVariables;
 flowtype Decl = decorate {env, isTopLevel, returnType};
 
 {-- Pass down from top-level declaration the list of attribute to each name-declaration -}
@@ -85,6 +103,7 @@ aspect default production
 top::Decl ::=
 {
   top.unfoldedGlobalDecls = top.globalDecls ++ [top];
+  top.deferredDecls = [];
 }
 
 abstract production decls
@@ -97,6 +116,9 @@ top::Decl ::= d::Decls
   top.unfoldedGlobalDecls = d.unfoldedGlobalDecls;
   top.defs := d.defs;
   top.freeVariables = d.freeVariables;
+  top.deferredDecls = d.deferredDecls;
+  
+  d.givenDeferredDecls = [];
 }
 
 abstract production defsDecl
@@ -199,7 +221,7 @@ top::Decl ::= f::FunctionDecl
   top.freeVariables = f.freeVariables;
 }
 
-  
+
 
 {--
  - The semantics of this are to raise the messages in 'msg' and otherwise have
@@ -519,6 +541,7 @@ top::FunctionDecl ::= storage::StorageClasses  fnquals::SpecialSpecifiers  bty::
   body.env = addEnv(ds.defs ++ body.functionDefs, ds.env);
   
   ds.isTopLevel = false;
+  ds.givenDeferredDecls = [];
   
   -- TODO: so long as the original wasn't also a definition
   top.errors <- name.valueRedeclarationCheck(top.typerep); 

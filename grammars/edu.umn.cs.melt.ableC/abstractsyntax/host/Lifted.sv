@@ -142,6 +142,7 @@ top::Expr ::= decls::Decls lifted::Expr
   decls.env = globalEnv(top.env);
   decls.isTopLevel = true;
   decls.returnType = nothing();
+  decls.givenDeferredDecls = [];
 
   lifted.env = addEnv([globalDefsDef(decls.defs)], top.env);
 
@@ -173,6 +174,7 @@ top::Stmt ::= decls::Decls lifted::Stmt
   decls.env = globalEnv(top.env);
   decls.isTopLevel = true;
   decls.returnType = nothing();
+  decls.givenDeferredDecls = [];
   
   lifted.env = addEnv([globalDefsDef(decls.defs)], top.env);
 }
@@ -206,6 +208,7 @@ top::BaseTypeExpr ::= decls::Decls lifted::BaseTypeExpr
   decls.env = globalEnv(top.env);
   decls.isTopLevel = true;
   decls.returnType = nothing();
+  decls.givenDeferredDecls = [];
 
   lifted.env = addEnv([globalDefsDef(decls.defs)], top.env);
 }
@@ -231,17 +234,23 @@ top::Decl ::= decls::Decls
   decls.env = globalEnv(top.env);
   decls.isTopLevel = true;
   decls.returnType = nothing();
+  decls.givenDeferredDecls = [];
 }
 
 {--
- - Inserts globalDecls before h
+ - Inserts globalDecls and instantiated deferred decls before h
  -}
 aspect production consGlobalDecl
 top::GlobalDecls ::= h::Decl  t::GlobalDecls
 {
   propagate host;
   top.lifted =
-    foldr(consGlobalDecl, t.lifted, map(\ d::Decorated Decl -> d.lifted, h.unfoldedGlobalDecls));
+    foldr(
+      consGlobalDecl,
+      t.lifted,
+      map(
+        \ d::Decorated Decl -> d.lifted,
+        concat(map((.unfoldedGlobalDecls), partDeferredDecls.fst ++ [h]))));
 }
 
 -- Utility functions
