@@ -25,7 +25,7 @@ abstract production deferredDecl
 top::Decl ::= cond::(Boolean ::= Decorated Env) d::Decl
 {
   propagate host;
-  top.pp = ppConcat([pp"deferredDecl{", d.pp, pp"}"]);
+  top.pp = ppConcat([pp"deferredDecl", space(), braces(nestlines(2, d.pp))]);
   top.lifted = decls(nilDecl());
   top.errors := [];
   top.globalDecls := [];

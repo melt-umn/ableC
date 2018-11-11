@@ -253,6 +253,17 @@ top::GlobalDecls ::= h::Decl  t::GlobalDecls
         concat(map((.unfoldedGlobalDecls), partDeferredDecls.fst ++ [h]))));
 }
 
+aspect production nilGlobalDecl
+top::GlobalDecls ::=
+{
+  propagate host;
+  top.lifted =
+    foldGlobalDecl(
+      map(
+        \ d::Decorated Decl -> d.lifted,
+        concat(map((.unfoldedGlobalDecls), partDeferredDecls.fst))));
+}
+
 -- Utility functions
 function globalDeclsDefs
 [Def] ::= d::[Decorated Decl]

@@ -12,13 +12,12 @@ flowtype GlobalDecls = decorate {env, returnType, givenDeferredDecls};
 abstract production consGlobalDecl
 top::GlobalDecls ::= h::Decl  t::GlobalDecls
 {
+  -- host, lifted defined in Lifted.sv
   top.pps = h.pp :: t.pps;
   top.errors := h.errors ++ t.errors;
   top.freeVariables =
     h.freeVariables ++
     removeDefsFromNames(h.defs, t.freeVariables);
-  
-  -- host, lifted defined in Lifted.sv
   
   h.isTopLevel = true;
   production partDeferredDecls::Pair<[Decorated Decl] [Pair<(Boolean ::= Decorated Env) Decorated Decl>]> =
@@ -32,10 +31,13 @@ top::GlobalDecls ::= h::Decl  t::GlobalDecls
 abstract production nilGlobalDecl
 top::GlobalDecls ::=
 {
-  propagate host, lifted;
+  -- host, lifted defined in Lifted.sv
   top.pps = [];
   top.errors := [];
   top.freeVariables = [];
+  
+  production partDeferredDecls::Pair<[Decorated Decl] [Pair<(Boolean ::= Decorated Env) Decorated Decl>]> =
+    partitionDeferredDecls(top.givenDeferredDecls, top.env);
 }
 
 nonterminal Decls with pps, host<Decls>, lifted<Decls>, errors, globalDecls, unfoldedGlobalDecls, defs, env, isTopLevel, returnType, givenDeferredDecls, deferredDecls, freeVariables;
@@ -51,14 +53,14 @@ top::Decls ::= h::Decl  t::Decls
   top.errors := h.errors ++ t.errors;
   top.defs := h.defs ++ t.defs;
   top.globalDecls := h.globalDecls ++ t.globalDecls;
-  top.unfoldedGlobalDecls = h.unfoldedGlobalDecls ++ t.unfoldedGlobalDecls;
   top.freeVariables =
     h.freeVariables ++
     removeDefsFromNames(h.defs, t.freeVariables);
   
   production partDeferredDecls::Pair<[Decorated Decl] [Pair<(Boolean ::= Decorated Env) Decorated Decl>]> =
     partitionDeferredDecls(top.givenDeferredDecls, top.env);
-  h.env = addEnv(concat(map((.defs), partDeferredDecls.fst)), top.env);
+  local deferredDefs::[Def] = concat(map((.defs), partDeferredDecls.fst));
+  h.env = addEnv(deferredDefs, top.env);
   
   t.env = addEnv(h.defs, h.env);
   t.givenDeferredDecls = h.deferredDecls;
@@ -68,21 +70,31 @@ top::Decls ::= h::Decl  t::Decls
       consDecl,
       t.lifted,
       map(\ d::Decorated Decl -> d.lifted, partDeferredDecls.fst ++ [h]));
+  top.defs <- deferredDefs;
   top.globalDecls <- concat(map((.globalDecls), partDeferredDecls.fst));
+  top.unfoldedGlobalDecls =
+    concat(map((.unfoldedGlobalDecls), partDeferredDecls.fst)) ++
+    h.unfoldedGlobalDecls ++ t.unfoldedGlobalDecls;
   top.deferredDecls = t.deferredDecls;
 }
 
 abstract production nilDecl
 top::Decls ::=
 {
-  propagate host, lifted;
+  propagate host;
   top.pps = [];
   top.errors := [];
   top.globalDecls := [];
-  top.unfoldedGlobalDecls = [];
   top.defs := [];
   top.freeVariables = [];
-  top.deferredDecls = top.givenDeferredDecls;
+  
+  production partDeferredDecls::Pair<[Decorated Decl] [Pair<(Boolean ::= Decorated Env) Decorated Decl>]> =
+    partitionDeferredDecls(top.givenDeferredDecls, top.env);
+  top.lifted = foldDecl(map(\ d::Decorated Decl -> d.lifted, partDeferredDecls.fst));
+  top.defs <- concat(map((.defs), partDeferredDecls.fst));
+  top.globalDecls <- concat(map((.globalDecls), partDeferredDecls.fst));
+  top.unfoldedGlobalDecls = concat(map((.unfoldedGlobalDecls), partDeferredDecls.fst));
+  top.deferredDecls = partDeferredDecls.snd;
 }
 
 function appendDecls
