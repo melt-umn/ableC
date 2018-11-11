@@ -1043,8 +1043,11 @@ top::StructDeclarator ::= name::Name  ty::TypeModifierExpr  attrs::Attributes
   top.typerep = animateAttributeOnType(allAttrs, ty.typerep);
   top.sourceLocation = name.location;
   
-  
   top.errors <- name.valueRedeclarationCheckNoCompatible;
+  top.errors <-
+    if !top.typerep.isCompleteType(top.env)
+    then [err(top.sourceLocation, s"field ${name.name} has incomplete type")]
+    else [];
   
   local allAttrs :: Attributes = appendAttribute(top.givenAttributes, attrs);
   allAttrs.env = top.env;
@@ -1079,11 +1082,20 @@ top::StructDeclarator ::= name::MaybeName  ty::TypeModifierExpr  e::Expr  attrs:
   top.sourceLocation = 
     case name.maybename of
     | just(n) -> n.location
-    | nothing() -> loc("??",-1,-1,-1,-1,-1,-1) -- TODO: bug? probably okay, since only used to lookup names from env
+    | nothing() -> loc("??",-1,-1,-1,-1,-1,-1) -- TODO: bug
     end;
   
-  
   top.errors <- name.valueRedeclarationCheckNoCompatible;
+  
+  local errName::String =
+    case name.maybename of
+    | just(n) -> n.name
+    | nothing() -> "<anon>"
+    end;
+  top.errors <-
+    if !top.typerep.isCompleteType(top.env)
+    then [err(top.sourceLocation, s"field ${errName} has incomplete type")]
+    else [];
 
   local allAttrs :: Attributes = appendAttribute(top.givenAttributes, attrs);
   allAttrs.env = top.env;
