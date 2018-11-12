@@ -17,17 +17,13 @@ top::Decl ::= refId::String d::Decl
 function defsDeferredDecls
 [Decorated Decl] ::= env::Decorated Env returnType::Maybe<Type> isTopLevel::Boolean defs::[Def]
 {
-  local foldedDefs::Defs = foldr(consDefs, nilDefs(), defs);
   local deferredDecls::Decl =
     decls(
       foldDecl(
         concat(
           map(
             lookupDeferredDecls(_, env),
-            map(
-              fst,
-              foldedDefs.refIdContribs ++
-              foldr(consDefs, nilDefs(), foldedDefs.globalDefs).refIdContribs)))));
+            map(fst, foldr(consDefs, nilDefs(), defs).refIdContribs)))));
   deferredDecls.env = env;
   deferredDecls.returnType = returnType;
   deferredDecls.isTopLevel = isTopLevel;
