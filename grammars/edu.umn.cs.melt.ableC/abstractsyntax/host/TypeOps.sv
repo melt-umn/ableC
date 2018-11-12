@@ -32,6 +32,8 @@ Boolean ::= a::Type  b::Type  allowSubtypes::Boolean  dropOuterQual::Boolean
   | _, errorType() -> true
   -- Type specifiers
   | builtinType(q1, b1), builtinType(q2, b2) -> builtinCompatible(b1, b2, allowSubtypes) && compatibleQualifiers(q1, q2, allowSubtypes, dropOuterQual)
+  | builtinType(q1, b1), extType(q2, enumExtType(_)) -> allowSubtypes && b1.isIntegerType && compatibleQualifiers(q1, q2, allowSubtypes, dropOuterQual)
+  | extType(q1, enumExtType(_)), builtinType(q2, b2) -> allowSubtypes && b2.isIntegerType && compatibleQualifiers(q1, q2, allowSubtypes, dropOuterQual)
   | extType(q1, s1), extType(q2, s2) -> s1.isEqualTo(s2) && compatibleQualifiers(q1, q2, allowSubtypes, dropOuterQual)
   -- Compound types
   | atomicType(q1, t1), atomicType(q2, t2) -> compatibleTypes(t1, t2, allowSubtypes, dropOuterQual) && compatibleQualifiers(q1, q2, allowSubtypes, dropOuterQual)
