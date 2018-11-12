@@ -3,14 +3,15 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 abstract production deferredDecl
 top::Decl ::= refId::String d::Decl
 {
-  propagate lifted;
   top.pp = ppConcat([pp"deferredDecl", space(), parens(text(refId)), space(), braces(nestlines(2, d.pp))]);
-  -- This production goes away when the transformation to host occurs.
-  top.host = decls(nilDecl());
-  top.errors := [];
-  top.globalDecls := [];
-  top.defs := [deferredDeclDef(refId, d)];
-  top.freeVariables := [];
+  
+  production refIdExists::Boolean = !null(lookupRefId(refId, top.env));
+  top.host = if refIdExists then d.host else decls(nilDecl());
+  top.lifted = if refIdExists then d.lifted else deferredDecl(refId, d.lifted);
+  top.errors := if refIdExists then d.errors else [];
+  top.globalDecls := if refIdExists then d.globalDecls else [];
+  top.defs := if refIdExists then d.defs else [deferredDeclDef(refId, d)];
+  top.freeVariables := if refIdExists then d.freeVariables else [];
 }
 
 function defsDeferredDecls
