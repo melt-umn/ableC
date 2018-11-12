@@ -425,8 +425,8 @@ top::Type ::= q::Qualifiers  sub::ExtType
   top.freeVariables := sub.freeVariables;
   
   top.isIntegerType = sub.isIntegerType;
-  top.isArithmeticType = sub.isIntegerType;
-  top.isScalarType = sub.isIntegerType;
+  top.isArithmeticType = sub.isArithmeticType;
+  top.isScalarType = sub.isScalarType;
   top.isCompleteType = sub.isCompleteType;
   top.maybeRefId = sub.maybeRefId;
 
@@ -509,6 +509,7 @@ top::ExtType ::= ref::Decorated EnumDecl
       end;
     
   top.isIntegerType = true;
+  top.isArithmeticType = true;
 }
 {--
  - Our env-independent type representation must end at resolving to a 'refId' of
