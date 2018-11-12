@@ -17,13 +17,17 @@ top::Decl ::= refId::String d::Decl
 function defsDeferredDecls
 [Decorated Decl] ::= env::Decorated Env returnType::Maybe<Type> isTopLevel::Boolean defs::[Def]
 {
+  local foldedDefs::Defs = foldr(consDefs, nilDefs(), defs);
   local deferredDecls::Decl =
     decls(
       foldDecl(
         concat(
           map(
             lookupDeferredDecls(_, env),
-            map(fst, foldr(consDefs, nilDefs(), defs).refIdContribs)))));
+            map(
+              fst,
+              foldedDefs.refIdContribs ++
+              foldr(consDefs, nilDefs(), foldedDefs.globalDefs).refIdContribs)))));
   deferredDecls.env = env;
   deferredDecls.returnType = returnType;
   deferredDecls.isTopLevel = isTopLevel;
@@ -43,7 +47,8 @@ top::Decl ::= d::[Def]
   -- This production goes away when the transformation to host occurs, this is a special case where
   -- host is not simply propagated, because Def is a closed 'collection' nonterminal with special
   -- semantics.
-  local deferredDecls::[Decorated Decl] = defsDeferredDecls(top.env, top.returnType, top.isTopLevel, d);
+  local deferredDecls::[Decorated Decl] =
+    defsDeferredDecls(top.env, top.returnType, top.isTopLevel, d);
   top.host = decls(foldDecl(map(\ d::Decorated Decl -> d.host, deferredDecls)));
   top.defs <- concat(map((.defs), deferredDecls));
 }
@@ -52,7 +57,8 @@ aspect production variableDecls
 top::Decl ::= storage::StorageClasses  attrs::Attributes  ty::BaseTypeExpr  dcls::Declarators
 {
   local host::Decl = variableDecls(storage, attrs.host, ty.host, dcls.host);
-  local deferredDecls::[Decorated Decl] = defsDeferredDecls(top.env, top.returnType, top.isTopLevel, ty.defs);
+  local deferredDecls::[Decorated Decl] =
+    defsDeferredDecls(addEnv(dcls.defs, dcls.env), top.returnType, top.isTopLevel, ty.defs);
   top.host =
     if !null(deferredDecls)
     then decls(foldDecl(host :: map(\ d::Decorated Decl -> d.host, deferredDecls)))
@@ -65,7 +71,8 @@ aspect production typeExprDecl
 top::Decl ::= attrs::Attributes ty::BaseTypeExpr
 {
   local host::Decl = typeExprDecl(attrs.host, ty.host);
-  local deferredDecls::[Decorated Decl] = defsDeferredDecls(top.env, top.returnType, top.isTopLevel, ty.defs);
+  local deferredDecls::[Decorated Decl] =
+    defsDeferredDecls(addEnv(ty.defs, ty.env), top.returnType, top.isTopLevel, ty.defs);
   top.host =
     if !null(deferredDecls)
     then decls(foldDecl(host :: map(\ d::Decorated Decl -> d.host, deferredDecls)))
@@ -78,7 +85,8 @@ aspect production typedefDecls
 top::Decl ::= attrs::Attributes  ty::BaseTypeExpr  dcls::Declarators
 {
   local host::Decl = typedefDecls(attrs.host, ty.host, dcls.host);
-  local deferredDecls::[Decorated Decl] = defsDeferredDecls(top.env, top.returnType, top.isTopLevel, ty.defs);
+  local deferredDecls::[Decorated Decl] =
+    defsDeferredDecls(addEnv(dcls.defs, dcls.env), top.returnType, top.isTopLevel, ty.defs);
   top.host =
     if !null(deferredDecls)
     then decls(foldDecl(host :: map(\ d::Decorated Decl -> d.host, deferredDecls)))
@@ -91,7 +99,8 @@ aspect production functionDeclaration
 top::Decl ::= f::FunctionDecl
 {
   local host::Decl = functionDeclaration(f.host);
-  local deferredDecls::[Decorated Decl] = defsDeferredDecls(top.env, top.returnType, top.isTopLevel, f.defs);
+  local deferredDecls::[Decorated Decl] =
+    defsDeferredDecls(addEnv(f.defs, f.env), top.returnType, top.isTopLevel, f.defs);
   top.host =
     if !null(deferredDecls)
     then decls(foldDecl(host :: map(\ d::Decorated Decl -> d.host, deferredDecls)))
