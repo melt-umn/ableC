@@ -371,6 +371,22 @@ top::Declarator ::= name::Name  ty::TypeModifierExpr  attrs::Attributes  initial
       name.valueRedeclarationCheck(top.typerep)
     else
       name.valueRedeclarationCheckNoCompatible;
+  
+  top.errors <-
+    if !top.isTypedef && !top.typerep.isCompleteType(ty.env)
+    then
+      case initializer of
+      | justInitializer(_) ->
+        [err(top.sourceLocation, s"variable ${name.name} has initializer but incomplete type ${showType(top.typerep)}")]
+      | nothingInitializer() -> []
+      end ++
+      -- TODO: This check should be included for non-extern top-level declarations. However, we
+      -- somehow need to check if a struct actually does have a declaration later on in the file,
+      -- which would complicate the environment.
+      if !top.isTopLevel --!(top.isTopLevel && top.givenStorageClasses.isExtern)
+      then [err(top.sourceLocation, s"storage size of ${name.name} (type ${showType(top.typerep)}) isn't known")]
+      else []
+    else [];
 
   local allAttrs :: Attributes = appendAttribute(top.givenAttributes, attrs);
   allAttrs.env = top.env;
@@ -666,6 +682,7 @@ top::ParameterDecl ::= storage::StorageClasses  bty::BaseTypeExpr  mty::TypeModi
   mty.typeModifiersIn = bty.typeModifiers;
   
   top.errors <- name.valueRedeclarationCheckNoCompatible;
+  -- TODO: Check for incomplete types when we know this is an actual function declaration
 }
 
 synthesized attribute refId :: String; -- TODO move this later?
@@ -1138,17 +1155,22 @@ top::EnumItem ::= name::Name  e::MaybeExpr
   top.errors <- name.valueRedeclarationCheckNoCompatible;
 }
 
+synthesized attribute isExtern::Boolean;
+synthesized attribute isStatic::Boolean;
+
 autocopy attribute appendedStorageClasses :: StorageClasses;
 synthesized attribute appendedStorageClassesRes :: StorageClasses;
 
-nonterminal StorageClasses with pps, appendedStorageClasses, appendedStorageClassesRes;
-flowtype StorageClasses = decorate {}, appendedStorageClassesRes {appendedStorageClasses};
+nonterminal StorageClasses with pps, isExtern, isStatic, appendedStorageClasses, appendedStorageClassesRes;
+flowtype StorageClasses = decorate {}, isExtern {}, isStatic {}, appendedStorageClassesRes {appendedStorageClasses};
 
 abstract production consStorageClass
 top::StorageClasses ::= h::StorageClass  t::StorageClasses
 {
   top.pps = h.pp :: t.pps;
   top.appendedStorageClassesRes = consStorageClass(h, t.appendedStorageClassesRes);
+  top.isExtern = h.isExtern || t.isExtern;
+  top.isStatic = h.isStatic || t.isStatic;
 }
 
 abstract production nilStorageClass
@@ -1156,6 +1178,8 @@ top::StorageClasses ::=
 {
   top.pps = [];
   top.appendedStorageClassesRes = top.appendedStorageClasses;
+  top.isExtern = false;
+  top.isStatic = false;
 }
 
 function appendStorageClasses
@@ -1165,19 +1189,43 @@ StorageClasses ::= s1::StorageClasses s2::StorageClasses
   return s1.appendedStorageClassesRes;
 }
 
-nonterminal StorageClass with pp;
-flowtype StorageClass = decorate {};
+nonterminal StorageClass with pp, isExtern, isStatic;
+flowtype StorageClass = decorate {}, isExtern {}, isStatic {};
+
+aspect default production
+top::StorageClass ::=
+{
+  top.isExtern = false;
+  top.isStatic = false;
+}
 
 abstract production externStorageClass
-top::StorageClass ::= { top.pp = text("extern"); }
+top::StorageClass ::=
+{
+  top.pp = text("extern");
+  top.isExtern = true;
+}
 abstract production staticStorageClass
-top::StorageClass ::= { top.pp = text("static"); }
+top::StorageClass ::=
+{
+  top.pp = text("static");
+  top.isStatic = true;
+}
 abstract production autoStorageClass
-top::StorageClass ::= { top.pp = text("auto"); }
+top::StorageClass ::=
+{
+  top.pp = text("auto");
+}
 abstract production registerStorageClass
-top::StorageClass ::= { top.pp = text("register"); }
+top::StorageClass ::=
+{
+  top.pp = text("register");
+}
 abstract production threadLocalStorageClass
-top::StorageClass ::= { top.pp = text("_Thread_local"); }
+top::StorageClass ::=
+{
+  top.pp = text("_Thread_local");
+}
 
 {-
 From clang:
