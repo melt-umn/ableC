@@ -1107,14 +1107,15 @@ top::StructDeclarator ::= msg::[Message]
   top.sourceLocation = loc("nowhere", -1, -1, -1, -1, -1, -1); -- TODO fix this? add locaiton maybe?
 }
 
-nonterminal EnumItem with pp, host<EnumItem>, lifted<EnumItem>, errors, globalDecls, defs, env, containingEnum, typerep, sourceLocation, returnType, freeVariables;
-flowtype EnumItem = decorate {env, containingEnum, returnType};
+nonterminal EnumItem with pp, name, host<EnumItem>, lifted<EnumItem>, errors, globalDecls, defs, env, containingEnum, typerep, sourceLocation, returnType, freeVariables;
+flowtype EnumItem = decorate {env, containingEnum, returnType}, name {};
 
 abstract production enumItem
 top::EnumItem ::= name::Name  e::MaybeExpr
 {
   propagate host, lifted;
   top.pp = ppConcat([name.pp] ++ if e.isJust then [text(" = "), e.pp] else []);
+  top.name = name.name;
   top.errors := e.errors;
   top.globalDecls := e.globalDecls;
   top.defs := valueDef(name.name, enumValueItem(top)) :: e.defs;
