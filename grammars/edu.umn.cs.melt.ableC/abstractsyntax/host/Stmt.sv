@@ -61,6 +61,28 @@ top::Stmt ::= msg::[Message]
   top.functionDefs := [];
 }
 
+{--
+ - The purpose of this production is for an extension production to use to wrap
+ - children that have already been decorated during error checking, etc. when
+ - computing a forward tree, to avoid re-decoration and potential exponential
+ - performance hits.  When using this production, one must be very careful to
+ - ensure that the inherited attributes recieved by the wrapped tree are equivalent
+ - to the ones that would have been passed down in the forward tree.
+ - See https://github.com/melt-umn/silver/issues/86
+ -}
+abstract production decStmt
+top::Stmt ::= s::Decorated Stmt
+{
+  top.pp = pp"dec{${s.pp}}";
+  top.host = s.host;
+  top.lifted = s.lifted;
+  top.errors := s.errors;
+  top.globalDecls := s.globalDecls;
+  top.defs := s.defs;
+  top.freeVariables = s.freeVariables;
+  top.functionDefs := s.functionDefs;
+}
+
 abstract production declStmt
 top::Stmt ::= d::Decl
 {

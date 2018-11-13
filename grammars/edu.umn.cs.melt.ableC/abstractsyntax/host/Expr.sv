@@ -42,6 +42,28 @@ Expr ::= msg::[Message] e::Expr l::Location
 {
   return if null(msg) then e else warnExpr(msg, e, location=l);
 }
+
+{--
+ - The purpose of this production is for an extension production to use to wrap
+ - children that have already been decorated during error checking, etc. when
+ - computing a forward tree, to avoid re-decoration and potential exponential
+ - performance hits.  When using this production, one must be very careful to
+ - ensure that the inherited attributes recieved by the wrapped tree are equivalent
+ - to the ones that would have been passed down in the forward tree.
+ - See https://github.com/melt-umn/silver/issues/86
+ -}
+abstract production decExpr
+top::Expr ::= e::Decorated Expr
+{
+  top.pp = pp"dec(${e.pp})";
+  top.host = e.host;
+  top.lifted = e.lifted;
+  top.errors := e.errors;
+  top.globalDecls := e.globalDecls;
+  top.defs := e.defs;
+  top.freeVariables = e.freeVariables;
+  top.typerep = e.typerep;
+}
 abstract production qualifiedExpr
 top::Expr ::= q::Qualifiers e::Expr
 {
@@ -260,7 +282,7 @@ top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
     end;
   
   local refids :: [RefIdItem] =
-    lookupRefId(quals_refid.snd, top.env);
+    lookupRefId(quals_refid.snd, addEnv(lhs.defs, lhs.env));
   
   local valueitems :: [ValueItem] =
     lookupValue(rhs.name, head(refids).tagEnv);

@@ -16,6 +16,13 @@ top::BaseTypeExpr ::= msg::[Message]  ty::BaseTypeExpr
 {
   propagate substituted;
 }
+aspect production decTypeExpr
+top::BaseTypeExpr ::= ty::Decorated BaseTypeExpr
+{
+  local newTy::BaseTypeExpr = new(ty);
+  newTy.substitutions = top.substitutions;
+  top.substituted = newTy.substituted;
+}
 aspect production defsTypeExpr
 top::BaseTypeExpr ::= d::[Def]  bty::BaseTypeExpr
 {

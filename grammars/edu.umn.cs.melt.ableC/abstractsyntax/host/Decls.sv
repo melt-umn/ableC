@@ -124,7 +124,13 @@ top::Decl ::= storage::StorageClasses  attrs::Attributes  ty::BaseTypeExpr  dcls
       [ty.pp, space(), ppImplode(text(", "), dcls.pps), semi()]);
   top.lifted =
     if dcls.hasModifiedTypeExpr
-    then decls(foldDecl(ty.decls ++ dcls.liftedDecls))
+    then
+      decls(
+        foldDecl(
+          -- decorate needed here because of flowtype for decls
+          decorate ty.lifted with {
+            env = ty.env; returnType = ty.returnType; givenRefId = ty.givenRefId;
+          }.decls ++ dcls.liftedDecls))
     else variableDecls(storage, attrs.lifted, ty.lifted, dcls.lifted);
   top.errors := ty.errors ++ dcls.errors;
   top.globalDecls := ty.globalDecls ++ dcls.globalDecls;
@@ -159,7 +165,13 @@ top::Decl ::= attrs::Attributes  ty::BaseTypeExpr  dcls::Declarators
   top.pp = ppConcat([text("typedef "), ppAttributes(attrs), ty.pp, space(), ppImplode(text(", "), dcls.pps), semi()]);
   top.lifted =
     if dcls.hasModifiedTypeExpr
-    then decls(foldDecl(ty.decls ++ dcls.liftedDecls))
+    then
+      decls(
+        foldDecl(
+          -- decorate needed here because of flowtype for decls
+          decorate ty.lifted with {
+            env = ty.env; returnType = ty.returnType; givenRefId = ty.givenRefId;
+          }.decls ++ dcls.liftedDecls))
     else typedefDecls(attrs.lifted, ty.lifted, dcls.lifted);
   top.errors := ty.errors ++ dcls.errors;
   top.globalDecls := ty.globalDecls ++ dcls.globalDecls;
@@ -207,6 +219,27 @@ top::Decl ::= msg::[Message]
   top.globalDecls := [];
   top.defs := [];
   top.freeVariables = [];
+}
+
+{--
+ - The purpose of this production is for an extension production to use to wrap
+ - children that have already been decorated during error checking, etc. when
+ - computing a forward tree, to avoid re-decoration and potential exponential
+ - performance hits.  When using this production, one must be very careful to
+ - ensure that the inherited attributes recieved by the wrapped tree are equivalent
+ - to the ones that would have been passed down in the forward tree.
+ - See https://github.com/melt-umn/silver/issues/86
+ -}
+abstract production decDecl
+top::Decl ::= d::Decorated Decl
+{
+  top.pp = pp"dec{${d.pp}}";
+  top.host = d.host;
+  top.lifted = d.lifted;
+  top.errors := d.errors;
+  top.globalDecls := d.globalDecls;
+  top.defs := d.defs;
+  top.freeVariables = d.freeVariables;
 }
 
 -- C11
@@ -322,13 +355,16 @@ top::Declarator ::= name::Name  ty::TypeModifierExpr  attrs::Attributes  initial
   top.defs :=
     [valueDef(name.name, declaratorValueItem(top))] ++ 
     globalDeclsDefs(ty.globalDecls) ++
-    initializer.defs;
+    ty.defs ++ initializer.defs;
   top.freeVariables = ty.freeVariables ++ initializer.freeVariables;
   top.typerep =
     if top.isTypedef
     then noncanonicalType(typedefType(nilQualifier(), name.name, typerepWithAllExtnQuals))
     else typerepWithAllExtnQuals;
   top.sourceLocation = name.location;
+  
+  attrs.env = addEnv(ty.defs, ty.env);
+  initializer.env = attrs.env;
   
   top.errors <- 
     if top.isTopLevel then
@@ -380,7 +416,10 @@ top::FunctionDecl ::= storage::StorageClasses  fnquals::SpecialSpecifiers  bty::
     | just(mbty) ->
       decls(
         foldDecl(
-          bty.decls ++
+          -- decorate needed here because of flowtype for decls
+          decorate bty.lifted with {
+            env = bty.env; returnType = bty.returnType; givenRefId = bty.givenRefId;
+          }.decls ++
           [functionDeclaration(
              functionDecl(
                storage,
@@ -600,15 +639,18 @@ top::ParameterDecl ::= storage::StorageClasses  bty::BaseTypeExpr  mty::TypeModi
     end;
   top.errors := bty.errors ++ mty.errors;
   top.globalDecls :=
-    {-case mty.modifiedBaseTypeExpr of
+    case mty.modifiedBaseTypeExpr of
     | just(_) ->
       -- TODO: Should be lifting decls to the closest scope, not global!
       map(
         \ d::Decl ->
           decorate d with {env = top.env; returnType = top.returnType; isTopLevel = true;},
-          bty.decls)
+        -- decorate needed here because of flowtype for decls
+        decorate bty.lifted with {
+          env = bty.env; returnType = bty.returnType; givenRefId = bty.givenRefId;
+        }.decls)
     | nothing() -> []
-    end ++-} bty.globalDecls ++ mty.globalDecls;
+    end ++ bty.globalDecls ++ mty.globalDecls;
   top.decls = bty.decls ++ mty.decls;
   top.defs := bty.defs ++ mty.defs;
   top.functionDefs :=

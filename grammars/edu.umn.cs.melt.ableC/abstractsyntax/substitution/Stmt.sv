@@ -26,6 +26,12 @@ top::Stmt ::= msg::[Message]
   propagate substituted;
 }
 
+aspect production decStmt
+top::Stmt ::= s::Decorated Stmt
+{
+  propagate substituted;
+}
+
 aspect production declStmt
 top::Stmt ::= d::Decl
 {

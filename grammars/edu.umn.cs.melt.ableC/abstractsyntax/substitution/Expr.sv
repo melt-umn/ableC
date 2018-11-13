@@ -10,6 +10,11 @@ top::Expr ::= msg::[Message] e::Expr
 {
   propagate substituted;
 }
+aspect production decExpr
+top::Expr ::= e::Decorated Expr
+{
+  propagate substituted;
+}
 aspect production transformedExpr
 top::Expr ::= original::Expr  resolved::Expr
 {

@@ -9,8 +9,8 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
  - Variants: builtin, pointer, array, function, tagged, noncanonical.
  - Noncanonical forwards, and so doesn't need any attributes, etc attached to it.
  -}
-nonterminal Type with lpp, rpp, host<Type>, baseTypeExpr, typeModifierExpr, mangledName, integerPromotions, defaultArgumentPromotions, defaultLvalueConversion, defaultFunctionArrayLvalueConversion, isIntegerType, isScalarType, isArithmeticType, withoutAttributes, withoutTypeQualifiers, withoutExtensionQualifiers<Type>, withTypeQualifiers, addedTypeQualifiers, qualifiers, mergeQualifiers<Type>, errors, freeVariables;
-flowtype Type = decorate {}, baseTypeExpr {}, typeModifierExpr {}, integerPromotions {}, defaultArgumentPromotions {}, defaultLvalueConversion {}, defaultFunctionArrayLvalueConversion {}, isIntegerType {}, isScalarType {}, isArithmeticType {}, withoutAttributes {}, withoutTypeQualifiers {}, withoutExtensionQualifiers {}, withTypeQualifiers {addedTypeQualifiers}, qualifiers {}, mergeQualifiers {};
+nonterminal Type with lpp, rpp, host<Type>, baseTypeExpr, typeModifierExpr, mangledName, integerPromotions, defaultArgumentPromotions, defaultLvalueConversion, defaultFunctionArrayLvalueConversion, isIntegerType, isScalarType, isArithmeticType, maybeRefId, withoutAttributes, withoutTypeQualifiers, withoutExtensionQualifiers<Type>, withTypeQualifiers, addedTypeQualifiers, qualifiers, mergeQualifiers<Type>, errors, freeVariables;
+flowtype Type = decorate {}, baseTypeExpr {}, typeModifierExpr {}, integerPromotions {}, defaultArgumentPromotions {}, defaultLvalueConversion {}, defaultFunctionArrayLvalueConversion {}, isIntegerType {}, isScalarType {}, isArithmeticType {}, maybeRefId {}, withoutAttributes {}, withoutTypeQualifiers {}, withoutExtensionQualifiers {}, withTypeQualifiers {addedTypeQualifiers}, qualifiers {}, mergeQualifiers {};
 
 -- Used to turn a Type back into a TypeName
 synthesized attribute baseTypeExpr :: BaseTypeExpr;
@@ -58,6 +58,7 @@ top::Type ::=
   top.isIntegerType = false;
   top.isScalarType = false;
   top.isArithmeticType = false;
+  top.maybeRefId = nothing();
 }
 
 {-------------------------------------------------------------------------------
@@ -425,6 +426,7 @@ top::Type ::= q::Qualifiers  sub::ExtType
   top.isIntegerType = sub.isIntegerType;
   top.isArithmeticType = sub.isArithmeticType;
   top.isScalarType = sub.isScalarType;
+  top.maybeRefId = sub.maybeRefId;
 
   q.typeToQualify = top;
   sub.givenQualifiers = q;
@@ -608,6 +610,7 @@ top::Type ::= attrs::Attributes  bt::Type
   top.isIntegerType = bt.isIntegerType;
   top.isScalarType = bt.isScalarType;
   top.isArithmeticType = bt.isArithmeticType;
+  top.maybeRefId = bt.maybeRefId;
   top.errors := bt.errors;
   top.freeVariables = bt.freeVariables;
   
