@@ -682,7 +682,7 @@ top::ParameterDecl ::= storage::StorageClasses  bty::BaseTypeExpr  mty::TypeModi
   mty.typeModifiersIn = bty.typeModifiers;
   
   top.errors <- name.valueRedeclarationCheckNoCompatible;
-  -- TODO: Check for incomplete types when we know this is an actual function declaration
+  -- TODO: Check for incomplete types when we know this is an actual function definition
 }
 
 -- This is the last item in a struct/union declaration
@@ -860,7 +860,7 @@ top::StructItemList ::= h::StructItem  t::StructItemList
   
   h.isLast =
     top.isLast &&
-    (!top.inStruct ||
+    (!top.inStruct || -- In a union all fields are structurally the "last" field
      case t of
      | consStructItem(_, _) -> false
      | nilStructItem() -> true
@@ -1040,7 +1040,7 @@ top::StructDeclarators ::= h::StructDeclarator  t::StructDeclarators
   
   h.isLast =
     top.isLast &&
-    (!top.inStruct ||
+    (!top.inStruct || -- In a union all fields are structurally the "last" field
      case t of
      | consStructDeclarator(_, _) -> false
      | nilStructDeclarator() -> true
