@@ -324,6 +324,7 @@ top::BaseTypeExpr ::= q::Qualifiers  def::StructDecl
   top.defs := def.defs;
   top.freeVariables := [];
   q.typeToQualify = top.typerep;
+  def.isLast = true;
 }
 
 {-- An actual declaration of, not reference to, a union. -}
@@ -347,6 +348,7 @@ top::BaseTypeExpr ::= q::Qualifiers  def::UnionDecl
   top.defs := def.defs;
   top.freeVariables := [];
   q.typeToQualify = top.typerep;
+  def.isLast = true;
 }
 
 {-- An actual declaration of, not reference to, an enum. -}
