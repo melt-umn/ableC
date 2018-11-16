@@ -228,7 +228,7 @@ top::Decl ::= msg::[Message]
 abstract production decDecl
 top::Decl ::= d::Decorated Decl
 {
-  top.pp = pp"dec {${nestlines(2, d.pp)}}";
+  top.pp = d.pp;
   top.host = d.host;
   top.lifted = d.lifted;
   top.errors := d.errors;

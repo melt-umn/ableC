@@ -73,7 +73,7 @@ top::Stmt ::= msg::[Message]
 abstract production decStmt
 top::Stmt ::= s::Decorated Stmt
 {
-  top.pp = pp"dec{${s.pp}}";
+  top.pp = s.pp;
   top.host = s.host;
   top.lifted = s.lifted;
   top.errors := s.errors;

@@ -161,7 +161,7 @@ top::BaseTypeExpr ::= result::Type
 abstract production decTypeExpr
 top::BaseTypeExpr ::= ty::Decorated BaseTypeExpr
 {
-  top.pp = pp"dec{${ty.pp}}";
+  top.pp = ty.pp;
   top.host = ty.host;
   top.lifted = ty.lifted;
   top.typerep = ty.typerep;

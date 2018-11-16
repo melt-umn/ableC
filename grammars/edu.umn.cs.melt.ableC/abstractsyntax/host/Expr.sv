@@ -55,7 +55,7 @@ Expr ::= msg::[Message] e::Expr l::Location
 abstract production decExpr
 top::Expr ::= e::Decorated Expr
 {
-  top.pp = pp"dec(${e.pp})";
+  top.pp = e.pp;
   top.host = e.host;
   top.lifted = e.lifted;
   top.errors := e.errors;
