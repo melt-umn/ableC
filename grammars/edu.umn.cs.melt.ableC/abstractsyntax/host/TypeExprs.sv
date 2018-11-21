@@ -374,7 +374,7 @@ top::BaseTypeExpr ::= q::Qualifiers  sub::ExtType
   top.typerep = extType(q, sub);
   propagate lifted;
   top.host = directTypeExpr(sub.host);
-  top.pp = sub.pp;
+  top.pp = ppConcat([terminate(space(), q.pps), sub.lpp, sub.rpp]);
   top.errors := q.errors;
   top.globalDecls := [];
   top.typeModifiers = [];
