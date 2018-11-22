@@ -63,6 +63,8 @@ top::Expr ::= e::Decorated Expr
   top.defs := e.defs;
   top.freeVariables := e.freeVariables;
   top.typerep = e.typerep;
+  top.isLValue = e.isLValue;
+  top.integerConstantValue = e.integerConstantValue;
 }
 abstract production qualifiedExpr
 top::Expr ::= q::Qualifiers e::Expr

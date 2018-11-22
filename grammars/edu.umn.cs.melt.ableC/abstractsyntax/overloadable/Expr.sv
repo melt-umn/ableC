@@ -27,7 +27,11 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
     | nothing() -> nothing()
     end;
   
-  local host::host:Expr = inj:arraySubscriptExpr(lhs, rhs, location=top.location);
+  local host::host:Expr =
+    inj:arraySubscriptExpr(
+      host:decExpr(lhs, location=lhs.location),
+      host:decExpr(rhs, location=rhs.location),
+      location=top.location);
   local fwrd::host:Expr =
     case orElse(lhs.host:typerep.arraySubscriptProd, rewriteProd) of
       just(prod) -> host:transformedExpr(host, prod(lhs, rhs, top.location), location=top.location)
@@ -48,7 +52,8 @@ top::host:Expr ::= f::host:Expr  a::host:Exprs
     | nothing() -> nothing()
     end;
   
-  local host::host:Expr = inj:callExpr(f, a, location=top.location);
+  local host::host:Expr =
+    inj:callExpr(host:decExpr(f, location=f.location), a, location=top.location);
   forwards to
     case orElse(f.callProd, rewriteProd) of
       just(prod) -> host:transformedExpr(host, prod(a, top.location), location=top.location)
@@ -64,7 +69,11 @@ top::host:Expr ::= lhs::host:Expr  deref::Boolean  rhs::host:Name
 
   local t::host:Type = lhs.host:typerep;
   t.isDeref = deref;
-  local host::host:Expr = inj:memberExpr(lhs, deref, rhs, location=top.location);
+  local host::host:Expr =
+    inj:memberExpr(
+      host:decExpr(lhs, location=lhs.location),
+      deref, rhs,
+      location=top.location);
   local fwrd::host:Expr =
     case t.memberProd of
       just(prod) -> host:transformedExpr(host, prod(lhs, rhs, top.location), location=top.location)
