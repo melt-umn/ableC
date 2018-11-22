@@ -569,6 +569,31 @@ top::TypeModifierExpr ::= bty::BaseTypeExpr
   bty.givenRefId = nothing();
 }
 
+{--
+ - The purpose of this production is for an extension production to use to wrap
+ - children that have already been decorated during error checking, etc. when
+ - computing a forward tree, to avoid re-decoration and potential exponential
+ - performance hits.  When using this production, one must be very careful to
+ - ensure that the inherited attributes recieved by the wrapped tree are equivalent
+ - to the ones that would have been passed down in the forward tree.
+ - See https://github.com/melt-umn/silver/issues/86
+ -}
+abstract production decTypeModifierExpr
+top::TypeModifierExpr ::= ty::Decorated TypeModifierExpr
+{
+  top.lpp = ty.lpp;
+  top.rpp = ty.rpp;
+  top.host = ty.host;
+  top.lifted = ty.lifted;
+  top.modifiedBaseTypeExpr = ty.modifiedBaseTypeExpr;
+  top.typerep = ty.typerep;
+  top.errors := ty.errors;
+  top.globalDecls := ty.globalDecls;
+  top.decls = ty.decls;
+  top.defs := ty.defs;
+  top.freeVariables := ty.freeVariables;
+}
+
 {-- Pointers -}
 abstract production pointerTypeExpr
 top::TypeModifierExpr ::= q::Qualifiers  target::TypeModifierExpr
