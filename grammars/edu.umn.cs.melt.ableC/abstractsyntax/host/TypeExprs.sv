@@ -206,6 +206,7 @@ top::BaseTypeExpr ::= bty::BaseTypeExpr  mty::TypeModifierExpr
   top.pp = parens(ppConcat([bty.pp, mty.lpp, mty.rpp]));
   top.lifted = bty.lifted;
   top.typerep = mty.typerep;
+  mty.env = addEnv(bty.defs, bty.env);
   mty.baseType = bty.typerep;
   mty.typeModifiersIn = bty.typeModifiers;
   top.errors := bty.errors ++ mty.errors;
