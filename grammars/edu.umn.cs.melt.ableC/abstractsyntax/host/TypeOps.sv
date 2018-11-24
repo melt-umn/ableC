@@ -10,7 +10,7 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 synthesized attribute isIntegerType :: Boolean; -- enum or integer builtin
 synthesized attribute isArithmeticType :: Boolean; -- integer or floating (incl complex)
 synthesized attribute isScalarType :: Boolean; -- pointers or arithmetic
-
+synthesized attribute isCompleteType :: (Boolean ::= Decorated Env); -- test if we know the size of a type
 
 
 function showType

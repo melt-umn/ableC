@@ -371,6 +371,22 @@ top::Declarator ::= name::Name  ty::TypeModifierExpr  attrs::Attributes  initial
       name.valueRedeclarationCheck(top.typerep)
     else
       name.valueRedeclarationCheckNoCompatible;
+  
+  top.errors <-
+    if !top.isTypedef && !top.typerep.isCompleteType(ty.env)
+    then
+      case initializer of
+      | justInitializer(_) ->
+        [err(top.sourceLocation, s"variable ${name.name} has initializer but incomplete type ${showType(top.typerep)}")]
+      | nothingInitializer() -> []
+      end ++
+      -- TODO: This check should be included for non-extern top-level declarations. However, we
+      -- somehow need to check if a struct actually does have a declaration later on in the file,
+      -- which would complicate the environment.
+      if !top.isTopLevel --!(top.isTopLevel && top.givenStorageClasses.isExtern)
+      then [err(top.sourceLocation, s"storage size of ${name.name} (type ${showType(top.typerep)}) isn't known")]
+      else []
+    else [];
 
   local allAttrs :: Attributes = appendAttribute(top.givenAttributes, attrs);
   allAttrs.env = top.env;
@@ -666,14 +682,18 @@ top::ParameterDecl ::= storage::StorageClasses  bty::BaseTypeExpr  mty::TypeModi
   mty.typeModifiersIn = bty.typeModifiers;
   
   top.errors <- name.valueRedeclarationCheckNoCompatible;
+  -- TODO: Check for incomplete types when we know this is an actual function definition
 }
+
+-- This is the last item in a struct/union declaration
+inherited attribute isLast::Boolean;
 
 synthesized attribute refId :: String; -- TODO move this later?
 
 synthesized attribute hasConstField::Boolean;
 
-nonterminal StructDecl with location, pp, host<StructDecl>, lifted<StructDecl>, maybename, errors, globalDecls, defs, env, localDefs, tagEnv, givenRefId, refId, hasConstField, returnType, freeVariables;
-flowtype StructDecl = decorate {env, givenRefId, returnType}, localDefs {decorate}, tagEnv {decorate}, refId {decorate}, hasConstField {decorate};
+nonterminal StructDecl with location, pp, host<StructDecl>, lifted<StructDecl>, maybename, errors, globalDecls, defs, env, localDefs, tagEnv, isLast, givenRefId, refId, hasConstField, returnType, freeVariables;
+flowtype StructDecl = decorate {env, isLast, givenRefId, returnType}, localDefs {decorate}, tagEnv {decorate}, refId {decorate}, hasConstField {decorate};
 
 abstract production structDecl
 top::StructDecl ::= attrs::Attributes  name::MaybeName  dcls::StructItemList
@@ -726,6 +746,8 @@ top::StructDecl ::= attrs::Attributes  name::MaybeName  dcls::StructItemList
   top.freeVariables = dcls.freeVariables;
   
   dcls.env = openScopeEnv(addEnv(preDefs, top.env));
+  dcls.inStruct = true;
+  dcls.isLast = top.isLast;
   
   
   -- Redeclaration error if there IS a forward declaration AND an existing refid declaration.
@@ -734,8 +756,8 @@ top::StructDecl ::= attrs::Attributes  name::MaybeName  dcls::StructItemList
     else [err(top.location, "Redeclaration of struct " ++ name.maybename.fromJust.name)];
 }
 
-nonterminal UnionDecl with location, pp, host<UnionDecl>, lifted<UnionDecl>, maybename, errors, globalDecls, defs, env, localDefs, tagEnv, givenRefId, refId, hasConstField, returnType, freeVariables;
-flowtype UnionDecl = decorate {env, givenRefId, returnType}, localDefs {decorate}, tagEnv {decorate}, refId {decorate}, hasConstField {decorate};
+nonterminal UnionDecl with location, pp, host<UnionDecl>, lifted<UnionDecl>, maybename, errors, globalDecls, defs, env, localDefs, tagEnv, isLast, givenRefId, refId, hasConstField, returnType, freeVariables;
+flowtype UnionDecl = decorate {env, isLast, givenRefId, returnType}, localDefs {decorate}, tagEnv {decorate}, refId {decorate}, hasConstField {decorate};
 
 abstract production unionDecl
 top::UnionDecl ::= attrs::Attributes  name::MaybeName  dcls::StructItemList
@@ -771,6 +793,8 @@ top::UnionDecl ::= attrs::Attributes  name::MaybeName  dcls::StructItemList
   top.freeVariables = dcls.freeVariables;
   
   dcls.env = openScopeEnv(addEnv(preDefs, top.env));
+  dcls.inStruct = false;
+  dcls.isLast = top.isLast;
   
   
   -- Redeclaration error if there IS a forward declaration AND an existing refid declaration.
@@ -811,11 +835,13 @@ top::EnumDecl ::= name::MaybeName  dcls::EnumItemList
     -- We can rely on the name being present if it's a redeclaration
 }
 
+autocopy attribute inStruct::Boolean;
+
 autocopy attribute appendedStructItemList :: StructItemList;
 synthesized attribute appendedStructItemListRes :: StructItemList;
 
-nonterminal StructItemList with pps, host<StructItemList>, lifted<StructItemList>, errors, globalDecls, defs, env, localDefs, hasConstField, returnType, freeVariables, appendedStructItemList, appendedStructItemListRes;
-flowtype StructItemList = decorate {env, returnType}, appendedStructItemListRes {appendedStructItemList};
+nonterminal StructItemList with pps, host<StructItemList>, lifted<StructItemList>, errors, globalDecls, defs, env, localDefs, hasConstField, inStruct, isLast, returnType, freeVariables, appendedStructItemList, appendedStructItemListRes;
+flowtype StructItemList = decorate {env, returnType, inStruct, isLast}, appendedStructItemListRes {appendedStructItemList};
 
 abstract production consStructItem
 top::StructItemList ::= h::StructItem  t::StructItemList
@@ -832,7 +858,16 @@ top::StructItemList ::= h::StructItem  t::StructItemList
   top.hasConstField = h.hasConstField || t.hasConstField;
   top.appendedStructItemListRes = consStructItem(h, t.appendedStructItemListRes);
   
+  h.isLast =
+    top.isLast &&
+    (!top.inStruct || -- In a union all fields are structurally the "last" field
+     case t of
+     | consStructItem(_, _) -> false
+     | nilStructItem() -> true
+     end);
+  
   t.env = addEnv(h.defs ++ h.localDefs, h.env);
+  t.isLast = top.isLast;
 }
 
 abstract production nilStructItem
@@ -899,8 +934,8 @@ EnumItemList ::= e1::EnumItemList e2::EnumItemList
   return e1.appendedEnumItemListRes;
 }
 
-nonterminal StructItem with pp, host<StructItem>, lifted<StructItem>, errors, globalDecls, defs, env, localDefs, hasConstField, returnType, freeVariables;
-flowtype StructItem = decorate {env, returnType};
+nonterminal StructItem with pp, host<StructItem>, lifted<StructItem>, errors, globalDecls, defs, env, localDefs, hasConstField, inStruct, isLast, returnType, freeVariables;
+flowtype StructItem = decorate {env, returnType, inStruct, isLast};
 
 abstract production structItem
 top::StructItem ::= attrs::Attributes  ty::BaseTypeExpr  dcls::StructDeclarators
@@ -922,6 +957,7 @@ top::StructItem ::= attrs::Attributes  ty::BaseTypeExpr  dcls::StructDeclarators
   ty.givenRefId = attrs.maybeRefId;
   dcls.env = addEnv(ty.defs, ty.env);
   dcls.baseType = ty.typerep;
+  dcls.isLast = top.isLast;
   dcls.typeModifiersIn = ty.typeModifiers;
   dcls.givenAttributes = attrs;
 }
@@ -936,6 +972,7 @@ top::StructItem ::= dcls::StructItemList
   top.freeVariables = dcls.freeVariables;
   top.localDefs := dcls.localDefs;
   top.hasConstField = dcls.hasConstField;
+  dcls.isLast = top.isLast;
 }
 abstract production anonStructStructItem
 top::StructItem ::= d::StructDecl
@@ -949,6 +986,7 @@ top::StructItem ::= d::StructDecl
   top.localDefs := d.localDefs;
   top.hasConstField = d.hasConstField;
   
+  d.isLast = top.isLast;
   d.givenRefId = nothing();
 }
 abstract production anonUnionStructItem
@@ -963,6 +1001,7 @@ top::StructItem ::= d::UnionDecl
   top.localDefs := d.localDefs;
   top.hasConstField = d.hasConstField;
   
+  d.isLast = top.isLast;
   d.givenRefId = nothing();
 }
 abstract production warnStructItem
@@ -980,8 +1019,8 @@ top::StructItem ::= msg::[Message]
 
 synthesized attribute liftedStructItems::[StructItem];
 
-nonterminal StructDeclarators with pps, host<StructDeclarators>, lifted<StructDeclarators>, liftedStructItems, hasModifiedTypeExpr, errors, globalDecls, defs, localDefs, hasConstField, env, baseType, typeModifiersIn, givenAttributes, returnType, freeVariables;
-flowtype StructDeclarators = decorate {env, returnType, baseType, typeModifiersIn, givenAttributes}, liftedStructItems {decorate}, hasModifiedTypeExpr {decorate};
+nonterminal StructDeclarators with pps, host<StructDeclarators>, lifted<StructDeclarators>, liftedStructItems, hasModifiedTypeExpr, errors, globalDecls, defs, localDefs, hasConstField, env, baseType, inStruct, isLast, typeModifiersIn, givenAttributes, returnType, freeVariables;
+flowtype StructDeclarators = decorate {env, returnType, baseType, inStruct, isLast, typeModifiersIn, givenAttributes}, liftedStructItems {decorate}, hasModifiedTypeExpr {decorate};
 
 abstract production consStructDeclarator
 top::StructDeclarators ::= h::StructDeclarator  t::StructDeclarators
@@ -999,7 +1038,16 @@ top::StructDeclarators ::= h::StructDeclarator  t::StructDeclarators
     h.freeVariables ++
     removeDefsFromNames(h.localDefs, t.freeVariables);
   
+  h.isLast =
+    top.isLast &&
+    (!top.inStruct || -- In a union all fields are structurally the "last" field
+     case t of
+     | consStructDeclarator(_, _) -> false
+     | nilStructDeclarator() -> true
+     end);
+  
   t.env = addEnv(h.localDefs, h.env);
+  t.isLast = top.isLast;
 }
 abstract production nilStructDeclarator
 top::StructDeclarators ::=
@@ -1018,8 +1066,8 @@ top::StructDeclarators ::=
 
 synthesized attribute liftedStructItem::StructItem;
 
-nonterminal StructDeclarator with pps, host<StructDeclarator>, lifted<StructDeclarator>, liftedStructItem, hasModifiedTypeExpr, errors, globalDecls, defs, localDefs, hasConstField, env, typerep, sourceLocation, baseType, typeModifiersIn, givenAttributes, returnType, freeVariables;
-flowtype StructDeclarator = decorate {env, returnType, baseType, typeModifiersIn, givenAttributes}, liftedStructItem {decorate}, hasModifiedTypeExpr {decorate};
+nonterminal StructDeclarator with pps, host<StructDeclarator>, lifted<StructDeclarator>, liftedStructItem, hasModifiedTypeExpr, errors, globalDecls, defs, localDefs, hasConstField, env, typerep, sourceLocation, baseType, inStruct, isLast, typeModifiersIn, givenAttributes, returnType, freeVariables;
+flowtype StructDeclarator = decorate {env, returnType, baseType, inStruct, isLast, typeModifiersIn, givenAttributes}, liftedStructItem {decorate}, hasModifiedTypeExpr {decorate};
 
 abstract production structField
 top::StructDeclarator ::= name::Name  ty::TypeModifierExpr  attrs::Attributes
@@ -1043,8 +1091,21 @@ top::StructDeclarator ::= name::Name  ty::TypeModifierExpr  attrs::Attributes
   top.typerep = animateAttributeOnType(allAttrs, ty.typerep);
   top.sourceLocation = name.location;
   
-  
   top.errors <- name.valueRedeclarationCheckNoCompatible;
+  top.errors <-
+    case ty.typerep of
+    | arrayType(_, _, _, incompleteArrayType()) ->
+      if !top.inStruct
+      then [err(top.sourceLocation, s"flexible array member ${name.name} only permitted in structs")]
+      else if !top.isLast
+      then [err(top.sourceLocation, s"flexible array member ${name.name} not at end of struct")]
+      else []
+    | _ -> []
+    end;
+  top.errors <-
+    if !top.typerep.isCompleteType(top.env)
+    then [err(top.sourceLocation, s"field ${name.name} has incomplete type")]
+    else [];
   
   local allAttrs :: Attributes = appendAttribute(top.givenAttributes, attrs);
   allAttrs.env = top.env;
@@ -1079,11 +1140,20 @@ top::StructDeclarator ::= name::MaybeName  ty::TypeModifierExpr  e::Expr  attrs:
   top.sourceLocation = 
     case name.maybename of
     | just(n) -> n.location
-    | nothing() -> loc("??",-1,-1,-1,-1,-1,-1) -- TODO: bug? probably okay, since only used to lookup names from env
+    | nothing() -> loc("??",-1,-1,-1,-1,-1,-1) -- TODO: bug
     end;
   
-  
   top.errors <- name.valueRedeclarationCheckNoCompatible;
+  
+  local errName::String =
+    case name.maybename of
+    | just(n) -> n.name
+    | nothing() -> "<anon>"
+    end;
+  top.errors <-
+    if !top.typerep.isCompleteType(top.env)
+    then [err(top.sourceLocation, s"field ${errName} has incomplete type")]
+    else [];
 
   local allAttrs :: Attributes = appendAttribute(top.givenAttributes, attrs);
   allAttrs.env = top.env;
@@ -1127,17 +1197,22 @@ top::EnumItem ::= name::Name  e::MaybeExpr
   top.errors <- name.valueRedeclarationCheckNoCompatible;
 }
 
+synthesized attribute isExtern::Boolean;
+synthesized attribute isStatic::Boolean;
+
 autocopy attribute appendedStorageClasses :: StorageClasses;
 synthesized attribute appendedStorageClassesRes :: StorageClasses;
 
-nonterminal StorageClasses with pps, appendedStorageClasses, appendedStorageClassesRes;
-flowtype StorageClasses = decorate {}, appendedStorageClassesRes {appendedStorageClasses};
+nonterminal StorageClasses with pps, isExtern, isStatic, appendedStorageClasses, appendedStorageClassesRes;
+flowtype StorageClasses = decorate {}, isExtern {}, isStatic {}, appendedStorageClassesRes {appendedStorageClasses};
 
 abstract production consStorageClass
 top::StorageClasses ::= h::StorageClass  t::StorageClasses
 {
   top.pps = h.pp :: t.pps;
   top.appendedStorageClassesRes = consStorageClass(h, t.appendedStorageClassesRes);
+  top.isExtern = h.isExtern || t.isExtern;
+  top.isStatic = h.isStatic || t.isStatic;
 }
 
 abstract production nilStorageClass
@@ -1145,6 +1220,8 @@ top::StorageClasses ::=
 {
   top.pps = [];
   top.appendedStorageClassesRes = top.appendedStorageClasses;
+  top.isExtern = false;
+  top.isStatic = false;
 }
 
 function appendStorageClasses
@@ -1154,19 +1231,43 @@ StorageClasses ::= s1::StorageClasses s2::StorageClasses
   return s1.appendedStorageClassesRes;
 }
 
-nonterminal StorageClass with pp;
-flowtype StorageClass = decorate {};
+nonterminal StorageClass with pp, isExtern, isStatic;
+flowtype StorageClass = decorate {}, isExtern {}, isStatic {};
+
+aspect default production
+top::StorageClass ::=
+{
+  top.isExtern = false;
+  top.isStatic = false;
+}
 
 abstract production externStorageClass
-top::StorageClass ::= { top.pp = text("extern"); }
+top::StorageClass ::=
+{
+  top.pp = text("extern");
+  top.isExtern = true;
+}
 abstract production staticStorageClass
-top::StorageClass ::= { top.pp = text("static"); }
+top::StorageClass ::=
+{
+  top.pp = text("static");
+  top.isStatic = true;
+}
 abstract production autoStorageClass
-top::StorageClass ::= { top.pp = text("auto"); }
+top::StorageClass ::=
+{
+  top.pp = text("auto");
+}
 abstract production registerStorageClass
-top::StorageClass ::= { top.pp = text("register"); }
+top::StorageClass ::=
+{
+  top.pp = text("register");
+}
 abstract production threadLocalStorageClass
-top::StorageClass ::= { top.pp = text("_Thread_local"); }
+top::StorageClass ::=
+{
+  top.pp = text("_Thread_local");
+}
 
 {-
 From clang:
