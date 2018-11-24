@@ -9,8 +9,8 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
  - Variants: builtin, pointer, array, function, tagged, noncanonical.
  - Noncanonical forwards, and so doesn't need any attributes, etc attached to it.
  -}
-nonterminal Type with lpp, rpp, host<Type>, baseTypeExpr, typeModifierExpr, mangledName, integerPromotions, defaultArgumentPromotions, defaultLvalueConversion, defaultFunctionArrayLvalueConversion, isIntegerType, isScalarType, isArithmeticType, maybeRefId, withoutAttributes, withoutTypeQualifiers, withoutExtensionQualifiers<Type>, withTypeQualifiers, addedTypeQualifiers, qualifiers, mergeQualifiers<Type>, errors, freeVariables;
-flowtype Type = decorate {}, baseTypeExpr {}, typeModifierExpr {}, integerPromotions {}, defaultArgumentPromotions {}, defaultLvalueConversion {}, defaultFunctionArrayLvalueConversion {}, isIntegerType {}, isScalarType {}, isArithmeticType {}, maybeRefId {}, withoutAttributes {}, withoutTypeQualifiers {}, withoutExtensionQualifiers {}, withTypeQualifiers {addedTypeQualifiers}, qualifiers {}, mergeQualifiers {};
+nonterminal Type with lpp, rpp, host<Type>, baseTypeExpr, typeModifierExpr, mangledName, integerPromotions, defaultArgumentPromotions, defaultLvalueConversion, defaultFunctionArrayLvalueConversion, isIntegerType, isScalarType, isArithmeticType, isCompleteType, maybeRefId, withoutAttributes, withoutTypeQualifiers, withoutExtensionQualifiers<Type>, withTypeQualifiers, addedTypeQualifiers, qualifiers, mergeQualifiers<Type>, errors, freeVariables;
+flowtype Type = decorate {}, baseTypeExpr {}, typeModifierExpr {}, integerPromotions {}, defaultArgumentPromotions {}, defaultLvalueConversion {}, defaultFunctionArrayLvalueConversion {}, isIntegerType {}, isScalarType {}, isArithmeticType {}, isCompleteType {}, maybeRefId {}, withoutAttributes {}, withoutTypeQualifiers {}, withoutExtensionQualifiers {}, withTypeQualifiers {addedTypeQualifiers}, qualifiers {}, mergeQualifiers {};
 
 -- Used to turn a Type back into a TypeName
 synthesized attribute baseTypeExpr :: BaseTypeExpr;
@@ -58,6 +58,7 @@ top::Type ::=
   top.isIntegerType = false;
   top.isScalarType = false;
   top.isArithmeticType = false;
+  top.isCompleteType = \ Decorated Env -> true;
   top.maybeRefId = nothing();
 }
 
@@ -426,6 +427,7 @@ top::Type ::= q::Qualifiers  sub::ExtType
   top.isIntegerType = sub.isIntegerType;
   top.isArithmeticType = sub.isArithmeticType;
   top.isScalarType = sub.isScalarType;
+  top.isCompleteType = sub.isCompleteType;
   top.maybeRefId = sub.maybeRefId;
 
   q.typeToQualify = top;
@@ -437,8 +439,8 @@ inherited attribute givenQualifiers::Qualifiers;
 -- t1.isEqualTo(t2) iff t1.mangledName == t2.mangledName
 synthesized attribute isEqualTo::(Boolean ::= ExtType);
 
-closed nonterminal ExtType with givenQualifiers, pp, lpp, rpp, host<Type>, baseTypeExpr, typeModifierExpr, mangledName, isEqualTo, integerPromotions, defaultArgumentPromotions, defaultLvalueConversion, defaultFunctionArrayLvalueConversion, isIntegerType, isScalarType, isArithmeticType, maybeRefId, freeVariables;
-flowtype ExtType = decorate {givenQualifiers}, lpp {givenQualifiers}, rpp {givenQualifiers}, baseTypeExpr {decorate}, typeModifierExpr {decorate}, isEqualTo {}, integerPromotions {decorate}, defaultArgumentPromotions {decorate}, defaultLvalueConversion {decorate}, defaultFunctionArrayLvalueConversion {decorate}, isIntegerType {}, isScalarType {}, isArithmeticType {}, maybeRefId {};
+closed nonterminal ExtType with givenQualifiers, pp, lpp, rpp, host<Type>, baseTypeExpr, typeModifierExpr, mangledName, isEqualTo, integerPromotions, defaultArgumentPromotions, defaultLvalueConversion, defaultFunctionArrayLvalueConversion, isIntegerType, isScalarType, isArithmeticType, isCompleteType, maybeRefId, freeVariables;
+flowtype ExtType = decorate {givenQualifiers}, lpp {givenQualifiers}, rpp {givenQualifiers}, baseTypeExpr {decorate}, typeModifierExpr {decorate}, isEqualTo {}, integerPromotions {decorate}, defaultArgumentPromotions {decorate}, defaultLvalueConversion {decorate}, defaultFunctionArrayLvalueConversion {decorate}, isIntegerType {}, isScalarType {}, isArithmeticType {}, isCompleteType {}, maybeRefId {};
 
 -- Forward flowtype is empty, since extensions would primarilly introduce new non-forwarding
 -- productions on ExtType, and we would like to be able to pattern match on these.
@@ -461,6 +463,7 @@ top::ExtType ::=
   top.isIntegerType = false;
   top.isArithmeticType = false;
   top.isScalarType = false;
+  top.isCompleteType = \ Decorated Env -> true;
   top.maybeRefId = nothing();
 }
 
@@ -515,7 +518,7 @@ top::ExtType ::= ref::Decorated EnumDecl
  - to consult the environment about what's known about that tag.
  -
  - This production, despite its signature, only represents structs and unions, not enums.
- -} 
+ -}
 abstract production refIdExtType
 top::ExtType ::= kwd::StructOrEnumOrUnion  n::String  refId::String
 {
@@ -531,6 +534,8 @@ top::ExtType ::= kwd::StructOrEnumOrUnion  n::String  refId::String
       | refIdExtType(_, _, otherRefId) -> refId == otherRefId
       | _ -> false
       end;
+  top.isCompleteType =
+    \ env::Decorated Env -> !null(lookupRefId(refId, env));
   top.maybeRefId = just(refId);
 }
 
@@ -610,6 +615,7 @@ top::Type ::= attrs::Attributes  bt::Type
   top.isIntegerType = bt.isIntegerType;
   top.isScalarType = bt.isScalarType;
   top.isArithmeticType = bt.isArithmeticType;
+  top.isCompleteType = bt.isCompleteType;
   top.maybeRefId = bt.maybeRefId;
   top.errors := bt.errors;
   top.freeVariables = bt.freeVariables;
@@ -661,6 +667,7 @@ top::Type ::= bt::Type  bytes::Integer
   top.isIntegerType = false;
   top.isScalarType = false;
   top.isArithmeticType = false;
+  top.isCompleteType = bt.isCompleteType;
   top.errors := bt.errors;
   top.freeVariables = bt.freeVariables;
 }
