@@ -699,7 +699,7 @@ top::StructDecl ::= attrs::Attributes  name::MaybeName  dcls::StructItemList
     -- DEBUGGING
     --text("/*" ++ top.refId ++ "*/"),
     -- END DEBUGGING
-    text(" {"), nestlines(2, terminate(cat(semi(),line()), dcls.pps)),
+    text(" {"), nestlines(2, terminate(line(), dcls.pps)),
     text("}")]);
   top.errors := dcls.errors;
   top.globalDecls := dcls.globalDecls;
@@ -763,7 +763,7 @@ top::UnionDecl ::= attrs::Attributes  name::MaybeName  dcls::StructItemList
     -- DEBUGGING
     --text("/*" ++ top.refId ++ "*/"),
     -- END DEBUGGING
-    text(" {"), nestlines(2, terminate(cat(semi(),line()), dcls.pps)),
+    text(" {"), nestlines(2, terminate(line(), dcls.pps)),
     text("}")]);
   top.errors := dcls.errors;
   top.globalDecls := dcls.globalDecls;
@@ -936,7 +936,7 @@ abstract production structItem
 top::StructItem ::= attrs::Attributes  ty::BaseTypeExpr  dcls::StructDeclarators
 {
   propagate host;
-  top.pp = ppConcat([ppAttributes(attrs), ty.pp, space(), ppImplode(text(", "), dcls.pps)]);
+  top.pp = ppConcat([ppAttributes(attrs), ty.pp, space(), ppImplode(text(", "), dcls.pps), semi()]);
   top.lifted =
     if dcls.hasModifiedTypeExpr
     -- TODO: Discarding ty.decls!
