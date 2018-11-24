@@ -298,9 +298,10 @@ top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
       errorType()
     else addQualifiers(quals_refid.fst.qualifiers, head(valueitems).typerep);
   top.errors <-
-    case lhs.typerep of
-      errorType() -> []
-    | _ ->
+    case isPointer, lhs.typerep of
+    | _, errorType() -> []
+    | true, pointerType(_, errorType()) -> []
+    | _, _ ->
       if null(refids) then 
         [err(lhs.location, "expression does not have defined fields (got " ++ showType(lhs.typerep) ++ ")")]
       else if isPointer != deref then 
