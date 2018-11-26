@@ -18,6 +18,8 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
   injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
+  rhs.env = addEnv(lhs.defs, lhs.env);
+
   local lType::host:Type = lhs.host:typerep;
   lType.otherType = rType;
   local rType::host:Type = rhs.host:typerep;
@@ -28,7 +30,11 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
     then just(mkEqRewriteExpr(\ lhs::host:Expr rhs::host:Expr loc::Location -> rhs, _, _, _))
     else nothing();
   
-  local host::host:Expr = inj:eqExpr(lhs, rhs, location=top.location);
+  local host::host:Expr =
+    inj:eqExpr(
+      host:decExpr(lhs, location=lhs.location),
+      host:decExpr(rhs, location=rhs.location),
+      location=top.location);
   local fwrd::host:Expr =
     case orElse(lType.lEqProd, orElse(rType.rEqProd, rewriteProd)) of
       just(prod) -> host:transformedExpr(host, prod(lhs, rhs, top.location), location=top.location)
@@ -56,6 +62,8 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
   injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
+  rhs.env = addEnv(lhs.defs, lhs.env);
+
   local lType::host:Type = lhs.host:typerep;
   lType.otherType = rType;
   local rType::host:Type = rhs.host:typerep;
@@ -66,7 +74,11 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
     then just(mkEqRewriteExpr(mulExpr(_, _, location=_), _, _, _))
     else nothing();
   
-  local host::host:Expr = inj:mulEqExpr(lhs, rhs, location=top.location);
+  local host::host:Expr =
+    inj:mulEqExpr(
+      host:decExpr(lhs, location=lhs.location),
+      host:decExpr(rhs, location=rhs.location),
+      location=top.location);
   local fwrd::host:Expr =
     case orElse(lType.lMulEqProd, orElse(rType.rMulEqProd, rewriteProd)) of
       just(prod) -> host:transformedExpr(host, prod(lhs, rhs, top.location), location=top.location)
@@ -94,6 +106,8 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
   injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
+  rhs.env = addEnv(lhs.defs, lhs.env);
+
   local lType::host:Type = lhs.host:typerep;
   lType.otherType = rType;
   local rType::host:Type = rhs.host:typerep;
@@ -104,7 +118,11 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
     then just(mkEqRewriteExpr(divExpr(_, _, location=_), _, _, _))
     else nothing();
   
-  local host::host:Expr = inj:divEqExpr(lhs, rhs, location=top.location);
+  local host::host:Expr =
+    inj:divEqExpr(
+      host:decExpr(lhs, location=lhs.location),
+      host:decExpr(rhs, location=rhs.location),
+      location=top.location);
   local fwrd::host:Expr =
     case orElse(lType.lDivEqProd, orElse(rType.rDivEqProd, rewriteProd)) of
       just(prod) -> host:transformedExpr(host, prod(lhs, rhs, top.location), location=top.location)
@@ -131,6 +149,8 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
   injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+
+  rhs.env = addEnv(lhs.defs, lhs.env);
   
   local lType::host:Type = lhs.host:typerep;
   lType.otherType = rType;
@@ -142,7 +162,11 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
     then just(mkEqRewriteExpr(modExpr(_, _, location=_), _, _, _))
     else nothing();
   
-  local host::host:Expr = inj:modEqExpr(lhs, rhs, location=top.location);
+  local host::host:Expr =
+    inj:modEqExpr(
+      host:decExpr(lhs, location=lhs.location),
+      host:decExpr(rhs, location=rhs.location),
+      location=top.location);
   local fwrd::host:Expr =
     case orElse(lType.lModEqProd, orElse(rType.rModEqProd, rewriteProd)) of
       just(prod) -> host:transformedExpr(host, prod(lhs, rhs, top.location), location=top.location)
@@ -169,6 +193,8 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
   injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+
+  rhs.env = addEnv(lhs.defs, lhs.env);
   
   local lType::host:Type = lhs.host:typerep;
   lType.otherType = rType;
@@ -180,7 +206,11 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
     then just(mkEqRewriteExpr(addExpr(_, _, location=_), _, _, _))
     else nothing();
   
-  local host::host:Expr = inj:addEqExpr(lhs, rhs, location=top.location);
+  local host::host:Expr =
+    inj:addEqExpr(
+      host:decExpr(lhs, location=lhs.location),
+      host:decExpr(rhs, location=rhs.location),
+      location=top.location);
   local fwrd::host:Expr =
     case orElse(lType.lAddEqProd, orElse(rType.rAddEqProd, rewriteProd)) of
       just(prod) -> host:transformedExpr(host, prod(lhs, rhs, top.location), location=top.location)
@@ -207,6 +237,8 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
   injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+
+  rhs.env = addEnv(lhs.defs, lhs.env);
   
   local lType::host:Type = lhs.host:typerep;
   lType.otherType = rType;
@@ -218,7 +250,11 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
     then just(mkEqRewriteExpr(subExpr(_, _, location=_), _, _, _))
     else nothing();
   
-  local host::host:Expr = inj:subEqExpr(lhs, rhs, location=top.location);
+  local host::host:Expr =
+    inj:subEqExpr(
+      host:decExpr(lhs, location=lhs.location),
+      host:decExpr(rhs, location=rhs.location),
+      location=top.location);
   local fwrd::host:Expr =
     case orElse(lType.lSubEqProd, orElse(rType.rSubEqProd, rewriteProd)) of
       just(prod) -> host:transformedExpr(host, prod(lhs, rhs, top.location), location=top.location)
@@ -245,6 +281,8 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
   injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+
+  rhs.env = addEnv(lhs.defs, lhs.env);
   
   local lType::host:Type = lhs.host:typerep;
   lType.otherType = rType;
@@ -256,7 +294,11 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
     then just(mkEqRewriteExpr(lshExpr(_, _, location=_), _, _, _))
     else nothing();
   
-  local host::host:Expr = inj:lshEqExpr(lhs, rhs, location=top.location);
+  local host::host:Expr =
+    inj:lshEqExpr(
+      host:decExpr(lhs, location=lhs.location),
+      host:decExpr(rhs, location=rhs.location),
+      location=top.location);
   local fwrd::host:Expr =
     case orElse(lType.lLshEqProd, orElse(rType.rLshEqProd, rewriteProd)) of
       just(prod) -> host:transformedExpr(host, prod(lhs, rhs, top.location), location=top.location)
@@ -283,6 +325,8 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
   injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+
+  rhs.env = addEnv(lhs.defs, lhs.env);
   
   local lType::host:Type = lhs.host:typerep;
   lType.otherType = rType;
@@ -294,7 +338,11 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
     then just(mkEqRewriteExpr(rshExpr(_, _, location=_), _, _, _))
     else nothing();
   
-  local host::host:Expr = inj:rshEqExpr(lhs, rhs, location=top.location);
+  local host::host:Expr =
+    inj:rshEqExpr(
+      host:decExpr(lhs, location=lhs.location),
+      host:decExpr(rhs, location=rhs.location),
+      location=top.location);
   local fwrd::host:Expr =
     case orElse(lType.lRshEqProd, orElse(rType.rRshEqProd, rewriteProd)) of
       just(prod) -> host:transformedExpr(host, prod(lhs, rhs, top.location), location=top.location)
@@ -321,6 +369,8 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
   injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+
+  rhs.env = addEnv(lhs.defs, lhs.env);
   
   local lType::host:Type = lhs.host:typerep;
   lType.otherType = rType;
@@ -332,7 +382,11 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
     then just(mkEqRewriteExpr(andExpr(_, _, location=_), _, _, _))
     else nothing();
   
-  local host::host:Expr = inj:andEqExpr(lhs, rhs, location=top.location);
+  local host::host:Expr =
+    inj:andEqExpr(
+      host:decExpr(lhs, location=lhs.location),
+      host:decExpr(rhs, location=rhs.location),
+      location=top.location);
   local fwrd::host:Expr =
     case orElse(lType.lAndEqProd, orElse(rType.rAndEqProd, rewriteProd)) of
       just(prod) -> host:transformedExpr(host, prod(lhs, rhs, top.location), location=top.location)
@@ -360,6 +414,8 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
   injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+
+  rhs.env = addEnv(lhs.defs, lhs.env);
   
   local lType::host:Type = lhs.host:typerep;
   lType.otherType = rType;
@@ -371,7 +427,11 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
     then just(mkEqRewriteExpr(xorExpr(_, _, location=_), _, _, _))
     else nothing();
   
-  local host::host:Expr = inj:xorEqExpr(lhs, rhs, location=top.location);
+  local host::host:Expr =
+    inj:xorEqExpr(
+      host:decExpr(lhs, location=lhs.location),
+      host:decExpr(rhs, location=rhs.location),
+      location=top.location);
   local fwrd::host:Expr =
     case orElse(lType.lXorEqProd, orElse(rType.rXorEqProd, rewriteProd)) of
       just(prod) -> host:transformedExpr(host, prod(lhs, rhs, top.location), location=top.location)
@@ -398,6 +458,8 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
   injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+
+  rhs.env = addEnv(lhs.defs, lhs.env);
   
   local lType::host:Type = lhs.host:typerep;
   lType.otherType = rType;
@@ -409,7 +471,11 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
     then just(mkEqRewriteExpr(orExpr(_, _, location=_), _, _, _))
     else nothing();
   
-  local host::host:Expr = inj:orEqExpr(lhs, rhs, location=top.location);
+  local host::host:Expr =
+    inj:orEqExpr(
+      host:decExpr(lhs, location=lhs.location),
+      host:decExpr(rhs, location=rhs.location),
+      location=top.location);
   local fwrd::host:Expr =
     case orElse(lType.lOrEqProd, orElse(rType.rOrEqProd, rewriteProd)) of
       just(prod) -> host:transformedExpr(host, prod(lhs, rhs, top.location), location=top.location)
@@ -437,13 +503,19 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
   injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+
+  rhs.env = addEnv(lhs.defs, lhs.env);
   
   local lType::host:Type = lhs.host:typerep;
   lType.otherType = rType;
   local rType::host:Type = rhs.host:typerep;
   rType.otherType = lType;
   
-  local host::host:Expr = inj:andExpr(lhs, rhs, location=top.location);
+  local host::host:Expr =
+    inj:andExpr(
+      host:decExpr(lhs, location=lhs.location),
+      host:decExpr(rhs, location=rhs.location),
+      location=top.location);
   local fwrd::host:Expr =
     case orElse(lType.lAndProd, rType.rAndProd) of
       just(prod) -> host:transformedExpr(host, prod(lhs, rhs, top.location), location=top.location)
@@ -470,13 +542,19 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
   injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+
+  rhs.env = addEnv(lhs.defs, lhs.env);
   
   local lType::host:Type = lhs.host:typerep;
   lType.otherType = rType;
   local rType::host:Type = rhs.host:typerep;
   rType.otherType = lType;
   
-  local host::host:Expr = inj:orExpr(lhs, rhs, location=top.location);
+  local host::host:Expr =
+    inj:orExpr(
+      host:decExpr(lhs, location=lhs.location),
+      host:decExpr(rhs, location=rhs.location),
+      location=top.location);
   local fwrd::host:Expr =
     case orElse(lType.lOrProd, rType.rOrProd) of
       just(prod) -> host:transformedExpr(host, prod(lhs, rhs, top.location), location=top.location)
@@ -503,13 +581,19 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
   injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+
+  rhs.env = addEnv(lhs.defs, lhs.env);
   
   local lType::host:Type = lhs.host:typerep;
   lType.otherType = rType;
   local rType::host:Type = rhs.host:typerep;
   rType.otherType = lType;
   
-  local host::host:Expr = inj:andBitExpr(lhs, rhs, location=top.location);
+  local host::host:Expr =
+    inj:andBitExpr(
+      host:decExpr(lhs, location=lhs.location),
+      host:decExpr(rhs, location=rhs.location),
+      location=top.location);
   local fwrd::host:Expr =
     case orElse(lType.lAndBitProd, rType.rAndBitProd) of
       just(prod) -> host:transformedExpr(host, prod(lhs, rhs, top.location), location=top.location)
@@ -542,7 +626,11 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   local rType::host:Type = rhs.host:typerep;
   rType.otherType = lType;
   
-  local host::host:Expr = inj:orBitExpr(lhs, rhs, location=top.location);
+  local host::host:Expr =
+    inj:orBitExpr(
+      host:decExpr(lhs, location=lhs.location),
+      host:decExpr(rhs, location=rhs.location),
+      location=top.location);
   local fwrd::host:Expr =
     case orElse(lType.lOrBitProd, rType.rOrBitProd) of
       just(prod) -> host:transformedExpr(host, prod(lhs, rhs, top.location), location=top.location)
@@ -569,13 +657,19 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
   injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+
+  rhs.env = addEnv(lhs.defs, lhs.env);
   
   local lType::host:Type = lhs.host:typerep;
   lType.otherType = rType;
   local rType::host:Type = rhs.host:typerep;
   rType.otherType = lType;
   
-  local host::host:Expr = inj:xorExpr(lhs, rhs, location=top.location);
+  local host::host:Expr =
+    inj:xorExpr(
+      host:decExpr(lhs, location=lhs.location),
+      host:decExpr(rhs, location=rhs.location),
+      location=top.location);
   local fwrd::host:Expr =
     case orElse(lType.lXorProd, rType.rXorProd) of
       just(prod) -> host:transformedExpr(host, prod(lhs, rhs, top.location), location=top.location)
@@ -602,13 +696,19 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
   injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+
+  rhs.env = addEnv(lhs.defs, lhs.env);
   
   local lType::host:Type = lhs.host:typerep;
   lType.otherType = rType;
   local rType::host:Type = rhs.host:typerep;
   rType.otherType = lType;
   
-  local host::host:Expr = inj:lshExpr(lhs, rhs, location=top.location);
+  local host::host:Expr =
+    inj:lshExpr(
+      host:decExpr(lhs, location=lhs.location),
+      host:decExpr(rhs, location=rhs.location),
+      location=top.location);
   local fwrd::host:Expr =
     case orElse(lType.lLshBitProd, rType.rLshBitProd) of
       just(prod) -> host:transformedExpr(host, prod(lhs, rhs, top.location), location=top.location)
@@ -636,12 +736,18 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
   injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
+  rhs.env = addEnv(lhs.defs, lhs.env);
+
   local lType::host:Type = lhs.host:typerep;
   lType.otherType = rType;
   local rType::host:Type = rhs.host:typerep;
   rType.otherType = lType;
   
-  local host::host:Expr = inj:rshExpr(lhs, rhs, location=top.location);
+  local host::host:Expr =
+    inj:rshExpr(
+      host:decExpr(lhs, location=lhs.location),
+      host:decExpr(rhs, location=rhs.location),
+      location=top.location);
   local fwrd::host:Expr =
     case orElse(lType.lRshBitProd, rType.rRshBitProd) of
       just(prod) -> host:transformedExpr(host, prod(lhs, rhs, top.location), location=top.location)
@@ -668,6 +774,8 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
   injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+
+  rhs.env = addEnv(lhs.defs, lhs.env);
   
   local lType::host:Type = lhs.host:typerep;
   lType.otherType = rType;
@@ -682,7 +790,11 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
          notExpr(notEqualsExpr(lhs, rhs, location=loc), location=loc)) 
     else nothing();
   
-  local host::host:Expr = inj:equalsExpr(lhs, rhs, location=top.location);
+  local host::host:Expr =
+    inj:equalsExpr(
+      host:decExpr(lhs, location=lhs.location),
+      host:decExpr(rhs, location=rhs.location),
+      location=top.location);
   local fwrd::host:Expr =
     case orElse(lType.lEqualsProd, orElse(rType.rEqualsProd, rewriteProd)) of
       just(prod) -> host:transformedExpr(host, prod(lhs, rhs, top.location), location=top.location)
@@ -709,6 +821,8 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
   injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+
+  rhs.env = addEnv(lhs.defs, lhs.env);
   
   local lType::host:Type = lhs.host:typerep;
   lType.otherType = rType;
@@ -723,7 +837,11 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
          notExpr(equalsExpr(lhs, rhs, location=loc), location=loc)) 
     else nothing();
   
-  local host::host:Expr = inj:notEqualsExpr(lhs, rhs, location=top.location);
+  local host::host:Expr =
+    inj:notEqualsExpr(
+      host:decExpr(lhs, location=lhs.location),
+      host:decExpr(rhs, location=rhs.location),
+      location=top.location);
   local fwrd::host:Expr =
     case orElse(lType.lNotEqualsProd, orElse(rType.rNotEqualsProd, rewriteProd)) of
       just(prod) -> host:transformedExpr(host, prod(lhs, rhs, top.location), location=top.location)
@@ -750,6 +868,8 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
   injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+
+  rhs.env = addEnv(lhs.defs, lhs.env);
   
   local lType::host:Type = lhs.host:typerep;
   lType.otherType = rType;
@@ -792,7 +912,11 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
          _, _, _))
     else nothing();
   
-  local host::host:Expr = inj:ltExpr(lhs, rhs, location=top.location);
+  local host::host:Expr =
+    inj:ltExpr(
+      host:decExpr(lhs, location=lhs.location),
+      host:decExpr(rhs, location=rhs.location),
+      location=top.location);
   local fwrd::host:Expr =
     case foldr1(orElse, [lType.lLtProd, rType.rLtProd, rewriteProd1, rewriteProd2, rewriteProd3]) of
       just(prod) -> host:transformedExpr(host, prod(lhs, rhs, top.location), location=top.location)
@@ -818,7 +942,11 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   local modLhsRhs :: Pair<host:Expr host:Expr> = inj:applyLhsRhsMods(runtimeMods, lhs, rhs);
 
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
-  injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;local lType::host:Type = lhs.host:typerep;
+  injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+
+  rhs.env = addEnv(lhs.defs, lhs.env);
+  
+  local lType::host:Type = lhs.host:typerep;
   lType.otherType = rType;
   local rType::host:Type = rhs.host:typerep;
   rType.otherType = lType;
@@ -859,7 +987,11 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
          _, _, _))
     else nothing();
   
-  local host::host:Expr = inj:gtExpr(lhs, rhs, location=top.location);
+  local host::host:Expr =
+    inj:gtExpr(
+      host:decExpr(lhs, location=lhs.location),
+      host:decExpr(rhs, location=rhs.location),
+      location=top.location);
   local fwrd::host:Expr =
     case foldr1(orElse, [lType.lGtProd, rType.rGtProd, rewriteProd1, rewriteProd2, rewriteProd3]) of
       just(prod) -> host:transformedExpr(host, prod(lhs, rhs, top.location), location=top.location)
@@ -886,6 +1018,8 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
   injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+
+  rhs.env = addEnv(lhs.defs, lhs.env);
   
   local lType::host:Type = lhs.host:typerep;
   lType.otherType = rType;
@@ -928,7 +1062,11 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
          _, _, _))
     else nothing();
   
-  local host::host:Expr = inj:lteExpr(lhs, rhs, location=top.location);
+  local host::host:Expr =
+    inj:lteExpr(
+      host:decExpr(lhs, location=lhs.location),
+      host:decExpr(rhs, location=rhs.location),
+      location=top.location);
   local fwrd::host:Expr =
     case foldr1(orElse, [lType.lLteProd, rType.rLteProd, rewriteProd1, rewriteProd2, rewriteProd3]) of
       just(prod) -> host:transformedExpr(host, prod(lhs, rhs, top.location), location=top.location)
@@ -954,7 +1092,11 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   local modLhsRhs :: Pair<host:Expr host:Expr> = inj:applyLhsRhsMods(runtimeMods, lhs, rhs);
 
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
-  injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;local lType::host:Type = lhs.host:typerep;
+  injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+
+  rhs.env = addEnv(lhs.defs, lhs.env);
+  
+  local lType::host:Type = lhs.host:typerep;
   lType.otherType = rType;
   local rType::host:Type = rhs.host:typerep;
   rType.otherType = lType;
@@ -995,7 +1137,11 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
          _, _, _))
     else nothing();
   
-  local host::host:Expr = inj:gteExpr(lhs, rhs, location=top.location);
+  local host::host:Expr =
+    inj:gteExpr(
+      host:decExpr(lhs, location=lhs.location),
+      host:decExpr(rhs, location=rhs.location),
+      location=top.location);
   local fwrd::host:Expr =
     case foldr1(orElse, [lType.lGteProd, rType.rGteProd, rewriteProd1, rewriteProd2, rewriteProd3]) of
       just(prod) -> host:transformedExpr(host, prod(lhs, rhs, top.location), location=top.location)
@@ -1022,13 +1168,19 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
   injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+
+  rhs.env = addEnv(lhs.defs, lhs.env);
   
   local lType::host:Type = lhs.host:typerep;
   lType.otherType = rType;
   local rType::host:Type = rhs.host:typerep;
   rType.otherType = lType;
   
-  local host::host:Expr = inj:addExpr(lhs, rhs, location=top.location);
+  local host::host:Expr =
+    inj:addExpr(
+      host:decExpr(lhs, location=lhs.location),
+      host:decExpr(rhs, location=rhs.location),
+      location=top.location);
   local fwrd::host:Expr =
     case orElse(lType.lAddProd, rType.rAddProd) of
       just(prod) -> host:transformedExpr(host, prod(lhs, rhs, top.location), location=top.location)
@@ -1055,13 +1207,19 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
   injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+
+  rhs.env = addEnv(lhs.defs, lhs.env);
   
   local lType::host:Type = lhs.host:typerep;
   lType.otherType = rType;
   local rType::host:Type = rhs.host:typerep;
   rType.otherType = lType;
   
-  local host::host:Expr = inj:subExpr(lhs, rhs, location=top.location);
+  local host::host:Expr =
+    inj:subExpr(
+      host:decExpr(lhs, location=lhs.location),
+      host:decExpr(rhs, location=rhs.location),
+      location=top.location);
   local fwrd::host:Expr =
     case orElse(lType.lSubProd, rType.rSubProd) of
       just(prod) -> host:transformedExpr(host, prod(lhs, rhs, top.location), location=top.location)
@@ -1088,13 +1246,19 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
   injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+
+  rhs.env = addEnv(lhs.defs, lhs.env);
   
   local lType::host:Type = lhs.host:typerep;
   lType.otherType = rType;
   local rType::host:Type = rhs.host:typerep;
   rType.otherType = lType;
   
-  local host::host:Expr = inj:mulExpr(lhs, rhs, location=top.location);
+  local host::host:Expr =
+    inj:mulExpr(
+      host:decExpr(lhs, location=lhs.location),
+      host:decExpr(rhs, location=rhs.location),
+      location=top.location);
   local fwrd::host:Expr =
     case orElse(lType.lMulProd, rType.rMulProd) of
       just(prod) -> host:transformedExpr(host, prod(lhs, rhs, top.location), location=top.location)
@@ -1121,13 +1285,19 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
   injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+
+  rhs.env = addEnv(lhs.defs, lhs.env);
   
   local lType::host:Type = lhs.host:typerep;
   lType.otherType = rType;
   local rType::host:Type = rhs.host:typerep;
   rType.otherType = lType;
   
-  local host::host:Expr = inj:divExpr(lhs, rhs, location=top.location);
+  local host::host:Expr =
+    inj:divExpr(
+      host:decExpr(lhs, location=lhs.location),
+      host:decExpr(rhs, location=rhs.location),
+      location=top.location);
   local fwrd::host:Expr =
     case orElse(lType.lDivProd, rType.rDivProd) of
       just(prod) -> host:transformedExpr(host, prod(lhs, rhs, top.location), location=top.location)
@@ -1154,13 +1324,19 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
   injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+
+  rhs.env = addEnv(lhs.defs, lhs.env);
   
   local lType::host:Type = lhs.host:typerep;
   lType.otherType = rType;
   local rType::host:Type = rhs.host:typerep;
   rType.otherType = lType;
   
-  local host::host:Expr = inj:modExpr(lhs, rhs, location=top.location);
+  local host::host:Expr =
+    inj:modExpr(
+      host:decExpr(lhs, location=lhs.location),
+      host:decExpr(rhs, location=rhs.location),
+      location=top.location);
   local fwrd::host:Expr =
     case orElse(lType.lModProd, rType.rModProd) of
       just(prod) -> host:transformedExpr(host, prod(lhs, rhs, top.location), location=top.location)
