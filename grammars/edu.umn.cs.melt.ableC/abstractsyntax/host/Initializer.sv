@@ -11,7 +11,7 @@ top::MaybeInitializer ::=
   top.errors := [];
   top.globalDecls := [];
   top.defs := [];
-  top.freeVariables = [];
+  top.freeVariables := [];
 }
 abstract production justInitializer
 top::MaybeInitializer ::= i::Initializer
@@ -21,7 +21,7 @@ top::MaybeInitializer ::= i::Initializer
   top.errors := i.errors;
   top.globalDecls := i.globalDecls;
   top.defs := i.defs;
-  top.freeVariables = i.freeVariables;
+  top.freeVariables := i.freeVariables;
 }
 
 nonterminal Initializer with pp, host<Initializer>, lifted<Initializer>, errors, globalDecls, defs, env, freeVariables, returnType;
@@ -35,7 +35,7 @@ top::Initializer ::= e::Expr
   top.errors := e.errors;
   top.globalDecls := e.globalDecls;
   top.defs := e.defs;
-  top.freeVariables = e.freeVariables;
+  top.freeVariables := e.freeVariables;
 }
 
 abstract production objectInitializer
@@ -46,7 +46,7 @@ top::Initializer ::= l::InitList
   top.errors := l.errors;
   top.globalDecls := l.globalDecls;
   top.defs := l.defs;
-  top.freeVariables = l.freeVariables;
+  top.freeVariables := l.freeVariables;
 }
 
 nonterminal InitList with pps, host<InitList>, lifted<InitList>, errors, globalDecls, defs, env, freeVariables, returnType;
@@ -60,7 +60,7 @@ top::InitList ::= h::Init  t::InitList
   top.errors := h.errors ++ t.errors;
   top.globalDecls := h.globalDecls ++ t.globalDecls;
   top.defs := h.defs ++ t.defs;
-  top.freeVariables = h.freeVariables ++ removeDefsFromNames(h.defs, t.freeVariables);
+  top.freeVariables := h.freeVariables ++ removeDefsFromNames(h.defs, t.freeVariables);
   
   t.env = addEnv(h.defs, h.env);
 }
@@ -73,7 +73,7 @@ top::InitList ::=
   top.errors := [];
   top.globalDecls := [];
   top.defs := [];
-  top.freeVariables = [];
+  top.freeVariables := [];
 }
 
 nonterminal Init with pp, host<Init>, lifted<Init>, errors, globalDecls, defs, env, freeVariables, returnType;
@@ -87,7 +87,7 @@ top::Init ::= i::Initializer
   top.errors := i.errors;
   top.globalDecls := i.globalDecls;
   top.defs := i.defs;
-  top.freeVariables = i.freeVariables;
+  top.freeVariables := i.freeVariables;
 }
 
 abstract production designatedInit
@@ -98,7 +98,7 @@ top::Init ::= d::Designator  i::Initializer
   top.errors := d.errors ++ i.errors;
   top.globalDecls := d.globalDecls ++ i.globalDecls;
   top.defs := d.defs ++ i.defs;
-  top.freeVariables = d.freeVariables ++ i.freeVariables;
+  top.freeVariables := d.freeVariables ++ i.freeVariables;
   
   i.env = addEnv(d.defs, d.env);
 }
@@ -118,7 +118,7 @@ top::Designator ::=
   top.errors := [];
   top.globalDecls := [];
   top.defs := [];
-  top.freeVariables = [];
+  top.freeVariables := [];
 }
 
 abstract production fieldDesignator
@@ -129,7 +129,7 @@ top::Designator ::= d::Designator  f::Name
   top.errors := d.errors;
   top.globalDecls := d.globalDecls;
   top.defs := d.defs;
-  top.freeVariables = d.freeVariables;
+  top.freeVariables := d.freeVariables;
 }
 
 abstract production arrayDesignator
@@ -140,7 +140,7 @@ top::Designator ::= d::Designator  e::Expr
   top.errors := d.errors ++ e.errors;
   top.globalDecls := d.globalDecls ++ e.globalDecls;
   top.defs := d.defs ++ e.defs; -- Yep...
-  top.freeVariables = d.freeVariables ++ e.freeVariables;
+  top.freeVariables := d.freeVariables ++ e.freeVariables;
   
   e.env = addEnv(d.defs, d.env);
 }
@@ -154,6 +154,6 @@ top::Designator ::= d::Designator  l::Expr  u::Expr
   top.errors := d.errors ++ l.errors ++ u.errors;
   top.globalDecls := d.globalDecls ++ l.globalDecls ++ u.globalDecls;
   top.defs := d.defs ++ l.defs ++ u.defs;
-  top.freeVariables = d.freeVariables ++ l.freeVariables ++ u.freeVariables;
+  top.freeVariables := d.freeVariables ++ l.freeVariables ++ u.freeVariables;
 }
 

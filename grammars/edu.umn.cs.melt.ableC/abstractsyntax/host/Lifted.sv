@@ -86,7 +86,7 @@ flowtype unfoldedGlobalDecls {decorate} on
 abstract production maybeDecl
 top::Decl ::= include::(Boolean ::= Decorated Env) decl::Decl
 {
-  top.pp = cat(pp"maybe ", braces(decl.pp));
+  top.pp = cat(pp"maybe ", braces(nestlines(2, decl.pp)));
   
   forwards to
     if include(top.env)
@@ -98,21 +98,21 @@ top::Decl ::= include::(Boolean ::= Decorated Env) decl::Decl
 abstract production maybeValueDecl
 top::Decl ::= name::String decl::Decl
 {
-  top.pp = cat(pp"maybeValue (${text(name)}) ", braces(decl.pp));
+  top.pp = cat(pp"maybeValue (${text(name)}) ", braces(nestlines(2, decl.pp)));
   
   forwards to maybeDecl(\ env::Decorated Env -> null(lookupValue(name, top.env)), decl);
 }
 abstract production maybeTagDecl
 top::Decl ::= name::String decl::Decl
 {
-  top.pp = cat(pp"maybeTag (${text(name)}) ", braces(decl.pp));
+  top.pp = cat(pp"maybeTag (${text(name)}) ", braces(nestlines(2, decl.pp)));
   
   forwards to maybeDecl(\ env::Decorated Env -> null(lookupTag(name, top.env)), decl);
 }
 abstract production maybeRefIdDecl
 top::Decl ::= name::String decl::Decl
 {
-  top.pp = cat(pp"maybeRefId (${text(name)}) ", braces(decl.pp));
+  top.pp = cat(pp"maybeRefId (${text(name)}) ", braces(nestlines(2, decl.pp)));
   
   forwards to maybeDecl(\ env::Decorated Env -> null(lookupRefId(name, top.env)), decl);
 }
@@ -134,7 +134,7 @@ top::Expr ::= decls::Decls lifted::Expr
   
   -- Variables corresponing to lifted values are *not* considered free, since they are either bound
   -- here (host tree) or available globally and shouldn't recieve special treatment (lifted tree).
-  top.freeVariables = removeDefsFromNames(decls.defs, lifted.freeVariables);
+  top.freeVariables := removeDefsFromNames(decls.defs, lifted.freeVariables);
   
   -- Define other attributes to be the same as on lifted
   top.typerep = lifted.typerep;
@@ -165,7 +165,7 @@ top::Stmt ::= decls::Decls lifted::Stmt
   
   -- Variables corresponing to lifted values are *not* considered free, since they are either bound
   -- here (host tree) or available globally and shouldn't recieve special treatment (lifted tree).
-  top.freeVariables = removeDefsFromNames(decls.defs, lifted.freeVariables);
+  top.freeVariables := removeDefsFromNames(decls.defs, lifted.freeVariables);
   
   -- Define other attributes to be the same as on lifted
   top.functionDefs := lifted.functionDefs;
@@ -194,7 +194,7 @@ top::BaseTypeExpr ::= decls::Decls lifted::BaseTypeExpr
   
   -- Variables corresponing to lifted values are *not* considered free, since they are either bound
   -- here (host tree) or available globally and shouldn't recieve special treatment (lifted tree).
-  top.freeVariables = removeDefsFromNames(decls.defs, lifted.freeVariables);
+  top.freeVariables := removeDefsFromNames(decls.defs, lifted.freeVariables);
   
   -- Preserve injected decls when transforming to and back from typerep
   top.decls = [injectGlobalDeclsDecl(decls)];
@@ -226,7 +226,7 @@ top::Decl ::= decls::Decls
   top.lifted = edu:umn:cs:melt:ableC:abstractsyntax:host:decls(nilDecl());
   
   -- Define other attributes to be the same as on "lifted" (i.e. nilDecl())
-  top.freeVariables = [];
+  top.freeVariables := [];
   
   decls.env = globalEnv(top.env);
   decls.isTopLevel = true;
@@ -241,7 +241,10 @@ top::GlobalDecls ::= h::Decl  t::GlobalDecls
 {
   propagate host;
   top.lifted =
-    foldr(consGlobalDecl, t.lifted, map(\ d::Decorated Decl -> d.lifted, h.unfoldedGlobalDecls));
+    foldr(
+      consGlobalDecl,
+      t.lifted,
+      map(\ d::Decorated Decl -> d.lifted, h.unfoldedGlobalDecls));
 }
 
 -- Utility functions

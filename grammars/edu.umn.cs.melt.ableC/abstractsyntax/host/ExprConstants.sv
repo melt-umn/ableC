@@ -12,7 +12,7 @@ top::Expr ::= c::NumericConstant
   top.errors := [];
   top.globalDecls := [];
   top.defs := [];
-  top.freeVariables = [];
+  top.freeVariables := [];
   top.typerep = builtinType(nilQualifier(), c.constanttyperep);
   top.isLValue = false;
   top.integerConstantValue = c.integerConstantValue;
@@ -25,7 +25,7 @@ top::Expr ::= c::NumericConstant
   top.errors := [];
   top.globalDecls := [];
   top.defs := [];
-  top.freeVariables = [];
+  top.freeVariables := [];
   top.typerep = builtinType(nilQualifier(), case c.constanttyperep of
     | realType(rt) -> complexType(rt)
     | signedType(it) -> complexIntegerType(it)
@@ -41,7 +41,7 @@ top::Expr ::= num::String  c::CharPrefix
   top.errors := [];
   top.globalDecls := [];
   top.defs := [];
-  top.freeVariables = [];
+  top.freeVariables := [];
   top.typerep = builtinType(nilQualifier(), signedType(charType())); -- TODO: no idea
   top.isLValue = false;
 }

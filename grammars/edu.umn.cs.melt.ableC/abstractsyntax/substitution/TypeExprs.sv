@@ -100,6 +100,11 @@ top::TypeModifierExpr ::= bty::BaseTypeExpr
 {
   propagate substituted;
 }
+aspect production decTypeModifierExpr
+top::TypeModifierExpr ::= ty::Decorated TypeModifierExpr
+{
+  propagate substituted;
+}
 aspect production pointerTypeExpr
 top::TypeModifierExpr ::= q::Qualifiers  target::TypeModifierExpr
 {

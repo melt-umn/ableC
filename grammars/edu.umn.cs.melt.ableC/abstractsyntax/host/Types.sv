@@ -85,7 +85,7 @@ top::Type ::=
   top.mergeQualifiers = \t2::Type -> errorType();
   top.qualifiers = [];
   top.errors := [];
-  top.freeVariables = [];
+  top.freeVariables := [];
 
   -- The semantics for all flags is that they should be TRUE is no error is to be
   -- raised. Thus, all should be true here, to suppress errors.
@@ -128,7 +128,7 @@ top::Type ::= q::Qualifiers  bt::BuiltinType
   top.qualifiers = q.qualifiers;
   top.errors := q.errors;
   q.typeToQualify = top;
-  top.freeVariables = [];
+  top.freeVariables := [];
 }
 
 
@@ -179,7 +179,7 @@ top::Type ::= q::Qualifiers  target::Type
   
   top.isScalarType = true;
   q.typeToQualify = top;
-  top.freeVariables = target.freeVariables;
+  top.freeVariables := target.freeVariables;
 }
 
 
@@ -251,7 +251,7 @@ top::Type ::= element::Type  indexQualifiers::Qualifiers  sizeModifier::ArraySiz
     end;
   top.qualifiers = indexQualifiers.qualifiers;
   top.errors := element.errors ++ indexQualifiers.errors;
-  top.freeVariables = element.freeVariables ++ sub.freeVariables;
+  top.freeVariables := element.freeVariables ++ sub.freeVariables;
   indexQualifiers.typeToQualify = top;
 }
 
@@ -264,7 +264,7 @@ top::ArrayType ::= size::Integer
 {
   propagate host;
   top.pp = text(toString(size));
-  top.freeVariables = [];
+  top.freeVariables := [];
   -- TODO: include the Decorated Expr here too maybe?
 }
 abstract production incompleteArrayType
@@ -272,7 +272,7 @@ top::ArrayType ::=
 {
   propagate host;
   top.pp = notext();
-  top.freeVariables = [];
+  top.freeVariables := [];
 }
 abstract production variableArrayType
 top::ArrayType ::= size::Decorated Expr
@@ -281,7 +281,7 @@ top::ArrayType ::= size::Decorated Expr
     variableArrayType(
       decorate size.host with {env = size.env; returnType = size.returnType;});
   top.pp = size.pp;
-  top.freeVariables = size.freeVariables;
+  top.freeVariables := size.freeVariables;
 }
 
 {-- Modifiers attached to array types that are function parameters -}
@@ -334,7 +334,7 @@ top::Type ::= result::Type  sub::FunctionType  q::Qualifiers
     end;
   top.qualifiers = q.qualifiers;
   top.errors := result.errors ++ sub.errors;
-  top.freeVariables = result.freeVariables ++ sub.freeVariables;
+  top.freeVariables := result.freeVariables ++ sub.freeVariables;
 }
 
 {-- The subtypes of functions -}
@@ -366,7 +366,7 @@ top::FunctionType ::= args::[Type]  variadic::Boolean
       map((.rpp), args)) ++ if variadic then [text("...")] else [];
   top.mangledName = implode("_", map((.mangledName), args)) ++ if variadic then "_variadic" else "";
   top.errors := concat(map((.errors), args));
-  top.freeVariables = concat(map((.freeVariables), args));
+  top.freeVariables := concat(map((.freeVariables), args));
 }
 -- Evidently, old K&R C functions don't have args as part of function type
 abstract production noProtoFunctionType
@@ -378,7 +378,7 @@ top::FunctionType ::=
   top.rpp = text("()");
   top.mangledName = "noproto";
   top.errors := [];
-  top.freeVariables = [];
+  top.freeVariables := [];
 }
 
 function argTypesToParameters
@@ -422,7 +422,7 @@ top::Type ::= q::Qualifiers  sub::ExtType
     end;
   top.qualifiers = q.qualifiers;
   top.errors := q.errors;
-  top.freeVariables = sub.freeVariables;
+  top.freeVariables := sub.freeVariables;
   
   top.isIntegerType = sub.isIntegerType;
   top.isArithmeticType = sub.isArithmeticType;
@@ -458,7 +458,7 @@ top::ExtType ::=
   top.defaultArgumentPromotions = extType(top.givenQualifiers, top);
   top.defaultLvalueConversion = extType(top.givenQualifiers, top);
   top.defaultFunctionArrayLvalueConversion = extType(top.givenQualifiers, top);
-  top.freeVariables = [];
+  top.freeVariables := [];
   
   top.isIntegerType = false;
   top.isArithmeticType = false;
@@ -577,7 +577,7 @@ top::Type ::= q::Qualifiers  bt::Type
     end;
   top.qualifiers = q.qualifiers;
   top.errors := q.errors ++ bt.errors;
-  top.freeVariables = bt.freeVariables;
+  top.freeVariables := bt.freeVariables;
   q.typeToQualify = top;
 }
 
@@ -618,7 +618,7 @@ top::Type ::= attrs::Attributes  bt::Type
   top.isCompleteType = bt.isCompleteType;
   top.maybeRefId = bt.maybeRefId;
   top.errors := bt.errors;
-  top.freeVariables = bt.freeVariables;
+  top.freeVariables := bt.freeVariables;
   
   -- Whatever...
   attrs.env = emptyEnv();
@@ -669,7 +669,7 @@ top::Type ::= bt::Type  bytes::Integer
   top.isArithmeticType = false;
   top.isCompleteType = bt.isCompleteType;
   top.errors := bt.errors;
-  top.freeVariables = bt.freeVariables;
+  top.freeVariables := bt.freeVariables;
 }
 
 {-------------------------------------------------------------------------------

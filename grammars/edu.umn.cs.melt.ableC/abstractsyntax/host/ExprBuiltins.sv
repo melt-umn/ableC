@@ -8,7 +8,7 @@ top::Expr ::= l::TypeName  r::TypeName
   top.errors := l.errors ++ r.errors;
   top.globalDecls := l.globalDecls ++ r.globalDecls;
   top.defs := l.defs ++ r.defs;
-  top.freeVariables = l.freeVariables ++ r.freeVariables;
+  top.freeVariables := l.freeVariables ++ r.freeVariables;
   top.typerep = builtinType(nilQualifier(), signedType(intType()));
   top.isLValue = false;
 }
@@ -20,7 +20,7 @@ top::Expr ::= e::Expr  ty::TypeName
   top.errors := e.errors ++ ty.errors;
   top.globalDecls := e.globalDecls ++ ty.globalDecls;
   top.defs := e.defs ++ ty.defs;
-  top.freeVariables = e.freeVariables ++ ty.freeVariables;
+  top.freeVariables := e.freeVariables ++ ty.freeVariables;
   top.typerep = ty.typerep;
   top.isLValue = false;
 }
@@ -33,7 +33,7 @@ top::Expr ::= ty::TypeName  e::MemberDesignator
   top.errors := ty.errors ++ e.errors;
   top.globalDecls := ty.globalDecls ++ e.globalDecls;
   top.defs := ty.defs ++ e.defs;
-  top.freeVariables = ty.freeVariables ++ e.freeVariables;
+  top.freeVariables := ty.freeVariables ++ e.freeVariables;
   top.typerep = builtinType(nilQualifier(), signedType(intType()));
   top.isLValue = false;
 }
@@ -49,7 +49,7 @@ top::MemberDesignator ::= id::Name
   top.errors := [];
   top.globalDecls := [];
   top.defs := [];
-  top.freeVariables = [];
+  top.freeVariables := [];
 }
 abstract production fieldMemberDesignator
 top::MemberDesignator ::= d::MemberDesignator  id::Name
@@ -59,7 +59,7 @@ top::MemberDesignator ::= d::MemberDesignator  id::Name
   top.errors := d.errors;
   top.globalDecls := d.globalDecls;
   top.defs := d.defs;
-  top.freeVariables = d.freeVariables;
+  top.freeVariables := d.freeVariables;
 }
 abstract production derefMemberDesignator
 top::MemberDesignator ::= d::MemberDesignator  id::Name
@@ -69,7 +69,7 @@ top::MemberDesignator ::= d::MemberDesignator  id::Name
   top.errors := d.errors;
   top.globalDecls := d.globalDecls;
   top.defs := d.defs;
-  top.freeVariables = d.freeVariables;
+  top.freeVariables := d.freeVariables;
 }
 abstract production arrayMemberDesignator
 top::MemberDesignator ::= d::MemberDesignator  e::Expr
@@ -79,7 +79,7 @@ top::MemberDesignator ::= d::MemberDesignator  e::Expr
   top.errors := d.errors;
   top.globalDecls := d.globalDecls ++ e.globalDecls;
   top.defs := d.defs ++ e.defs; -- sigh
-  top.freeVariables = d.freeVariables ++ e.freeVariables;
+  top.freeVariables := d.freeVariables ++ e.freeVariables;
 }
 
 abstract production isConstantExpr
@@ -91,7 +91,7 @@ top::Expr ::= e::Expr
   top.defs := e.defs;
   top.globalDecls := e.globalDecls;
   top.typerep = builtinType(nilQualifier(), signedType(intType()));
-  top.freeVariables = e.freeVariables;
+  top.freeVariables := e.freeVariables;
   top.isLValue = false;
 }
 
@@ -104,7 +104,7 @@ top::Expr ::=
   top.globalDecls := [];
   top.defs := [];
   top.typerep = builtinType(nilQualifier(), voidType());
-  top.freeVariables = [];
+  top.freeVariables := [];
   top.isLValue = false;
 }
 
@@ -117,7 +117,7 @@ top::Expr ::= eval::Expr  expected::Expr
   top.globalDecls := eval.globalDecls ++ expected.globalDecls;
   top.defs := eval.defs ++ expected.defs;
   top.typerep = builtinType(nilQualifier(), signedType(intType()));
-  top.freeVariables = eval.freeVariables ++ expected.freeVariables;
+  top.freeVariables := eval.freeVariables ++ expected.freeVariables;
   top.isLValue = false;
 }
 
@@ -130,7 +130,7 @@ top::Expr ::= lastParam::Name  valist::Name
   top.globalDecls := [];
   top.defs := [];
   top.typerep = builtinType(nilQualifier(), voidType());
-  top.freeVariables = [];
+  top.freeVariables := [];
   top.isLValue = false;
 }
 abstract production vaEndExpr
@@ -142,7 +142,7 @@ top::Expr ::= valist::Name
   top.globalDecls := [];
   top.defs := [];
   top.typerep = builtinType(nilQualifier(), voidType());
-  top.freeVariables = [];
+  top.freeVariables := [];
   top.isLValue = false;
 }
 
