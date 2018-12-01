@@ -54,7 +54,7 @@ top::Decl ::= storage::StorageClasses  attrs::Attributes  ty::BaseTypeExpr  dcls
 {
   local host::Decl = variableDecls(storage, attrs.host, ty.host, dcls.host);
   local deferredDecls::[Decorated Decl] =
-    defsDeferredDecls(addEnv(dcls.defs, dcls.env), top.returnType, top.isTopLevel, ty.defs);
+    defsDeferredDecls(addEnv(dcls.defs, dcls.env), top.returnType, top.isTopLevel, ty.defs ++ dcls.defs);
   top.host =
     if !null(deferredDecls)
     then decls(foldDecl(host :: map(\ d::Decorated Decl -> d.host, deferredDecls)))
@@ -82,7 +82,7 @@ top::Decl ::= attrs::Attributes  ty::BaseTypeExpr  dcls::Declarators
 {
   local host::Decl = typedefDecls(attrs.host, ty.host, dcls.host);
   local deferredDecls::[Decorated Decl] =
-    defsDeferredDecls(addEnv(dcls.defs, dcls.env), top.returnType, top.isTopLevel, ty.defs);
+    defsDeferredDecls(addEnv(dcls.defs, dcls.env), top.returnType, top.isTopLevel, ty.defs ++ dcls.defs);
   top.host =
     if !null(deferredDecls)
     then decls(foldDecl(host :: map(\ d::Decorated Decl -> d.host, deferredDecls)))
