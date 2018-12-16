@@ -16,7 +16,7 @@ top::BaseTypeExpr ::= q::Qualifiers loc::Location
 abstract production intervalType
 top::ExtType ::= 
 {
-  propagate substituted;
+  propagate substituted, canonicalType;
   top.pp = pp"interval";
   -- Translate to a reference to the struct with the refId specified in the header file
   top.host =
