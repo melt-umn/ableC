@@ -235,11 +235,18 @@ top::BaseTypeExpr ::= q::Qualifiers  result::BuiltinType
 }
 
 {-- A reference to a tag type. e.g. 'struct foo' not 'struct foo {...}' -}
+{- TODO: A forward declaration of a new struct, e.g. 'struct foo;' should be semantically
+ - different from a type expression referencing a struct, e.g. 'struct foo*;', since
+ - the former looks only in the local scope for an existing definition before creating
+ - a new refId while the latter only creates a new refId if there is no definition
+ - found in any scope.  Currently we always only check the local scope for an existing
+ - definition.
+ -}
 abstract production tagReferenceTypeExpr
-top::BaseTypeExpr ::= q::Qualifiers  kwd::StructOrEnumOrUnion  name::Name
+top::BaseTypeExpr ::= q::Qualifiers  kwd::StructOrEnumOrUnion  n::Name
 {
   propagate host, lifted;
-  top.pp = ppConcat([terminate(space(), q.pps), kwd.pp, space(), name.pp
+  top.pp = ppConcat([terminate(space(), q.pps), kwd.pp, space(), n.pp
     -- DEBUGGING
     --, text("/*" ++ refId ++ "*/")
     -- END DEBUGGING
@@ -247,17 +254,17 @@ top::BaseTypeExpr ::= q::Qualifiers  kwd::StructOrEnumOrUnion  name::Name
 
   -- This code is nassssty. TODO. Possibly split enum references to a separate production? This might simplify the logic considerably.
 
-  local tags :: [TagItem] = lookupTag(name.name, top.env);
+  local tags :: [TagItem] = lookupTag(n.name, top.env);
   
   top.typerep =
     case kwd, tags of
     -- It's an enum and we see the declaration.
     | enumSEU(), enumTagItem(d) :: _ -> extType(q, enumExtType(d))
     -- We don't see the declaration, so we're adding it.
-    | _, [] -> extType(q, refIdExtType(kwd, name.name, fromMaybe(name.tagRefId, top.givenRefId)))
+    | _, [] -> extType(q, refIdExtType(kwd, n.name, fromMaybe(n.tagRefId, top.givenRefId)))
     -- It's a struct/union and the tag type agrees.
-    | structSEU(), refIdTagItem(structSEU(), rid) :: _ -> extType(q, refIdExtType(kwd, name.name, rid))
-    | unionSEU(), refIdTagItem(unionSEU(), rid) :: _ -> extType(q, refIdExtType(kwd, name.name, rid))
+    | structSEU(), refIdTagItem(structSEU(), rid) :: _ -> extType(q, refIdExtType(kwd, n.name, rid))
+    | unionSEU(), refIdTagItem(unionSEU(), rid) :: _ -> extType(q, refIdExtType(kwd, n.name, rid))
     -- Otherwise, error!
     | _, _ -> errorType()
     end;
@@ -267,23 +274,34 @@ top::BaseTypeExpr ::= q::Qualifiers  kwd::StructOrEnumOrUnion  name::Name
     case kwd, tags of
     -- It's an enum and we see the declaration.
     | enumSEU(), enumTagItem(d) :: _ -> []
-    | enumSEU(), [] -> [err(name.location, "Undeclared enum " ++ name.name)]
-    | enumSEU(), _ :: _ -> [err(name.location, "Tag " ++ name.name ++ " is not an enum")]
+    | enumSEU(), [] -> [err(n.location, "Undeclared enum " ++ n.name)]
+    | enumSEU(), _ :: _ -> [err(n.location, "Tag " ++ n.name ++ " is not an enum")]
     -- We don't see the declaration, so we're adding it.
     | _, [] -> []
     -- It's a struct/union and the tag type agrees.
     | structSEU(), refIdTagItem(structSEU(), rid) :: _ -> []
-    | structSEU(), _ :: _ -> [err(name.location, "Tag " ++ name.name ++ " is not a struct")]
+    | structSEU(), _ :: _ -> [err(n.location, "Tag " ++ n.name ++ " is not a struct")]
     | unionSEU(), refIdTagItem(unionSEU(), rid) :: _ -> []
-    | unionSEU(), _ :: _ -> [err(name.location, "Tag " ++ name.name ++ " is not a union")]
+    | unionSEU(), _ :: _ -> [err(n.location, "Tag " ++ n.name ++ " is not a union")]
     end;
   
   top.globalDecls := [];
   top.typeModifiers = [];
-  -- Avoid re-decorating and re-generating refIds
+  
   top.decls =
-    if null(lookupTag(name.name, top.env))
-    then [typeExprDecl(nilAttribute(), decTypeExpr(top))]
+    if null(lookupTag(n.name, top.env))
+    then
+      -- TODO: Ugly way of forward-declaring a tag without overriding an existing definition
+      [typedefDecls(
+         nilAttribute(),
+         top,
+         consDeclarator(
+           declarator(
+             name("_unused_" ++ toString(genInt()), location=builtinLoc("host")),
+             baseTypeExpr(),
+             nilAttribute(),
+             nothingInitializer()),
+           nilDeclarator()))]
     else [];
   
   top.defs :=
@@ -291,7 +309,7 @@ top::BaseTypeExpr ::= q::Qualifiers  kwd::StructOrEnumOrUnion  name::Name
     -- It's an enum and we see the declaration.
     | enumSEU(), enumTagItem(d) :: _ -> []
     -- We don't see the declaration, so we're adding it.
-    | _, [] -> [tagDef(name.name, refIdTagItem(kwd, fromMaybe(name.tagRefId, top.givenRefId)))]
+    | _, [] -> [tagDef(n.name, refIdTagItem(kwd, fromMaybe(n.tagRefId, top.givenRefId)))]
     -- It's a struct/union and the tag type agrees.
     | structSEU(), refIdTagItem(structSEU(), rid) :: _ -> []
     | unionSEU(), refIdTagItem(unionSEU(), rid) :: _ -> []

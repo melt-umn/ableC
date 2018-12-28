@@ -30,7 +30,10 @@ function defsDeferredDecls
   
   return
     if !null(deferredDecls.defs)
-    then deferredDecls :: defsDeferredDecls(env, returnType, isTopLevel, deferredDecls.defs)
+    then
+      deferredDecls ::
+      defsDeferredDecls(
+        addEnv(deferredDecls.defs, env), returnType, isTopLevel, deferredDecls.defs)
     else [];
 }
 
@@ -44,7 +47,7 @@ top::Decl ::= d::[Def]
   -- host is not simply propagated, because Def is a closed 'collection' nonterminal with special
   -- semantics.
   local deferredDecls::[Decorated Decl] =
-    defsDeferredDecls(top.env, top.returnType, top.isTopLevel, d);
+    defsDeferredDecls(addEnv(d, top.env), top.returnType, top.isTopLevel, d);
   top.host = decls(foldDecl(map(\ d::Decorated Decl -> d.host, deferredDecls)));
   top.defs <- concat(map((.defs), deferredDecls));
 }
@@ -54,7 +57,7 @@ top::Decl ::= storage::StorageClasses  attrs::Attributes  ty::BaseTypeExpr  dcls
 {
   local host::Decl = variableDecls(storage, attrs.host, ty.host, dcls.host);
   local deferredDecls::[Decorated Decl] =
-    defsDeferredDecls(addEnv(dcls.defs, dcls.env), top.returnType, top.isTopLevel, ty.defs);
+    defsDeferredDecls(addEnv(dcls.defs, dcls.env), top.returnType, top.isTopLevel, ty.defs ++ dcls.defs);
   top.host =
     if !null(deferredDecls)
     then decls(foldDecl(host :: map(\ d::Decorated Decl -> d.host, deferredDecls)))
@@ -82,7 +85,7 @@ top::Decl ::= attrs::Attributes  ty::BaseTypeExpr  dcls::Declarators
 {
   local host::Decl = typedefDecls(attrs.host, ty.host, dcls.host);
   local deferredDecls::[Decorated Decl] =
-    defsDeferredDecls(addEnv(dcls.defs, dcls.env), top.returnType, top.isTopLevel, ty.defs);
+    defsDeferredDecls(addEnv(dcls.defs, dcls.env), top.returnType, top.isTopLevel, ty.defs ++ dcls.defs);
   top.host =
     if !null(deferredDecls)
     then decls(foldDecl(host :: map(\ d::Decorated Decl -> d.host, deferredDecls)))

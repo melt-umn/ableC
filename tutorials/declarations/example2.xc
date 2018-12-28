@@ -1,6 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+// Forward declaration of struct bar
+struct bar;
+
 tuple foo {struct bar, struct bar}
 
 // Here foo is an incomplete type

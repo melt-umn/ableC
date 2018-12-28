@@ -673,6 +673,7 @@ top::ParameterDecl ::= storage::StorageClasses  bty::BaseTypeExpr  mty::TypeModi
   
   bty.givenRefId = nothing();
   
+  mty.env = addEnv(bty.defs, bty.env);
   mty.baseType = bty.typerep;
   mty.typeModifiersIn = bty.typeModifiers;
   
