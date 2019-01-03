@@ -33,7 +33,7 @@ concrete productions top::FunctionDefinition_c
       d.givenStmt = s.ast;
     }
     action {
-      context = lh:closeScope(context); -- Opened by InitialFunctionDefinition.
+      context = closeScope(context); -- Opened by InitialFunctionDefinition.
     }
 
 closed nonterminal Declaration_c with location, ast<ast:Decl>;
@@ -63,8 +63,8 @@ concrete productions top::Declaration_c
     action {
       context =
         if ds.isTypedef
-        then lh:addTypenamesToScope(idcl.declaredIdents, context)
-        else lh:addIdentsToScope(idcl.declaredIdents, context);
+        then addIdentsToScope(idcl.declaredIdents, TypeName_t, context)
+        else addIdentsToScope(idcl.declaredIdents, Identifier_t, context);
     }
 | ds::DeclarationSpecifiers_c  ';'
     { ds.givenQualifiers = ds.typeQualifiers;
@@ -225,7 +225,7 @@ concrete productions top::InitialFunctionDefinition_c
     action {
       -- Function are annoying because we have to open a scope, then add the
       -- parameters, and close it after the brace.
-      context = lh:beginFunctionScope(d.declaredIdent, d.declaredParamIdents, context);
+      context = beginFunctionScope(d.declaredIdent, Identifier_t, d.declaredParamIdents, context);
     }
 | d::Declarator_c  l::InitiallyUnqualifiedDeclarationList_c
     {
@@ -260,7 +260,7 @@ concrete productions top::InitialFunctionDefinition_c
       -- Unfortunate duplication. This production is necessary for K&R compatibility
       -- We can't make it a proper optional nonterminal, since that requires a reduce far too early.
       -- (i.e. LALR conflicts)
-      context = lh:beginFunctionScope(d.declaredIdent, d.declaredParamIdents, context);
+      context = beginFunctionScope(d.declaredIdent, Identifier_t, d.declaredParamIdents, context);
     }
 
 {--
@@ -305,8 +305,8 @@ concrete productions top::InitiallyUnqualifiedDeclaration_c
     action {
       context =
         if ds.isTypedef
-        then lh:addTypenamesToScope(idcl.declaredIdents, context)
-        else lh:addIdentsToScope(idcl.declaredIdents, context);
+        then addIdentsToScope(idcl.declaredIdents, TypeName_t, context)
+        else addIdentsToScope(idcl.declaredIdents, Identifier_t, context);
     }
 | ds::InitiallyUnqualifiedDeclarationSpecifiers_c  ';'
     { ds.givenQualifiers = ds.typeQualifiers;

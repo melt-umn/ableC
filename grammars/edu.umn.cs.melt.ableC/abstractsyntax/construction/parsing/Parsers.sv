@@ -3,7 +3,6 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax:construction:parsing;
 imports silver:langutil;
 
 imports edu:umn:cs:melt:ableC:concretesyntax as cst;
-imports edu:umn:cs:melt:ableC:concretesyntax:lexerHack as lh;
 imports edu:umn:cs:melt:ableC:abstractsyntax:construction;
 imports edu:umn:cs:melt:ableC:abstractsyntax:host;
 

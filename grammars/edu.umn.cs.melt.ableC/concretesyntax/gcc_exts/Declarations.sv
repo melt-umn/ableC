@@ -1,7 +1,6 @@
 grammar edu:umn:cs:melt:ableC:concretesyntax:gcc_exts;
 
 imports edu:umn:cs:melt:ableC:concretesyntax;
-imports edu:umn:cs:melt:ableC:concretesyntax:lexerHack as lh;
 
 imports edu:umn:cs:melt:ableC:abstractsyntax:host as ast;
 imports edu:umn:cs:melt:ableC:abstractsyntax:construction as ast;
@@ -87,7 +86,7 @@ concrete productions top::NestedFunctionDefinition_c
       d.givenStmt = s.ast;
     }
     action {
-      context = lh:closeScope(context); -- Opened by InitialNestedFunctionDefinition.
+      context = closeScope(context); -- Opened by InitialNestedFunctionDefinition.
     }
 closed nonterminal InitialNestedFunctionDefinition_c with location, ast<ast:FunctionDecl>, givenStmt;
 concrete productions top::InitialNestedFunctionDefinition_c
@@ -107,7 +106,7 @@ concrete productions top::InitialNestedFunctionDefinition_c
     }
     action {
       -- TODO: we have to duplicate this more. yaaay...
-      context = lh:beginFunctionScope(d.declaredIdent, d.declaredParamIdents, context);
+      context = beginFunctionScope(d.declaredIdent, Identifier_t, d.declaredParamIdents, context);
     }
 
 concrete productions top::InitDeclarator_c
