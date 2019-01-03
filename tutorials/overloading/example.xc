@@ -14,6 +14,8 @@ int main (int argc, char **argv) {
   interval f = a / b;
   interval g = -c;
   interval h = ~d;
+  interval i = a;
+  i += b;
 
   print_interval(a);
   print_interval(b);
@@ -23,6 +25,10 @@ int main (int argc, char **argv) {
   print_interval(f);
   print_interval(g);
   print_interval(h);
+  print_interval(i);
+
+  printf("%d\n", a == b);
+  printf("%d\n", a != b);
   
   return 0; 
 }

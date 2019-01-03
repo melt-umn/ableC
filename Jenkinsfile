@@ -1,178 +1,105 @@
 #!groovy
 
-/* Set the properties this job has.
-   I think there's a bug where the very first run lacks these... */
-properties([
-  /* Set our config to take a parameter when a build is triggered.
-     We should always have defaults, I don't know what happens when
-     it's triggered by a commit without a default... */
-  [ $class: 'ParametersDefinitionProperty',
-    parameterDefinitions: [
-      [ $class: 'StringParameterDefinition',
-        name: 'SILVER_BASE',
-        defaultValue: '/export/scratch/melt-jenkins/custom-silver/',
-        description: 'Silver installation path to use. Currently assumes only one build machine. Otherwise a path is not sufficient, we need to copy artifacts or something else.'
-      ]
-    ]
-  ],
-  /* If we don't set this, everything is preserved forever.
-     We don't bother discarding build logs (because they're small),
-     but if this job keeps artifacts, we ask them to only stick around
-     for awhile. */
-  [ $class: 'BuildDiscarderProperty',
-    strategy:
-      [ $class: 'LogRotator',
-        artifactDaysToKeepStr: '120',
-        artifactNumToKeepStr: '20'
-      ]
-  ]
-])
+library "github.com/melt-umn/jenkins-lib"
 
-/* If the above syntax confuses you, be sure you've skimmed through
-   https://github.com/jenkinsci/pipeline-plugin/blob/master/TUTORIAL.md
+melt.setProperties(silverBase: true)
 
-   In particular, Jenkins has this thing that turns a map with a '$class' property
-   into an actual object of that type, with the remainder of the map being its
-   parameters. */
+melt.trynode('ableC') {
+  def ABLEC_BASE = env.WORKSPACE
+  def ABLEC_GEN = "${ABLEC_BASE}/generated"
+  def SILVER_BASE = silver.resolveSilver()
+  def newenv = silver.getSilverEnv(SILVER_BASE)
 
+  stage ("Build") {
 
-/* a node allocates an executor to actually do work */
-node {
-  try {
-//    notifyBuild('STARTED')
+    checkout scm
 
-    /* stages are pretty much just labels about what's going on */
-    stage ("Build") {
-      /* Clean Silver-generated files from previous builds in this workspace */
-      /* note: sh "mkdir -p generated" fails first time? try dir("generated")
-       * instead? this should mkdir if it doesn't exist, maybe? */
-      dir("generated") {
-        sh "rm -rf * || true"
-      }
+    melt.clearGenerated()
 
-      checkout scm
-
-      /* env.PATH is the master's path, not the executor's */
-      withEnv(["PATH=${params.SILVER_BASE}/support/bin/:${env.PATH}"]) {
-        sh "./build -G ${WORKSPACE}/generated --warn-all --warn-error"
-      }
+    withEnv(newenv) {
+      sh './build ${SVFLAGS} --warn-all --warn-error'
     }
+  }
 
-    stage ("Extensions") {
-      parallel(
-        "ableC-skeleton": {
-          build job: '/melt-umn/ableC-skeleton/develop', parameters:
-            [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: params.SILVER_BASE],
-             [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
-        },
-        "ableC-lib-skeleton": {
-          build job: '/melt-umn/ableC-lib-skeleton/develop', parameters:
-            [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: params.SILVER_BASE],
-             [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
-        },
-        "ableC-sqlite": {
-          build job: '/melt-umn/ableC-sqlite/develop', parameters:
-            [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: params.SILVER_BASE],
-             [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
-        },
-        "ableC-condition-tables": {
-          build job: '/melt-umn/ableC-condition-tables/develop', parameters:
-            [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: params.SILVER_BASE],
-             [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
-        },
-        "ableC-interval": {
-          build job: '/melt-umn/ableC-interval/develop', parameters:
-            [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: params.SILVER_BASE],
-             [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
-        },
-        "ableC-cilk": {
-          build job: '/melt-umn/ableC-cilk/develop', parameters:
-            [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: params.SILVER_BASE],
-             [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
-        },
-        "ableC-halide": {
-          build job: '/melt-umn/ableC-halide/develop', parameters:
-            [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: params.SILVER_BASE],
-             [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
-        },
-        "ableC-closure": {
-          build job: '/melt-umn/ableC-closure/develop', parameters:
-            [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: params.SILVER_BASE],
-             [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
-        },
-        "ableC-templating": {
-          build job: '/melt-umn/ableC-templating/develop', parameters:
-            [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: params.SILVER_BASE],
-             [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
-        },
-        "ableC-string": {
-          build job: '/melt-umn/ableC-string/develop', parameters:
-            [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: params.SILVER_BASE],
-             [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
-        },
-        "ableC-vector": {
-          build job: '/melt-umn/ableC-vector/develop', parameters:
-            [[$class: 'StringParameterValue', name: 'SILVER_BASE', value: params.SILVER_BASE],
-             [$class: 'StringParameterValue', name: 'ABLEC_BASE', value: WORKSPACE]]
-        }
-      )
-    }
-
-    /* TODO: use nailgun!
-       sh ". ${params.SILVER_BASE}/support/nailgun/sv-nailgun"
-       sh "sv-serve ableC.jar"
-       sh "python testing/supertest.py ${params.SILVER_BASE}/support/nailgun/sv-call testing/tests/*"
-    */
-    stage ("Test") {
-      dir("testing/expected-results") {
+  stage ("Test") {
+    dir("testing/expected-results") {
+      withEnv(newenv) {
         sh "./runTests"
       }
     }
-	} catch (e) {
-		currentBuild.result = 'FAILURE'
-		throw e
-	} finally {
-		if (currentBuild.result == 'FAILURE') {
-			notifyBuild(currentBuild.result)
-		}
-	}
-}
-
-/* Slack / email notification
- * notifyBuild() author: fahl-design
- * https://bitbucket.org/snippets/fahl-design/koxKe */
-def notifyBuild(String buildStatus = 'STARTED') {
-  // build status of null means successful
-  buildStatus =  buildStatus ?: 'SUCCESSFUL'
-
-  // Default values
-  def colorName = 'RED'
-  def colorCode = '#FF0000'
-  def subject = "${buildStatus}: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]'"
-  def summary = "${subject} (${env.BUILD_URL})"
-  def details = """<p>STARTED: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]':</p>
-    <p>Check console output at &QUOT;<a href='${env.BUILD_URL}'>${env.JOB_NAME} [${env.BUILD_NUMBER}]</a>&QUOT;</p>"""
-
-  // Override default values based on build status
-  if (buildStatus == 'STARTED') {
-    color = 'YELLOW'
-    colorCode = '#FFFF00'
-  } else if (buildStatus == 'SUCCESSFUL') {
-    color = 'GREEN'
-    colorCode = '#00FF00'
-  } else {
-    color = 'RED'
-    colorCode = '#FF0000'
   }
 
-  // Send notifications
-  slackSend (color: colorCode, message: summary)
+  stage ("Tutorials") {
+    def tuts = ["construction", "declarations", "embedded_dsl", "error_checking", "extended_env", "getting_started", "lifting", "overloading"]
+    
+    def tasks = [:]
+    tasks << tuts.collectEntries { t -> [(t): task_tutorial(t, ABLEC_BASE, ABLEC_GEN, SILVER_BASE)] }
+    
+    parallel tasks
+  }
 
-  emailext(
-      subject: subject,
-      body: details,
-			to: 'evw@umn.edu',
-      recipientProviders: [[$class: 'CulpritsRecipientProvider']]
-    )
+  stage ("Integration") {
+    // All known, stable extensions to build downstream
+    def extensions = [
+      "silver-ableC",
+      "ableC-skeleton", "ableC-lib-skeleton",
+      "ableC-constructor",
+      "ableC-checkBounds",
+      "ableC-cilk",
+      "ableC-condition-tables",
+      "ableC-dimensionalAnalysis",
+      "ableC-halide",
+      "ableC-nonnull",
+      "ableC-sqlite",
+      "ableC-templating",
+    ]
+    /* These are now downstream of silver-ableC, so we don't build them here:
+      "ableC-sample-projects",
+      "ableC-closure",
+      "ableC-refcount-closure",
+      "ableC-string",
+      "ableC-vector",
+      "ableC-interval",
+      "ableC-watch",
+      "ableC-nondeterministic-search", "ableC-nondeterministic-search-benchmarks",
+      "ableC-algebraic-data-types", "ableC-template-algebraic-data-types"
+     */
+    // Specific other jobs to build
+    def specific_jobs = ["/melt-umn/ableP/master"]
+
+    def tasks = [:]
+    // SILVER_GEN should get inherited automatically
+    def newargs = [SILVER_BASE: SILVER_BASE, ABLEC_BASE: ABLEC_BASE, ABLEC_GEN: ABLEC_GEN]
+    tasks << extensions.collectEntries { t ->
+      [(t): { melt.buildProject("/melt-umn/${t}", newargs) }]
+    }
+    tasks << specific_jobs.collectEntries { t ->
+      [(t): { melt.buildJob(t, newargs) }]
+    }
+    
+    parallel tasks
+  }
+
+  /* If we've gotten all this way with a successful build, don't take up disk space */
+  melt.clearGenerated()
 }
 
+// Tutorial in local workspace
+def task_tutorial(String tutorialpath, String ablec_base, String ablec_gen, String silver_base) {
+  return {
+    node {
+      melt.clearGenerated()
+      
+      newenv = silver.getSilverEnv(silver_base)
+      newenv << "SILVER_HOST_GEN=${ablec_gen}"
+      withEnv(newenv) {
+        // Go back to our "parent" workspace, into the tutorial
+        dir(ablec_base + '/tutorials/' + tutorialpath) {
+          sh "make -j"
+        }
+      }
+      // Blow away these generated files in our private workspace
+      deleteDir()
+    }
+  }
+}

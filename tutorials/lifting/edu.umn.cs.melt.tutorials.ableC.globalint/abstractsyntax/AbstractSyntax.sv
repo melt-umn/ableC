@@ -1,6 +1,6 @@
 grammar edu:umn:cs:melt:tutorials:ableC:globalint:abstractsyntax;
 
-imports edu:umn:cs:melt:ableC:abstractsyntax;
+imports edu:umn:cs:melt:ableC:abstractsyntax:host;
 imports edu:umn:cs:melt:ableC:abstractsyntax:construction:parsing;
 
 abstract production globalIntRefExpr

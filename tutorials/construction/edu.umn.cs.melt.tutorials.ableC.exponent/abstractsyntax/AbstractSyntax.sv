@@ -1,6 +1,7 @@
 grammar edu:umn:cs:melt:tutorials:ableC:exponent:abstractsyntax;
 
-imports edu:umn:cs:melt:ableC:abstractsyntax;
+imports edu:umn:cs:melt:ableC:abstractsyntax:host;
+imports edu:umn:cs:melt:ableC:abstractsyntax:env;
 imports edu:umn:cs:melt:ableC:abstractsyntax:substitution;
 imports edu:umn:cs:melt:ableC:abstractsyntax:construction;
 imports edu:umn:cs:melt:ableC:abstractsyntax:construction:parsing;
@@ -25,7 +26,7 @@ top::Expr ::= l::Expr r::Expr
   local lTempName::String = "_l_" ++ toString(genInt());
   local rTempName::String = "_r_" ++ toString(genInt());
   local fwrd::Expr =
-    subExpr(
+    substExpr(
       [typedefSubstitution("__l_type__", directTypeExpr(l.typerep)),
        typedefSubstitution("__r_type__", directTypeExpr(r.typerep)),
        declRefSubstitution("__l__", l),

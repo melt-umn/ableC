@@ -3,15 +3,17 @@ grammar edu:umn:cs:melt:tutorials:ableC:prefixExpr:abstractsyntax;
 imports silver:langutil;
 imports silver:langutil:pp;
 
-imports edu:umn:cs:melt:ableC:abstractsyntax;
+imports edu:umn:cs:melt:ableC:abstractsyntax:host;
 imports edu:umn:cs:melt:ableC:abstractsyntax:construction;
 imports edu:umn:cs:melt:ableC:abstractsyntax:env;
+imports edu:umn:cs:melt:ableC:abstractsyntax:substitution;
 
 -- Bridge production from host abstract syntax to extension abstract syntax
 abstract production prefixExpr
 top::Expr ::= pe::PrefixExpr
 {
   top.pp = pp"prefix (${pe.pp})";
+  propagate substituted;
 
   -- Check for errors on the EDSL AST
   -- Either forward to an error production or the computed translation
@@ -27,12 +29,7 @@ abstract production addPrefixExpr
 top::PrefixExpr ::= pe1::PrefixExpr pe2::PrefixExpr
 {
   top.pp = pp"+ ${pe1.pp} ${pe2.pp}";
-  top.toExpr =
-    binaryOpExpr(
-      pe1.toExpr,
-      numOp(addOp(location=top.location), location=top.location),
-      pe2.toExpr,
-      location=top.location);
+  top.toExpr = addExpr(pe1.toExpr, pe2.toExpr, location=top.location);
   top.typerep = usualAdditiveConversionsOnTypes(pe1.typerep, pe2.typerep);
   top.errors := pe1.errors ++ pe2.errors;
 
@@ -49,12 +46,7 @@ abstract production subPrefixExpr
 top::PrefixExpr ::= pe1::PrefixExpr pe2::PrefixExpr
 {
   top.pp = pp"- ${pe1.pp} ${pe2.pp}";
-  top.toExpr =
-    binaryOpExpr(
-      pe1.toExpr,
-      numOp(subOp(location=top.location), location=top.location),
-      pe2.toExpr,
-      location=top.location);
+  top.toExpr = subExpr(pe1.toExpr, pe2.toExpr, location=top.location);
   top.typerep = usualSubtractiveConversionsOnTypes(pe1.typerep, pe2.typerep);
   top.errors := pe1.errors ++ pe2.errors;
 
@@ -71,12 +63,7 @@ abstract production mulPrefixExpr
 top::PrefixExpr ::= pe1::PrefixExpr pe2::PrefixExpr
 {
   top.pp = pp"* ${pe1.pp} ${pe2.pp}";
-  top.toExpr =
-    binaryOpExpr(
-      pe1.toExpr,
-      numOp(mulOp(location=top.location), location=top.location),
-      pe2.toExpr,
-      location=top.location);
+  top.toExpr = mulExpr(pe1.toExpr, pe2.toExpr, location=top.location);
   top.typerep = usualArithmeticConversionsOnTypes(pe1.typerep, pe2.typerep);
   top.errors := pe1.errors ++ pe2.errors;
 
@@ -93,12 +80,7 @@ abstract production divPrefixExpr
 top::PrefixExpr ::= pe1::PrefixExpr pe2::PrefixExpr
 {
   top.pp = pp"/ ${pe1.pp} ${pe2.pp}";
-  top.toExpr =
-    binaryOpExpr(
-      pe1.toExpr,
-      numOp(divOp(location=top.location), location=top.location),
-      pe2.toExpr,
-      location=top.location);
+  top.toExpr = divExpr(pe1.toExpr, pe2.toExpr, location=top.location);
   top.typerep = usualArithmeticConversionsOnTypes(pe1.typerep, pe2.typerep);
   top.errors := pe1.errors ++ pe2.errors;
 
