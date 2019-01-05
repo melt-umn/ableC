@@ -106,7 +106,7 @@ concrete productions top::InitialNestedFunctionDefinition_c
     }
     action {
       -- TODO: we have to duplicate this more. yaaay...
-      context = beginFunctionScope(d.declaredIdent, Identifier_t, d.declaredParamIdents, context);
+      context = beginFunctionScope(d.declaredIdent, Identifier_t, d.declaredParamIdents, Identifier_t, context);
     }
 
 concrete productions top::InitDeclarator_c

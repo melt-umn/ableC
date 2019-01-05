@@ -225,7 +225,7 @@ concrete productions top::InitialFunctionDefinition_c
     action {
       -- Function are annoying because we have to open a scope, then add the
       -- parameters, and close it after the brace.
-      context = beginFunctionScope(d.declaredIdent, Identifier_t, d.declaredParamIdents, context);
+      context = beginFunctionScope(d.declaredIdent, Identifier_t, d.declaredParamIdents, Identifier_t, context);
     }
 | d::Declarator_c  l::InitiallyUnqualifiedDeclarationList_c
     {
@@ -260,7 +260,7 @@ concrete productions top::InitialFunctionDefinition_c
       -- Unfortunate duplication. This production is necessary for K&R compatibility
       -- We can't make it a proper optional nonterminal, since that requires a reduce far too early.
       -- (i.e. LALR conflicts)
-      context = beginFunctionScope(d.declaredIdent, Identifier_t, d.declaredParamIdents, context);
+      context = beginFunctionScope(d.declaredIdent, Identifier_t, d.declaredParamIdents, Identifier_t, context);
     }
 
 {--

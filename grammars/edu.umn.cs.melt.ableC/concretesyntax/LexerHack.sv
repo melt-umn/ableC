@@ -34,7 +34,10 @@ lexer class Cidentifier
   disambiguate {
     pluck
       case lookupBy(stringEq, lexeme, head(context)) of
-      | just(id) -> id
+      | just(id) ->
+        if containsBy(terminalIdEq, id, shiftable)
+        then id
+        else Identifier_t
       | nothing() -> Identifier_t
       end;
   };
@@ -63,12 +66,12 @@ function addIdentsToScope
 }
 
 function beginFunctionScope
-[[Pair<String TerminalId>]] ::= funName::ast:Name  id::TerminalId  paramNames::Maybe<[ast:Name]>  context::[[Pair<String TerminalId>]]
+[[Pair<String TerminalId>]] ::= funName::ast:Name  id::TerminalId  paramNames::Maybe<[ast:Name]>  paramId::TerminalId  context::[[Pair<String TerminalId>]]
 {
   return
     addIdentsToScope(
       fromMaybe([], paramNames),
-      id,
+      paramId,
       openScope(
         addIdentsToScope(
           [funName],
