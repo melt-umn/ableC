@@ -36,7 +36,10 @@ lexer class Cidentifier
       case lookupBy(stringEq, lexeme, head(context)) of
       | just(id) ->
         if containsBy(terminalIdEq, id, shiftable)
+        -- Only disambiguate to a non-Identifier_t if that terminal is valid at this point
         then id
+        -- By default, disambiguate to Identifier_t.
+        -- If Identifier_t isn't valid here, then oh well... syntax error.
         else Identifier_t
       | nothing() -> Identifier_t
       end;
