@@ -1,7 +1,6 @@
 grammar edu:umn:cs:melt:tutorials:ableC:tuple:concretesyntax;
 
 imports edu:umn:cs:melt:ableC:concretesyntax;
-imports edu:umn:cs:melt:ableC:concretesyntax:lexerHack as lh;
 
 imports edu:umn:cs:melt:ableC:abstractsyntax:host;
 imports edu:umn:cs:melt:ableC:abstractsyntax:construction;
@@ -18,5 +17,5 @@ top::Declaration_c ::= 'tuple' id::Identifier_t '{' tns::TypeNames_c '}'
   top.ast = tupleDecl(fromId(id), tns.ast);
 }
 action {
-  context = lh:addTypenamesToScope([fromId(id)], context);
+  context = addIdentsToScope([fromId(id)], TypeName_t, context);
 }
