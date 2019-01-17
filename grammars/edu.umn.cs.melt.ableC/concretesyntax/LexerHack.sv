@@ -32,17 +32,25 @@ parser attribute context :: [[Pair<String TerminalId>]]
 lexer class Cidentifier
   submits to Ckeyword
   disambiguate {
-    pluck
+    local lookupResult::Maybe<TerminalId> =
+      -- Look up the lexeme in the current context
       case lookupBy(stringEq, lexeme, head(context)) of
       | just(id) ->
         if containsBy(terminalIdEq, id, shiftable)
-        -- Only disambiguate to a non-Identifier_t if that terminal is valid at this point
-        then id
-        -- By default, disambiguate to Identifier_t.
-        -- If Identifier_t isn't valid here, then oh well... syntax error.
-        else Identifier_t
-      | nothing() -> Identifier_t
+        -- Only disambiguate to an extension terminal if that terminal is valid at this point.
+        then just(id)
+        else nothing()
+      | nothing() -> nothing()
       end;
+  
+    pluck
+      fromMaybe(
+        -- By default, disambiguate to Identifier_t if it is valid at this point, or else TypeName_t.
+        if containsBy(terminalIdEq, Identifier_t, shiftable)
+        then Identifier_t
+        -- If TypeName_t isn't valid here, then oh well... syntax error.
+        else TypeName_t,
+        lookupResult);
   };
 
 -- The logic that mutates the 'context' value is distributed amoung the rules

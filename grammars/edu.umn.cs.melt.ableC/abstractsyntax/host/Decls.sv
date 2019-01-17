@@ -454,13 +454,8 @@ top::FunctionDecl ::= storage::StorageClasses  fnquals::SpecialSpecifiers  bty::
           body.lifted))
     end;
   
-  -- TODO: consider changing signature of this production to take
-  -- SpecialSpecifiers instead of [SpecialSpecifier]
-  --local specialSpecifiers :: SpecialSpecifiers =
-  --   foldr(consSpecialSpecifier, nilSpecialSpecifier(), fnquals);
   fnquals.env = top.env;
   fnquals.returnType = top.returnType;  
-  
   
   local parameters :: Decorated Parameters =
     case mty of
