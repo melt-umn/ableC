@@ -101,6 +101,30 @@ top::Exprs ::=
     else
       [err(top.callExpr.location, s"call expected ${toString(top.argumentPosition + length(top.expectedTypes) - 1)} arguments, got only ${toString(top.argumentPosition - 1)}")];
 }
+{--
+ - The purpose of this production is for an extension production to use to wrap
+ - children that have already been decorated during error checking, etc. when
+ - computing a forward tree, to avoid re-decoration and potential exponential
+ - performance hits.  When using this production, one must be very careful to
+ - ensure that the inherited attributes recieved by the wrapped tree are equivalent
+ - to the ones that would have been passed down in the forward tree.
+ - See https://github.com/melt-umn/silver/issues/86
+ -}
+abstract production decExprs
+top::Exprs ::= e::Decorated Exprs
+{
+  top.pps = e.pps;
+  top.host = e.host;
+  top.lifted = e.lifted;
+  top.errors := e.errors;
+  top.globalDecls := e.globalDecls;
+  top.defs := e.defs;
+  top.freeVariables := e.freeVariables;
+  top.typereps = e.typereps;
+  top.count = e.count;
+  top.isLValue = e.isLValue;
+  forwards to new(e); -- appendedRes, argumentErrors require more than the reference set
+}
 
 function appendExprs
 Exprs ::= e1::Exprs e2::Exprs
