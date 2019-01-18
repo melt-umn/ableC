@@ -30,6 +30,13 @@ Decl ::= subs::[Substitution] base::Decl
   return base.substituted;
 }
 
+function substTypeName
+TypeName ::= subs::[Substitution] base::TypeName
+{
+  base.substitutions = foldSubstitution(subs);
+  return base.substituted;
+}
+
 function substStmt
 Stmt ::= subs::[Substitution] base::Stmt
 {
