@@ -412,8 +412,12 @@ top::BaseTypeExpr ::= q::Qualifiers  name::Name
   top.pp = ppConcat([terminate(space(), q.pps), name.pp ]);
   
   top.typerep = 
-    if !null(name.valueLookupCheck) then errorType()
-    else noncanonicalType(typedefType(q, name.name, addQualifiers(q.qualifiers, name.valueItem.typerep)));
+    noncanonicalType(
+      typedefType(
+        q, name.name,
+        if !null(name.valueLookupCheck)
+        then errorType()
+        else addQualifiers(q.qualifiers, name.valueItem.typerep)));
   top.errors := q.errors;
   top.globalDecls := [];
   top.typeModifiers = [];
