@@ -42,7 +42,11 @@ lexer class Cidentifier
         else nothing()
       | nothing() -> nothing()
       end;
-  
+    
+    -- In order of preference:
+    -- * Looked-up terminal from context
+    -- * Identifier_t
+    -- * TypeName_t
     pluck
       fromMaybe(
         -- By default, disambiguate to Identifier_t if it is valid at this point, or else TypeName_t.
