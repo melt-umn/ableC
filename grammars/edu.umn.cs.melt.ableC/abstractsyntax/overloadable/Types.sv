@@ -80,7 +80,7 @@ flowtype bitNegateProd {decorate} on host:Type, host:ExtType;
 synthesized attribute notProd::Maybe<UnaryProd> occurs on host:Type, host:ExtType;
 flowtype notProd {decorate} on host:Type, host:ExtType;
 
-inherited attribute otherType::host:Type occurs on host:Type, host:ExtType;
+inherited attribute otherType::host:Type occurs on host:Expr, host:Type, host:ExtType;
 
 synthesized attribute lEqProd<a>::Maybe<a>;
 attribute lEqProd<UnaryProd> occurs on host:Expr;
@@ -90,16 +90,16 @@ synthesized attribute rEqProd::Maybe<BinaryProd> occurs on host:Type, host:ExtTy
 flowtype rEqProd {decorate, otherType} on host:Type, host:ExtType;
 
 synthesized attribute eqArraySubscriptProd::Maybe<(host:Expr ::= host:Expr host:Expr host:Expr Location)> occurs on host:Type, host:ExtType;
-flowtype eqArraySubscriptProd {decorate} on host:Type, host:ExtType;
+flowtype eqArraySubscriptProd {decorate, otherType} on host:Type, host:ExtType;
 
 synthesized attribute eqCallProd::Maybe<(host:Expr ::= host:Expr host:Exprs host:Expr Location)> occurs on host:Type, host:ExtType;
-flowtype eqCallProd {decorate} on host:Type, host:ExtType;
+flowtype eqCallProd {decorate, otherType} on host:Type, host:ExtType;
 
 synthesized attribute eqMemberProd<a>::Maybe<a>;
 attribute eqMemberProd<(host:Expr ::= host:Expr host:Name host:Expr Location)> occurs on host:Type;
 attribute eqMemberProd<(host:Expr ::= host:Expr Boolean host:Name host:Expr Location)> occurs on host:ExtType;
-flowtype eqMemberProd {decorate, isDeref} on host:Type;
-flowtype eqMemberProd {decorate} on host:ExtType;
+flowtype eqMemberProd {decorate, otherType, isDeref} on host:Type;
+flowtype eqMemberProd {decorate, otherType} on host:ExtType;
 
 synthesized attribute lMulEqProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
 flowtype lMulEqProd {decorate, otherType} on host:Type, host:ExtType;
@@ -267,11 +267,14 @@ top::host:Expr ::= original::host:Expr  resolved::host:Expr
   top.callProd = original.callProd;
   top.addressOfProd = original.addressOfProd;
   top.lEqProd = original.lEqProd;
+  original.otherType = top.otherType;
 }
 
 aspect production host:arraySubscriptExpr
 top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 {
+  local t::host:Type = lhs.host:typerep;
+  t.otherType = top.otherType;
   top.addressOfProd =
     orElse(
       case lhs.host:typerep.addressOfArraySubscriptProd of
@@ -284,19 +287,22 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
       end);
   top.lEqProd =
     orElse(
-      case lhs.host:typerep.eqArraySubscriptProd of
+      case t.eqArraySubscriptProd of
         just(prod) -> just(prod(lhs, rhs, _, _))
       | nothing() -> nothing()
       end,
-      case top.host:typerep.lEqProd of
+      case t.lEqProd of
         just(prod) -> just(prod(top, _, _))
       | nothing() -> nothing()
       end);
+  lhs.otherType = top.otherType;
 }
 
 aspect production host:callExpr
 top::host:Expr ::= f::host:Expr  a::host:Exprs
 {
+  local t::host:Type = f.host:typerep;
+  t.otherType = top.otherType;
   top.addressOfProd =
     orElse(
       case f.host:typerep.addressOfCallProd of
@@ -309,20 +315,22 @@ top::host:Expr ::= f::host:Expr  a::host:Exprs
       end);
   top.lEqProd =
     orElse(
-      case f.host:typerep.eqCallProd of
+      case t.eqCallProd of
         just(prod) -> just(prod(f, a, _, _))
       | nothing() -> nothing()
       end,
-      case top.host:typerep.lEqProd of
+      case t.lEqProd of
         just(prod) -> just(prod(top, _, _))
       | nothing() -> nothing()
       end);
+  f.otherType = top.otherType;
 }
 
 aspect production host:memberExpr
 top::host:Expr ::= lhs::host:Expr  deref::Boolean  rhs::host:Name
 {
   local t::host:Type = lhs.host:typerep;
+  t.otherType = top.otherType;
   t.isDeref = deref;
   top.callProd =
     orElse(
@@ -350,10 +358,11 @@ top::host:Expr ::= lhs::host:Expr  deref::Boolean  rhs::host:Name
         just(prod) -> just(prod(lhs, rhs, _, _))
       | nothing() -> nothing()
       end,
-      case top.host:typerep.lEqProd of
+      case t.lEqProd of
         just(prod) -> just(prod(top, _, _))
       | nothing() -> nothing()
       end);
+  lhs.otherType = top.otherType;
 }
 
 aspect production host:parenExpr
@@ -362,6 +371,7 @@ top::host:Expr ::= e::host:Expr
   top.callProd = e.callProd;
   top.addressOfProd = e.addressOfProd;
   top.lEqProd = e.lEqProd;
+  e.otherType = top.otherType;
 }
 
 aspect default production
@@ -455,6 +465,7 @@ top::host:Type ::= q::host:Qualifiers target::host:Type
   top.addressOfMemberProd = if top.isDeref then target.addressOfMemberProd else nothing();
   top.eqMemberProd = if top.isDeref then target.eqMemberProd else nothing();
   
+  target.otherType = top.otherType;
   target.isDeref = false;
 }
 

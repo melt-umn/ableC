@@ -18,6 +18,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
   injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
+  lhs.otherType = rhs.host:typerep;
   rhs.env = addEnv(lhs.defs, lhs.env);
 
   local lType::host:Type = lhs.host:typerep;
