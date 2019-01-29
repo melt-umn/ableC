@@ -55,7 +55,7 @@ lexer class Cidentifier
         then Identifier_t
         else if containsBy(terminalIdEq, TypeName_t, shiftable)
         then TypeName_t
-        else head(shiftable),
+        else head(shiftable), -- Always has length >= 2
         lookupResult);
   };
 
