@@ -47,13 +47,15 @@ lexer class Cidentifier
     -- * Looked-up terminal from context
     -- * Identifier_t
     -- * TypeName_t
+    -- * Any (arbitrary) thing that is valid: if the parse succeeds there will
+    --   be a semantic error.
     pluck
       fromMaybe(
-        -- By default, disambiguate to Identifier_t if it is valid at this point, or else TypeName_t.
         if containsBy(terminalIdEq, Identifier_t, shiftable)
         then Identifier_t
-        -- If TypeName_t isn't valid here, then oh well... syntax error.
-        else TypeName_t,
+        else if containsBy(terminalIdEq, TypeName_t, shiftable)
+        then TypeName_t
+        else head(shiftable),
         lookupResult);
   };
 
