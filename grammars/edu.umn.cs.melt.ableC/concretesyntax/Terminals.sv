@@ -221,7 +221,14 @@ terminal RParen_t      ')' precedence = 1, association = left; -- evidently, par
 terminal LBracket_t    '[';
 terminal RBracket_t    ']';
 terminal LCurly_t      '{'  action { context = head(context) :: context; };
+terminal TypeLCurly_t  /{/  action { context = head(context) :: context; }; -- { used in types, e.g. struct {...
 terminal RCurly_t      '}'  action { context = tail(context); };
+
+-- Not ambigous in the host since '{' never follows a type, but we allow this to
+-- be done by extensions since it is permitted in C++.
+disambiguate LCurly_t, TypeLCurly_t {
+  pluck LCurly_t;
+}
 
 terminal Question_t    '?';
 terminal Colon_t       ':';
