@@ -18,6 +18,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
   injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
+  lhs.otherType = rhs.host:typerep;
   rhs.env = addEnv(lhs.defs, lhs.env);
 
   local lType::host:Type = lhs.host:typerep;
@@ -25,9 +26,9 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   local rType::host:Type = rhs.host:typerep;
   rType.otherType = lType;
   
-  local rewriteProd::Maybe<BinaryProd> =
+  local rewriteProd::Maybe<UnaryProd> =
     if lhs.addressOfProd.isJust
-    then just(mkEqRewriteExpr(\ lhs::host:Expr rhs::host:Expr loc::Location -> rhs, _, _, _))
+    then just(mkEqRewriteExpr(\ lhs::host:Expr rhs::host:Expr loc::Location -> rhs, lhs, _, _))
     else nothing();
   
   local host::host:Expr =
@@ -36,8 +37,8 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
       host:decExpr(rhs, location=rhs.location),
       location=top.location);
   local fwrd::host:Expr =
-    case orElse(lType.lEqProd, orElse(rType.rEqProd, rewriteProd)) of
-      just(prod) -> host:transformedExpr(host, prod(lhs, rhs, top.location), location=top.location)
+    case orElse(lhs.lEqProd, orElse(mapMaybe(\ p::BinaryProd -> p(lhs, _, _), rType.rEqProd), rewriteProd)) of
+      just(prod) -> host:transformedExpr(host, prod(rhs, top.location), location=top.location)
     | nothing() -> host
     end;
   
