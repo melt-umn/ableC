@@ -224,6 +224,15 @@ terminal LCurly_t      '{'  action { context = head(context) :: context; };
 terminal TypeLCurly_t  /{/  action { context = head(context) :: context; }; -- { used in types, e.g. struct {...
 terminal RCurly_t      '}'  action { context = tail(context); };
 
+{- In the standard C grammar, '{' can never follow a type expression.
+ - In C++ this is allowed, and we would like to allow the same for extensions.
+ - Doing so directly results in shift/reduce conflicts between struct/enum/
+ - union references and declarations that can't be resolved one way via
+ - precedence.
+ - Instead, we introduce a distinct TypeLCurly_t terminal to be used in these
+ - declarations that is lexically ambigous with '{', and use a parser attribute
+ - to control whether it is allowed to occur.
+ -}
 parser attribute allowStructEnumUnionDecl :: Boolean
   action { allowStructEnumUnionDecl = true; };
 
