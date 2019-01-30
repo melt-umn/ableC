@@ -224,10 +224,14 @@ terminal LCurly_t      '{'  action { context = head(context) :: context; };
 terminal TypeLCurly_t  /{/  action { context = head(context) :: context; }; -- { used in types, e.g. struct {...
 terminal RCurly_t      '}'  action { context = tail(context); };
 
--- Not ambigous in the host since '{' never follows a type, but we allow this to
--- be done by extensions since it is permitted in C++.
+parser attribute allowStructEnumUnionDecl :: Boolean
+  action { allowStructEnumUnionDecl = true; };
+
+terminal AllowSEUDecl_t '' action { allowStructEnumUnionDecl = true; };
+terminal DisallowSEUDecl_t '' action { allowStructEnumUnionDecl = false; };
+
 disambiguate LCurly_t, TypeLCurly_t {
-  pluck LCurly_t;
+  pluck if allowStructEnumUnionDecl then TypeLCurly_t else LCurly_t;
 }
 
 terminal Question_t    '?';
