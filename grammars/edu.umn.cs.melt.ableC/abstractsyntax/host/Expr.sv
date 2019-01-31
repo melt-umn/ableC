@@ -478,7 +478,9 @@ top::Expr ::= body::Stmt result::Expr
   top.freeVariables := body.freeVariables ++ removeDefsFromNames(body.defs, result.freeVariables);
   top.typerep = result.typerep;
   
-  body.env = openScopeEnv(top.env);
+  -- Add body.functionDefs to env here, since labels don't bubble up
+  -- from expressions to the top-level function.
+  body.env = addEnv(body.functionDefs, openScopeEnv(top.env));
   result.env = addEnv(body.defs, body.env);
 }
 
