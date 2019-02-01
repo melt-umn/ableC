@@ -221,7 +221,6 @@ terminal RParen_t      ')' precedence = 1, association = left; -- evidently, par
 terminal LBracket_t    '[';
 terminal RBracket_t    ']';
 terminal LCurly_t      '{'  action { context = head(context) :: context; };
-terminal TypeLCurly_t  /{/  action { context = head(context) :: context; }; -- { used in types, e.g. struct {...
 terminal RCurly_t      '}'  action { context = tail(context); };
 
 {- In the standard C grammar, '{' can never follow a type expression.
@@ -233,6 +232,8 @@ terminal RCurly_t      '}'  action { context = tail(context); };
  - declarations that is lexically ambigous with '{', and use a parser attribute
  - to control whether it is allowed to occur.
  -}
+terminal TypeLCurly_t  /{/  action { context = head(context) :: context; };
+
 parser attribute allowStructEnumUnionDecl :: Boolean
   action { allowStructEnumUnionDecl = true; };
 
@@ -273,7 +274,7 @@ terminal LEFT_OP       '<<'    lexer classes {Csymbol};
 
 -- Numerical operators
 terminal Minus_t       '-'  precedence = 5, association = left, lexer classes {Csymbol}; -- negative
-terminal Plus_t        '+'  precedence = 5, association = left,  lexer classes {Csymbol}; -- positive
+terminal Plus_t        '+'  precedence = 5, association = left, lexer classes {Csymbol}; -- positive
 terminal Star_t        '*'  precedence = 6, association = left, lexer classes {Csymbol}; -- pointer, deref
 terminal Divide_t      '/'  precedence = 6, association = left, lexer classes {Csymbol};
 terminal Mod_t         '%';
