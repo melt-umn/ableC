@@ -38,68 +38,68 @@ concrete productions top::Asm_Starter_c
 
 closed nonterminal AsmArgument_c with location, ast<ast:AsmArgument>;
 concrete productions top::AsmArgument_c
-| s::StringConstant_t
-    { top.ast = ast:asmArgument( s.lexeme, 
+| s::StringConstant_c
+    { top.ast = ast:asmArgument( s.ast, 
                   ast:noneAsmOps(location=top.location),
                   ast:noneAsmOps(location=top.location), 
                   ast:noneAsmClobbers(location=top.location),
                   location=top.location ); }
-| s::StringConstant_t ':' asmOps1::AsmOperands_c
-    { top.ast = ast:asmArgument( s.lexeme, 
+| s::StringConstant_c ':' asmOps1::AsmOperands_c
+    { top.ast = ast:asmArgument( s.ast, 
                   asmOps1.ast,
                   ast:noneAsmOps(location=top.location), 
                   ast:noneAsmClobbers(location=top.location),
                   location=top.location ); }
-| s::StringConstant_t ':' 
-    { top.ast = ast:asmArgument( s.lexeme, 
+| s::StringConstant_c ':' 
+    { top.ast = ast:asmArgument( s.ast, 
                   ast:noneAsmOps(location=top.location),
                   ast:noneAsmOps(location=top.location), 
                   ast:noneAsmClobbers(location=top.location),
                   location=top.location ); }
-| s::StringConstant_t ':' asmOps1::AsmOperands_c ':' asmOps2::AsmOperands_c
-    { top.ast = ast:asmArgument( s.lexeme, 
+| s::StringConstant_c ':' asmOps1::AsmOperands_c ':' asmOps2::AsmOperands_c
+    { top.ast = ast:asmArgument( s.ast, 
                   asmOps1.ast,
+                  asmOps2.ast,
+                  ast:noneAsmClobbers(location=top.location),
+                  location=top.location ); }
+| s::StringConstant_c ':'  ':' asmOps2::AsmOperands_c
+    { top.ast = ast:asmArgument( s.ast, 
+                  ast:noneAsmOps(location=top.location),
                   asmOps2.ast,
                   ast:noneAsmClobbers(location=top.location),
                   location=top.location ); }
-| s::StringConstant_t ':'  ':' asmOps2::AsmOperands_c
-    { top.ast = ast:asmArgument( s.lexeme, 
-                  ast:noneAsmOps(location=top.location),
-                  asmOps2.ast,
-                  ast:noneAsmClobbers(location=top.location),
-                  location=top.location ); }
-| s::StringConstant_t ':' asmOps1::AsmOperands_c ':' 
-    { top.ast = ast:asmArgument( s.lexeme, 
+| s::StringConstant_c ':' asmOps1::AsmOperands_c ':' 
+    { top.ast = ast:asmArgument( s.ast, 
                   asmOps1.ast,
                   ast:noneAsmOps(location=top.location), 
                   ast:noneAsmClobbers(location=top.location),
                   location=top.location ); }
-| s::StringConstant_t ':'  ':' 
-    { top.ast = ast:asmArgument( s.lexeme, 
+| s::StringConstant_c ':'  ':' 
+    { top.ast = ast:asmArgument( s.ast, 
                   ast:noneAsmOps(location=top.location),
                   ast:noneAsmOps(location=top.location), 
                   ast:noneAsmClobbers(location=top.location),
                   location=top.location ); }
-| s::StringConstant_t ':' asmOps1::AsmOperands_c ':' asmOps2::AsmOperands_c ':' asmC::AsmClobbers_c
-    { top.ast = ast:asmArgument( s.lexeme, 
+| s::StringConstant_c ':' asmOps1::AsmOperands_c ':' asmOps2::AsmOperands_c ':' asmC::AsmClobbers_c
+    { top.ast = ast:asmArgument( s.ast, 
                   asmOps1.ast,
-                  asmOps2.ast,
-                  asmC.ast,
-                  location=top.location ); }
-| s::StringConstant_t ':'  ':' asmOps2::AsmOperands_c ':' asmC::AsmClobbers_c
-    { top.ast = ast:asmArgument( s.lexeme, 
-                  ast:noneAsmOps(location=top.location),
                   asmOps2.ast,
                   asmC.ast,
                   location=top.location ); }
-| s::StringConstant_t ':' asmOps1::AsmOperands_c ':'  ':' asmC::AsmClobbers_c
-    { top.ast = ast:asmArgument( s.lexeme, 
+| s::StringConstant_c ':'  ':' asmOps2::AsmOperands_c ':' asmC::AsmClobbers_c
+    { top.ast = ast:asmArgument( s.ast, 
+                  ast:noneAsmOps(location=top.location),
+                  asmOps2.ast,
+                  asmC.ast,
+                  location=top.location ); }
+| s::StringConstant_c ':' asmOps1::AsmOperands_c ':'  ':' asmC::AsmClobbers_c
+    { top.ast = ast:asmArgument( s.ast, 
                   asmOps1.ast,
                   ast:noneAsmOps(location=top.location), 
                   asmC.ast,
                   location=top.location ); }
-| s::StringConstant_t ':'  ':'  ':' asmC::AsmClobbers_c
-    { top.ast = ast:asmArgument( s.lexeme, 
+| s::StringConstant_c ':'  ':'  ':' asmC::AsmClobbers_c
+    { top.ast = ast:asmArgument( s.ast, 
                   ast:noneAsmOps(location=top.location),
                   ast:noneAsmOps(location=top.location), 
                   asmC.ast,
