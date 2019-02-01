@@ -49,7 +49,7 @@ top::Name ::= n::String
   local labdcls :: [LabelItem] = lookupLabel(n, top.env);
   top.labelRedeclarationCheck =
     case labdcls of
-    | [] -> []
+    | [] -> [err(top.location, "INTERNAL compiler error: expected to find label in function scope, was missing.")] -- TODO?
     | [_] -> [] -- We found ourselves. Labels are in function scope, so a-okay!
     | _ :: _ :: _ -> [err(top.location, "Redeclaration of " ++ n)]
     end;
