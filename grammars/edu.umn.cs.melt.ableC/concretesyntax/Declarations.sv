@@ -139,12 +139,16 @@ concrete productions top::Names_c
 | 
   { top.ast = []; }
 
--- Ugly hack to add things to the follow set TypeNames_c and Names_c
+-- Ugly hack to add things to the follow sets of TypeNames_c and Names_c
 -- We set this to include what is allowed by C++ for extensions to use
 terminal TypeNames_NEVER_t 'TypeNames_NEVER_t!!!nevernever1234567890';
 terminal Names_NEVER_t 'Names_NEVER_t!!!nevernever1234567890';
 concrete productions top::Expr_c
 | 'TypeNames_NEVER_t!!!nevernever1234567890' TypeNames_c ')'
+    { top.ast = ast:errorExpr ( [ err (top.location, "Internal Error. " ++
+        "Placeholder for TypeNames_c should not appear in the tree.") ],
+        location=top.location ) ; }
+| 'TypeNames_NEVER_t!!!nevernever1234567890' TypeNames_c '{'
     { top.ast = ast:errorExpr ( [ err (top.location, "Internal Error. " ++
         "Placeholder for TypeNames_c should not appear in the tree.") ],
         location=top.location ) ; }
@@ -157,6 +161,10 @@ concrete productions top::Expr_c
         "Placeholder for TypeNames_c should not appear in the tree.") ],
         location=top.location ) ; }
 | 'TypeNames_NEVER_t!!!nevernever1234567890' TypeNames_c ';'
+    { top.ast = ast:errorExpr ( [ err (top.location, "Internal Error. " ++
+        "Placeholder for TypeNames_c should not appear in the tree.") ],
+        location=top.location ) ; }
+| 'TypeNames_NEVER_t!!!nevernever1234567890' TypeNames_c AllowSEUDecl_t
     { top.ast = ast:errorExpr ( [ err (top.location, "Internal Error. " ++
         "Placeholder for TypeNames_c should not appear in the tree.") ],
         location=top.location ) ; }

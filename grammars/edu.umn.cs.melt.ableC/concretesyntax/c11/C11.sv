@@ -149,13 +149,13 @@ concrete productions top::UnaryExpr_c
 
 -- Anonymous struct/union
 concrete productions top::StructDeclaration_c
-| su::StructOrUnion_c id::Identifier_c '{' ss::StructDeclarationList_c '}' ';'
+| su::StructOrUnion_c id::Identifier_c TypeLCurly_t ss::StructDeclarationList_c '}' ';'
     { top.ast =
         case su of
         | struct_c(_) -> [ast:anonStructStructItem(ast:structDecl(ast:nilAttribute(), ast:justName(id.ast), ast:foldStructItem(ss.ast), location=top.location))]
         | union_c(_) -> [ast:anonUnionStructItem(ast:unionDecl(ast:nilAttribute(), ast:justName(id.ast), ast:foldStructItem(ss.ast), location=top.location))]
         end; }
-| su::StructOrUnion_c '{' ss::StructDeclarationList_c '}' ';'
+| su::StructOrUnion_c TypeLCurly_t ss::StructDeclarationList_c '}' ';'
     { top.ast =
         case su of
         | struct_c(_) -> [ast:anonStructStructItem(ast:structDecl(ast:nilAttribute(), ast:nothingName(), ast:foldStructItem(ss.ast), location=top.location))]

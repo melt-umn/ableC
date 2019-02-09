@@ -223,6 +223,27 @@ terminal RBracket_t    ']';
 terminal LCurly_t      '{'  action { context = head(context) :: context; };
 terminal RCurly_t      '}'  action { context = tail(context); };
 
+{- In the standard C grammar, '{' can never follow a type expression.
+ - In C++ this is allowed, and we would like to allow the same for extensions.
+ - Doing so directly results in shift/reduce conflicts between struct/enum/
+ - union references and declarations that can't be resolved one way via
+ - precedence.
+ - Instead, we introduce a distinct TypeLCurly_t terminal to be used in these
+ - declarations that is lexically ambigous with '{', and use a parser attribute
+ - to control whether it is allowed to occur.
+ -}
+terminal TypeLCurly_t  /{/  action { context = head(context) :: context; };
+
+parser attribute allowStructEnumUnionDecl :: Boolean
+  action { allowStructEnumUnionDecl = true; };
+
+terminal AllowSEUDecl_t '' action { allowStructEnumUnionDecl = true; };
+terminal DisallowSEUDecl_t '' action { allowStructEnumUnionDecl = false; };
+
+disambiguate LCurly_t, TypeLCurly_t {
+  pluck if allowStructEnumUnionDecl then TypeLCurly_t else LCurly_t;
+}
+
 terminal Question_t    '?';
 terminal Colon_t       ':';
 
@@ -253,7 +274,7 @@ terminal LEFT_OP       '<<'    lexer classes {Csymbol};
 
 -- Numerical operators
 terminal Minus_t       '-'  precedence = 5, association = left, lexer classes {Csymbol}; -- negative
-terminal Plus_t        '+'  precedence = 5, association = left,  lexer classes {Csymbol}; -- positive
+terminal Plus_t        '+'  precedence = 5, association = left, lexer classes {Csymbol}; -- positive
 terminal Star_t        '*'  precedence = 6, association = left, lexer classes {Csymbol}; -- pointer, deref
 terminal Divide_t      '/'  precedence = 6, association = left, lexer classes {Csymbol};
 terminal Mod_t         '%';

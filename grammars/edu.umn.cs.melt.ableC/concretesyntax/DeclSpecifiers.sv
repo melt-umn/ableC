@@ -319,13 +319,13 @@ concrete productions top::FunctionSpecifier_c
 
 closed nonterminal StructOrUnionSpecifier_c with location, realTypeSpecifiers, givenQualifiers; 
 concrete productions top::StructOrUnionSpecifier_c
-| su::StructOrUnion_c id::Identifier_c '{' ss::StructDeclarationList_c '}'
+| su::StructOrUnion_c id::Identifier_c TypeLCurly_t ss::StructDeclarationList_c '}'
     { top.realTypeSpecifiers =
         case su of
         | struct_c(_) -> [ast:structTypeExpr(top.givenQualifiers, ast:structDecl(ast:nilAttribute(), ast:justName(id.ast), ast:foldStructItem(ss.ast), location=top.location))]
         | union_c(_) -> [ast:unionTypeExpr(top.givenQualifiers, ast:unionDecl(ast:nilAttribute(), ast:justName(id.ast), ast:foldStructItem(ss.ast), location=top.location))]
         end; }
-| su::StructOrUnion_c '{' ss::StructDeclarationList_c '}'
+| su::StructOrUnion_c TypeLCurly_t ss::StructDeclarationList_c '}'
     { top.realTypeSpecifiers =
         case su of
         | struct_c(_) -> [ast:structTypeExpr(top.givenQualifiers, ast:structDecl(ast:nilAttribute(), ast:nothingName(), ast:foldStructItem(ss.ast), location=top.location))]
@@ -385,13 +385,13 @@ concrete productions top::StructDeclarator_c
 
 closed nonterminal EnumSpecifier_c with location, realTypeSpecifiers, givenQualifiers; 
 concrete productions top::EnumSpecifier_c
-| 'enum' '{' en::EnumeratorList_c '}'
+| 'enum' TypeLCurly_t en::EnumeratorList_c '}'
     { top.realTypeSpecifiers = [ast:enumTypeExpr(top.givenQualifiers, ast:enumDecl(ast:nothingName(), ast:foldEnumItem(en.ast), location=top.location))]; }
-| 'enum' id::Identifier_c '{' en::EnumeratorList_c '}'
+| 'enum' id::Identifier_c TypeLCurly_t en::EnumeratorList_c '}'
     { top.realTypeSpecifiers = [ast:enumTypeExpr(top.givenQualifiers, ast:enumDecl(ast:justName(id.ast), ast:foldEnumItem(en.ast), location=top.location))]; }
-| 'enum' '{' en::EnumeratorList_c ',' '}'
+| 'enum' TypeLCurly_t en::EnumeratorList_c ',' '}'
     { top.realTypeSpecifiers = [ast:enumTypeExpr(top.givenQualifiers, ast:enumDecl(ast:nothingName(), ast:foldEnumItem(en.ast), location=top.location))]; }
-| 'enum' id::Identifier_c '{' en::EnumeratorList_c ',' '}'
+| 'enum' id::Identifier_c TypeLCurly_t en::EnumeratorList_c ',' '}'
     { top.realTypeSpecifiers = [ast:enumTypeExpr(top.givenQualifiers, ast:enumDecl(ast:justName(id.ast), ast:foldEnumItem(en.ast), location=top.location))]; }
 | 'enum' id::Identifier_c
     { top.realTypeSpecifiers = [ast:tagReferenceTypeExpr(top.givenQualifiers, ast:enumSEU(), id.ast)]; }

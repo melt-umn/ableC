@@ -600,3 +600,10 @@ concrete productions top::Constant_c
 | c::CharConstantUBig_t
     { top.ast = ast:characterConstant(c.lexeme, ast:char32CharPrefix(), location=top.location); }
 
+-- Ugly hack to add things to the follow set Expr_c
+terminal Expr_NEVER_t 'Expr_NEVER_t!!!nevernever1234567890';
+concrete productions top::Expr_c
+| 'Expr_NEVER_t!!!nevernever1234567890' Expr_c  AllowSEUDecl_t
+    { top.ast = ast:errorExpr ( [ err (top.location, "Internal Error. " ++
+        "Placeholder for Expr_c should not appear in the tree.") ],
+        location=top.location ) ; }
