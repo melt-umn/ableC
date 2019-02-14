@@ -45,6 +45,7 @@ melt.trynode('ableC') {
       "ableC-skeleton", "ableC-lib-skeleton",
       "ableC-constructor",
       "ableC-checkBounds",
+      "ableC-checkTaggedUnion",
       "ableC-cilk",
       "ableC-condition-tables",
       "ableC-dimensionalAnalysis",
