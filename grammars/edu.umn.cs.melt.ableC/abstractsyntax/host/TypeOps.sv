@@ -51,7 +51,7 @@ Boolean ::= a::Type  b::Type  allowSubtypes::Boolean  dropOuterQual::Boolean
         compatibleTypeList(
           map((.defaultFunctionArrayLvalueConversion), a1),
           map((.defaultFunctionArrayLvalueConversion), a2),
-          true, true) &&
+          false, true) &&
         compatibleQualifiers(q1, q2, allowSubtypes, dropOuterQual) &&
         v1 == v2
   | functionType(r1, _, q1), functionType(r2, _, q2) -> 
