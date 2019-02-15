@@ -26,3 +26,5 @@ This tutorial is composed of 3 sections.  It is expected that you complete the f
 2. *(Coming soon!)* [Modular well-definedness](mwda/): Apply the modular well-definedness analysis to the previously-defined postfix arithmetic extension
 3. *(Coming soon!)* [Organizing extensions](organization/): A look at the skeleton extension, and how to set up an extension for distribution
 4. *(Coming soon!)* [Utility extensions](util/): A look at several generally-useful extensions, including string, vector, templating, and closure.  
+
+A ``tutorial_solutions`` branch also exists.
