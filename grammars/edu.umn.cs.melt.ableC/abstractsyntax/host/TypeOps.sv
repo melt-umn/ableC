@@ -48,7 +48,10 @@ Boolean ::= a::Type  b::Type  allowSubtypes::Boolean  dropOuterQual::Boolean
   | functionType(r1, protoFunctionType(a1, v1), q1),
     functionType(r2, protoFunctionType(a2, v2), q2) ->
       compatibleTypes(r1, r2, false, false) &&
-        compatibleTypeList(a1, a2, false, true) && -- TODO: check subtypes of function args
+        compatibleTypeList(
+          map((.defaultFunctionArrayLvalueConversion), a1),
+          map((.defaultFunctionArrayLvalueConversion), a2),
+          true, true) &&
         compatibleQualifiers(q1, q2, allowSubtypes, dropOuterQual) &&
         v1 == v2
   | functionType(r1, _, q1), functionType(r2, _, q2) -> 
