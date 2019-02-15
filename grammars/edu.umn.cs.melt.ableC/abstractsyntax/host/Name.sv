@@ -173,8 +173,8 @@ function doValueRedeclarationCheck
             herePP :: String = show(100, cat(t.lpp, t.rpp))
          in
             [err(n.location, 
-              "Redeclaration of " ++ n.name ++ " with incompatible types. Original (from line " ++
-              toString(v.sourceLocation.line) ++ ") " ++ originalPP ++ 
+              "Redeclaration of " ++ n.name ++ " with incompatible types. Original (from " ++
+              v.sourceLocation.unparse ++ ") " ++ originalPP ++
               " but here it is " ++ herePP)]
         end
   end;
@@ -187,8 +187,8 @@ function doValueRedeclarationCheckNoCompatible
   | [] -> []
   | v :: _ -> 
       [err(n.location, 
-        "Redeclaration of " ++ n.name ++ ". Original (from line " ++
-        toString(v.sourceLocation.line) ++ ")")]
+        "Redeclaration of " ++ n.name ++ ". Original (from " ++
+        v.sourceLocation.unparse ++ ")")]
   end;
 }
 
