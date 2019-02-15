@@ -21,10 +21,16 @@ top::AssignExpr_c ::= 'prefix' '(' pe::PrefixExpr_c ')'
 -- 'closed' nonterminal = allow nonforwarding productions, disallow new attributes in other extensions
 closed nonterminal PrefixExpr_c with ast<PrefixExpr>, location;
 
+
+terminal NewPlus_t '+' ;
+
 -- New syntax for prefix expressions
--- Note that all the terminals used here are from the host
+-- Note that most of the terminals used here are from the host
+-- Only the NewPlus_t above is now.
+-- Note how it overlaps with the Plus_t from the host.
+  
 concrete productions top::PrefixExpr_c
-| '+' pe1::PrefixExpr_c pe2::PrefixExpr_c
+| NewPlus_t pe1::PrefixExpr_c pe2::PrefixExpr_c
   { top.ast = addPrefixExpr(pe1.ast, pe2.ast, location=top.location); }
 | '-' pe1::PrefixExpr_c pe2::PrefixExpr_c
   { top.ast = subPrefixExpr(pe1.ast, pe2.ast, location=top.location); }
