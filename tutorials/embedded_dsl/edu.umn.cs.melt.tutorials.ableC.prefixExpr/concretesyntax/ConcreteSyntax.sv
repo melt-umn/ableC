@@ -32,16 +32,12 @@ terminal NewPlus_t '+' ;
 concrete productions top::PrefixExpr_c
 | NewPlus_t pe1::PrefixExpr_c pe2::PrefixExpr_c
   { top.ast = addPrefixExpr(pe1.ast, pe2.ast, location=top.location); }
-{- XX
 | '-' pe1::PrefixExpr_c pe2::PrefixExpr_c
   { top.ast = subPrefixExpr(pe1.ast, pe2.ast, location=top.location); }
--}
 | '*' pe1::PrefixExpr_c pe2::PrefixExpr_c
   { top.ast = mulPrefixExpr(pe1.ast, pe2.ast, location=top.location); }
-{-
 | '/' pe1::PrefixExpr_c pe2::PrefixExpr_c
   { top.ast = divPrefixExpr(pe1.ast, pe2.ast, location=top.location); }
--}
 | c::PrefixConstant_c
   { top.ast = exprPrefixExpr(c.ast, location=top.location); }
 | id::Identifier_t

@@ -30,22 +30,17 @@ top::ExtType ::=
     \ other::ExtType -> case other of intervalType() -> true | _ -> false end;
   
   -- Additional equations specify overload productions for the interval type
+  top.memberProd = just(memberInterval(_, _, _, location=_));
+  top.negativeProd = just(negInterval(_, location=_));
+  top.bitNegateProd = just(invInterval(_, location=_));
   top.lAddProd = just(addInterval(_, _, location=_));
   top.rAddProd = just(addInterval(_, _, location=_));
-  top.lSubProd = nothing();  -- complete this
-  top.rSubProd = nothing();  -- complete this
-  -- create a production not unlike addInterval in AbstractSyntax.sv
+  top.lSubProd = just(subInterval(_, _, location=_));
+  top.rSubProd = just(subInterval(_, _, location=_));
   top.lMulProd = just(mulInterval(_, _, location=_));
   top.rMulProd = just(mulInterval(_, _, location=_));
-  top.lDivProd = nothing();  -- complete this
-  top.rDivProd = nothing();  -- complete this
-  -- create a production not unlike addInterval in AbstractSyntax.sv
-
-  top.memberProd = just(memberInterval(_, _, _, location=_));
-  top.bitNegateProd = just(invInterval(_, location=_));
-  top.negativeProd = nothing();   -- complete this
-  -- create production not unlike invInterval in AbstractSyntax.sv
-
+  top.lDivProd = just(divInterval(_, _, location=_));
+  top.rDivProd = just(divInterval(_, _, location=_));
   -- Overloads for +=, -=, *=, /= automatically inferred from above
   top.lEqualsProd = just(equalsInterval(_, _, location=_));
   top.rEqualsProd = just(equalsInterval(_, _, location=_));

@@ -8,70 +8,6 @@ imports edu:umn:cs:melt:ableC:abstractsyntax:construction;
 imports edu:umn:cs:melt:ableC:abstractsyntax:env;
 imports edu:umn:cs:melt:ableC:abstractsyntax:substitution;
 
-
-abstract production invInterval
-top::Expr ::= i::Expr
-{
-  propagate substituted;
-  top.pp = pp"~(${i.pp})";
-  
-  local localErrors::[Message] =
-    checkIntervalHeaderDef("inv_interval", top.location, top.env) ++
-    checkIntervalType(i.typerep, "~", top.location);
-
-  // forwards to a call to a function in the `interval.xh` file in
-  // the `include` directory above.
-  local fwrd::Expr = ableC_Expr { inv_interval ( $Expr{i} ) };
-  forwards to mkErrorCheck(localErrors, fwrd);
-}
-
-abstract production addInterval
-top::Expr ::= i1::Expr i2::Expr
-{
-  propagate substituted;
-  top.pp = pp"(${i1.pp}) + (${i2.pp})";
-
-  local localErrors::[Message] =
-    checkIntervalHeaderDef("add_interval", top.location, top.env) ++
-    checkIntervalType(i1.typerep, "+", top.location) ++
-    checkIntervalType(i2.typerep, "+", top.location);
-
-  local fwrd::Expr = ableC_Expr { add_interval ( $Expr{i1}, $Expr{i2} ) } ; 
-  forwards to mkErrorCheck(localErrors, fwrd);
-}
-
-
-abstract production mulInterval
-top::Expr ::= i1::Expr i2::Expr
-{
-  propagate substituted;
-  top.pp = pp"(${i1.pp}) * (${i2.pp})";
-
-  local localErrors::[Message] =
-    checkIntervalHeaderDef("mul_interval", top.location, top.env) ++
-    checkIntervalType(i1.typerep, "*", top.location) ++
-    checkIntervalType(i2.typerep, "*", top.location);
-
-  local fwrd::Expr = ableC_Expr { mul_interval ( $Expr{i1}, $Expr{i2} ) }; 
-  forwards to mkErrorCheck(localErrors, fwrd);
-}
-
-
-abstract production equalsInterval
-top::Expr ::= i1::Expr i2::Expr
-{
-  propagate substituted;
-  top.pp = pp"(${i1.pp}) == (${i2.pp})";
-
-  local localErrors::[Message] =
-    checkIntervalHeaderDef("equals_interval", top.location, top.env) ++
-    checkIntervalType(i1.typerep, "==", top.location) ++
-    checkIntervalType(i2.typerep, "==", top.location);
-  local fwrd::Expr =
-    directCallExpr(name("equals_interval", location=builtin), foldExpr([i1, i2]), location=builtin);
-  forwards to mkErrorCheck(localErrors, fwrd);
-}
-
 abstract production newInterval
 top::Expr ::= min::Expr max::Expr
 {
@@ -110,6 +46,109 @@ top::Expr ::= lhs::Expr deref::Boolean rhs::Name
         location=builtin),
       false, rhs,
       location=builtin);
+  forwards to mkErrorCheck(localErrors, fwrd);
+}
+
+abstract production negInterval
+top::Expr ::= i::Expr
+{
+  propagate substituted;
+  top.pp = pp"-(${i.pp})";
+
+  local localErrors::[Message] =
+    checkIntervalHeaderDef("neg_interval", top.location, top.env) ++
+    checkIntervalType(i.typerep, "-", top.location);
+  local fwrd::Expr =
+    directCallExpr(name("neg_interval", location=builtin), foldExpr([i]), location=builtin);
+  forwards to mkErrorCheck(localErrors, fwrd);
+}
+
+abstract production invInterval
+top::Expr ::= i::Expr
+{
+  propagate substituted;
+  top.pp = pp"~(${i.pp})";
+  
+  local localErrors::[Message] =
+    checkIntervalHeaderDef("inv_interval", top.location, top.env) ++
+    checkIntervalType(i.typerep, "~", top.location);
+  local fwrd::Expr =
+    directCallExpr(name("inv_interval", location=builtin), foldExpr([i]), location=builtin);
+  forwards to mkErrorCheck(localErrors, fwrd);
+}
+
+abstract production addInterval
+top::Expr ::= i1::Expr i2::Expr
+{
+  propagate substituted;
+  top.pp = pp"(${i1.pp}) + (${i2.pp})";
+
+  local localErrors::[Message] =
+    checkIntervalHeaderDef("add_interval", top.location, top.env) ++
+    checkIntervalType(i1.typerep, "+", top.location) ++
+    checkIntervalType(i2.typerep, "+", top.location);
+  local fwrd::Expr =
+    directCallExpr(name("add_interval", location=builtin), foldExpr([i1, i2]), location=builtin);
+  forwards to mkErrorCheck(localErrors, fwrd);
+}
+
+abstract production subInterval
+top::Expr ::= i1::Expr i2::Expr
+{
+  propagate substituted;
+  top.pp = pp"(${i1.pp}) - (${i2.pp})";
+
+  local localErrors::[Message] =
+    checkIntervalHeaderDef("sub_interval", top.location, top.env) ++
+    checkIntervalType(i1.typerep, "-", top.location) ++
+    checkIntervalType(i2.typerep, "-", top.location);
+  local fwrd::Expr =
+    directCallExpr(name("sub_interval", location=builtin), foldExpr([i1, i2]), location=builtin);
+  forwards to mkErrorCheck(localErrors, fwrd);
+}
+
+abstract production mulInterval
+top::Expr ::= i1::Expr i2::Expr
+{
+  propagate substituted;
+  top.pp = pp"(${i1.pp}) * (${i2.pp})";
+
+  local localErrors::[Message] =
+    checkIntervalHeaderDef("mul_interval", top.location, top.env) ++
+    checkIntervalType(i1.typerep, "*", top.location) ++
+    checkIntervalType(i2.typerep, "*", top.location);
+  local fwrd::Expr =
+    directCallExpr(name("mul_interval", location=builtin), foldExpr([i1, i2]), location=builtin);
+  forwards to mkErrorCheck(localErrors, fwrd);
+}
+
+abstract production divInterval
+top::Expr ::= i1::Expr i2::Expr
+{
+  propagate substituted;
+  top.pp = pp"(${i1.pp}) / (${i2.pp})";
+
+  local localErrors::[Message] =
+    checkIntervalHeaderDef("div_interval", top.location, top.env) ++
+    checkIntervalType(i1.typerep, "/", top.location) ++
+    checkIntervalType(i2.typerep, "/", top.location);
+  local fwrd::Expr =
+    directCallExpr(name("div_interval", location=builtin), foldExpr([i1, i2]), location=builtin);
+  forwards to mkErrorCheck(localErrors, fwrd);
+}
+
+abstract production equalsInterval
+top::Expr ::= i1::Expr i2::Expr
+{
+  propagate substituted;
+  top.pp = pp"(${i1.pp}) == (${i2.pp})";
+
+  local localErrors::[Message] =
+    checkIntervalHeaderDef("equals_interval", top.location, top.env) ++
+    checkIntervalType(i1.typerep, "==", top.location) ++
+    checkIntervalType(i2.typerep, "==", top.location);
+  local fwrd::Expr =
+    directCallExpr(name("equals_interval", location=builtin), foldExpr([i1, i2]), location=builtin);
   forwards to mkErrorCheck(localErrors, fwrd);
 }
 
