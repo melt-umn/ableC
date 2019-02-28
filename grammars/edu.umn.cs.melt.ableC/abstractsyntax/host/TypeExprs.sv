@@ -149,7 +149,6 @@ top::BaseTypeExpr ::= result::Type
   forwards to typeModifierTypeExpr(result.baseTypeExpr, result.typeModifierExpr);
 }
 
-
 {--
  - The purpose of this production is for an extension production to use to wrap
  - children that have already been decorated during error checking, etc. when

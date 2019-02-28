@@ -41,3 +41,9 @@ top::Decl ::= decls::Decls
 {
   propagate substituted;
 }
+
+aspect production completedTypeExpr
+top::BaseTypeExpr ::= result::Type
+{
+  propagate substituted;
+}
