@@ -737,5 +737,6 @@ top::host:Type ::= t::host:Type
   top.rModProd = t.rModProd;
   
   t.otherType = top.otherType;
+  t.isDeref = top.isDeref;
 }
 

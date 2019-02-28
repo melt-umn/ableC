@@ -47,3 +47,9 @@ top::BaseTypeExpr ::= result::Type
 {
   propagate substituted;
 }
+
+aspect production completedType
+top::Type ::= result::Type
+{
+  propagate substituted;
+}

@@ -179,6 +179,8 @@ top::Expr ::= lhs::Expr  rhs::Expr
         else right([err(top.location, "index expression does not have integer type (got " ++ showType(otherty) ++ ")")])
     | errorType(), _ -> right([])
     | _, errorType() -> right([])
+    | completedType(_), _ -> right([])
+    | _, completedType(_) -> right([])
     | _, _ ->
         right([err(top.location, "expression is not an indexable type (got " ++ showType(lhs.typerep) ++ ")")])
     end;

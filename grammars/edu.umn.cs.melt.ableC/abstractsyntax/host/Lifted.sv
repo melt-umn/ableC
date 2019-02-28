@@ -266,11 +266,12 @@ top::BaseTypeExpr ::= result::Type
 abstract production completedType
 top::Type ::= t::Type
 {
-  propagate host, canonicalType, integerPromotions, defaultArgumentPromotions, defaultLvalueConversion, defaultFunctionArrayLvalueConversion, withoutTypeQualifiers;
+  propagate host, canonicalType, integerPromotions, defaultArgumentPromotions, defaultLvalueConversion, defaultFunctionArrayLvalueConversion, withoutTypeQualifiers, withoutExtensionQualifiers;
   top.lpp = t.lpp;
   top.rpp = t.rpp;
   top.baseTypeExpr = completedTypeExpr(t);
   top.typeModifierExpr = baseTypeExpr();
+  top.mangledName = t.mangledName;
   top.isCompleteType = \ Decorated Env -> true;
   top.mergeQualifiers = \ t2::Type -> completedType(t.mergeQualifiers(t2));
   top.qualifiers = t.qualifiers;

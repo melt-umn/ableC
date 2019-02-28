@@ -319,10 +319,12 @@ Boolean ::= lval::Type  rval::Type
     else
     case lval of
     | errorType() -> true
+    | completedType(_) -> true
     | _ -> false
     end ||
     case rval of
     | errorType() -> true
+    | completedType(_) -> true
     | _ -> false
     end ||
 

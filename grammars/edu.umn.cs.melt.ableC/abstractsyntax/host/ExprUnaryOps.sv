@@ -101,6 +101,7 @@ top::Expr ::= e::Expr
     case e.typerep.defaultFunctionArrayLvalueConversion of
     | pointerType(_, _) -> []
     | errorType() -> []
+    | completedType(_) -> []
     | _ -> [err(top.location, "invalid type argument of unary ‘*’ (have ‘" ++
                                showType(e.typerep) ++ "’)")]
     end;
