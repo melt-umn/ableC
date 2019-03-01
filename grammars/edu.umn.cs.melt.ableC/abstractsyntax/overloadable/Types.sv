@@ -255,7 +255,8 @@ top::host:Expr ::=
     | nothing() -> nothing()
     end;
   top.lEqProd =
-    case top.host:typerep.lEqProd of
+    -- Can't use a local here, unfourtunately
+    case decorate top.host:typerep with {otherType=top.otherType;}.lEqProd of
       just(prod) -> just(prod(top, _, _))
     | nothing() -> nothing()
     end;
