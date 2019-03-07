@@ -139,10 +139,12 @@ concrete productions top::Names_c
 | 
   { top.ast = []; }
 
--- Ugly hack to add things to the follow sets of TypeNames_c and Names_c
+-- Ugly hack to add things to the follow sets of several nonterminals
 -- We set this to include what is allowed by C++ for extensions to use
 terminal TypeNames_NEVER_t 'TypeNames_NEVER_t!!!nevernever1234567890';
 terminal Names_NEVER_t 'Names_NEVER_t!!!nevernever1234567890';
+terminal Declarator_NEVER_t 'Declarator_NEVER_t!!!nevernever1234567890';
+terminal DirectDeclarator_NEVER_t 'DirectDeclarator_NEVER_t!!!nevernever1234567890';
 concrete productions top::Expr_c
 | 'TypeNames_NEVER_t!!!nevernever1234567890' TypeNames_c ')'
     { top.ast = ast:errorExpr ( [ err (top.location, "Internal Error. " ++
@@ -183,6 +185,14 @@ concrete productions top::Expr_c
 | 'Names_NEVER_t!!!nevernever1234567890' Names_c ';'
     { top.ast = ast:errorExpr ( [ err (top.location, "Internal Error. " ++
         "Placeholder for Names_c should not appear in the tree.") ],
+        location=top.location ) ; }
+| 'Declarator_NEVER_t!!!nevernever1234567890' Declarator_c '>'
+    { top.ast = ast:errorExpr ( [ err (top.location, "Internal Error. " ++
+        "Placeholder for Declarator_c should not appear in the tree.") ],
+        location=top.location ) ; }
+| 'DirectDeclarator_NEVER_t!!!nevernever1234567890' DirectDeclarator_c '>'
+    { top.ast = ast:errorExpr ( [ err (top.location, "Internal Error. " ++
+        "Placeholder for DirectDeclarator_c should not appear in the tree.") ],
         location=top.location ) ; }
 
 -- "Non-exported" nonterminals
