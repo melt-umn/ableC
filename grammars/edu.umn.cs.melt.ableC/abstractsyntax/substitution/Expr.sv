@@ -13,7 +13,9 @@ top::Expr ::= msg::[Message] e::Expr
 aspect production decExpr
 top::Expr ::= e::Decorated Expr
 {
-  propagate substituted;
+  local newE::Expr = new(e);
+  newE.substitutions = top.substitutions;
+  top.substituted = newE.substituted;
 }
 aspect production transformedExpr
 top::Expr ::= original::Expr  resolved::Expr
