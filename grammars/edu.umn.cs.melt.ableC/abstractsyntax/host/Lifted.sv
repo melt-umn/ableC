@@ -247,6 +247,41 @@ top::GlobalDecls ::= h::Decl  t::GlobalDecls
       map(\ d::Decorated Decl -> d.lifted, h.unfoldedGlobalDecls));
 }
 
+-- Required to allow for types that are only completed in the lifted tree.
+abstract production completedTypeExpr
+top::BaseTypeExpr ::= result::Type
+{
+  propagate host;
+  top.pp = parens(cat(result.lpp, result.rpp));
+  top.lifted = result.baseTypeExpr;
+  top.typerep = completedType(result);
+  top.errors := [];
+  top.globalDecls := [];
+  top.typeModifiers = [result.typeModifierExpr];
+  top.decls = [];
+  top.defs := [];
+  top.freeVariables := [];
+}
+
+abstract production completedType
+top::Type ::= t::Type
+{
+  propagate host, canonicalType, integerPromotions, defaultArgumentPromotions, defaultLvalueConversion, defaultFunctionArrayLvalueConversion, withoutTypeQualifiers, withoutExtensionQualifiers;
+  top.lpp = t.lpp;
+  top.rpp = t.rpp;
+  top.baseTypeExpr = completedTypeExpr(t);
+  top.typeModifierExpr = baseTypeExpr();
+  top.mangledName = t.mangledName;
+  top.isCompleteType = \ Decorated Env -> true;
+  top.mergeQualifiers = \ t2::Type -> completedType(t.mergeQualifiers(t2));
+  top.qualifiers = t.qualifiers;
+  top.errors := t.errors;
+  top.freeVariables := t.freeVariables;
+  top.isIntegerType = t.isIntegerType;
+  top.isScalarType = t.isScalarType;
+  top.isArithmeticType = t.isArithmeticType;
+}
+
 -- Utility functions
 function globalDeclsDefs
 [Def] ::= d::[Decorated Decl]
