@@ -28,9 +28,10 @@ top::Expr ::= id::Name
   local substitutions::Substitutions = top.substitutions;
   substitutions.nameIn = id.name;
   top.substituted =
-    case substitutions.declRefSub of
-      just(sub) -> sub
-    | nothing() -> directRefExpr(id.substituted, location=top.location)
+    case substitutions.declRefSub, substitutions.declRefLocSub of
+    | just(sub), _ -> sub
+    | nothing(), just(sub) -> sub(top.location)
+    | _, _ -> directRefExpr(id.substituted, location=top.location)
     end;
 }
 aspect production declRefExpr
@@ -39,9 +40,10 @@ top::Expr ::= id::Name
   local substitutions::Substitutions = top.substitutions;
   substitutions.nameIn = id.name;
   top.substituted =
-    case substitutions.declRefSub of
-      just(sub) -> sub
-    | nothing() -> declRefExpr(id.substituted, location=top.location)
+    case substitutions.declRefSub, substitutions.declRefLocSub of
+    | just(sub), _ -> sub
+    | nothing(), just(sub) -> sub(top.location)
+    | _, _ -> declRefExpr(id.substituted, location=top.location)
     end;
 }
 aspect production stringLiteral
@@ -65,9 +67,10 @@ top::Expr ::= f::Name  a::Exprs
   local substitutions::Substitutions = top.substitutions;
   substitutions.nameIn = f.name;
   top.substituted =
-    case substitutions.declRefSub of
-      just(sub) -> callExpr(sub, a.substituted, location=top.location)
-    | nothing() -> directCallExpr(f.substituted, a.substituted, location=top.location)
+    case substitutions.declRefSub, substitutions.declRefLocSub of
+    | just(sub), _ -> callExpr(sub, a.substituted, location=top.location)
+    | nothing(), just(sub) -> callExpr(sub(top.location), a.substituted, location=top.location)
+    | _, _ -> directCallExpr(f.substituted, a.substituted, location=top.location)
     end;
 }
 aspect production callExpr
