@@ -24,7 +24,8 @@ synthesized attribute mangledName :: String;
 flowtype mangledName {} on
   Type, FunctionType, ExtType, StructOrEnumOrUnion,
   Qualifiers, Qualifier,
-  BuiltinType, RealType, IntegerType;
+  BuiltinType, RealType, IntegerType,
+  NumericConstant;
 
 -- char -> int and stuff in operations
 synthesized attribute integerPromotions :: Type;
