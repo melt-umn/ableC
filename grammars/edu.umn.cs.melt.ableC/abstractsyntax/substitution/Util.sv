@@ -37,6 +37,13 @@ TypeName ::= subs::[Substitution] base::TypeName
   return base.substituted;
 }
 
+function substParameters
+Parameters ::= subs::[Substitution] base::Parameters
+{
+  base.substitutions = foldSubstitution(subs);
+  return base.substituted;
+}
+
 function substStmt
 Stmt ::= subs::[Substitution] base::Stmt
 {

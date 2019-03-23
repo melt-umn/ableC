@@ -35,9 +35,10 @@ autocopy attribute substitutions::Substitutions;
 synthesized attribute substituted<a>::a;
 
 autocopy attribute nameIn::String;
-synthesized attribute nameSub::Maybe<Name>;
-synthesized attribute typedefSub::Maybe<BaseTypeExpr>;
-synthesized attribute declRefSub::Maybe<Expr>;
+synthesized attribute nameSub::Maybe<Name>; -- TODO: Change signature to Maybe<(Name ::= Location)>
+synthesized attribute typedefSub::Maybe<BaseTypeExpr>; -- TODO: rename to baseTypeExprSub
+synthesized attribute declRefSub::Maybe<Expr>; -- TODO: depricate
+synthesized attribute declRefLocSub::Maybe<(Expr ::= Location)>; -- TODO: rename to exprSub
 
 -- 'Indirect' substitutions that substitute something other than a production directly wrapping a name
 synthesized attribute stmtSub::Maybe<Stmt>;
@@ -46,8 +47,8 @@ synthesized attribute exprsSub::Maybe<Exprs>;
 synthesized attribute parametersSub::Maybe<Parameters>;
 synthesized attribute refIdSub::Maybe<String>;
 
-nonterminal Substitutions with nameIn, nameSub, typedefSub, declRefSub, stmtSub, initializerSub, exprsSub, parametersSub, refIdSub;
-flowtype Substitutions = nameSub {nameIn}, typedefSub {nameIn}, declRefSub {nameIn}, stmtSub {nameIn}, exprsSub {nameIn}, parametersSub {nameIn}, refIdSub {nameIn};
+nonterminal Substitutions with nameIn, nameSub, typedefSub, declRefSub, declRefLocSub, stmtSub, initializerSub, exprsSub, parametersSub, refIdSub;
+flowtype Substitutions = nameSub {nameIn}, typedefSub {nameIn}, declRefSub {nameIn}, declRefLocSub {nameIn}, stmtSub {nameIn}, exprsSub {nameIn}, parametersSub {nameIn}, refIdSub {nameIn};
 
 abstract production consSubstitution
 top::Substitutions ::= h::Substitution t::Substitutions
@@ -55,6 +56,7 @@ top::Substitutions ::= h::Substitution t::Substitutions
   top.nameSub = orElse(h.nameSub, t.nameSub);
   top.typedefSub = orElse(h.typedefSub, t.typedefSub);
   top.declRefSub = orElse(h.declRefSub, t.declRefSub);
+  top.declRefLocSub = orElse(h.declRefLocSub, t.declRefLocSub);
   top.initializerSub = orElse(h.initializerSub, t.initializerSub);
   top.stmtSub = orElse(h.stmtSub, t.stmtSub);
   top.exprsSub = orElse(h.exprsSub, t.exprsSub);
@@ -68,6 +70,7 @@ top::Substitutions ::=
   top.nameSub = nothing();
   top.typedefSub = nothing();
   top.declRefSub = nothing();
+  top.declRefLocSub = nothing();
   top.stmtSub = nothing();
   top.initializerSub = nothing();
   top.exprsSub = nothing();
@@ -75,8 +78,8 @@ top::Substitutions ::=
   top.refIdSub = nothing();
 }
 
-closed nonterminal Substitution with nameIn, nameSub, typedefSub, declRefSub, stmtSub, initializerSub, exprsSub, parametersSub, refIdSub;
-flowtype Substitution = nameSub {nameIn}, typedefSub {nameIn}, declRefSub {nameIn}, stmtSub {nameIn}, exprsSub {nameIn}, parametersSub {nameIn}, refIdSub {nameIn};
+closed nonterminal Substitution with nameIn, nameSub, typedefSub, declRefSub, declRefLocSub, stmtSub, initializerSub, exprsSub, parametersSub, refIdSub;
+flowtype Substitution = nameSub {nameIn}, typedefSub {nameIn}, declRefSub {nameIn}, declRefLocSub {nameIn}, stmtSub {nameIn}, exprsSub {nameIn}, parametersSub {nameIn}, refIdSub {nameIn};
 
 aspect default production
 top::Substitution ::= 
@@ -84,6 +87,7 @@ top::Substitution ::=
   top.nameSub = nothing();
   top.typedefSub = nothing();
   top.declRefSub = nothing();
+  top.declRefLocSub = nothing();
   top.stmtSub = nothing();
   top.initializerSub = nothing();
   top.exprsSub = nothing();
@@ -110,6 +114,14 @@ abstract production declRefSubstitution
 top::Substitution ::= name::String sub::Expr
 {
   top.declRefSub = if top.nameIn == name then just(sub) else nothing();
+}
+
+-- Substitutes a value name for an expression,
+-- with support for providing a proper substituted location
+abstract production declRefLocSubstitution
+top::Substitution ::= name::String sub::(Expr ::= Location)
+{
+  top.declRefLocSub = if top.nameIn == name then just(sub) else nothing();
 }
 
 -- Substitutes an exprStmt that is a declRefExpr for another statement

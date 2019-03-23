@@ -46,7 +46,7 @@ top::Expr ::= num::String  c::CharPrefix
   top.isLValue = false;
 }
 
-nonterminal NumericConstant with location, pp, host<NumericConstant>, lifted<NumericConstant>, errors, env, constanttyperep, integerConstantValue;
+nonterminal NumericConstant with location, pp, mangledName, host<NumericConstant>, lifted<NumericConstant>, errors, env, constanttyperep, integerConstantValue;
 flowtype NumericConstant = decorate {env}, constanttyperep {decorate}, integerConstantValue {decorate};
 
 synthesized attribute constanttyperep :: BuiltinType;
@@ -56,6 +56,7 @@ top::NumericConstant ::= num::String  unsigned::Boolean  suffix::IntSuffix
 {
   propagate host, lifted;
   top.pp = text(num);
+  top.mangledName = substitute(".", "_", num);
   top.errors := [];
   top.constanttyperep = if unsigned then unsignedType(suffix.constinttyperep) else signedType(suffix.constinttyperep);
   top.integerConstantValue = just(toInt(num));
@@ -65,6 +66,7 @@ top::NumericConstant ::= num::String  unsigned::Boolean  suffix::IntSuffix
 {
   propagate host, lifted;
   top.pp = text(num);
+  top.mangledName = substitute(".", "_", num);
   top.errors := [];
   top.constanttyperep = if unsigned then unsignedType(suffix.constinttyperep) else signedType(suffix.constinttyperep);
   top.integerConstantValue = nothing(); -- TODO
@@ -74,6 +76,7 @@ top::NumericConstant ::= num::String  unsigned::Boolean  suffix::IntSuffix
 {
   propagate host, lifted;
   top.pp = text(num);
+  top.mangledName = substitute(".", "_", num);
   top.errors := [];
   top.constanttyperep = if unsigned then unsignedType(suffix.constinttyperep) else signedType(suffix.constinttyperep);
   top.integerConstantValue = nothing(); -- TODO
@@ -84,6 +87,7 @@ top::NumericConstant ::= num::String  suffix::FloatSuffix
 {
   propagate host, lifted;
   top.pp = text(num);
+  top.mangledName = substitute(".", "_", num);
   top.errors := [];
   top.constanttyperep = realType(suffix.constfloattyperep);
   top.integerConstantValue = nothing();
@@ -93,6 +97,7 @@ top::NumericConstant ::= num::String  suffix::FloatSuffix
 {
   propagate host, lifted;
   top.pp = text(num);
+  top.mangledName = substitute(".", "_", num);
   top.errors := [];
   top.constanttyperep = realType(suffix.constfloattyperep);
   top.integerConstantValue = nothing();
