@@ -42,12 +42,33 @@ concrete productions top::PrimaryExpr_c
       local attribute lastExpr :: ast:Expr
         = case bis.lastBlockItem_c of
           | blockStmt_c( exprStmt_c( nonEmptyExprStmt_c (e,_))) -> e.ast
+          {-
           | _ -> ast:errorExpr( [ err ( top.location, 
                                         "GCC-style statement expressions require " ++ 
                                         "at least one expression" ) ], 
                                   location=top.location )
+          -}
+          | _ ->
+            ast:explicitCastExpr(
+              ast:typeName(ast:builtinTypeExpr(ast:nilQualifier(), ast:voidType()), ast:baseTypeExpr()),
+              ast:mkIntConst(0, top.location),
+              location=top.location)
           end ;
-      top.ast = ast:stmtExpr( ast:foldStmt(bis.firstBlockItemList_c.ast), lastExpr, location=top.location);
+      top.ast =
+        case bis.lastBlockItem_c of
+        | blockStmt_c(exprStmt_c(nonEmptyExprStmt_c(_,_))) -> 
+          ast:stmtExpr( ast:foldStmt(bis.firstBlockItemList_c.ast), lastExpr, location=top.location)
+        -- TODO: Apparently GCC now supports void statement expressions with no value?
+        -- Should have an actual production for this, probably
+        | _ -> 
+          ast:stmtExpr(
+            ast:foldStmt(bis.ast), 
+            ast:explicitCastExpr(
+              ast:typeName(ast:builtinTypeExpr(ast:nilQualifier(), ast:voidType()), ast:baseTypeExpr()),
+              ast:mkIntConst(0, top.location),
+              location=top.location),
+            location=top.location)
+        end;
       }
 | '__builtin_va_arg' '(' e::AssignExpr_c ',' ty::TypeName_c ')'
     { top.ast = ast:vaArgExpr(e.ast, ty.ast, location=top.location); }
