@@ -26,7 +26,7 @@ Type ::= attr::Decorated Attribs  ty::Type
       appliedAttrib(
         attribName(name("__vector_size__")), 
         consExpr(realConstant(integerConstant(num, _, _)), nilExpr())),
-      t) -> animateAttribOnType(t, vectorType(ty, toInt(num)))
+      t) -> animateAttribOnType(t, vectorType(ty, toInteger(num)))
   
   -- Attribs that should not be attatched
   -- refId(name)

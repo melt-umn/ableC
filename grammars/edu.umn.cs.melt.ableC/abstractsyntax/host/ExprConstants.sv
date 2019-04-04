@@ -59,7 +59,7 @@ top::NumericConstant ::= num::String  unsigned::Boolean  suffix::IntSuffix
   top.mangledName = substitute(".", "_", num);
   top.errors := [];
   top.constanttyperep = if unsigned then unsignedType(suffix.constinttyperep) else signedType(suffix.constinttyperep);
-  top.integerConstantValue = just(toInt(num));
+  top.integerConstantValue = just(toInteger(num));
 }
 abstract production hexIntegerConstant
 top::NumericConstant ::= num::String  unsigned::Boolean  suffix::IntSuffix

@@ -229,7 +229,7 @@ concrete productions top::TypeSpecifier
 function createVectorType
 a:Type ::= qs::a:Qualifiers more::(a:Type ::= a:Qualifiers) n::String
 {
-  return a:vectorType(more(qs), toInt(n));
+  return a:vectorType(more(qs), toInteger(n));
 }
 
 nonterminal TypeSuffix with ignoreMe, qualifiers, pointercount;

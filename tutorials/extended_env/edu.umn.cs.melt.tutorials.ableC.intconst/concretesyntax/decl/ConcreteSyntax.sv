@@ -11,5 +11,5 @@ exports edu:umn:cs:melt:tutorials:ableC:intconst:concretesyntax:keyword;
 concrete production intConstDecl_c
 top::ExternalDeclaration_c ::= 'intconst' id::Identifier_t '=' dc::DecConstant_t ';'
 { 
-  top.ast = intConstDecl(fromId(id), toInt(dc.lexeme));
+  top.ast = intConstDecl(fromId(id), toInteger(dc.lexeme));
 }

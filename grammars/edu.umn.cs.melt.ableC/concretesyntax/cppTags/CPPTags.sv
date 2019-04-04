@@ -31,7 +31,7 @@ ignore terminal CPP_Location_Tag_t /\#\ [0-9]+\ \"[^\"]+\"[\ 0-9]*([\r]?[\n]?)/
         indexOf("\"", lexeme) + 1, -- after "
         lastIndexOf("\"", lexeme), -- end before "
         lexeme);
-    line = toInt(
+    line = toInteger(
       substring(
         2, -- after #<space>
         indexOf("\"", lexeme) - 1, -- end before <space>"
@@ -56,7 +56,7 @@ layout { Space_t }
 action
 {
   filename = substring(1,length(cpp_filename.lexeme) - 1,cpp_filename.lexeme);
-  line = toInt(cpp_line.lexeme);
+  line = toInteger(cpp_line.lexeme);
   column = 0;
 }
 
