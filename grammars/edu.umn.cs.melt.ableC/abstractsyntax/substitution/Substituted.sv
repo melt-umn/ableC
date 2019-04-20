@@ -22,8 +22,124 @@ top::AST ::= prodName::String children::ASTs annotations::NamedASTs
   top.substituted =
     foldl(
       fromMaybe,
-      nonterminalAST(prodName, children.substituted, annotations.substituted),
+      fromMaybe(
+        nonterminalAST(prodName, children.substituted, annotations.substituted),
+        altSub),
       map(\ s::Substitution -> s(top), top.substitutions));
+  
+  production attribute altSub::Maybe<AST> with orElse;
+  altSub := nothing();
+  
+  local declRes::Either<String Decl> = reify(top);
+  local decl::Decl = declRes.fromRight;
+  decl.env = emptyEnv();
+  decl.returnType = nothing();
+  decl.isTopLevel = false;
+  altSub <-
+    if declRes.isRight
+    then
+      case decl of
+      | decDecl(d) ->
+        just(
+          decorate reflect(new(d)) with {
+            substitutions = top.substitutions;
+          }.substituted)
+      | _ -> nothing()
+      end
+    else nothing();
+  
+  local stmtRes::Either<String Stmt> = reify(top);
+  local stmt::Stmt = stmtRes.fromRight;
+  stmt.env = emptyEnv();
+  stmt.returnType = nothing();
+  altSub <-
+    if stmtRes.isRight
+    then
+      case stmt of
+      | decStmt(s) ->
+        just(
+          decorate reflect(new(s)) with {
+            substitutions = top.substitutions;
+          }.substituted)
+      | _ -> nothing()
+      end
+    else nothing();
+  
+  local exprRes::Either<String Expr> = reify(top);
+  local expr::Expr = exprRes.fromRight;
+  expr.env = emptyEnv();
+  expr.returnType = nothing();
+  altSub <-
+    if exprRes.isRight
+    then
+      case expr of
+      | decExpr(e) ->
+        just(
+          decorate reflect(new(e)) with {
+            substitutions = top.substitutions;
+          }.substituted)
+      | _ -> nothing()
+      end
+    else nothing();
+  
+  local exprsRes::Either<String Exprs> = reify(top);
+  local exprs::Exprs = exprsRes.fromRight;
+  exprs.env = emptyEnv();
+  exprs.returnType = nothing();
+  altSub <-
+    if exprsRes.isRight
+    then
+      case exprs of
+      | decExprs(e) ->
+        just(
+          decorate reflect(new(e)) with {
+            substitutions = top.substitutions;
+          }.substituted)
+      | _ -> nothing()
+      end
+    else nothing();
+  
+  local btyRes::Either<String BaseTypeExpr> = reify(top);
+  local bty::BaseTypeExpr = btyRes.fromRight;
+  bty.env = emptyEnv();
+  bty.returnType = nothing();
+  bty.givenRefId = nothing();
+  altSub <-
+    if btyRes.isRight
+    then
+      case bty of
+      | directTypeExpr(t) ->
+        just(
+          decorate reflect(typeModifierTypeExpr(t.baseTypeExpr, t.typeModifierExpr)) with {
+            substitutions = top.substitutions;
+          }.substituted)
+      | decTypeExpr(ty) ->
+        just(
+          decorate reflect(new(ty)) with {
+            substitutions = top.substitutions;
+          }.substituted)
+      | _ -> nothing()
+      end
+    else nothing();
+  
+  local mtyRes::Either<String TypeModifierExpr> = reify(top);
+  local mty::TypeModifierExpr = mtyRes.fromRight;
+  mty.env = emptyEnv();
+  mty.returnType = nothing();
+  mty.baseType = errorType();
+  mty.typeModifiersIn = [];
+  altSub <-
+    if mtyRes.isRight
+    then
+      case mty of
+      | decTypeModifierExpr(ty) ->
+        just(
+          decorate reflect(new(ty)) with {
+            substitutions = top.substitutions;
+          }.substituted)
+      | _ -> nothing()
+      end
+    else nothing();
 }
 
 aspect production terminalAST
