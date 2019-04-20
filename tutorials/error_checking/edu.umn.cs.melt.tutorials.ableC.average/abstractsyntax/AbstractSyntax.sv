@@ -3,7 +3,6 @@ grammar edu:umn:cs:melt:tutorials:ableC:average:abstractsyntax;
 imports edu:umn:cs:melt:ableC:abstractsyntax:env; -- TODO: Why is this import needed?
 imports edu:umn:cs:melt:ableC:abstractsyntax:host;
 imports edu:umn:cs:melt:ableC:abstractsyntax:construction;
-imports edu:umn:cs:melt:ableC:abstractsyntax:substitution;
 
 imports silver:langutil;
 imports silver:langutil:pp;
@@ -11,7 +10,6 @@ imports silver:langutil:pp;
 abstract production averageExpr
 top::Expr ::= l::Expr r::Expr
 {
-  propagate substituted; -- Ignore this for now
   top.pp = pp"(${l.pp} ~~ ${r.pp})";
 
   local localErrors::[Message] =

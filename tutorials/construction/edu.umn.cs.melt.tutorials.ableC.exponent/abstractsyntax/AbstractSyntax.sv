@@ -2,9 +2,9 @@ grammar edu:umn:cs:melt:tutorials:ableC:exponent:abstractsyntax;
 
 imports edu:umn:cs:melt:ableC:abstractsyntax:host;
 imports edu:umn:cs:melt:ableC:abstractsyntax:env;
-imports edu:umn:cs:melt:ableC:abstractsyntax:substitution;
 imports edu:umn:cs:melt:ableC:abstractsyntax:construction;
 imports edu:umn:cs:melt:ableC:abstractsyntax:construction:parsing;
+imports edu:umn:cs:melt:ableC:abstractsyntax:substitution;
 
 imports silver:langutil;
 imports silver:langutil:pp;
@@ -12,7 +12,6 @@ imports silver:langutil:pp;
 abstract production exponentExpr
 top::Expr ::= l::Expr r::Expr
 {
-  propagate substituted;
   top.pp = pp"(${l.pp} ** ${r.pp})";
 
   local localErrors::[Message] =
@@ -27,10 +26,10 @@ top::Expr ::= l::Expr r::Expr
   local rTempName::String = "_r_" ++ toString(genInt());
   local fwrd::Expr =
     substExpr(
-      [typedefSubstitution("__l_type__", directTypeExpr(l.typerep)),
-       typedefSubstitution("__r_type__", directTypeExpr(r.typerep)),
-       declRefSubstitution("__l__", l),
-       declRefSubstitution("__r__", r)],
+      [typeExprSubstitution("__l_type__", directTypeExpr(l.typerep)),
+       typeExprSubstitution("__r_type__", directTypeExpr(r.typerep)),
+       exprSubstitution("__l__", \ Location -> l),
+       exprSubstitution("__r__", \ Location -> r)],
       parseExpr(s"""
 ({proto_typedef __l_type__, __r_type__;
   __l_type__ ${lTempName} = __l__;

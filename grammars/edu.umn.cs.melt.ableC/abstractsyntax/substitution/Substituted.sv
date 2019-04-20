@@ -7,6 +7,7 @@ imports silver:reflect;
 imports edu:umn:cs:melt:ableC:abstractsyntax:host;
 imports edu:umn:cs:melt:ableC:abstractsyntax:env;
 imports edu:umn:cs:melt:ableC:abstractsyntax:construction;
+imports edu:umn:cs:melt:ableC:abstractsyntax:overloadable as ovrld;
 
 type Substitution = (Maybe<AST> ::= AST); 
 
@@ -105,98 +106,119 @@ top::NamedAST ::= n::String v::AST
 
 
 -- Substitutes a name for another name in all places
-function nameSubstitution
-Substitution ::= name::String sub::Name
+function nameSub
+Maybe<AST> ::= n::String sub::Name a::AST
 {
+  local res::Either<String Name> = reify(a);
+  local n1::Name = res.fromRight;
+  n1.env = emptyEnv();
   return
-    \ a::AST ->
-      case a of
-      | AST { edu:umn:cs:melt:ableC:abstractsyntax:host:name(n :: String, location=_) } ->
-        if n == name then just(reflect(sub)) else nothing()
-      | _ -> nothing()
-      end; 
+    if res.isRight
+    then if n == n1.name then just(reflect(new(sub))) else nothing()
+    else nothing();
 }
+
+global nameSubstitution::(Substitution ::= String Name) =
+  \ n::String sub::Name -> nameSub(n, sub, _);
 
 -- Substitutes a typedef name for a type
-function typeExprSubstitution
-Substitution ::= name::String sub::BaseTypeExpr
+function typeExprSub
+Maybe<AST> ::= n::String sub::BaseTypeExpr a::AST
 {
+  local res::Either<String BaseTypeExpr> = reify(a);
+  local te::BaseTypeExpr = res.fromRight;
+  te.env = emptyEnv();
+  te.returnType = nothing();
+  te.givenRefId = nothing();
   return
-    \ a::AST ->
-      case a of
-      | AST {
-        edu:umn:cs:melt:ableC:abstractsyntax:host:typedefTypeExpr(
-          _,
-          edu:umn:cs:melt:ableC:abstractsyntax:host:name(n :: String, location=_))
-        } -> if n == name then just(reflect(sub)) else nothing()
+    if res.isRight
+    then
+      case te of
+      | typedefTypeExpr(_, name(n1)) ->
+        if n == n1 then just(reflect(new(sub))) else nothing()
       | _ -> nothing()
-      end; 
+      end
+    else nothing();
 }
+
+global typeExprSubstitution::(Substitution ::= String BaseTypeExpr) =
+  \ n::String sub::BaseTypeExpr -> typeExprSub(n, sub, _);
 
 -- Substitutes a value name for an expression
-function exprSubstitution
-Substitution ::= name::String sub::(Expr ::= Location)
+function exprSub
+Maybe<AST> ::= n::String sub::(Expr ::= Location) a::AST
 {
+  local res::Either<String Expr> = reify(a);
+  local e::Expr = res.fromRight;
+  e.env = emptyEnv();
+  e.returnType = nothing();
   return
-    \ a::AST ->
-      case a of
-      | AST {
-        edu:umn:cs:melt:ableC:abstractsyntax:host:declRefExpr(
-          edu:umn:cs:melt:ableC:abstractsyntax:host:name(n :: String, location=_),
-          location=l)
-        } -> if n == name then just(reflect(sub(reify(l).fromRight))) else nothing()
+    if res.isRight
+    then
+      case e of
+      | declRefExpr(name(n1)) ->
+        if n == n1 then just(reflect(sub(e.location))) else nothing()
+      | directCallExpr(name(n1), args) ->
+        if n == n1
+        then just(reflect(ovrld:callExpr(sub(e.location), args, location=e.location)))
+        else nothing()
       | _ -> nothing()
-      end; 
+      end
+    else nothing();
 }
+
+global exprSubstitution::(Substitution ::= String (Expr ::= Location)) =
+  \ n::String sub::(Expr ::= Location) -> exprSub(n, sub, _);
 
 -- Substitutes an exprStmt that is a declRefExpr for another statement
-function stmtSubstitution
-Substitution ::= name::String sub::Stmt
+function stmtSub
+Maybe<AST> ::= n::String sub::Stmt a::AST
 {
+  local res::Either<String Stmt> = reify(a);
+  local s::Stmt = res.fromRight;
+  s.env = emptyEnv();
+  s.returnType = nothing();
   return
-    \ a::AST ->
-      case a of
-      | AST {
-        edu:umn:cs:melt:ableC:abstractsyntax:host:exprStmt(
-          edu:umn:cs:melt:ableC:abstractsyntax:host:declRefExpr(
-            edu:umn:cs:melt:ableC:abstractsyntax:host:name(n :: String, location=_),
-            location=_))
-        } -> if n == name then just(reflect(sub)) else nothing()
+    if res.isRight
+    then
+      case s of
+      | exprStmt(declRefExpr(name(n1))) ->
+        if n == n1 then just(reflect(new(sub))) else nothing()
       | _ -> nothing()
-      end;
+      end
+    else nothing();
 }
 
--- Substitutes an exprInitializer that is a declRefExpr for another initializer
-function initializerSubstitution
-Substitution ::= name::String sub::Initializer
-{
-  return
-    \ a::AST ->
-      case a of
-      | AST {
-        edu:umn:cs:melt:ableC:abstractsyntax:host:exprInitializer(
-          edu:umn:cs:melt:ableC:abstractsyntax:host:declRefExpr(
-            edu:umn:cs:melt:ableC:abstractsyntax:host:name(n :: String, location=_),
-            location=_))
-        } -> if n == name then just(reflect(sub)) else nothing()
-      | _ -> nothing()
-      end;
-}
+global stmtSubstitution::(Substitution ::= String Stmt) =
+  \ n::String sub::Stmt -> stmtSub(n, sub, _);
 
 -- Substitutes the 'refId' attribute on a struct (ableC host extension) for a new refId
-{-function refIdSubstitution
-Substitution ::= refId::String sub::String
+function refIdSub
+Maybe<AST> ::= refId::String sub::String a::AST
 {
+  local res::Either<String Attrib> = reify(a);
+  local at::Attrib = res.fromRight;
+  at.env = emptyEnv();
+  at.returnType = nothing();
   return
-    \ a::AST ->
-      case a of
-      | AST {
-        edu:umn:cs:melt:ableC:abstractsyntax:host:appliedAttrib(
-          edu:umn:cs:melt:ableC:abstractsyntax:host:declRefExpr(
-            edu:umn:cs:melt:ableC:abstractsyntax:host:name(n :: String, location=_),
-            location=_))
-        } -> if n == name then just(reflect(sub)) else nothing()
+    if res.isRight
+    then
+      case at of
+      | appliedAttrib(attribName(n), consExpr(stringLiteral(s), nilExpr())) ->
+        if n.name == "refId" && substring(1, length(s) - 1, s) == refId
+        then
+          just(
+            reflect(
+              appliedAttrib(
+                attribName(n),
+                consExpr(
+                  stringLiteral(s"\"${sub}\"", location=builtinLoc("substituted")),
+                  nilExpr()))))
+        else nothing()
       | _ -> nothing()
-      end;
+      end
+    else nothing();
 }
--}
+
+global refIdSubstitution::(Substitution ::= String String) =
+  \ n::String sub::String -> refIdSub(n, sub, _);
