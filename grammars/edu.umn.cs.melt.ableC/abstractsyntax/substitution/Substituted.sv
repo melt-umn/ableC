@@ -108,11 +108,6 @@ top::AST ::= prodName::String children::ASTs annotations::NamedASTs
     if btyRes.isRight
     then
       case bty of
-      | directTypeExpr(t) ->
-        just(
-          decorate reflect(typeModifierTypeExpr(t.baseTypeExpr, t.typeModifierExpr)) with {
-            substitutions = top.substitutions;
-          }.substituted)
       | decTypeExpr(ty) ->
         just(
           decorate reflect(new(ty)) with {
