@@ -22,6 +22,7 @@ synthesized attribute refIdContribs :: Contribs<RefIdItem>;
 synthesized attribute deferredDeclContribs :: Contribs<Decl>;
 synthesized attribute miscContribs :: Contribs<MiscItem>;
 synthesized attribute globalDefs :: [Def];
+synthesized attribute functionScopeDefs :: [Def];
 
 {- Environment representation productions provide implementations for env functions
  - emptyEnv_i creates the basic environment with empty global scopes
@@ -96,6 +97,7 @@ top::Defs ::=
   top.deferredDeclContribs = [];
   top.miscContribs = [];
   top.globalDefs = [];
+  top.functionScopeDefs = [];
 }
 
 abstract production consDefs
@@ -108,6 +110,7 @@ top::Defs ::= h::Def  t::Defs
   top.deferredDeclContribs = h.deferredDeclContribs ++ t.deferredDeclContribs;
   top.miscContribs = h.miscContribs ++ t.miscContribs;
   top.globalDefs = h.globalDefs ++ t.globalDefs;
+  top.functionScopeDefs = h.functionScopeDefs ++ t.functionScopeDefs;
 }
 
 -- Defaults for Def
@@ -122,5 +125,6 @@ top::Def ::=
   top.deferredDeclContribs = [];
   top.miscContribs = [];
   top.globalDefs = [];
+  top.functionScopeDefs = [];
 }
 

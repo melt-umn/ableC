@@ -26,11 +26,25 @@ top::Expr ::= decls::Decls lifted::Expr
 {
   propagate substituted;
 }
+
+aspect production injectFunctionDeclsExpr
+top::Expr ::= decls::Decls lifted::Expr
+{
+  propagate substituted;
+}
+
 aspect production injectGlobalDeclsStmt
 top::Stmt ::= decls::Decls lifted::Stmt
 {
   propagate substituted;
 }
+
+aspect production injectFunctionDeclsStmt
+top::Stmt ::= decls::Decls lifted::Stmt
+{
+  propagate substituted;
+}
+
 aspect production injectGlobalDeclsTypeExpr
 top::BaseTypeExpr ::= decls::Decls lifted::BaseTypeExpr
 {
