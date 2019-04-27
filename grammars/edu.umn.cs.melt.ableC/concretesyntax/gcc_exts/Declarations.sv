@@ -19,6 +19,7 @@ terminal UURestrictUU_t '__restrict__' lexer classes { Ckeyword };
 terminal Typeof_t 'typeof' lexer classes {Ckeyword};
 terminal CPP_Typeof_t '__typeof__' lexer classes {Ckeyword};
 terminal CPP_UUTypeof_t '__typeof' lexer classes {Ckeyword};
+terminal Float128_t '_Float128' lexer classes {Ckeyword};
 
 concrete productions top::TranslationUnit_c
 | h::TranslationUnit_c  ';' 
@@ -66,6 +67,9 @@ concrete productions top::TypeSpecifier_c
 | t::TypeofStarter_c '(' e::Expr_c ')'
     { top.preTypeSpecifiers = [];
       top.realTypeSpecifiers = [ast:typeofTypeExpr(top.givenQualifiers, ast:exprExpr(e.ast))]; }
+| '_Float128'
+    { top.realTypeSpecifiers = [ast:builtinTypeExpr(top.givenQualifiers, ast:realType(ast:longdoubleType()))]; -- TODO: Not sure, this shows up in GCC header files
+      top.preTypeSpecifiers = []; }
 
 closed nonterminal TypeofStarter_c with location;
 concrete productions top::TypeofStarter_c
