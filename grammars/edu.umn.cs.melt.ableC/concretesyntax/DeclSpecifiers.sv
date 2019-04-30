@@ -249,7 +249,7 @@ concrete productions top::StorageClassSpecifier_c
       top.storageClass = [ast:registerStorageClass()]; }
 
 
-closed nonterminal TypeSpecifier_c with location, preTypeSpecifiers, realTypeSpecifiers, givenQualifiers; 
+closed nonterminal TypeSpecifier_c with location, preTypeSpecifiers, realTypeSpecifiers, givenQualifiers;
 concrete productions top::TypeSpecifier_c
 | 'void'
     { top.realTypeSpecifiers = [ast:builtinTypeExpr(top.givenQualifiers, ast:voidType())];
