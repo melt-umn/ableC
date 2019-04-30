@@ -8,6 +8,7 @@ terminal Hash_t '#';
 terminal Pragma_t 'pragma';
 terminal RedefExtname_t 'redefine_extname';
 terminal Pack_t /pack\([^\)]*\)([\n\r]+)/;
+terminal OMP_t /omp .*/;
 
 concrete productions top::ExternalDeclaration_c
 | '#' 'pragma' Pack_t
@@ -17,3 +18,7 @@ concrete productions top::ExternalDeclaration_c
     layout { Spaces_t }
     { top.ast = ast:warnDecl([wrn(top.location, "Ignored redefine_extname pragma")]); }
 
+concrete productions top::Stmt_c
+| '#' 'pragma' omp::OMP_t
+    layout { Spaces_t }
+    { top.ast = ast:txtStmt("#pragma " ++ omp.lexeme); }
