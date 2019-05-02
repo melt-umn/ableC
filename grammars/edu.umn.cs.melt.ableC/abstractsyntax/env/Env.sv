@@ -11,13 +11,13 @@ nonterminal Env with labels, tags, values, refIds, deferredDecls, misc;
  - A list of definitions, only used in contributing new names to the environment.
  -}
 nonterminal Defs 
-  with labelContribs, tagContribs, valueContribs, refIdContribs, deferredDeclContribs, miscContribs, globalDefs, functionScopeDefs;
+  with labelContribs, tagContribs, valueContribs, refIdContribs, deferredDeclContribs, miscContribs, globalDefs;
 
 {--
  - An individual definition of a name.
  -}
 closed nonterminal Def 
-  with labelContribs, tagContribs, valueContribs, refIdContribs, deferredDeclContribs, miscContribs, globalDefs, functionScopeDefs;
+  with labelContribs, tagContribs, valueContribs, refIdContribs, deferredDeclContribs, miscContribs, globalDefs;
 
 
 {--

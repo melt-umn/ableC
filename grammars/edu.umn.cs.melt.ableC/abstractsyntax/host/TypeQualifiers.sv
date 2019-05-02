@@ -141,7 +141,7 @@ top::Qualifier ::=
  - e.g. Function specifiers (inline, _Noreturn)
  -      Alignment specifiers (_Alignas)
  -}
-nonterminal SpecialSpecifier with pp, host<SpecialSpecifier>, lifted<SpecialSpecifier>, env, returnType, errors, globalDecls, functionDecls, defs;
+nonterminal SpecialSpecifier with pp, host<SpecialSpecifier>, lifted<SpecialSpecifier>, env, returnType, errors, globalDecls, defs;
 flowtype SpecialSpecifier = decorate {env, returnType};
 
 abstract production inlineQualifier
@@ -151,7 +151,6 @@ top::SpecialSpecifier ::=
   top.pp = text("inline");
   top.errors := [];
   top.globalDecls := [];
-  top.functionDecls := [];
   top.defs := [];
 }
 
@@ -163,7 +162,6 @@ top::SpecialSpecifier ::=
   top.pp = text("_Noreturn");
   top.errors := [];
   top.globalDecls := [];
-  top.functionDecls := [];
   top.defs := [];
 }
 
@@ -175,11 +173,10 @@ top::SpecialSpecifier ::= e::Expr
   top.pp = ppConcat([text("_Alignas"), parens(e.pp)]);
   top.errors := e.errors;
   top.globalDecls := e.globalDecls;
-  top.functionDecls := e.functionDecls;
   top.defs := e.defs;
 }
 
-nonterminal SpecialSpecifiers with pps, host<SpecialSpecifiers>, lifted<SpecialSpecifiers>, env, returnType, errors, globalDecls, functionDecls, defs;
+nonterminal SpecialSpecifiers with pps, host<SpecialSpecifiers>, lifted<SpecialSpecifiers>, env, returnType, errors, globalDecls, defs;
 flowtype SpecialSpecifiers = decorate {env, returnType};
 
 abstract production consSpecialSpecifier
@@ -189,7 +186,6 @@ top::SpecialSpecifiers ::= h::SpecialSpecifier t::SpecialSpecifiers
   top.pps = h.pp :: t.pps;
   top.errors := h.errors ++ t.errors;
   top.globalDecls := h.globalDecls ++ t.globalDecls;
-  top.functionDecls := h.functionDecls ++ t.functionDecls;
   top.defs := h.defs ++ t.defs;
 }
 
@@ -200,7 +196,6 @@ top::SpecialSpecifiers ::=
   top.pps = [];
   top.errors := [];
   top.globalDecls := [];
-  top.functionDecls := [];
   top.defs := [];
 }
 	

@@ -2,7 +2,7 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 
 import edu:umn:cs:melt:ableC:abstractsyntax:overloadable as ovrld;
 
-nonterminal Expr with location, pp, host<Expr>, lifted<Expr>, globalDecls, functionDecls, errors, defs, env, returnType, freeVariables, typerep, isLValue, integerConstantValue;
+nonterminal Expr with location, pp, host<Expr>, lifted<Expr>, globalDecls, errors, defs, env, returnType, freeVariables, typerep, isLValue, integerConstantValue;
 
 flowtype Expr = decorate {env, returnType}, isLValue {decorate}, integerConstantValue {decorate};
 
@@ -23,7 +23,6 @@ top::Expr ::= msg::[Message]
   top.pp = ppConcat([ text("/*"), text(messagesToString(msg)), text("*/") ]);
   top.errors := msg;
   top.globalDecls := [];
-  top.functionDecls := [];
   top.defs := [];
   top.freeVariables := [];
   top.typerep = errorType();
@@ -61,7 +60,6 @@ top::Expr ::= e::Decorated Expr
   top.lifted = e.lifted;
   top.errors := e.errors;
   top.globalDecls := e.globalDecls;
-  top.functionDecls := e.functionDecls;
   top.defs := e.defs;
   top.freeVariables := e.freeVariables;
   top.typerep = e.typerep;
@@ -77,7 +75,6 @@ top::Expr ::= q::Qualifiers e::Expr
   top.pp = pp"qualifiedExpr (${ppImplode(space(), q.pps)} (${e.pp}))";
   top.errors := e.errors;
   top.globalDecls := e.globalDecls;
-  top.functionDecls := e.globalDecls;
   top.defs := e.defs;
   top.freeVariables := e.freeVariables;
   top.isLValue = e.isLValue;
@@ -99,7 +96,6 @@ top::Expr ::= original::Expr  resolved::Expr
   top.host = resolved.host;
   top.errors := resolved.errors;
   top.globalDecls := resolved.globalDecls;
-  top.functionDecls := resolved.functionDecls;
   top.defs := resolved.defs;
   top.typerep = resolved.typerep;
   top.freeVariables := resolved.freeVariables;
@@ -127,7 +123,6 @@ top::Expr ::= id::Name
   top.pp = parens( id.pp );
   top.errors := [];
   top.globalDecls := [];
-  top.functionDecls := [];
   top.defs := [];
   top.typerep = id.valueItem.typerep;
   top.freeVariables := top.typerep.freeVariables ++ [id];
@@ -145,7 +140,6 @@ top::Expr ::= l::String
   top.pp = text(l);
   top.errors := [];
   top.globalDecls := [];
-  top.functionDecls := [];
   top.defs := [];
   top.freeVariables := [];  
   top.typerep = pointerType(nilQualifier(),
@@ -158,7 +152,6 @@ top::Expr ::= e::Expr
   top.pp = parens( e.pp );
   top.errors := e.errors;
   top.globalDecls := e.globalDecls;
-  top.functionDecls := e.functionDecls;
   top.defs := e.defs;
   top.freeVariables := e.freeVariables;
   top.typerep = e.typerep;
@@ -172,7 +165,6 @@ top::Expr ::= lhs::Expr  rhs::Expr
   top.pp = parens( ppConcat([ lhs.pp, brackets( rhs.pp )]) );
   top.errors := lhs.errors ++ rhs.errors;
   top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
-  top.functionDecls := lhs.functionDecls ++ rhs.functionDecls;
   top.defs := lhs.defs ++ rhs.defs;
   top.freeVariables := lhs.freeVariables ++ removeDefsFromNames(rhs.defs, rhs.freeVariables);
   top.isLValue = true;
@@ -228,7 +220,6 @@ top::Expr ::= f::Expr  a::Exprs
   top.pp = parens( ppConcat([ f.pp, parens( ppImplode( cat( comma(), space() ), a.pps ))]) );
   top.errors := f.errors ++ a.errors;
   top.globalDecls := f.globalDecls ++ a.globalDecls;
-  top.functionDecls := f.functionDecls ++ a.functionDecls;
   top.defs := f.defs ++ a.defs;
   top.freeVariables := f.freeVariables ++ removeDefsFromNames(f.defs, a.freeVariables);
   top.isLValue = false; -- C++ style references would change this
@@ -274,7 +265,6 @@ top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
   top.pp = parens(ppConcat([lhs.pp, text(if deref then "->" else "."), rhs.pp]));
   top.errors := lhs.errors;
   top.globalDecls := lhs.globalDecls;
-  top.functionDecls := lhs.functionDecls;
   top.defs := lhs.defs;
   top.freeVariables := lhs.freeVariables;
   
@@ -333,7 +323,6 @@ top::Expr ::= cond::Expr  t::Expr  e::Expr
   top.pp = parens( ppConcat([ cond.pp, space(), text("?"), space(), t.pp, space(), text(":"),  space(), e.pp]) );
   top.errors := cond.errors ++ t.errors ++ e.errors;
   top.globalDecls := cond.globalDecls ++ t.globalDecls ++ e.globalDecls;
-  top.functionDecls := cond.functionDecls ++ t.functionDecls ++ e.functionDecls;
   top.defs := cond.defs ++ t.defs ++ e.defs;
   top.freeVariables :=
     cond.freeVariables ++
@@ -354,7 +343,6 @@ top::Expr ::= cond::Expr  e::Expr
   top.pp = ppConcat([ cond.pp, space(), text("?:"), space(), e.pp]);
   top.errors := cond.errors ++ e.errors;
   top.globalDecls := cond.globalDecls ++ e.globalDecls;
-  top.functionDecls := cond.functionDecls ++ e.functionDecls;
   top.defs := cond.defs ++ e.defs;
   top.freeVariables := cond.freeVariables ++ e.freeVariables;
   
@@ -369,7 +357,6 @@ top::Expr ::= ty::TypeName  e::Expr
   top.pp = parens( ppConcat([parens(ty.pp), e.pp]) );
   top.errors := ty.errors ++ e.errors;
   top.globalDecls := ty.globalDecls ++ e.globalDecls;
-  top.functionDecls := ty.functionDecls ++ e.functionDecls;
   top.defs := ty.defs ++ e.defs;
   top.freeVariables := ty.freeVariables ++ removeDefsFromNames(ty.defs, e.freeVariables);
   top.typerep = ty.typerep;
@@ -385,7 +372,6 @@ top::Expr ::= ty::TypeName  init::InitList
   top.pp = parens( ppConcat([parens(ty.pp), text("{"), ppImplode(text(", "), init.pps), text("}")]) );
   top.errors := ty.errors ++ init.errors;
   top.globalDecls := ty.globalDecls ++ init.globalDecls;
-  top.functionDecls := ty.functionDecls ++ init.functionDecls;
   top.defs := ty.defs ++ init.defs;
   top.freeVariables := ty.freeVariables ++ removeDefsFromNames(ty.defs, init.freeVariables);
   top.typerep = ty.typerep; -- TODO: actually may involve learning from the initializer e.g. the length of the array.
@@ -401,7 +387,6 @@ top::Expr ::=
   top.pp = parens( text("__func__") );
   top.errors := [];
   top.globalDecls := [];
-  top.functionDecls := [];
   top.defs := [];
   top.freeVariables := [];
   top.typerep = pointerType(nilQualifier(),
@@ -422,7 +407,6 @@ top::Expr ::= e::Expr  gl::GenericAssocs  def::MaybeExpr
       ))]);
   top.errors := e.errors ++ gl.errors ++ def.errors;
   top.globalDecls := e.globalDecls ++ gl.globalDecls ++ def.globalDecls;
-  top.functionDecls := e.functionDecls ++ gl.functionDecls ++ def.functionDecls;
   top.defs := e.defs ++ gl.defs ++ def.defs;
   top.freeVariables := e.freeVariables ++ gl.freeVariables ++ def.freeVariables;
   top.typerep = 
@@ -439,7 +423,7 @@ top::Expr ::= e::Expr  gl::GenericAssocs  def::MaybeExpr
   -- TODO: type checking!!
 }
 
-nonterminal GenericAssocs with pps, host<GenericAssocs>, lifted<GenericAssocs>, errors, globalDecls, functionDecls, defs, env, selectionType, compatibleSelections, returnType, freeVariables;
+nonterminal GenericAssocs with pps, host<GenericAssocs>, lifted<GenericAssocs>, errors, globalDecls, defs, env, selectionType, compatibleSelections, returnType, freeVariables;
 flowtype GenericAssocs = decorate {env, returnType}, compatibleSelections {decorate, selectionType};
 
 autocopy attribute selectionType :: Type;
@@ -452,7 +436,6 @@ top::GenericAssocs ::= h::GenericAssoc  t::GenericAssocs
   top.pps = h.pp :: t.pps;
   top.errors := h.errors ++ t.errors;
   top.globalDecls := h.globalDecls ++ t.globalDecls;
-  top.functionDecls := h.functionDecls ++ t.functionDecls;
   top.defs := h.defs ++ t.defs;
   top.freeVariables := h.freeVariables ++ t.freeVariables;
   top.compatibleSelections = h.compatibleSelections ++ t.compatibleSelections;
@@ -464,13 +447,12 @@ top::GenericAssocs ::=
   top.pps = [];
   top.errors := [];
   top.globalDecls := [];
-  top.functionDecls := [];
   top.defs := [];
   top.freeVariables := [];
   top.compatibleSelections = [];
 }
 
-nonterminal GenericAssoc with location, pp, host<GenericAssoc>, lifted<GenericAssoc>, globalDecls, functionDecls, errors, defs, env, selectionType, compatibleSelections, returnType, freeVariables;
+nonterminal GenericAssoc with location, pp, host<GenericAssoc>, lifted<GenericAssoc>, globalDecls, errors, defs, env, selectionType, compatibleSelections, returnType, freeVariables;
 flowtype GenericAssoc = decorate {env, returnType}, compatibleSelections {decorate, selectionType};
 
 abstract production genericAssoc
@@ -480,7 +462,6 @@ top::GenericAssoc ::= ty::TypeName  fun::Expr
   top.pp = ppConcat([ty.pp, text(": "), fun.pp]);
   top.errors := ty.errors ++ fun.errors;
   top.globalDecls := ty.globalDecls ++ fun.globalDecls;
-  top.functionDecls := ty.functionDecls ++ fun.functionDecls;
   top.defs := ty.defs ++ fun.defs;
   top.freeVariables := ty.freeVariables ++ fun.freeVariables;
   top.compatibleSelections =
@@ -495,8 +476,7 @@ top::Expr ::= body::Stmt result::Expr
   top.pp = ppConcat([text("({"), nestlines(2, ppConcat([body.pp, line(), result.pp, text("; })")]))]);
   top.errors := body.errors ++ result.errors;
   top.globalDecls := body.globalDecls ++ result.globalDecls;
-  top.functionDecls := body.functionDecls ++ result.functionDecls;
-  top.defs := globalDeclsDefs(body.globalDecls) ++ globalDeclsDefs(result.globalDecls); -- defs are *not* propagated up. This is beginning of a scope. -- TODO: functionDecls?
+  top.defs := globalDeclsDefs(body.globalDecls) ++ globalDeclsDefs(result.globalDecls); -- defs are *not* propagated up. This is beginning of a scope.
   top.freeVariables := body.freeVariables ++ removeDefsFromNames(body.defs, result.freeVariables);
   top.typerep = result.typerep;
   
@@ -514,7 +494,6 @@ top::Expr ::= s::String
   top.pp = ppConcat([ text("/* "), text(s), text(" */") ]);
   top.errors := [];
   top.globalDecls := [];
-  top.functionDecls := [];
   top.defs := [];
   top.freeVariables := [];
   top.typerep = errorType();

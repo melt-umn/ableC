@@ -10,7 +10,6 @@ top::Decl ::= refId::String d::Decl
   top.lifted = if refIdExists then d.lifted else deferredDecl(refId, d.lifted);
   top.errors := if refIdExists then d.errors else [];
   top.globalDecls := if refIdExists then d.globalDecls else [];
-  top.functionDecls := if refIdExists then d.functionDecls else [];
   top.defs := if refIdExists then d.defs else [deferredDeclDef(refId, d)];
   top.freeVariables := if refIdExists then d.freeVariables else [];
 }
