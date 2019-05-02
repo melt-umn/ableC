@@ -38,6 +38,17 @@ Scopes<a> ::= d::Contribs<a>  s::Scopes<a>
     | _, h :: t -> h :: addGlobalScope(d, t)
     end;
 }
+{-- Adds contributions to the second outermost scope -}
+function addFunctionScope
+Scopes<a> ::= d::Contribs<a> s::Scopes<a>
+{
+  return case d, s of
+    | [], _ -> s
+    | _, [_] -> addScope(d, s)
+    | _, h :: m :: [] -> h :: addScope(d, m :: [])
+    | _, h :: t -> h :: addFunctionScope(d, t)
+  end;
+}
 {-- Create a new innermost scope -}
 function openScope
 Scopes<a> ::= s::Scopes<a>

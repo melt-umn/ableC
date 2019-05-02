@@ -7,6 +7,7 @@ top::Expr ::= lhs::Expr rhs::Expr
   top.pp = parens( ppConcat([lhs.pp, space(), text("="), space(), rhs.pp]) );
   top.errors := lhs.errors ++ assignErrors(lhs, rhs, top.location) ++ rhs.errors;
   top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
+  top.functionDecls := lhs.functionDecls ++ rhs.functionDecls;
   top.defs := lhs.defs ++ rhs.defs;
   top.freeVariables :=
     lhs.freeVariables ++
@@ -23,6 +24,7 @@ top::Expr ::= lhs::Expr rhs::Expr
   top.pp = parens( ppConcat([lhs.pp, space(), text("*="), space(), rhs.pp]) );
   top.errors := lhs.errors ++ assignErrors(lhs, rhs, top.location) ++ rhs.errors;
   top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
+  top.functionDecls := lhs.functionDecls ++ rhs.functionDecls;
   top.defs := lhs.defs ++ rhs.defs;
   top.freeVariables :=
     lhs.freeVariables ++
@@ -39,6 +41,7 @@ top::Expr ::= lhs::Expr rhs::Expr
   top.pp = parens( ppConcat([lhs.pp, space(), text("/="), space(), rhs.pp]) );
   top.errors := lhs.errors ++ assignErrors(lhs, rhs, top.location) ++ rhs.errors;
   top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
+  top.functionDecls := lhs.functionDecls ++ rhs.functionDecls;
   top.defs := lhs.defs ++ rhs.defs;
   top.freeVariables :=
     lhs.freeVariables ++
@@ -55,6 +58,7 @@ top::Expr ::= lhs::Expr rhs::Expr
   top.pp = parens( ppConcat([lhs.pp, space(), text("%="), space(), rhs.pp]) );
   top.errors := lhs.errors ++ assignErrors(lhs, rhs, top.location) ++ rhs.errors;
   top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
+  top.functionDecls := lhs.functionDecls ++ rhs.functionDecls;
   top.defs := lhs.defs ++ rhs.defs;
   top.freeVariables :=
     lhs.freeVariables ++
@@ -71,6 +75,7 @@ top::Expr ::= lhs::Expr rhs::Expr
   top.pp = parens( ppConcat([lhs.pp, space(), text("+="), space(), rhs.pp]) );
   top.errors := lhs.errors ++ assignErrors(lhs, rhs, top.location) ++ rhs.errors;
   top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
+  top.functionDecls := lhs.functionDecls ++ rhs.functionDecls;
   top.defs := lhs.defs ++ rhs.defs;
   top.freeVariables :=
     lhs.freeVariables ++
@@ -87,6 +92,7 @@ top::Expr ::= lhs::Expr rhs::Expr
   top.pp = parens( ppConcat([lhs.pp, space(), text("-="), space(), rhs.pp]) );
   top.errors := lhs.errors ++ assignErrors(lhs, rhs, top.location) ++ rhs.errors;
   top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
+  top.functionDecls := lhs.functionDecls ++ rhs.functionDecls;
   top.defs := lhs.defs ++ rhs.defs;
   top.freeVariables :=
     lhs.freeVariables ++
@@ -103,6 +109,7 @@ top::Expr ::= lhs::Expr rhs::Expr
   top.pp = parens( ppConcat([lhs.pp, space(), text("<<="), space(), rhs.pp]) );
   top.errors := lhs.errors ++ assignErrors(lhs, rhs, top.location) ++ rhs.errors;
   top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
+  top.functionDecls := lhs.functionDecls ++ rhs.functionDecls;
   top.defs := lhs.defs ++ rhs.defs;
   top.freeVariables :=
     lhs.freeVariables ++
@@ -119,6 +126,7 @@ top::Expr ::= lhs::Expr rhs::Expr
   top.pp = parens( ppConcat([lhs.pp, space(), text(">>="), space(), rhs.pp]) );
   top.errors := lhs.errors ++ assignErrors(lhs, rhs, top.location) ++ rhs.errors;
   top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
+  top.functionDecls := lhs.functionDecls ++ rhs.functionDecls;
   top.defs := lhs.defs ++ rhs.defs;
   top.freeVariables :=
     lhs.freeVariables ++
@@ -135,6 +143,7 @@ top::Expr ::= lhs::Expr rhs::Expr
   top.pp = parens( ppConcat([lhs.pp, space(), text("&="), space(), rhs.pp]) );
   top.errors := lhs.errors ++ assignErrors(lhs, rhs, top.location) ++ rhs.errors;
   top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
+  top.functionDecls := lhs.functionDecls ++ rhs.functionDecls;
   top.defs := lhs.defs ++ rhs.defs;
   top.freeVariables :=
     lhs.freeVariables ++
@@ -151,6 +160,7 @@ top::Expr ::= lhs::Expr rhs::Expr
   top.pp = parens( ppConcat([lhs.pp, space(), text("^="), space(), rhs.pp]) );
   top.errors := lhs.errors ++ assignErrors(lhs, rhs, top.location) ++ rhs.errors;
   top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
+  top.functionDecls := lhs.functionDecls ++ rhs.functionDecls;
   top.defs := lhs.defs ++ rhs.defs;
   top.freeVariables :=
     lhs.freeVariables ++
@@ -167,6 +177,7 @@ top::Expr ::= lhs::Expr rhs::Expr
   top.pp = parens( ppConcat([lhs.pp, space(), text("|="), space(), rhs.pp]) );
   top.errors := lhs.errors ++ assignErrors(lhs, rhs, top.location) ++ rhs.errors;
   top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
+  top.functionDecls := lhs.functionDecls ++ rhs.functionDecls;
   top.defs := lhs.defs ++ rhs.defs;
   top.freeVariables :=
     lhs.freeVariables ++
@@ -208,6 +219,7 @@ top::Expr ::= lhs::Expr rhs::Expr
   top.pp = parens( ppConcat([lhs.pp, space(), text("&&"), space(), rhs.pp]) );
   top.errors := lhs.errors ++ rhs.errors;
   top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
+  top.functionDecls := lhs.functionDecls ++ rhs.functionDecls;
   top.defs := lhs.defs ++ rhs.defs;
   top.freeVariables :=
     lhs.freeVariables ++
@@ -224,6 +236,7 @@ top::Expr ::= lhs::Expr rhs::Expr
   top.pp = parens( ppConcat([lhs.pp, space(), text("||"), space(), rhs.pp]) );
   top.errors := lhs.errors ++ rhs.errors;
   top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
+  top.functionDecls := lhs.functionDecls ++ rhs.functionDecls;
   top.defs := lhs.defs ++ rhs.defs;
   top.freeVariables :=
     lhs.freeVariables ++
@@ -240,6 +253,7 @@ top::Expr ::= lhs::Expr rhs::Expr
   top.pp = parens( ppConcat([lhs.pp, space(), text("&"), space(), rhs.pp]) );
   top.errors := lhs.errors ++ rhs.errors;
   top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
+  top.functionDecls := lhs.functionDecls ++ rhs.functionDecls;
   top.defs := lhs.defs ++ rhs.defs;
   top.freeVariables :=
     lhs.freeVariables ++
@@ -256,6 +270,7 @@ top::Expr ::= lhs::Expr rhs::Expr
   top.pp = parens( ppConcat([lhs.pp, space(), text("|"), space(), rhs.pp]) );
   top.errors := lhs.errors ++ rhs.errors;
   top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
+  top.functionDecls := lhs.functionDecls ++ rhs.functionDecls;
   top.defs := lhs.defs ++ rhs.defs;
   top.freeVariables :=
     lhs.freeVariables ++
@@ -272,6 +287,7 @@ top::Expr ::= lhs::Expr rhs::Expr
   top.pp = parens( ppConcat([lhs.pp, space(), text("^"), space(), rhs.pp]) );
   top.errors := lhs.errors ++ rhs.errors;
   top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
+  top.functionDecls := lhs.functionDecls ++ rhs.functionDecls;
   top.defs := lhs.defs ++ rhs.defs;
   top.freeVariables :=
     lhs.freeVariables ++
@@ -288,6 +304,7 @@ top::Expr ::= lhs::Expr rhs::Expr
   top.pp = parens( ppConcat([lhs.pp, space(), text("<<"), space(), rhs.pp]) );
   top.errors := lhs.errors ++ rhs.errors;
   top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
+  top.functionDecls := lhs.functionDecls ++ rhs.functionDecls;
   top.defs := lhs.defs ++ rhs.defs;
   top.freeVariables :=
     lhs.freeVariables ++
@@ -304,6 +321,7 @@ top::Expr ::= lhs::Expr rhs::Expr
   top.pp = parens( ppConcat([lhs.pp, space(), text(">>"), space(), rhs.pp]) );
   top.errors := lhs.errors ++ rhs.errors;
   top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
+  top.functionDecls := lhs.functionDecls ++ rhs.functionDecls;
   top.defs := lhs.defs ++ rhs.defs;
   top.freeVariables :=
     lhs.freeVariables ++
@@ -320,6 +338,7 @@ top::Expr ::= lhs::Expr rhs::Expr
   top.pp = parens( ppConcat([lhs.pp, space(), text("=="), space(), rhs.pp]) );
   top.errors := lhs.errors ++ rhs.errors;
   top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
+  top.functionDecls := lhs.functionDecls ++ rhs.functionDecls;
   top.defs := lhs.defs ++ rhs.defs;
   top.freeVariables :=
     lhs.freeVariables ++
@@ -336,6 +355,7 @@ top::Expr ::= lhs::Expr rhs::Expr
   top.pp = parens( ppConcat([lhs.pp, space(), text("!="), space(), rhs.pp]) );
   top.errors := lhs.errors ++ rhs.errors;
   top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
+  top.functionDecls := lhs.functionDecls ++ rhs.functionDecls;
   top.defs := lhs.defs ++ rhs.defs;
   top.freeVariables :=
     lhs.freeVariables ++
@@ -352,6 +372,7 @@ top::Expr ::= lhs::Expr rhs::Expr
   top.pp = parens( ppConcat([lhs.pp, space(), text(">"), space(), rhs.pp]) );
   top.errors := lhs.errors ++ rhs.errors;
   top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
+  top.functionDecls := lhs.functionDecls ++ rhs.functionDecls;
   top.defs := lhs.defs ++ rhs.defs;
   top.freeVariables :=
     lhs.freeVariables ++
@@ -368,6 +389,7 @@ top::Expr ::= lhs::Expr rhs::Expr
   top.pp = parens( ppConcat([lhs.pp, space(), text("<"), space(), rhs.pp]) );
   top.errors := lhs.errors ++ rhs.errors;
   top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
+  top.functionDecls := lhs.functionDecls ++ rhs.functionDecls;
   top.defs := lhs.defs ++ rhs.defs;
   top.freeVariables :=
     lhs.freeVariables ++
@@ -384,6 +406,7 @@ top::Expr ::= lhs::Expr rhs::Expr
   top.pp = parens( ppConcat([lhs.pp, space(), text(">="), space(), rhs.pp]) );
   top.errors := lhs.errors ++ rhs.errors;
   top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
+  top.functionDecls := lhs.functionDecls ++ rhs.functionDecls;
   top.defs := lhs.defs ++ rhs.defs;
   top.freeVariables :=
     lhs.freeVariables ++
@@ -400,6 +423,7 @@ top::Expr ::= lhs::Expr rhs::Expr
   top.pp = parens( ppConcat([lhs.pp, space(), text("<="), space(), rhs.pp]) );
   top.errors := lhs.errors ++ rhs.errors;
   top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
+  top.functionDecls := lhs.functionDecls ++ rhs.functionDecls;
   top.defs := lhs.defs ++ rhs.defs;
   top.freeVariables :=
     lhs.freeVariables ++
@@ -416,6 +440,7 @@ top::Expr ::= lhs::Expr rhs::Expr
   top.pp = parens( ppConcat([lhs.pp, space(), text("+"), space(), rhs.pp]) );
   top.errors := lhs.errors ++ rhs.errors;
   top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
+  top.functionDecls := lhs.functionDecls ++ rhs.functionDecls;
   top.defs := lhs.defs ++ rhs.defs;
   top.freeVariables :=
     lhs.freeVariables ++
@@ -432,6 +457,7 @@ top::Expr ::= lhs::Expr rhs::Expr
   top.pp = parens( ppConcat([lhs.pp, space(), text("-"), space(), rhs.pp]) );
   top.errors := lhs.errors ++ rhs.errors;
   top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
+  top.functionDecls := lhs.functionDecls ++ rhs.functionDecls;
   top.defs := lhs.defs ++ rhs.defs;
   top.freeVariables :=
     lhs.freeVariables ++
@@ -448,6 +474,7 @@ top::Expr ::= lhs::Expr rhs::Expr
   top.pp = parens( ppConcat([lhs.pp, space(), text("*"), space(), rhs.pp]) );
   top.errors := lhs.errors ++ rhs.errors;
   top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
+  top.functionDecls := lhs.functionDecls ++ rhs.functionDecls;
   top.defs := lhs.defs ++ rhs.defs;
   top.freeVariables :=
     lhs.freeVariables ++
@@ -464,6 +491,7 @@ top::Expr ::= lhs::Expr rhs::Expr
   top.pp = parens( ppConcat([lhs.pp, space(), text("/"), space(), rhs.pp]) );
   top.errors := lhs.errors ++ rhs.errors;
   top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
+  top.functionDecls := lhs.functionDecls ++ rhs.functionDecls;
   top.defs := lhs.defs ++ rhs.defs;
   top.freeVariables :=
     lhs.freeVariables ++
@@ -480,6 +508,7 @@ top::Expr ::= lhs::Expr rhs::Expr
   top.pp = parens( ppConcat([lhs.pp, space(), text("%"), space(), rhs.pp]) );
   top.errors := lhs.errors ++ rhs.errors;
   top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
+  top.functionDecls := lhs.functionDecls ++ rhs.functionDecls;
   top.defs := lhs.defs ++ rhs.defs;
   top.freeVariables :=
     lhs.freeVariables ++
@@ -496,6 +525,7 @@ top::Expr ::= lhs::Expr rhs::Expr
   top.pp = parens( ppConcat([lhs.pp, space(), comma(), space(), rhs.pp]) );
   top.errors := lhs.errors ++ rhs.errors;
   top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
+  top.functionDecls := lhs.functionDecls ++ rhs.functionDecls;
   top.defs := lhs.defs ++ rhs.defs;
   top.freeVariables :=
     lhs.freeVariables ++

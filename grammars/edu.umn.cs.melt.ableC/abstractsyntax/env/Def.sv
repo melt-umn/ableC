@@ -42,3 +42,9 @@ top::Def ::= d::[Def]
 {
   top.globalDefs = d ++ foldr(consDefs, nilDefs(), d).globalDefs;
 }
+
+abstract production functionDefsDef
+top::Def ::= d::[Def]
+{
+  top.functionScopeDefs = d ++ foldr(consDefs, nilDefs(), d).functionScopeDefs;
+}

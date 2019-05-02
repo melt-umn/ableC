@@ -1,6 +1,6 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 
-nonterminal MaybeExpr with pp, host<MaybeExpr>, lifted<MaybeExpr>, isJust, errors, globalDecls, defs, env, maybeTyperep, returnType, freeVariables, justTheExpr, isLValue;
+nonterminal MaybeExpr with pp, host<MaybeExpr>, lifted<MaybeExpr>, isJust, errors, globalDecls, functionDecls, defs, env, maybeTyperep, returnType, freeVariables, justTheExpr, isLValue;
 
 flowtype MaybeExpr = decorate {env, returnType}, isJust {}, justTheExpr {}, maybeTyperep {decorate};
 
@@ -16,6 +16,7 @@ top::MaybeExpr ::= e::Expr
   top.justTheExpr = just(e);
   top.errors := e.errors;
   top.globalDecls := e.globalDecls;
+  top.functionDecls := e.functionDecls;
   top.defs := e.defs;
   top.freeVariables := e.freeVariables;
   top.maybeTyperep = just(e.typerep);
@@ -30,13 +31,14 @@ top::MaybeExpr ::=
   top.justTheExpr = nothing();
   top.errors := [];
   top.globalDecls := [];
+  top.functionDecls := [];
   top.defs := [];
   top.freeVariables := [];
   top.maybeTyperep = nothing();
   top.isLValue = false;
 }
 
-nonterminal Exprs with pps, host<Exprs>, lifted<Exprs>, errors, globalDecls, defs, env, expectedTypes, argumentPosition, callExpr, argumentErrors, typereps, count, callVariadic, returnType, freeVariables, appendedExprs, appendedRes, isLValue;
+nonterminal Exprs with pps, host<Exprs>, lifted<Exprs>, errors, globalDecls, functionDecls, defs, env, expectedTypes, argumentPosition, callExpr, argumentErrors, typereps, count, callVariadic, returnType, freeVariables, appendedExprs, appendedRes, isLValue;
 
 flowtype Exprs = decorate {env, returnType}, argumentErrors {decorate, expectedTypes, argumentPosition, callExpr, callVariadic}, count {}, appendedRes {appendedExprs};
 
@@ -59,6 +61,7 @@ top::Exprs ::= h::Expr  t::Exprs
   top.pps = h.pp :: t.pps;
   top.errors := h.errors ++ t.errors;
   top.globalDecls := h.globalDecls ++ t.globalDecls;
+  top.functionDecls := h.functionDecls ++ t.functionDecls;
   top.defs := h.defs ++ t.defs;
   top.freeVariables := h.freeVariables ++ removeDefsFromNames(h.defs, t.freeVariables);
   top.typereps = h.typerep :: t.typereps;
@@ -89,6 +92,7 @@ top::Exprs ::=
   top.pps = [];
   top.errors := [];
   top.globalDecls := [];
+  top.functionDecls := [];
   top.defs := [];
   top.freeVariables := [];
   top.typereps = [];
@@ -118,6 +122,7 @@ top::Exprs ::= e::Decorated Exprs
   top.lifted = e.lifted;
   top.errors := e.errors;
   top.globalDecls := e.globalDecls;
+  top.functionDecls := e.functionDecls;
   top.defs := e.defs;
   top.freeVariables := e.freeVariables;
   top.typereps = e.typereps;
@@ -133,7 +138,7 @@ Exprs ::= e1::Exprs e2::Exprs
   return e1.appendedRes;
 }
 
-nonterminal ExprOrTypeName with pp, host<ExprOrTypeName>, lifted<ExprOrTypeName>, errors, globalDecls, defs, env, typerep, returnType, freeVariables, isLValue;
+nonterminal ExprOrTypeName with pp, host<ExprOrTypeName>, lifted<ExprOrTypeName>, errors, globalDecls, functionDecls, defs, env, typerep, returnType, freeVariables, isLValue;
 
 flowtype ExprOrTypeName = decorate {env, returnType};
 
@@ -144,6 +149,7 @@ top::ExprOrTypeName ::= e::Expr
   top.pp = e.pp;
   top.errors := e.errors;
   top.globalDecls := e.globalDecls;
+  top.functionDecls := e.functionDecls;
   top.defs := e.defs;
   top.freeVariables := e.freeVariables;
   top.typerep = e.typerep;
@@ -156,6 +162,7 @@ top::ExprOrTypeName ::= ty::TypeName
   top.pp = ty.pp;
   top.errors := ty.errors;
   top.globalDecls := ty.globalDecls;
+  top.functionDecls := ty.functionDecls;
   top.defs := ty.defs;
   top.freeVariables := ty.freeVariables;
   top.typerep = ty.typerep;

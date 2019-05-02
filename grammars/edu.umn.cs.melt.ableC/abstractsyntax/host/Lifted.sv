@@ -51,6 +51,7 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 
 synthesized attribute lifted<a>::a;
 synthesized attribute globalDecls::[Decorated Decl] with ++;
+synthesized attribute functionDecls::[Decorated Decl] with ++;
 synthesized attribute unfoldedGlobalDecls::[Decorated Decl];
 
 flowtype lifted {decorate} on
@@ -68,6 +69,15 @@ flowtype lifted {decorate} on
   Name, MaybeName,
   MaybeInitializer, Initializer, InitList, Init, Designator;
 flowtype globalDecls {decorate} on
+  Decls, Decl, Declarators, Declarator, FunctionDecl, Parameters, ParameterDecl, StructDecl, UnionDecl, EnumDecl, StructItemList, EnumItemList, StructItem, StructDeclarators, StructDeclarator, EnumItem,
+  MemberDesignator,
+  SpecialSpecifiers,
+  Expr, GenericAssocs, GenericAssoc,
+  TypeName, BaseTypeExpr, TypeModifierExpr, TypeNames,
+  MaybeExpr, Exprs, ExprOrTypeName,
+  Stmt,
+  MaybeInitializer, Initializer, InitList, Init, Designator;
+flowtype functionDecls {decorate} on
   Decls, Decl, Declarators, Declarator, FunctionDecl, Parameters, ParameterDecl, StructDecl, UnionDecl, EnumDecl, StructItemList, EnumItemList, StructItem, StructDeclarators, StructDeclarator, EnumItem,
   MemberDesignator,
   SpecialSpecifiers,
@@ -130,6 +140,7 @@ top::Expr ::= decls::Decls lifted::Expr
 
   -- Note that the invariant over `globalDecls` and `lifted` is maintained.
   top.globalDecls := decls.unfoldedGlobalDecls ++ lifted.globalDecls;
+  top.functionDecls := lifted.functionDecls;
   top.lifted = lifted.lifted;
   
   -- Variables corresponing to lifted values are *not* considered free, since they are either bound
@@ -161,6 +172,7 @@ top::Stmt ::= decls::Decls lifted::Stmt
 
   -- Note that the invariant over `globalDecls` and `lifted` is maintained.
   top.globalDecls := decls.unfoldedGlobalDecls ++ lifted.globalDecls;
+  top.functionDecls := lifted.functionDecls;
   top.lifted = lifted.lifted;
   
   -- Variables corresponing to lifted values are *not* considered free, since they are either bound
@@ -190,6 +202,7 @@ top::BaseTypeExpr ::= decls::Decls lifted::BaseTypeExpr
 
   -- Note that the invariant over `globalDecls` and `lifted` is maintained.
   top.globalDecls := decls.unfoldedGlobalDecls ++ lifted.globalDecls;
+  top.functionDecls := lifted.functionDecls;
   top.lifted = lifted.lifted;
   
   -- Variables corresponing to lifted values are *not* considered free, since they are either bound
@@ -223,6 +236,7 @@ top::Decl ::= decls::Decls
 
   -- Note that the invariant over `globalDecls` and `lifted` is maintained.
   top.globalDecls := decls.unfoldedGlobalDecls;
+  top.functionDecls := decls.functionDecls;
   top.lifted = edu:umn:cs:melt:ableC:abstractsyntax:host:decls(nilDecl());
   
   -- Define other attributes to be the same as on "lifted" (i.e. nilDecl())
@@ -257,6 +271,7 @@ top::BaseTypeExpr ::= result::Type
   top.typerep = completedType(result);
   top.errors := [];
   top.globalDecls := [];
+  top.functionDecls := [];
   top.typeModifiers = [result.typeModifierExpr];
   top.decls = [];
   top.defs := [];
@@ -287,4 +302,10 @@ function globalDeclsDefs
 [Def] ::= d::[Decorated Decl]
 {
   return [globalDefsDef(foldr(append, [], map((.defs), d)))];
+}
+
+function functionDeclsDefs
+[Def] ::= d::[Decorated Decl]
+{
+  return [functionDefsDef(foldr(append, [], map((.defs), d)))];
 }
