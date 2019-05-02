@@ -137,19 +137,18 @@ top::BaseTypeExpr ::= msg::[Message]  ty::BaseTypeExpr
   top.freeVariables := ty.freeVariables;
 }
 
-{-- A TypeExpr that converts a Type back into a TypeExpr
- - This production is NOT considered part of the host, since Type should not occur in the host tree.
+{-- Constructs a TypeExpr by translating a Type back to a TypeExpr
+ - This is NOT a host production, since Type should not occur in the host tree.
  - Instead we transform the parameter type into a TypeExpr and forward to that.
- - Note that directTypeExpr(te.typerep) is not necessarily equivalent to te, since TypeNames can
+ - Note that directTypeExpr(te.typerep) is not necessarily equivalent to te, since TypeExprs can
  - contain extra information relevant only to the declaration, not to the meaning of the type.  
  - However, directTypeExpr(ty).typerep should be the same as ty, and
- - directTypeExpr(te.typerep).host.pp should be the same as te.typerep.pp
+ - directTypeExpr(te.typerep).host.typerep should be the same as te.typerep.host
  -}
-abstract production directTypeExpr
-top::BaseTypeExpr ::= result::Type
+function directTypeExpr
+BaseTypeExpr ::= result::Type
 {
-  top.pp = parens(cat(result.lpp, result.rpp));
-  forwards to typeModifierTypeExpr(result.baseTypeExpr, result.typeModifierExpr);
+  return typeModifierTypeExpr(result.baseTypeExpr, result.typeModifierExpr);
 }
 
 {--
