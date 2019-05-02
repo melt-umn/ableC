@@ -4,10 +4,7 @@ imports silver:langutil;
 imports silver:langutil:pp;
 imports edu:umn:cs:melt:ableC:abstractsyntax:env;
 imports edu:umn:cs:melt:ableC:abstractsyntax:construction;
-
--- Treat the substitution module like an export for modular analyses,
--- but don't add it to the reference set.
-option edu:umn:cs:melt:ableC:abstractsyntax:substitution;
+imports edu:umn:cs:melt:ableC:abstractsyntax:substitution;
 
 -- Flowtypes for imported attributes that are the same w.r.t. the reference set on all nonterminals
 flowtype pp {} on

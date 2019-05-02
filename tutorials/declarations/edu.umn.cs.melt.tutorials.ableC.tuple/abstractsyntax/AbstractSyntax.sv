@@ -3,7 +3,6 @@ grammar edu:umn:cs:melt:tutorials:ableC:tuple:abstractsyntax;
 imports edu:umn:cs:melt:ableC:abstractsyntax:host;
 imports edu:umn:cs:melt:ableC:abstractsyntax:env;
 imports edu:umn:cs:melt:ableC:abstractsyntax:construction;
-imports edu:umn:cs:melt:ableC:abstractsyntax:substitution;
 
 imports silver:langutil;
 imports silver:langutil:pp;
@@ -13,7 +12,6 @@ global builtin::Location = builtinLoc("tuple");
 abstract production tupleDecl
 top::Decl ::= n::Name tns::TypeNames
 {
-  propagate substituted;
   top.pp = pp"tuple ${n.pp} (${ppImplode(pp", ", tns.pps)})";
 
   tns.index = 0;

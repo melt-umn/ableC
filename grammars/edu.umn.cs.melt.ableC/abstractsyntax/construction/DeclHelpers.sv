@@ -1,5 +1,4 @@
 import edu:umn:cs:melt:ableC:abstractsyntax:env;
-import edu:umn:cs:melt:ableC:abstractsyntax:substitution;
 import silver:langutil:pp;
 
 -- Decl --
@@ -129,7 +128,6 @@ Stmt ::= n::String type: init::MaybeInitializer l::Location
 abstract production autoDecl
 top::Decl ::= n::Name e::Expr
 {
-  propagate substituted;
   top.pp = pp"auto ${n.pp} = ${e.pp};";
 
   local bty::BaseTypeExpr = directTypeExpr(e.typerep);
