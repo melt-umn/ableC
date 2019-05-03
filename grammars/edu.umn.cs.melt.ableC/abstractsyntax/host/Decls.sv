@@ -440,6 +440,14 @@ top::FunctionDecl ::= storage::StorageClasses  fnquals::SpecialSpecifiers  bty::
     text("{"), line(), nestlines(2,body.pp), text("}")]);
   
   top.lifted =
+    let liftedBody :: Stmt =
+      seqStmt(
+        foldr(
+          \ decl::Decorated Decl stmt::Stmt ->
+            seqStmt(declStmt(new(decl)), stmt),
+          nullStmt(), functionDecls),
+        body.lifted)
+    in
     case mty.modifiedBaseTypeExpr of
     | just(mbty) ->
       decls(
@@ -457,7 +465,7 @@ top::FunctionDecl ::= storage::StorageClasses  fnquals::SpecialSpecifiers  bty::
                name.lifted,
                attrs.lifted,
                ds.lifted,
-               body.lifted))]))
+               liftedBody))]))
     | nothing() ->
       functionDeclaration(
         functionDecl(
@@ -468,8 +476,8 @@ top::FunctionDecl ::= storage::StorageClasses  fnquals::SpecialSpecifiers  bty::
           name.lifted,
           attrs.lifted,
           ds.lifted,
-          body.lifted))
-    end;
+          liftedBody))
+    end end;
   
   fnquals.env = top.env;
   fnquals.returnType = top.returnType;  
@@ -497,8 +505,12 @@ top::FunctionDecl ::= storage::StorageClasses  fnquals::SpecialSpecifiers  bty::
   top.errors := bty.errors ++ mty.errors ++ body.errors ++ fnquals.errors;
   top.globalDecls := bty.globalDecls ++ mty.globalDecls ++ ds.globalDecls ++ 
                      body.globalDecls ++ fnquals.globalDecls;
-  top.functionDecls := bty.functionDecls ++ mty.functionDecls ++ ds.functionDecls ++
-                       body.functionDecls ++ fnquals.functionDecls;
+  local functionDecls :: [Decorated Decl] = bty.functionDecls ++ 
+    mty.functionDecls ++ ds.functionDecls ++ body.functionDecls ++ 
+    fnquals.functionDecls;
+
+  top.functionDecls := [];
+
   top.defs :=
     funcDefs ++
     globalDeclsDefs(mty.globalDecls) ++

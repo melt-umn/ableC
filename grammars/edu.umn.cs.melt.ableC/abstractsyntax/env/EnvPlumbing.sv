@@ -84,6 +84,16 @@ top::Env ::= e::Decorated Env
   top.deferredDecls = nonGlobalScope(e.deferredDecls);
   top.misc = nonGlobalScope(e.misc);
 }
+abstract production functionEnv_i
+top::Env ::= e::Decorated Env
+{
+  top.labels = functionScope(e.labels);
+  top.tags = functionScope(e.tags);
+  top.values = functionScope(e.values);
+  top.refIds = functionScope(e.refIds);
+  top.deferredDecls = functionScope(e.deferredDecls);
+  top.misc = functionScope(e.misc);
+}
 
 {- Definition list productions provide a way of folding up defs into Contribs lists
  -}

@@ -67,6 +67,12 @@ Scopes<a> ::= s::Scopes<a>
 {
   return init(s);
 }
+{-- Get the outermost 2 scopes -}
+function functionScope
+Scopes<a> ::= s::Scopes<a>
+{
+  return drop(length(s) - 2, s);
+}
 {-- Looks up an identifier in the closest scope that has a match -}
 function lookupScope
 [a] ::= n::String  s::Scopes<a>
