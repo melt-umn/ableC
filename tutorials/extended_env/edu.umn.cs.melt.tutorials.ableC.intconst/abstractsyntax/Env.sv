@@ -50,6 +50,11 @@ top::Env ::= e::Decorated Env
 {
   top.intConsts = [last(e.intConsts)];
 }
+aspect production functionEnv_i
+top::Env ::= e::Decorated Env
+{
+  top.intConsts = functionScope(e.intConsts);
+}
 
 aspect production nilDefs
 top::Defs ::=
