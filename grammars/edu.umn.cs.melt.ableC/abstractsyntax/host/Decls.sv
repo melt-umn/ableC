@@ -14,7 +14,10 @@ top::GlobalDecls ::= h::Decl  t::GlobalDecls
 {
   -- host, lifted defined in Lifted.sv
   top.pps = h.pp :: t.pps;
-  top.errors := h.errors ++ t.errors;
+  top.errors := h.errors ++ t.errors ++
+    if !null(h.functionDecls)
+    then [err(loc("??", -1, -1, -1, -1, -1, -1), s"An extension is attempting to lift a declaration to a function scope, but it has reached global scope.")]
+    else [];
   top.freeVariables :=
     h.freeVariables ++
     removeDefsFromNames(h.defs, t.freeVariables);
@@ -197,7 +200,7 @@ top::Decl ::= f::FunctionDecl
   top.lifted = f.lifted;
   top.errors := f.errors;
   top.globalDecls := f.globalDecls;
-  top.functionDecls := f.functionDecls;
+  top.functionDecls := [];
   top.defs := f.defs;
   top.freeVariables := f.freeVariables;
 }
@@ -427,7 +430,7 @@ top::Declarator ::= msg::[Message]
   top.sourceLocation = loc("nowhere", -1, -1, -1, -1, -1, -1); -- TODO fix this? add locaiton maybe?
 }
 
-nonterminal FunctionDecl with pp, host<FunctionDecl>, lifted<Decl>, errors, globalDecls, functionDecls, defs, env, typerep, name, sourceLocation, returnType, freeVariables;
+nonterminal FunctionDecl with pp, host<FunctionDecl>, lifted<Decl>, errors, globalDecls, defs, env, typerep, name, sourceLocation, returnType, freeVariables;
 flowtype FunctionDecl = decorate {env, returnType}, name {}, sourceLocation {};
 
 abstract production functionDecl
@@ -439,15 +442,19 @@ top::FunctionDecl ::= storage::StorageClasses  fnquals::SpecialSpecifiers  bty::
     bty.pp, space(), mty.lpp, name.pp, mty.rpp, ppAttributesRHS(attrs), line(), terminate(cat(semi(), line()), ds.pps),
     text("{"), line(), nestlines(2,body.pp), text("}")]);
   
+  local functionDecls :: [Decorated Decl] = bty.functionDecls ++ 
+    mty.functionDecls ++ ds.functionDecls ++ body.functionDecls ++ 
+    fnquals.functionDecls;
+  
+  local liftedBody :: Stmt =
+    seqStmt(
+      foldr(
+        \ decl::Decorated Decl stmt::Stmt ->
+          seqStmt(declStmt(new(decl)), stmt),
+        nullStmt(), functionDecls),
+      body.lifted);
+
   top.lifted =
-    let liftedBody :: Stmt =
-      seqStmt(
-        foldr(
-          \ decl::Decorated Decl stmt::Stmt ->
-            seqStmt(declStmt(new(decl)), stmt),
-          nullStmt(), functionDecls),
-        body.lifted)
-    in
     case mty.modifiedBaseTypeExpr of
     | just(mbty) ->
       decls(
@@ -477,7 +484,7 @@ top::FunctionDecl ::= storage::StorageClasses  fnquals::SpecialSpecifiers  bty::
           attrs.lifted,
           ds.lifted,
           liftedBody))
-    end end;
+    end;
   
   fnquals.env = top.env;
   fnquals.returnType = top.returnType;  
@@ -505,11 +512,6 @@ top::FunctionDecl ::= storage::StorageClasses  fnquals::SpecialSpecifiers  bty::
   top.errors := bty.errors ++ mty.errors ++ body.errors ++ fnquals.errors;
   top.globalDecls := bty.globalDecls ++ mty.globalDecls ++ ds.globalDecls ++ 
                      body.globalDecls ++ fnquals.globalDecls;
-  local functionDecls :: [Decorated Decl] = bty.functionDecls ++ 
-    mty.functionDecls ++ ds.functionDecls ++ body.functionDecls ++ 
-    fnquals.functionDecls;
-
-  top.functionDecls := [];
 
   top.defs :=
     funcDefs ++
@@ -593,7 +595,6 @@ top::FunctionDecl ::= msg::[Message]
   top.lifted = functionDeclaration(top);
   top.errors := msg;
   top.globalDecls := [];
-  top.functionDecls := [];
   top.defs := [];
   top.freeVariables := [];
   top.typerep = errorType();

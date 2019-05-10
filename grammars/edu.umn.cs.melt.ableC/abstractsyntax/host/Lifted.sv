@@ -78,7 +78,7 @@ flowtype globalDecls {decorate} on
   Stmt,
   MaybeInitializer, Initializer, InitList, Init, Designator;
 flowtype functionDecls {decorate} on
-  Decls, Decl, Declarators, Declarator, FunctionDecl, Parameters, ParameterDecl, StructDecl, UnionDecl, EnumDecl, StructItemList, EnumItemList, StructItem, StructDeclarators, StructDeclarator, EnumItem,
+  Decls, Decl, Declarators, Declarator, Parameters, ParameterDecl, StructDecl, UnionDecl, EnumDecl, StructItemList, EnumItemList, StructItem, StructDeclarators, StructDeclarator, EnumItem,
   MemberDesignator,
   SpecialSpecifiers,
   Expr, GenericAssocs, GenericAssoc,
@@ -189,33 +189,6 @@ top::Stmt ::= decls::Decls lifted::Stmt
   lifted.env = addEnv([globalDefsDef(decls.defs)], top.env);
 }
 
-abstract production injectFunctionDeclsStmt
-top::Stmt ::= decls::Decls lifted::Stmt
-{
-  propagate host;
-  top.errors := decls.errors ++ lifted.errors;
-  top.pp = pp"injectFunctionDeclsStmt ${braces(nestlines(2, ppImplode(line(), decls.pps)))} ${braces(nestlines(2, lifted.pp))}";
-
-  top.defs := functionDefsDef(decls.defs) :: lifted.defs;
-
-  top.globalDecls := lifted.globalDecls;
-  top.functionDecls := 
-    decorate edu:umn:cs:melt:ableC:abstractsyntax:host:decls(decls) 
-      with {env=functionEnv(top.env); isTopLevel=false; returnType=nothing(); }
-    :: decls.functionDecls ++ lifted.functionDecls;
-  top.lifted = lifted.lifted;
-
-  top.freeVariables := removeDefsFromNames(decls.defs, lifted.freeVariables);
-
-  top.functionDefs := lifted.functionDefs;
-
-  decls.env = functionEnv(top.env);
-  decls.isTopLevel = false;
-  decls.returnType = nothing();
-
-  lifted.env = addEnv([functionDefsDef(decls.defs)], top.env);
-}
-
 -- Same as injectGlobalDeclsExpr, but on BaseTypeExpr
 abstract production injectGlobalDeclsTypeExpr
 top::BaseTypeExpr ::= decls::Decls lifted::BaseTypeExpr
@@ -271,6 +244,29 @@ top::Decl ::= decls::Decls
   
   decls.env = globalEnv(top.env);
   decls.isTopLevel = true;
+  decls.returnType = nothing();
+}
+
+abstract production injectFunctionDeclsDecl
+top::Decl ::= decls::Decls
+{
+  propagate host;
+  top.errors := decls.errors;
+  top.pp = pp"injectFunctionDeclsStmt ${braces(nestlines(2, ppImplode(line(), decls.pps)))}";
+
+  top.defs := [functionDefsDef(decls.defs)];
+
+  top.globalDecls := [];
+  top.functionDecls := 
+    decorate edu:umn:cs:melt:ableC:abstractsyntax:host:decls(decls) 
+      with {env=functionEnv(top.env); isTopLevel=false; returnType=nothing(); }
+    :: decls.functionDecls;
+  top.lifted = edu:umn:cs:melt:ableC:abstractsyntax:host:decls(nilDecl());
+
+  top.freeVariables := [];
+
+  decls.env = functionEnv(top.env);
+  decls.isTopLevel = false;
   decls.returnType = nothing();
 }
 
