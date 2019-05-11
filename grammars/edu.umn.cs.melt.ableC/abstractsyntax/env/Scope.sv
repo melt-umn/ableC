@@ -45,7 +45,7 @@ Scopes<a> ::= d::Contribs<a> s::Scopes<a>
   return case d, s of
     | [], _ -> s
     | _, [_] -> addScope(d, s)
-    | _, h :: m :: [] -> h :: addScope(d, m :: [])
+    | _, h :: m :: [] -> addScope(d, h :: m :: [])
     | _, h :: t -> h :: addFunctionScope(d, t)
   end;
 }
