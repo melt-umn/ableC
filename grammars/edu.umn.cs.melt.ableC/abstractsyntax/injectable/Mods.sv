@@ -33,37 +33,13 @@ top::LhsOrRhsRuntimeMods ::=
 function applyLhsRhsMods
 Pair<Expr Expr> ::= l::[LhsOrRhsRuntimeMod]  lhs::Decorated Expr  rhs::Decorated Expr
 {
-  local tmpLhsName :: String = "_tmpLhs" ++ toString(genInt());
-  local tmpLhs :: Expr = declRefExpr(name(tmpLhsName, location=lhs.location), location=lhs.location);
-  local tmpRhsName :: String = "_tmpRhs" ++ toString(genInt());
-  local tmpRhs :: Expr = declRefExpr(name(tmpRhsName, location=rhs.location), location=rhs.location);
+  local mods :: LhsOrRhsRuntimeMods = 
+    foldr(consLhsOrRhsRuntimeMod, nilLhsOrRhsRuntimeMod(), l);
 
-  local mods :: LhsOrRhsRuntimeMods = foldr(consLhsOrRhsRuntimeMod, nilLhsOrRhsRuntimeMod(), l);
-  mods.lhsToModify = tmpLhs;
-  mods.rhsToModify = tmpRhs;
+  mods.lhsToModify = new(lhs);
+  mods.rhsToModify = new(rhs);
 
-  -- copy lhs/rhs to tmps to prevent being evaluated more than once
-  local modLhs :: Expr =
-    if null(filter((.isLhs), l))
-    then new(lhs)
-    else
-      stmtExpr(
-        mkDecl(tmpLhsName, lhs.typerep, new(lhs), lhs.location),
-        mods.modLhs,
-        location=lhs.location
-      );
-
-  local modRhs :: Expr =
-    if null(filter(\m::LhsOrRhsRuntimeMod -> !m.isLhs, l))
-    then new(rhs)
-    else
-      stmtExpr(
-        mkDecl(tmpRhsName, rhs.typerep, new(rhs), rhs.location),
-        mods.modRhs,
-        location=rhs.location
-      );
-
-  return pair(modLhs, modRhs);
+  return pair(mods.modLhs, mods.modRhs);
 }
 
 nonterminal LhsOrRhsRuntimeMod with modLhs, modRhs, isLhs, lhsToModify, rhsToModify;
@@ -109,17 +85,9 @@ top::RuntimeMods ::=
 function applyMods
 Expr ::= l::[RuntimeMod] e::Decorated Expr
 {
-  local tmpName :: String = "_tmp" ++ toString(genInt());
-  local tmpDecl :: Stmt = mkDecl(tmpName, e.typerep, new(e), e.location);
-
   local mods :: RuntimeMods = foldr(consRuntimeMod, nilRuntimeMod(), l);
-  mods.exprToModify = declRefExpr(name(tmpName, location=e.location), location=e.location);
 
-  local modExpr :: Expr =
-    if null(l) then new(e)
-    else stmtExpr(tmpDecl, mods.modExpr, location=e.location);
-
-  return modExpr;
+  return (decorate mods with {exprToModify=new(e);}).modExpr;
 }
 
 nonterminal RuntimeMod with modExpr, exprToModify;
