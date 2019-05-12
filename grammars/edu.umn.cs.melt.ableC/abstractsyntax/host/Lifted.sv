@@ -256,7 +256,7 @@ top::Decl ::= decls::Decls
 
   top.defs := [functionDefsDef(decls.defs)];
 
-  top.globalDecls := [];
+  top.globalDecls := decls.globalDecls;
   top.functionDecls := 
     decorate edu:umn:cs:melt:ableC:abstractsyntax:host:decls(decls) 
       with {env=functionEnv(top.env); isTopLevel=false; returnType=nothing(); }
