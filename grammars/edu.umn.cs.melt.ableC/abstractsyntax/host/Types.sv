@@ -805,7 +805,7 @@ top::NoncanonicalType ::= q::Qualifiers  n::String  resolved::Type
     noncanonicalType(
       typedefType(foldQualifier(top.addedTypeQualifiers ++ q.qualifiers), n, resolved));
 
-  top.canonicalType = addQualifiers(q.qualifiers, resolved);
+  top.canonicalType = resolved;
 }
 
 {-- GCC typeof type expression -}
