@@ -803,7 +803,10 @@ top::NoncanonicalType ::= q::Qualifiers  n::String  resolved::Type
   top.typeModifierExpr = baseTypeExpr();
   top.withTypeQualifiers =
     noncanonicalType(
-      typedefType(foldQualifier(top.addedTypeQualifiers ++ q.qualifiers), n, resolved));
+      typedefType(
+        foldQualifier(top.addedTypeQualifiers ++ q.qualifiers),
+        n, resolved.withTypeQualifiers));
+  resolved.addedTypeQualifiers = top.addedTypeQualifiers;
 
   top.canonicalType = resolved;
 }
@@ -821,7 +824,10 @@ top::NoncanonicalType ::= q::Qualifiers  resolved::Type
   top.typeModifierExpr = baseTypeExpr();
   top.withTypeQualifiers =
     noncanonicalType(
-      typeofType(foldQualifier(top.addedTypeQualifiers ++ q.qualifiers), resolved));
+      typeofType(
+        foldQualifier(top.addedTypeQualifiers ++ q.qualifiers),
+        resolved.withTypeQualifiers));
+  resolved.addedTypeQualifiers = top.addedTypeQualifiers;
 }
 
 function filterExtensionQualifiers
