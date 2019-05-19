@@ -454,7 +454,7 @@ top::FunctionDecl ::= storage::StorageClasses  fnquals::SpecialSpecifiers  bty::
     seqStmt(
       foldr(
         \ decl::Decorated Decl stmt::Stmt ->
-          seqStmt(declStmt(new(decl)), stmt),
+          seqStmt(declStmt(decl.lifted), stmt),
         nullStmt(), functionDecls),
       body.lifted);
 
