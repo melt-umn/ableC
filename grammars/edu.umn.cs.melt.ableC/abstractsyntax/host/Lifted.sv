@@ -53,6 +53,7 @@ synthesized attribute lifted<a>::a;
 synthesized attribute globalDecls::[Decorated Decl] with ++;
 synthesized attribute functionDecls::[Decorated Decl] with ++;
 synthesized attribute unfoldedGlobalDecls::[Decorated Decl];
+synthesized attribute unfoldedFunctionDecls::[Decorated Decl];
 
 flowtype lifted {decorate} on
   Root,
@@ -87,6 +88,8 @@ flowtype functionDecls {decorate} on
   Stmt,
   MaybeInitializer, Initializer, InitList, Init, Designator;
 flowtype unfoldedGlobalDecls {decorate} on
+  Decls, Decl;
+flowtype unfoldedFunctionDecls {decorate} on
   Decls, Decl;
 
 {--
@@ -140,7 +143,7 @@ top::Expr ::= decls::Decls lifted::Expr
 
   -- Note that the invariant over `globalDecls` and `lifted` is maintained.
   top.globalDecls := decls.unfoldedGlobalDecls ++ lifted.globalDecls;
-  top.functionDecls := lifted.functionDecls;
+  top.functionDecls := decls.functionDecls ++ lifted.functionDecls;
   top.lifted = lifted.lifted;
   
   -- Variables corresponing to lifted values are *not* considered free, since they are either bound
@@ -172,7 +175,7 @@ top::Stmt ::= decls::Decls lifted::Stmt
 
   -- Note that the invariant over `globalDecls` and `lifted` is maintained.
   top.globalDecls := decls.unfoldedGlobalDecls ++ lifted.globalDecls;
-  top.functionDecls := lifted.functionDecls;
+  top.functionDecls := decls.functionDecls ++ lifted.functionDecls;
   top.lifted = lifted.lifted;
   
   -- Variables corresponing to lifted values are *not* considered free, since they are either bound
@@ -202,7 +205,7 @@ top::BaseTypeExpr ::= decls::Decls lifted::BaseTypeExpr
 
   -- Note that the invariant over `globalDecls` and `lifted` is maintained.
   top.globalDecls := decls.unfoldedGlobalDecls ++ lifted.globalDecls;
-  top.functionDecls := lifted.functionDecls;
+  top.functionDecls := decls.functionDecls ++ lifted.functionDecls;
   top.lifted = lifted.lifted;
   
   -- Variables corresponing to lifted values are *not* considered free, since they are either bound
@@ -257,10 +260,7 @@ top::Decl ::= decls::Decls
   top.defs := [functionDefsDef(decls.defs)];
 
   top.globalDecls := decls.globalDecls;
-  top.functionDecls := 
-    decorate edu:umn:cs:melt:ableC:abstractsyntax:host:decls(decls) 
-      with {env=functionEnv(top.env); isTopLevel=false; returnType=nothing(); }
-    :: decls.functionDecls;
+  top.functionDecls := decls.unfoldedFunctionDecls;
   top.lifted = edu:umn:cs:melt:ableC:abstractsyntax:host:decls(nilDecl());
 
   top.freeVariables := [];

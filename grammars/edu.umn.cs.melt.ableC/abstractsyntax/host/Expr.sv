@@ -496,7 +496,11 @@ top::Expr ::= body::Stmt result::Expr
   top.errors := body.errors ++ result.errors;
   top.globalDecls := body.globalDecls ++ result.globalDecls;
   top.functionDecls := body.functionDecls ++ result.functionDecls;
-  top.defs := globalDeclsDefs(body.globalDecls) ++ globalDeclsDefs(result.globalDecls) ++ functionDeclsDefs(body.functionDecls) ++ functionDeclsDefs(result.functionDecls); -- defs are *not* propagated up. This is beginning of a scope.
+  
+  -- defs are *not* propagated up. This is beginning of a scope.
+  top.defs := globalDeclsDefs(body.globalDecls) ++ globalDeclsDefs(result.globalDecls) 
+           ++ functionDeclsDefs(body.functionDecls) ++ functionDeclsDefs(result.functionDecls); 
+  
   top.freeVariables := body.freeVariables ++ removeDefsFromNames(body.defs, result.freeVariables);
   top.typerep = result.typerep;
   

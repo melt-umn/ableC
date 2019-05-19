@@ -16,7 +16,7 @@ top::GlobalDecls ::= h::Decl  t::GlobalDecls
   top.pps = h.pp :: t.pps;
   top.errors := h.errors ++ t.errors ++
     if !null(h.functionDecls)
-    then [err(loc("??", -1, -1, -1, -1, -1, -1), s"An extension is attempting to lift a declaration to a function scope, but it has reached global scope.")]
+    then error("An extension is attempting to lift a declaration to a function scope, but it has reached global scope.")
     else [];
   top.freeVariables :=
     h.freeVariables ++
@@ -36,7 +36,7 @@ top::GlobalDecls ::=
   top.freeVariables := [];
 }
 
-nonterminal Decls with pps, host<Decls>, lifted<Decls>, errors, globalDecls, functionDecls, unfoldedGlobalDecls, defs, env, isTopLevel, returnType, freeVariables;
+nonterminal Decls with pps, host<Decls>, lifted<Decls>, errors, globalDecls, functionDecls, unfoldedGlobalDecls, unfoldedFunctionDecls, defs, env, isTopLevel, returnType, freeVariables;
 flowtype Decls = decorate {env, isTopLevel, returnType};
 
 autocopy attribute isTopLevel :: Boolean;
@@ -51,6 +51,7 @@ top::Decls ::= h::Decl  t::Decls
   top.globalDecls := h.globalDecls ++ t.globalDecls;
   top.functionDecls := h.functionDecls ++ t.functionDecls;
   top.unfoldedGlobalDecls = h.unfoldedGlobalDecls ++ t.unfoldedGlobalDecls;
+  top.unfoldedFunctionDecls = h.unfoldedFunctionDecls ++ t.unfoldedFunctionDecls;
   top.freeVariables :=
     h.freeVariables ++
     removeDefsFromNames(h.defs, t.freeVariables);
@@ -68,6 +69,7 @@ top::Decls ::=
   top.globalDecls := [];
   top.functionDecls := [];
   top.unfoldedGlobalDecls = [];
+  top.unfoldedFunctionDecls = [];
   top.freeVariables := [];
 }
 
@@ -78,7 +80,7 @@ Decls ::= d1::Decls d2::Decls
 }
 
 
-nonterminal Decl with pp, host<Decl>, lifted<Decl>, errors, globalDecls, functionDecls, unfoldedGlobalDecls, defs, env, isTopLevel, returnType, freeVariables;
+nonterminal Decl with pp, host<Decl>, lifted<Decl>, errors, globalDecls, functionDecls, unfoldedGlobalDecls, unfoldedFunctionDecls, defs, env, isTopLevel, returnType, freeVariables;
 flowtype Decl = decorate {env, isTopLevel, returnType};
 
 {-- Pass down from top-level declaration the list of attribute to each name-declaration -}
@@ -89,6 +91,7 @@ aspect default production
 top::Decl ::=
 {
   top.unfoldedGlobalDecls = top.globalDecls ++ [top];
+  top.unfoldedFunctionDecls = top.functionDecls ++ [top];
 }
 
 abstract production decls
@@ -100,6 +103,7 @@ top::Decl ::= d::Decls
   top.globalDecls := d.globalDecls;
   top.functionDecls := d.functionDecls;
   top.unfoldedGlobalDecls = d.unfoldedGlobalDecls;
+  top.unfoldedFunctionDecls = d.unfoldedFunctionDecls;
   top.defs := d.defs;
   top.freeVariables := d.freeVariables;
 }

@@ -39,6 +39,9 @@ Scopes<a> ::= d::Contribs<a>  s::Scopes<a>
     end;
 }
 {-- Adds contributions to the second outermost scope -}
+{- TODO: This implementation is slightly broken because gcc supports nested
+   functions. We should inject into the outermost scope for the current 
+   function, which is not necessarily the second outermost scope -}
 function addFunctionScope
 Scopes<a> ::= d::Contribs<a> s::Scopes<a>
 {
