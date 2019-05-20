@@ -43,7 +43,14 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
  - If there are ever errors reported about something being redefined in the
  - lifted tree, then there is a bug in the host where the env was not provided
  - properly somewhere to contain all injected declarations defined so far.
- - 
+ -
+ - It is also possible for extensions to specify declarations to lift to the
+ - current function's outermost scope. This can be done by forwarding to the
+ - host production `injectFunctionDeclsDecl`. The same properties discussed
+ - above with global scope lifting apply the same to the function scope 
+ - lifting, just using the `functionDecls` attribute to track these 
+ - declarations.
+ -
  - TODO:
  - It would be nice to move all of this to its own grammar, but aspecting
  - everything for lifted and globalDecls would be kind of a pain
@@ -51,7 +58,9 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 
 synthesized attribute lifted<a>::a;
 synthesized attribute globalDecls::[Decorated Decl] with ++;
+synthesized attribute functionDecls::[Decorated Decl] with ++;
 synthesized attribute unfoldedGlobalDecls::[Decorated Decl];
+synthesized attribute unfoldedFunctionDecls::[Decorated Decl];
 
 flowtype lifted {decorate} on
   Root,
@@ -76,7 +85,18 @@ flowtype globalDecls {decorate} on
   MaybeExpr, Exprs, ExprOrTypeName,
   Stmt,
   MaybeInitializer, Initializer, InitList, Init, Designator;
+flowtype functionDecls {decorate} on
+  Decls, Decl, Declarators, Declarator, Parameters, ParameterDecl, StructDecl, UnionDecl, EnumDecl, StructItemList, EnumItemList, StructItem, StructDeclarators, StructDeclarator, EnumItem,
+  MemberDesignator,
+  SpecialSpecifiers,
+  Expr, GenericAssocs, GenericAssoc,
+  TypeName, BaseTypeExpr, TypeModifierExpr, TypeNames,
+  MaybeExpr, Exprs, ExprOrTypeName,
+  Stmt,
+  MaybeInitializer, Initializer, InitList, Init, Designator;
 flowtype unfoldedGlobalDecls {decorate} on
+  Decls, Decl;
+flowtype unfoldedFunctionDecls {decorate} on
   Decls, Decl;
 
 {--
@@ -130,6 +150,7 @@ top::Expr ::= decls::Decls lifted::Expr
 
   -- Note that the invariant over `globalDecls` and `lifted` is maintained.
   top.globalDecls := decls.unfoldedGlobalDecls ++ lifted.globalDecls;
+  top.functionDecls := decls.functionDecls ++ lifted.functionDecls;
   top.lifted = lifted.lifted;
   
   -- Variables corresponing to lifted values are *not* considered free, since they are either bound
@@ -161,6 +182,7 @@ top::Stmt ::= decls::Decls lifted::Stmt
 
   -- Note that the invariant over `globalDecls` and `lifted` is maintained.
   top.globalDecls := decls.unfoldedGlobalDecls ++ lifted.globalDecls;
+  top.functionDecls := decls.functionDecls ++ lifted.functionDecls;
   top.lifted = lifted.lifted;
   
   -- Variables corresponing to lifted values are *not* considered free, since they are either bound
@@ -190,6 +212,7 @@ top::BaseTypeExpr ::= decls::Decls lifted::BaseTypeExpr
 
   -- Note that the invariant over `globalDecls` and `lifted` is maintained.
   top.globalDecls := decls.unfoldedGlobalDecls ++ lifted.globalDecls;
+  top.functionDecls := decls.functionDecls ++ lifted.functionDecls;
   top.lifted = lifted.lifted;
   
   -- Variables corresponing to lifted values are *not* considered free, since they are either bound
@@ -223,6 +246,7 @@ top::Decl ::= decls::Decls
 
   -- Note that the invariant over `globalDecls` and `lifted` is maintained.
   top.globalDecls := decls.unfoldedGlobalDecls;
+  top.functionDecls := decls.functionDecls;
   top.lifted = edu:umn:cs:melt:ableC:abstractsyntax:host:decls(nilDecl());
   
   -- Define other attributes to be the same as on "lifted" (i.e. nilDecl())
@@ -230,6 +254,26 @@ top::Decl ::= decls::Decls
   
   decls.env = globalEnv(top.env);
   decls.isTopLevel = true;
+  decls.returnType = nothing();
+}
+
+abstract production injectFunctionDeclsDecl
+top::Decl ::= decls::Decls
+{
+  propagate host;
+  top.errors := decls.errors;
+  top.pp = pp"injectFunctionDeclsStmt ${braces(nestlines(2, ppImplode(line(), decls.pps)))}";
+
+  top.defs := [functionDefsDef(decls.defs)];
+
+  top.globalDecls := decls.globalDecls;
+  top.functionDecls := decls.unfoldedFunctionDecls;
+  top.lifted = edu:umn:cs:melt:ableC:abstractsyntax:host:decls(nilDecl());
+
+  top.freeVariables := [];
+
+  decls.env = functionEnv(top.env);
+  decls.isTopLevel = false;
   decls.returnType = nothing();
 }
 
@@ -257,6 +301,7 @@ top::BaseTypeExpr ::= result::Type
   top.typerep = completedType(result);
   top.errors := [];
   top.globalDecls := [];
+  top.functionDecls := [];
   top.typeModifiers = [result.typeModifierExpr];
   top.decls = [];
   top.defs := [];
@@ -287,4 +332,10 @@ function globalDeclsDefs
 [Def] ::= d::[Decorated Decl]
 {
   return [globalDefsDef(foldr(append, [], map((.defs), d)))];
+}
+
+function functionDeclsDefs
+[Def] ::= d::[Decorated Decl]
+{
+  return [functionDefsDef(foldr(append, [], map((.defs), d)))];
 }

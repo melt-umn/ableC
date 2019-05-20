@@ -38,6 +38,20 @@ Scopes<a> ::= d::Contribs<a>  s::Scopes<a>
     | _, h :: t -> h :: addGlobalScope(d, t)
     end;
 }
+{-- Adds contributions to the second outermost scope -}
+{- TODO: This implementation is slightly broken because gcc supports nested
+   functions. We should inject into the outermost scope for the current 
+   function, which is not necessarily the second outermost scope -}
+function addFunctionScope
+Scopes<a> ::= d::Contribs<a> s::Scopes<a>
+{
+  return case d, s of
+    | [], _ -> s
+    | _, [_] -> addScope(d, s)
+    | _, h :: m :: [] -> addScope(d, h :: m :: [])
+    | _, h :: t -> h :: addFunctionScope(d, t)
+  end;
+}
 {-- Create a new innermost scope -}
 function openScope
 Scopes<a> ::= s::Scopes<a>
@@ -55,6 +69,12 @@ function nonGlobalScope
 Scopes<a> ::= s::Scopes<a>
 {
   return init(s);
+}
+{-- Get the outermost 2 scopes -}
+function functionScope
+Scopes<a> ::= s::Scopes<a>
+{
+  return drop(length(s) - 2, s);
 }
 {-- Looks up an identifier in the closest scope that has a match -}
 function lookupScope

@@ -11,13 +11,13 @@ nonterminal Env with labels, tags, values, refIds, deferredDecls, misc;
  - A list of definitions, only used in contributing new names to the environment.
  -}
 nonterminal Defs 
-  with labelContribs, tagContribs, valueContribs, refIdContribs, deferredDeclContribs, miscContribs, globalDefs;
+  with labelContribs, tagContribs, valueContribs, refIdContribs, deferredDeclContribs, miscContribs, globalDefs, functionScopeDefs;
 
 {--
  - An individual definition of a name.
  -}
 closed nonterminal Def 
-  with labelContribs, tagContribs, valueContribs, refIdContribs, deferredDeclContribs, miscContribs, globalDefs;
+  with labelContribs, tagContribs, valueContribs, refIdContribs, deferredDeclContribs, miscContribs, globalDefs, functionScopeDefs;
 
 
 {--
@@ -87,6 +87,11 @@ function nonGlobalEnv
 Decorated Env ::= e::Decorated Env
 {
   return decorate nonGlobalEnv_i(e) with {};
+}
+function functionEnv
+Decorated Env ::= e::Decorated Env
+{
+  return decorate functionEnv_i(e) with {};
 }
 
 -- Environment lookup functions
