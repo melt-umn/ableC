@@ -43,7 +43,14 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
  - If there are ever errors reported about something being redefined in the
  - lifted tree, then there is a bug in the host where the env was not provided
  - properly somewhere to contain all injected declarations defined so far.
- - 
+ -
+ - It is also possible for extensions to specify declarations to lift to the
+ - current function's outermost scope. This can be done by forwarding to the
+ - host production `injectFunctionDeclsDecl`. The same properties discussed
+ - above with global scope lifting apply the same to the function scope 
+ - lifting, just using the `functionDecls` attribute to track these 
+ - declarations.
+ -
  - TODO:
  - It would be nice to move all of this to its own grammar, but aspecting
  - everything for lifted and globalDecls would be kind of a pain
