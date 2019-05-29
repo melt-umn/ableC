@@ -1,0 +1,9 @@
+ide_specification for edu:umn:cs:melt:ableC:concretesyntax {
+  terminal LineComment {
+    atomMarkupName = comment.line.double-slash;
+  };
+
+  terminal BlockComment {
+    atomMarkupName = comment.block;
+  };
+}

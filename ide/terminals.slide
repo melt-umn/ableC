@@ -1,0 +1,421 @@
+ide_specification for edu:umn:cs:melt:ableC:concretesyntax {
+  terminal TypeName_t {
+    atomMarkupName = storage.type;
+  };
+
+  terminal DecConstantU_t {
+    atomMarkupName = constant.numeric;
+  };
+
+  terminal DecConstantL_t {
+    atomMarkupName = constant.numeric;
+  };
+
+  terminal DecConstantUL_t {
+    atomMarkupName = constant.numeric;
+  };
+
+  terminal DecConstantLL_t {
+    atomMarkupName = constant.numeric;
+  };
+
+  terminal DecConstantULL_t {
+    atomMarkupName = constant.numeric;
+  };
+
+  terminal OctConstantU_t {
+    atomMarkupName = constant.numeric;
+  };
+
+  terminal OctConstantL_t {
+    atomMarkupName = constant.numeric;
+  };
+
+  terminal OctConstantUL_t {
+    atomMarkupName = constant.numeric;
+  };
+
+  terminal OctConstantLL_t {
+    atomMarkupName = constant.numeric;
+  };
+
+  terminal OctConstantULL_t {
+    atomMarkupName = constant.numeric;
+  };
+
+  terminal OctConstantError_t {
+    atomMarkupName = invalid.illegal;
+  };
+
+  terminal HexConstant_t {
+    atomMarkupName = constant.numeric;
+  };
+
+  terminal HexConstantU_t {
+    atomMarkupName = constant.numeric;
+  };
+
+  terminal HexConstantL_t {
+    atomMarkupName = constant.numeric;
+  };
+
+  terminal HexConstantUL_t {
+    atomMarkupName = constant.numeric;
+  };
+
+  terminal HexConstantLL_t {
+    atomMarkupName = constant.numeric;
+  };
+
+  terminal HexConstantULL_t {
+    atomMarkupName = constant.numeric;
+  };
+
+  terminal FloatConstant_t {
+    atomMarkupName = constant.numeric;
+  };
+
+  terminal FloatConstantFloat_t {
+    atomMarkupName = constant.numeric;
+  };
+
+  terminal FloatConstantLongDouble_t {
+    atomMarkupName = constant.numeric;
+  };
+
+  terminal HexFloatConstant_t {
+    atomMarkupName = constant.numeric;
+  };
+
+  terminal HexFloatConstantFloat_t {
+    atomMarkupName = constant.numeric;
+  };
+
+  terminal HexFloatConstantLongDouble_t {
+    atomMarkupName = constant.numeric;
+  };
+
+  terminal StringConstant_t {
+    atomMarkupName = string.quoted.double;
+  };
+
+  terminal StringConstantU8_t {
+    atomMarkupName = string.quoted.double;
+  };
+
+  terminal StringConstantL_t {
+    atomMarkupName = string.quoted.double;
+  };
+
+  terminal StringConstantU_t {
+    atomMarkupName = string.quoted.double;
+  };
+
+  terminal StringConstantUBig_t {
+    atomMarkupName = string.quoted.double;
+  };
+
+  terminal CharConstant_t {
+    atomMarkupName = constant.character;
+  };
+
+  terminal CharConstantL_t {
+    atomMarkupName = constant.character;
+  };
+
+  terminal CharConstantU_t {
+    atomMarkupName = constant.character;
+  };
+
+  terminal CharConstantUBig_t {
+    atomMarkupName = constant.character;
+  };
+
+  terminal Char_t {
+    atomMarkupName = storage.type;
+  };
+
+  terminal Double_t {
+    atomMarkupName = storage.type;
+  };
+
+  terminal Float_t {
+    atomMarkupName = storage.type;
+  };
+
+  terminal Int_t {
+    atomMarkupName = storage.type;
+  };
+
+  terminal Long_t {
+    atomMarkupName = storage.type;
+  };
+
+  terminal Short_t {
+    atomMarkupName = storage.type;
+  };
+
+  terminal Signed_t {
+    atomMarkupName = storage.type;
+  };
+
+  terminal Unsigned_t {
+    atomMarkupName = storage.type;
+  };
+
+  terminal Void_t {
+    atomMarkupName = storage.type;
+  };
+
+  terminal Bool_t {
+    atomMarkupName = storage.type;
+  };
+
+  terminal Complex_t {
+    atomMarkupName = storage.type;
+  };
+
+  terminal Imagin_t {
+    atomMarkupName = storage.type;
+  };
+
+  terminal ENUM {
+    atomMarkupName = keyword.control;
+  };
+
+  terminal STRUCT {
+    atomMarkupName = keyword.control;
+  };
+
+  terminal UNION {
+    atomMarkupName = keyword.control;
+  };
+
+  terminal Const_t {
+    atomMarkupName = storage.modifier;
+  };
+
+  terminal Volatile_t {
+    atomMarkupName = storage.modifier;
+  };
+
+  terminal Restrict_t {
+    atomMarkupName = storage.modifier;
+  };
+
+  terminal Inline_t {
+    atomMarkupName = storage.modifier;
+  };
+
+  terminal Auto_t {
+    atomMarkupName = storage.modifier;
+  };
+
+  terminal Extern_t {
+    atomMarkupName = storage.modifier;
+  };
+
+  terminal Register_t {
+    atomMarkupName = storage.modifier;
+  };
+
+  terminal Static_t {
+    atomMarkupName = storage.modifier;
+  };
+
+  terminal Typedef_t {
+    atomMarkupName = keyword.control;
+  };
+
+  terminal BREAK {
+    atomMarkupName = keyword.control;
+  };
+
+  terminal CASE {
+    atomMarkupName = keyword.control;
+  };
+
+  terminal CONTINUE {
+    atomMarkupName = keyword.control;
+  };
+
+  terminal DEFAULT {
+    atomMarkupName = keyword.control;
+  };
+
+  terminal DO {
+    atomMarkupName = keyword.control;
+  };
+
+  terminal ELSE {
+    atomMarkupName = keyword.control;
+  };
+
+  terminal FOR {
+    atomMarkupName = keyword.control;
+  };
+
+  terminal GOTO {
+    atomMarkupName = keyword.control;
+  };
+
+  terminal IF {
+    atomMarkupName = keyword.control;
+  };
+
+  terminal Return_t {
+    atomMarkupName = keyword.control;
+  };
+
+  terminal SWITCH {
+    atomMarkupName = keyword.control;
+  };
+
+  terminal WHILE {
+    atomMarkupName = keyword.control;
+  };
+
+  terminal SIZEOF {
+    atomMarkupName = keyword.operator;
+  };
+
+  terminal Question_t {
+    atomMarkupName = keyword.operator;
+  };
+
+  terminal Colon_t {
+    atomMarkupName = keyword.operator;
+  };
+
+  terminal Dot_t {
+    atomMarkupName = keyword.operator;
+  };
+
+  terminal PTR_OP {
+    atomMarkupName = keyword.operator;
+  };
+
+  terminal Assign_t {
+    atomMarkupName = keyword.operator;
+  };
+
+  terminal RIGHT_ASSIGN {
+    atomMarkupName = keyword.operator;
+  };
+
+  terminal LEFT_ASSIGN {
+    atomMarkupName = keyword.operator;
+  };
+
+  terminal ADD_ASSIGN {
+    atomMarkupName = keyword.operator;
+  };
+
+  terminal SUB_ASSIGN {
+    atomMarkupName = keyword.operator;
+  };
+
+  terminal MUL_ASSIGN {
+    atomMarkupName = keyword.operator;
+  };
+
+  terminal DIV_ASSIGN {
+    atomMarkupName = keyword.operator;
+  };
+
+  terminal MOD_ASSIGN {
+    atomMarkupName = keyword.operator;
+  };
+
+  terminal AND_ASSIGN {
+    atomMarkupName = keyword.operator;
+  };
+
+  terminal XOR_ASSIGN {
+    atomMarkupName = keyword.operator;
+  };
+
+  terminal OR_ASSIGN {
+    atomMarkupName = keyword.operator;
+  };
+
+  terminal And_t {
+    atomMarkupName = keyword.operator;
+  };
+
+  terminal Or_t {
+    atomMarkupName = keyword.operator;
+  };
+
+  terminal Tilde_t {
+    atomMarkupName = keyword.operator;
+  };
+
+  terminal Xor_t {
+    atomMarkupName = keyword.operator;
+  };
+
+  terminal RIGHT_OP {
+    atomMarkupName = keyword.operator;
+  };
+
+  terminal LEFT_OP {
+    atomMarkupName = keyword.operator;
+  };
+
+  terminal Minus_t {
+    atomMarkupName = keyword.operator;
+  };
+
+  terminal Plus_t {
+    atomMarkupName = keyword.operator;
+  };
+
+  terminal Star_t {
+    atomMarkupName = keyword.operator;
+  };
+
+  terminal Divide_t {
+    atomMarkupName = keyword.operator;
+  };
+
+  terminal Mod_t {
+    atomMarkupName = keyword.operator;
+  };
+
+  terminal LessThan_t {
+    atomMarkupName = keyword.operator;
+  };
+
+  terminal GreaterThan_t {
+    atomMarkupName = keyword.operator;
+  };
+
+  terminal LessThanEqual_t {
+    atomMarkupName = keyword.operator;
+  };
+
+  terminal GreaterThanEqual_t {
+    atomMarkupName = keyword.operator;
+  };
+
+  terminal Equality_t {
+    atomMarkupName = keyword.operator;
+  };
+
+  terminal NonEquality_t {
+    atomMarkupName = keyword.operator;
+  };
+
+  terminal INC_OP {
+    atomMarkupName = keyword.operator;
+  };
+
+  terminal DEC_OP {
+    atomMarkupName = keyword.operator;
+  };
+
+  terminal ELLIPSES {
+    atomMarkupName = variable.parameter;
+  };
+}

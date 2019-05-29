@@ -1,0 +1,5 @@
+global ide_specification {
+  language_name = ablec;
+  treesitter_parser = @joeblanchard/tree-sitter-ablec;
+  file_extensions = [ xc ];
+}
