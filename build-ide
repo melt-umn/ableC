@@ -4,15 +4,15 @@
 # without any extensions
 
 # run silver to get the grammar.js file modified_copper.xml and ideInterface.txt
-silver --treesitter-spec ablec --ide-interface -I grammars edu:umn:cs:melt:ableC:host
+silver --treesitter-spec ablec --treesitter-demo --ide-interface -I grammars edu:umn:cs:melt:ableC:host
 
 # make sure commments appear in the parse tree
-sed s/_edu_umn_cs_melt_ableC_concretesyntax_BlockComment/edu_umn_cs_melt_ableC_concretesyntax_BlockComment/ grammar.js > grammar2.js; mv grammar2.js grammar.js
-sed s/_edu_umn_cs_melt_ableC_concretesyntax_LineComment/edu_umn_cs_melt_ableC_concretesyntax_LineComment/ grammar.js > grammar2.js ; mv grammar2.js grammar.js
+#sed s/_edu_umn_cs_melt_ableC_concretesyntax_BlockComment/edu_umn_cs_melt_ableC_concretesyntax_BlockComment/ grammar.js > grammar2.js; mv grammar2.js grammar.js
+#sed s/_edu_umn_cs_melt_ableC_concretesyntax_LineComment/edu_umn_cs_melt_ableC_concretesyntax_LineComment/ grammar.js > grammar2.js ; mv grammar2.js grammar.js
 
 # run the scripts with your NPM username as the command line option
 # This scope is the unique identifier which will allow multiple people to have
 # a parser with the same name
-gen-treesitter-parser --scope $1 --lang ablec --publish
-gen-atom-language-package ablec $1 -I ide ideInterface.txt
+#gen-treesitter-parser --scope $1 --lang ablec --publish
+#gen-atom-language-package ablec $1 -I ide -I ide/ableCOnly ideInterface.txt
 
