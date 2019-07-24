@@ -1,3 +1,4 @@
+specification Standard;
 ide_specification for edu:umn:cs:melt:ableC:concretesyntax {
   terminal TypeName_t {
     atomMarkupName = storage.type;
