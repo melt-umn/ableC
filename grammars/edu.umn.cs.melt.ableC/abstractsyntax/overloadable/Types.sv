@@ -265,10 +265,11 @@ top::host:Expr ::=
 aspect production host:transformedExpr
 top::host:Expr ::= original::host:Expr  resolved::host:Expr
 {
-  top.callProd = original.callProd;
-  top.addressOfProd = original.addressOfProd;
-  top.lEqProd = original.lEqProd;
+  top.callProd = orElse(original.callProd, resolved.callProd);
+  top.addressOfProd = orElse(original.addressOfProd, resolved.addressOfProd);
+  top.lEqProd = orElse(original.lEqProd, resolved.lEqProd);
   original.otherType = top.otherType;
+  resolved.otherType = top.otherType;
 }
 
 aspect production host:arraySubscriptExpr
