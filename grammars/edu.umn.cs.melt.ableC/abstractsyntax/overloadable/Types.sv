@@ -246,18 +246,18 @@ top::host:Expr ::=
 {
   top.callProd =
     case top.host:typerep.callProd of
-      just(prod) -> just(prod(top, _, _))
+    | just(prod) -> just(prod(host:decExpr(top, location=top.location), _, _))
     | nothing() -> nothing()
     end;
   top.addressOfProd =
     case top.host:typerep.addressOfProd of
-      just(prod) -> just(prod(top, _))
+    | just(prod) -> just(prod(host:decExpr(top, location=top.location), _))
     | nothing() -> nothing()
     end;
   top.lEqProd =
     -- Can't use a local here, unfourtunately
     case decorate top.host:typerep with {otherType=top.otherType;}.lEqProd of
-      just(prod) -> just(prod(top, _, _))
+    | just(prod) -> just(prod(host:decExpr(top, location=top.location), _, _))
     | nothing() -> nothing()
     end;
 }
@@ -280,21 +280,31 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   top.addressOfProd =
     orElse(
       case lhs.host:typerep.addressOfArraySubscriptProd of
-        just(prod) -> just(prod(lhs, rhs, _))
+      | just(prod) ->
+          just(
+            prod(
+              host:decExpr(lhs, location=lhs.location),
+              host:decExpr(rhs, location=rhs.location),
+              _))
       | nothing() -> nothing()
       end,
       case top.host:typerep.addressOfProd of
-        just(prod) -> just(prod(top, _))
+      | just(prod) -> just(prod(host:decExpr(top, location=top.location), _))
       | nothing() -> nothing()
       end);
   top.lEqProd =
     orElse(
       case t.eqArraySubscriptProd of
-        just(prod) -> just(prod(lhs, rhs, _, _))
+      | just(prod) ->
+          just(
+            prod(
+              host:decExpr(lhs, location=lhs.location),
+              host:decExpr(rhs, location=rhs.location),
+              _, _))
       | nothing() -> nothing()
       end,
       case t.lEqProd of
-        just(prod) -> just(prod(top, _, _))
+      | just(prod) -> just(prod(host:decExpr(top, location=top.location), _, _))
       | nothing() -> nothing()
       end);
   lhs.otherType = top.otherType;
@@ -308,21 +318,21 @@ top::host:Expr ::= f::host:Expr  a::host:Exprs
   top.addressOfProd =
     orElse(
       case f.host:typerep.addressOfCallProd of
-        just(prod) -> just(prod(f, a, _))
+      | just(prod) -> just(prod(host:decExpr(f, location=f.location), a, _))
       | nothing() -> nothing()
       end,
       case top.host:typerep.addressOfProd of
-        just(prod) -> just(prod(top, _))
+      | just(prod) -> just(prod(host:decExpr(top, location=top.location), _))
       | nothing() -> nothing()
       end);
   top.lEqProd =
     orElse(
       case t.eqCallProd of
-        just(prod) -> just(prod(f, a, _, _))
+      | just(prod) -> just(prod(host:decExpr(f, location=f.location), a, _, _))
       | nothing() -> nothing()
       end,
       case t.lEqProd of
-        just(prod) -> just(prod(top, _, _))
+      | just(prod) -> just(prod(host:decExpr(top, location=top.location), _, _))
       | nothing() -> nothing()
       end);
   f.otherType = top.otherType;
@@ -337,31 +347,43 @@ top::host:Expr ::= lhs::host:Expr  deref::Boolean  rhs::host:Name
   top.callProd =
     orElse(
       case t.callMemberProd of
-        just(prod) -> just(prod(lhs, rhs, _, _))
+      | just(prod) ->
+          just(
+            prod(
+              host:decExpr(lhs, location=lhs.location),
+              rhs, _, _))
       | nothing() -> nothing()
       end,
       case top.host:typerep.callProd of
-        just(prod) -> just(prod(top, _, _))
+      | just(prod) -> just(prod(host:decExpr(top, location=top.location), _, _))
       | nothing() -> nothing()
       end);
   top.addressOfProd =
     orElse(
       case t.addressOfMemberProd of
-        just(prod) -> just(prod(lhs, rhs, _))
+      | just(prod) ->
+        just(
+          prod(
+            host:decExpr(lhs, location=lhs.location),
+            rhs, _))
       | nothing() -> nothing()
       end,
       case top.host:typerep.addressOfProd of
-        just(prod) -> just(prod(top, _))
+      | just(prod) -> just(prod(host:decExpr(top, location=top.location), _))
       | nothing() -> nothing()
       end);
   top.lEqProd =
     orElse(
       case t.eqMemberProd of
-        just(prod) -> just(prod(lhs, rhs, _, _))
+      | just(prod) ->
+          just(
+            prod(
+              host:decExpr(lhs, location=lhs.location),
+              rhs, _, _))
       | nothing() -> nothing()
       end,
       case t.lEqProd of
-        just(prod) -> just(prod(top, _, _))
+      | just(prod) -> just(prod(host:decExpr(top, location=top.location), _, _))
       | nothing() -> nothing()
       end);
   lhs.otherType = top.otherType;
@@ -478,12 +500,12 @@ top::host:Type ::= q::host:Qualifiers  sub::host:ExtType
   top.callProd = sub.callProd;
   top.callMemberProd =
     case sub.callMemberProd of
-      just(prod) -> just(prod(_, top.isDeref, _, _, _))
+    | just(prod) -> just(prod(_, top.isDeref, _, _, _))
     | nothing() -> nothing()
     end;
   top.memberProd =
     case sub.memberProd of
-      just(prod) -> just(prod(_, top.isDeref, _, _))
+    | just(prod) -> just(prod(_, top.isDeref, _, _))
     | nothing() -> nothing()
     end;
   
@@ -496,7 +518,7 @@ top::host:Type ::= q::host:Qualifiers  sub::host:ExtType
   top.addressOfCallProd = sub.addressOfCallProd;
   top.addressOfMemberProd =
     case sub.addressOfMemberProd of
-      just(prod) -> just(prod(_, top.isDeref, _, _))
+    | just(prod) -> just(prod(_, top.isDeref, _, _))
     | nothing() -> nothing()
     end;
   top.dereferenceProd = sub.dereferenceProd;
@@ -512,7 +534,7 @@ top::host:Type ::= q::host:Qualifiers  sub::host:ExtType
   top.eqCallProd = sub.eqCallProd;
   top.eqMemberProd =
     case sub.eqMemberProd of
-      just(prod) -> just(prod(_, top.isDeref, _, _, _))
+    | just(prod) -> just(prod(_, top.isDeref, _, _, _))
     | nothing() -> nothing()
     end;
   top.lMulEqProd = sub.lMulEqProd;
