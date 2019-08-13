@@ -63,7 +63,10 @@ top::host:Expr ::= f::host:Expr  a::host:Exprs
   local rewriteProd::Maybe<(host:Expr ::= host:Exprs Location)> =
     case f.host:typerep.addressOfCallProd of
     | just(prod) ->
-        just(\ a::host:Exprs loc::Location -> dereferenceExpr(prod(f, a, loc), location=loc))
+        just(\ a::host:Exprs loc::Location ->
+          dereferenceExpr(
+            prod(host:decExpr(f, location=f.location), a, loc),
+            location=loc))
     | nothing() -> nothing()
     end;
   
