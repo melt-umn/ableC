@@ -281,11 +281,11 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
     orElse(
       case lhs.host:typerep.addressOfArraySubscriptProd of
       | just(prod) ->
-          just(
-            prod(
-              host:decExpr(lhs, location=lhs.location),
-              host:decExpr(rhs, location=rhs.location),
-              _))
+        just(
+          prod(
+            host:decExpr(lhs, location=lhs.location),
+            host:decExpr(rhs, location=rhs.location),
+            _))
       | nothing() -> nothing()
       end,
       case top.host:typerep.addressOfProd of
@@ -296,11 +296,11 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
     orElse(
       case t.eqArraySubscriptProd of
       | just(prod) ->
-          just(
-            prod(
-              host:decExpr(lhs, location=lhs.location),
-              host:decExpr(rhs, location=rhs.location),
-              _, _))
+        just(
+          prod(
+            host:decExpr(lhs, location=lhs.location),
+            host:decExpr(rhs, location=rhs.location),
+            _, _))
       | nothing() -> nothing()
       end,
       case t.lEqProd of
@@ -318,7 +318,8 @@ top::host:Expr ::= f::host:Expr  a::host:Exprs
   top.addressOfProd =
     orElse(
       case f.host:typerep.addressOfCallProd of
-      | just(prod) -> just(prod(host:decExpr(f, location=f.location), a, _))
+      | just(prod) ->
+        just(prod(host:decExpr(f, location=f.location), host:decExprs(a), _))
       | nothing() -> nothing()
       end,
       case top.host:typerep.addressOfProd of
@@ -328,7 +329,8 @@ top::host:Expr ::= f::host:Expr  a::host:Exprs
   top.lEqProd =
     orElse(
       case t.eqCallProd of
-      | just(prod) -> just(prod(host:decExpr(f, location=f.location), a, _, _))
+      | just(prod) ->
+        just(prod(host:decExpr(f, location=f.location), host:decExprs(a), _, _))
       | nothing() -> nothing()
       end,
       case t.lEqProd of
@@ -348,10 +350,10 @@ top::host:Expr ::= lhs::host:Expr  deref::Boolean  rhs::host:Name
     orElse(
       case t.callMemberProd of
       | just(prod) ->
-          just(
-            prod(
-              host:decExpr(lhs, location=lhs.location),
-              rhs, _, _))
+        just(
+          prod(
+            host:decExpr(lhs, location=lhs.location),
+            rhs, _, _))
       | nothing() -> nothing()
       end,
       case top.host:typerep.callProd of
@@ -376,10 +378,10 @@ top::host:Expr ::= lhs::host:Expr  deref::Boolean  rhs::host:Name
     orElse(
       case t.eqMemberProd of
       | just(prod) ->
-          just(
-            prod(
-              host:decExpr(lhs, location=lhs.location),
-              rhs, _, _))
+        just(
+          prod(
+            host:decExpr(lhs, location=lhs.location),
+            rhs, _, _))
       | nothing() -> nothing()
       end,
       case t.lEqProd of
