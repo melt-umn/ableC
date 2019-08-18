@@ -65,20 +65,12 @@ IOVal<Integer> ::= args::[String] ioIn::IO
               printM(substitute("edu:umn:cs:melt:", "", hackUnparse(comp.abs:hostAst)) ++ "\n");
               return 0;
             }
-            else if containsBy(stringEq, "--show-lifted-ast", args) then {
-              printM(substitute("edu:umn:cs:melt:", "", hackUnparse(comp.abs:liftedAst)) ++ "\n");
-              return 0;
-            }
             else if containsBy(stringEq, "--show-pp", args) then {
               printM(show(100, comp.abs:srcPP) ++ "\n");
               return 0;
             }
             else if containsBy(stringEq, "--show-host-pp", args) then {
               printM(show(100, comp.abs:hostPP) ++ "\n");
-              return 0;
-            }
-            else if containsBy(stringEq, "--show-lifted-pp", args) then {
-              printM(show(100, comp.abs:liftedPP) ++ "\n");
               return 0;
             }
             else {

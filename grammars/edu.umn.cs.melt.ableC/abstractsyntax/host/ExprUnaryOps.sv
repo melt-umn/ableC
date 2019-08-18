@@ -3,7 +3,7 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 abstract production preIncExpr
 top::Expr ::= e::Expr
 {
-  propagate host, lifted;
+  propagate host;
   top.pp = parens( cat( text("++"), e.pp ) );
   top.errors := e.errors;
   top.globalDecls := e.globalDecls;
@@ -20,7 +20,7 @@ top::Expr ::= e::Expr
 abstract production preDecExpr
 top::Expr ::= e::Expr
 {
-  propagate host, lifted;
+  propagate host;
   top.pp = parens( cat( text("--"), e.pp ) );
   top.errors := e.errors;
   top.globalDecls := e.globalDecls;
@@ -37,7 +37,7 @@ top::Expr ::= e::Expr
 abstract production postIncExpr
 top::Expr ::= e::Expr
 {
-  propagate host, lifted;
+  propagate host;
   top.pp = parens( cat( e.pp, text("++") ) );
   top.errors := e.errors;
   top.globalDecls := e.globalDecls;
@@ -54,7 +54,7 @@ top::Expr ::= e::Expr
 abstract production postDecExpr
 top::Expr ::= e::Expr
 {
-  propagate host, lifted;
+  propagate host;
   top.pp = parens( cat( e.pp, text("--") ) );
   top.errors := e.errors;
   top.globalDecls := e.globalDecls;
@@ -71,7 +71,7 @@ top::Expr ::= e::Expr
 abstract production addressOfExpr
 top::Expr ::= e::Expr
 {
-  propagate host, lifted;
+  propagate host;
   top.pp = parens( cat( text("&"), e.pp ) );
   top.errors := e.errors;
   top.globalDecls := e.globalDecls;
@@ -88,7 +88,7 @@ top::Expr ::= e::Expr
 abstract production dereferenceExpr
 top::Expr ::= e::Expr
 {
-  propagate host, lifted;
+  propagate host;
   top.pp = parens( cat(text("*"), e.pp) );
   top.typerep =
     case e.typerep.defaultFunctionArrayLvalueConversion of
@@ -107,7 +107,6 @@ top::Expr ::= e::Expr
     case e.typerep.defaultFunctionArrayLvalueConversion of
     | pointerType(_, _) -> []
     | errorType() -> []
-    | completedType(_) -> []
     | _ -> [err(top.location, "invalid type argument of unary ‘*’ (have ‘" ++
                                showType(e.typerep) ++ "’)")]
     end;
@@ -115,7 +114,7 @@ top::Expr ::= e::Expr
 abstract production positiveExpr
 top::Expr ::= e::Expr
 {
-  propagate host, lifted;
+  propagate host;
   top.pp = parens( cat( text("+"), e.pp ) );
   top.errors := e.errors;
   top.globalDecls := e.globalDecls;
@@ -127,7 +126,7 @@ top::Expr ::= e::Expr
 abstract production negativeExpr
 top::Expr ::= e::Expr
 {
-  propagate host, lifted;
+  propagate host;
   top.pp = parens( cat( text("-"), e.pp ) );
   top.errors := e.errors;
   top.globalDecls := e.globalDecls;
@@ -139,7 +138,7 @@ top::Expr ::= e::Expr
 abstract production bitNegateExpr
 top::Expr ::= e::Expr
 {
-  propagate host, lifted;
+  propagate host;
   top.pp = parens( cat( text("~"), e.pp ) );
   top.errors := e.errors;
   top.globalDecls := e.globalDecls;
@@ -151,7 +150,7 @@ top::Expr ::= e::Expr
 abstract production notExpr
 top::Expr ::= e::Expr
 {
-  propagate host, lifted;
+  propagate host;
   top.pp = parens( cat( text("!"), e.pp ) );
   top.errors := e.errors;
   top.globalDecls := e.globalDecls;
@@ -165,7 +164,7 @@ top::Expr ::= e::Expr
 abstract production realExpr
 top::Expr ::= e::Expr
 {
-  propagate host, lifted;
+  propagate host;
   top.pp = parens( cat( text("__real__"), e.pp ) );
   top.errors := e.errors;
   top.globalDecls := e.globalDecls;
@@ -178,7 +177,7 @@ top::Expr ::= e::Expr
 abstract production imagExpr
 top::Expr ::= e::Expr
 {
-  propagate host, lifted;
+  propagate host;
   top.pp = parens( cat( text("__imag__"), e.pp ) );
   top.errors := e.errors;
   top.globalDecls := e.globalDecls;
@@ -191,7 +190,7 @@ top::Expr ::= e::Expr
 abstract production sizeofExpr
 top::Expr ::= e::ExprOrTypeName
 {
-  propagate host, lifted;
+  propagate host;
   top.pp = parens( ppConcat([text("sizeof"), parens(e.pp)]) );
   top.errors := e.errors;
   top.globalDecls := e.globalDecls;
@@ -204,7 +203,7 @@ top::Expr ::= e::ExprOrTypeName
 abstract production alignofExpr
 top::Expr ::= e::ExprOrTypeName
 {
-  propagate host, lifted;
+  propagate host;
   top.pp = parens( ppConcat([text("_Alignof"), parens(e.pp)]) );
   top.errors := e.errors;
   top.globalDecls := e.globalDecls;

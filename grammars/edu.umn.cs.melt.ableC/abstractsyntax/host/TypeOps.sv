@@ -30,9 +30,6 @@ Boolean ::= a::Type  b::Type  allowSubtypes::Boolean  dropOuterQual::Boolean
   -- Allow already raised errors to go by unbothered by more errors
   | errorType(), _ -> true
   | _, errorType() -> true
-  -- We don't know (yet), avoid raising errors.  This should only occur in the host tree
-  | completedType(_), _ -> true
-  | _, completedType(_) -> true
   -- Type specifiers
   | builtinType(q1, b1), builtinType(q2, b2) -> builtinCompatible(b1, b2, allowSubtypes) && compatibleQualifiers(q1, q2, allowSubtypes, dropOuterQual)
   | builtinType(q1, b1), extType(q2, enumExtType(_)) -> allowSubtypes && b1.isIntegerType && compatibleQualifiers(q1, q2, allowSubtypes, dropOuterQual)
@@ -319,12 +316,10 @@ Boolean ::= lval::Type  rval::Type
     else
     case lval of
     | errorType() -> true
-    | completedType(_) -> true
     | _ -> false
     end ||
     case rval of
     | errorType() -> true
-    | completedType(_) -> true
     | _ -> false
     end ||
 
