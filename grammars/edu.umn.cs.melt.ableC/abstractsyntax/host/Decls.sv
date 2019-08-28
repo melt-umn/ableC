@@ -522,11 +522,7 @@ top::FunctionDecl ::= storage::StorageClasses  fnquals::SpecialSpecifiers  bty::
     globalDeclsDefs(mty.globalDecls) ++
     globalDeclsDefs(ds.globalDecls) ++
     globalDeclsDefs(body.globalDecls) ++
-    globalDeclsDefs(fnquals.globalDecls) ++
-    functionDeclsDefs(mty.functionDecls) ++
-    functionDeclsDefs(ds.functionDecls) ++
-    functionDeclsDefs(body.functionDecls) ++
-    functionDeclsDefs(fnquals.functionDecls);
+    globalDeclsDefs(fnquals.globalDecls);
   top.freeVariables :=
     bty.freeVariables ++
     removeDefsFromNames(implicitDefs, mty.freeVariables) ++
