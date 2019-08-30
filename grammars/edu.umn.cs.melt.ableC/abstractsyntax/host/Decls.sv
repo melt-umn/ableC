@@ -440,8 +440,19 @@ flowtype FunctionDecl = decorate {env, returnType}, name {}, sourceLocation {};
 abstract production functionDecl
 top::FunctionDecl ::= storage::StorageClasses  fnquals::SpecialSpecifiers  bty::BaseTypeExpr mty::TypeModifierExpr  name::Name  attrs::Attributes  ds::Decls  body::Stmt
 {
-  propagate host;
-  
+  production attribute setups :: [Stmt] with ++;
+  setups := if null(top.env.values) -- Want env on flowtype of setups
+            then []
+            else [];
+
+  top.host = functionDecl(storage, fnquals.host, bty.host, mty.host,
+    name.host, attrs.host, ds.host,
+    if name.name == "main"
+    then
+      foldr(seqStmt, body.host, 
+        map(\s::Stmt -> (decorate s with {env=top.env; returnType=nothing();}).host, setups))
+    else body.host);
+
   top.pp = ppConcat([terminate(space(), storage.pps), terminate( space(), fnquals.pps ),
     bty.pp, space(), mty.lpp, name.pp, mty.rpp, ppAttributesRHS(attrs), line(), terminate(cat(semi(), line()), ds.pps),
     text("{"), line(), nestlines(2,body.pp), text("}")]);
