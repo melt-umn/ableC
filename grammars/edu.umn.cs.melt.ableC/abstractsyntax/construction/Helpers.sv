@@ -97,11 +97,19 @@ Maybe<BaseTypeExpr> ::= q::Qualifiers  sorted_type_specifiers::[String]
       just(builtinTypeExpr(q, signedType(longlongType())))
   | "int" :: "long" :: "long" :: "signed" :: [] ->
       just(builtinTypeExpr(q, signedType(longlongType())))
-  -- unsigned long:
+  -- unsigned long long:
   | "int" :: "long" :: "long" :: "unsigned" :: [] ->
       just(builtinTypeExpr(q, unsignedType(longlongType())))
   | "long" :: "long" :: "unsigned" :: [] ->
       just(builtinTypeExpr(q, unsignedType(longlongType())))
+  -- signed __int128:
+  | "__int128" :: [] ->
+      just(builtinTypeExpr(q, signedType(int128Type())))
+  | "__int128" :: "signed" :: [] ->
+      just(builtinTypeExpr(q, signedType(int128Type())))
+  -- unsigned __int128:
+  | "__int128" :: "unsigned" :: [] ->
+      just(builtinTypeExpr(q, unsignedType(int128Type())))
   -- float:
   | "float" :: [] ->
       just(builtinTypeExpr(q, realType(floatType())))
