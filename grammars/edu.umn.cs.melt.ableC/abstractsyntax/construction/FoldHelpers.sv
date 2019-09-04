@@ -73,13 +73,18 @@ Parameters ::= l::[ParameterDecl]
   return case l of
   -- A special case.  "type name(void)"  means no parameters.
   | [d] ->
-  -- TODO: Possible bug with flow analysis, doesn't complain if this decorate is removed
-    case decorate d with {env = emptyEnv(); returnType = nothing();} of
-      parameterDecl([], builtinTypeExpr(nilQualifier(), voidType()), baseTypeExpr(), nothingName(), nilAttribute()) -> nilParameters()
+    case decorate d with {env = emptyEnv(); returnType = nothing(); position = 0;} of
+      parameterDecl(nilStorageClass(), builtinTypeExpr(nilQualifier(), voidType()), baseTypeExpr(), nothingName(), nilAttribute()) -> nilParameters()
     | _ -> foldr(consParameters, nilParameters(), l)
     end
   | _ -> foldr(consParameters, nilParameters(), l)
   end;
+}
+
+function foldStorageClass
+StorageClasses ::= l::[StorageClass]
+{
+  return foldr(consStorageClass, nilStorageClass(), l);
 }
 
 function foldAttribute

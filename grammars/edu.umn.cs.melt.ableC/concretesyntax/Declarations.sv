@@ -33,7 +33,7 @@ concrete productions top::FunctionDefinition_c
       d.givenStmt = s.ast;
     }
     action {
-      context = lh:closeScope(context); -- Opened by InitialFunctionDefinition.
+      context = closeScope(context); -- Opened by InitialFunctionDefinition.
     }
 
 closed nonterminal Declaration_c with location, ast<ast:Decl>;
@@ -58,13 +58,13 @@ concrete productions top::Declaration_c
           else
             ast:typedefDecls(ds.attributes, bt, dcls)
         else
-          ast:variableDecls(ds.storageClass, ds.attributes, bt, dcls);
+          ast:variableDecls(ast:foldStorageClass(ds.storageClass), ds.attributes, bt, dcls);
     }
     action {
       context =
         if ds.isTypedef
-        then lh:addTypenamesToScope(idcl.declaredIdents, context)
-        else lh:addIdentsToScope(idcl.declaredIdents, context);
+        then addIdentsToScope(idcl.declaredIdents, TypeName_t, context)
+        else addIdentsToScope(idcl.declaredIdents, Identifier_t, context);
     }
 | ds::DeclarationSpecifiers_c  ';'
     { ds.givenQualifiers = ds.typeQualifiers;
@@ -101,7 +101,7 @@ concrete productions top::TypeName_c
         ast:typeName(
           case decorate sqs.attributes with { ast:returnType = nothing(); } of
           | ast:nilAttribute() -> bt
-          | _ -> ast:warnTypeExpr([wrn(top.location, "Ignoring attributes in type name1")], bt)
+          | _ -> ast:warnTypeExpr([wrn(top.location, "Ignoring attributes in type name")], bt)
           end,
           ast:baseTypeExpr());
     }
@@ -115,7 +115,7 @@ concrete productions top::TypeName_c
         ast:typeName(
           case decorate sqs.attributes with { ast:returnType = nothing(); } of
           | ast:nilAttribute() -> bt
-          | _ -> ast:warnTypeExpr([wrn(top.location, "Ignoring attributes in type name1")], bt)
+          | _ -> ast:warnTypeExpr([wrn(top.location, "Ignoring attributes in type name")], bt)
           end,
           d.ast);
     }
@@ -139,12 +139,22 @@ concrete productions top::Names_c
 | 
   { top.ast = []; }
 
--- Ugly hack to add things to the follow set TypeNames_c and Names_c
+-- Ugly hack to add things to the follow sets of several nonterminals
 -- We set this to include what is allowed by C++ for extensions to use
 terminal TypeNames_NEVER_t 'TypeNames_NEVER_t!!!nevernever1234567890';
 terminal Names_NEVER_t 'Names_NEVER_t!!!nevernever1234567890';
+terminal Declarator_NEVER_t 'Declarator_NEVER_t!!!nevernever1234567890';
+terminal DirectDeclarator_NEVER_t 'DirectDeclarator_NEVER_t!!!nevernever1234567890';
 concrete productions top::Expr_c
 | 'TypeNames_NEVER_t!!!nevernever1234567890' TypeNames_c ')'
+    { top.ast = ast:errorExpr ( [ err (top.location, "Internal Error. " ++
+        "Placeholder for TypeNames_c should not appear in the tree.") ],
+        location=top.location ) ; }
+| 'TypeNames_NEVER_t!!!nevernever1234567890' TypeNames_c '{'
+    { top.ast = ast:errorExpr ( [ err (top.location, "Internal Error. " ++
+        "Placeholder for TypeNames_c should not appear in the tree.") ],
+        location=top.location ) ; }
+| 'TypeNames_NEVER_t!!!nevernever1234567890' TypeNames_c '}'
     { top.ast = ast:errorExpr ( [ err (top.location, "Internal Error. " ++
         "Placeholder for TypeNames_c should not appear in the tree.") ],
         location=top.location ) ; }
@@ -156,7 +166,15 @@ concrete productions top::Expr_c
     { top.ast = ast:errorExpr ( [ err (top.location, "Internal Error. " ++
         "Placeholder for TypeNames_c should not appear in the tree.") ],
         location=top.location ) ; }
+| 'TypeNames_NEVER_t!!!nevernever1234567890' TypeNames_c AllowSEUDecl_t
+    { top.ast = ast:errorExpr ( [ err (top.location, "Internal Error. " ++
+        "Placeholder for TypeNames_c should not appear in the tree.") ],
+        location=top.location ) ; }
 | 'Names_NEVER_t!!!nevernever1234567890' Names_c ')'
+    { top.ast = ast:errorExpr ( [ err (top.location, "Internal Error. " ++
+        "Placeholder for Names_c should not appear in the tree.") ],
+        location=top.location ) ; }
+| 'Names_NEVER_t!!!nevernever1234567890' Names_c '}'
     { top.ast = ast:errorExpr ( [ err (top.location, "Internal Error. " ++
         "Placeholder for Names_c should not appear in the tree.") ],
         location=top.location ) ; }
@@ -167,6 +185,14 @@ concrete productions top::Expr_c
 | 'Names_NEVER_t!!!nevernever1234567890' Names_c ';'
     { top.ast = ast:errorExpr ( [ err (top.location, "Internal Error. " ++
         "Placeholder for Names_c should not appear in the tree.") ],
+        location=top.location ) ; }
+| 'Declarator_NEVER_t!!!nevernever1234567890' Declarator_c '>'
+    { top.ast = ast:errorExpr ( [ err (top.location, "Internal Error. " ++
+        "Placeholder for Declarator_c should not appear in the tree.") ],
+        location=top.location ) ; }
+| 'DirectDeclarator_NEVER_t!!!nevernever1234567890' DirectDeclarator_c '>'
+    { top.ast = ast:errorExpr ( [ err (top.location, "Internal Error. " ++
+        "Placeholder for DirectDeclarator_c should not appear in the tree.") ],
         location=top.location ) ; }
 
 -- "Non-exported" nonterminals
@@ -212,12 +238,12 @@ concrete productions top::InitialFunctionDefinition_c
         end;
 
       top.ast = 
-        ast:functionDecl(ds.storageClass, specialSpecifiers, bt, mt, d.declaredIdent, ds.attributes, ast:foldDecl(l.ast), top.givenStmt);
+        ast:functionDecl(ast:foldStorageClass(ds.storageClass), specialSpecifiers, bt, mt, d.declaredIdent, ds.attributes, ast:foldDecl(l.ast), top.givenStmt);
     }
     action {
       -- Function are annoying because we have to open a scope, then add the
       -- parameters, and close it after the brace.
-      context = lh:beginFunctionScope(d.declaredIdent, d.declaredParamIdents, context);
+      context = beginFunctionScope(d.declaredIdent, Identifier_t, d.declaredParamIdents, Identifier_t, context);
     }
 | d::Declarator_c  l::InitiallyUnqualifiedDeclarationList_c
     {
@@ -246,13 +272,13 @@ concrete productions top::InitialFunctionDefinition_c
         end;
 
       top.ast = 
-        ast:functionDecl([], ast:nilSpecialSpecifier(), bt, mt, d.declaredIdent, ast:nilAttribute(), ast:foldDecl(l.ast), top.givenStmt);
+        ast:functionDecl(ast:nilStorageClass(), ast:nilSpecialSpecifier(), bt, mt, d.declaredIdent, ast:nilAttribute(), ast:foldDecl(l.ast), top.givenStmt);
     }
     action {
       -- Unfortunate duplication. This production is necessary for K&R compatibility
       -- We can't make it a proper optional nonterminal, since that requires a reduce far too early.
       -- (i.e. LALR conflicts)
-      context = lh:beginFunctionScope(d.declaredIdent, d.declaredParamIdents, context);
+      context = beginFunctionScope(d.declaredIdent, Identifier_t, d.declaredParamIdents, Identifier_t, context);
     }
 
 {--
@@ -292,13 +318,13 @@ concrete productions top::InitiallyUnqualifiedDeclaration_c
           else
             ast:typedefDecls(ds.attributes, bt, dcls)
         else
-          ast:variableDecls(ds.storageClass, ds.attributes, bt, dcls);
+          ast:variableDecls(ast:foldStorageClass(ds.storageClass), ds.attributes, bt, dcls);
     }
     action {
       context =
         if ds.isTypedef
-        then lh:addTypenamesToScope(idcl.declaredIdents, context)
-        else lh:addIdentsToScope(idcl.declaredIdents, context);
+        then addIdentsToScope(idcl.declaredIdents, TypeName_t, context)
+        else addIdentsToScope(idcl.declaredIdents, Identifier_t, context);
     }
 | ds::InitiallyUnqualifiedDeclarationSpecifiers_c  ';'
     { ds.givenQualifiers = ds.typeQualifiers;
@@ -557,7 +583,7 @@ concrete productions top::ParameterDeclaration_c
       d.givenType = ast:baseTypeExpr();
       local bt :: ast:BaseTypeExpr =
         ast:figureOutTypeFromSpecifiers(ds.location, ds.typeQualifiers, ds.preTypeSpecifiers, ds.realTypeSpecifiers, ds.mutateTypeSpecifiers);
-      top.ast = ast:parameterDecl(ds.storageClass, bt, d.ast, ast:justName(d.declaredIdent), ds.attributes);
+      top.ast = ast:parameterDecl(ast:foldStorageClass(ds.storageClass), bt, d.ast, ast:justName(d.declaredIdent), ds.attributes);
       }
 | ds::DeclarationSpecifiers_c d::AbstractDeclarator_c 
     { top.declaredIdents = [];
@@ -565,14 +591,14 @@ concrete productions top::ParameterDeclaration_c
       d.givenType = ast:baseTypeExpr();
       local bt :: ast:BaseTypeExpr =
         ast:figureOutTypeFromSpecifiers(ds.location, ds.typeQualifiers, ds.preTypeSpecifiers, ds.realTypeSpecifiers, ds.mutateTypeSpecifiers);
-      top.ast = ast:parameterDecl(ds.storageClass, bt, d.ast, ast:nothingName(), ds.attributes);
+      top.ast = ast:parameterDecl(ast:foldStorageClass(ds.storageClass), bt, d.ast, ast:nothingName(), ds.attributes);
     }
 | ds::DeclarationSpecifiers_c 
     { top.declaredIdents = [];
       ds.givenQualifiers = ds.typeQualifiers;
       local bt :: ast:BaseTypeExpr =
         ast:figureOutTypeFromSpecifiers(ds.location, ds.typeQualifiers, ds.preTypeSpecifiers, ds.realTypeSpecifiers, ds.mutateTypeSpecifiers);
-      top.ast = ast:parameterDecl(ds.storageClass, bt, ast:baseTypeExpr(), ast:nothingName(), ds.attributes);
+      top.ast = ast:parameterDecl(ast:foldStorageClass(ds.storageClass), bt, ast:baseTypeExpr(), ast:nothingName(), ds.attributes);
     }
 
 

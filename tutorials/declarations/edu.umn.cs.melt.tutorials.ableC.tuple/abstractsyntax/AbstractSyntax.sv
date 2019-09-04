@@ -1,6 +1,7 @@
 grammar edu:umn:cs:melt:tutorials:ableC:tuple:abstractsyntax;
 
 imports edu:umn:cs:melt:ableC:abstractsyntax:host;
+imports edu:umn:cs:melt:ableC:abstractsyntax:env;
 imports edu:umn:cs:melt:ableC:abstractsyntax:construction;
 
 imports silver:langutil;
@@ -16,18 +17,33 @@ top::Decl ::= n::Name tns::TypeNames
   tns.index = 0;
 
   forwards to
-    typedefDecls(
-      nilAttribute(),
-      structTypeExpr(
-        nilQualifier(),
-        structDecl(
-          nilAttribute(),
-          nothingName(),
-          tns.tupleStructItems,
-          location=builtin)),
-      consDeclarator(
-        declarator(n, baseTypeExpr(), nilAttribute(), nothingInitializer()),
-        nilDeclarator()));
+    decls(
+      foldDecl(
+        -- declarations implicit in tns, such as forward-declaring structs
+        tns.decls ++
+        -- typedef struct ${n} ${n};
+        [typedefDecls(
+           nilAttribute(),
+           tagReferenceTypeExpr(nilQualifier(), structSEU(), n),
+           consDeclarator(
+             declarator(n, baseTypeExpr(), nilAttribute(), nothingInitializer()),
+             nilDeclarator())),
+         -- Defer the struct definition until all members have been defined
+         -- Construct a chain of deferredDecl productions for each member refId
+         foldr(
+           deferredDecl,
+           -- struct ${n} { ${tns.tupleStructItems} };
+           typeExprDecl(
+             nilAttribute(),
+             structTypeExpr(
+               nilQualifier(),
+               structDecl(
+                 nilAttribute(),
+                 justName(n),
+                 tns.tupleStructItems,
+                 location=builtin))),
+           -- Compute the list of all member refIds
+           catMaybes(map((.maybeRefId), tns.typereps)))]));
 }
 
 synthesized attribute tupleStructItems :: StructItemList occurs on TypeNames;

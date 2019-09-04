@@ -1,8 +1,9 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax:env;
 
-closed nonterminal ValueItem with typerep, sourceLocation, directCallHandler, isItemValue, isItemType;
+closed nonterminal ValueItem with typerep, sourceLocation, directRefHandler, directCallHandler, isItemValue, isItemType;
 
 synthesized attribute sourceLocation :: Location;
+synthesized attribute directRefHandler :: (Expr ::= Name Location);
 synthesized attribute directCallHandler :: (Expr ::= Name Exprs Location);
 synthesized attribute isItemValue :: Boolean;
 synthesized attribute isItemType :: Boolean;
@@ -10,6 +11,7 @@ synthesized attribute isItemType :: Boolean;
 aspect default production
 top::ValueItem ::=
 {
+  top.directRefHandler = ordinaryVariableHandler;
   top.directCallHandler = ordinaryFunctionHandler;
   top.isItemValue = false;
   top.isItemType = false;
@@ -86,5 +88,3 @@ top::ValueItem ::=
   top.isItemValue = true;
   top.isItemType = true;
 }
-
-

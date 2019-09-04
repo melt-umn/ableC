@@ -10,7 +10,7 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 synthesized attribute isIntegerType :: Boolean; -- enum or integer builtin
 synthesized attribute isArithmeticType :: Boolean; -- integer or floating (incl complex)
 synthesized attribute isScalarType :: Boolean; -- pointers or arithmetic
-
+synthesized attribute isCompleteType :: (Boolean ::= Decorated Env); -- test if we know the size of a type
 
 
 function showType
@@ -30,10 +30,14 @@ Boolean ::= a::Type  b::Type  allowSubtypes::Boolean  dropOuterQual::Boolean
   -- Allow already raised errors to go by unbothered by more errors
   | errorType(), _ -> true
   | _, errorType() -> true
+  -- We don't know (yet), avoid raising errors.  This should only occur in the host tree
+  | completedType(_), _ -> true
+  | _, completedType(_) -> true
   -- Type specifiers
   | builtinType(q1, b1), builtinType(q2, b2) -> builtinCompatible(b1, b2, allowSubtypes) && compatibleQualifiers(q1, q2, allowSubtypes, dropOuterQual)
-  | tagType(q1, enumTagType(_)), tagType(q2, enumTagType(_)) -> true -- TODO: FIXME: enums should be handled the same as other tags
-  | tagType(q1, refIdTagType(_, _, r1)), tagType(q2, refIdTagType(_, _, r2)) -> r1 == r2 && compatibleQualifiers(q1, q2, allowSubtypes, dropOuterQual)
+  | builtinType(q1, b1), extType(q2, enumExtType(_)) -> allowSubtypes && b1.isIntegerType && compatibleQualifiers(q1, q2, allowSubtypes, dropOuterQual)
+  | extType(q1, enumExtType(_)), builtinType(q2, b2) -> allowSubtypes && b2.isIntegerType && compatibleQualifiers(q1, q2, allowSubtypes, dropOuterQual)
+  | extType(q1, s1), extType(q2, s2) -> s1.isEqualTo(s2) && compatibleQualifiers(q1, q2, allowSubtypes, dropOuterQual)
   -- Compound types
   | atomicType(q1, t1), atomicType(q2, t2) -> compatibleTypes(t1, t2, allowSubtypes, dropOuterQual) && compatibleQualifiers(q1, q2, allowSubtypes, dropOuterQual)
   | pointerType(q1, p1), pointerType(q2, p2) ->
@@ -47,7 +51,10 @@ Boolean ::= a::Type  b::Type  allowSubtypes::Boolean  dropOuterQual::Boolean
   | functionType(r1, protoFunctionType(a1, v1), q1),
     functionType(r2, protoFunctionType(a2, v2), q2) ->
       compatibleTypes(r1, r2, false, false) &&
-        compatibleTypeList(a1, a2, false, true) && -- TODO: check subtypes of function args
+        compatibleTypeList(
+          map((.defaultFunctionArrayLvalueConversion), a1),
+          map((.defaultFunctionArrayLvalueConversion), a2),
+          false, true) &&
         compatibleQualifiers(q1, q2, allowSubtypes, dropOuterQual) &&
         v1 == v2
   | functionType(r1, _, q1), functionType(r2, _, q2) -> 
@@ -63,10 +70,6 @@ Boolean ::= a::Type  b::Type  allowSubtypes::Boolean  dropOuterQual::Boolean
   | _, noncanonicalType(s2) -> compatibleTypes(a, s2.canonicalType, allowSubtypes, dropOuterQual)
   | _, _ -> false
   end;
-  
-  -- Needed because flow analysis is whiny
-  a.addedTypeQualifiers = error("unneeded");
-  b.addedTypeQualifiers = error("unneeded");
 }
 
 function compatibleTypeList
@@ -316,16 +319,18 @@ Boolean ::= lval::Type  rval::Type
     else
     case lval of
     | errorType() -> true
+    | completedType(_) -> true
     | _ -> false
     end ||
     case rval of
     | errorType() -> true
+    | completedType(_) -> true
     | _ -> false
     end ||
 
     case lval.defaultFunctionArrayLvalueConversion, rval.defaultFunctionArrayLvalueConversion of
--- the left operand has an atomic, qualified, or unqualified version of a structure or union type compatible with the type of the right;
-    | tagType(_, _), _ -> compatibleTypes(lval.defaultFunctionArrayLvalueConversion, rval.defaultFunctionArrayLvalueConversion, true, true)
+-- the left operand has an atomic, qualified, or unqualified version of a structure, enum, union or extension type compatible with the type
+    | extType(_, _), _ -> compatibleTypes(lval.defaultFunctionArrayLvalueConversion, rval.defaultFunctionArrayLvalueConversion, true, true)
 -- the left operand has atomic, qualified, or unqualified pointer type, and (considering the type the left operand would have after lvalue conversion) both operands are pointers to qualified or unqualified versions of compatible types, and the type pointed to by the left has all the qualifiers of the type pointed to by the right;
     | pointerType(q1, p1), pointerType(q2, p2) ->
         (compatibleTypes(p1, p2, containsQualifier(constQualifier(location=bogusLoc()), p1), false) ||
@@ -377,25 +382,3 @@ Type ::= qs::[Qualifier] base::Type
       nubBy(qualifierCompat, qs));
   return base.withTypeQualifiers;
 }
-
-{--
- - Compute a unique identifier coresponding to the module (host or extension) that 'owns' this type
- -}
- function moduleName
- Maybe<String> ::= env::Decorated Env a::Type
- {
-   return
-     case a of
-     | tagType(_, refIdTagType(_, _, refId)) ->
-         case lookupRefId(refId, env) of
--- The type is a tag type, with a definition: Check the attributes on the definition for a module name
-         | item :: _ -> item.moduleName
--- The type is a tag type, without a definition: The type belongs to host
-         | _ -> nothing()
-         end
--- The type is an attributed type: Check the attributes for a module name first, then the base type
-     | attributedType(attrs, bt) -> orElse(attrs.moduleName, moduleName(env, bt))
--- Other types do not have a module name
-     | _ -> nothing()
-     end;
- }

@@ -1,6 +1,6 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 
-nonterminal MaybeInitializer with pp, host<MaybeInitializer>, lifted<MaybeInitializer>, errors, globalDecls, defs, env, freeVariables, returnType;
+nonterminal MaybeInitializer with pp, host<MaybeInitializer>, lifted<MaybeInitializer>, errors, globalDecls, functionDecls, defs, env, freeVariables, returnType;
 flowtype MaybeInitializer = decorate {env, returnType};
 
 abstract production nothingInitializer
@@ -10,8 +10,9 @@ top::MaybeInitializer ::=
   top.pp = notext();
   top.errors := [];
   top.globalDecls := [];
+  top.functionDecls := [];
   top.defs := [];
-  top.freeVariables = [];
+  top.freeVariables := [];
 }
 abstract production justInitializer
 top::MaybeInitializer ::= i::Initializer
@@ -20,11 +21,12 @@ top::MaybeInitializer ::= i::Initializer
   top.pp = ppConcat([ text(" = "), i.pp ]);
   top.errors := i.errors;
   top.globalDecls := i.globalDecls;
+  top.functionDecls := i.functionDecls;
   top.defs := i.defs;
-  top.freeVariables = i.freeVariables;
+  top.freeVariables := i.freeVariables;
 }
 
-nonterminal Initializer with pp, host<Initializer>, lifted<Initializer>, errors, globalDecls, defs, env, freeVariables, returnType;
+nonterminal Initializer with pp, host<Initializer>, lifted<Initializer>, errors, globalDecls, functionDecls, defs, env, freeVariables, returnType;
 flowtype Initializer = decorate {env, returnType};
 
 abstract production exprInitializer
@@ -34,8 +36,9 @@ top::Initializer ::= e::Expr
   top.pp = e.pp;
   top.errors := e.errors;
   top.globalDecls := e.globalDecls;
+  top.functionDecls := e.functionDecls;
   top.defs := e.defs;
-  top.freeVariables = e.freeVariables;
+  top.freeVariables := e.freeVariables;
 }
 
 abstract production objectInitializer
@@ -45,11 +48,12 @@ top::Initializer ::= l::InitList
   top.pp = ppConcat([text("{"), ppImplode(text(", "), l.pps), text("}")]);
   top.errors := l.errors;
   top.globalDecls := l.globalDecls;
+  top.functionDecls := l.functionDecls;
   top.defs := l.defs;
-  top.freeVariables = l.freeVariables;
+  top.freeVariables := l.freeVariables;
 }
 
-nonterminal InitList with pps, host<InitList>, lifted<InitList>, errors, globalDecls, defs, env, freeVariables, returnType;
+nonterminal InitList with pps, host<InitList>, lifted<InitList>, errors, globalDecls, functionDecls, defs, env, freeVariables, returnType;
 flowtype InitList = decorate {env, returnType};
 
 abstract production consInit
@@ -59,8 +63,9 @@ top::InitList ::= h::Init  t::InitList
   top.pps = h.pp :: t.pps;
   top.errors := h.errors ++ t.errors;
   top.globalDecls := h.globalDecls ++ t.globalDecls;
+  top.functionDecls := h.functionDecls ++ t.functionDecls;
   top.defs := h.defs ++ t.defs;
-  top.freeVariables = h.freeVariables ++ removeDefsFromNames(h.defs, t.freeVariables);
+  top.freeVariables := h.freeVariables ++ removeDefsFromNames(h.defs, t.freeVariables);
   
   t.env = addEnv(h.defs, h.env);
 }
@@ -72,11 +77,12 @@ top::InitList ::=
   top.pps = [];
   top.errors := [];
   top.globalDecls := [];
+  top.functionDecls := [];
   top.defs := [];
-  top.freeVariables = [];
+  top.freeVariables := [];
 }
 
-nonterminal Init with pp, host<Init>, lifted<Init>, errors, globalDecls, defs, env, freeVariables, returnType;
+nonterminal Init with pp, host<Init>, lifted<Init>, errors, globalDecls, functionDecls, defs, env, freeVariables, returnType;
 flowtype Init = decorate {env, returnType};
 
 abstract production positionalInit
@@ -86,8 +92,9 @@ top::Init ::= i::Initializer
   top.pp = i.pp;
   top.errors := i.errors;
   top.globalDecls := i.globalDecls;
+  top.functionDecls := i.functionDecls;
   top.defs := i.defs;
-  top.freeVariables = i.freeVariables;
+  top.freeVariables := i.freeVariables;
 }
 
 abstract production designatedInit
@@ -97,8 +104,9 @@ top::Init ::= d::Designator  i::Initializer
   top.pp = ppConcat([d.pp, text(" = "), i.pp]);
   top.errors := d.errors ++ i.errors;
   top.globalDecls := d.globalDecls ++ i.globalDecls;
+  top.functionDecls := d.functionDecls ++ i.functionDecls;
   top.defs := d.defs ++ i.defs;
-  top.freeVariables = d.freeVariables ++ i.freeVariables;
+  top.freeVariables := d.freeVariables ++ i.freeVariables;
   
   i.env = addEnv(d.defs, d.env);
 }
@@ -107,7 +115,7 @@ top::Init ::= d::Designator  i::Initializer
  - Tree access pattern for designators.
  - e.g.  "[1].d[0] = e" gives "array(0, field(d, array(1, initial)))"
  -}
-nonterminal Designator with pp, host<Designator>, lifted<Designator>, errors, globalDecls, defs, env, freeVariables, returnType;
+nonterminal Designator with pp, host<Designator>, lifted<Designator>, errors, globalDecls, functionDecls, defs, env, freeVariables, returnType;
 flowtype Designator = decorate {env, returnType};
 
 abstract production initialDesignator
@@ -117,8 +125,9 @@ top::Designator ::=
   top.pp = notext();
   top.errors := [];
   top.globalDecls := [];
+  top.functionDecls := [];
   top.defs := [];
-  top.freeVariables = [];
+  top.freeVariables := [];
 }
 
 abstract production fieldDesignator
@@ -128,8 +137,9 @@ top::Designator ::= d::Designator  f::Name
   top.pp = ppConcat([d.pp, text("."), f.pp]);
   top.errors := d.errors;
   top.globalDecls := d.globalDecls;
+  top.functionDecls := d.functionDecls;
   top.defs := d.defs;
-  top.freeVariables = d.freeVariables;
+  top.freeVariables := d.freeVariables;
 }
 
 abstract production arrayDesignator
@@ -139,8 +149,9 @@ top::Designator ::= d::Designator  e::Expr
   top.pp = ppConcat([d.pp, text("["), e.pp, text("]")]);
   top.errors := d.errors ++ e.errors;
   top.globalDecls := d.globalDecls ++ e.globalDecls;
+  top.functionDecls := d.functionDecls ++ e.functionDecls;
   top.defs := d.defs ++ e.defs; -- Yep...
-  top.freeVariables = d.freeVariables ++ e.freeVariables;
+  top.freeVariables := d.freeVariables ++ e.freeVariables;
   
   e.env = addEnv(d.defs, d.env);
 }
@@ -153,7 +164,8 @@ top::Designator ::= d::Designator  l::Expr  u::Expr
   top.pp = ppConcat([d.pp, text("["), l.pp, text("..."), u.pp, text("]")]);
   top.errors := d.errors ++ l.errors ++ u.errors;
   top.globalDecls := d.globalDecls ++ l.globalDecls ++ u.globalDecls;
+  top.functionDecls := d.functionDecls ++ l.functionDecls ++ u.functionDecls;
   top.defs := d.defs ++ l.defs ++ u.defs;
-  top.freeVariables = d.freeVariables ++ l.freeVariables ++ u.freeVariables;
+  top.freeVariables := d.freeVariables ++ l.freeVariables ++ u.freeVariables;
 }
 

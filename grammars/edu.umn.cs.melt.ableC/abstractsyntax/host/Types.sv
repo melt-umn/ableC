@@ -9,8 +9,11 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
  - Variants: builtin, pointer, array, function, tagged, noncanonical.
  - Noncanonical forwards, and so doesn't need any attributes, etc attached to it.
  -}
-nonterminal Type with lpp, rpp, host<Type>, baseTypeExpr, typeModifierExpr, mangledName, integerPromotions, defaultArgumentPromotions, defaultLvalueConversion, defaultFunctionArrayLvalueConversion, isIntegerType, isScalarType, isArithmeticType, withoutAttributes, withoutTypeQualifiers, withoutExtensionQualifiers<Type>, withTypeQualifiers, addedTypeQualifiers, qualifiers, mergeQualifiers<Type>, errors, freeVariables;
-flowtype Type = decorate {}, baseTypeExpr {}, typeModifierExpr {}, integerPromotions {}, defaultArgumentPromotions {}, defaultLvalueConversion {}, defaultFunctionArrayLvalueConversion {}, isIntegerType {}, isScalarType {}, isArithmeticType {}, withoutAttributes {}, withoutTypeQualifiers {}, withoutExtensionQualifiers {}, withTypeQualifiers {addedTypeQualifiers}, qualifiers {}, mergeQualifiers {};
+nonterminal Type with lpp, rpp, host<Type>, canonicalType<Type>, baseTypeExpr, typeModifierExpr, mangledName, integerPromotions, defaultArgumentPromotions, defaultLvalueConversion, defaultFunctionArrayLvalueConversion, isIntegerType, isScalarType, isArithmeticType, isCompleteType, maybeRefId, withoutAttributes, withoutTypeQualifiers, withoutExtensionQualifiers<Type>, withTypeQualifiers, addedTypeQualifiers, qualifiers, mergeQualifiers<Type>, errors, freeVariables;
+flowtype Type = decorate {}, canonicalType {}, baseTypeExpr {}, typeModifierExpr {}, integerPromotions {}, defaultArgumentPromotions {}, defaultLvalueConversion {}, defaultFunctionArrayLvalueConversion {}, isIntegerType {}, isScalarType {}, isArithmeticType {}, isCompleteType {}, maybeRefId {}, withoutAttributes {}, withoutTypeQualifiers {}, withoutExtensionQualifiers {}, withTypeQualifiers {addedTypeQualifiers}, qualifiers {}, mergeQualifiers {};
+
+-- Transform away noncanonical types such as typedefs, etc. while preserving extension types
+synthesized attribute canonicalType<a> :: a;
 
 -- Used to turn a Type back into a TypeName
 synthesized attribute baseTypeExpr :: BaseTypeExpr;
@@ -19,9 +22,10 @@ synthesized attribute typeModifierExpr :: TypeModifierExpr;
 -- Compute a unique name for a type that is a valid C identifier
 synthesized attribute mangledName :: String;
 flowtype mangledName {} on
-  Type, FunctionType, TagType, StructOrEnumOrUnion,
+  Type, FunctionType, ExtType, StructOrEnumOrUnion,
   Qualifiers, Qualifier,
-  BuiltinType, RealType, IntegerType;
+  BuiltinType, RealType, IntegerType,
+  NumericConstant;
 
 -- char -> int and stuff in operations
 synthesized attribute integerPromotions :: Type;
@@ -58,6 +62,8 @@ top::Type ::=
   top.isIntegerType = false;
   top.isScalarType = false;
   top.isArithmeticType = false;
+  top.isCompleteType = \ Decorated Env -> true;
+  top.maybeRefId = nothing();
 }
 
 {-------------------------------------------------------------------------------
@@ -68,7 +74,7 @@ top::Type ::=
 abstract production errorType
 top::Type ::=
 {
-  propagate host;
+  propagate host, canonicalType;
   top.lpp = text("/*err*/");
   top.rpp = text("");
   top.baseTypeExpr = errorTypeExpr([]);
@@ -83,7 +89,7 @@ top::Type ::=
   top.mergeQualifiers = \t2::Type -> errorType();
   top.qualifiers = [];
   top.errors := [];
-  top.freeVariables = [];
+  top.freeVariables := [];
 
   -- The semantics for all flags is that they should be TRUE is no error is to be
   -- raised. Thus, all should be true here, to suppress errors.
@@ -100,7 +106,7 @@ top::Type ::=
 abstract production builtinType
 top::Type ::= q::Qualifiers  bt::BuiltinType
 {
-  propagate host;
+  propagate host, canonicalType;
   top.lpp =
     ppConcat([terminate(space(), q.pps), bt.pp]);
   top.rpp = notext();
@@ -126,7 +132,7 @@ top::Type ::= q::Qualifiers  bt::BuiltinType
   top.qualifiers = q.qualifiers;
   top.errors := q.errors;
   q.typeToQualify = top;
-  top.freeVariables = [];
+  top.freeVariables := [];
 }
 
 
@@ -138,7 +144,7 @@ top::Type ::= q::Qualifiers  bt::BuiltinType
 abstract production pointerType
 top::Type ::= q::Qualifiers  target::Type
 {
-  propagate host;
+  propagate host, canonicalType;
   
   local wrapTarget::Boolean = 
     case target of
@@ -177,7 +183,7 @@ top::Type ::= q::Qualifiers  target::Type
   
   top.isScalarType = true;
   q.typeToQualify = top;
-  top.freeVariables = target.freeVariables;
+  top.freeVariables := target.freeVariables;
 }
 
 
@@ -204,7 +210,7 @@ top::Type ::= q::Qualifiers  target::Type
 abstract production arrayType
 top::Type ::= element::Type  indexQualifiers::Qualifiers  sizeModifier::ArraySizeModifier  sub::ArrayType
 {
-  propagate host;
+  propagate host, canonicalType;
   top.lpp = element.lpp;
   
   top.rpp = cat(brackets(ppConcat([
@@ -249,7 +255,7 @@ top::Type ::= element::Type  indexQualifiers::Qualifiers  sizeModifier::ArraySiz
     end;
   top.qualifiers = indexQualifiers.qualifiers;
   top.errors := element.errors ++ indexQualifiers.errors;
-  top.freeVariables = element.freeVariables ++ sub.freeVariables;
+  top.freeVariables := element.freeVariables ++ sub.freeVariables;
   indexQualifiers.typeToQualify = top;
 }
 
@@ -262,7 +268,7 @@ top::ArrayType ::= size::Integer
 {
   propagate host;
   top.pp = text(toString(size));
-  top.freeVariables = [];
+  top.freeVariables := [];
   -- TODO: include the Decorated Expr here too maybe?
 }
 abstract production incompleteArrayType
@@ -270,15 +276,16 @@ top::ArrayType ::=
 {
   propagate host;
   top.pp = notext();
-  top.freeVariables = [];
+  top.freeVariables := [];
 }
 abstract production variableArrayType
 top::ArrayType ::= size::Decorated Expr
 {
   top.host =
-    variableArrayType(decorate size.host with {env = size.env; returnType = size.returnType;});
+    variableArrayType(
+      decorate size.host with {env = size.env; returnType = size.returnType;});
   top.pp = size.pp;
-  top.freeVariables = size.freeVariables;
+  top.freeVariables := size.freeVariables;
 }
 
 {-- Modifiers attached to array types that are function parameters -}
@@ -304,7 +311,7 @@ top::ArraySizeModifier ::= { top.pps = [text("*")]; }
 abstract production functionType
 top::Type ::= result::Type  sub::FunctionType  q::Qualifiers
 {
-  propagate host, withoutExtensionQualifiers;
+  propagate host, canonicalType, withoutExtensionQualifiers;
   --TODO should this space be here? also TODO: ordering? result lpp before sub.lpp maybe? TODO: actually sub.lpp is always nothing. FIXME
   top.lpp = ppConcat([ sub.lpp, space(), result.lpp ]);
   top.rpp = cat(sub.rpp, result.rpp);
@@ -331,18 +338,19 @@ top::Type ::= result::Type  sub::FunctionType  q::Qualifiers
     end;
   top.qualifiers = q.qualifiers;
   top.errors := result.errors ++ sub.errors;
-  top.freeVariables = result.freeVariables ++ sub.freeVariables;
+  top.freeVariables := result.freeVariables ++ sub.freeVariables;
 }
 
 {-- The subtypes of functions -}
-nonterminal FunctionType with lpp, rpp, host<FunctionType>, mangledName, withoutExtensionQualifiers<FunctionType>, mergeQualifiers<FunctionType>, errors, freeVariables;
-flowtype FunctionType = decorate {};
+nonterminal FunctionType with lpp, rpp, host<FunctionType>, canonicalType<FunctionType>, mangledName, withoutExtensionQualifiers<FunctionType>, mergeQualifiers<FunctionType>, errors, freeVariables;
+flowtype FunctionType = decorate {}, canonicalType {};
 -- clang has an 'extinfo' structure with calling convention, noreturn, 'produces'?, regparam
 
 abstract production protoFunctionType
 top::FunctionType ::= args::[Type]  variadic::Boolean
 {
   top.host = protoFunctionType(map(\t::Type -> t.host, args), variadic);
+  top.canonicalType = protoFunctionType(map(\t::Type -> t.canonicalType, args), variadic);
   top.withoutExtensionQualifiers = protoFunctionType(map(\t::Type -> t.withoutExtensionQualifiers, args), variadic);
   top.mergeQualifiers = \t2::FunctionType ->
     case t2 of
@@ -363,19 +371,19 @@ top::FunctionType ::= args::[Type]  variadic::Boolean
       map((.rpp), args)) ++ if variadic then [text("...")] else [];
   top.mangledName = implode("_", map((.mangledName), args)) ++ if variadic then "_variadic" else "";
   top.errors := concat(map((.errors), args));
-  top.freeVariables = concat(map((.freeVariables), args));
+  top.freeVariables := concat(map((.freeVariables), args));
 }
 -- Evidently, old K&R C functions don't have args as part of function type
 abstract production noProtoFunctionType
 top::FunctionType ::=
 {
-  propagate host, withoutExtensionQualifiers;
+  propagate host, canonicalType, withoutExtensionQualifiers;
   top.mergeQualifiers = \t2::FunctionType -> noProtoFunctionType();
   top.lpp = notext();
   top.rpp = text("()");
   top.mangledName = "noproto";
   top.errors := [];
-  top.freeVariables = [];
+  top.freeVariables := [];
 }
 
 function argTypesToParameters
@@ -385,67 +393,102 @@ Parameters ::= args::[Type]
     case args of
       h :: t ->
         consParameters(
-          parameterDecl([], directTypeExpr(h), baseTypeExpr(), nothingName(), nilAttribute()),
+          parameterDecl(nilStorageClass(), directTypeExpr(h), baseTypeExpr(), nothingName(), nilAttribute()),
           argTypesToParameters(t))
     | [] -> nilParameters()
     end;
 }
 
-
 {-------------------------------------------------------------------------------
- - Tagged types: enum, struct, union
+ - "New" types: structs, unions and enums, but also new types defined by extensions.
  -}
-abstract production tagType
-top::Type ::= q::Qualifiers  sub::TagType
+
+abstract production extType
+top::Type ::= q::Qualifiers  sub::ExtType
 {
-  propagate host;
-  top.lpp = ppConcat([ terminate(space(), q.pps), sub.pp ]);
-  top.rpp = notext();
-  top.baseTypeExpr =
-    case sub of
-      enumTagType(ref) -> enumTypeExpr(q, new(ref))
-    | refIdTagType(kwd, n, refId) ->
-      tagReferenceTypeExpr(q, kwd, name(n, location=builtinLoc("host")))
-    end;
-  top.typeModifierExpr = baseTypeExpr();
-  top.mangledName = s"${q.mangledName}_tag_${sub.mangledName}_";
-  top.integerPromotions = top;
-  top.defaultArgumentPromotions = top;
-  top.defaultLvalueConversion = tagType(nilQualifier(), sub);
-  top.defaultFunctionArrayLvalueConversion = top;
-  top.withoutTypeQualifiers = tagType(nilQualifier(), sub);
-  top.withoutExtensionQualifiers = tagType(filterExtensionQualifiers(q), sub);
-  top.withTypeQualifiers = tagType(foldQualifier(top.addedTypeQualifiers ++
+  propagate canonicalType;
+  top.lpp = sub.lpp;
+  top.rpp = sub.rpp;
+  top.host = sub.host;
+  top.baseTypeExpr = sub.baseTypeExpr;
+  top.typeModifierExpr = sub.typeModifierExpr;
+  top.mangledName = s"${q.mangledName}_${sub.mangledName}_";
+  top.integerPromotions = sub.integerPromotions;
+  top.defaultArgumentPromotions = sub.defaultArgumentPromotions;
+  top.defaultLvalueConversion = sub.defaultLvalueConversion;
+  top.defaultFunctionArrayLvalueConversion = sub.defaultFunctionArrayLvalueConversion;
+  top.withoutTypeQualifiers = extType(nilQualifier(), sub);
+  top.withoutExtensionQualifiers = extType(filterExtensionQualifiers(q), sub);
+  top.withTypeQualifiers = extType(foldQualifier(top.addedTypeQualifiers ++
     q.qualifiers), sub);
   top.mergeQualifiers = \t2::Type ->
     case t2 of
-      tagType(q2, _) ->
-        tagType(unionQualifiers(top.qualifiers, q2.qualifiers), sub)
-    | _ -> tagType(q, sub)
+      extType(q2, _) -> extType(unionQualifiers(q.qualifiers, q2.qualifiers), sub)
+    | _ -> top
     end;
   top.qualifiers = q.qualifiers;
   top.errors := q.errors;
-  top.freeVariables = [];
+  top.freeVariables := sub.freeVariables;
   
   top.isIntegerType = sub.isIntegerType;
-  top.isArithmeticType = sub.isIntegerType;
-  top.isScalarType = sub.isIntegerType;
+  top.isArithmeticType = sub.isArithmeticType;
+  top.isScalarType = sub.isScalarType;
+  top.isCompleteType = sub.isCompleteType;
+  top.maybeRefId = sub.maybeRefId;
 
   q.typeToQualify = top;
+  sub.givenQualifiers = q;
 }
 
-{-- Structs, unions and enums -}
-nonterminal TagType with pp, host<TagType>, mangledName, isIntegerType;
-flowtype TagType = decorate {}, isIntegerType {};
+inherited attribute givenQualifiers::Qualifiers;
 
-abstract production enumTagType
-top::TagType ::= ref::Decorated EnumDecl
+-- t1.isEqualTo(t2) iff t1.mangledName == t2.mangledName
+synthesized attribute isEqualTo::(Boolean ::= ExtType);
+
+closed nonterminal ExtType with givenQualifiers, pp, lpp, rpp, host<Type>, canonicalType<ExtType>, baseTypeExpr, typeModifierExpr, mangledName, isEqualTo, integerPromotions, defaultArgumentPromotions, defaultLvalueConversion, defaultFunctionArrayLvalueConversion, isIntegerType, isScalarType, isArithmeticType, isCompleteType, maybeRefId, freeVariables;
+flowtype ExtType = decorate {givenQualifiers}, lpp {givenQualifiers}, rpp {givenQualifiers}, canonicalType {decorate}, baseTypeExpr {decorate}, typeModifierExpr {decorate}, isEqualTo {}, integerPromotions {decorate}, defaultArgumentPromotions {decorate}, defaultLvalueConversion {decorate}, defaultFunctionArrayLvalueConversion {decorate}, isIntegerType {}, isScalarType {}, isArithmeticType {}, isCompleteType {}, maybeRefId {};
+
+-- Forward flowtype is empty, since extensions would primarilly introduce new non-forwarding
+-- productions on ExtType, and we would like to be able to pattern match on these.
+flowtype forward {} on ExtType;
+
+aspect default production
+top::ExtType ::=
 {
-  propagate host;
+  top.lpp = ppConcat([ terminate(space(), top.givenQualifiers.pps), top.pp ]);
+  top.rpp = notext();
+  top.baseTypeExpr = extTypeExpr(top.givenQualifiers, top);
+  top.typeModifierExpr = baseTypeExpr();
+
+  top.integerPromotions = extType(top.givenQualifiers, top);
+  top.defaultArgumentPromotions = extType(top.givenQualifiers, top);
+  top.defaultLvalueConversion = extType(top.givenQualifiers, top);
+  top.defaultFunctionArrayLvalueConversion = extType(top.givenQualifiers, top);
+  top.freeVariables := [];
+  
+  top.isIntegerType = false;
+  top.isArithmeticType = false;
+  top.isScalarType = false;
+  top.isCompleteType = \ Decorated Env -> true;
+  top.maybeRefId = nothing();
+}
+
+abstract production enumExtType
+top::ExtType ::= ref::Decorated EnumDecl
+{
+  propagate canonicalType;
+  top.host = extType(top.givenQualifiers, top);
+  top.baseTypeExpr =
+    case ref.maybename of
+    | just(n) -> tagReferenceTypeExpr(top.givenQualifiers, enumSEU(), n)
+    -- TODO: Technically this should be whatever integer type is large enough to
+    -- hold all the enumerated values
+    | nothing() -> builtinTypeExpr(top.givenQualifiers, unsignedType(intType()))
+    end;
   top.pp =
     case ref.maybename of
     | just(n) -> cat(text("enum "), n.pp)
-    | nothing() -> text("int/*anon enum*/") -- TODO: location
+    | nothing() -> text("enum <anon>") -- TODO: location
     end;
   top.mangledName =
     "enum_" ++
@@ -453,23 +496,55 @@ top::TagType ::= ref::Decorated EnumDecl
     | just(n) -> n.name
     | nothing() -> "anon"
     end;
+  top.isEqualTo =
+    \ other::ExtType ->
+      case other of
+      | enumExtType(otherRef) ->
+        -- TODO: This code is slightly broken, since our representation of
+        -- enum types lacks a method of uniquely identifying each type.
+        -- For now, we just check that the tags are the same.
+        -- This isn't quite correct (due to name shadowing), but is close enough for now. 
+        -- Properly fixing this would require giving enums refIds.
+        case ref.maybename, otherRef.maybename of
+        -- Check that tag names are equal
+        | just(n1), just(n2) -> n1.name == n2.name
+        -- For now, assuming all anon enums have the same type.
+        | nothing(), nothing() -> true
+        | _, _ -> false
+        end
+      | _ -> false
+      end;
     
   top.isIntegerType = true;
+  top.isArithmeticType = true;
 }
 {--
  - Our env-independent type representation must end at resolving to a 'refId' of
  - the struct/union. This DOES give us equality (refIds equal), but not structural
  - information about the tag, without bailing out of type code and going back
  - to consult the environment about what's known about that tag.
- -} 
-abstract production refIdTagType
-top::TagType ::= kwd::StructOrEnumOrUnion  name::String  refId::String
+ -
+ - This production, despite its signature, only represents structs and unions, not enums.
+ -}
+abstract production refIdExtType
+top::ExtType ::= kwd::StructOrEnumOrUnion  n::String  refId::String
 {
-  propagate host;
-  top.pp = ppConcat([kwd.pp, space(), text(name)]);
+  propagate canonicalType;
+  top.host = extType(top.givenQualifiers, top);
+  top.baseTypeExpr =
+    tagReferenceTypeExpr(top.givenQualifiers, kwd, name(n, location=builtinLoc("host")));
+  top.pp = ppConcat([kwd.pp, space(), text(n)]);
   top.mangledName =
-    s"${kwd.mangledName}_${if name == "<anon>" then "anon" else name}_${substitute(":", "_", refId)}";
-  top.isIntegerType = false;
+    s"${kwd.mangledName}_${if n == "<anon>" then "anon" else n}_${substitute(":", "_", refId)}";
+  top.isEqualTo =
+    \ other::ExtType ->
+      case other of
+      | refIdExtType(_, _, otherRefId) -> refId == otherRefId
+      | _ -> false
+      end;
+  top.isCompleteType =
+    \ env::Decorated Env -> !null(lookupRefId(refId, env));
+  top.maybeRefId = just(refId);
 }
 
 nonterminal StructOrEnumOrUnion with pp, mangledName; -- Silver enums would be nice.
@@ -480,14 +555,13 @@ top::StructOrEnumOrUnion ::= { top.pp = text("union"); top.mangledName = "union"
 abstract production enumSEU
 top::StructOrEnumOrUnion ::= { top.pp = text("enum"); top.mangledName = "enum"; }
 
-
 {-------------------------------------------------------------------------------
  - C11 atomic types.
  -}
 abstract production atomicType
 top::Type ::= q::Qualifiers  bt::Type
 {
-  propagate host;
+  propagate host, canonicalType;
   top.lpp = ppConcat([ terminate(space(), q.pps),
                      text("_Atomic"), parens(cat(bt.lpp, bt.rpp))]);
   top.rpp = notext();
@@ -511,7 +585,7 @@ top::Type ::= q::Qualifiers  bt::Type
     end;
   top.qualifiers = q.qualifiers;
   top.errors := q.errors ++ bt.errors;
-  top.freeVariables = bt.freeVariables;
+  top.freeVariables := bt.freeVariables;
   q.typeToQualify = top;
 }
 
@@ -525,7 +599,7 @@ top::Type ::= q::Qualifiers  bt::Type
 abstract production attributedType
 top::Type ::= attrs::Attributes  bt::Type
 {
-  propagate host, withoutExtensionQualifiers;
+  propagate host, canonicalType, withoutExtensionQualifiers;
   top.lpp = ppConcat([ ppAttributes(attrs), space(), bt.lpp]);
   top.rpp = bt.rpp;
   top.mangledName = bt.mangledName;
@@ -549,8 +623,10 @@ top::Type ::= attrs::Attributes  bt::Type
   top.isIntegerType = bt.isIntegerType;
   top.isScalarType = bt.isScalarType;
   top.isArithmeticType = bt.isArithmeticType;
+  top.isCompleteType = bt.isCompleteType;
+  top.maybeRefId = bt.maybeRefId;
   top.errors := bt.errors;
-  top.freeVariables = bt.freeVariables;
+  top.freeVariables := bt.freeVariables;
   
   -- Whatever...
   attrs.env = emptyEnv();
@@ -565,7 +641,7 @@ top::Type ::= attrs::Attributes  bt::Type
 abstract production vectorType
 top::Type ::= bt::Type  bytes::Integer
 {
-  propagate host, withoutExtensionQualifiers;
+  propagate host, canonicalType, withoutExtensionQualifiers;
   top.lpp = ppConcat([ text("__attribute__((__vector_size__(" ++ toString(bytes) ++ "))) "), bt.lpp]);
   top.rpp = bt.rpp;
   top.mangledName = s"vector_${bt.mangledName}_${toString(bytes)}_";
@@ -599,8 +675,9 @@ top::Type ::= bt::Type  bytes::Integer
   top.isIntegerType = false;
   top.isScalarType = false;
   top.isArithmeticType = false;
+  top.isCompleteType = bt.isCompleteType;
   top.errors := bt.errors;
-  top.freeVariables = bt.freeVariables;
+  top.freeVariables := bt.freeVariables;
 }
 
 {-------------------------------------------------------------------------------
@@ -630,10 +707,8 @@ top::Type ::= sub::NoncanonicalType
 }
 
 {-- Types that resolve to other types. -}
-nonterminal NoncanonicalType with canonicalType, lpp, rpp, host<NoncanonicalType>, baseTypeExpr, typeModifierExpr, withTypeQualifiers, addedTypeQualifiers;
+nonterminal NoncanonicalType with canonicalType<Type>, lpp, rpp, host<NoncanonicalType>, baseTypeExpr, typeModifierExpr, withTypeQualifiers, addedTypeQualifiers;
 flowtype NoncanonicalType = decorate {}, canonicalType {}, baseTypeExpr {}, typeModifierExpr {}, withTypeQualifiers {addedTypeQualifiers};
-
-synthesized attribute canonicalType :: Type;
 
 {-- A NoncanonicalType that is really just a normal Type
  - e.g. the result of performing a substitution for a typedef
@@ -728,7 +803,10 @@ top::NoncanonicalType ::= q::Qualifiers  n::String  resolved::Type
   top.typeModifierExpr = baseTypeExpr();
   top.withTypeQualifiers =
     noncanonicalType(
-      typedefType(foldQualifier(top.addedTypeQualifiers ++ q.qualifiers), n, resolved));
+      typedefType(
+        foldQualifier(top.addedTypeQualifiers ++ q.qualifiers),
+        n, resolved.withTypeQualifiers));
+  resolved.addedTypeQualifiers = top.addedTypeQualifiers;
 
   top.canonicalType = resolved;
 }
@@ -746,7 +824,10 @@ top::NoncanonicalType ::= q::Qualifiers  resolved::Type
   top.typeModifierExpr = baseTypeExpr();
   top.withTypeQualifiers =
     noncanonicalType(
-      typeofType(foldQualifier(top.addedTypeQualifiers ++ q.qualifiers), resolved));
+      typeofType(
+        foldQualifier(top.addedTypeQualifiers ++ q.qualifiers),
+        resolved.withTypeQualifiers));
+  resolved.addedTypeQualifiers = top.addedTypeQualifiers;
 }
 
 function filterExtensionQualifiers

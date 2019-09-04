@@ -40,10 +40,20 @@ top::Env ::= e::Decorated Env
 {
   top.intConsts = tm:empty(compareString) :: e.intConsts;
 }
+aspect production nonGlobalEnv_i
+top::Env ::= e::Decorated Env
+{
+  top.intConsts = init(e.intConsts);
+}
 aspect production globalEnv_i
 top::Env ::= e::Decorated Env
 {
   top.intConsts = [last(e.intConsts)];
+}
+aspect production functionEnv_i
+top::Env ::= e::Decorated Env
+{
+  top.intConsts = functionScope(e.intConsts);
 }
 
 aspect production nilDefs

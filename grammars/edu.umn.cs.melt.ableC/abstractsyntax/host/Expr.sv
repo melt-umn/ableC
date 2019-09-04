@@ -2,7 +2,7 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 
 import edu:umn:cs:melt:ableC:abstractsyntax:overloadable as ovrld;
 
-nonterminal Expr with location, pp, host<Expr>, lifted<Expr>, globalDecls, errors, defs, env, returnType, freeVariables, typerep, isLValue, integerConstantValue;
+nonterminal Expr with location, pp, host<Expr>, lifted<Expr>, globalDecls, functionDecls, errors, defs, env, returnType, freeVariables, typerep, isLValue, integerConstantValue;
 
 flowtype Expr = decorate {env, returnType}, isLValue {decorate}, integerConstantValue {decorate};
 
@@ -23,8 +23,9 @@ top::Expr ::= msg::[Message]
   top.pp = ppConcat([ text("/*"), text(messagesToString(msg)), text("*/") ]);
   top.errors := msg;
   top.globalDecls := [];
+  top.functionDecls := [];
   top.defs := [];
-  top.freeVariables = [];
+  top.freeVariables := [];
   top.typerep = errorType();
 }
 -- TODO, this production is interfering and could lose errors in an analysis
@@ -42,6 +43,31 @@ Expr ::= msg::[Message] e::Expr l::Location
 {
   return if null(msg) then e else warnExpr(msg, e, location=l);
 }
+
+{--
+ - The purpose of this production is for an extension production to use to wrap
+ - children that have already been decorated during error checking, etc. when
+ - computing a forward tree, to avoid re-decoration and potential exponential
+ - performance hits.  When using this production, one must be very careful to
+ - ensure that the inherited attributes recieved by the wrapped tree are equivalent
+ - to the ones that would have been passed down in the forward tree.
+ - See https://github.com/melt-umn/silver/issues/86
+ -}
+abstract production decExpr
+top::Expr ::= e::Decorated Expr
+{
+  top.pp = e.pp;
+  top.host = e.host;
+  top.lifted = e.lifted;
+  top.errors := e.errors;
+  top.globalDecls := e.globalDecls;
+  top.functionDecls := e.functionDecls;
+  top.defs := e.defs;
+  top.freeVariables := e.freeVariables;
+  top.typerep = e.typerep;
+  top.isLValue = e.isLValue;
+  top.integerConstantValue = e.integerConstantValue;
+}
 abstract production qualifiedExpr
 top::Expr ::= q::Qualifiers e::Expr
 {
@@ -51,8 +77,9 @@ top::Expr ::= q::Qualifiers e::Expr
   top.pp = pp"qualifiedExpr (${ppImplode(space(), q.pps)} (${e.pp}))";
   top.errors := e.errors;
   top.globalDecls := e.globalDecls;
+  top.functionDecls := e.functionDecls;
   top.defs := e.defs;
-  top.freeVariables = e.freeVariables;
+  top.freeVariables := e.freeVariables;
   top.isLValue = e.isLValue;
 }
 -- only wrap in qualifiedExpr if have qualifiers to wrap with
@@ -61,6 +88,38 @@ Expr ::= q::[Qualifier]  e::Expr  l::Location
 {
   return if null(q) then e else qualifiedExpr(foldQualifier(q), e, location=l);
 }
+-- Wraps the result of a forwarding transformation (e.g. overloading or injection)
+-- to allow for "syntactic" analyses on the original host Expr.  Otherwise this
+-- is semantically equivalent to resolved. 
+abstract production transformedExpr
+top::Expr ::= original::Expr  resolved::Expr
+{
+  propagate lifted;
+  top.pp = original.pp;
+  top.host = resolved.host;
+  top.errors := resolved.errors;
+  top.globalDecls := resolved.globalDecls;
+  top.functionDecls := resolved.functionDecls;
+  top.defs := resolved.defs;
+  top.typerep = resolved.typerep;
+  top.freeVariables := resolved.freeVariables;
+  top.isLValue = resolved.isLValue;
+}
+
+abstract production directRefExpr
+top::Expr ::= id::Name
+{
+  -- Forwarding depends on env. We must be able to compute a pp without using env.
+  top.pp = id.pp;
+
+  forwards to id.valueItem.directRefHandler(id, top.location);
+}
+-- If the identifier is an ordinary one, use the normal var reference production
+function ordinaryVariableHandler
+Expr ::= id::Name  l::Location
+{
+  return declRefExpr(id, location=l);
+}
 abstract production declRefExpr
 top::Expr ::= id::Name
 { -- Reference to a value. (Either a Decl or a EnumItem)
@@ -68,9 +127,10 @@ top::Expr ::= id::Name
   top.pp = parens( id.pp );
   top.errors := [];
   top.globalDecls := [];
+  top.functionDecls := [];
   top.defs := [];
   top.typerep = id.valueItem.typerep;
-  top.freeVariables = top.typerep.freeVariables ++ [id];
+  top.freeVariables := top.typerep.freeVariables ++ [id];
   top.isLValue = true;
   
   top.errors <- id.valueLookupCheck;
@@ -85,8 +145,9 @@ top::Expr ::= l::String
   top.pp = text(l);
   top.errors := [];
   top.globalDecls := [];
+  top.functionDecls := [];
   top.defs := [];
-  top.freeVariables = [];  
+  top.freeVariables := [];  
   top.typerep = pointerType(nilQualifier(),
     builtinType(foldQualifier([]), signedType(charType())));
 }
@@ -97,8 +158,9 @@ top::Expr ::= e::Expr
   top.pp = parens( e.pp );
   top.errors := e.errors;
   top.globalDecls := e.globalDecls;
+  top.functionDecls := e.functionDecls;
   top.defs := e.defs;
-  top.freeVariables = e.freeVariables;
+  top.freeVariables := e.freeVariables;
   top.typerep = e.typerep;
   top.isLValue = e.isLValue;  
   
@@ -110,8 +172,9 @@ top::Expr ::= lhs::Expr  rhs::Expr
   top.pp = parens( ppConcat([ lhs.pp, brackets( rhs.pp )]) );
   top.errors := lhs.errors ++ rhs.errors;
   top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
+  top.functionDecls := lhs.functionDecls ++ rhs.functionDecls;
   top.defs := lhs.defs ++ rhs.defs;
-  top.freeVariables = lhs.freeVariables ++ removeDefsFromNames(rhs.defs, rhs.freeVariables);
+  top.freeVariables := lhs.freeVariables ++ removeDefsFromNames(rhs.defs, rhs.freeVariables);
   top.isLValue = true;
   
   local subtype :: Either<Type [Message]> =
@@ -124,6 +187,8 @@ top::Expr ::= lhs::Expr  rhs::Expr
         else right([err(top.location, "index expression does not have integer type (got " ++ showType(otherty) ++ ")")])
     | errorType(), _ -> right([])
     | _, errorType() -> right([])
+    | completedType(_), _ -> right([])
+    | _, completedType(_) -> right([])
     | _, _ ->
         right([err(top.location, "expression is not an indexable type (got " ++ showType(lhs.typerep) ++ ")")])
     end;
@@ -152,7 +217,6 @@ top::Expr ::= f::Name  a::Exprs
 function ordinaryFunctionHandler
 Expr ::= f::Name  a::Exprs  l::Location
 {
-  -- TODO: Figure out a better solution to integrating overloading
   return ovrld:callExpr(declRefExpr(f, location=f.location), a, location=l);
 }
 
@@ -164,8 +228,9 @@ top::Expr ::= f::Expr  a::Exprs
   top.pp = parens( ppConcat([ f.pp, parens( ppImplode( cat( comma(), space() ), a.pps ))]) );
   top.errors := f.errors ++ a.errors;
   top.globalDecls := f.globalDecls ++ a.globalDecls;
+  top.functionDecls := f.functionDecls ++ a.functionDecls;
   top.defs := f.defs ++ a.defs;
-  top.freeVariables = f.freeVariables ++ removeDefsFromNames(f.defs, a.freeVariables);
+  top.freeVariables := f.freeVariables ++ removeDefsFromNames(f.defs, a.freeVariables);
   top.isLValue = false; -- C++ style references would change this
   
   local subtype :: Either<Pair<Type FunctionType> [Message]> =
@@ -184,7 +249,7 @@ top::Expr ::= f::Expr  a::Exprs
      | left(_) -> a.argumentErrors
      | right(r) -> r
     end;
-
+  
   a.expectedTypes =
     case subtype of
     | left(pair(_, protoFunctionType(args, _))) -> args
@@ -209,17 +274,13 @@ top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
   top.pp = parens(ppConcat([lhs.pp, text(if deref then "->" else "."), rhs.pp]));
   top.errors := lhs.errors;
   top.globalDecls := lhs.globalDecls;
+  top.functionDecls := lhs.functionDecls;
   top.defs := lhs.defs;
-  top.freeVariables = lhs.freeVariables;
+  top.freeVariables := lhs.freeVariables;
   
   local isPointer::Boolean =
     case lhs.typerep.withoutAttributes of
-    | pointerType(_, sub) ->
-        case sub.withoutAttributes of
-          tagType(q, refIdTagType(_, _, rid)) -> true
-        | _ -> false
-        end
-    | tagType(q, refIdTagType(_, _, rid)) -> false
+    | pointerType(_, sub) -> true
     | _ -> false
     end;
   
@@ -227,19 +288,19 @@ top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
     case lhs.typerep.withoutAttributes of
     | pointerType(_, sub) ->
         case sub.withoutAttributes of
-          tagType(q, refIdTagType(_, _, rid)) -> pair(q, rid)
+        | extType(q, e) -> pair(q, fromMaybe("", e.maybeRefId))
         | _ -> pair(nilQualifier(), "")
         end
-    | tagType(q, refIdTagType(_, _, rid)) -> pair(q, rid)
+    | extType(q, e) -> pair(q, fromMaybe("", e.maybeRefId))
     | _ -> pair(nilQualifier(), "")
     end;
   
   local refids :: [RefIdItem] =
-    lookupRefId(quals_refid.snd, top.env);
+    lookupRefId(quals_refid.snd, addEnv(lhs.defs, lhs.env));
   
   local valueitems :: [ValueItem] =
     lookupValue(rhs.name, head(refids).tagEnv);
-
+  
   top.isLValue = true;
   
   top.typerep =
@@ -249,9 +310,10 @@ top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
       errorType()
     else addQualifiers(quals_refid.fst.qualifiers, head(valueitems).typerep);
   top.errors <-
-    case lhs.typerep of
-      errorType() -> []
-    | _ ->
+    case isPointer, lhs.typerep of
+    | _, errorType() -> []
+    | true, pointerType(_, errorType()) -> []
+    | _, _ ->
       if null(refids) then 
         [err(lhs.location, "expression does not have defined fields (got " ++ showType(lhs.typerep) ++ ")")]
       else if isPointer != deref then 
@@ -271,8 +333,9 @@ top::Expr ::= cond::Expr  t::Expr  e::Expr
   top.pp = parens( ppConcat([ cond.pp, space(), text("?"), space(), t.pp, space(), text(":"),  space(), e.pp]) );
   top.errors := cond.errors ++ t.errors ++ e.errors;
   top.globalDecls := cond.globalDecls ++ t.globalDecls ++ e.globalDecls;
+  top.functionDecls := cond.functionDecls ++ t.functionDecls ++ e.functionDecls;
   top.defs := cond.defs ++ t.defs ++ e.defs;
-  top.freeVariables =
+  top.freeVariables :=
     cond.freeVariables ++
     removeDefsFromNames(cond.defs, t.freeVariables) ++
     removeDefsFromNames(cond.defs ++ t.defs, e.freeVariables);
@@ -291,8 +354,9 @@ top::Expr ::= cond::Expr  e::Expr
   top.pp = ppConcat([ cond.pp, space(), text("?:"), space(), e.pp]);
   top.errors := cond.errors ++ e.errors;
   top.globalDecls := cond.globalDecls ++ e.globalDecls;
+  top.functionDecls := cond.functionDecls ++ e.functionDecls;
   top.defs := cond.defs ++ e.defs;
-  top.freeVariables = cond.freeVariables ++ e.freeVariables;
+  top.freeVariables := cond.freeVariables ++ e.freeVariables;
   
   top.typerep = e.typerep; -- TODO: not even sure what this should be
   
@@ -305,8 +369,9 @@ top::Expr ::= ty::TypeName  e::Expr
   top.pp = parens( ppConcat([parens(ty.pp), e.pp]) );
   top.errors := ty.errors ++ e.errors;
   top.globalDecls := ty.globalDecls ++ e.globalDecls;
+  top.functionDecls := ty.functionDecls ++ e.functionDecls;
   top.defs := ty.defs ++ e.defs;
-  top.freeVariables = ty.freeVariables ++ removeDefsFromNames(ty.defs, e.freeVariables);
+  top.freeVariables := ty.freeVariables ++ removeDefsFromNames(ty.defs, e.freeVariables);
   top.typerep = ty.typerep;
   
   e.env = addEnv(ty.defs, ty.env);
@@ -320,8 +385,9 @@ top::Expr ::= ty::TypeName  init::InitList
   top.pp = parens( ppConcat([parens(ty.pp), text("{"), ppImplode(text(", "), init.pps), text("}")]) );
   top.errors := ty.errors ++ init.errors;
   top.globalDecls := ty.globalDecls ++ init.globalDecls;
+  top.functionDecls := ty.functionDecls ++ init.functionDecls;
   top.defs := ty.defs ++ init.defs;
-  top.freeVariables = ty.freeVariables ++ removeDefsFromNames(ty.defs, init.freeVariables);
+  top.freeVariables := ty.freeVariables ++ removeDefsFromNames(ty.defs, init.freeVariables);
   top.typerep = ty.typerep; -- TODO: actually may involve learning from the initializer e.g. the length of the array.
 
   init.env = addEnv(ty.defs, ty.env);
@@ -335,8 +401,9 @@ top::Expr ::=
   top.pp = parens( text("__func__") );
   top.errors := [];
   top.globalDecls := [];
+  top.functionDecls := [];
   top.defs := [];
-  top.freeVariables = [];
+  top.freeVariables := [];
   top.typerep = pointerType(nilQualifier(),
   builtinType(foldQualifier([constQualifier(location=builtinLoc("host"))]), signedType(charType()))); -- const char *
 }
@@ -355,8 +422,9 @@ top::Expr ::= e::Expr  gl::GenericAssocs  def::MaybeExpr
       ))]);
   top.errors := e.errors ++ gl.errors ++ def.errors;
   top.globalDecls := e.globalDecls ++ gl.globalDecls ++ def.globalDecls;
+  top.functionDecls := e.functionDecls ++ gl.functionDecls ++ def.functionDecls;
   top.defs := e.defs ++ gl.defs ++ def.defs;
-  top.freeVariables = e.freeVariables ++ gl.freeVariables ++ def.freeVariables;
+  top.freeVariables := e.freeVariables ++ gl.freeVariables ++ def.freeVariables;
   top.typerep = 
     if null(gl.compatibleSelections) then
       case def of
@@ -371,7 +439,7 @@ top::Expr ::= e::Expr  gl::GenericAssocs  def::MaybeExpr
   -- TODO: type checking!!
 }
 
-nonterminal GenericAssocs with pps, host<GenericAssocs>, lifted<GenericAssocs>, errors, globalDecls, defs, env, selectionType, compatibleSelections, returnType, freeVariables;
+nonterminal GenericAssocs with pps, host<GenericAssocs>, lifted<GenericAssocs>, errors, globalDecls, functionDecls, defs, env, selectionType, compatibleSelections, returnType, freeVariables;
 flowtype GenericAssocs = decorate {env, returnType}, compatibleSelections {decorate, selectionType};
 
 autocopy attribute selectionType :: Type;
@@ -384,8 +452,9 @@ top::GenericAssocs ::= h::GenericAssoc  t::GenericAssocs
   top.pps = h.pp :: t.pps;
   top.errors := h.errors ++ t.errors;
   top.globalDecls := h.globalDecls ++ t.globalDecls;
+  top.functionDecls := h.functionDecls ++ t.functionDecls;
   top.defs := h.defs ++ t.defs;
-  top.freeVariables = h.freeVariables ++ t.freeVariables;
+  top.freeVariables := h.freeVariables ++ t.freeVariables;
   top.compatibleSelections = h.compatibleSelections ++ t.compatibleSelections;
 }
 abstract production nilGenericAssoc
@@ -395,12 +464,13 @@ top::GenericAssocs ::=
   top.pps = [];
   top.errors := [];
   top.globalDecls := [];
+  top.functionDecls := [];
   top.defs := [];
-  top.freeVariables = [];
+  top.freeVariables := [];
   top.compatibleSelections = [];
 }
 
-nonterminal GenericAssoc with location, pp, host<GenericAssoc>, lifted<GenericAssoc>, globalDecls, errors, defs, env, selectionType, compatibleSelections, returnType, freeVariables;
+nonterminal GenericAssoc with location, pp, host<GenericAssoc>, lifted<GenericAssoc>, globalDecls, functionDecls, errors, defs, env, selectionType, compatibleSelections, returnType, freeVariables;
 flowtype GenericAssoc = decorate {env, returnType}, compatibleSelections {decorate, selectionType};
 
 abstract production genericAssoc
@@ -410,8 +480,9 @@ top::GenericAssoc ::= ty::TypeName  fun::Expr
   top.pp = ppConcat([ty.pp, text(": "), fun.pp]);
   top.errors := ty.errors ++ fun.errors;
   top.globalDecls := ty.globalDecls ++ fun.globalDecls;
+  top.functionDecls := ty.functionDecls ++ fun.functionDecls;
   top.defs := ty.defs ++ fun.defs;
-  top.freeVariables = ty.freeVariables ++ fun.freeVariables;
+  top.freeVariables := ty.freeVariables ++ fun.freeVariables;
   top.compatibleSelections =
     if compatibleTypes(top.selectionType, ty.typerep, true, false) then [fun] else [];
 }
@@ -424,11 +495,18 @@ top::Expr ::= body::Stmt result::Expr
   top.pp = ppConcat([text("({"), nestlines(2, ppConcat([body.pp, line(), result.pp, text("; })")]))]);
   top.errors := body.errors ++ result.errors;
   top.globalDecls := body.globalDecls ++ result.globalDecls;
-  top.defs := globalDeclsDefs(body.globalDecls) ++ globalDeclsDefs(result.globalDecls); -- defs are *not* propagated up. This is beginning of a scope.
-  top.freeVariables = body.freeVariables ++ removeDefsFromNames(body.defs, result.freeVariables);
+  top.functionDecls := body.functionDecls ++ result.functionDecls;
+  
+  -- defs are *not* propagated up. This is beginning of a scope.
+  top.defs := globalDeclsDefs(body.globalDecls) ++ globalDeclsDefs(result.globalDecls) 
+           ++ functionDeclsDefs(body.functionDecls) ++ functionDeclsDefs(result.functionDecls); 
+  
+  top.freeVariables := body.freeVariables ++ removeDefsFromNames(body.defs, result.freeVariables);
   top.typerep = result.typerep;
   
-  body.env = openScopeEnv(top.env);
+  -- Add body.functionDefs to env here, since labels don't bubble up
+  -- from expressions to the top-level function.
+  body.env = addEnv(body.functionDefs, openScopeEnv(top.env));
   result.env = addEnv(body.defs, body.env);
 }
 
@@ -440,8 +518,9 @@ top::Expr ::= s::String
   top.pp = ppConcat([ text("/* "), text(s), text(" */") ]);
   top.errors := [];
   top.globalDecls := [];
+  top.functionDecls := [];
   top.defs := [];
-  top.freeVariables = [];
+  top.freeVariables := [];
   top.typerep = errorType();
 }
 

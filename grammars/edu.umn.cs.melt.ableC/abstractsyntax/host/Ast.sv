@@ -4,17 +4,14 @@ imports silver:langutil;
 imports silver:langutil:pp;
 imports edu:umn:cs:melt:ableC:abstractsyntax:env;
 imports edu:umn:cs:melt:ableC:abstractsyntax:construction;
-
--- Treat the substitution module like an export for modular analyses,
--- but don't add it to the reference set.
-option edu:umn:cs:melt:ableC:abstractsyntax:substitution;
+imports edu:umn:cs:melt:ableC:abstractsyntax:substitution;
 
 -- Flowtypes for imported attributes that are the same w.r.t. the reference set on all nonterminals
 flowtype pp {} on
   Attribute, Attribs, Attrib, AttribName,
   Decl, FunctionDecl, ParameterDecl, StructDecl, UnionDecl, EnumDecl, StructItem, EnumItem, StorageClass,
   MemberDesignator,
-  ArrayType, TagType, StructOrEnumOrUnion,
+  ArrayType, ExtType, StructOrEnumOrUnion,
   AsmStatement, AsmArgument, AsmClobbers, AsmOperands, AsmOperand,
   Qualifier, SpecialSpecifier,
   Expr, GenericAssoc,
@@ -27,7 +24,7 @@ flowtype pp {} on
   MaybeInitializer, Initializer, Init, Designator;
 flowtype pps {} on 
   Attributes,
-  GlobalDecls, Decls, Declarators, Declarator, Parameters, StructItemList, EnumItemList, StructDeclarators, StructDeclarator,
+  GlobalDecls, Decls, Declarators, Declarator, Parameters, StructItemList, EnumItemList, StructDeclarators, StructDeclarator, StorageClasses,
   ArraySizeModifier,
   Qualifiers, SpecialSpecifiers,
   GenericAssocs,
@@ -54,18 +51,27 @@ flowtype errors {decorate} on
   SpecialSpecifiers;
 
 flowtype defs {decorate} on
-  Decls, Decl, Declarators, Declarator, FunctionDecl, Parameters, ParameterDecl, StructDecl, UnionDecl, EnumDecl, StructItemList, EnumItemList, StructItem, EnumItem,
+  Decls, Decl, Declarators, Declarator, FunctionDecl, Parameters, ParameterDecl, StructDecl, UnionDecl, EnumDecl, StructItemList, EnumItemList, StructItem, StructDeclarators, StructDeclarator, EnumItem,
   MemberDesignator,
-  SpecialSpecifiers,
+  SpecialSpecifier, SpecialSpecifiers,
   Expr, GenericAssocs, GenericAssoc,
-  TypeName, BaseTypeExpr, TypeNames,
+  TypeName, BaseTypeExpr, TypeModifierExpr, TypeNames,
   MaybeExpr, Exprs, ExprOrTypeName,
   Stmt,
   MaybeInitializer, Initializer, InitList, Init, Designator;
+flowtype functionDefs {decorate} on
+  Parameters, ParameterDecl;
+-- Empty within function bodies since functionDefs is used in computing the env
 flowtype functionDefs {} on
   Stmt;
 flowtype localDefs {decorate} on
   StructItemList, StructItem, StructDeclarators, StructDeclarator;
+
+flowtype typerep {decorate} on
+  Declarator, FunctionDecl, ParameterDecl, StructDeclarator, EnumItem,
+  Expr,
+  TypeName, BaseTypeExpr, TypeModifierExpr,
+  ExprOrTypeName;
 
 -- Set all forward flowtypes on 'collection' and 'wrapper' nonterminals to be empty, since we
 -- typically don't forward on these, and may want to pattern match without providing all attributes
@@ -86,7 +92,7 @@ flowtype forward {decorate} on
   Attribute, Attrib,
   GlobalDecls, Decl, Declarator, FunctionDecl, ParameterDecl, StructDecl, UnionDecl, EnumDecl, StructItem, StructDeclarator, EnumItem, StorageClass,
   MemberDesignator,
-  Type, ArrayType, ArraySizeModifier, FunctionType, TagType, NoncanonicalType,
+  Type, ArrayType, ArraySizeModifier, FunctionType, NoncanonicalType,
   AsmStatement, AsmArgument, AsmOperand,
   Qualifier, SpecialSpecifier,
   Expr, GenericAssoc,

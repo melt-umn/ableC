@@ -1,3 +1,6 @@
+import edu:umn:cs:melt:ableC:abstractsyntax:env;
+import silver:langutil:pp;
+
 -- Decl --
 
 -- int n ;
@@ -39,7 +42,7 @@ function mkIntDeclGeneral
 Stmt ::= n::String init::MaybeInitializer l::Location
 {
   return  declStmt( 
-            variableDecls( [], nilAttribute(), 
+            variableDecls(nilStorageClass(), nilAttribute(), 
               directTypeExpr(
                 builtinType(nilQualifier(), signedType(intType()))),
               consDeclarator( 
@@ -57,7 +60,7 @@ Stmt ::= n::String typ::Type l::Location
   local bty::BaseTypeExpr = directTypeExpr(typ);
 
   return  declStmt( 
-            variableDecls( [], nilAttribute(), bty,
+            variableDecls(nilStorageClass(), nilAttribute(), bty,
               consDeclarator( 
                 declarator( name(n, location=l), baseTypeExpr(), nilAttribute(), 
                     nothingInitializer() ) , 
@@ -73,7 +76,7 @@ Stmt ::= n::String typ::Type v::Expr l::Location
   local bty::BaseTypeExpr = directTypeExpr(typ);
 
   return  declStmt( 
-            variableDecls( [], nilAttribute(), bty,
+            variableDecls(nilStorageClass(), nilAttribute(), bty,
               consDeclarator( 
                 declarator( name(n, location=l), baseTypeExpr(), nilAttribute(), 
                     justInitializer(exprInitializer(v)) ) , 
@@ -94,7 +97,7 @@ Decl ::= n::String val::String l::Location
 function makeDeclIntGeneral
 Decl ::= n::String init::MaybeInitializer l::Location
 {
-  return variableDecls( [], nilAttribute(), 
+  return variableDecls(nilStorageClass(), nilAttribute(), 
            directTypeExpr(
              builtinType(nilQualifier(), signedType(intType()))),
            consDeclarator( 
@@ -121,4 +124,20 @@ Stmt ::= n::String type: init::MaybeInitializer l::Location
           ) ;
 }
  -}  
+ 
+abstract production autoDecl
+top::Decl ::= n::Name e::Expr
+{
+  top.pp = pp"auto ${n.pp} = ${e.pp};";
 
+  local bty::BaseTypeExpr = directTypeExpr(e.typerep);
+
+  forwards to
+    variableDecls(
+      nilStorageClass(), nilAttribute(), bty,
+      consDeclarator(
+        declarator(
+          n, baseTypeExpr(), nilAttribute(),
+          justInitializer(exprInitializer(e))),
+        nilDeclarator()));
+}

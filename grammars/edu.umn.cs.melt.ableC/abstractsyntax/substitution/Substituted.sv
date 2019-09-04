@@ -2,244 +2,334 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax:substitution;
 
 imports silver:langutil;
 imports silver:langutil:pp;
+imports silver:reflect;
 
 imports edu:umn:cs:melt:ableC:abstractsyntax:host;
 imports edu:umn:cs:melt:ableC:abstractsyntax:env;
 imports edu:umn:cs:melt:ableC:abstractsyntax:construction;
 imports edu:umn:cs:melt:ableC:abstractsyntax:overloadable as ovrld;
-imports edu:umn:cs:melt:ableC:abstractsyntax:injectable as inj;
 
-{--
- - Framework for performing substitutions on ASTs
- -
- - The functor attribute 'substituted' computes a transformation to generate a tree with the
- - rewrites specified by the 'substitutions' attribute.  substitutions is a list of Substitutions,
- - which each can receive inherited attributes to see what is being substituted, and synthesized
- - attributes corresponding to the result of performing a substitution.  
- -
- - In every production that would potentially want to perform a substitution, the incoming
- - subsitutions are decorated with the relevant parameters and the corresponding Maybe attribute
- - is accessed, to possibly find a value for substituted different than the current node.  
- -
- - Since this transformation is env-independent, productions that forward based on the env must
- - propagate substituted.  It is recommended, however, that all productions do this anyway, similar
- - to pp.  
- - 
- - Substitution is a closed nonterminal in the same way as Def, as extensions may wish to specify
- - new substitutions to perform on extension productions.  However, extensions cannot specify a new
- - substitution for a host production, since there is no way of specifying a new equation for the
- - substituted attribute on a host production.   
- -}
+type Substitution = (Maybe<AST> ::= AST); 
 
-autocopy attribute substitutions::Substitutions;
+autocopy attribute substitutions::[Substitution] occurs on AST, ASTs, NamedASTs, NamedAST;
 synthesized attribute substituted<a>::a;
 
-autocopy attribute nameIn::String;
-synthesized attribute nameSub::Maybe<Name>;
-synthesized attribute typedefSub::Maybe<BaseTypeExpr>;
-synthesized attribute declRefSub::Maybe<Expr>;
+attribute substituted<AST> occurs on AST;
 
--- 'Indirect' substitutions that substitute something other than a production directly wrapping a name
-synthesized attribute stmtSub::Maybe<Stmt>;
-synthesized attribute initializerSub::Maybe<Initializer>;
-synthesized attribute exprsSub::Maybe<Exprs>;
-synthesized attribute parametersSub::Maybe<Parameters>;
-synthesized attribute refIdSub::Maybe<String>;
-
-nonterminal Substitutions with nameIn, nameSub, typedefSub, declRefSub, stmtSub, initializerSub, exprsSub, parametersSub, refIdSub;
-flowtype Substitutions = nameSub {nameIn}, typedefSub {nameIn}, declRefSub {nameIn}, stmtSub {nameIn}, exprsSub {nameIn}, parametersSub {nameIn}, refIdSub {nameIn};
-
-abstract production consSubstitution
-top::Substitutions ::= h::Substitution t::Substitutions
+aspect production nonterminalAST
+top::AST ::= prodName::String children::ASTs annotations::NamedASTs
 {
-  top.nameSub = orElse(h.nameSub, t.nameSub);
-  top.typedefSub = orElse(h.typedefSub, t.typedefSub);
-  top.declRefSub = orElse(h.declRefSub, t.declRefSub);
-  top.initializerSub = orElse(h.initializerSub, t.initializerSub);
-  top.stmtSub = orElse(h.stmtSub, t.stmtSub);
-  top.exprsSub = orElse(h.exprsSub, t.exprsSub);
-  top.parametersSub = orElse(h.parametersSub, t.parametersSub);
-  top.refIdSub = orElse(h.refIdSub, t.refIdSub);
+  top.substituted =
+    foldl(
+      fromMaybe,
+      fromMaybe(
+        nonterminalAST(prodName, children.substituted, annotations.substituted),
+        altSub),
+      map(\ s::Substitution -> s(top), top.substitutions));
+  
+  production attribute altSub::Maybe<AST> with orElse;
+  altSub := nothing();
+  
+  local declRes::Either<String Decl> = reify(top);
+  local decl::Decl = declRes.fromRight;
+  decl.env = emptyEnv();
+  decl.returnType = nothing();
+  decl.isTopLevel = false;
+  altSub <-
+    if declRes.isRight
+    then
+      case decl of
+      | decDecl(d) ->
+        just(
+          decorate reflect(new(d)) with {
+            substitutions = top.substitutions;
+          }.substituted)
+      | _ -> nothing()
+      end
+    else nothing();
+  
+  local stmtRes::Either<String Stmt> = reify(top);
+  local stmt::Stmt = stmtRes.fromRight;
+  stmt.env = emptyEnv();
+  stmt.returnType = nothing();
+  altSub <-
+    if stmtRes.isRight
+    then
+      case stmt of
+      | decStmt(s) ->
+        just(
+          decorate reflect(new(s)) with {
+            substitutions = top.substitutions;
+          }.substituted)
+      | _ -> nothing()
+      end
+    else nothing();
+  
+  local exprRes::Either<String Expr> = reify(top);
+  local expr::Expr = exprRes.fromRight;
+  expr.env = emptyEnv();
+  expr.returnType = nothing();
+  altSub <-
+    if exprRes.isRight
+    then
+      case expr of
+      | decExpr(e) ->
+        just(
+          decorate reflect(new(e)) with {
+            substitutions = top.substitutions;
+          }.substituted)
+      | _ -> nothing()
+      end
+    else nothing();
+  
+  local exprsRes::Either<String Exprs> = reify(top);
+  local exprs::Exprs = exprsRes.fromRight;
+  exprs.env = emptyEnv();
+  exprs.returnType = nothing();
+  altSub <-
+    if exprsRes.isRight
+    then
+      case exprs of
+      | decExprs(e) ->
+        just(
+          decorate reflect(new(e)) with {
+            substitutions = top.substitutions;
+          }.substituted)
+      | _ -> nothing()
+      end
+    else nothing();
+  
+  local btyRes::Either<String BaseTypeExpr> = reify(top);
+  local bty::BaseTypeExpr = btyRes.fromRight;
+  bty.env = emptyEnv();
+  bty.returnType = nothing();
+  bty.givenRefId = nothing();
+  altSub <-
+    if btyRes.isRight
+    then
+      case bty of
+      | decTypeExpr(ty) ->
+        just(
+          decorate reflect(new(ty)) with {
+            substitutions = top.substitutions;
+          }.substituted)
+      | _ -> nothing()
+      end
+    else nothing();
+  
+  local mtyRes::Either<String TypeModifierExpr> = reify(top);
+  local mty::TypeModifierExpr = mtyRes.fromRight;
+  mty.env = emptyEnv();
+  mty.returnType = nothing();
+  mty.baseType = errorType();
+  mty.typeModifiersIn = [];
+  altSub <-
+    if mtyRes.isRight
+    then
+      case mty of
+      | decTypeModifierExpr(ty) ->
+        just(
+          decorate reflect(new(ty)) with {
+            substitutions = top.substitutions;
+          }.substituted)
+      | _ -> nothing()
+      end
+    else nothing();
 }
 
-abstract production nilSubstitution
-top::Substitutions ::= 
+aspect production terminalAST
+top::AST ::= terminalName::String lexeme::String location::Location
 {
-  top.nameSub = nothing();
-  top.typedefSub = nothing();
-  top.declRefSub = nothing();
-  top.stmtSub = nothing();
-  top.initializerSub = nothing();
-  top.exprsSub = nothing();
-  top.parametersSub = nothing();
-  top.refIdSub = nothing();
+  propagate substituted;
 }
 
-closed nonterminal Substitution with nameIn, nameSub, typedefSub, declRefSub, stmtSub, initializerSub, exprsSub, parametersSub, refIdSub;
-flowtype Substitution = nameSub {nameIn}, typedefSub {nameIn}, declRefSub {nameIn}, stmtSub {nameIn}, exprsSub {nameIn}, parametersSub {nameIn}, refIdSub {nameIn};
-
-aspect default production
-top::Substitution ::= 
+aspect production listAST
+top::AST ::= vals::ASTs
 {
-  top.nameSub = nothing();
-  top.typedefSub = nothing();
-  top.declRefSub = nothing();
-  top.stmtSub = nothing();
-  top.initializerSub = nothing();
-  top.exprsSub = nothing();
-  top.parametersSub = nothing();
-  top.refIdSub = nothing();
+  propagate substituted;
 }
+
+aspect production stringAST
+top::AST ::= s::String
+{
+  propagate substituted;
+}
+
+aspect production integerAST
+top::AST ::= i::Integer
+{
+  propagate substituted;
+}
+
+aspect production floatAST
+top::AST ::= f::Float
+{
+  propagate substituted;
+}
+
+aspect production booleanAST
+top::AST ::= b::Boolean
+{
+  propagate substituted;
+}
+
+aspect production anyAST
+top::AST ::= x::a
+{
+  propagate substituted;
+}
+
+attribute substituted<ASTs> occurs on ASTs;
+
+aspect production consAST
+top::ASTs ::= h::AST t::ASTs
+{
+  propagate substituted;
+}
+
+aspect production nilAST
+top::ASTs ::=
+{
+  propagate substituted;
+}
+
+attribute substituted<NamedASTs> occurs on NamedASTs;
+
+aspect production consNamedAST
+top::NamedASTs ::= h::NamedAST t::NamedASTs
+{
+  propagate substituted;
+}
+
+aspect production nilNamedAST
+top::NamedASTs ::=
+{
+  propagate substituted;
+}
+
+attribute substituted<NamedAST> occurs on NamedAST;
+
+aspect production namedAST
+top::NamedAST ::= n::String v::AST
+{
+  propagate substituted;
+}
+
 
 -- Substitutes a name for another name in all places
-abstract production nameSubstitution
-top::Substitution ::= name::String sub::Name
+function nameSub
+Maybe<AST> ::= n::String sub::Name a::AST
 {
-  top.nameSub = if top.nameIn == name then just(sub) else nothing();
+  local res::Either<String Name> = reify(a);
+  local n1::Name = res.fromRight;
+  n1.env = emptyEnv();
+  return
+    if res.isRight
+    then if n == n1.name then just(reflect(new(sub))) else nothing()
+    else nothing();
 }
+
+global nameSubstitution::(Substitution ::= String Name) =
+  \ n::String sub::Name -> nameSub(n, sub, _);
 
 -- Substitutes a typedef name for a type
-abstract production typedefSubstitution
-top::Substitution ::= name::String sub::BaseTypeExpr
+function typeExprSub
+Maybe<AST> ::= n::String sub::BaseTypeExpr a::AST
 {
-  top.typedefSub = if top.nameIn == name then just(sub) else nothing();
+  local res::Either<String BaseTypeExpr> = reify(a);
+  local te::BaseTypeExpr = res.fromRight;
+  te.env = emptyEnv();
+  te.returnType = nothing();
+  te.givenRefId = nothing();
+  return
+    if res.isRight
+    then
+      case te of
+      | typedefTypeExpr(_, name(n1)) ->
+        if n == n1 then just(reflect(new(sub))) else nothing()
+      | _ -> nothing()
+      end
+    else nothing();
 }
+
+global typeExprSubstitution::(Substitution ::= String BaseTypeExpr) =
+  \ n::String sub::BaseTypeExpr -> typeExprSub(n, sub, _);
 
 -- Substitutes a value name for an expression
-abstract production declRefSubstitution
-top::Substitution ::= name::String sub::Expr
+function exprSub
+Maybe<AST> ::= n::String sub::(Expr ::= Location) a::AST
 {
-  top.declRefSub = if top.nameIn == name then just(sub) else nothing();
+  local res::Either<String Expr> = reify(a);
+  local e::Expr = res.fromRight;
+  e.env = emptyEnv();
+  e.returnType = nothing();
+  return
+    if res.isRight
+    then
+      case e of
+      | declRefExpr(name(n1)) ->
+        if n == n1 then just(reflect(sub(e.location))) else nothing()
+      | directCallExpr(name(n1), args) ->
+        if n == n1
+        then just(reflect(ovrld:callExpr(sub(e.location), args, location=e.location)))
+        else nothing()
+      | _ -> nothing()
+      end
+    else nothing();
 }
+
+global exprSubstitution::(Substitution ::= String (Expr ::= Location)) =
+  \ n::String sub::(Expr ::= Location) -> exprSub(n, sub, _);
 
 -- Substitutes an exprStmt that is a declRefExpr for another statement
-abstract production stmtSubstitution
-top::Substitution ::= name::String sub::Stmt
+function stmtSub
+Maybe<AST> ::= n::String sub::Stmt a::AST
 {
-  top.stmtSub = if top.nameIn == name then just(sub) else nothing();
+  local res::Either<String Stmt> = reify(a);
+  local s::Stmt = res.fromRight;
+  s.env = emptyEnv();
+  s.returnType = nothing();
+  return
+    if res.isRight
+    then
+      case s of
+      | exprStmt(declRefExpr(name(n1))) ->
+        if n == n1 then just(reflect(new(sub))) else nothing()
+      | _ -> nothing()
+      end
+    else nothing();
 }
 
--- Substitutes an exprInitializer that is a declRefExpr for another initializer
-abstract production initializerSubstitution
-top::Substitution ::= name::String sub::Initializer
-{
-  top.initializerSub = if top.nameIn == name then just(sub) else nothing();
-}
-
--- Substitutes consExpr where the first element is a declRefExpr
-abstract production exprsSubstitution
-top::Substitution ::= name::String sub::Exprs
-{
-  top.exprsSub = if top.nameIn == name then just(sub) else nothing();
-}
-
--- Substitutes consExpr where the first element is a declRefExpr
-abstract production parametersSubstitution
-top::Substitution ::= name::String sub::Parameters
-{
-  top.parametersSub = if top.nameIn == name then just(sub) else nothing();
-}
+global stmtSubstitution::(Substitution ::= String Stmt) =
+  \ n::String sub::Stmt -> stmtSub(n, sub, _);
 
 -- Substitutes the 'refId' attribute on a struct (ableC host extension) for a new refId
-abstract production refIdSubstitution
-top::Substitution ::= refId::String sub::String
+function refIdSub
+Maybe<AST> ::= refId::String sub::String a::AST
 {
-  top.refIdSub = if top.nameIn == refId then just(sub) else nothing();
+  local res::Either<String Attrib> = reify(a);
+  local at::Attrib = res.fromRight;
+  at.env = emptyEnv();
+  at.returnType = nothing();
+  return
+    if res.isRight
+    then
+      case at of
+      | appliedAttrib(attribName(n), consExpr(stringLiteral(s), nilExpr())) ->
+        if n.name == "refId" && substring(1, length(s) - 1, s) == refId
+        then
+          just(
+            reflect(
+              appliedAttrib(
+                attribName(n),
+                consExpr(
+                  stringLiteral(s"\"${sub}\"", location=builtinLoc("substituted")),
+                  nilExpr()))))
+        else nothing()
+      | _ -> nothing()
+      end
+    else nothing();
 }
 
--- 'occurs on' definitions for every nonterminal
-attribute substitutions occurs on
-  AsmStatement, AsmArgument, AsmClobbers, AsmOperands, AsmOperand,
-  Attributes, Attribute, Attribs, Attrib, AttribName,
-  Decls, Decl, Declarators, Declarator, FunctionDecl, Parameters, ParameterDecl,
-    StructDecl, UnionDecl, EnumDecl, StructItemList, EnumItemList,
-    StructItem, StructDeclarators, StructDeclarator, EnumItem,
-  Expr, GenericAssocs, GenericAssoc,
-  MemberDesignator,
-  NumericConstant,
-  MaybeExpr, Exprs, ExprOrTypeName,
-  MaybeInitializer, Initializer, InitList, Init, Designator,
-  Name, MaybeName, Names,
-  Stmt,
-  TypeName, BaseTypeExpr, TypeModifierExpr, TypeNames,
-  Qualifier, SpecialSpecifier,
-  Type, ArrayType, FunctionType, TagType, NoncanonicalType,
-  BuiltinType, RealType, IntegerType;
-
-attribute substituted<AsmStatement> occurs on AsmStatement;
-attribute substituted<AsmArgument> occurs on AsmArgument;
-attribute substituted<AsmClobbers> occurs on AsmClobbers;
-attribute substituted<AsmOperands> occurs on AsmOperands;
-attribute substituted<AsmOperand> occurs on AsmOperand;
-attribute substituted<Attributes> occurs on Attributes;
-attribute substituted<Attribute> occurs on Attribute;
-attribute substituted<Attribs> occurs on Attribs;
-attribute substituted<Attrib> occurs on Attrib;
-attribute substituted<AttribName> occurs on AttribName;
-attribute substituted<Decls> occurs on Decls;
-attribute substituted<Decl> occurs on Decl;
-attribute substituted<Declarators> occurs on Declarators;
-attribute substituted<Declarator> occurs on Declarator;
-attribute substituted<FunctionDecl> occurs on FunctionDecl;
-attribute substituted<Parameters> occurs on Parameters;
-attribute substituted<ParameterDecl> occurs on ParameterDecl;
-attribute substituted<StructDecl> occurs on StructDecl;
-attribute substituted<UnionDecl> occurs on UnionDecl;
-attribute substituted<EnumDecl> occurs on EnumDecl;
-attribute substituted<StructItemList> occurs on StructItemList;
-attribute substituted<EnumItemList> occurs on EnumItemList;
-attribute substituted<StructItem> occurs on StructItem;
-attribute substituted<StructDeclarators> occurs on StructDeclarators;
-attribute substituted<StructDeclarator> occurs on StructDeclarator;
-attribute substituted<EnumItem> occurs on EnumItem;
-attribute substituted<Expr> occurs on Expr;
-attribute substituted<GenericAssocs> occurs on GenericAssocs;
-attribute substituted<GenericAssoc> occurs on GenericAssoc;
-attribute substituted<MemberDesignator> occurs on MemberDesignator;
-attribute substituted<NumericConstant> occurs on NumericConstant;
-attribute substituted<MaybeExpr> occurs on MaybeExpr;
-attribute substituted<Exprs> occurs on Exprs;
-attribute substituted<ExprOrTypeName> occurs on ExprOrTypeName;
-attribute substituted<MaybeInitializer> occurs on MaybeInitializer;
-attribute substituted<Initializer> occurs on Initializer;
-attribute substituted<InitList> occurs on InitList;
-attribute substituted<Init> occurs on Init;
-attribute substituted<Designator> occurs on Designator;
-attribute substituted<Name> occurs on Name;
-attribute substituted<MaybeName> occurs on MaybeName;
-attribute substituted<Names> occurs on Names;
-attribute substituted<Stmt> occurs on Stmt;
-attribute substituted<TypeName> occurs on TypeName;
-attribute substituted<BaseTypeExpr> occurs on BaseTypeExpr;
-attribute substituted<TypeModifierExpr> occurs on TypeModifierExpr;
-attribute substituted<TypeNames> occurs on TypeNames;
-attribute substituted<Qualifier> occurs on Qualifier;
-attribute substituted<SpecialSpecifier> occurs on SpecialSpecifier;
-attribute substituted<Type> occurs on Type;
-attribute substituted<ArrayType> occurs on ArrayType;
-attribute substituted<FunctionType> occurs on FunctionType;
-attribute substituted<TagType> occurs on TagType;
-attribute substituted<NoncanonicalType> occurs on NoncanonicalType;
-attribute substituted<BuiltinType> occurs on BuiltinType;
-attribute substituted<RealType> occurs on RealType;
-attribute substituted<IntegerType> occurs on IntegerType;
-
--- Flowtype declarations for every nonterminal
-flowtype substituted {substitutions} on
-  AsmStatement, AsmArgument, AsmClobbers, AsmOperands, AsmOperand,
-  Attributes, Attribute, Attribs, Attrib, AttribName,
-  Decls, Decl, Declarators, Declarator, FunctionDecl, Parameters, ParameterDecl,
-    StructDecl, UnionDecl, EnumDecl, StructItemList, EnumItemList,
-    StructItem, StructDeclarators, StructDeclarator, EnumItem,
-  Expr, GenericAssocs, GenericAssoc,
-  MemberDesignator,
-  NumericConstant,
-  MaybeExpr, Exprs, ExprOrTypeName,
-  MaybeInitializer, Initializer, InitList, Init, Designator,
-  Name, MaybeName,
-  Stmt,
-  TypeName, BaseTypeExpr, TypeModifierExpr, TypeNames,
-  Qualifier, SpecialSpecifier,
-  Type, ArrayType, FunctionType, TagType, NoncanonicalType,
-  BuiltinType, RealType, IntegerType;
-  
+global refIdSubstitution::(Substitution ::= String String) =
+  \ n::String sub::String -> refIdSub(n, sub, _);

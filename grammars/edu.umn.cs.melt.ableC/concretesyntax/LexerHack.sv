@@ -13,7 +13,7 @@ grammar edu:umn:cs:melt:ableC:concretesyntax;
  -
  - The initial value is an empty, outer scope. [[]] not [], which is no scopes at all.
  -}
-parser attribute context :: [[Pair<String lh:IdentType>]]
+parser attribute context :: [[Pair<String TerminalId>]]
   action { context = [[]]; };
 
 {--
@@ -27,32 +27,37 @@ parser attribute context :: [[Pair<String lh:IdentType>]]
  - after we have reduced the declaration.
  -}
 
-{- now in concretesyntax:lexerHack/LexerHack.sv, to avoid the nonterminal
-   IdentType being flagged as useless by the Copper MDA analysis.
-
-nonterminal IdentType;
-abstract production identType_c     top::IdentType ::= {}
-abstract production typenameType_c  top::IdentType ::= {}
-
--- convenient, one single object for each. totally unnecessary of course...
-global identType :: IdentType = identType_c();
-global typenameType :: IdentType = typenameType_c();
--}
-
 
 -- Here is the actual decision logic
-disambiguate Identifier_t, TypeName_t
-{
-  pluck
-
-    case lookupBy(stringEq, lexeme, head(context)) of
-    | just(lh:typenameType_c()) -> TypeName_t
-    | _ -> Identifier_t
-    end;
-}
-
-{- now in concretesyntax:lexerHack/LexerHack.sv since they depend
-   on IdentType which has been moved there.  See comment above.
+lexer class Cidentifier
+  submits to Ckeyword
+  disambiguate {
+    local lookupResult::Maybe<TerminalId> =
+      -- Look up the lexeme in the current context
+      case lookupBy(stringEq, lexeme, head(context)) of
+      | just(id) ->
+        if containsBy(terminalIdEq, id, shiftable)
+        -- Only disambiguate to an extension terminal if that terminal is valid at this point.
+        then just(id)
+        else nothing()
+      | nothing() -> nothing()
+      end;
+    
+    -- In order of preference:
+    -- * Looked-up terminal from context
+    -- * Identifier_t
+    -- * TypeName_t
+    -- * Any (arbitrary) thing that is valid: if the parse succeeds there will
+    --   be a semantic error.
+    pluck
+      fromMaybe(
+        if containsBy(terminalIdEq, Identifier_t, shiftable)
+        then Identifier_t
+        else if containsBy(terminalIdEq, TypeName_t, shiftable)
+        then TypeName_t
+        else head(shiftable), -- Always has length >= 2
+        lookupResult);
+  };
 
 -- The logic that mutates the 'context' value is distributed amoung the rules
 -- elsewhere in the grammar. grep for 'action' to find them all.
@@ -60,37 +65,33 @@ disambiguate Identifier_t, TypeName_t
 -- The following functions are not difficult, but we provide them to give
 -- a name to the actions.
 function openScope
-[[Pair<String IdentType>]] ::= l::[[Pair<String IdentType>]]
+[[Pair<String TerminalId>]] ::= l::[[Pair<String TerminalId>]]
 {
   return head(l) :: l;
 }
 
 function closeScope
-[[Pair<String IdentType>]] ::= l::[[Pair<String IdentType>]]
+[[Pair<String TerminalId>]] ::= l::[[Pair<String TerminalId>]]
 {
   return tail(l);
 }
 
 function addIdentsToScope
-[[Pair<String IdentType>]] ::= l::[ast:Name]  context::[[Pair<String IdentType>]]
+[[Pair<String TerminalId>]] ::= l::[ast:Name]  id::TerminalId  context::[[Pair<String TerminalId>]]
 {
-  return (map(pair(_, identType), map((.ast:name), l)) ++ head(context)) :: tail(context);
-}
-
-function addTypenamesToScope
-[[Pair<String IdentType>]] ::= l::[ast:Name]  context::[[Pair<String IdentType>]]
-{
-  return (map(pair(_, typenameType), map((.ast:name), l)) ++ head(context)) :: tail(context);
+  return (map(pair(_, id), map((.ast:name), l)) ++ head(context)) :: tail(context);
 }
 
 function beginFunctionScope
-[[Pair<String IdentType>]] ::= funName::ast:Name  paramNames::Maybe<[ast:Name]>  context::[[Pair<String IdentType>]]
+[[Pair<String TerminalId>]] ::= funName::ast:Name  id::TerminalId  paramNames::Maybe<[ast:Name]>  paramId::TerminalId  context::[[Pair<String TerminalId>]]
 {
   return
-    addIdentsToScope(fromMaybe([], paramNames),
+    addIdentsToScope(
+      fromMaybe([], paramNames),
+      paramId,
       openScope(
-        addIdentsToScope([funName],
+        addIdentsToScope(
+          [funName],
+          id,
           context)));
 }
-
--}

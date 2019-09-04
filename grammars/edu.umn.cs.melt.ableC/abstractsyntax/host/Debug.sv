@@ -18,8 +18,9 @@ e::Expr ::= txt::String
   e.pp = text(txt);
   e.errors := [];
   e.globalDecls := [];
+  e.functionDecls := [];
   e.defs := [];
-  e.freeVariables = [];
+  e.freeVariables := [];
   e.typerep = errorType(); -- error("Need a type on txtExpr"); 
   e.isLValue = false;
 }
@@ -30,9 +31,10 @@ s::Stmt ::= txt::String
   s.pp = text(txt);
   s.errors := [];
   s.globalDecls := [];
+  s.functionDecls := [];
   s.defs := [];
   s.functionDefs := [];
-  s.freeVariables = [];
+  s.freeVariables := [];
 }
 
 abstract production txtDecl
@@ -42,8 +44,9 @@ d::Decl ::= txt::String
   d.pp = text(txt);
   d.errors := [ ];
   d.globalDecls := [];
+  d.functionDecls := [];
   d.defs := [ ];
-  d.freeVariables = [];
+  d.freeVariables := [];
 }
 
 {- ------------------------------------------------------------
@@ -60,6 +63,7 @@ e::Expr ::=
 {
   e.errors := [];
   e.globalDecls := [];
+  e.functionDecls := [];
   e.defs := [];
   e.pp =
     decorate comment("printEnv pp should be demanded through host pp", location=e.location)

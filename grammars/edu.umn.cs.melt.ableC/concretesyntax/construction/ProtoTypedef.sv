@@ -3,7 +3,6 @@ grammar edu:umn:cs:melt:ableC:concretesyntax:construction;
 imports silver:langutil;
 
 imports edu:umn:cs:melt:ableC:concretesyntax;
-imports edu:umn:cs:melt:ableC:concretesyntax:lexerHack as lh;
 imports edu:umn:cs:melt:ableC:abstractsyntax:construction;
 imports edu:umn:cs:melt:ableC:abstractsyntax:host;
 
@@ -22,7 +21,7 @@ concrete productions top::ProtoTypedef_c
 | 'proto_typedef' ids::IdentifierList_c ';'
   {}
   action {
-    context = lh:addTypenamesToScope(ids.declaredIdents, context);
+    context = addIdentsToScope(ids.declaredIdents, TypeName_t, context);
   }
 
 nonterminal IdentifierList_c with declaredIdents;

@@ -24,6 +24,13 @@ top::Def ::= s::String  l::RefIdItem
   top.refIdContribs = [pair(s, l)];
 }
 
+abstract production deferredDeclDef
+top::Def ::= s::String  d::Decl
+{
+  top.deferredDeclContribs = [pair(s, d)];
+}
+
+
 abstract production miscDef
 top::Def ::= s::String  l::MiscItem
 {
@@ -34,4 +41,10 @@ abstract production globalDefsDef
 top::Def ::= d::[Def]
 {
   top.globalDefs = d ++ foldr(consDefs, nilDefs(), d).globalDefs;
+}
+
+abstract production functionDefsDef
+top::Def ::= d::[Def]
+{
+  top.functionScopeDefs = d ++ foldr(consDefs, nilDefs(), d).functionScopeDefs;
 }

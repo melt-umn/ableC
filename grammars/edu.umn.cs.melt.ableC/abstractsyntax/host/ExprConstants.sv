@@ -11,8 +11,9 @@ top::Expr ::= c::NumericConstant
   top.pp = c.pp;
   top.errors := [];
   top.globalDecls := [];
+  top.functionDecls := [];
   top.defs := [];
-  top.freeVariables = [];
+  top.freeVariables := [];
   top.typerep = builtinType(nilQualifier(), c.constanttyperep);
   top.isLValue = false;
   top.integerConstantValue = c.integerConstantValue;
@@ -24,8 +25,9 @@ top::Expr ::= c::NumericConstant
   top.pp = c.pp;
   top.errors := [];
   top.globalDecls := [];
+  top.functionDecls := [];
   top.defs := [];
-  top.freeVariables = [];
+  top.freeVariables := [];
   top.typerep = builtinType(nilQualifier(), case c.constanttyperep of
     | realType(rt) -> complexType(rt)
     | signedType(it) -> complexIntegerType(it)
@@ -40,13 +42,14 @@ top::Expr ::= num::String  c::CharPrefix
   top.pp = text(num);
   top.errors := [];
   top.globalDecls := [];
+  top.functionDecls := [];
   top.defs := [];
-  top.freeVariables = [];
+  top.freeVariables := [];
   top.typerep = builtinType(nilQualifier(), signedType(charType())); -- TODO: no idea
   top.isLValue = false;
 }
 
-nonterminal NumericConstant with location, pp, host<NumericConstant>, lifted<NumericConstant>, errors, env, constanttyperep, integerConstantValue;
+nonterminal NumericConstant with location, pp, mangledName, host<NumericConstant>, lifted<NumericConstant>, errors, env, constanttyperep, integerConstantValue;
 flowtype NumericConstant = decorate {env}, constanttyperep {decorate}, integerConstantValue {decorate};
 
 synthesized attribute constanttyperep :: BuiltinType;
@@ -56,15 +59,17 @@ top::NumericConstant ::= num::String  unsigned::Boolean  suffix::IntSuffix
 {
   propagate host, lifted;
   top.pp = text(num);
+  top.mangledName = substitute(".", "_", num);
   top.errors := [];
   top.constanttyperep = if unsigned then unsignedType(suffix.constinttyperep) else signedType(suffix.constinttyperep);
-  top.integerConstantValue = just(toInt(num));
+  top.integerConstantValue = just(toInteger(num));
 }
 abstract production hexIntegerConstant
 top::NumericConstant ::= num::String  unsigned::Boolean  suffix::IntSuffix
 {
   propagate host, lifted;
   top.pp = text(num);
+  top.mangledName = substitute(".", "_", num);
   top.errors := [];
   top.constanttyperep = if unsigned then unsignedType(suffix.constinttyperep) else signedType(suffix.constinttyperep);
   top.integerConstantValue = nothing(); -- TODO
@@ -74,6 +79,7 @@ top::NumericConstant ::= num::String  unsigned::Boolean  suffix::IntSuffix
 {
   propagate host, lifted;
   top.pp = text(num);
+  top.mangledName = substitute(".", "_", num);
   top.errors := [];
   top.constanttyperep = if unsigned then unsignedType(suffix.constinttyperep) else signedType(suffix.constinttyperep);
   top.integerConstantValue = nothing(); -- TODO
@@ -84,6 +90,7 @@ top::NumericConstant ::= num::String  suffix::FloatSuffix
 {
   propagate host, lifted;
   top.pp = text(num);
+  top.mangledName = substitute(".", "_", num);
   top.errors := [];
   top.constanttyperep = realType(suffix.constfloattyperep);
   top.integerConstantValue = nothing();
@@ -93,6 +100,7 @@ top::NumericConstant ::= num::String  suffix::FloatSuffix
 {
   propagate host, lifted;
   top.pp = text(num);
+  top.mangledName = substitute(".", "_", num);
   top.errors := [];
   top.constanttyperep = realType(suffix.constfloattyperep);
   top.integerConstantValue = nothing();

@@ -7,7 +7,7 @@ a::AsmStatement ::= arg::AsmArgument
 {
   propagate host, lifted;
   a.pp = ppConcat( [ text("asm ("), arg.pp, text(")"), text(";") ] );
-  a.freeVariables = arg.freeVariables;
+  a.freeVariables := arg.freeVariables;
 }
 
 abstract production asmStatementTypeQual
@@ -15,7 +15,7 @@ a::AsmStatement ::= tq::Qualifier arg::AsmArgument
 {
   propagate host, lifted;
   a.pp = ppConcat( [ text("asm "), tq.pp, text(" ("), arg.pp, text(")"), text(";") ] );
-  a.freeVariables = arg.freeVariables;
+  a.freeVariables := arg.freeVariables;
 }
 
 nonterminal AsmArgument with location, pp, host<AsmArgument>, lifted<AsmArgument>, env, returnType, freeVariables;
@@ -33,7 +33,7 @@ top::AsmArgument ::= s::String asmOps1::AsmOperands asmOps2::AsmOperands asmC::A
              ++ (if asmC.exists then [text(": ")] else [ ])
              ++ [asmC.pp] 
              ) ;  
-  top.freeVariables = asmOps1.freeVariables ++ asmOps2.freeVariables;
+  top.freeVariables := asmOps1.freeVariables ++ asmOps2.freeVariables;
 }
 
 synthesized attribute exists::Boolean;
@@ -72,7 +72,7 @@ top::AsmOperands ::=
   propagate host, lifted;
   top.pp = notext();
   top.exists = false;
-  top.freeVariables = [];
+  top.freeVariables := [];
 }
 abstract production oneAsmOps
 top::AsmOperands ::= asmOp::AsmOperand
@@ -80,7 +80,7 @@ top::AsmOperands ::= asmOp::AsmOperand
   propagate host, lifted;
   top.pp = asmOp.pp;
   top.exists = true;
-  top.freeVariables = asmOp.freeVariables;
+  top.freeVariables := asmOp.freeVariables;
 }
 abstract production snocAsmOps
 top::AsmOperands ::= asmOps::AsmOperands asmOp::AsmOperand
@@ -88,7 +88,7 @@ top::AsmOperands ::= asmOps::AsmOperands asmOp::AsmOperand
   propagate host, lifted;
   top.pp = ppConcat ( [asmOps.pp, text(", "), asmOp.pp] );
   top.exists = true;
-  top.freeVariables = asmOp.freeVariables ++ asmOps.freeVariables;
+  top.freeVariables := asmOp.freeVariables ++ asmOps.freeVariables;
 }
 
 nonterminal AsmOperand with location, pp, host<AsmOperand>, lifted<AsmOperand>, env, returnType, freeVariables;
@@ -99,7 +99,7 @@ top::AsmOperand ::= s::String e::Expr
 { 
   propagate host, lifted;
   top.pp = ppConcat( [ text(s), text(" ("), e.pp, text(")") ] );
-  top.freeVariables = e.freeVariables;
+  top.freeVariables := e.freeVariables;
 }
 
 abstract production asmOperandId
@@ -107,5 +107,5 @@ top::AsmOperand ::= id::Name  s::String e::Expr
 {
   propagate host, lifted;
   top.pp = ppConcat( [ text("["), id.pp, text("] "), text(s), text(" ("), e.pp, text(")") ] ); 
-  top.freeVariables = e.freeVariables;
+  top.freeVariables := e.freeVariables;
 }

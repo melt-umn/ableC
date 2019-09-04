@@ -1,7 +1,6 @@
 grammar edu:umn:cs:melt:ableC:concretesyntax:gcc_exts;
 
 imports edu:umn:cs:melt:ableC:concretesyntax;
-imports edu:umn:cs:melt:ableC:concretesyntax:lexerHack as lh;
 
 imports edu:umn:cs:melt:ableC:abstractsyntax:host as ast;
 imports edu:umn:cs:melt:ableC:abstractsyntax:construction as ast;
@@ -20,6 +19,8 @@ terminal UURestrictUU_t '__restrict__' lexer classes { Ckeyword };
 terminal Typeof_t 'typeof' lexer classes {Ckeyword};
 terminal CPP_Typeof_t '__typeof__' lexer classes {Ckeyword};
 terminal CPP_UUTypeof_t '__typeof' lexer classes {Ckeyword};
+terminal Float128_t '_Float128' lexer classes {Ckeyword};
+terminal Int128_t '__int128' lexer classes {Ckeyword};
 
 concrete productions top::TranslationUnit_c
 | h::TranslationUnit_c  ';' 
@@ -67,6 +68,12 @@ concrete productions top::TypeSpecifier_c
 | t::TypeofStarter_c '(' e::Expr_c ')'
     { top.preTypeSpecifiers = [];
       top.realTypeSpecifiers = [ast:typeofTypeExpr(top.givenQualifiers, ast:exprExpr(e.ast))]; }
+| '_Float128'
+    { top.realTypeSpecifiers = [ast:builtinTypeExpr(top.givenQualifiers, ast:realType(ast:longdoubleType()))]; -- TODO: Not sure, this shows up in GCC header files
+      top.preTypeSpecifiers = []; }
+| '__int128'
+    { top.realTypeSpecifiers = [];
+      top.preTypeSpecifiers = ["__int128"]; }
 
 closed nonterminal TypeofStarter_c with location;
 concrete productions top::TypeofStarter_c
@@ -87,7 +94,7 @@ concrete productions top::NestedFunctionDefinition_c
       d.givenStmt = s.ast;
     }
     action {
-      context = lh:closeScope(context); -- Opened by InitialNestedFunctionDefinition.
+      context = closeScope(context); -- Opened by InitialNestedFunctionDefinition.
     }
 closed nonterminal InitialNestedFunctionDefinition_c with location, ast<ast:FunctionDecl>, givenStmt;
 concrete productions top::InitialNestedFunctionDefinition_c
@@ -103,11 +110,11 @@ concrete productions top::InitialNestedFunctionDefinition_c
         foldr(ast:consSpecialSpecifier, ast:nilSpecialSpecifier(), ds.specialSpecifiers);
 
       top.ast =
-        ast:nestedFunctionDecl(ds.storageClass, specialSpecifiers, bt, d.ast, d.declaredIdent, ds.attributes, ast:foldDecl([]), top.givenStmt);
+        ast:nestedFunctionDecl(ast:foldStorageClass(ds.storageClass), specialSpecifiers, bt, d.ast, d.declaredIdent, ds.attributes, ast:foldDecl([]), top.givenStmt);
     }
     action {
       -- TODO: we have to duplicate this more. yaaay...
-      context = lh:beginFunctionScope(d.declaredIdent, d.declaredParamIdents, context);
+      context = beginFunctionScope(d.declaredIdent, Identifier_t, d.declaredParamIdents, Identifier_t, context);
     }
 
 concrete productions top::InitDeclarator_c
@@ -224,20 +231,20 @@ concrete productions top::StructDeclarator_c
 
 
 concrete productions top::StructOrUnionSpecifier_c
-| su::StructOrUnion_c aa::Attributes_c id::Identifier_c '{' ss::StructDeclarationList_c '}'
+| su::StructOrUnion_c aa::Attributes_c id::Identifier_c TypeLCurly_t ss::StructDeclarationList_c '}'
     { top.realTypeSpecifiers =
         case su of
         | struct_c(_) -> [ast:structTypeExpr(top.givenQualifiers, ast:structDecl(aa.ast, ast:justName(id.ast), ast:foldStructItem(ss.ast), location=top.location))]
         | union_c(_) -> [ast:unionTypeExpr(top.givenQualifiers, ast:unionDecl(aa.ast, ast:justName(id.ast), ast:foldStructItem(ss.ast), location=top.location))]
         end;
     }
-| su::StructOrUnion_c id::Identifier_c '{' '}'
+| su::StructOrUnion_c id::Identifier_c TypeLCurly_t '}'
     { top.realTypeSpecifiers =
         case su of
         | struct_c(_) -> [ast:structTypeExpr(top.givenQualifiers, ast:structDecl(ast:nilAttribute(), ast:justName(id.ast), ast:foldStructItem([]), location=top.location))]
         | union_c(_) -> [ast:unionTypeExpr(top.givenQualifiers, ast:unionDecl(ast:nilAttribute(), ast:justName(id.ast), ast:foldStructItem([]), location=top.location))]
         end; }
-| su::StructOrUnion_c '{' '}'
+| su::StructOrUnion_c TypeLCurly_t '}'
     { top.realTypeSpecifiers =
         case su of
         | struct_c(_) -> [ast:structTypeExpr(top.givenQualifiers, ast:structDecl(ast:nilAttribute(), ast:nothingName(), ast:foldStructItem([]), location=top.location))]
@@ -288,7 +295,7 @@ concrete productions top::ParameterDeclaration_c
       d.givenType = ast:baseTypeExpr();
       local bt :: ast:BaseTypeExpr =
         ast:figureOutTypeFromSpecifiers(ds.location, ds.typeQualifiers, ds.preTypeSpecifiers, ds.realTypeSpecifiers, ds.mutateTypeSpecifiers);
-      top.ast = ast:parameterDecl(ds.storageClass, bt, d.ast, ast:justName(d.declaredIdent), ast:appendAttribute(ds.attributes, aa.ast));
+      top.ast = ast:parameterDecl(ast:foldStorageClass(ds.storageClass), bt, d.ast, ast:justName(d.declaredIdent), ast:appendAttribute(ds.attributes, aa.ast));
       }
 | ds::DeclarationSpecifiers_c  d::AbstractDeclarator_c  aa::Attributes_c
     { top.declaredIdents = [];
@@ -296,7 +303,7 @@ concrete productions top::ParameterDeclaration_c
       d.givenType = ast:baseTypeExpr();
       local bt :: ast:BaseTypeExpr =
         ast:figureOutTypeFromSpecifiers(ds.location, ds.typeQualifiers, ds.preTypeSpecifiers, ds.realTypeSpecifiers, ds.mutateTypeSpecifiers);
-      top.ast = ast:parameterDecl(ds.storageClass, bt, d.ast, ast:nothingName(), ast:appendAttribute(ds.attributes, aa.ast));
+      top.ast = ast:parameterDecl(ast:foldStorageClass(ds.storageClass), bt, d.ast, ast:nothingName(), ast:appendAttribute(ds.attributes, aa.ast));
     }
 -- wtf gcc, first declspecs have attributes and then they're supposed to appear here??
 --| dspecs::DeclarationSpecifiers_c Attributes_c

@@ -18,15 +18,30 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
   injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
-  local fwrd::host:Expr =
-    getAssignOverload(
-      modLhsRhs.fst, modLhsRhs.snd, top.location,
-      top.env, top.host:returnType,
-      eqExpr(_, _, location=_),
-      getEqOverloadProd,
-      nothing(),
-      inj:eqExpr(_, _, location=_));
+  lhs.otherType = rhs.host:typerep;
+  rhs.env = addEnv(lhs.defs, lhs.env);
 
+  local lType::host:Type = lhs.host:typerep;
+  lType.otherType = rType;
+  local rType::host:Type = rhs.host:typerep;
+  rType.otherType = lType;
+  
+  local rewriteProd::Maybe<UnaryProd> =
+    if lhs.addressOfProd.isJust
+    then just(mkEqRewriteExpr(\ lhs::host:Expr rhs::host:Expr loc::Location -> rhs, lhs, _, _))
+    else nothing();
+  
+  local host::host:Expr =
+    inj:eqExpr(
+      host:decExpr(lhs, location=lhs.location),
+      host:decExpr(rhs, location=rhs.location),
+      location=top.location);
+  local fwrd::host:Expr =
+    case orElse(lhs.lEqProd, orElse(mapMaybe(\ p::BinaryProd -> p(lhs, _, _), rType.rEqProd), rewriteProd)) of
+      just(prod) -> host:transformedExpr(host, prod(rhs, top.location), location=top.location)
+    | nothing() -> host
+    end;
+  
   forwards to
     host:wrapWarnExpr(
       lerrors,
@@ -48,14 +63,28 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
   injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
+  rhs.env = addEnv(lhs.defs, lhs.env);
+
+  local lType::host:Type = lhs.host:typerep;
+  lType.otherType = rType;
+  local rType::host:Type = rhs.host:typerep;
+  rType.otherType = lType;
+  
+  local rewriteProd::Maybe<BinaryProd> =
+    if lhs.addressOfProd.isJust || lType.lMulProd.isJust || rType.rMulProd.isJust
+    then just(mkEqRewriteExpr(mulExpr(_, _, location=_), _, _, _))
+    else nothing();
+  
+  local host::host:Expr =
+    inj:mulEqExpr(
+      host:decExpr(lhs, location=lhs.location),
+      host:decExpr(rhs, location=rhs.location),
+      location=top.location);
   local fwrd::host:Expr =
-    getAssignOverload(
-      modLhsRhs.fst, modLhsRhs.snd, top.location,
-      top.env, top.host:returnType,
-      mulEqExpr(_, _, location=_),
-      getMulEqOverloadProd,
-      just(getMulOverloadProd),
-      inj:mulEqExpr(_, _, location=_));
+    case orElse(lType.lMulEqProd, orElse(rType.rMulEqProd, rewriteProd)) of
+      just(prod) -> host:transformedExpr(host, prod(lhs, rhs, top.location), location=top.location)
+    | nothing() -> host
+    end;
 
   forwards to
     host:wrapWarnExpr(
@@ -78,14 +107,28 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
   injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
+  rhs.env = addEnv(lhs.defs, lhs.env);
+
+  local lType::host:Type = lhs.host:typerep;
+  lType.otherType = rType;
+  local rType::host:Type = rhs.host:typerep;
+  rType.otherType = lType;
+  
+  local rewriteProd::Maybe<BinaryProd> =
+    if lhs.addressOfProd.isJust || lType.lDivProd.isJust || rType.rDivProd.isJust
+    then just(mkEqRewriteExpr(divExpr(_, _, location=_), _, _, _))
+    else nothing();
+  
+  local host::host:Expr =
+    inj:divEqExpr(
+      host:decExpr(lhs, location=lhs.location),
+      host:decExpr(rhs, location=rhs.location),
+      location=top.location);
   local fwrd::host:Expr =
-    getAssignOverload(
-      modLhsRhs.fst, modLhsRhs.snd, top.location,
-      top.env, top.host:returnType,
-      divEqExpr(_, _, location=_),
-      getDivEqOverloadProd,
-      just(getDivOverloadProd),
-      inj:divEqExpr(_, _, location=_));
+    case orElse(lType.lDivEqProd, orElse(rType.rDivEqProd, rewriteProd)) of
+      just(prod) -> host:transformedExpr(host, prod(lhs, rhs, top.location), location=top.location)
+    | nothing() -> host
+    end;
 
   forwards to
     host:wrapWarnExpr(
@@ -108,14 +151,28 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
   injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
+  rhs.env = addEnv(lhs.defs, lhs.env);
+  
+  local lType::host:Type = lhs.host:typerep;
+  lType.otherType = rType;
+  local rType::host:Type = rhs.host:typerep;
+  rType.otherType = lType;
+  
+  local rewriteProd::Maybe<BinaryProd> =
+    if lhs.addressOfProd.isJust || lType.lModProd.isJust || rType.rModProd.isJust
+    then just(mkEqRewriteExpr(modExpr(_, _, location=_), _, _, _))
+    else nothing();
+  
+  local host::host:Expr =
+    inj:modEqExpr(
+      host:decExpr(lhs, location=lhs.location),
+      host:decExpr(rhs, location=rhs.location),
+      location=top.location);
   local fwrd::host:Expr =
-    getAssignOverload(
-      modLhsRhs.fst, modLhsRhs.snd, top.location,
-      top.env, top.host:returnType,
-      modEqExpr(_, _, location=_),
-      getModEqOverloadProd,
-      just(getModOverloadProd),
-      inj:modEqExpr(_, _, location=_));
+    case orElse(lType.lModEqProd, orElse(rType.rModEqProd, rewriteProd)) of
+      just(prod) -> host:transformedExpr(host, prod(lhs, rhs, top.location), location=top.location)
+    | nothing() -> host
+    end;
 
   forwards to
     host:wrapWarnExpr(
@@ -138,14 +195,28 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
   injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
+  rhs.env = addEnv(lhs.defs, lhs.env);
+  
+  local lType::host:Type = lhs.host:typerep;
+  lType.otherType = rType;
+  local rType::host:Type = rhs.host:typerep;
+  rType.otherType = lType;
+  
+  local rewriteProd::Maybe<BinaryProd> =
+    if lhs.addressOfProd.isJust || lType.lAddProd.isJust || rType.rAddProd.isJust
+    then just(mkEqRewriteExpr(addExpr(_, _, location=_), _, _, _))
+    else nothing();
+  
+  local host::host:Expr =
+    inj:addEqExpr(
+      host:decExpr(lhs, location=lhs.location),
+      host:decExpr(rhs, location=rhs.location),
+      location=top.location);
   local fwrd::host:Expr =
-    getAssignOverload(
-      modLhsRhs.fst, modLhsRhs.snd, top.location,
-      top.env, top.host:returnType,
-      addEqExpr(_, _, location=_),
-      getAddEqOverloadProd,
-      just(getAddOverloadProd),
-      inj:addEqExpr(_, _, location=_));
+    case orElse(lType.lAddEqProd, orElse(rType.rAddEqProd, rewriteProd)) of
+      just(prod) -> host:transformedExpr(host, prod(lhs, rhs, top.location), location=top.location)
+    | nothing() -> host
+    end;
 
   forwards to
     host:wrapWarnExpr(
@@ -168,14 +239,28 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
   injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
+  rhs.env = addEnv(lhs.defs, lhs.env);
+  
+  local lType::host:Type = lhs.host:typerep;
+  lType.otherType = rType;
+  local rType::host:Type = rhs.host:typerep;
+  rType.otherType = lType;
+  
+  local rewriteProd::Maybe<BinaryProd> =
+    if lhs.addressOfProd.isJust || lType.lSubProd.isJust || rType.rSubProd.isJust
+    then just(mkEqRewriteExpr(subExpr(_, _, location=_), _, _, _))
+    else nothing();
+  
+  local host::host:Expr =
+    inj:subEqExpr(
+      host:decExpr(lhs, location=lhs.location),
+      host:decExpr(rhs, location=rhs.location),
+      location=top.location);
   local fwrd::host:Expr =
-    getAssignOverload(
-      modLhsRhs.fst, modLhsRhs.snd, top.location,
-      top.env, top.host:returnType,
-      subEqExpr(_, _, location=_),
-      getSubEqOverloadProd,
-      just(getSubOverloadProd),
-      inj:subEqExpr(_, _, location=_));
+    case orElse(lType.lSubEqProd, orElse(rType.rSubEqProd, rewriteProd)) of
+      just(prod) -> host:transformedExpr(host, prod(lhs, rhs, top.location), location=top.location)
+    | nothing() -> host
+    end;
 
   forwards to
     host:wrapWarnExpr(
@@ -198,14 +283,28 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
   injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
+  rhs.env = addEnv(lhs.defs, lhs.env);
+  
+  local lType::host:Type = lhs.host:typerep;
+  lType.otherType = rType;
+  local rType::host:Type = rhs.host:typerep;
+  rType.otherType = lType;
+  
+  local rewriteProd::Maybe<BinaryProd> =
+    if lhs.addressOfProd.isJust || lType.lLshBitProd.isJust || rType.rLshBitProd.isJust
+    then just(mkEqRewriteExpr(lshExpr(_, _, location=_), _, _, _))
+    else nothing();
+  
+  local host::host:Expr =
+    inj:lshEqExpr(
+      host:decExpr(lhs, location=lhs.location),
+      host:decExpr(rhs, location=rhs.location),
+      location=top.location);
   local fwrd::host:Expr =
-    getAssignOverload(
-      modLhsRhs.fst, modLhsRhs.snd, top.location,
-      top.env, top.host:returnType,
-      lshEqExpr(_, _, location=_),
-      getLshEqOverloadProd,
-      just(getLshOverloadProd),
-      inj:lshEqExpr(_, _, location=_));
+    case orElse(lType.lLshEqProd, orElse(rType.rLshEqProd, rewriteProd)) of
+      just(prod) -> host:transformedExpr(host, prod(lhs, rhs, top.location), location=top.location)
+    | nothing() -> host
+    end;
 
   forwards to
     host:wrapWarnExpr(
@@ -228,14 +327,28 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
   injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
+  rhs.env = addEnv(lhs.defs, lhs.env);
+  
+  local lType::host:Type = lhs.host:typerep;
+  lType.otherType = rType;
+  local rType::host:Type = rhs.host:typerep;
+  rType.otherType = lType;
+  
+  local rewriteProd::Maybe<BinaryProd> =
+    if lhs.addressOfProd.isJust || lType.lRshBitProd.isJust || rType.rRshBitProd.isJust
+    then just(mkEqRewriteExpr(rshExpr(_, _, location=_), _, _, _))
+    else nothing();
+  
+  local host::host:Expr =
+    inj:rshEqExpr(
+      host:decExpr(lhs, location=lhs.location),
+      host:decExpr(rhs, location=rhs.location),
+      location=top.location);
   local fwrd::host:Expr =
-    getAssignOverload(
-      modLhsRhs.fst, modLhsRhs.snd, top.location,
-      top.env, top.host:returnType,
-      rshEqExpr(_, _, location=_),
-      getRshEqOverloadProd,
-      just(getRshOverloadProd),
-      inj:rshEqExpr(_, _, location=_));
+    case orElse(lType.lRshEqProd, orElse(rType.rRshEqProd, rewriteProd)) of
+      just(prod) -> host:transformedExpr(host, prod(lhs, rhs, top.location), location=top.location)
+    | nothing() -> host
+    end;
 
   forwards to
     host:wrapWarnExpr(
@@ -258,14 +371,29 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
   injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
+  rhs.env = addEnv(lhs.defs, lhs.env);
+  
+  local lType::host:Type = lhs.host:typerep;
+  lType.otherType = rType;
+  local rType::host:Type = rhs.host:typerep;
+  rType.otherType = lType;
+  
+  local rewriteProd::Maybe<BinaryProd> =
+    if lhs.addressOfProd.isJust || lType.lAndProd.isJust || rType.rAndProd.isJust
+    then just(mkEqRewriteExpr(andExpr(_, _, location=_), _, _, _))
+    else nothing();
+  
+  local host::host:Expr =
+    inj:andEqExpr(
+      host:decExpr(lhs, location=lhs.location),
+      host:decExpr(rhs, location=rhs.location),
+      location=top.location);
   local fwrd::host:Expr =
-    getAssignOverload(
-      modLhsRhs.fst, modLhsRhs.snd, top.location,
-      top.env, top.host:returnType,
-      andEqExpr(_, _, location=_),
-      getAndEqOverloadProd,
-      just(getAndOverloadProd),
-      inj:andEqExpr(_, _, location=_));
+    case orElse(lType.lAndEqProd, orElse(rType.rAndEqProd, rewriteProd)) of
+      just(prod) -> host:transformedExpr(host, prod(lhs, rhs, top.location), location=top.location)
+    | nothing() -> host
+    end;
+
 
   forwards to
     host:wrapWarnExpr(
@@ -288,14 +416,28 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
   injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
+  rhs.env = addEnv(lhs.defs, lhs.env);
+  
+  local lType::host:Type = lhs.host:typerep;
+  lType.otherType = rType;
+  local rType::host:Type = rhs.host:typerep;
+  rType.otherType = lType;
+  
+  local rewriteProd::Maybe<BinaryProd> =
+    if lhs.addressOfProd.isJust || lType.lAndProd.isJust || rType.rAndProd.isJust
+    then just(mkEqRewriteExpr(xorExpr(_, _, location=_), _, _, _))
+    else nothing();
+  
+  local host::host:Expr =
+    inj:xorEqExpr(
+      host:decExpr(lhs, location=lhs.location),
+      host:decExpr(rhs, location=rhs.location),
+      location=top.location);
   local fwrd::host:Expr =
-    getAssignOverload(
-      modLhsRhs.fst, modLhsRhs.snd, top.location,
-      top.env, top.host:returnType,
-      xorEqExpr(_, _, location=_),
-      getXorEqOverloadProd,
-      just(getXorOverloadProd),
-      inj:xorEqExpr(_, _, location=_));
+    case orElse(lType.lXorEqProd, orElse(rType.rXorEqProd, rewriteProd)) of
+      just(prod) -> host:transformedExpr(host, prod(lhs, rhs, top.location), location=top.location)
+    | nothing() -> host
+    end;
 
   forwards to
     host:wrapWarnExpr(
@@ -318,14 +460,28 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
   injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
+  rhs.env = addEnv(lhs.defs, lhs.env);
+  
+  local lType::host:Type = lhs.host:typerep;
+  lType.otherType = rType;
+  local rType::host:Type = rhs.host:typerep;
+  rType.otherType = lType;
+  
+  local rewriteProd::Maybe<BinaryProd> =
+    if lhs.addressOfProd.isJust || lType.lOrProd.isJust || rType.rOrProd.isJust
+    then just(mkEqRewriteExpr(orExpr(_, _, location=_), _, _, _))
+    else nothing();
+  
+  local host::host:Expr =
+    inj:orEqExpr(
+      host:decExpr(lhs, location=lhs.location),
+      host:decExpr(rhs, location=rhs.location),
+      location=top.location);
   local fwrd::host:Expr =
-    getAssignOverload(
-      modLhsRhs.fst, modLhsRhs.snd, top.location,
-      top.env, top.host:returnType,
-      orEqExpr(_, _, location=_),
-      getOrEqOverloadProd,
-      just(getOrOverloadProd),
-      inj:orEqExpr(_, _, location=_));
+    case orElse(lType.lOrEqProd, orElse(rType.rOrEqProd, rewriteProd)) of
+      just(prod) -> host:transformedExpr(host, prod(lhs, rhs, top.location), location=top.location)
+    | nothing() -> host
+    end;
 
   forwards to
     host:wrapWarnExpr(
@@ -335,7 +491,6 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 }
 
 -- TODO: Automatic equations with DeMorgan's Laws?  
-
 abstract production andExpr
 top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 {
@@ -349,13 +504,24 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
   injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+
+  rhs.env = addEnv(lhs.defs, lhs.env);
   
-  local fwrd::host:Expr = 
-    getBinaryOverload(
-      modLhsRhs.fst, modLhsRhs.snd, top.location,
-      top.env, top.host:returnType,
-      getAndOverloadProd,
-      inj:andExpr(_, _, location=_));
+  local lType::host:Type = lhs.host:typerep;
+  lType.otherType = rType;
+  local rType::host:Type = rhs.host:typerep;
+  rType.otherType = lType;
+  
+  local host::host:Expr =
+    inj:andExpr(
+      host:decExpr(lhs, location=lhs.location),
+      host:decExpr(rhs, location=rhs.location),
+      location=top.location);
+  local fwrd::host:Expr =
+    case orElse(lType.lAndProd, rType.rAndProd) of
+      just(prod) -> host:transformedExpr(host, prod(lhs, rhs, top.location), location=top.location)
+    | nothing() -> host
+    end;
 
   forwards to
     host:wrapWarnExpr(
@@ -377,13 +543,24 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
   injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+
+  rhs.env = addEnv(lhs.defs, lhs.env);
   
-  local fwrd::host:Expr = 
-    getBinaryOverload(
-      modLhsRhs.fst, modLhsRhs.snd, top.location,
-      top.env, top.host:returnType,
-      getOrOverloadProd,
-      inj:orExpr(_, _, location=_));
+  local lType::host:Type = lhs.host:typerep;
+  lType.otherType = rType;
+  local rType::host:Type = rhs.host:typerep;
+  rType.otherType = lType;
+  
+  local host::host:Expr =
+    inj:orExpr(
+      host:decExpr(lhs, location=lhs.location),
+      host:decExpr(rhs, location=rhs.location),
+      location=top.location);
+  local fwrd::host:Expr =
+    case orElse(lType.lOrProd, rType.rOrProd) of
+      just(prod) -> host:transformedExpr(host, prod(lhs, rhs, top.location), location=top.location)
+    | nothing() -> host
+    end;
 
   forwards to
     host:wrapWarnExpr(
@@ -405,13 +582,24 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
   injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+
+  rhs.env = addEnv(lhs.defs, lhs.env);
   
-  local fwrd::host:Expr = 
-    getBinaryOverload(
-      modLhsRhs.fst, modLhsRhs.snd, top.location,
-      top.env, top.host:returnType,
-      getAndBitOverloadProd,
-      inj:andBitExpr(_, _, location=_));
+  local lType::host:Type = lhs.host:typerep;
+  lType.otherType = rType;
+  local rType::host:Type = rhs.host:typerep;
+  rType.otherType = lType;
+  
+  local host::host:Expr =
+    inj:andBitExpr(
+      host:decExpr(lhs, location=lhs.location),
+      host:decExpr(rhs, location=rhs.location),
+      location=top.location);
+  local fwrd::host:Expr =
+    case orElse(lType.lAndBitProd, rType.rAndBitProd) of
+      just(prod) -> host:transformedExpr(host, prod(lhs, rhs, top.location), location=top.location)
+    | nothing() -> host
+    end;
 
   forwards to
     host:wrapWarnExpr(
@@ -434,12 +622,21 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
   injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
   
-  local fwrd::host:Expr = 
-    getBinaryOverload(
-      modLhsRhs.fst, modLhsRhs.snd, top.location,
-      top.env, top.host:returnType,
-      getOrBitOverloadProd,
-      inj:orBitExpr(_, _, location=_));
+  local lType::host:Type = lhs.host:typerep;
+  lType.otherType = rType;
+  local rType::host:Type = rhs.host:typerep;
+  rType.otherType = lType;
+  
+  local host::host:Expr =
+    inj:orBitExpr(
+      host:decExpr(lhs, location=lhs.location),
+      host:decExpr(rhs, location=rhs.location),
+      location=top.location);
+  local fwrd::host:Expr =
+    case orElse(lType.lOrBitProd, rType.rOrBitProd) of
+      just(prod) -> host:transformedExpr(host, prod(lhs, rhs, top.location), location=top.location)
+    | nothing() -> host
+    end;
 
   forwards to
     host:wrapWarnExpr(
@@ -461,13 +658,24 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
   injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+
+  rhs.env = addEnv(lhs.defs, lhs.env);
   
-  local fwrd::host:Expr = 
-    getBinaryOverload(
-      modLhsRhs.fst, modLhsRhs.snd, top.location,
-      top.env, top.host:returnType,
-      getXorOverloadProd,
-      inj:xorExpr(_, _, location=_));
+  local lType::host:Type = lhs.host:typerep;
+  lType.otherType = rType;
+  local rType::host:Type = rhs.host:typerep;
+  rType.otherType = lType;
+  
+  local host::host:Expr =
+    inj:xorExpr(
+      host:decExpr(lhs, location=lhs.location),
+      host:decExpr(rhs, location=rhs.location),
+      location=top.location);
+  local fwrd::host:Expr =
+    case orElse(lType.lXorProd, rType.rXorProd) of
+      just(prod) -> host:transformedExpr(host, prod(lhs, rhs, top.location), location=top.location)
+    | nothing() -> host
+    end;
 
   forwards to
     host:wrapWarnExpr(
@@ -489,13 +697,24 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
   injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+
+  rhs.env = addEnv(lhs.defs, lhs.env);
   
-  local fwrd::host:Expr = 
-    getBinaryOverload(
-      modLhsRhs.fst, modLhsRhs.snd, top.location,
-      top.env, top.host:returnType,
-      getLshOverloadProd,
-      inj:lshExpr(_, _, location=_));
+  local lType::host:Type = lhs.host:typerep;
+  lType.otherType = rType;
+  local rType::host:Type = rhs.host:typerep;
+  rType.otherType = lType;
+  
+  local host::host:Expr =
+    inj:lshExpr(
+      host:decExpr(lhs, location=lhs.location),
+      host:decExpr(rhs, location=rhs.location),
+      location=top.location);
+  local fwrd::host:Expr =
+    case orElse(lType.lLshBitProd, rType.rLshBitProd) of
+      just(prod) -> host:transformedExpr(host, prod(lhs, rhs, top.location), location=top.location)
+    | nothing() -> host
+    end;
 
   forwards to
     host:wrapWarnExpr(
@@ -518,12 +737,23 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
   injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
-  local fwrd::host:Expr = 
-    getBinaryOverload(
-      modLhsRhs.fst, modLhsRhs.snd, top.location,
-      top.env, top.host:returnType,
-      getRshOverloadProd,
-      inj:rshExpr(_, _, location=_));
+  rhs.env = addEnv(lhs.defs, lhs.env);
+
+  local lType::host:Type = lhs.host:typerep;
+  lType.otherType = rType;
+  local rType::host:Type = rhs.host:typerep;
+  rType.otherType = lType;
+  
+  local host::host:Expr =
+    inj:rshExpr(
+      host:decExpr(lhs, location=lhs.location),
+      host:decExpr(rhs, location=rhs.location),
+      location=top.location);
+  local fwrd::host:Expr =
+    case orElse(lType.lRshBitProd, rType.rRshBitProd) of
+      just(prod) -> host:transformedExpr(host, prod(lhs, rhs, top.location), location=top.location)
+    | nothing() -> host
+    end;
 
   forwards to
     host:wrapWarnExpr(
@@ -545,13 +775,32 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
   injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+
+  rhs.env = addEnv(lhs.defs, lhs.env);
   
-  local fwrd::host:Expr = 
-    getBinaryOverload(
-      modLhsRhs.fst, modLhsRhs.snd, top.location,
-      top.env, top.host:returnType,
-      getEqualsOverloadProd,
-      inj:equalsExpr(_, _, location=_));
+  local lType::host:Type = lhs.host:typerep;
+  lType.otherType = rType;
+  local rType::host:Type = rhs.host:typerep;
+  rType.otherType = lType;
+  
+  local rewriteProd::Maybe<BinaryProd> =
+    if lType.lNotEqualsProd.isJust || rType.rNotEqualsProd.isJust
+    then
+     just(
+       \ lhs::host:Expr rhs::host:Expr loc::Location ->
+         notExpr(notEqualsExpr(lhs, rhs, location=loc), location=loc)) 
+    else nothing();
+  
+  local host::host:Expr =
+    inj:equalsExpr(
+      host:decExpr(lhs, location=lhs.location),
+      host:decExpr(rhs, location=rhs.location),
+      location=top.location);
+  local fwrd::host:Expr =
+    case orElse(lType.lEqualsProd, orElse(rType.rEqualsProd, rewriteProd)) of
+      just(prod) -> host:transformedExpr(host, prod(lhs, rhs, top.location), location=top.location)
+    | nothing() -> host
+    end;
 
   forwards to
     host:wrapWarnExpr(
@@ -573,14 +822,32 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
   injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+
+  rhs.env = addEnv(lhs.defs, lhs.env);
   
-  local fwrd::host:Expr = 
-    getNegatedBinaryOverload(
-      modLhsRhs.fst, modLhsRhs.snd, top.location,
-      top.env, top.host:returnType,
-      getNotEqualsOverloadProd,
-      getEqualsOverloadProd,
-      inj:notEqualsExpr(_, _, location=_));
+  local lType::host:Type = lhs.host:typerep;
+  lType.otherType = rType;
+  local rType::host:Type = rhs.host:typerep;
+  rType.otherType = lType;
+  
+  local rewriteProd::Maybe<BinaryProd> =
+    if lType.lEqualsProd.isJust || rType.rEqualsProd.isJust
+    then
+     just(
+       \ lhs::host:Expr rhs::host:Expr loc::Location ->
+         notExpr(equalsExpr(lhs, rhs, location=loc), location=loc)) 
+    else nothing();
+  
+  local host::host:Expr =
+    inj:notEqualsExpr(
+      host:decExpr(lhs, location=lhs.location),
+      host:decExpr(rhs, location=rhs.location),
+      location=top.location);
+  local fwrd::host:Expr =
+    case orElse(lType.lNotEqualsProd, orElse(rType.rNotEqualsProd, rewriteProd)) of
+      just(prod) -> host:transformedExpr(host, prod(lhs, rhs, top.location), location=top.location)
+    | nothing() -> host
+    end;
 
   forwards to
     host:wrapWarnExpr(
@@ -602,13 +869,60 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
   injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+
+  rhs.env = addEnv(lhs.defs, lhs.env);
   
-  local fwrd::host:Expr = 
-    getBinaryOverload(
-      modLhsRhs.fst, modLhsRhs.snd, top.location,
-      top.env, top.host:returnType,
-      getLtOverloadProd,
-      inj:ltExpr(_, _, location=_));
+  local lType::host:Type = lhs.host:typerep;
+  lType.otherType = rType;
+  local rType::host:Type = rhs.host:typerep;
+  rType.otherType = lType;
+  
+  local rewriteProd1::Maybe<BinaryProd> =
+    if lType.lGtProd.isJust || rType.rGtProd.isJust
+    then
+     just(
+       mkTmpBinOpExpr(
+         \ lhs::host:Expr rhs::host:Expr loc::Location ->
+           gtExpr(rhs, lhs, location=loc),
+         _, _, _))
+    else nothing();
+  
+  local rewriteProd2::Maybe<BinaryProd> =
+    if lType.lLteProd.isJust || rType.rLteProd.isJust
+    then
+     just(
+       mkTmpBinOpExpr(
+         \ lhs::host:Expr rhs::host:Expr loc::Location ->
+           andExpr(
+             lteExpr(lhs, rhs, location=loc),
+             notEqualsExpr(lhs, rhs, location=loc),
+             location=loc),
+         _, _, _))
+    else nothing();
+  
+  local rewriteProd3::Maybe<BinaryProd> =
+    if lType.lGteProd.isJust || rType.rGteProd.isJust
+    then
+     just(
+       mkTmpBinOpExpr(
+         \ lhs::host:Expr rhs::host:Expr loc::Location ->
+           andExpr(
+             gteExpr(rhs, lhs, location=loc),
+             notEqualsExpr(lhs, rhs, location=loc),
+             location=loc),
+         _, _, _))
+    else nothing();
+  
+  local host::host:Expr =
+    inj:ltExpr(
+      host:decExpr(lhs, location=lhs.location),
+      host:decExpr(rhs, location=rhs.location),
+      location=top.location);
+  local fwrd::host:Expr =
+    case foldr1(orElse, [lType.lLtProd, rType.rLtProd, rewriteProd1, rewriteProd2, rewriteProd3]) of
+      just(prod) -> host:transformedExpr(host, prod(lhs, rhs, top.location), location=top.location)
+    | nothing() -> host
+    end;
 
   forwards to
     host:wrapWarnExpr(
@@ -630,11 +944,60 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
   injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+
+  rhs.env = addEnv(lhs.defs, lhs.env);
   
-  local fwrd::host:Expr = 
-    getGtOverload(
-      modLhsRhs.fst, modLhsRhs.snd, top.location,
-      top.env, top.host:returnType);
+  local lType::host:Type = lhs.host:typerep;
+  lType.otherType = rType;
+  local rType::host:Type = rhs.host:typerep;
+  rType.otherType = lType;
+  
+  local rewriteProd1::Maybe<BinaryProd> =
+    if lType.lLtProd.isJust || rType.rLtProd.isJust
+    then
+     just(
+       mkTmpBinOpExpr(
+         \ lhs::host:Expr rhs::host:Expr loc::Location ->
+           ltExpr(rhs, lhs, location=loc),
+         _, _, _))
+    else nothing();
+  
+  local rewriteProd2::Maybe<BinaryProd> =
+    if lType.lGteProd.isJust || rType.rGteProd.isJust
+    then
+     just(
+       mkTmpBinOpExpr(
+         \ lhs::host:Expr rhs::host:Expr loc::Location ->
+           andExpr(
+             gteExpr(lhs, rhs, location=loc),
+             notEqualsExpr(lhs, rhs, location=loc),
+             location=loc),
+         _, _, _))
+    else nothing();
+  
+  local rewriteProd3::Maybe<BinaryProd> =
+    if lType.lLteProd.isJust || rType.rLteProd.isJust
+    then
+     just(
+       mkTmpBinOpExpr(
+         \ lhs::host:Expr rhs::host:Expr loc::Location ->
+           andExpr(
+             lteExpr(rhs, lhs, location=loc),
+             notEqualsExpr(lhs, rhs, location=loc),
+             location=loc),
+         _, _, _))
+    else nothing();
+  
+  local host::host:Expr =
+    inj:gtExpr(
+      host:decExpr(lhs, location=lhs.location),
+      host:decExpr(rhs, location=rhs.location),
+      location=top.location);
+  local fwrd::host:Expr =
+    case foldr1(orElse, [lType.lGtProd, rType.rGtProd, rewriteProd1, rewriteProd2, rewriteProd3]) of
+      just(prod) -> host:transformedExpr(host, prod(lhs, rhs, top.location), location=top.location)
+    | nothing() -> host
+    end;
 
   forwards to
     host:wrapWarnExpr(
@@ -656,14 +1019,60 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
   injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+
+  rhs.env = addEnv(lhs.defs, lhs.env);
   
-  local fwrd::host:Expr = 
-    getNegatedBinaryOverload(
-      modLhsRhs.fst, modLhsRhs.snd, top.location,
-      top.env, top.host:returnType,
-      getLteOverloadProd,
-      getGtOverloadProd,
-      inj:lteExpr(_, _, location=_));
+  local lType::host:Type = lhs.host:typerep;
+  lType.otherType = rType;
+  local rType::host:Type = rhs.host:typerep;
+  rType.otherType = lType;
+  
+  local rewriteProd1::Maybe<BinaryProd> =
+    if lType.lGteProd.isJust || rType.rGteProd.isJust
+    then
+     just(
+       mkTmpBinOpExpr(
+         \ lhs::host:Expr rhs::host:Expr loc::Location ->
+           gteExpr(rhs, lhs, location=loc),
+         _, _, _))
+    else nothing();
+  
+  local rewriteProd2::Maybe<BinaryProd> =
+    if lType.lLtProd.isJust || rType.rLtProd.isJust
+    then
+     just(
+       mkTmpBinOpExpr(
+         \ lhs::host:Expr rhs::host:Expr loc::Location ->
+           orExpr(
+             ltExpr(lhs, rhs, location=loc),
+             equalsExpr(lhs, rhs, location=loc),
+             location=loc),
+         _, _, _))
+    else nothing();
+  
+  local rewriteProd3::Maybe<BinaryProd> =
+    if lType.lGtProd.isJust || rType.rGtProd.isJust
+    then
+     just(
+       mkTmpBinOpExpr(
+         \ lhs::host:Expr rhs::host:Expr loc::Location ->
+           orExpr(
+             gtExpr(rhs, lhs, location=loc),
+             equalsExpr(lhs, rhs, location=loc),
+             location=loc),
+         _, _, _))
+    else nothing();
+  
+  local host::host:Expr =
+    inj:lteExpr(
+      host:decExpr(lhs, location=lhs.location),
+      host:decExpr(rhs, location=rhs.location),
+      location=top.location);
+  local fwrd::host:Expr =
+    case foldr1(orElse, [lType.lLteProd, rType.rLteProd, rewriteProd1, rewriteProd2, rewriteProd3]) of
+      just(prod) -> host:transformedExpr(host, prod(lhs, rhs, top.location), location=top.location)
+    | nothing() -> host
+    end;
 
   forwards to
     host:wrapWarnExpr(
@@ -685,14 +1094,60 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
   injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+
+  rhs.env = addEnv(lhs.defs, lhs.env);
   
-  local fwrd::host:Expr = 
-    getNegatedBinaryOverload(
-      modLhsRhs.fst, modLhsRhs.snd, top.location,
-      top.env, top.host:returnType,
-      getGteOverloadProd,
-      getLtOverloadProd,
-      inj:gteExpr(_, _, location=_));
+  local lType::host:Type = lhs.host:typerep;
+  lType.otherType = rType;
+  local rType::host:Type = rhs.host:typerep;
+  rType.otherType = lType;
+  
+  local rewriteProd1::Maybe<BinaryProd> =
+    if lType.lLteProd.isJust || rType.rLteProd.isJust
+    then
+     just(
+       mkTmpBinOpExpr(
+         \ lhs::host:Expr rhs::host:Expr loc::Location ->
+           lteExpr(rhs, lhs, location=loc),
+         _, _, _))
+    else nothing();
+  
+  local rewriteProd2::Maybe<BinaryProd> =
+    if lType.lGtProd.isJust || rType.rGtProd.isJust
+    then
+     just(
+       mkTmpBinOpExpr(
+         \ lhs::host:Expr rhs::host:Expr loc::Location ->
+           orExpr(
+             gtExpr(lhs, rhs, location=loc),
+             equalsExpr(lhs, rhs, location=loc),
+             location=loc),
+         _, _, _))
+    else nothing();
+  
+  local rewriteProd3::Maybe<BinaryProd> =
+    if lType.lLtProd.isJust || rType.rLtProd.isJust
+    then
+     just(
+       mkTmpBinOpExpr(
+         \ lhs::host:Expr rhs::host:Expr loc::Location ->
+           orExpr(
+             ltExpr(rhs, lhs, location=loc),
+             equalsExpr(lhs, rhs, location=loc),
+             location=loc),
+         _, _, _))
+    else nothing();
+  
+  local host::host:Expr =
+    inj:gteExpr(
+      host:decExpr(lhs, location=lhs.location),
+      host:decExpr(rhs, location=rhs.location),
+      location=top.location);
+  local fwrd::host:Expr =
+    case foldr1(orElse, [lType.lGteProd, rType.rGteProd, rewriteProd1, rewriteProd2, rewriteProd3]) of
+      just(prod) -> host:transformedExpr(host, prod(lhs, rhs, top.location), location=top.location)
+    | nothing() -> host
+    end;
 
   forwards to
     host:wrapWarnExpr(
@@ -714,13 +1169,24 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
   injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+
+  rhs.env = addEnv(lhs.defs, lhs.env);
   
-  local fwrd::host:Expr = 
-    getBinaryOverload(
-      modLhsRhs.fst, modLhsRhs.snd, top.location,
-      top.env, top.host:returnType,
-      getAddOverloadProd,
-      inj:addExpr(_, _, location=_));
+  local lType::host:Type = lhs.host:typerep;
+  lType.otherType = rType;
+  local rType::host:Type = rhs.host:typerep;
+  rType.otherType = lType;
+  
+  local host::host:Expr =
+    inj:addExpr(
+      host:decExpr(lhs, location=lhs.location),
+      host:decExpr(rhs, location=rhs.location),
+      location=top.location);
+  local fwrd::host:Expr =
+    case orElse(lType.lAddProd, rType.rAddProd) of
+      just(prod) -> host:transformedExpr(host, prod(lhs, rhs, top.location), location=top.location)
+    | nothing() -> host
+    end;
 
   forwards to
     host:wrapWarnExpr(
@@ -742,13 +1208,24 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
   injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+
+  rhs.env = addEnv(lhs.defs, lhs.env);
   
-  local fwrd::host:Expr = 
-    getBinaryOverload(
-      modLhsRhs.fst, modLhsRhs.snd, top.location,
-      top.env, top.host:returnType,
-      getSubOverloadProd,
-      inj:subExpr(_, _, location=_));
+  local lType::host:Type = lhs.host:typerep;
+  lType.otherType = rType;
+  local rType::host:Type = rhs.host:typerep;
+  rType.otherType = lType;
+  
+  local host::host:Expr =
+    inj:subExpr(
+      host:decExpr(lhs, location=lhs.location),
+      host:decExpr(rhs, location=rhs.location),
+      location=top.location);
+  local fwrd::host:Expr =
+    case orElse(lType.lSubProd, rType.rSubProd) of
+      just(prod) -> host:transformedExpr(host, prod(lhs, rhs, top.location), location=top.location)
+    | nothing() -> host
+    end;
 
   forwards to
     host:wrapWarnExpr(
@@ -770,13 +1247,24 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
   injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+
+  rhs.env = addEnv(lhs.defs, lhs.env);
   
-  local fwrd::host:Expr = 
-    getBinaryOverload(
-      modLhsRhs.fst, modLhsRhs.snd, top.location,
-      top.env, top.host:returnType,
-      getMulOverloadProd,
-      inj:mulExpr(_, _, location=_));
+  local lType::host:Type = lhs.host:typerep;
+  lType.otherType = rType;
+  local rType::host:Type = rhs.host:typerep;
+  rType.otherType = lType;
+  
+  local host::host:Expr =
+    inj:mulExpr(
+      host:decExpr(lhs, location=lhs.location),
+      host:decExpr(rhs, location=rhs.location),
+      location=top.location);
+  local fwrd::host:Expr =
+    case orElse(lType.lMulProd, rType.rMulProd) of
+      just(prod) -> host:transformedExpr(host, prod(lhs, rhs, top.location), location=top.location)
+    | nothing() -> host
+    end;
 
   forwards to
     host:wrapWarnExpr(
@@ -798,13 +1286,24 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
   injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+
+  rhs.env = addEnv(lhs.defs, lhs.env);
   
-  local fwrd::host:Expr = 
-    getBinaryOverload(
-      modLhsRhs.fst, modLhsRhs.snd, top.location,
-      top.env, top.host:returnType,
-      getDivOverloadProd,
-      inj:divExpr(_, _, location=_));
+  local lType::host:Type = lhs.host:typerep;
+  lType.otherType = rType;
+  local rType::host:Type = rhs.host:typerep;
+  rType.otherType = lType;
+  
+  local host::host:Expr =
+    inj:divExpr(
+      host:decExpr(lhs, location=lhs.location),
+      host:decExpr(rhs, location=rhs.location),
+      location=top.location);
+  local fwrd::host:Expr =
+    case orElse(lType.lDivProd, rType.rDivProd) of
+      just(prod) -> host:transformedExpr(host, prod(lhs, rhs, top.location), location=top.location)
+    | nothing() -> host
+    end;
 
   forwards to
     host:wrapWarnExpr(
@@ -826,13 +1325,24 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
   injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+
+  rhs.env = addEnv(lhs.defs, lhs.env);
   
-  local fwrd::host:Expr = 
-    getBinaryOverload(
-      modLhsRhs.fst, modLhsRhs.snd, top.location,
-      top.env, top.host:returnType,
-      getModOverloadProd,
-      inj:modExpr(_, _, location=_));
+  local lType::host:Type = lhs.host:typerep;
+  lType.otherType = rType;
+  local rType::host:Type = rhs.host:typerep;
+  rType.otherType = lType;
+  
+  local host::host:Expr =
+    inj:modExpr(
+      host:decExpr(lhs, location=lhs.location),
+      host:decExpr(rhs, location=rhs.location),
+      location=top.location);
+  local fwrd::host:Expr =
+    case orElse(lType.lModProd, rType.rModProd) of
+      just(prod) -> host:transformedExpr(host, prod(lhs, rhs, top.location), location=top.location)
+    | nothing() -> host
+    end;
 
   forwards to
     host:wrapWarnExpr(
@@ -841,3 +1351,38 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
       top.location);
 }
 
+-- Utilities
+function mkEqRewriteExpr
+host:Expr ::= baseOpProd::BinaryProd  lhs::host:Expr  rhs::host:Expr  loc::Location
+{
+  local tmpName::host:Name = host:name("_tmp" ++ toString(genInt()), location=loc);
+  -- ({auto ${tmpName} = &${lhs}; *${tmpName} = *${tmpName} ${baseOp} ${rhs};})
+  return
+    host:stmtExpr(
+      host:declStmt(autoDecl(tmpName, addressOfExpr(lhs, location=loc))),
+      eqExpr(
+        dereferenceExpr(host:declRefExpr(tmpName, location=loc), location=loc),
+        baseOpProd(
+          dereferenceExpr(host:declRefExpr(tmpName, location=loc), location=loc),
+          rhs, loc),
+        location=loc),
+      location=loc);
+}
+
+function mkTmpBinOpExpr
+host:Expr ::= baseOpProd::BinaryProd  lhs::host:Expr  rhs::host:Expr  loc::Location
+{
+  local tmpName1::host:Name = host:name("_tmp" ++ toString(genInt()), location=loc);
+  local tmpName2::host:Name = host:name("_tmp" ++ toString(genInt()), location=loc);
+  -- ({auto ${tmpName1} = ${lhs}; auto ${tmpName2} = rhs; ${tmpName1} ${baseOp} ${tmpName2};})
+  return
+    host:stmtExpr(
+      host:seqStmt(
+        host:declStmt(autoDecl(tmpName1, lhs)),
+        host:declStmt(autoDecl(tmpName2, rhs))),
+      baseOpProd(
+        host:declRefExpr(tmpName1, location=loc),
+        host:declRefExpr(tmpName2, location=loc),
+        loc),
+      location=loc);
+}

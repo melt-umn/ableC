@@ -43,25 +43,27 @@ melt.trynode('ableC') {
     def extensions = [
       "silver-ableC",
       "ableC-skeleton", "ableC-lib-skeleton",
-      "ableC-algebraic-data-types",
+      "ableC-constructor",
       "ableC-checkBounds",
+      "ableC-checkTaggedUnion",
       "ableC-cilk",
       "ableC-condition-tables",
       "ableC-dimensionalAnalysis",
-      "ableC-halide",
-      "ableC-interval",
       "ableC-nonnull",
       "ableC-sqlite",
-      "ableC-string",
       "ableC-templating",
-      "ableC-watch",
     ]
     /* These are now downstream of silver-ableC, so we don't build them here:
       "ableC-sample-projects",
       "ableC-closure",
       "ableC-refcount-closure",
+      "ableC-string",
       "ableC-vector",
-      "ableC-nondeterministic-search", "ableC-nondeterministic-search-benchmarks"
+      "ableC-halide",
+      "ableC-interval",
+      "ableC-watch",
+      "ableC-nondeterministic-search", "ableC-nondeterministic-search-benchmarks",
+      "ableC-algebraic-data-types", "ableC-template-algebraic-data-types"
      */
     // Specific other jobs to build
     def specific_jobs = ["/melt-umn/ableP/master"]

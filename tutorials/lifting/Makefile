@@ -17,7 +17,7 @@ all: $(ABLEC_JAR) $(C_FILES) $(OBJECTS) $(EXECUTABLES) $(TESTS)
 
 $(ABLEC_JAR): $(GRAMMAR_SOURCES)
 	touch $(wildcard $(ARTIFACT)/*.sv)
-	silver -o $@ $(SVFLAGS) $(ARTIFACT)
+	silver --warn-all --warn-error -o $@ $(SVFLAGS) $(ARTIFACT)
 
 %.c: %.xc $(ABLEC_JAR)
 	java $(JAVAFLAGS) -jar $(ABLEC_JAR) $< $(XCFLAGS)

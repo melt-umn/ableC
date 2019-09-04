@@ -7,8 +7,9 @@ top::Expr ::= e::Expr
   top.pp = parens( cat( text("++"), e.pp ) );
   top.errors := e.errors;
   top.globalDecls := e.globalDecls;
+  top.functionDecls := e.functionDecls;
   top.defs := e.defs;
-  top.freeVariables = e.freeVariables;
+  top.freeVariables := e.freeVariables;
   top.typerep = e.typerep.defaultLvalueConversion.integerPromotions;
 
   top.errors <- 
@@ -23,8 +24,9 @@ top::Expr ::= e::Expr
   top.pp = parens( cat( text("--"), e.pp ) );
   top.errors := e.errors;
   top.globalDecls := e.globalDecls;
+  top.functionDecls := e.functionDecls;
   top.defs := e.defs;
-  top.freeVariables = e.freeVariables;
+  top.freeVariables := e.freeVariables;
   top.typerep = e.typerep.integerPromotions;
 
   top.errors <- 
@@ -39,8 +41,9 @@ top::Expr ::= e::Expr
   top.pp = parens( cat( e.pp, text("++") ) );
   top.errors := e.errors;
   top.globalDecls := e.globalDecls;
+  top.functionDecls := e.functionDecls;
   top.defs := e.defs;
-  top.freeVariables = e.freeVariables;
+  top.freeVariables := e.freeVariables;
   top.typerep = e.typerep.integerPromotions;
 
   top.errors <- 
@@ -55,8 +58,9 @@ top::Expr ::= e::Expr
   top.pp = parens( cat( e.pp, text("--") ) );
   top.errors := e.errors;
   top.globalDecls := e.globalDecls;
+  top.functionDecls := e.functionDecls;
   top.defs := e.defs;
-  top.freeVariables = e.freeVariables;
+  top.freeVariables := e.freeVariables;
   top.typerep = e.typerep.integerPromotions;
 
   top.errors <- 
@@ -71,8 +75,9 @@ top::Expr ::= e::Expr
   top.pp = parens( cat( text("&"), e.pp ) );
   top.errors := e.errors;
   top.globalDecls := e.globalDecls;
+  top.functionDecls := e.functionDecls;
   top.defs := e.defs;
-  top.freeVariables = e.freeVariables;
+  top.freeVariables := e.freeVariables;
   top.typerep = pointerType(nilQualifier(), e.typerep);
 
   top.errors <- 
@@ -92,8 +97,9 @@ top::Expr ::= e::Expr
     end;
   top.errors := e.errors;
   top.globalDecls := e.globalDecls;
+  top.functionDecls := e.functionDecls;
   top.defs := e.defs;
-  top.freeVariables = e.freeVariables;
+  top.freeVariables := e.freeVariables;
   top.isLValue = true;
   
   top.errors <-
@@ -101,6 +107,7 @@ top::Expr ::= e::Expr
     case e.typerep.defaultFunctionArrayLvalueConversion of
     | pointerType(_, _) -> []
     | errorType() -> []
+    | completedType(_) -> []
     | _ -> [err(top.location, "invalid type argument of unary ‘*’ (have ‘" ++
                                showType(e.typerep) ++ "’)")]
     end;
@@ -112,8 +119,9 @@ top::Expr ::= e::Expr
   top.pp = parens( cat( text("+"), e.pp ) );
   top.errors := e.errors;
   top.globalDecls := e.globalDecls;
+  top.functionDecls := e.functionDecls;
   top.defs := e.defs;
-  top.freeVariables = e.freeVariables;
+  top.freeVariables := e.freeVariables;
   top.typerep = e.typerep.defaultLvalueConversion.integerPromotions;
 }
 abstract production negativeExpr
@@ -123,8 +131,9 @@ top::Expr ::= e::Expr
   top.pp = parens( cat( text("-"), e.pp ) );
   top.errors := e.errors;
   top.globalDecls := e.globalDecls;
+  top.functionDecls := e.functionDecls;
   top.defs := e.defs;
-  top.freeVariables = e.freeVariables;
+  top.freeVariables := e.freeVariables;
   top.typerep = e.typerep.defaultLvalueConversion.integerPromotions;
 }
 abstract production bitNegateExpr
@@ -134,8 +143,9 @@ top::Expr ::= e::Expr
   top.pp = parens( cat( text("~"), e.pp ) );
   top.errors := e.errors;
   top.globalDecls := e.globalDecls;
+  top.functionDecls := e.functionDecls;
   top.defs := e.defs;
-  top.freeVariables = e.freeVariables;
+  top.freeVariables := e.freeVariables;
   top.typerep = e.typerep.defaultLvalueConversion.integerPromotions;
 }
 abstract production notExpr
@@ -145,8 +155,9 @@ top::Expr ::= e::Expr
   top.pp = parens( cat( text("!"), e.pp ) );
   top.errors := e.errors;
   top.globalDecls := e.globalDecls;
+  top.functionDecls := e.functionDecls;
   top.defs := e.defs;
-  top.freeVariables = e.freeVariables;
+  top.freeVariables := e.freeVariables;
   top.typerep = e.typerep.defaultLvalueConversion.integerPromotions;
 }
 
@@ -158,8 +169,9 @@ top::Expr ::= e::Expr
   top.pp = parens( cat( text("__real__"), e.pp ) );
   top.errors := e.errors;
   top.globalDecls := e.globalDecls;
+  top.functionDecls := e.functionDecls;
   top.defs := e.defs;
-  top.freeVariables = e.freeVariables;
+  top.freeVariables := e.freeVariables;
   top.typerep = e.typerep.defaultLvalueConversion.integerPromotions;
 }
 -- GCC extension
@@ -170,8 +182,9 @@ top::Expr ::= e::Expr
   top.pp = parens( cat( text("__imag__"), e.pp ) );
   top.errors := e.errors;
   top.globalDecls := e.globalDecls;
+  top.functionDecls := e.functionDecls;
   top.defs := e.defs;
-  top.freeVariables = e.freeVariables;
+  top.freeVariables := e.freeVariables;
   top.typerep = e.typerep.defaultLvalueConversion.integerPromotions;
 }
 
@@ -182,8 +195,9 @@ top::Expr ::= e::ExprOrTypeName
   top.pp = parens( ppConcat([text("sizeof"), parens(e.pp)]) );
   top.errors := e.errors;
   top.globalDecls := e.globalDecls;
+  top.functionDecls := e.functionDecls;
   top.defs := e.defs;
-  top.freeVariables = e.freeVariables;
+  top.freeVariables := e.freeVariables;
   top.typerep = builtinType(nilQualifier(), signedType(intType())); -- TODO result type
 }
 -- C11
@@ -194,8 +208,9 @@ top::Expr ::= e::ExprOrTypeName
   top.pp = parens( ppConcat([text("_Alignof"), parens(e.pp)]) );
   top.errors := e.errors;
   top.globalDecls := e.globalDecls;
+  top.functionDecls := e.functionDecls;
   top.defs := e.defs;
-  top.freeVariables = e.freeVariables;
+  top.freeVariables := e.freeVariables;
   top.typerep = builtinType(nilQualifier(), signedType(intType())); -- TODO result type
 }
 
