@@ -123,21 +123,4 @@ Stmt ::= n::String type: init::MaybeInitializer l::Location
             )
           ) ;
 }
- -}  
- 
-abstract production autoDecl
-top::Decl ::= n::Name e::Expr
-{
-  top.pp = pp"auto ${n.pp} = ${e.pp};";
-
-  local bty::BaseTypeExpr = directTypeExpr(e.typerep);
-
-  forwards to
-    variableDecls(
-      nilStorageClass(), nilAttribute(), bty,
-      consDeclarator(
-        declarator(
-          n, baseTypeExpr(), nilAttribute(),
-          justInitializer(exprInitializer(e))),
-        nilDeclarator()));
-}
+ -}

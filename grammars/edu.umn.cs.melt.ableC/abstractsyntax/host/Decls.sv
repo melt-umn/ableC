@@ -259,6 +259,33 @@ top::Decl ::= s::String
   -- but used to be the way to put c functions and such in custom sections.
 }
 
+-- Useful for extensions
+abstract production autoDecl
+top::Decl ::= n::Name  e::Expr
+{
+  top.pp = pp"auto ${n.pp} = ${e.pp};";
+  top.host =
+    variableDecls(
+      nilStorageClass(),
+      nilAttribute(),
+      e.typerep.host.baseTypeExpr,
+      consDeclarator(
+        declarator(
+          n,
+          e.typerep.host.typeModifierExpr,
+          nilAttribute(),
+          justInitializer(exprInitializer(e.host))),
+        nilDeclarator()));
+  top.errors := e.errors;
+  top.globalDecls := e.globalDecls;
+  top.functionDecls := e.functionDecls;
+  top.defs := e.defs;
+  top.freeVariables := e.freeVariables;
+  
+  top.errors <- n.valueRedeclarationCheckNoCompatible;
+  top.defs <- [valueDef(n.name, autoValueItem(e))];
+}
+
 synthesized attribute hasModifiedTypeExpr::Boolean;
 synthesized attribute hostDecls::[Decl];
 

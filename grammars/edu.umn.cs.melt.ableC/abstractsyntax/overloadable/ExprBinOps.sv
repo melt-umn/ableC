@@ -1559,7 +1559,7 @@ host:Expr ::= baseOpProd::BinaryProd  lhs::host:Expr  rhs::host:Expr  loc::Locat
   -- ({auto ${tmpName} = &${lhs}; *${tmpName} = *${tmpName} ${baseOp} ${rhs};})
   return
     host:stmtExpr(
-      host:declStmt(autoDecl(tmpName, addressOfExpr(lhs, location=loc))),
+      host:declStmt(host:autoDecl(tmpName, addressOfExpr(lhs, location=loc))),
       eqExpr(
         dereferenceExpr(host:declRefExpr(tmpName, location=loc), location=loc),
         baseOpProd(
@@ -1578,8 +1578,8 @@ host:Expr ::= baseOpProd::BinaryProd  lhs::host:Expr  rhs::host:Expr  loc::Locat
   return
     host:stmtExpr(
       host:seqStmt(
-        host:declStmt(autoDecl(tmpName1, lhs)),
-        host:declStmt(autoDecl(tmpName2, rhs))),
+        host:declStmt(host:autoDecl(tmpName1, lhs)),
+        host:declStmt(host:autoDecl(tmpName2, rhs))),
       baseOpProd(
         host:declRefExpr(tmpName1, location=loc),
         host:declRefExpr(tmpName2, location=loc),

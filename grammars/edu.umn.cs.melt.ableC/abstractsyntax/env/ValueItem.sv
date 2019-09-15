@@ -80,6 +80,14 @@ top::ValueItem ::= s::Decorated ParameterDecl
   top.isItemValue = true;
 }
 
+abstract production autoValueItem
+top::ValueItem ::= e::Decorated Expr
+{
+  top.typerep = e.typerep;
+  top.sourceLocation = e.location;
+  top.isItemValue = true;
+}
+
 abstract production errorValueItem
 top::ValueItem ::=
 {
