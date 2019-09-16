@@ -2,17 +2,19 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 
 import edu:umn:cs:melt:ableC:abstractsyntax:overloadable as ovrld;
 
-nonterminal Expr with location, pp, host<Expr>, globalDecls, functionDecls, errors, defs, env, returnType, freeVariables, typerep, isLValue, integerConstantValue;
+nonterminal Expr with location, pp, host<Expr>, globalDecls, functionDecls, errors, defs, env, returnType, freeVariables, typerep, isLValue, isSimple, integerConstantValue;
 
-flowtype Expr = decorate {env, returnType}, isLValue {decorate}, integerConstantValue {decorate};
+flowtype Expr = decorate {env, returnType}, isLValue {decorate}, isSimple {decorate}, integerConstantValue {decorate};
 
 synthesized attribute isLValue::Boolean;
+synthesized attribute isSimple::Boolean; -- true if expression can be duplicated without encurring any addtional work (is a name, constant, field access, etc.)
 synthesized attribute integerConstantValue::Maybe<Integer>;
 
 aspect default production
 top::Expr ::=
 {
   top.isLValue = false;
+  top.isSimple = false;
   top.integerConstantValue = nothing();
 }
 
@@ -27,6 +29,7 @@ top::Expr ::= msg::[Message]
   top.defs := [];
   top.freeVariables := [];
   top.typerep = errorType();
+  top.isSimple = true;
 }
 -- TODO, this production is interfering and could lose errors in an analysis
 abstract production warnExpr
@@ -65,6 +68,7 @@ top::Expr ::= e::Decorated Expr
   top.freeVariables := e.freeVariables;
   top.typerep = e.typerep;
   top.isLValue = e.isLValue;
+  top.isSimple = e.isSimple;
   top.integerConstantValue = e.integerConstantValue;
 }
 abstract production qualifiedExpr
@@ -129,6 +133,7 @@ top::Expr ::= id::Name
   top.typerep = id.valueItem.typerep;
   top.freeVariables := top.typerep.freeVariables ++ [id];
   top.isLValue = true;
+  top.isSimple = true;
   
   top.errors <- id.valueLookupCheck;
   top.errors <-
@@ -147,6 +152,7 @@ top::Expr ::= l::String
   top.freeVariables := [];  
   top.typerep = pointerType(nilQualifier(),
     builtinType(foldQualifier([]), signedType(charType())));
+  top.isSimple = true;
 }
 abstract production parenExpr
 top::Expr ::= e::Expr
@@ -159,8 +165,8 @@ top::Expr ::= e::Expr
   top.defs := e.defs;
   top.freeVariables := e.freeVariables;
   top.typerep = e.typerep;
-  top.isLValue = e.isLValue;  
-  
+  top.isLValue = e.isLValue;
+  top.isSimple = e.isSimple;
 }
 abstract production arraySubscriptExpr
 top::Expr ::= lhs::Expr  rhs::Expr
@@ -319,6 +325,7 @@ top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
         [err(lhs.location, "expression does not have field " ++ rhs.name)]
       else []
     end;
+  top.isSimple = !deref && lhs.isSimple;
 }
 
 abstract production conditionalExpr
@@ -517,6 +524,7 @@ top::Expr ::= s::String
   top.defs := [];
   top.freeVariables := [];
   top.typerep = errorType();
+  top.isSimple = true;
 }
 
 {- from clang:
