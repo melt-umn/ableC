@@ -655,6 +655,23 @@ top::Parameters ::=
   top.appendedParametersRes = top.appendedParameters;
 }
 
+abstract production decParameters
+top::Parameters ::= p::Decorated Parameters
+{
+  top.pps = p.pps;
+  top.host = p.host;
+  top.count = p.count;
+  top.typereps = p.typereps;
+  top.errors := p.errors;
+  top.globalDecls := p.globalDecls;
+  top.functionDecls := p.functionDecls;
+  top.decls = p.decls;
+  top.defs := p.defs;
+  top.functionDefs := p.functionDefs;
+  top.freeVariables := p.freeVariables;
+  forwards to new(p);
+}
+
 function appendParameters
 Parameters ::= p1::Parameters p2::Parameters
 {
