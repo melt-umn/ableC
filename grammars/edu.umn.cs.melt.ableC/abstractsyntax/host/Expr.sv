@@ -70,6 +70,7 @@ top::Expr ::= e::Decorated Expr
   top.isLValue = e.isLValue;
   top.isSimple = e.isSimple;
   top.integerConstantValue = e.integerConstantValue;
+  forwards to new(e); -- for easier pattern matching
 }
 abstract production qualifiedExpr
 top::Expr ::= q::Qualifiers e::Expr

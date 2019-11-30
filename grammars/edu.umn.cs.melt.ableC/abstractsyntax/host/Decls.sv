@@ -228,6 +228,7 @@ top::Decl ::= d::Decorated Decl
   top.unfoldedFunctionDecls = d.unfoldedFunctionDecls;
   top.defs := d.defs;
   top.freeVariables := d.freeVariables;
+  forwards to new(d); -- for easier pattern matching
 }
 
 -- C11

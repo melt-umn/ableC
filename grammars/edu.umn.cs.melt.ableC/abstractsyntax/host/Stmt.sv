@@ -85,6 +85,7 @@ top::Stmt ::= s::Decorated Stmt
   top.defs := s.defs;
   top.freeVariables := s.freeVariables;
   top.functionDefs := s.functionDefs;
+  forwards to new(s); -- for easier pattern matching
 }
 
 abstract production declStmt

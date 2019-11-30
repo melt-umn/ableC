@@ -198,6 +198,7 @@ top::BaseTypeExpr ::= ty::Decorated BaseTypeExpr
   top.decls = ty.decls;
   top.defs := ty.defs;
   top.freeVariables := ty.freeVariables;
+  forwards to new(ty); -- for easier pattern matching
 }
 
 {-- A TypeExpr that contains extra extension defs to be placed in the environment
