@@ -4,7 +4,6 @@ imports silver:langutil;
 imports silver:langutil:pp with implode as ppImplode, concat as ppConcat;
 imports edu:umn:cs:melt:ableC:abstractsyntax:env;
 imports edu:umn:cs:melt:ableC:abstractsyntax:construction;
-imports edu:umn:cs:melt:ableC:abstractsyntax:construction:parsing;
 import edu:umn:cs:melt:ableC:abstractsyntax:host;
 
 nonterminal LhsOrRhsRuntimeMods with modLhs, modRhs, lhsToModify, rhsToModify;
@@ -132,7 +131,19 @@ top::RuntimeMod ::= check::(Expr ::= Expr)  failMessage::String  l::Location
     stmtExpr(
       ifStmtNoElse(
         check(top.exprToModify),
-        parseStmt(s"fprintf(stderr, \"${l.unparse}:${failMessage}\"); exit(255);")
+        seqStmt(
+          exprStmt(
+            directCallExpr(
+              name("fprintf", location=bogusLoc()),
+              foldExpr(
+                [declRefExpr(name("stderr", location=bogusLoc()), location=bogusLoc()),
+                 mkStringConst(s"${l.unparse}:${failMessage}", bogusLoc())]),
+              location=bogusLoc())),
+          exprStmt(
+            directCallExpr(
+              name("exit", location=bogusLoc()),
+              foldExpr([mkIntConst(255, bogusLoc())]),
+              location=bogusLoc())))
       ),
       top.exprToModify,
       location=bogusLoc()
