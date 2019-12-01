@@ -37,7 +37,6 @@ melt.trynode('ableC') {
       "ableC-constructor",
       "ableC-checkBounds",
       "ableC-checkTaggedUnion",
-      "ableC-cilk",
       "ableC-condition-tables",
       "ableC-dimensionalAnalysis",
       "ableC-nonnull",
@@ -53,6 +52,7 @@ melt.trynode('ableC') {
       "ableC-halide",
       "ableC-interval",
       "ableC-watch",
+      "ableC-cilk",
       "ableC-nondeterministic-search", "ableC-nondeterministic-search-benchmarks",
       "ableC-algebraic-data-types", "ableC-template-algebraic-data-types"
      */
