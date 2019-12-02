@@ -7,7 +7,6 @@ top::Decl ::= refId::String d::Decl
   
   production refIdExists::Boolean = !null(lookupRefId(refId, top.env));
   top.host = if refIdExists then d.host else decls(nilDecl());
-  top.lifted = if refIdExists then d.lifted else deferredDecl(refId, d.lifted);
   top.errors := if refIdExists then d.errors else [];
   top.globalDecls := if refIdExists then d.globalDecls else [];
   top.functionDecls := if refIdExists then d.functionDecls else [];
@@ -51,18 +50,30 @@ top::Decl ::= d::[Def]
     defsDeferredDecls(addEnv(d, top.env), top.returnType, top.isTopLevel, d);
   top.host = decls(foldDecl(map(\ d::Decorated Decl -> d.host, deferredDecls)));
   top.defs <- concat(map((.defs), deferredDecls));
+  top.freeVariables <- concat(map((.freeVariables), deferredDecls));
+  top.globalDecls <- concat(map((.globalDecls), deferredDecls));
 }
 
 aspect production variableDecls
 top::Decl ::= storage::StorageClasses  attrs::Attributes  ty::BaseTypeExpr  dcls::Declarators
 {
-  local host::Decl = variableDecls(storage, attrs.host, ty.host, dcls.host);
+  local host::Decl =
+    if dcls.hasModifiedTypeExpr
+    then
+      decls(
+        foldDecl(
+          -- decorate needed here because of flowtype for decls
+          decorate ty.host with {
+            env = ty.env; returnType = ty.returnType; givenRefId = ty.givenRefId;
+          }.decls ++ dcls.hostDecls))
+    else variableDecls(storage, attrs.host, ty.host, dcls.host);
   local deferredDecls::[Decorated Decl] =
     defsDeferredDecls(addEnv(dcls.defs, dcls.env), top.returnType, top.isTopLevel, ty.defs ++ dcls.defs);
   top.host =
     if !null(deferredDecls)
     then decls(foldDecl(host :: map(\ d::Decorated Decl -> d.host, deferredDecls)))
     else host;
+  top.globalDecls := ty.globalDecls ++ dcls.globalDecls ++ concat(map((.globalDecls), deferredDecls));
   top.defs <- concat(map((.defs), deferredDecls));
   top.freeVariables <- concat(map((.freeVariables), deferredDecls));
 }
@@ -77,6 +88,7 @@ top::Decl ::= attrs::Attributes ty::BaseTypeExpr
     if !null(deferredDecls)
     then decls(foldDecl(host :: map(\ d::Decorated Decl -> d.host, deferredDecls)))
     else host;
+  top.globalDecls := ty.globalDecls ++ concat(map((.globalDecls), deferredDecls));
   top.defs <- concat(map((.defs), deferredDecls));
   top.freeVariables <- concat(map((.freeVariables), deferredDecls));
 }
@@ -84,13 +96,23 @@ top::Decl ::= attrs::Attributes ty::BaseTypeExpr
 aspect production typedefDecls
 top::Decl ::= attrs::Attributes  ty::BaseTypeExpr  dcls::Declarators
 {
-  local host::Decl = typedefDecls(attrs.host, ty.host, dcls.host);
+  local host::Decl =
+    if dcls.hasModifiedTypeExpr
+    then
+      decls(
+        foldDecl(
+          -- decorate needed here because of flowtype for decls
+          decorate ty.host with {
+            env = ty.env; returnType = ty.returnType; givenRefId = ty.givenRefId;
+          }.decls ++ dcls.hostDecls))
+    else typedefDecls(attrs.host, ty.host, dcls.host);
   local deferredDecls::[Decorated Decl] =
     defsDeferredDecls(addEnv(dcls.defs, dcls.env), top.returnType, top.isTopLevel, ty.defs ++ dcls.defs);
   top.host =
     if !null(deferredDecls)
     then decls(foldDecl(host :: map(\ d::Decorated Decl -> d.host, deferredDecls)))
     else host;
+  top.globalDecls := ty.globalDecls ++ dcls.globalDecls ++ concat(map((.globalDecls), deferredDecls));
   top.defs <- concat(map((.defs), deferredDecls));
   top.freeVariables <- concat(map((.freeVariables), deferredDecls));
 }
@@ -98,13 +120,14 @@ top::Decl ::= attrs::Attributes  ty::BaseTypeExpr  dcls::Declarators
 aspect production functionDeclaration
 top::Decl ::= f::FunctionDecl
 {
-  local host::Decl = functionDeclaration(f.host);
+  local host::Decl = f.host;
   local deferredDecls::[Decorated Decl] =
     defsDeferredDecls(addEnv(f.defs, f.env), top.returnType, top.isTopLevel, f.defs);
   top.host =
     if !null(deferredDecls)
     then decls(foldDecl(host :: map(\ d::Decorated Decl -> d.host, deferredDecls)))
     else host;
+  top.globalDecls := f.globalDecls ++ concat(map((.globalDecls), deferredDecls));
   top.defs <- concat(map((.defs), deferredDecls));
   top.freeVariables <- concat(map((.freeVariables), deferredDecls));
 }
