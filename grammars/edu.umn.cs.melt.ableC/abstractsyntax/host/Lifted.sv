@@ -5,16 +5,15 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
  - do so by forwarding to the host production `injectGlobalDecls` (or one
  - of the corresponding ones for Stmt or BaseTypeExpr.)  
  - 
- - After extracting the `host` tree, there are no extension constructs, but
- - the AST contains constructs that cannot be directly translated into C, for
+ - ASTs may contain constructs that cannot be directly translated into C, for
  - example declarations need to be lifted to the proper place. 
  - 
  - A pair of synthesized attributes can be used for this.
  - * `globalDecls`: the list of declarations to lift up
- - * `lifted`: the lifted tree.
- - An invariant here is that all Decl nodes in the `host` tree appear in
- - either `globalDecls` or in `lifted`.  Also, the 'injection' productions
- - defined here should not occur in the lifted tree.  
+ - * `host`: the tranformed tree containing only proper host productions.
+ - An invariant here is that all Decl nodes in the original tree appear in
+ - either `globalDecls` or in `host`.  Also, the 'injection' productions
+ - defined here should not occur in the host tree.  
  -
  - One issue with this is how to generate the correct environment for the
  - 'lifted' tree passed to an injection production.  The behaviour we *want* is
@@ -41,7 +40,7 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
  - to be kept.
  -
  - If there are ever errors reported about something being redefined in the
- - lifted tree, then there is a bug in the host where the env was not provided
+ - host tree, then there is a bug in the host where the env was not provided
  - properly somewhere to contain all injected declarations defined so far.
  -
  - It is also possible for extensions to specify declarations to lift to the
@@ -53,29 +52,14 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
  -
  - TODO:
  - It would be nice to move all of this to its own grammar, but aspecting
- - everything for lifted and globalDecls would be kind of a pain
+ - everything would be kind of a pain
  -}
 
-synthesized attribute lifted<a>::a;
 synthesized attribute globalDecls::[Decorated Decl] with ++;
 synthesized attribute functionDecls::[Decorated Decl] with ++;
 synthesized attribute unfoldedGlobalDecls::[Decorated Decl];
 synthesized attribute unfoldedFunctionDecls::[Decorated Decl];
 
-flowtype lifted {decorate} on
-  Root,
-  Attributes, Attribute, Attribs, Attrib, AttribName,
-  GlobalDecls, Decls, Decl, Declarators, Declarator, FunctionDecl, Parameters, ParameterDecl, StructDecl, UnionDecl, EnumDecl, StructItemList, EnumItemList, StructItem, StructDeclarators, StructDeclarator, EnumItem,
-  MemberDesignator,
-  AsmStatement, AsmArgument, AsmClobbers, AsmOperands, AsmOperand,
-  SpecialSpecifier, SpecialSpecifiers,
-  Expr, GenericAssocs, GenericAssoc,
-  TypeName, BaseTypeExpr, TypeModifierExpr, TypeNames,
-  NumericConstant,
-  MaybeExpr, Exprs, ExprOrTypeName,
-  Stmt,
-  Name, MaybeName,
-  MaybeInitializer, Initializer, InitList, Init, Designator;
 flowtype globalDecls {decorate} on
   Decls, Decl, Declarators, Declarator, FunctionDecl, Parameters, ParameterDecl, StructDecl, UnionDecl, EnumDecl, StructItemList, EnumItemList, StructItem, StructDeclarators, StructDeclarator, EnumItem,
   MemberDesignator,
@@ -141,7 +125,6 @@ top::Decl ::= name::String decl::Decl
 abstract production injectGlobalDeclsExpr
 top::Expr ::= decls::Decls lifted::Expr
 {
-  propagate host;
   top.errors := decls.errors ++ lifted.errors;
   top.pp = pp"injectGlobalDeclsExpr ${braces(nestlines(2, ppImplode(line(), decls.pps)))} (${lifted.pp})";
   
@@ -151,7 +134,7 @@ top::Expr ::= decls::Decls lifted::Expr
   -- Note that the invariant over `globalDecls` and `lifted` is maintained.
   top.globalDecls := decls.unfoldedGlobalDecls ++ lifted.globalDecls;
   top.functionDecls := decls.functionDecls ++ lifted.functionDecls;
-  top.lifted = lifted.lifted;
+  top.host = lifted.host;
   
   -- Variables corresponing to lifted values are *not* considered free, since they are either bound
   -- here (host tree) or available globally and shouldn't recieve special treatment (lifted tree).
@@ -173,7 +156,6 @@ top::Expr ::= decls::Decls lifted::Expr
 abstract production injectGlobalDeclsStmt
 top::Stmt ::= decls::Decls lifted::Stmt
 {
-  propagate host;
   top.errors := decls.errors ++ lifted.errors;
   top.pp = pp"injectGlobalDeclsStmt ${braces(nestlines(2, ppImplode(line(), decls.pps)))} ${braces(nestlines(2, lifted.pp))}";
   
@@ -183,7 +165,7 @@ top::Stmt ::= decls::Decls lifted::Stmt
   -- Note that the invariant over `globalDecls` and `lifted` is maintained.
   top.globalDecls := decls.unfoldedGlobalDecls ++ lifted.globalDecls;
   top.functionDecls := decls.functionDecls ++ lifted.functionDecls;
-  top.lifted = lifted.lifted;
+  top.host = lifted.host;
   
   -- Variables corresponing to lifted values are *not* considered free, since they are either bound
   -- here (host tree) or available globally and shouldn't recieve special treatment (lifted tree).
@@ -203,7 +185,6 @@ top::Stmt ::= decls::Decls lifted::Stmt
 abstract production injectGlobalDeclsTypeExpr
 top::BaseTypeExpr ::= decls::Decls lifted::BaseTypeExpr
 {
-  propagate host;
   top.pp = pp"injectGlobalDeclsTypeExpr ${braces(nestlines(2, ppImplode(line(), decls.pps)))} (${lifted.pp})";
   top.errors := decls.errors ++ lifted.errors;
   
@@ -213,7 +194,7 @@ top::BaseTypeExpr ::= decls::Decls lifted::BaseTypeExpr
   -- Note that the invariant over `globalDecls` and `lifted` is maintained.
   top.globalDecls := decls.unfoldedGlobalDecls ++ lifted.globalDecls;
   top.functionDecls := decls.functionDecls ++ lifted.functionDecls;
-  top.lifted = lifted.lifted;
+  top.host = lifted.host;
   
   -- Variables corresponing to lifted values are *not* considered free, since they are either bound
   -- here (host tree) or available globally and shouldn't recieve special treatment (lifted tree).
@@ -224,7 +205,7 @@ top::BaseTypeExpr ::= decls::Decls lifted::BaseTypeExpr
   
   -- Define other attributes to be the same as on lifted
   top.typerep = lifted.typerep;
-  top.typeModifiers = lifted.typeModifiers;
+  top.typeModifier = lifted.typeModifier;
   
   decls.env = globalEnv(top.env);
   decls.isTopLevel = true;
@@ -237,7 +218,6 @@ top::BaseTypeExpr ::= decls::Decls lifted::BaseTypeExpr
 abstract production injectGlobalDeclsDecl
 top::Decl ::= decls::Decls
 {
-  propagate host;
   top.errors := decls.errors;
   top.pp = pp"injectGlobalDeclsDecl ${braces(nestlines(2, ppImplode(line(), decls.pps)))}";
   
@@ -247,7 +227,7 @@ top::Decl ::= decls::Decls
   -- Note that the invariant over `globalDecls` and `lifted` is maintained.
   top.globalDecls := decls.unfoldedGlobalDecls;
   top.functionDecls := decls.functionDecls;
-  top.lifted = edu:umn:cs:melt:ableC:abstractsyntax:host:decls(nilDecl());
+  top.host = edu:umn:cs:melt:ableC:abstractsyntax:host:decls(nilDecl());
   
   -- Define other attributes to be the same as on "lifted" (i.e. nilDecl())
   top.freeVariables := [];
@@ -260,7 +240,6 @@ top::Decl ::= decls::Decls
 abstract production injectFunctionDeclsDecl
 top::Decl ::= decls::Decls
 {
-  propagate host;
   top.errors := decls.errors;
   top.pp = pp"injectFunctionDeclsStmt ${braces(nestlines(2, ppImplode(line(), decls.pps)))}";
 
@@ -268,7 +247,7 @@ top::Decl ::= decls::Decls
 
   top.globalDecls := decls.globalDecls;
   top.functionDecls := decls.unfoldedFunctionDecls;
-  top.lifted = edu:umn:cs:melt:ableC:abstractsyntax:host:decls(nilDecl());
+  top.host = edu:umn:cs:melt:ableC:abstractsyntax:host:decls(nilDecl());
 
   top.freeVariables := [];
 
@@ -283,48 +262,11 @@ top::Decl ::= decls::Decls
 aspect production consGlobalDecl
 top::GlobalDecls ::= h::Decl  t::GlobalDecls
 {
-  propagate host;
-  top.lifted =
+  top.host =
     foldr(
       consGlobalDecl,
-      t.lifted,
-      map(\ d::Decorated Decl -> d.lifted, h.unfoldedGlobalDecls));
-}
-
--- Required to allow for types that are only completed in the lifted tree.
-abstract production completedTypeExpr
-top::BaseTypeExpr ::= result::Type
-{
-  propagate host;
-  top.pp = parens(cat(result.lpp, result.rpp));
-  top.lifted = result.baseTypeExpr;
-  top.typerep = completedType(result);
-  top.errors := [];
-  top.globalDecls := [];
-  top.functionDecls := [];
-  top.typeModifiers = [result.typeModifierExpr];
-  top.decls = [];
-  top.defs := [];
-  top.freeVariables := [];
-}
-
-abstract production completedType
-top::Type ::= t::Type
-{
-  propagate host, canonicalType, integerPromotions, defaultArgumentPromotions, defaultLvalueConversion, defaultFunctionArrayLvalueConversion, withoutTypeQualifiers, withoutExtensionQualifiers;
-  top.lpp = t.lpp;
-  top.rpp = t.rpp;
-  top.baseTypeExpr = completedTypeExpr(t);
-  top.typeModifierExpr = baseTypeExpr();
-  top.mangledName = t.mangledName;
-  top.isCompleteType = \ Decorated Env -> true;
-  top.mergeQualifiers = \ t2::Type -> completedType(t.mergeQualifiers(t2));
-  top.qualifiers = t.qualifiers;
-  top.errors := t.errors;
-  top.freeVariables := t.freeVariables;
-  top.isIntegerType = t.isIntegerType;
-  top.isScalarType = t.isScalarType;
-  top.isArithmeticType = t.isArithmeticType;
+      t.host,
+      map(\ d::Decorated Decl -> d.host, h.unfoldedGlobalDecls));
 }
 
 -- Utility functions

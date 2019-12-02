@@ -122,7 +122,7 @@ top::AST ::= prodName::String children::ASTs annotations::NamedASTs
   mty.env = emptyEnv();
   mty.returnType = nothing();
   mty.baseType = errorType();
-  mty.typeModifiersIn = [];
+  mty.typeModifierIn = baseTypeExpr();
   altSub <-
     if mtyRes.isRight
     then

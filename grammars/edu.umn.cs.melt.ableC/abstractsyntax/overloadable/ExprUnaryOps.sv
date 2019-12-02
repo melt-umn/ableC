@@ -11,7 +11,11 @@ top::host:Expr ::= e::host:Expr
     inj:preIncExpr(host:decExpr(e, location=e.location), location=top.location);
   local fwrd::host:Expr =
     case e.host:typerep.preIncProd of
-      just(prod) -> host:transformedExpr(host, prod(e, top.location), location=top.location)
+    | just(prod) ->
+      host:transformedExpr(
+        host,
+        prod(host:decExpr(e, location=e.location), top.location),
+        location=top.location)
     | nothing() -> host
     end;
 
@@ -28,7 +32,11 @@ top::host:Expr ::= e::host:Expr
     inj:preDecExpr(host:decExpr(e, location=e.location), location=top.location);
   local fwrd::host:Expr =
     case e.host:typerep.preDecProd of
-      just(prod) -> host:transformedExpr(host, prod(e, top.location), location=top.location)
+    | just(prod) ->
+      host:transformedExpr(
+        host,
+        prod(host:decExpr(e, location=e.location), top.location),
+        location=top.location)
     | nothing() -> host
     end;
 
@@ -45,7 +53,11 @@ top::host:Expr ::= e::host:Expr
     inj:postIncExpr(host:decExpr(e, location=e.location), location=top.location);
   local fwrd::host:Expr =
     case e.host:typerep.postIncProd of
-      just(prod) -> host:transformedExpr(host, prod(e, top.location), location=top.location)
+    | just(prod) ->
+      host:transformedExpr(
+        host,
+        prod(host:decExpr(e, location=e.location), top.location),
+        location=top.location)
     | nothing() -> host
     end;
 
@@ -62,7 +74,11 @@ top::host:Expr ::= e::host:Expr
     inj:postDecExpr(host:decExpr(e, location=e.location), location=top.location);
   local fwrd::host:Expr =
     case e.host:typerep.postDecProd of
-      just(prod) -> host:transformedExpr(host, prod(e, top.location), location=top.location)
+    | just(prod) ->
+      host:transformedExpr(
+        host,
+        prod(host:decExpr(e, location=e.location), top.location),
+        location=top.location)
     | nothing() -> host
     end;
 
@@ -79,7 +95,7 @@ top::host:Expr ::= e::host:Expr
     inj:addressOfExpr(host:decExpr(e, location=e.location), location=top.location);
   local fwrd::host:Expr =
     case e.addressOfProd of
-      just(prod) -> host:transformedExpr(host, prod(top.location), location=top.location)
+    | just(prod) -> host:transformedExpr(host, prod(top.location), location=top.location)
     | nothing() -> host
     end;
 
@@ -96,7 +112,11 @@ top::host:Expr ::= e::host:Expr
     inj:dereferenceExpr(host:decExpr(e, location=e.location), location=top.location);
   local fwrd::host:Expr =
     case e.host:typerep.dereferenceProd of
-      just(prod) -> host:transformedExpr(host, prod(e, top.location), location=top.location)
+    | just(prod) ->
+      host:transformedExpr(
+        host,
+        prod(host:decExpr(e, location=e.location), top.location),
+        location=top.location)
     | nothing() -> host
     end;
 
@@ -113,7 +133,11 @@ top::host:Expr ::= e::host:Expr
     inj:positiveExpr(host:decExpr(e, location=e.location), location=top.location);
   local fwrd::host:Expr =
     case e.host:typerep.positiveProd of
-      just(prod) -> host:transformedExpr(host, prod(e, top.location), location=top.location)
+    | just(prod) ->
+      host:transformedExpr(
+        host,
+        prod(host:decExpr(e, location=e.location), top.location),
+        location=top.location)
     | nothing() -> host
     end;
 
@@ -130,7 +154,11 @@ top::host:Expr ::= e::host:Expr
     inj:negativeExpr(host:decExpr(e, location=e.location), location=top.location);
   local fwrd::host:Expr =
     case e.host:typerep.negativeProd of
-      just(prod) -> host:transformedExpr(host, prod(e, top.location), location=top.location)
+    | just(prod) ->
+      host:transformedExpr(
+        host,
+        prod(host:decExpr(e, location=e.location), top.location),
+        location=top.location)
     | nothing() -> host
     end;
 
@@ -147,7 +175,11 @@ top::host:Expr ::= e::host:Expr
     inj:bitNegateExpr(host:decExpr(e, location=e.location), location=top.location);
   local fwrd::host:Expr =
     case e.host:typerep.bitNegateProd of
-      just(prod) -> host:transformedExpr(host, prod(e, top.location), location=top.location)
+    | just(prod) ->
+      host:transformedExpr(
+        host,
+        prod(host:decExpr(e, location=e.location), top.location),
+        location=top.location)
     | nothing() -> host
     end;
 
@@ -164,7 +196,11 @@ top::host:Expr ::= e::host:Expr
     inj:notExpr(host:decExpr(e, location=e.location), location=top.location);
   local fwrd::host:Expr =
     case e.host:typerep.notProd of
-      just(prod) -> host:transformedExpr(host, prod(e, top.location), location=top.location)
+    | just(prod) ->
+      host:transformedExpr(
+        host,
+        prod(host:decExpr(e, location=e.location), top.location),
+        location=top.location)
     | nothing() -> host
     end;
 

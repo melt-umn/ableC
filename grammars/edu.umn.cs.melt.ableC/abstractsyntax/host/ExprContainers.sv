@@ -1,6 +1,6 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 
-nonterminal MaybeExpr with pp, host<MaybeExpr>, lifted<MaybeExpr>, isJust, errors, globalDecls, functionDecls, defs, env, maybeTyperep, returnType, freeVariables, justTheExpr, isLValue;
+nonterminal MaybeExpr with pp, host<MaybeExpr>, isJust, errors, globalDecls, functionDecls, defs, env, maybeTyperep, returnType, freeVariables, justTheExpr, isLValue;
 
 flowtype MaybeExpr = decorate {env, returnType}, isJust {}, justTheExpr {}, maybeTyperep {decorate};
 
@@ -10,7 +10,7 @@ synthesized attribute justTheExpr :: Maybe<Expr>;
 abstract production justExpr
 top::MaybeExpr ::= e::Expr
 {
-  propagate host, lifted;
+  propagate host;
   top.pp = e.pp;
   top.isJust = true;
   top.justTheExpr = just(e);
@@ -25,7 +25,7 @@ top::MaybeExpr ::= e::Expr
 abstract production nothingExpr
 top::MaybeExpr ::=
 {
-  propagate host, lifted;
+  propagate host;
   top.pp = notext();
   top.isJust = false;
   top.justTheExpr = nothing();
@@ -38,7 +38,7 @@ top::MaybeExpr ::=
   top.isLValue = false;
 }
 
-nonterminal Exprs with pps, host<Exprs>, lifted<Exprs>, errors, globalDecls, functionDecls, defs, env, expectedTypes, argumentPosition, callExpr, argumentErrors, typereps, count, callVariadic, returnType, freeVariables, appendedExprs, appendedRes, isLValue;
+nonterminal Exprs with pps, host<Exprs>, errors, globalDecls, functionDecls, defs, env, expectedTypes, argumentPosition, callExpr, argumentErrors, typereps, count, callVariadic, returnType, freeVariables, appendedExprs, appendedRes, isLValue;
 
 flowtype Exprs = decorate {env, returnType}, argumentErrors {decorate, expectedTypes, argumentPosition, callExpr, callVariadic}, count {}, appendedRes {appendedExprs};
 
@@ -57,7 +57,7 @@ synthesized attribute appendedRes :: Exprs;
 abstract production consExpr
 top::Exprs ::= h::Expr  t::Exprs
 {
-  propagate host, lifted;
+  propagate host;
   top.pps = h.pp :: t.pps;
   top.errors := h.errors ++ t.errors;
   top.globalDecls := h.globalDecls ++ t.globalDecls;
@@ -88,7 +88,7 @@ top::Exprs ::= h::Expr  t::Exprs
 abstract production nilExpr
 top::Exprs ::=
 {
-  propagate host, lifted;
+  propagate host;
   top.pps = [];
   top.errors := [];
   top.globalDecls := [];
@@ -119,7 +119,6 @@ top::Exprs ::= e::Decorated Exprs
 {
   top.pps = e.pps;
   top.host = e.host;
-  top.lifted = e.lifted;
   top.errors := e.errors;
   top.globalDecls := e.globalDecls;
   top.functionDecls := e.functionDecls;
@@ -138,14 +137,14 @@ Exprs ::= e1::Exprs e2::Exprs
   return e1.appendedRes;
 }
 
-nonterminal ExprOrTypeName with pp, host<ExprOrTypeName>, lifted<ExprOrTypeName>, errors, globalDecls, functionDecls, defs, env, typerep, returnType, freeVariables, isLValue;
+nonterminal ExprOrTypeName with pp, host<ExprOrTypeName>, errors, globalDecls, functionDecls, defs, env, typerep, returnType, freeVariables, isLValue;
 
 flowtype ExprOrTypeName = decorate {env, returnType};
 
 abstract production exprExpr
 top::ExprOrTypeName ::= e::Expr
 {
-  propagate host, lifted;
+  propagate host;
   top.pp = e.pp;
   top.errors := e.errors;
   top.globalDecls := e.globalDecls;
@@ -158,7 +157,7 @@ top::ExprOrTypeName ::= e::Expr
 abstract production typeNameExpr
 top::ExprOrTypeName ::= ty::TypeName
 {
-  propagate host, lifted;
+  propagate host;
   top.pp = ty.pp;
   top.errors := ty.errors;
   top.globalDecls := ty.globalDecls;
