@@ -71,7 +71,7 @@ All you need is vagrant and virtualbox, and you can clone that repo and `vagrant
 Where to go next
 ----------------
 
-You can look under `tutorials` for information about how to develop your own extensions.
+You can look at the [ableC tutorials](https://github.com/melt-umn/tutorials) for information about how to develop your own extensions.
 
 Alternatively, we have developed several (this list is not authoritative):
 
