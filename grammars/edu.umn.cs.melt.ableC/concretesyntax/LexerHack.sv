@@ -45,18 +45,20 @@ lexer class Cidentifier
     
     -- In order of preference:
     -- * Looked-up terminal from context
-    -- * Identifier_t
-    -- * TypeName_t
+    -- * Identifier_t, if valid
+    -- * TypeName_t, if valid
     -- * Any (arbitrary) thing that is valid: if the parse succeeds there will
     --   be a semantic error.
     pluck
-      fromMaybe(
+      case lookupResult of
+      | just(id) -> id
+      | nothing() ->
         if containsBy(terminalIdEq, Identifier_t, shiftable)
         then Identifier_t
         else if containsBy(terminalIdEq, TypeName_t, shiftable)
         then TypeName_t
-        else head(shiftable), -- Always has length >= 2
-        lookupResult);
+        else head(shiftable) -- Always has length >= 2
+      end;
   };
 
 -- The logic that mutates the 'context' value is distributed amoung the rules
