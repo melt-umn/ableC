@@ -29,8 +29,8 @@ parser attribute context :: [[Pair<String TerminalId>]]
 
 
 -- Here is the actual decision logic
-lexer class Cidentifier
-  submits to Ckeyword
+lexer class Identifier
+  submits to Reserved
   disambiguate {
     local lookupResult::Maybe<TerminalId> =
       -- Look up the lexeme in the current context

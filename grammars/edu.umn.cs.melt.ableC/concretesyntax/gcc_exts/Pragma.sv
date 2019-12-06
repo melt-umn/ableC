@@ -2,7 +2,7 @@ grammar edu:umn:cs:melt:ableC:concretesyntax:gcc_exts;
 
 import edu:umn:cs:melt:ableC:concretesyntax:cppTags;
 
-ignore terminal PragmaMark /#pragma\ mark.*([\n\r]+)/ lexer classes {Ccomment};
+ignore terminal PragmaMark /#pragma\ mark.*([\n\r]+)/ lexer classes {Comment};
 
 terminal Hash_t '#';
 terminal Pragma_t 'pragma';

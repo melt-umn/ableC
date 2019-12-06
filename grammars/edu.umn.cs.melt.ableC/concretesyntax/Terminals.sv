@@ -15,10 +15,8 @@ grammar edu:umn:cs:melt:ableC:concretesyntax;
 prefix separator "::";
 
 {--
- - Largely exists to permit embedding into other languages. Allows easy
- - dominates relationship
+ - Fonts for legacy eclipse IDE plugin
  -}
-
 temp_imp_ide_font font_all color(160, 32, 240) bold;
 temp_imp_ide_font font_type color(34, 139, 34) bold;
 temp_imp_ide_font font_string color(139, 34, 82) italic;
@@ -27,191 +25,199 @@ temp_imp_ide_font font_special_symbol color(71, 71, 141);
 temp_imp_ide_font font_equal color(71, 71, 141) bold;
 
 
-lexer class Ccomment font = font_comments;
-lexer class Ckeyword font = font_all;
-lexer class Ctype font = font_type;
-lexer class Cstring font = font_string;
-lexer class Cassignment font = font_equal;
-lexer class Csymbol font = font_special_symbol;
-
-
---
+{--
+ - Comments
+ -}
+lexer class Comment font = font_comments;
 
 ignore terminal LineComment
   /[\/][\/].*/ 
-  lexer classes {Ccomment};
+  lexer classes {Comment};
 
 ignore terminal BlockComment 
   /[\/][\*]([^\*]|[\r\n]|([\*]+([^\*\/]|[\r\n])))*[\*]+[\/]/ 
-  lexer classes {Ccomment};
+  lexer classes {Comment};
 
 {-
 ignore terminal WhiteSpace
   /[\n\r\t\ ]+/ 
-  lexer classes {Ccomment};
+  lexer classes {Comment};
 -}
 
 -- The following need to be separated for tables without white space
 -- to work.  See edu:umn:cs:melt:exts:ableC:tablesWS.
 ignore terminal Spaces_t 
   /[\t\ ]+/ 
-  lexer classes {Ccomment};
+  lexer classes {Comment};
 
 ignore terminal NewLine_t /[\n\r]+/ 
-  lexer classes {Ccomment};
+  lexer classes {Comment};
 
 {--
  - Identifiers: normal or type name.
  -}
 
-terminal Identifier_t /[A-Za-z_\$][A-Za-z_0-9\$]*/ lexer classes {Cidentifier};
-terminal TypeName_t   /[A-Za-z_\$][A-Za-z_0-9\$]*/ lexer classes {Cidentifier, Ctype};
+terminal Identifier_t /[A-Za-z_\$][A-Za-z_0-9\$]*/ lexer classes {Identifier};
+terminal TypeName_t   /[A-Za-z_\$][A-Za-z_0-9\$]*/ lexer classes {Identifier, Type};
 -- See LexerHack.sv for code related to disambiguation of these terminals.
 
 
 {--
  - Literals
  -}
-lexer class Cliteral;
+lexer class NumericLiteral;
 
 terminal DecConstant_t /
 	((0)|([1-9][0-9]*)) -- Begins with 1-9 or is just 0 alone
-	/ lexer classes {Cliteral};
-terminal DecConstantU_t   /((0)|([1-9][0-9]*))([Uu])/ lexer classes {Cliteral};
-terminal DecConstantL_t   /((0)|([1-9][0-9]*))([Ll])/ lexer classes {Cliteral};
-terminal DecConstantUL_t  /((0)|([1-9][0-9]*))(([Uu][Ll])|([Ll][Uu]))/ lexer classes {Cliteral};
-terminal DecConstantLL_t  /((0)|([1-9][0-9]*))([Ll][Ll])/ lexer classes {Cliteral};
-terminal DecConstantULL_t /((0)|([1-9][0-9]*))(([Uu][Ll][Ll])|([Ll][Ll][Uu]))/ lexer classes {Cliteral};
+	/ lexer classes {NumericLiteral};
+terminal DecConstantU_t   /((0)|([1-9][0-9]*))([Uu])/ lexer classes {NumericLiteral};
+terminal DecConstantL_t   /((0)|([1-9][0-9]*))([Ll])/ lexer classes {NumericLiteral};
+terminal DecConstantUL_t  /((0)|([1-9][0-9]*))(([Uu][Ll])|([Ll][Uu]))/ lexer classes {NumericLiteral};
+terminal DecConstantLL_t  /((0)|([1-9][0-9]*))([Ll][Ll])/ lexer classes {NumericLiteral};
+terminal DecConstantULL_t /((0)|([1-9][0-9]*))(([Uu][Ll][Ll])|([Ll][Ll][Uu]))/ lexer classes {NumericLiteral};
 
 terminal OctConstant_t /
 	(0[0-7]+)           -- Begins with 0 AND has more digits
-	/ lexer classes {Cliteral};
-terminal OctConstantU_t   /(0[0-7]+)([Uu])/ lexer classes {Cliteral};
-terminal OctConstantL_t   /(0[0-7]+)([Ll])/ lexer classes {Cliteral};
-terminal OctConstantUL_t  /(0[0-7]+)(([Uu][Ll])|([Ll][Uu]))/ lexer classes {Cliteral};
-terminal OctConstantLL_t  /(0[0-7]+)([Ll][Ll])/ lexer classes {Cliteral};
-terminal OctConstantULL_t /(0[0-7]+)(([Uu][Ll][Ll])|([Ll][Ll][Uu]))/ lexer classes {Cliteral};
+	/ lexer classes {NumericLiteral};
+terminal OctConstantU_t   /(0[0-7]+)([Uu])/ lexer classes {NumericLiteral};
+terminal OctConstantL_t   /(0[0-7]+)([Ll])/ lexer classes {NumericLiteral};
+terminal OctConstantUL_t  /(0[0-7]+)(([Uu][Ll])|([Ll][Uu]))/ lexer classes {NumericLiteral};
+terminal OctConstantLL_t  /(0[0-7]+)([Ll][Ll])/ lexer classes {NumericLiteral};
+terminal OctConstantULL_t /(0[0-7]+)(([Uu][Ll][Ll])|([Ll][Ll][Uu]))/ lexer classes {NumericLiteral};
 -- Specially recognize octal constants with 8 or 9 in them. (n.b. submits to, not class literal)
-terminal OctConstantError_t /(0[0-9]+)[uUlL]*/ submits to {Cliteral};
+terminal OctConstantError_t /(0[0-9]+)[uUlL]*/ submits to {NumericLiteral};
 
 terminal HexConstant_t /
 	(0[xX][0-9A-Fa-f]+) -- Begins with 0x and has more digits
-	/ lexer classes {Cliteral};
-terminal HexConstantU_t /(0[xX][0-9A-Fa-f]+)([Uu])/ lexer classes {Cliteral};
-terminal HexConstantL_t /(0[xX][0-9A-Fa-f]+)([Ll])/ lexer classes {Cliteral};
-terminal HexConstantUL_t /(0[xX][0-9A-Fa-f]+)(([Uu][Ll])|([Ll][Uu]))/ lexer classes {Cliteral};
-terminal HexConstantLL_t /(0[xX][0-9A-Fa-f]+)([Ll][Ll])/ lexer classes {Cliteral};
-terminal HexConstantULL_t /(0[xX][0-9A-Fa-f]+)(([Uu][Ll][Ll])|([Ll][Ll][Uu]))/ lexer classes {Cliteral};
+	/ lexer classes {NumericLiteral};
+terminal HexConstantU_t /(0[xX][0-9A-Fa-f]+)([Uu])/ lexer classes {NumericLiteral};
+terminal HexConstantL_t /(0[xX][0-9A-Fa-f]+)([Ll])/ lexer classes {NumericLiteral};
+terminal HexConstantUL_t /(0[xX][0-9A-Fa-f]+)(([Uu][Ll])|([Ll][Uu]))/ lexer classes {NumericLiteral};
+terminal HexConstantLL_t /(0[xX][0-9A-Fa-f]+)([Ll][Ll])/ lexer classes {NumericLiteral};
+terminal HexConstantULL_t /(0[xX][0-9A-Fa-f]+)(([Uu][Ll][Ll])|([Ll][Ll][Uu]))/ lexer classes {NumericLiteral};
 
 terminal FloatConstant_t /
 	(((([0-9]+[\.])|         -- end with do
 	  ([0-9]*[\.][0-9]+))    -- has dot
 	 ([Ee][\+\-]?[0-9]+)?)|  -- optional exponent
 	 ([0-9]+[Ee][\+\-]?[0-9]+)) -- No dot, mandatory exponent
-	/ lexer classes {Cliteral};
+	/ lexer classes {NumericLiteral};
 terminal FloatConstantFloat_t /
 	(((([0-9]+[\.])|         -- end with do
 	  ([0-9]*[\.][0-9]+))    -- has dot
 	 ([Ee][\+\-]?[0-9]+)?)|  -- optional exponent
 	 ([0-9]+[Ee][\+\-]?[0-9]+)) -- No dot, mandatory exponent
 	[Ff]
-	/ lexer classes {Cliteral};
+	/ lexer classes {NumericLiteral};
 terminal FloatConstantLongDouble_t /
 	(((([0-9]+[\.])|         -- end with do
 	  ([0-9]*[\.][0-9]+))    -- has dot
 	 ([Ee][\+\-]?[0-9]+)?)|  -- optional exponent
 	 ([0-9]+[Ee][\+\-]?[0-9]+)) -- No dot, mandatory exponent
 	[Ll]
-	/ lexer classes {Cliteral};
+	/ lexer classes {NumericLiteral};
 
 terminal HexFloatConstant_t /
 	0[xX]
 	(([a-fA-F0-9]+[\.]?)|
 	 ([a-fA-F0-9]*[\.][a-fA-F0-9]+))
 	([Pp][\+\-]?[0-9]+) -- mandatory exponent part
-	/ lexer classes {Cliteral};
+	/ lexer classes {NumericLiteral};
 terminal HexFloatConstantFloat_t /
 	0[xX]
 	(([a-fA-F0-9]+[\.]?)|
 	 ([a-fA-F0-9]*[\.][a-fA-F0-9]+))
 	([Pp][\+\-]?[0-9]+) -- mandatory exponent part
 	[Ff]
-	/ lexer classes {Cliteral};
+	/ lexer classes {NumericLiteral};
 terminal HexFloatConstantLongDouble_t /
 	0[xX]
 	(([a-fA-F0-9]+[\.]?)|
 	 ([a-fA-F0-9]*[\.][a-fA-F0-9]+))
 	([Pp][\+\-]?[0-9]+) -- mandatory exponent part
 	[Ll]
-	/ lexer classes {Cliteral};
+	/ lexer classes {NumericLiteral};
 
-terminal StringConstant_t      /[\"]([^\"\\]|[\\].)*[\"]/ lexer classes {Cstring, Cliteral};
-terminal StringConstantU8_t  /u8[\"]([^\"\\]|[\\].)*[\"]/ lexer classes {Cstring, Cliteral};
-terminal StringConstantL_t    /L[\"]([^\"\\]|[\\].)*[\"]/ lexer classes {Cstring, Cliteral};
-terminal StringConstantU_t    /u[\"]([^\"\\]|[\\].)*[\"]/ lexer classes {Cstring, Cliteral};
-terminal StringConstantUBig_t /U[\"]([^\"\\]|[\\].)*[\"]/ lexer classes {Cstring, Cliteral};
 
-terminal CharConstant_t      /[\']([^\']|[\\].)[\']/ lexer classes {Cstring, Cliteral};
-terminal CharConstantL_t    /L[\']([^\']|[\\].)[\']/ lexer classes {Cstring, Cliteral};
-terminal CharConstantU_t    /u[\']([^\']|[\\].)[\']/ lexer classes {Cstring, Cliteral};
-terminal CharConstantUBig_t /U[\']([^\']|[\\].)[\']/ lexer classes {Cstring, Cliteral};
+lexer class StringLiteral font = font_string;
+
+terminal StringConstant_t      /[\"]([^\"\\]|[\\].)*[\"]/ lexer classes {StringLiteral};
+terminal StringConstantU8_t  /u8[\"]([^\"\\]|[\\].)*[\"]/ lexer classes {StringLiteral};
+terminal StringConstantL_t    /L[\"]([^\"\\]|[\\].)*[\"]/ lexer classes {StringLiteral};
+terminal StringConstantU_t    /u[\"]([^\"\\]|[\\].)*[\"]/ lexer classes {StringLiteral};
+terminal StringConstantUBig_t /U[\"]([^\"\\]|[\\].)*[\"]/ lexer classes {StringLiteral};
+
+terminal CharConstant_t      /[\']([^\']|[\\].)[\']/ lexer classes {StringLiteral};
+terminal CharConstantL_t    /L[\']([^\']|[\\].)[\']/ lexer classes {StringLiteral};
+terminal CharConstantU_t    /u[\']([^\']|[\\].)[\']/ lexer classes {StringLiteral};
+terminal CharConstantUBig_t /U[\']([^\']|[\\].)[\']/ lexer classes {StringLiteral};
 
 
 {--
  - Keywords
+ -
+ - Keyword = things that should be considered keywords (e.g. for IDE highlighting)
+ - Reserved = things that lexically dominate identifiers
+ -
+ - Extensions can introduce new keywords, but generally shouldn't introduce lexical precedence
+ - relations, such as by introducing Reserved terminals.
  -}
+lexer class Keyword font = font_all;
+lexer class Reserved;
 
 
 -- types
-terminal Char_t     'char'     lexer classes {Ctype, Ckeyword};
-terminal Double_t   'double'   lexer classes {Ctype, Ckeyword};
-terminal Float_t    'float'    lexer classes {Ctype, Ckeyword};
-terminal Int_t      'int'      lexer classes {Ctype, Ckeyword};
-terminal Long_t     'long'     lexer classes {Ctype, Ckeyword};
-terminal Short_t    'short'    lexer classes {Ctype, Ckeyword};
-terminal Signed_t   'signed'   lexer classes {Ctype, Ckeyword};
-terminal Unsigned_t 'unsigned' lexer classes {Ctype, Ckeyword};
-terminal Void_t     'void'     lexer classes {Ctype, Ckeyword};
-terminal Bool_t     '_Bool'      lexer classes {Ctype, Ckeyword}; -- c99
-terminal Complex_t  '_Complex'   lexer classes {Ctype, Ckeyword}; -- c99
-terminal Imagin_t   '_Imaginary' lexer classes {Ctype, Ckeyword}; -- c99
+lexer class Type font = font_type;
+
+terminal Char_t     'char'     lexer classes {Type, Reserved};
+terminal Double_t   'double'   lexer classes {Type, Reserved};
+terminal Float_t    'float'    lexer classes {Type, Reserved};
+terminal Int_t      'int'      lexer classes {Type, Reserved};
+terminal Long_t     'long'     lexer classes {Type, Reserved};
+terminal Short_t    'short'    lexer classes {Type, Reserved};
+terminal Signed_t   'signed'   lexer classes {Type, Reserved};
+terminal Unsigned_t 'unsigned' lexer classes {Type, Reserved};
+terminal Void_t     'void'     lexer classes {Type, Reserved};
+terminal Bool_t     '_Bool'      lexer classes {Type, Reserved}; -- c99
+terminal Complex_t  '_Complex'   lexer classes {Type, Reserved}; -- c99
+terminal Imagin_t   '_Imaginary' lexer classes {Type, Reserved}; -- c99
 
 -- Er, Specifiers?
-terminal ENUM   'enum'   lexer classes {Ckeyword};
-terminal STRUCT 'struct' lexer classes {Ckeyword};
-terminal UNION  'union'  lexer classes {Ckeyword};
+terminal Enum_t   'enum'   lexer classes {Keyword, Reserved};
+terminal Struct_t 'struct' lexer classes {Keyword, Reserved};
+terminal Union_t  'union'  lexer classes {Keyword, Reserved};
 
 -- Qualifiers
-terminal Const_t    'const'    lexer classes {Ckeyword};
-terminal Volatile_t 'volatile' lexer classes {Ckeyword};
-terminal Restrict_t 'restrict' lexer classes {Ckeyword}; -- c99
+terminal Const_t    'const'    lexer classes {Keyword, Reserved};
+terminal Volatile_t 'volatile' lexer classes {Keyword, Reserved};
+terminal Restrict_t 'restrict' lexer classes {Keyword, Reserved}; -- c99
 
 -- Function specifiers
-terminal Inline_t   'inline'   lexer classes {Ckeyword}; -- c99
+terminal Inline_t   'inline'   lexer classes {Keyword, Reserved}; -- c99
 
 -- Storage class specifiers
-terminal Auto_t     'auto'     lexer classes {Ckeyword};
-terminal Extern_t   'extern'   lexer classes {Ckeyword};
-terminal Register_t 'register' lexer classes {Ckeyword};
-terminal Static_t   'static'   lexer classes {Ckeyword};
-terminal Typedef_t  'typedef'  lexer classes {Ckeyword};
+terminal Auto_t     'auto'     lexer classes {Keyword, Reserved};
+terminal Extern_t   'extern'   lexer classes {Keyword, Reserved};
+terminal Register_t 'register' lexer classes {Keyword, Reserved};
+terminal Static_t   'static'   lexer classes {Keyword, Reserved};
+terminal Typedef_t  'typedef'  lexer classes {Keyword, Reserved};
 
 -- Statement keywords
-terminal BREAK    'break'    lexer classes {Ckeyword};
-terminal CASE     'case'     lexer classes {Ckeyword};
-terminal CONTINUE 'continue' lexer classes {Ckeyword};
-terminal DEFAULT  'default'  lexer classes {Ckeyword};
-terminal DO       'do'       lexer classes {Ckeyword};
-terminal ELSE     'else'     lexer classes {Ckeyword}, precedence = 2, association = left;
-terminal FOR      'for'      lexer classes {Ckeyword};
-terminal GOTO     'goto'     lexer classes {Ckeyword};
-terminal IF       'if'       lexer classes {Ckeyword};
-terminal Return_t 'return'   lexer classes {Ckeyword};
-terminal SWITCH   'switch'   lexer classes {Ckeyword};
-terminal WHILE    'while'    lexer classes {Ckeyword};
+terminal Break_t    'break'    lexer classes {Keyword, Reserved};
+terminal Case_t     'case'     lexer classes {Keyword, Reserved};
+terminal Continue_t 'continue' lexer classes {Keyword, Reserved};
+terminal Default_t  'default'  lexer classes {Keyword, Reserved};
+terminal Do_t       'do'       lexer classes {Keyword, Reserved};
+terminal Else_t     'else'     lexer classes {Keyword, Reserved}, precedence = 2, association = left;
+terminal For_t      'for'      lexer classes {Keyword, Reserved};
+terminal Goto_t     'goto'     lexer classes {Keyword, Reserved};
+terminal If_t       'if'       lexer classes {Keyword, Reserved};
+terminal Return_t   'return'   lexer classes {Keyword, Reserved};
+terminal Switch_t   'switch'   lexer classes {Keyword, Reserved};
+terminal While_t    'while'    lexer classes {Keyword, Reserved};
 
 -- Expression keywords
-terminal SIZEOF   'sizeof'   lexer classes {Ckeyword};
+terminal Sizeof_t   'sizeof'   lexer classes {Keyword, Reserved};
 
 -- Structural symbols
 terminal Comma_t       ',';
@@ -249,55 +255,59 @@ terminal Colon_t       ':';
 
 -- Dereference operators
 terminal Dot_t         '.';
-terminal PTR_OP        '->';
+terminal PtrDot_t      '->';
 
 -- Assignment operators
-terminal Assign_t      '='    lexer classes {Cassignment};
-terminal RIGHT_ASSIGN  '>>='    lexer classes {Cassignment}; 
-terminal LEFT_ASSIGN   '<<='    lexer classes {Cassignment};
-terminal ADD_ASSIGN    '+='    lexer classes {Cassignment};
-terminal SUB_ASSIGN    '-='    lexer classes {Cassignment};
-terminal MUL_ASSIGN    '*='    lexer classes {Cassignment};
-terminal DIV_ASSIGN    '/='    lexer classes {Cassignment};
-terminal MOD_ASSIGN    '%='    lexer classes {Cassignment};
-terminal AND_ASSIGN    '&='    lexer classes {Cassignment};
-terminal XOR_ASSIGN    '^='    lexer classes {Cassignment};
-terminal OR_ASSIGN     '|='    lexer classes {Cassignment};
+lexer class Assignment font = font_equal;
+
+terminal Assign_t       '='     lexer classes {Assignment, Operator};
+terminal RightAssign_t  '>>='   lexer classes {Assignment, Operator}; 
+terminal LeftAssign_t   '<<='   lexer classes {Assignment, Operator};
+terminal AddAssign_t    '+='    lexer classes {Assignment, Operator};
+terminal SubAssign_t    '-='    lexer classes {Assignment, Operator};
+terminal MulAssign_t    '*='    lexer classes {Assignment, Operator};
+terminal DivAssign_t    '/='    lexer classes {Assignment, Operator};
+terminal ModAssign_t    '%='    lexer classes {Assignment, Operator};
+terminal AndAssign_t    '&='    lexer classes {Assignment, Operator};
+terminal XorAssign_t    '^='    lexer classes {Assignment, Operator};
+terminal OrAssign_t     '|='    lexer classes {Assignment, Operator};
+
+lexer class Operator font = font_special_symbol;
 
 -- Bit operators
-terminal And_t         '&'    lexer classes {Csymbol}; -- address of
-terminal Or_t          '|'    lexer classes {Csymbol};
-terminal Tilde_t       '~'    lexer classes {Csymbol};
-terminal Xor_t         '^'    lexer classes {Csymbol};
-terminal RIGHT_OP      '>>'    lexer classes {Csymbol};
-terminal LEFT_OP       '<<'    lexer classes {Csymbol};
+terminal And_t         '&'    lexer classes {Operator}; -- address of
+terminal Or_t          '|'    lexer classes {Operator};
+terminal Tilde_t       '~'    lexer classes {Operator};
+terminal Xor_t         '^'    lexer classes {Operator};
+terminal RightShift_t  '>>'   lexer classes {Operator};
+terminal LeftShift_t   '<<'   lexer classes {Operator};
 
 -- Numerical operators
-terminal Minus_t       '-'  precedence = 5, association = left, lexer classes {Csymbol}; -- negative
-terminal Plus_t        '+'  precedence = 5, association = left, lexer classes {Csymbol}; -- positive
-terminal Star_t        '*'  precedence = 6, association = left, lexer classes {Csymbol}; -- pointer, deref
-terminal Divide_t      '/'  precedence = 6, association = left, lexer classes {Csymbol};
+terminal Minus_t       '-'  precedence = 5, association = left, lexer classes {Operator}; -- negative
+terminal Plus_t        '+'  precedence = 5, association = left, lexer classes {Operator}; -- positive
+terminal Star_t        '*'  precedence = 6, association = left, lexer classes {Operator}; -- pointer, deref
+terminal Divide_t      '/'  precedence = 6, association = left, lexer classes {Operator};
 terminal Mod_t         '%';
 
 -- Logical operators
 terminal Not_t   '!';
-terminal AndOp_t '&&' precedence = 4, association = left, lexer classes {Csymbol};
-terminal OrOp_t  '||' precedence = 4, association = left, lexer classes {Csymbol};
+terminal AndOp_t '&&' precedence = 4, association = left, lexer classes {Operator};
+terminal OrOp_t  '||' precedence = 4, association = left, lexer classes {Operator};
 
 -- Comparison operators
-terminal LessThan_t         '<'  precedence = 3, association = left, lexer classes {Csymbol};
-terminal GreaterThan_t      '>'  precedence = 3, association = left, lexer classes {Csymbol};
-terminal LessThanEqual_t    '<=' precedence = 3, association = left, lexer classes {Csymbol};
-terminal GreaterThanEqual_t '>=' precedence = 3, association = left, lexer classes {Csymbol};
-terminal Equality_t         '==' precedence = 3, association = left, lexer classes {Csymbol};
-terminal NonEquality_t      '!=' precedence = 3, association = left, lexer classes {Csymbol};
+terminal LessThan_t         '<'  precedence = 3, association = left, lexer classes {Operator};
+terminal GreaterThan_t      '>'  precedence = 3, association = left, lexer classes {Operator};
+terminal LessThanEqual_t    '<=' precedence = 3, association = left, lexer classes {Operator};
+terminal GreaterThanEqual_t '>=' precedence = 3, association = left, lexer classes {Operator};
+terminal Equality_t         '==' precedence = 3, association = left, lexer classes {Operator};
+terminal NonEquality_t      '!=' precedence = 3, association = left, lexer classes {Operator};
 
 -- *crement operators
-terminal INC_OP        '++'    lexer classes {Csymbol};
-terminal DEC_OP        '--'    lexer classes {Csymbol};
+terminal Inc_t        '++'    lexer classes {Operator};
+terminal Dec_t        '--'    lexer classes {Operator};
 
 -- Varargs syntax
-terminal ELLIPSES      '...'    lexer classes {Csymbol};
+terminal Elipses_t      '...';
 
 -- High precedence empty terminal, for some reason?
 terminal Cpp_Attribute_high_prec '' precedence = 20;
