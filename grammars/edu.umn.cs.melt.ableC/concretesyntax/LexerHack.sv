@@ -30,7 +30,7 @@ parser attribute context :: [[Pair<String TerminalId>]]
 
 -- Here is the actual decision logic
 lexer class Identifier
-  submits to Reserved
+  submits to Reserved,
   disambiguate {
     local lookupResult::Maybe<TerminalId> =
       -- Look up the lexeme in the current context
@@ -43,16 +43,20 @@ lexer class Identifier
       | nothing() -> nothing()
       end;
     
-    -- In order of preference:
-    -- * Looked-up terminal from context
-    -- * Identifier_t, if valid
-    -- * TypeName_t, if valid
-    -- * Any (arbitrary) thing that is valid: if the parse succeeds there will
-    --   be a semantic error.
+    {- In order of preference:
+     - * Looked-up terminal from context
+     - * Any valid terminal from ScopedKeyword lexer class
+     - * Identifier_t, if valid
+     - * TypeName_t, if valid
+     - * Any (arbitrary) thing that is valid: if the parse succeeds there will
+     -   be a semantic error.
+     -}
     pluck
-      case lookupResult of
-      | just(id) -> id
-      | nothing() ->
+      case lookupResult, intersectBy(terminalIdEq, shiftable, ScopedReserved) of
+      | just(id), _ -> id
+      | nothing(), [id] -> id
+      | nothing(), _ :: _ -> disambiguationFailure
+      | nothing(), [] ->
         if containsBy(terminalIdEq, Identifier_t, shiftable)
         then Identifier_t
         else if containsBy(terminalIdEq, TypeName_t, shiftable)
@@ -60,6 +64,12 @@ lexer class Identifier
         else head(shiftable) -- Always has length >= 2
       end;
   };
+
+-- "scoped reserved" terminals are extension marking terminals that should be treated as
+-- identifiers that live in the outermost scope, and thus can be lexically shadowed.
+-- Extensions should use this class rather than Reserved, as marking terminals should not
+-- use lexical precedence.
+lexer class ScopedReserved extends Identifier;
 
 -- The logic that mutates the 'context' value is distributed amoung the rules
 -- elsewhere in the grammar. grep for 'action' to find them all.

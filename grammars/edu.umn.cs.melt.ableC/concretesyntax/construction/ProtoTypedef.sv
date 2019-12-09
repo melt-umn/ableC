@@ -6,14 +6,15 @@ imports edu:umn:cs:melt:ableC:concretesyntax;
 imports edu:umn:cs:melt:ableC:abstractsyntax:construction;
 imports edu:umn:cs:melt:ableC:abstractsyntax:host;
 
--- Needed for the lexer hack to work, allows specification of type names to add to lexer scope
+-- Needed for the lexer hack to work, when dealing with code fragments,
+-- allows specification of type names to add to lexer scope
 concrete production lexerHackProtoTypedefDecl
 top::Declaration_c ::= ProtoTypedef_c
 {
   top.ast = decls(nilDecl());
 }
 
-terminal LexerHackTypedefProto_t 'proto_typedef' lexer classes {Ckeyword};
+terminal LexerHackTypedefProto_t 'proto_typedef' lexer classes {Keyword, Reserved};
 
 nonterminal ProtoTypedef_c with location;
 
