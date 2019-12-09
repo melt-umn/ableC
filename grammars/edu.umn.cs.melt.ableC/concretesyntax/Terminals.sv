@@ -56,10 +56,12 @@ ignore terminal NewLine_t /[\n\r]+/
 {--
  - Identifiers: normal or type name.
  -}
+ 
+-- See LexerHack.sv for code related to disambiguation of these terminals.
+lexer class Identifier extends Scoped;
 
 terminal Identifier_t /[A-Za-z_\$][A-Za-z_0-9\$]*/ lexer classes {Identifier};
 terminal TypeName_t   /[A-Za-z_\$][A-Za-z_0-9\$]*/ lexer classes {Identifier, Type};
--- See LexerHack.sv for code related to disambiguation of these terminals.
 
 
 {--
