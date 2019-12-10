@@ -42,6 +42,9 @@ melt.trynode('ableC') {
       "ableC-nonnull",
       "ableC-sqlite",
       "ableC-templating",
+      
+      // Treat ableP like an extension since it depends on ableC
+      "ableP",
     ]
     /* These are now downstream of silver-ableC, so we don't build them here:
       "ableC-sample-projects",
@@ -56,17 +59,12 @@ melt.trynode('ableC') {
       "ableC-nondeterministic-search", "ableC-nondeterministic-search-benchmarks",
       "ableC-algebraic-data-types", "ableC-template-algebraic-data-types"
      */
-    // Specific other jobs to build
-    def specific_jobs = ["/melt-umn/ableP/master"]
 
     def tasks = [:]
     // SILVER_GEN should get inherited automatically
     def newargs = [SILVER_BASE: SILVER_BASE, ABLEC_BASE: ABLEC_BASE, ABLEC_GEN: ABLEC_GEN]
     tasks << extensions.collectEntries { t ->
       [(t): { melt.buildProject("/melt-umn/${t}", newargs) }]
-    }
-    tasks << specific_jobs.collectEntries { t ->
-      [(t): { melt.buildJob(t, newargs) }]
     }
     
     parallel tasks
