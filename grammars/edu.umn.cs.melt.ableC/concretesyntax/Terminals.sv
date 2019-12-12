@@ -252,12 +252,12 @@ disambiguate LCurly_t, TypeLCurly_t {
   pluck if allowStructEnumUnionDecl then TypeLCurly_t else LCurly_t;
 }
 
-terminal Question_t    '?';
-terminal Colon_t       ':';
+terminal Question_t    '?'    lexer classes {Operator};
+terminal Colon_t       ':'    lexer classes {Operator};
 
 -- Dereference operators
-terminal Dot_t         '.';
-terminal PtrDot_t      '->';
+terminal Dot_t         '.'    lexer classes {Operator};
+terminal PtrDot_t      '->'   lexer classes {Operator};
 
 -- Assignment operators
 lexer class Assignment font = font_equal;
