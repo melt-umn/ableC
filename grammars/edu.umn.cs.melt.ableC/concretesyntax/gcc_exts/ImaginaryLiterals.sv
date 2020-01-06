@@ -6,12 +6,12 @@ import edu:umn:cs:melt:ableC:abstractsyntax:injectable as inj;
 terminal IDecConstant_t /
 	((0)|([1-9][0-9]*)) -- Begins with 1-9 or is just 0 alone
 	[IiJj]
-	/ lexer classes {Cliteral};
-terminal IDecConstantU_t   /((0)|([1-9][0-9]*))(([Uu][IiJj])|([IiJj][Uu]))/ lexer classes {Cliteral};
-terminal IDecConstantL_t   /((0)|([1-9][0-9]*))(([Ll][IiJj])|([IiJj][Ll]))/ lexer classes {Cliteral};
-terminal IDecConstantUL_t  /((0)|([1-9][0-9]*))(([Uu][Ll][IiJj])|([Ll][Uu][IiJj])|([IiJj][Uu][Ll])|([IiJj][Ll][Uu])|([Uu][IiJj][Ll])|([Ll][IiJj][Uu]))/ lexer classes {Cliteral};
-terminal IDecConstantLL_t  /((0)|([1-9][0-9]*))(([Ll][Ll][IiJj])|([IiJj][Ll][Ll]))/ lexer classes {Cliteral};
-terminal IDecConstantULL_t /((0)|([1-9][0-9]*))(([Uu][Ll][Ll][IiJj])|([Ll][Ll][Uu][IiJj])|([IiJj][Uu][Ll][Ll])|([IiJj][Ll][Ll][Uu])|([Uu][IiJj][Ll][Ll])|([Ll][Ll][IiJj][Uu]))/ lexer classes {Cliteral};
+	/ lexer classes {NumericLiteral};
+terminal IDecConstantU_t   /((0)|([1-9][0-9]*))(([Uu][IiJj])|([IiJj][Uu]))/ lexer classes {NumericLiteral};
+terminal IDecConstantL_t   /((0)|([1-9][0-9]*))(([Ll][IiJj])|([IiJj][Ll]))/ lexer classes {NumericLiteral};
+terminal IDecConstantUL_t  /((0)|([1-9][0-9]*))(([Uu][Ll][IiJj])|([Ll][Uu][IiJj])|([IiJj][Uu][Ll])|([IiJj][Ll][Uu])|([Uu][IiJj][Ll])|([Ll][IiJj][Uu]))/ lexer classes {NumericLiteral};
+terminal IDecConstantLL_t  /((0)|([1-9][0-9]*))(([Ll][Ll][IiJj])|([IiJj][Ll][Ll]))/ lexer classes {NumericLiteral};
+terminal IDecConstantULL_t /((0)|([1-9][0-9]*))(([Uu][Ll][Ll][IiJj])|([Ll][Ll][Uu][IiJj])|([IiJj][Uu][Ll][Ll])|([IiJj][Ll][Ll][Uu])|([Uu][IiJj][Ll][Ll])|([Ll][Ll][IiJj][Uu]))/ lexer classes {NumericLiteral};
 
 terminal IFloatConstant_t /
 	(((([0-9]+[\.])|         -- end with do
@@ -19,21 +19,21 @@ terminal IFloatConstant_t /
 	 ([Ee][\+\-]?[0-9]+)?)|  -- optional exponent
 	 ([0-9]+[Ee][\+\-]?[0-9]+)) -- No dot, mandatory exponent
 	[IiJj]
-	/ lexer classes {Cliteral};
+	/ lexer classes {NumericLiteral};
 terminal IFloatConstantFloat_t /
 	(((([0-9]+[\.])|         -- end with do
 	  ([0-9]*[\.][0-9]+))    -- has dot
 	 ([Ee][\+\-]?[0-9]+)?)|  -- optional exponent
 	 ([0-9]+[Ee][\+\-]?[0-9]+)) -- No dot, mandatory exponent
 	(([IiJj][Ff])|([Ff][IiJj]))
-	/ lexer classes {Cliteral};
+	/ lexer classes {NumericLiteral};
 terminal IFloatConstantLongDouble_t /
 	(((([0-9]+[\.])|         -- end with do
 	  ([0-9]*[\.][0-9]+))    -- has dot
 	 ([Ee][\+\-]?[0-9]+)?)|  -- optional exponent
 	 ([0-9]+[Ee][\+\-]?[0-9]+)) -- No dot, mandatory exponent
 	(([IiJj][Ll])|([Ll][IiJj]))
-	/ lexer classes {Cliteral};
+	/ lexer classes {NumericLiteral};
 
 terminal IHexFloatConstant_t /
 	0[xX]
@@ -41,21 +41,21 @@ terminal IHexFloatConstant_t /
 	 ([a-fA-F0-9]*[\.][a-fA-F0-9]+))
 	([Pp][\+\-]?[0-9]+) -- mandatory exponent part
 	[IiJj]
-	/ lexer classes {Cliteral};
+	/ lexer classes {NumericLiteral};
 terminal IHexFloatConstantFloat_t /
 	0[xX]
 	(([a-fA-F0-9]+[\.]?)|
 	 ([a-fA-F0-9]*[\.][a-fA-F0-9]+))
 	([Pp][\+\-]?[0-9]+) -- mandatory exponent part
 	(([IiJj][Ff])|([Ff][IiJj]))
-	/ lexer classes {Cliteral};
+	/ lexer classes {NumericLiteral};
 terminal IHexFloatConstantLongDouble_t /
 	0[xX]
 	(([a-fA-F0-9]+[\.]?)|
 	 ([a-fA-F0-9]*[\.][a-fA-F0-9]+))
 	([Pp][\+\-]?[0-9]+) -- mandatory exponent part
 	(([IiJj][Ll])|([Ll][IiJj]))
-	/ lexer classes {Cliteral};
+	/ lexer classes {NumericLiteral};
 
 
 -- TODO: missing oct/hex ints
@@ -92,10 +92,10 @@ concrete productions top::Constant_c
     { top.ast = ast:imaginaryConstant(ast:hexFloatConstant(c.lexeme, ast:longDoubleFloatSuffix(), location=top.location), location=top.location); }
 
 
-terminal GNU_UUReal_t '__real' lexer classes {Ckeyword};
-terminal GNU_UURealUU_t '__real__' lexer classes {Ckeyword};
-terminal GNU_UUImag_t '__imag' lexer classes {Ckeyword};
-terminal GNU_UUImagUU_t '__imag__' lexer classes {Ckeyword};
+terminal GNU_UUReal_t '__real' lexer classes {Keyword, Reserved};
+terminal GNU_UURealUU_t '__real__' lexer classes {Keyword, Reserved};
+terminal GNU_UUImag_t '__imag' lexer classes {Keyword, Reserved};
+terminal GNU_UUImagUU_t '__imag__' lexer classes {Keyword, Reserved};
 
 concrete productions top::UnaryOp_c
 | '__real'  { top.ast = inj:realExpr(top.expr, location=top.location); }

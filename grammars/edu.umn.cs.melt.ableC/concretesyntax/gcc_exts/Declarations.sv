@@ -6,21 +6,21 @@ imports edu:umn:cs:melt:ableC:abstractsyntax:host as ast;
 imports edu:umn:cs:melt:ableC:abstractsyntax:construction as ast;
 imports silver:langutil;
 
-terminal CPP_Extension_t '__extension__' lexer classes {Ckeyword}, precedence=0;
-terminal CPP_Inline_OneSided_t '__inline' lexer classes {Ckeyword};
-terminal CPP_Inline_t '__inline__' lexer classes {Ckeyword};
-terminal CPP_Signed_t '__signed__' lexer classes {Ckeyword};
-terminal CPP_Volatile_t '__volatile__' lexer classes {Ckeyword};
-terminal CPP_UUVolatile_t '__volatile' lexer classes {Ckeyword};
-terminal UUConst_t '__const' lexer classes { Ckeyword };
-terminal UUBuiltinVAList_t '__builtin_va_list' lexer classes {Ckeyword};
-terminal UURestrict_t '__restrict' lexer classes { Ckeyword };
-terminal UURestrictUU_t '__restrict__' lexer classes { Ckeyword };
-terminal Typeof_t 'typeof' lexer classes {Ckeyword};
-terminal CPP_Typeof_t '__typeof__' lexer classes {Ckeyword};
-terminal CPP_UUTypeof_t '__typeof' lexer classes {Ckeyword};
-terminal Float128_t '_Float128' lexer classes {Ckeyword};
-terminal Int128_t '__int128' lexer classes {Ckeyword};
+terminal CPP_Extension_t '__extension__' lexer classes {Keyword, Reserved}, precedence=0;
+terminal CPP_Inline_OneSided_t '__inline' lexer classes {Keyword, Reserved};
+terminal CPP_Inline_t '__inline__' lexer classes {Keyword, Reserved};
+terminal CPP_Signed_t '__signed__' lexer classes {Keyword, Reserved};
+terminal CPP_Volatile_t '__volatile__' lexer classes {Keyword, Reserved};
+terminal CPP_UUVolatile_t '__volatile' lexer classes {Keyword, Reserved};
+terminal UUConst_t '__const' lexer classes { Keyword, Reserved };
+terminal UUBuiltinVAList_t '__builtin_va_list' lexer classes {Keyword, Reserved};
+terminal UURestrict_t '__restrict' lexer classes { Keyword, Reserved };
+terminal UURestrictUU_t '__restrict__' lexer classes { Keyword, Reserved };
+terminal Typeof_t 'typeof' lexer classes {Keyword, Reserved};
+terminal CPP_Typeof_t '__typeof__' lexer classes {Keyword, Reserved};
+terminal CPP_UUTypeof_t '__typeof' lexer classes {Keyword, Reserved};
+terminal Float128_t '_Float128' lexer classes {Keyword, Reserved};
+terminal Int128_t '__int128' lexer classes {Keyword, Reserved};
 
 concrete productions top::TranslationUnit_c
 | h::TranslationUnit_c  ';' 
