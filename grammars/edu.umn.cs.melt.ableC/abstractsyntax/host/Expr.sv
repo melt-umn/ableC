@@ -29,7 +29,7 @@ top::Expr ::= msg::[Message]
   top.defs := [];
   top.freeVariables := [];
   top.typerep = errorType();
-  top.isSimple = true;
+  top.isSimple = false;
 }
 -- TODO, this production is interfering and could lose errors in an analysis
 abstract production warnExpr
