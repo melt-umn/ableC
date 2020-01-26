@@ -9,22 +9,22 @@ imports edu:umn:cs:melt:ableC:abstractsyntax:host;
 
 global normalizeDecProds::Strategy =
   rule on Decl of
-  | decDecl(a) -> new(a)
+  | decDecl(a) -> a
   end <+
   rule on Stmt of
-  | decStmt(a) -> new(a)
+  | decStmt(a) -> a
   end <+
   rule on Expr of
-  | decExpr(a) -> new(a)
+  | decExpr(a) -> a
   end <+
   rule on Exprs of
-  | decExprs(a) -> new(a)
+  | decExprs(a) -> a
   end <+
   rule on BaseTypeExpr of
-  | decTypeExpr(a) -> new(a)
+  | decTypeExpr(a) -> a
   end <+
   rule on TypeModifierExpr of
-  | decTypeModifierExpr(a) -> new(a)
+  | decTypeModifierExpr(a) -> a
   end;
 
 abstract production topDownSubs
