@@ -16,6 +16,7 @@ top::Expr ::= c::NumericConstant
   top.freeVariables := [];
   top.typerep = builtinType(nilQualifier(), c.constanttyperep);
   top.isLValue = false;
+  top.isSimple = true;
   top.integerConstantValue = c.integerConstantValue;
 }
 abstract production imaginaryConstant
@@ -34,6 +35,7 @@ top::Expr ::= c::NumericConstant
     | unsignedType(it) -> complexIntegerType(it) -- probably not possible, but buggy!
     end);
   top.isLValue = false;
+  top.isSimple = true;
 }
 abstract production characterConstant
 top::Expr ::= num::String  c::CharPrefix
@@ -47,6 +49,7 @@ top::Expr ::= num::String  c::CharPrefix
   top.freeVariables := [];
   top.typerep = builtinType(nilQualifier(), signedType(charType())); -- TODO: no idea
   top.isLValue = false;
+  top.isSimple = true;
 }
 
 nonterminal NumericConstant with location, pp, mangledName, host<NumericConstant>, errors, env, constanttyperep, integerConstantValue;

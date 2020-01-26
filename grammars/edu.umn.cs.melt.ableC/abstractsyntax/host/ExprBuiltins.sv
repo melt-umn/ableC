@@ -39,6 +39,7 @@ top::Expr ::= ty::TypeName  e::MemberDesignator
   top.freeVariables := ty.freeVariables ++ e.freeVariables;
   top.typerep = builtinType(nilQualifier(), signedType(intType()));
   top.isLValue = false;
+  top.isSimple = true;
 }
 
 nonterminal MemberDesignator with pp, host<MemberDesignator>, errors, globalDecls, functionDecls, defs, env, returnType, freeVariables;
