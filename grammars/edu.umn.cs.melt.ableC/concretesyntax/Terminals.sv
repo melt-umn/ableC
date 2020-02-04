@@ -1,6 +1,9 @@
 grammar edu:umn:cs:melt:ableC:concretesyntax;
 
-{- The prefix seperator indicates a string that is written between
+{- This lexer class is a common superclass for all terminals in ableC.
+   Currently the only use for this is to define the prefix seperator.
+
+   The prefix seperator indicates a string that is written between
    transparent prefixes and the following marking terminal that has a
    lexical ambiguity with another extension.  This is used in
    generating the regular expression for the transparent prefix
@@ -12,7 +15,8 @@ grammar edu:umn:cs:melt:ableC:concretesyntax;
    should pick a prefix separator that is driven by syntax in object
    language (here, C) and not on Silver's syntax.
 -}
-prefix separator "::";
+lexer class AbleC
+  prefix separator "::";
 
 {--
  - Fonts for legacy eclipse IDE plugin
@@ -28,7 +32,7 @@ temp_imp_ide_font font_equal color(71, 71, 141) bold;
 {--
  - Comments
  -}
-lexer class Comment font = font_comments;
+lexer class Comment extends AbleC, font = font_comments;
 
 ignore terminal LineComment
   /[\/][\/].*/ 
@@ -57,7 +61,7 @@ ignore terminal NewLine_t /[\n\r]+/
  - Identifiers: normal or type name.
  -}
  
-lexer class Identifier;
+lexer class Identifier extends AbleC;
 
 -- See LexerHack.sv for code related to disambiguation of these terminals.
 terminal Identifier_t /[A-Za-z_\$][A-Za-z_0-9\$]*/ lexer classes {Identifier, Scoped};
@@ -67,7 +71,7 @@ terminal TypeName_t   /[A-Za-z_\$][A-Za-z_0-9\$]*/ lexer classes {Type, Identifi
 {--
  - Literals
  -}
-lexer class NumericLiteral;
+lexer class NumericLiteral extends AbleC;
 
 terminal DecConstant_t /
 	((0)|([1-9][0-9]*)) -- Begins with 1-9 or is just 0 alone
@@ -141,7 +145,7 @@ terminal HexFloatConstantLongDouble_t /
 	/ lexer classes {NumericLiteral};
 
 
-lexer class StringLiteral font = font_string;
+lexer class StringLiteral extends AbleC, font = font_string;
 
 terminal StringConstant_t      /[\"]([^\"\\]|[\\].)*[\"]/ lexer classes {StringLiteral};
 terminal StringConstantU8_t  /u8[\"]([^\"\\]|[\\].)*[\"]/ lexer classes {StringLiteral};
@@ -163,13 +167,16 @@ terminal CharConstantUBig_t /U[\']([^\']|[\\].)[\']/ lexer classes {StringLitera
  -
  - Extensions can introduce new keywords, but generally shouldn't introduce lexical precedence
  - relations, such as by introducing Reserved terminals.
+ -
+ - Note that Reserved doesn't extend AbleC, other host languages/extensions using AbleC
+ - as a DSL may define terminals in this lexer class.
  -}
-lexer class Keyword font = font_all;
+lexer class Keyword extends AbleC, font = font_all;
 lexer class Reserved;
 
 
 -- types
-lexer class Type font = font_type;
+lexer class Type extends AbleC, font = font_type;
 
 terminal Char_t     'char'     lexer classes {Type, Reserved};
 terminal Double_t   'double'   lexer classes {Type, Reserved};
@@ -260,19 +267,19 @@ terminal Dot_t         '.'    lexer classes {Operator};
 terminal PtrDot_t      '->'   lexer classes {Operator};
 
 -- Assignment operators
-lexer class Assignment font = font_equal;
+lexer class Assignment extends Operator, font = font_equal;
 
-terminal Assign_t       '='     lexer classes {Assignment, Operator};
-terminal RightAssign_t  '>>='   lexer classes {Assignment, Operator}; 
-terminal LeftAssign_t   '<<='   lexer classes {Assignment, Operator};
-terminal AddAssign_t    '+='    lexer classes {Assignment, Operator};
-terminal SubAssign_t    '-='    lexer classes {Assignment, Operator};
-terminal MulAssign_t    '*='    lexer classes {Assignment, Operator};
-terminal DivAssign_t    '/='    lexer classes {Assignment, Operator};
-terminal ModAssign_t    '%='    lexer classes {Assignment, Operator};
-terminal AndAssign_t    '&='    lexer classes {Assignment, Operator};
-terminal XorAssign_t    '^='    lexer classes {Assignment, Operator};
-terminal OrAssign_t     '|='    lexer classes {Assignment, Operator};
+terminal Assign_t       '='     lexer classes {Assignment};
+terminal RightAssign_t  '>>='   lexer classes {Assignment}; 
+terminal LeftAssign_t   '<<='   lexer classes {Assignment};
+terminal AddAssign_t    '+='    lexer classes {Assignment};
+terminal SubAssign_t    '-='    lexer classes {Assignment};
+terminal MulAssign_t    '*='    lexer classes {Assignment};
+terminal DivAssign_t    '/='    lexer classes {Assignment};
+terminal ModAssign_t    '%='    lexer classes {Assignment};
+terminal AndAssign_t    '&='    lexer classes {Assignment};
+terminal XorAssign_t    '^='    lexer classes {Assignment};
+terminal OrAssign_t     '|='    lexer classes {Assignment};
 
 lexer class Operator font = font_special_symbol;
 
