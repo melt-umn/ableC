@@ -270,7 +270,7 @@ terminal PtrDot_t      '->'   lexer classes {Operator};
 lexer class Assignment extends Operator, font = font_equal;
 
 terminal Assign_t       '='     lexer classes {Assignment};
-terminal RightAssign_t  '>>='   lexer classes {Assignment}; 
+terminal RightAssign_t  '>>='   lexer classes {Assignment};
 terminal LeftAssign_t   '<<='   lexer classes {Assignment};
 terminal AddAssign_t    '+='    lexer classes {Assignment};
 terminal SubAssign_t    '-='    lexer classes {Assignment};
