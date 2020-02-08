@@ -34,11 +34,11 @@ temp_imp_ide_font font_equal color(71, 71, 141) bold;
  -}
 lexer class Comment extends AbleC, font = font_comments;
 
-ignore terminal LineComment
+ignore terminal LineComment_t
   /[\/][\/].*/ 
   lexer classes {Comment};
 
-ignore terminal BlockComment 
+ignore terminal BlockComment_t
   /[\/][\*]([^\*]|[\r\n]|([\*]+([^\*\/]|[\r\n])))*[\*]+[\/]/ 
   lexer classes {Comment};
 
