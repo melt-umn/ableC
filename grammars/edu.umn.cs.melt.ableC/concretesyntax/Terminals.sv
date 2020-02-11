@@ -30,7 +30,7 @@ temp_imp_ide_font font_equal color(71, 71, 141) bold;
 
 
 {--
- - Comments
+ - Comments and whitespace
  -}
 lexer class Comment extends AbleC, font = font_comments;
 
@@ -42,20 +42,16 @@ ignore terminal BlockComment_t
   /[\/][\*]([^\*]|[\r\n]|([\*]+([^\*\/]|[\r\n])))*[\*]+[\/]/ 
   lexer classes {Comment};
 
-{-
-ignore terminal WhiteSpace
-  /[\n\r\t\ ]+/ 
-  lexer classes {Comment};
--}
+lexer class WhiteSpace extends AbleC;
 
 -- The following need to be separated for tables without white space
 -- to work.  See edu:umn:cs:melt:exts:ableC:tablesWS.
 ignore terminal Spaces_t 
   /[\t\ ]+/ 
-  lexer classes {Comment};
+  lexer classes {WhiteSpace};
 
 ignore terminal NewLine_t /[\n\r]+/ 
-  lexer classes {Comment};
+  lexer classes {WhiteSpace};
 
 {--
  - Identifiers: normal or type name.
@@ -259,6 +255,8 @@ disambiguate LCurly_t, TypeLCurly_t {
   pluck if allowStructEnumUnionDecl then TypeLCurly_t else LCurly_t;
 }
 
+lexer class Operator extends AbleC, font = font_special_symbol;
+
 terminal Question_t    '?'    lexer classes {Operator};
 terminal Colon_t       ':'    lexer classes {Operator};
 
@@ -280,8 +278,6 @@ terminal ModAssign_t    '%='    lexer classes {Assignment};
 terminal AndAssign_t    '&='    lexer classes {Assignment};
 terminal XorAssign_t    '^='    lexer classes {Assignment};
 terminal OrAssign_t     '|='    lexer classes {Assignment};
-
-lexer class Operator font = font_special_symbol;
 
 -- Bit operators
 terminal And_t         '&'    lexer classes {Operator}; -- address of
