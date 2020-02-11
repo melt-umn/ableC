@@ -166,7 +166,7 @@ terminal CharConstantUBig_t /U[\']([^\']|[\\].)[\']/ lexer classes {StringLitera
  - Reserved = things that lexically dominate identifiers
  -
  - Extensions can introduce new keywords, but generally shouldn't introduce lexical precedence
- - relations, such as by introducing Reserved terminals.
+ - relations involving host terminals, such as by introducing Reserved terminals.
  -
  - Note that Reserved doesn't extend AbleC, other host languages/extensions using AbleC
  - as a DSL may define terminals in this lexer class.
