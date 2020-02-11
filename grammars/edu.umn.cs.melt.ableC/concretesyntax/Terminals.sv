@@ -259,6 +259,8 @@ disambiguate LCurly_t, TypeLCurly_t {
   pluck if allowStructEnumUnionDecl then TypeLCurly_t else LCurly_t;
 }
 
+lexer class Operator extends AbleC, font = font_special_symbol;
+
 terminal Question_t    '?'    lexer classes {Operator};
 terminal Colon_t       ':'    lexer classes {Operator};
 
@@ -280,8 +282,6 @@ terminal ModAssign_t    '%='    lexer classes {Assignment};
 terminal AndAssign_t    '&='    lexer classes {Assignment};
 terminal XorAssign_t    '^='    lexer classes {Assignment};
 terminal OrAssign_t     '|='    lexer classes {Assignment};
-
-lexer class Operator font = font_special_symbol;
 
 -- Bit operators
 terminal And_t         '&'    lexer classes {Operator}; -- address of
