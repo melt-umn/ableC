@@ -30,7 +30,7 @@ temp_imp_ide_font font_equal color(71, 71, 141) bold;
 
 
 {--
- - Comments
+ - Comments and whitespace
  -}
 lexer class Comment extends AbleC, font = font_comments;
 
@@ -42,20 +42,16 @@ ignore terminal BlockComment_t
   /[\/][\*]([^\*]|[\r\n]|([\*]+([^\*\/]|[\r\n])))*[\*]+[\/]/ 
   lexer classes {Comment};
 
-{-
-ignore terminal WhiteSpace
-  /[\n\r\t\ ]+/ 
-  lexer classes {Comment};
--}
+lexer class WhiteSpace extends AbleC;
 
 -- The following need to be separated for tables without white space
 -- to work.  See edu:umn:cs:melt:exts:ableC:tablesWS.
 ignore terminal Spaces_t 
   /[\t\ ]+/ 
-  lexer classes {Comment};
+  lexer classes {WhiteSpace};
 
 ignore terminal NewLine_t /[\n\r]+/ 
-  lexer classes {Comment};
+  lexer classes {WhiteSpace};
 
 {--
  - Identifiers: normal or type name.
