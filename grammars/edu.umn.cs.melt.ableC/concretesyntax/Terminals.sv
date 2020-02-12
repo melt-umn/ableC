@@ -70,18 +70,16 @@ terminal TypeName_t   /[A-Za-z_\$][A-Za-z_0-9\$]*/ lexer classes {Type, Identifi
  -}
 lexer class NumericLiteral extends AbleC;
 
-terminal DecConstant_t /
-	((0)|([1-9][0-9]*)) -- Begins with 1-9 or is just 0 alone
-	/ lexer classes {NumericLiteral};
+-- Begins with 1-9 or is just 0 alone
+terminal DecConstant_t /((0)|([1-9][0-9]*))/ lexer classes {NumericLiteral};
 terminal DecConstantU_t   /((0)|([1-9][0-9]*))([Uu])/ lexer classes {NumericLiteral};
 terminal DecConstantL_t   /((0)|([1-9][0-9]*))([Ll])/ lexer classes {NumericLiteral};
 terminal DecConstantUL_t  /((0)|([1-9][0-9]*))(([Uu][Ll])|([Ll][Uu]))/ lexer classes {NumericLiteral};
 terminal DecConstantLL_t  /((0)|([1-9][0-9]*))([Ll][Ll])/ lexer classes {NumericLiteral};
 terminal DecConstantULL_t /((0)|([1-9][0-9]*))(([Uu][Ll][Ll])|([Ll][Ll][Uu]))/ lexer classes {NumericLiteral};
 
-terminal OctConstant_t /
-	(0[0-7]+)           -- Begins with 0 AND has more digits
-	/ lexer classes {NumericLiteral};
+-- Begins with 0 AND has more digits
+terminal OctConstant_t /(0[0-7]+)/ lexer classes {NumericLiteral};
 terminal OctConstantU_t   /(0[0-7]+)([Uu])/ lexer classes {NumericLiteral};
 terminal OctConstantL_t   /(0[0-7]+)([Ll])/ lexer classes {NumericLiteral};
 terminal OctConstantUL_t  /(0[0-7]+)(([Uu][Ll])|([Ll][Uu]))/ lexer classes {NumericLiteral};
@@ -90,56 +88,59 @@ terminal OctConstantULL_t /(0[0-7]+)(([Uu][Ll][Ll])|([Ll][Ll][Uu]))/ lexer class
 -- Specially recognize octal constants with 8 or 9 in them. (n.b. submits to, not class literal)
 terminal OctConstantError_t /(0[0-9]+)[uUlL]*/ submits to {NumericLiteral};
 
-terminal HexConstant_t /
-	(0[xX][0-9A-Fa-f]+) -- Begins with 0x and has more digits
-	/ lexer classes {NumericLiteral};
+-- Begins with 0x and has more digits
+terminal HexConstant_t /(0[xX][0-9A-Fa-f]+)/ lexer classes {NumericLiteral};
 terminal HexConstantU_t /(0[xX][0-9A-Fa-f]+)([Uu])/ lexer classes {NumericLiteral};
 terminal HexConstantL_t /(0[xX][0-9A-Fa-f]+)([Ll])/ lexer classes {NumericLiteral};
 terminal HexConstantUL_t /(0[xX][0-9A-Fa-f]+)(([Uu][Ll])|([Ll][Uu]))/ lexer classes {NumericLiteral};
 terminal HexConstantLL_t /(0[xX][0-9A-Fa-f]+)([Ll][Ll])/ lexer classes {NumericLiteral};
 terminal HexConstantULL_t /(0[xX][0-9A-Fa-f]+)(([Uu][Ll][Ll])|([Ll][Ll][Uu]))/ lexer classes {NumericLiteral};
 
-terminal FloatConstant_t /
-	(((([0-9]+[\.])|         -- end with do
+{- 	(((([0-9]+[\.])|         -- end with do
 	  ([0-9]*[\.][0-9]+))    -- has dot
 	 ([Ee][\+\-]?[0-9]+)?)|  -- optional exponent
 	 ([0-9]+[Ee][\+\-]?[0-9]+)) -- No dot, mandatory exponent
-	/ lexer classes {NumericLiteral};
-terminal FloatConstantFloat_t /
-	(((([0-9]+[\.])|         -- end with do
-	  ([0-9]*[\.][0-9]+))    -- has dot
-	 ([Ee][\+\-]?[0-9]+)?)|  -- optional exponent
-	 ([0-9]+[Ee][\+\-]?[0-9]+)) -- No dot, mandatory exponent
-	[Ff]
-	/ lexer classes {NumericLiteral};
-terminal FloatConstantLongDouble_t /
-	(((([0-9]+[\.])|         -- end with do
-	  ([0-9]*[\.][0-9]+))    -- has dot
-	 ([Ee][\+\-]?[0-9]+)?)|  -- optional exponent
-	 ([0-9]+[Ee][\+\-]?[0-9]+)) -- No dot, mandatory exponent
-	[Ll]
-	/ lexer classes {NumericLiteral};
+ -}
+terminal FloatConstant_t /(((([0-9]+[\.])|([0-9]*[\.][0-9]+))([Ee][\+\-]?[0-9]+)?)|([0-9]+[Ee][\+\-]?[0-9]+))/ lexer classes {NumericLiteral};
 
-terminal HexFloatConstant_t /
-	0[xX]
+{-	(((([0-9]+[\.])|         -- end with do
+	  ([0-9]*[\.][0-9]+))    -- has dot
+	 ([Ee][\+\-]?[0-9]+)?)|  -- optional exponent
+	 ([0-9]+[Ee][\+\-]?[0-9]+)) -- No dot, mandatory exponent
+	[Ff]
+ -}
+terminal FloatConstantFloat_t /(((([0-9]+[\.])|([0-9]*[\.][0-9]+))([Ee][\+\-]?[0-9]+)?)|([0-9]+[Ee][\+\-]?[0-9]+))[Ff]/ lexer classes {NumericLiteral};
+
+{-	(((([0-9]+[\.])|         -- end with do
+	  ([0-9]*[\.][0-9]+))    -- has dot
+	 ([Ee][\+\-]?[0-9]+)?)|  -- optional exponent
+	 ([0-9]+[Ee][\+\-]?[0-9]+)) -- No dot, mandatory exponent
+	[Ll]
+-}
+terminal FloatConstantLongDouble_t /(((([0-9]+[\.])|([0-9]*[\.][0-9]+))([Ee][\+\-]?[0-9]+)?)|([0-9]+[Ee][\+\-]?[0-9]+))[Ll]/ lexer classes {NumericLiteral};
+
+{-	0[xX]
 	(([a-fA-F0-9]+[\.]?)|
 	 ([a-fA-F0-9]*[\.][a-fA-F0-9]+))
 	([Pp][\+\-]?[0-9]+) -- mandatory exponent part
-	/ lexer classes {NumericLiteral};
-terminal HexFloatConstantFloat_t /
-	0[xX]
+-}
+terminal HexFloatConstant_t /0[xX](([a-fA-F0-9]+[\.]?)|([a-fA-F0-9]*[\.][a-fA-F0-9]+))([Pp][\+\-]?[0-9]+)/ lexer classes {NumericLiteral};
+
+{-	0[xX]
 	(([a-fA-F0-9]+[\.]?)|
 	 ([a-fA-F0-9]*[\.][a-fA-F0-9]+))
 	([Pp][\+\-]?[0-9]+) -- mandatory exponent part
 	[Ff]
-	/ lexer classes {NumericLiteral};
-terminal HexFloatConstantLongDouble_t /
-	0[xX]
+-}
+terminal HexFloatConstantFloat_t /0[xX](([a-fA-F0-9]+[\.]?)|([a-fA-F0-9]*[\.][a-fA-F0-9]+))([Pp][\+\-]?[0-9]+)[Ff]/ lexer classes {NumericLiteral};
+
+{-	0[xX]
 	(([a-fA-F0-9]+[\.]?)|
 	 ([a-fA-F0-9]*[\.][a-fA-F0-9]+))
 	([Pp][\+\-]?[0-9]+) -- mandatory exponent part
 	[Ll]
-	/ lexer classes {NumericLiteral};
+-}
+terminal HexFloatConstantLongDouble_t /0[xX](([a-fA-F0-9]+[\.]?)|([a-fA-F0-9]*[\.][a-fA-F0-9]+))([Pp][\+\-]?[0-9]+)[Ll]/ lexer classes {NumericLiteral};
 
 
 lexer class StringLiteral extends AbleC, font = font_string;
