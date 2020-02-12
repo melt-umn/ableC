@@ -36,11 +36,11 @@ lexer class Comment extends AbleC, font = font_comments;
 
 -- The C preprocessor strips these for us, but handle them here for completeness.
 ignore terminal LineComment_t
-  /[\/][\/].*/ 
+  /[/][/].*/
   lexer classes {Comment};
 
 ignore terminal BlockComment_t
-  /[\/][\*]([^\*]|[\r\n]|([\*]+([^\*\/]|[\r\n])))*[\*]+[\/]/ 
+  /[/][*]([^*]|[\r\n]|([*]+([^*/]|[\r\n])))*[*]+[/]/
   lexer classes {Comment};
 
 lexer class WhiteSpace extends AbleC;
@@ -48,10 +48,10 @@ lexer class WhiteSpace extends AbleC;
 -- The following need to be separated for tables without white space
 -- to work.  See edu:umn:cs:melt:exts:ableC:tablesWS.
 ignore terminal Spaces_t 
-  /[\t\ ]+/ 
+  /[\t ]+/
   lexer classes {WhiteSpace};
 
-ignore terminal NewLine_t /[\n\r]+/ 
+ignore terminal NewLine_t /[\n\r]+/
   lexer classes {WhiteSpace};
 
 {--
@@ -96,65 +96,65 @@ terminal HexConstantUL_t /(0[xX][0-9A-Fa-f]+)(([Uu][Ll])|([Ll][Uu]))/ lexer clas
 terminal HexConstantLL_t /(0[xX][0-9A-Fa-f]+)([Ll][Ll])/ lexer classes {NumericLiteral};
 terminal HexConstantULL_t /(0[xX][0-9A-Fa-f]+)(([Uu][Ll][Ll])|([Ll][Ll][Uu]))/ lexer classes {NumericLiteral};
 
-{- 	(((([0-9]+[\.])|         -- end with do
-	  ([0-9]*[\.][0-9]+))    -- has dot
-	 ([Ee][\+\-]?[0-9]+)?)|  -- optional exponent
-	 ([0-9]+[Ee][\+\-]?[0-9]+)) -- No dot, mandatory exponent
+{- 	(((([0-9]+[.])|         -- end with do
+	  ([0-9]*[.][0-9]+))    -- has dot
+	 ([Ee][-+]?[0-9]+)?)|	-- optional exponent
+	 ([0-9]+[Ee][-+]?[0-9]+)) -- No dot, mandatory exponent
  -}
-terminal FloatConstant_t /(((([0-9]+[\.])|([0-9]*[\.][0-9]+))([Ee][\+\-]?[0-9]+)?)|([0-9]+[Ee][\+\-]?[0-9]+))/ lexer classes {NumericLiteral};
+terminal FloatConstant_t /(((([0-9]+[.])|([0-9]*[.][0-9]+))([Ee][-+]?[0-9]+)?)|([0-9]+[Ee][-+]?[0-9]+))/ lexer classes {NumericLiteral};
 
-{-	(((([0-9]+[\.])|         -- end with do
-	  ([0-9]*[\.][0-9]+))    -- has dot
-	 ([Ee][\+\-]?[0-9]+)?)|  -- optional exponent
-	 ([0-9]+[Ee][\+\-]?[0-9]+)) -- No dot, mandatory exponent
+{-	(((([0-9]+[.])|         -- end with do
+	  ([0-9]*[.][0-9]+))    -- has dot
+	 ([Ee][-+]?[0-9]+)?)|	-- optional exponent
+	 ([0-9]+[Ee][-+]?[0-9]+)) -- No dot, mandatory exponent
 	[Ff]
  -}
-terminal FloatConstantFloat_t /(((([0-9]+[\.])|([0-9]*[\.][0-9]+))([Ee][\+\-]?[0-9]+)?)|([0-9]+[Ee][\+\-]?[0-9]+))[Ff]/ lexer classes {NumericLiteral};
+terminal FloatConstantFloat_t /(((([0-9]+[.])|([0-9]*[.][0-9]+))([Ee][-+]?[0-9]+)?)|([0-9]+[Ee][-+]?[0-9]+))[Ff]/ lexer classes {NumericLiteral};
 
-{-	(((([0-9]+[\.])|         -- end with do
-	  ([0-9]*[\.][0-9]+))    -- has dot
-	 ([Ee][\+\-]?[0-9]+)?)|  -- optional exponent
-	 ([0-9]+[Ee][\+\-]?[0-9]+)) -- No dot, mandatory exponent
+{-	(((([0-9]+[.])|         -- end with do
+	  ([0-9]*[.][0-9]+))    -- has dot
+	 ([Ee][-+]?[0-9]+)?)|	-- optional exponent
+	 ([0-9]+[Ee][-+]?[0-9]+)) -- No dot, mandatory exponent
 	[Ll]
 -}
-terminal FloatConstantLongDouble_t /(((([0-9]+[\.])|([0-9]*[\.][0-9]+))([Ee][\+\-]?[0-9]+)?)|([0-9]+[Ee][\+\-]?[0-9]+))[Ll]/ lexer classes {NumericLiteral};
+terminal FloatConstantLongDouble_t /(((([0-9]+[.])|([0-9]*[.][0-9]+))([Ee][-+]?[0-9]+)?)|([0-9]+[Ee][-+]?[0-9]+))[Ll]/ lexer classes {NumericLiteral};
 
 {-	0[xX]
-	(([a-fA-F0-9]+[\.]?)|
-	 ([a-fA-F0-9]*[\.][a-fA-F0-9]+))
-	([Pp][\+\-]?[0-9]+) -- mandatory exponent part
+	(([a-fA-F0-9]+[.]?)|
+	 ([a-fA-F0-9]*[.][a-fA-F0-9]+))
+	([Pp][-+]?[0-9]+) -- mandatory exponent part
 -}
-terminal HexFloatConstant_t /0[xX](([a-fA-F0-9]+[\.]?)|([a-fA-F0-9]*[\.][a-fA-F0-9]+))([Pp][\+\-]?[0-9]+)/ lexer classes {NumericLiteral};
+terminal HexFloatConstant_t /0[xX](([a-fA-F0-9]+[.]?)|([a-fA-F0-9]*[.][a-fA-F0-9]+))([Pp][-+]?[0-9]+)/ lexer classes {NumericLiteral};
 
 {-	0[xX]
-	(([a-fA-F0-9]+[\.]?)|
-	 ([a-fA-F0-9]*[\.][a-fA-F0-9]+))
-	([Pp][\+\-]?[0-9]+) -- mandatory exponent part
+	(([a-fA-F0-9]+[.]?)|
+	 ([a-fA-F0-9]*[.][a-fA-F0-9]+))
+	([Pp][-+]?[0-9]+) -- mandatory exponent part
 	[Ff]
 -}
-terminal HexFloatConstantFloat_t /0[xX](([a-fA-F0-9]+[\.]?)|([a-fA-F0-9]*[\.][a-fA-F0-9]+))([Pp][\+\-]?[0-9]+)[Ff]/ lexer classes {NumericLiteral};
+terminal HexFloatConstantFloat_t /0[xX](([a-fA-F0-9]+[.]?)|([a-fA-F0-9]*[.][a-fA-F0-9]+))([Pp][-+]?[0-9]+)[Ff]/ lexer classes {NumericLiteral};
 
 {-	0[xX]
-	(([a-fA-F0-9]+[\.]?)|
-	 ([a-fA-F0-9]*[\.][a-fA-F0-9]+))
-	([Pp][\+\-]?[0-9]+) -- mandatory exponent part
+	(([a-fA-F0-9]+[.]?)|
+	 ([a-fA-F0-9]*[.][a-fA-F0-9]+))
+	([Pp][-+]?[0-9]+) -- mandatory exponent part
 	[Ll]
 -}
-terminal HexFloatConstantLongDouble_t /0[xX](([a-fA-F0-9]+[\.]?)|([a-fA-F0-9]*[\.][a-fA-F0-9]+))([Pp][\+\-]?[0-9]+)[Ll]/ lexer classes {NumericLiteral};
+terminal HexFloatConstantLongDouble_t /0[xX](([a-fA-F0-9]+[.]?)|([a-fA-F0-9]*[.][a-fA-F0-9]+))([Pp][-+]?[0-9]+)[Ll]/ lexer classes {NumericLiteral};
 
 
 lexer class StringLiteral extends AbleC, font = font_string;
 
-terminal StringConstant_t      /[\"]([^\"\\]|[\\].)*[\"]/ lexer classes {StringLiteral};
-terminal StringConstantU8_t  /u8[\"]([^\"\\]|[\\].)*[\"]/ lexer classes {StringLiteral};
-terminal StringConstantL_t    /L[\"]([^\"\\]|[\\].)*[\"]/ lexer classes {StringLiteral};
-terminal StringConstantU_t    /u[\"]([^\"\\]|[\\].)*[\"]/ lexer classes {StringLiteral};
-terminal StringConstantUBig_t /U[\"]([^\"\\]|[\\].)*[\"]/ lexer classes {StringLiteral};
+terminal StringConstant_t      /["]([^"\\]|[\\].)*["]/ lexer classes {StringLiteral};
+terminal StringConstantU8_t  /u8["]([^"\\]|[\\].)*["]/ lexer classes {StringLiteral};
+terminal StringConstantL_t    /L["]([^"\\]|[\\].)*["]/ lexer classes {StringLiteral};
+terminal StringConstantU_t    /u["]([^"\\]|[\\].)*["]/ lexer classes {StringLiteral};
+terminal StringConstantUBig_t /U["]([^"\\]|[\\].)*["]/ lexer classes {StringLiteral};
 
-terminal CharConstant_t      /[\']([^\']|[\\].)[\']/ lexer classes {StringLiteral};
-terminal CharConstantL_t    /L[\']([^\']|[\\].)[\']/ lexer classes {StringLiteral};
-terminal CharConstantU_t    /u[\']([^\']|[\\].)[\']/ lexer classes {StringLiteral};
-terminal CharConstantUBig_t /U[\']([^\']|[\\].)[\']/ lexer classes {StringLiteral};
+terminal CharConstant_t      /[']([^']|[\\].)[']/ lexer classes {StringLiteral};
+terminal CharConstantL_t    /L[']([^']|[\\].)[']/ lexer classes {StringLiteral};
+terminal CharConstantU_t    /u[']([^']|[\\].)[']/ lexer classes {StringLiteral};
+terminal CharConstantUBig_t /U[']([^']|[\\].)[']/ lexer classes {StringLiteral};
 
 
 {--
