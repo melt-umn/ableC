@@ -1,6 +1,6 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 
-nonterminal Stmt with pp, host<Stmt>, errors, globalDecls, functionDecls, defs, env, functionDefs, returnType, freeVariables;
+nonterminal Stmt with pp, host, errors, globalDecls, functionDecls, defs, env, functionDefs, returnType, freeVariables;
 flowtype Stmt = decorate {env, returnType};
 
 autocopy attribute returnType :: Maybe<Type>;

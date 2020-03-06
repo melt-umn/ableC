@@ -8,7 +8,7 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
  - Productions that correspond to C should functor-propagate host, while productions
  - part of the 'extended' host language may have other semantics
  -}
-synthesized attribute host<a>::a;
+functor attribute host;
 flowtype host {decorate} on
   Root,
   Attributes, Attribute, Attribs, Attrib, AttribName,

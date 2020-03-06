@@ -2,7 +2,7 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 
 import edu:umn:cs:melt:ableC:abstractsyntax:overloadable as ovrld;
 
-nonterminal Expr with location, pp, host<Expr>, globalDecls, functionDecls, errors, defs, env, returnType, freeVariables, typerep, isLValue, isSimple, integerConstantValue;
+nonterminal Expr with location, pp, host, globalDecls, functionDecls, errors, defs, env, returnType, freeVariables, typerep, isLValue, isSimple, integerConstantValue;
 
 flowtype Expr = decorate {env, returnType}, isLValue {decorate}, isSimple {decorate}, integerConstantValue {decorate};
 
@@ -441,7 +441,7 @@ top::Expr ::= e::Expr  gl::GenericAssocs  def::MaybeExpr
   -- TODO: type checking!!
 }
 
-nonterminal GenericAssocs with pps, host<GenericAssocs>, errors, globalDecls, functionDecls, defs, env, selectionType, compatibleSelections, returnType, freeVariables;
+nonterminal GenericAssocs with pps, host, errors, globalDecls, functionDecls, defs, env, selectionType, compatibleSelections, returnType, freeVariables;
 flowtype GenericAssocs = decorate {env, returnType}, compatibleSelections {decorate, selectionType};
 
 autocopy attribute selectionType :: Type;
@@ -472,7 +472,7 @@ top::GenericAssocs ::=
   top.compatibleSelections = [];
 }
 
-nonterminal GenericAssoc with location, pp, host<GenericAssoc>, globalDecls, functionDecls, errors, defs, env, selectionType, compatibleSelections, returnType, freeVariables;
+nonterminal GenericAssoc with location, pp, host, globalDecls, functionDecls, errors, defs, env, selectionType, compatibleSelections, returnType, freeVariables;
 flowtype GenericAssoc = decorate {env, returnType}, compatibleSelections {decorate, selectionType};
 
 abstract production genericAssoc

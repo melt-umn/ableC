@@ -59,7 +59,7 @@ flowtype decls {decorate} on
 synthesized attribute bty :: BaseTypeExpr;
 synthesized attribute mty :: TypeModifierExpr;
 
-nonterminal TypeName with env, typerep, bty, mty, pp, host<TypeName>, errors, globalDecls, functionDecls, decls, defs, returnType, freeVariables;
+nonterminal TypeName with env, typerep, bty, mty, pp, host, errors, globalDecls, functionDecls, decls, defs, returnType, freeVariables;
 flowtype TypeName = decorate {env, returnType}, bty {}, mty {};
 
 abstract production typeName
@@ -128,7 +128,7 @@ top::TypeName ::= ty::Decorated TypeName
 {--
  - Corresponds to types obtainable from a TypeSpecifiers.
  -}
-nonterminal BaseTypeExpr with env, typerep, pp, host<BaseTypeExpr>, errors, globalDecls, functionDecls, typeModifier, decls, defs, givenRefId, returnType, freeVariables;
+nonterminal BaseTypeExpr with env, typerep, pp, host, errors, globalDecls, functionDecls, typeModifier, decls, defs, givenRefId, returnType, freeVariables;
 flowtype BaseTypeExpr = decorate {env, givenRefId, returnType}, typeModifier {decorate};
 
 abstract production errorTypeExpr
@@ -550,7 +550,7 @@ top::BaseTypeExpr ::= q::Qualifiers  e::ExprOrTypeName
  - Typically, these are just anchored somewhere to obtain the env,
  - and then turn into an environment-independent Type.
  -}
-nonterminal TypeModifierExpr with env, typerep, lpp, rpp, host<TypeModifierExpr>, modifiedBaseTypeExpr, isFunctionArrayTypeExpr, baseType, typeModifierIn, errors, globalDecls, functionDecls, decls, defs, returnType, freeVariables;
+nonterminal TypeModifierExpr with env, typerep, lpp, rpp, host, modifiedBaseTypeExpr, isFunctionArrayTypeExpr, baseType, typeModifierIn, errors, globalDecls, functionDecls, decls, defs, returnType, freeVariables;
 flowtype TypeModifierExpr = decorate {env, baseType, typeModifierIn, returnType}, modifiedBaseTypeExpr {decorate}, isFunctionArrayTypeExpr {};
 
 synthesized attribute modifiedBaseTypeExpr::Maybe<BaseTypeExpr>;
@@ -782,7 +782,7 @@ top::TypeModifierExpr ::= wrapped::TypeModifierExpr
 autocopy attribute appendedTypeNames :: TypeNames;
 synthesized attribute appendedTypeNamesRes :: TypeNames;
 
-nonterminal TypeNames with pps, host<TypeNames>, env, typereps, count, errors, globalDecls, functionDecls, decls, defs, returnType, freeVariables, appendedTypeNames, appendedTypeNamesRes;
+nonterminal TypeNames with pps, host, env, typereps, count, errors, globalDecls, functionDecls, decls, defs, returnType, freeVariables, appendedTypeNames, appendedTypeNamesRes;
 flowtype TypeNames = decorate {env, returnType}, count {}, appendedTypeNamesRes {appendedTypeNames};
 
 abstract production consTypeName

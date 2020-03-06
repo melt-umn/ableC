@@ -1,6 +1,6 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 
-nonterminal MaybeInitializer with pp, host<MaybeInitializer>, errors, globalDecls, functionDecls, defs, env, freeVariables, returnType;
+nonterminal MaybeInitializer with pp, host, errors, globalDecls, functionDecls, defs, env, freeVariables, returnType;
 flowtype MaybeInitializer = decorate {env, returnType};
 
 abstract production nothingInitializer
@@ -26,7 +26,7 @@ top::MaybeInitializer ::= i::Initializer
   top.freeVariables := i.freeVariables;
 }
 
-nonterminal Initializer with pp, host<Initializer>, errors, globalDecls, functionDecls, defs, env, freeVariables, returnType;
+nonterminal Initializer with pp, host, errors, globalDecls, functionDecls, defs, env, freeVariables, returnType;
 flowtype Initializer = decorate {env, returnType};
 
 abstract production exprInitializer
@@ -53,7 +53,7 @@ top::Initializer ::= l::InitList
   top.freeVariables := l.freeVariables;
 }
 
-nonterminal InitList with pps, host<InitList>, errors, globalDecls, functionDecls, defs, env, freeVariables, returnType;
+nonterminal InitList with pps, host, errors, globalDecls, functionDecls, defs, env, freeVariables, returnType;
 flowtype InitList = decorate {env, returnType};
 
 abstract production consInit
@@ -82,7 +82,7 @@ top::InitList ::=
   top.freeVariables := [];
 }
 
-nonterminal Init with pp, host<Init>, errors, globalDecls, functionDecls, defs, env, freeVariables, returnType;
+nonterminal Init with pp, host, errors, globalDecls, functionDecls, defs, env, freeVariables, returnType;
 flowtype Init = decorate {env, returnType};
 
 abstract production positionalInit
@@ -115,7 +115,7 @@ top::Init ::= d::Designator  i::Initializer
  - Tree access pattern for designators.
  - e.g.  "[1].d[0] = e" gives "array(0, field(d, array(1, initial)))"
  -}
-nonterminal Designator with pp, host<Designator>, errors, globalDecls, functionDecls, defs, env, freeVariables, returnType;
+nonterminal Designator with pp, host, errors, globalDecls, functionDecls, defs, env, freeVariables, returnType;
 flowtype Designator = decorate {env, returnType};
 
 abstract production initialDesignator

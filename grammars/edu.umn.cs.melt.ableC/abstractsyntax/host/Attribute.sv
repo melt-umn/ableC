@@ -21,7 +21,7 @@ Attributes ::= l1::Attributes l2::Attributes
     end;
 }
 
-nonterminal Attributes with pps, host<Attributes>, env, returnType;
+nonterminal Attributes with pps, host, env, returnType;
 flowtype Attributes = decorate {env, returnType};
 
 abstract production consAttribute
@@ -39,7 +39,7 @@ top::Attributes ::=
 }
 
 {-- __attribute__ syntax representation -}
-nonterminal Attribute with pp, host<Attribute>, env, returnType;
+nonterminal Attribute with pp, host, env, returnType;
 flowtype Attribute = decorate {env, returnType};
 
 abstract production gccAttribute
@@ -56,7 +56,7 @@ top::Attribute ::= s::String
   top.pp = text("__asm__(" ++ s ++ ")");
 }
 
-nonterminal Attribs with pp, host<Attribs>, env, returnType;
+nonterminal Attribs with pp, host, env, returnType;
 flowtype Attribs = decorate {env, returnType};
 
 abstract production consAttrib
@@ -77,7 +77,7 @@ top::Attribs ::=
   top.pp = text("");
 }
 
-nonterminal Attrib with pp, host<Attrib>, env, returnType;
+nonterminal Attrib with pp, host, env, returnType;
 flowtype Attrib = decorate {env, returnType};
 
 -- e.g. __attribute__(())
@@ -111,7 +111,7 @@ top::Attrib ::= n::AttribName  id::Name  e::Exprs
   top.isHostAttrib = true;
 }
 
-nonterminal AttribName with pp, env, host<AttribName>;
+nonterminal AttribName with pp, env, host;
 flowtype AttribName = decorate {env};
 
 abstract production attribName

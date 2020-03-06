@@ -1,6 +1,6 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 
-nonterminal Qualifiers with mangledName, qualifiers, pps, host<Qualifiers>, typeToQualify, errors;
+nonterminal Qualifiers with mangledName, qualifiers, pps, host, typeToQualify, errors;
 flowtype Qualifiers = decorate {}, qualifiers {}, errors {typeToQualify};
 
 autocopy attribute typeToQualify :: Type;
@@ -141,7 +141,7 @@ top::Qualifier ::=
  - e.g. Function specifiers (inline, _Noreturn)
  -      Alignment specifiers (_Alignas)
  -}
-nonterminal SpecialSpecifier with pp, host<SpecialSpecifier>, env, returnType, errors, globalDecls, functionDecls, defs;
+nonterminal SpecialSpecifier with pp, host, env, returnType, errors, globalDecls, functionDecls, defs;
 flowtype SpecialSpecifier = decorate {env, returnType};
 
 abstract production inlineQualifier
@@ -179,7 +179,7 @@ top::SpecialSpecifier ::= e::Expr
   top.defs := e.defs;
 }
 
-nonterminal SpecialSpecifiers with pps, host<SpecialSpecifiers>, env, returnType, errors, globalDecls, functionDecls, defs;
+nonterminal SpecialSpecifiers with pps, host, env, returnType, errors, globalDecls, functionDecls, defs;
 flowtype SpecialSpecifiers = decorate {env, returnType};
 
 abstract production consSpecialSpecifier
