@@ -785,10 +785,11 @@ synthesized attribute appendedTypeNamesRes :: TypeNames;
 nonterminal TypeNames with pps, host, env, typereps, count, errors, globalDecls, functionDecls, decls, defs, returnType, freeVariables, appendedTypeNames, appendedTypeNamesRes;
 flowtype TypeNames = decorate {env, returnType}, count {}, appendedTypeNamesRes {appendedTypeNames};
 
+propagate host on TypeNames;
+
 abstract production consTypeName
 top::TypeNames ::= h::TypeName t::TypeNames
 {
-  propagate host;
   top.pps = h.pp :: t.pps;
   top.typereps = h.typerep :: t.typereps;
   top.count = t.count + 1;
@@ -806,7 +807,6 @@ top::TypeNames ::= h::TypeName t::TypeNames
 abstract production nilTypeName
 top::TypeNames ::= 
 {
-  propagate host;
   top.pps = [];
   top.typereps = [];
   top.count = 0;

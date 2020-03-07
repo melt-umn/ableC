@@ -1,5 +1,7 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 
+propagate host on BuiltinType, IntegerType, RealType;
+
 nonterminal BuiltinType with pp, host, mangledName, integerPromotionsBuiltin, defaultArgumentPromotionsBuiltin, isIntegerType, isArithmeticType;
 flowtype BuiltinType = decorate {}, integerPromotionsBuiltin {}, defaultArgumentPromotionsBuiltin {}, isIntegerType {}, isArithmeticType {};
 
@@ -13,7 +15,6 @@ synthesized attribute defaultArgumentPromotionsBuiltin :: BuiltinType;
 abstract production voidType
 top::BuiltinType ::=
 {
-  propagate host;
   top.pp = text("void");
   top.mangledName = "void";
   top.integerPromotionsBuiltin = top;
@@ -26,7 +27,6 @@ top::BuiltinType ::=
 abstract production boolType
 top::BuiltinType ::=
 {
-  propagate host;
   top.pp = text("_Bool");
   top.mangledName = "bool";
   top.integerPromotionsBuiltin = signedType(intType()); -- yep.
@@ -39,7 +39,6 @@ top::BuiltinType ::=
 abstract production realType
 top::BuiltinType ::= rt::RealType
 {
-  propagate host;
   top.pp = rt.pp;
   top.mangledName = "real_" ++ rt.mangledName;
   top.integerPromotionsBuiltin = top;
@@ -57,7 +56,6 @@ top::BuiltinType ::= rt::RealType
 abstract production complexType
 top::BuiltinType ::= rt::RealType
 {
-  propagate host;
   top.pp = ppConcat([ text("_Complex "), rt.pp ]);
   top.mangledName = "complex_" ++ rt.mangledName;
   top.integerPromotionsBuiltin = top;
@@ -75,7 +73,6 @@ top::BuiltinType ::= rt::RealType
 abstract production imaginaryType
 top::BuiltinType ::= rt::RealType
 {
-  propagate host;
   top.pp = ppConcat([ text("_Imaginary "), rt.pp ]);
   top.mangledName = "imaginary_" ++ rt.mangledName;
   top.integerPromotionsBuiltin = top;
@@ -93,7 +90,6 @@ top::BuiltinType ::= rt::RealType
 abstract production signedType
 top::BuiltinType ::= it::IntegerType
 {
-  propagate host;
   top.pp = ppConcat([ text(signed), it.pp ]);
   local signed :: String =
     case it of
@@ -118,7 +114,6 @@ top::BuiltinType ::= it::IntegerType
 abstract production unsignedType
 top::BuiltinType ::= it::IntegerType
 {
-  propagate host;
   top.pp = ppConcat([ text("unsigned "), it.pp ]);
   top.mangledName = "unsigned_" ++ it.mangledName;
   top.integerPromotionsBuiltin = 
@@ -136,7 +131,6 @@ top::BuiltinType ::= it::IntegerType
 abstract production complexIntegerType
 top::BuiltinType ::= it::IntegerType
 {
-  propagate host;
   top.pp = ppConcat([ text("_Complex "), it.pp ]);
   top.mangledName = "complexinteger_" ++ it.mangledName;
   top.integerPromotionsBuiltin = 
@@ -159,7 +153,6 @@ flowtype RealType = decorate {};
 abstract production floatType
 top::RealType ::=
 {
-  propagate host;
   top.pp = text("float");
   top.mangledName = "float";
 }
@@ -167,7 +160,6 @@ top::RealType ::=
 abstract production doubleType
 top::RealType ::=
 {
-  propagate host;
   top.pp = text("double");
   top.mangledName = "double";
 }
@@ -175,7 +167,6 @@ top::RealType ::=
 abstract production longdoubleType
 top::RealType ::=
 {
-  propagate host;
   top.pp = text("long double");
   top.mangledName = "longdouble";
 }
@@ -190,7 +181,6 @@ synthesized attribute integerConversionRank :: Integer;
 abstract production charType
 top::IntegerType ::=
 {
-  propagate host;
   top.pp = text("char");
   top.mangledName = "char";
   top.integerConversionRank = 0;
@@ -199,7 +189,6 @@ top::IntegerType ::=
 abstract production shortType
 top::IntegerType ::=
 {
-  propagate host;
   top.pp = text("short");
   top.mangledName = "short";
   top.integerConversionRank = 1;
@@ -208,7 +197,6 @@ top::IntegerType ::=
 abstract production intType
 top::IntegerType ::=
 {
-  propagate host;
   top.pp = text("int");
   top.mangledName = "int";
   top.integerConversionRank = 2;
@@ -217,7 +205,6 @@ top::IntegerType ::=
 abstract production longType
 top::IntegerType ::=
 {
-  propagate host;
   top.pp = text("long");
   top.mangledName = "long";
   top.integerConversionRank = 3;
@@ -226,7 +213,6 @@ top::IntegerType ::=
 abstract production longlongType
 top::IntegerType ::=
 {
-  propagate host;
   top.pp = text("long long");
   top.mangledName = "longlong";
   top.integerConversionRank = 4;
@@ -235,7 +221,6 @@ top::IntegerType ::=
 abstract production int128Type
 top::IntegerType ::=
 {
-  propagate host;
   top.pp = text("__int128");
   top.mangledName = "int128";
   top.integerConversionRank = 5;

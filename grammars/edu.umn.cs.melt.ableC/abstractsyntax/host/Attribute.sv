@@ -21,20 +21,20 @@ Attributes ::= l1::Attributes l2::Attributes
     end;
 }
 
+propagate host on Attributes, Attribute, Attrib, AttribName;
+
 nonterminal Attributes with pps, host, env, returnType;
 flowtype Attributes = decorate {env, returnType};
 
 abstract production consAttribute
 top::Attributes ::= h::Attribute t::Attributes
 {
-  propagate host;
   top.pps = h.pp :: t.pps;
 }
 
 abstract production nilAttribute
 top::Attributes ::= 
 {
-  propagate host;
   top.pps = [];
 }
 
@@ -45,14 +45,12 @@ flowtype Attribute = decorate {env, returnType};
 abstract production gccAttribute
 top::Attribute ::= l::Attribs
 {
-  propagate host;
   top.pp = ppConcat([text("__attribute__(("), l.pp, text("))")]);
 }
 
 abstract production simpleAsm
 top::Attribute ::= s::String
 {
-  propagate host;
   top.pp = text("__asm__(" ++ s ++ ")");
 }
 
@@ -84,21 +82,18 @@ flowtype Attrib = decorate {env, returnType};
 abstract production emptyAttrib
 top::Attrib ::=
 {
-  propagate host;
   top.pp = notext();
 }
 -- e.g. __attribute__((deprecated))
 abstract production wordAttrib
 top::Attrib ::= n::AttribName
 {
-  propagate host;
   top.pp = n.pp;
 }
 -- e.g. __attribute__((deprecated("don't use this duh")))
 abstract production appliedAttrib
 top::Attrib ::= n::AttribName  e::Exprs
 {
-  propagate host;
   top.pp = ppConcat([n.pp, parens(ppImplode(text(", "), e.pps))]);
 }
 -- e.g. __attribute__((something(foo, "well whatever")))
@@ -106,7 +101,6 @@ top::Attrib ::= n::AttribName  e::Exprs
 abstract production idAppliedAttrib
 top::Attrib ::= n::AttribName  id::Name  e::Exprs
 {
-  propagate host;
   top.pp = ppConcat([n.pp, parens(ppImplode(text(", "), id.pp :: e.pps))]);
   top.isHostAttrib = true;
 }
@@ -117,7 +111,6 @@ flowtype AttribName = decorate {env};
 abstract production attribName
 top::AttribName ::= n::Name
 {
-  propagate host;
   top.pp = n.pp;
 }
 

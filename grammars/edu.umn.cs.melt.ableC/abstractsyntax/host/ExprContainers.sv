@@ -7,10 +7,11 @@ flowtype MaybeExpr = decorate {env, returnType}, isJust {}, justTheExpr {}, mayb
 synthesized attribute maybeTyperep :: Maybe<Type>;
 synthesized attribute justTheExpr :: Maybe<Expr>;
 
+propagate host on MaybeExpr;
+
 abstract production justExpr
 top::MaybeExpr ::= e::Expr
 {
-  propagate host;
   top.pp = e.pp;
   top.isJust = true;
   top.justTheExpr = just(e);
@@ -25,7 +26,6 @@ top::MaybeExpr ::= e::Expr
 abstract production nothingExpr
 top::MaybeExpr ::=
 {
-  propagate host;
   top.pp = notext();
   top.isJust = false;
   top.justTheExpr = nothing();
@@ -54,10 +54,11 @@ synthesized attribute count :: Integer;
 inherited attribute appendedExprs :: Exprs;
 synthesized attribute appendedRes :: Exprs;
 
+propagate host on Exprs;
+
 abstract production consExpr
 top::Exprs ::= h::Expr  t::Exprs
 {
-  propagate host;
   top.pps = h.pp :: t.pps;
   top.errors := h.errors ++ t.errors;
   top.globalDecls := h.globalDecls ++ t.globalDecls;
@@ -88,7 +89,6 @@ top::Exprs ::= h::Expr  t::Exprs
 abstract production nilExpr
 top::Exprs ::=
 {
-  propagate host;
   top.pps = [];
   top.errors := [];
   top.globalDecls := [];
@@ -141,10 +141,11 @@ nonterminal ExprOrTypeName with pp, host, errors, globalDecls, functionDecls, de
 
 flowtype ExprOrTypeName = decorate {env, returnType};
 
+propagate host on ExprOrTypeName;
+
 abstract production exprExpr
 top::ExprOrTypeName ::= e::Expr
 {
-  propagate host;
   top.pp = e.pp;
   top.errors := e.errors;
   top.globalDecls := e.globalDecls;
@@ -157,7 +158,6 @@ top::ExprOrTypeName ::= e::Expr
 abstract production typeNameExpr
 top::ExprOrTypeName ::= ty::TypeName
 {
-  propagate host;
   top.pp = ty.pp;
   top.errors := ty.errors;
   top.globalDecls := ty.globalDecls;

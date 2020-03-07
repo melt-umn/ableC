@@ -1,11 +1,13 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
+
+propagate host on AsmStatement, AsmArgument, AsmClobbers, AsmOperands, AsmOperand;
+
 nonterminal AsmStatement with location, pp, host, env, returnType, freeVariables;
 flowtype AsmStatement = decorate {env, returnType};
 
 abstract production asmStatement
 a::AsmStatement ::= arg::AsmArgument
 {
-  propagate host;
   a.pp = ppConcat( [ text("asm ("), arg.pp, text(")"), text(";") ] );
   a.freeVariables := arg.freeVariables;
 }
@@ -13,7 +15,6 @@ a::AsmStatement ::= arg::AsmArgument
 abstract production asmStatementTypeQual
 a::AsmStatement ::= tq::Qualifier arg::AsmArgument
 {
-  propagate host;
   a.pp = ppConcat( [ text("asm "), tq.pp, text(" ("), arg.pp, text(")"), text(";") ] );
   a.freeVariables := arg.freeVariables;
 }
@@ -24,7 +25,6 @@ flowtype AsmArgument = decorate {env, returnType};
 abstract production asmArgument
 top::AsmArgument ::= s::String asmOps1::AsmOperands asmOps2::AsmOperands asmC::AsmClobbers
 {
-  propagate host;
   top.pp = ppConcat( [ text(s) ]
              ++ (if asmOps1.exists || asmOps2.exists || asmC.exists then [text(": ")] else [ ])  
              ++ [asmOps1.pp]
@@ -44,21 +44,18 @@ flowtype AsmClobbers = decorate {}, exists {};
 abstract production noneAsmClobbers 
 top::AsmClobbers ::=
 {
-  propagate host;
   top.exists = false;
   top.pp = notext();
 }
 abstract production oneAsmClobbers 
 top::AsmClobbers ::= s::String
 {
-  propagate host;
   top.exists = true;
   top.pp = text(s);
 }
 abstract production snocAsmClobbers 
 top::AsmClobbers ::= asmC::AsmClobbers s::String
 {
-  propagate host;
   top.exists = true;
   top.pp = ppConcat( [asmC.pp, text(", "), text(s) ] );
 }
@@ -69,7 +66,6 @@ flowtype AsmOperands = decorate {env, returnType}, exists {};
 abstract production noneAsmOps
 top::AsmOperands ::= 
 {
-  propagate host;
   top.pp = notext();
   top.exists = false;
   top.freeVariables := [];
@@ -77,7 +73,6 @@ top::AsmOperands ::=
 abstract production oneAsmOps
 top::AsmOperands ::= asmOp::AsmOperand
 {
-  propagate host;
   top.pp = asmOp.pp;
   top.exists = true;
   top.freeVariables := asmOp.freeVariables;
@@ -85,7 +80,6 @@ top::AsmOperands ::= asmOp::AsmOperand
 abstract production snocAsmOps
 top::AsmOperands ::= asmOps::AsmOperands asmOp::AsmOperand
 {
-  propagate host;
   top.pp = ppConcat ( [asmOps.pp, text(", "), asmOp.pp] );
   top.exists = true;
   top.freeVariables := asmOp.freeVariables ++ asmOps.freeVariables;
@@ -96,8 +90,7 @@ flowtype AsmOperand = decorate {env, returnType};
 
 abstract production asmOperand
 top::AsmOperand ::= s::String e::Expr
-{ 
-  propagate host;
+{
   top.pp = ppConcat( [ text(s), text(" ("), e.pp, text(")") ] );
   top.freeVariables := e.freeVariables;
 }
@@ -105,7 +98,6 @@ top::AsmOperand ::= s::String e::Expr
 abstract production asmOperandId
 top::AsmOperand ::= id::Name  s::String e::Expr
 {
-  propagate host;
   top.pp = ppConcat( [ text("["), id.pp, text("] "), text(s), text(" ("), e.pp, text(")") ] ); 
   top.freeVariables := e.freeVariables;
 }
