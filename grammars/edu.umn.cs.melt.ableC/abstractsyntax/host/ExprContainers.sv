@@ -7,7 +7,7 @@ flowtype MaybeExpr = decorate {env, returnType}, isJust {}, justTheExpr {}, mayb
 synthesized attribute maybeTyperep :: Maybe<Type>;
 synthesized attribute justTheExpr :: Maybe<Expr>;
 
-propagate host on MaybeExpr;
+propagate host, errors, globalDecls, functionDecls, defs, freeVariables on MaybeExpr;
 
 abstract production justExpr
 top::MaybeExpr ::= e::Expr
@@ -15,11 +15,6 @@ top::MaybeExpr ::= e::Expr
   top.pp = e.pp;
   top.isJust = true;
   top.justTheExpr = just(e);
-  top.errors := e.errors;
-  top.globalDecls := e.globalDecls;
-  top.functionDecls := e.functionDecls;
-  top.defs := e.defs;
-  top.freeVariables := e.freeVariables;
   top.maybeTyperep = just(e.typerep);
   top.isLValue = e.isLValue;
 }
@@ -29,11 +24,6 @@ top::MaybeExpr ::=
   top.pp = notext();
   top.isJust = false;
   top.justTheExpr = nothing();
-  top.errors := [];
-  top.globalDecls := [];
-  top.functionDecls := [];
-  top.defs := [];
-  top.freeVariables := [];
   top.maybeTyperep = nothing();
   top.isLValue = false;
 }
@@ -54,16 +44,12 @@ synthesized attribute count :: Integer;
 inherited attribute appendedExprs :: Exprs;
 synthesized attribute appendedRes :: Exprs;
 
-propagate host on Exprs;
+propagate host, errors, globalDecls, functionDecls, defs on Exprs;
 
 abstract production consExpr
 top::Exprs ::= h::Expr  t::Exprs
 {
   top.pps = h.pp :: t.pps;
-  top.errors := h.errors ++ t.errors;
-  top.globalDecls := h.globalDecls ++ t.globalDecls;
-  top.functionDecls := h.functionDecls ++ t.functionDecls;
-  top.defs := h.defs ++ t.defs;
   top.freeVariables := h.freeVariables ++ removeDefsFromNames(h.defs, t.freeVariables);
   top.typereps = h.typerep :: t.typereps;
   top.count = 1 + t.count;
@@ -90,10 +76,6 @@ abstract production nilExpr
 top::Exprs ::=
 {
   top.pps = [];
-  top.errors := [];
-  top.globalDecls := [];
-  top.functionDecls := [];
-  top.defs := [];
   top.freeVariables := [];
   top.typereps = [];
   top.count = 0;
@@ -141,17 +123,12 @@ nonterminal ExprOrTypeName with pp, host, errors, globalDecls, functionDecls, de
 
 flowtype ExprOrTypeName = decorate {env, returnType};
 
-propagate host on ExprOrTypeName;
+propagate host, errors, globalDecls, functionDecls, defs, freeVariables on ExprOrTypeName;
 
 abstract production exprExpr
 top::ExprOrTypeName ::= e::Expr
 {
   top.pp = e.pp;
-  top.errors := e.errors;
-  top.globalDecls := e.globalDecls;
-  top.functionDecls := e.functionDecls;
-  top.defs := e.defs;
-  top.freeVariables := e.freeVariables;
   top.typerep = e.typerep;
   top.isLValue = e.isLValue;
 }
@@ -159,11 +136,6 @@ abstract production typeNameExpr
 top::ExprOrTypeName ::= ty::TypeName
 {
   top.pp = ty.pp;
-  top.errors := ty.errors;
-  top.globalDecls := ty.globalDecls;
-  top.functionDecls := ty.functionDecls;
-  top.defs := ty.defs;
-  top.freeVariables := ty.freeVariables;
   top.typerep = ty.typerep;
   top.isLValue = false;
 }

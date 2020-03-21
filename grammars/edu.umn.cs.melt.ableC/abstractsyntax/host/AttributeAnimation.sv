@@ -48,44 +48,10 @@ Type ::= attr::Decorated Attribs  ty::Type
   end;
 }
 
-synthesized attribute maybeRefId::Maybe<String> occurs on Attributes, Attribute, Attribs, Attrib;
+monoid attribute maybeRefId::Maybe<String> with nothing(), orElse;
+attribute maybeRefId occurs on Attributes, Attribute, Attribs, Attrib;
 flowtype maybeRefId {} on Attributes, Attribute, Attribs, Attrib;
-
-aspect production consAttribute
-top::Attributes ::= h::Attribute t::Attributes
-{
-  top.maybeRefId = orElse(h.maybeRefId, t.maybeRefId);
-}
-
-aspect production nilAttribute
-top::Attributes ::= 
-{
-  top.maybeRefId = nothing();
-}
-
-aspect production gccAttribute
-top::Attribute ::= l::Attribs
-{
-  top.maybeRefId = l.maybeRefId;
-}
-
-aspect production simpleAsm
-top::Attribute ::= s::String
-{
-  top.maybeRefId = nothing();
-}
-
-aspect production consAttrib
-top::Attribs ::= h::Attrib t::Attribs
-{
-  top.maybeRefId = orElse(h.maybeRefId, t.maybeRefId);
-}
-
-aspect production nilAttrib
-top::Attribs ::= 
-{
-  top.maybeRefId = nothing();
-}
+propagate maybeRefId on Attributes, Attribute, Attribs;
 
 synthesized attribute isHostAttrib::Boolean occurs on Attrib;
 flowtype isHostAttrib {} on Attrib;
@@ -94,7 +60,7 @@ aspect default production
 top::Attrib ::=
 {
   top.isHostAttrib = true;
-  top.maybeRefId = nothing();
+  top.maybeRefId := nothing();
 }
 
 -- e.g. __attribute__(())
@@ -116,7 +82,7 @@ top::Attrib ::= n::AttribName  e::Exprs
       attribName(name("refId")) -> false
     | _ -> true
     end;
-  top.maybeRefId =
+  top.maybeRefId :=
     case n, e of
       attribName(name("refId")), consExpr(stringLiteral(s), nilExpr()) ->
         just(substring(1, length(s) - 1, s))

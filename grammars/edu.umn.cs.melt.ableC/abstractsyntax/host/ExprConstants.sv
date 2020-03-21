@@ -7,13 +7,8 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 abstract production realConstant
 top::Expr ::= c::NumericConstant
 {
-  propagate host;
+  propagate host, errors, globalDecls, functionDecls, defs, freeVariables;
   top.pp = c.pp;
-  top.errors := [];
-  top.globalDecls := [];
-  top.functionDecls := [];
-  top.defs := [];
-  top.freeVariables := [];
   top.typerep = builtinType(nilQualifier(), c.constanttyperep);
   top.isLValue = false;
   top.isSimple = true;
@@ -22,13 +17,8 @@ top::Expr ::= c::NumericConstant
 abstract production imaginaryConstant
 top::Expr ::= c::NumericConstant
 {
-  propagate host;
+  propagate host, errors, globalDecls, functionDecls, defs, freeVariables;
   top.pp = c.pp;
-  top.errors := [];
-  top.globalDecls := [];
-  top.functionDecls := [];
-  top.defs := [];
-  top.freeVariables := [];
   top.typerep = builtinType(nilQualifier(), case c.constanttyperep of
     | realType(rt) -> complexType(rt)
     | signedType(it) -> complexIntegerType(it)
@@ -40,13 +30,8 @@ top::Expr ::= c::NumericConstant
 abstract production characterConstant
 top::Expr ::= num::String  c::CharPrefix
 {
-  propagate host;
+  propagate host, errors, globalDecls, functionDecls, defs, freeVariables;
   top.pp = text(num);
-  top.errors := [];
-  top.globalDecls := [];
-  top.functionDecls := [];
-  top.defs := [];
-  top.freeVariables := [];
   top.typerep = builtinType(nilQualifier(), signedType(charType())); -- TODO: no idea
   top.isLValue = false;
   top.isSimple = true;
@@ -57,14 +42,13 @@ flowtype NumericConstant = decorate {env}, constanttyperep {decorate}, integerCo
 
 synthesized attribute constanttyperep :: BuiltinType;
 
-propagate host on NumericConstant;
+propagate host, errors on NumericConstant;
 
 abstract production integerConstant
 top::NumericConstant ::= num::String  unsigned::Boolean  suffix::IntSuffix
 {
   top.pp = text(num);
   top.mangledName = substitute(".", "_", num);
-  top.errors := [];
   top.constanttyperep = if unsigned then unsignedType(suffix.constinttyperep) else signedType(suffix.constinttyperep);
   top.integerConstantValue = just(toInteger(num));
 }
@@ -73,7 +57,6 @@ top::NumericConstant ::= num::String  unsigned::Boolean  suffix::IntSuffix
 {
   top.pp = text(num);
   top.mangledName = substitute(".", "_", num);
-  top.errors := [];
   top.constanttyperep = if unsigned then unsignedType(suffix.constinttyperep) else signedType(suffix.constinttyperep);
   top.integerConstantValue = nothing(); -- TODO
 }
@@ -82,7 +65,6 @@ top::NumericConstant ::= num::String  unsigned::Boolean  suffix::IntSuffix
 {
   top.pp = text(num);
   top.mangledName = substitute(".", "_", num);
-  top.errors := [];
   top.constanttyperep = if unsigned then unsignedType(suffix.constinttyperep) else signedType(suffix.constinttyperep);
   top.integerConstantValue = nothing(); -- TODO
 }
@@ -92,7 +74,6 @@ top::NumericConstant ::= num::String  suffix::FloatSuffix
 {
   top.pp = text(num);
   top.mangledName = substitute(".", "_", num);
-  top.errors := [];
   top.constanttyperep = realType(suffix.constfloattyperep);
   top.integerConstantValue = nothing();
 }
@@ -101,7 +82,6 @@ top::NumericConstant ::= num::String  suffix::FloatSuffix
 {
   top.pp = text(num);
   top.mangledName = substitute(".", "_", num);
-  top.errors := [];
   top.constanttyperep = realType(suffix.constfloattyperep);
   top.integerConstantValue = nothing();
 }
@@ -123,4 +103,3 @@ abstract production noCharPrefix  top::CharPrefix ::= { }
 abstract production wcharCharPrefix  top::CharPrefix ::= { }
 abstract production char16CharPrefix  top::CharPrefix ::= { }
 abstract production char32CharPrefix  top::CharPrefix ::= { }
-

@@ -3,12 +3,9 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 abstract production eqExpr
 top::Expr ::= lhs::Expr rhs::Expr
 {
-  propagate host;
+  propagate host, errors, globalDecls, functionDecls, defs;
   top.pp = parens( ppConcat([lhs.pp, space(), text("="), space(), rhs.pp]) );
-  top.errors := lhs.errors ++ assignErrors(lhs, rhs, top.location) ++ rhs.errors;
-  top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
-  top.functionDecls := lhs.functionDecls ++ rhs.functionDecls;
-  top.defs := lhs.defs ++ rhs.defs;
+  top.errors <- assignErrors(lhs, rhs, top.location);
   top.freeVariables :=
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
@@ -20,12 +17,9 @@ top::Expr ::= lhs::Expr rhs::Expr
 abstract production mulEqExpr
 top::Expr ::= lhs::Expr rhs::Expr
 {
-  propagate host;
+  propagate host, errors, globalDecls, functionDecls, defs;
   top.pp = parens( ppConcat([lhs.pp, space(), text("*="), space(), rhs.pp]) );
-  top.errors := lhs.errors ++ assignErrors(lhs, rhs, top.location) ++ rhs.errors;
-  top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
-  top.functionDecls := lhs.functionDecls ++ rhs.functionDecls;
-  top.defs := lhs.defs ++ rhs.defs;
+  top.errors <- assignErrors(lhs, rhs, top.location);
   top.freeVariables :=
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
@@ -37,12 +31,9 @@ top::Expr ::= lhs::Expr rhs::Expr
 abstract production divEqExpr
 top::Expr ::= lhs::Expr rhs::Expr
 {
-  propagate host;
+  propagate host, errors, globalDecls, functionDecls, defs;
   top.pp = parens( ppConcat([lhs.pp, space(), text("/="), space(), rhs.pp]) );
-  top.errors := lhs.errors ++ assignErrors(lhs, rhs, top.location) ++ rhs.errors;
-  top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
-  top.functionDecls := lhs.functionDecls ++ rhs.functionDecls;
-  top.defs := lhs.defs ++ rhs.defs;
+  top.errors <- assignErrors(lhs, rhs, top.location);
   top.freeVariables :=
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
@@ -54,12 +45,9 @@ top::Expr ::= lhs::Expr rhs::Expr
 abstract production modEqExpr
 top::Expr ::= lhs::Expr rhs::Expr
 {
-  propagate host;
+  propagate host, errors, globalDecls, functionDecls, defs;
   top.pp = parens( ppConcat([lhs.pp, space(), text("%="), space(), rhs.pp]) );
-  top.errors := lhs.errors ++ assignErrors(lhs, rhs, top.location) ++ rhs.errors;
-  top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
-  top.functionDecls := lhs.functionDecls ++ rhs.functionDecls;
-  top.defs := lhs.defs ++ rhs.defs;
+  top.errors <- assignErrors(lhs, rhs, top.location);
   top.freeVariables :=
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
@@ -71,12 +59,9 @@ top::Expr ::= lhs::Expr rhs::Expr
 abstract production addEqExpr
 top::Expr ::= lhs::Expr rhs::Expr
 {
-  propagate host;
+  propagate host, errors, globalDecls, functionDecls, defs;
   top.pp = parens( ppConcat([lhs.pp, space(), text("+="), space(), rhs.pp]) );
-  top.errors := lhs.errors ++ assignErrors(lhs, rhs, top.location) ++ rhs.errors;
-  top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
-  top.functionDecls := lhs.functionDecls ++ rhs.functionDecls;
-  top.defs := lhs.defs ++ rhs.defs;
+  top.errors <- assignErrors(lhs, rhs, top.location);
   top.freeVariables :=
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
@@ -88,12 +73,9 @@ top::Expr ::= lhs::Expr rhs::Expr
 abstract production subEqExpr
 top::Expr ::= lhs::Expr rhs::Expr
 {
-  propagate host;
+  propagate host, errors, globalDecls, functionDecls, defs;
   top.pp = parens( ppConcat([lhs.pp, space(), text("-="), space(), rhs.pp]) );
-  top.errors := lhs.errors ++ assignErrors(lhs, rhs, top.location) ++ rhs.errors;
-  top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
-  top.functionDecls := lhs.functionDecls ++ rhs.functionDecls;
-  top.defs := lhs.defs ++ rhs.defs;
+  top.errors <- assignErrors(lhs, rhs, top.location);
   top.freeVariables :=
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
@@ -105,12 +87,9 @@ top::Expr ::= lhs::Expr rhs::Expr
 abstract production lshEqExpr
 top::Expr ::= lhs::Expr rhs::Expr
 {
-  propagate host;
+  propagate host, errors, globalDecls, functionDecls, defs;
   top.pp = parens( ppConcat([lhs.pp, space(), text("<<="), space(), rhs.pp]) );
-  top.errors := lhs.errors ++ assignErrors(lhs, rhs, top.location) ++ rhs.errors;
-  top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
-  top.functionDecls := lhs.functionDecls ++ rhs.functionDecls;
-  top.defs := lhs.defs ++ rhs.defs;
+  top.errors <- assignErrors(lhs, rhs, top.location);
   top.freeVariables :=
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
@@ -122,12 +101,9 @@ top::Expr ::= lhs::Expr rhs::Expr
 abstract production rshEqExpr
 top::Expr ::= lhs::Expr rhs::Expr
 {
-  propagate host;
+  propagate host, errors, globalDecls, functionDecls, defs;
   top.pp = parens( ppConcat([lhs.pp, space(), text(">>="), space(), rhs.pp]) );
-  top.errors := lhs.errors ++ assignErrors(lhs, rhs, top.location) ++ rhs.errors;
-  top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
-  top.functionDecls := lhs.functionDecls ++ rhs.functionDecls;
-  top.defs := lhs.defs ++ rhs.defs;
+  top.errors <- assignErrors(lhs, rhs, top.location);
   top.freeVariables :=
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
@@ -139,12 +115,9 @@ top::Expr ::= lhs::Expr rhs::Expr
 abstract production andEqExpr
 top::Expr ::= lhs::Expr rhs::Expr
 {
-  propagate host;
+  propagate host, errors, globalDecls, functionDecls, defs;
   top.pp = parens( ppConcat([lhs.pp, space(), text("&="), space(), rhs.pp]) );
-  top.errors := lhs.errors ++ assignErrors(lhs, rhs, top.location) ++ rhs.errors;
-  top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
-  top.functionDecls := lhs.functionDecls ++ rhs.functionDecls;
-  top.defs := lhs.defs ++ rhs.defs;
+  top.errors <- assignErrors(lhs, rhs, top.location);
   top.freeVariables :=
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
@@ -156,12 +129,9 @@ top::Expr ::= lhs::Expr rhs::Expr
 abstract production xorEqExpr
 top::Expr ::= lhs::Expr rhs::Expr
 {
-  propagate host;
+  propagate host, errors, globalDecls, functionDecls, defs;
   top.pp = parens( ppConcat([lhs.pp, space(), text("^="), space(), rhs.pp]) );
-  top.errors := lhs.errors ++ assignErrors(lhs, rhs, top.location) ++ rhs.errors;
-  top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
-  top.functionDecls := lhs.functionDecls ++ rhs.functionDecls;
-  top.defs := lhs.defs ++ rhs.defs;
+  top.errors <- assignErrors(lhs, rhs, top.location);
   top.freeVariables :=
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
@@ -173,12 +143,9 @@ top::Expr ::= lhs::Expr rhs::Expr
 abstract production orEqExpr
 top::Expr ::= lhs::Expr rhs::Expr
 {
-  propagate host;
+  propagate host, errors, globalDecls, functionDecls, defs;
   top.pp = parens( ppConcat([lhs.pp, space(), text("|="), space(), rhs.pp]) );
-  top.errors := lhs.errors ++ assignErrors(lhs, rhs, top.location) ++ rhs.errors;
-  top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
-  top.functionDecls := lhs.functionDecls ++ rhs.functionDecls;
-  top.defs := lhs.defs ++ rhs.defs;
+  top.errors <- assignErrors(lhs, rhs, top.location);
   top.freeVariables :=
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
@@ -215,12 +182,8 @@ function assignErrors
 abstract production andExpr
 top::Expr ::= lhs::Expr rhs::Expr
 {
-  propagate host;
+  propagate host, errors, globalDecls, functionDecls, defs;
   top.pp = parens( ppConcat([lhs.pp, space(), text("&&"), space(), rhs.pp]) );
-  top.errors := lhs.errors ++ rhs.errors;
-  top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
-  top.functionDecls := lhs.functionDecls ++ rhs.functionDecls;
-  top.defs := lhs.defs ++ rhs.defs;
   top.freeVariables :=
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
@@ -232,12 +195,8 @@ top::Expr ::= lhs::Expr rhs::Expr
 abstract production orExpr
 top::Expr ::= lhs::Expr rhs::Expr
 {
-  propagate host;
+  propagate host, errors, globalDecls, functionDecls, defs;
   top.pp = parens( ppConcat([lhs.pp, space(), text("||"), space(), rhs.pp]) );
-  top.errors := lhs.errors ++ rhs.errors;
-  top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
-  top.functionDecls := lhs.functionDecls ++ rhs.functionDecls;
-  top.defs := lhs.defs ++ rhs.defs;
   top.freeVariables :=
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
@@ -249,12 +208,8 @@ top::Expr ::= lhs::Expr rhs::Expr
 abstract production andBitExpr
 top::Expr ::= lhs::Expr rhs::Expr
 {
-  propagate host;
+  propagate host, errors, globalDecls, functionDecls, defs;
   top.pp = parens( ppConcat([lhs.pp, space(), text("&"), space(), rhs.pp]) );
-  top.errors := lhs.errors ++ rhs.errors;
-  top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
-  top.functionDecls := lhs.functionDecls ++ rhs.functionDecls;
-  top.defs := lhs.defs ++ rhs.defs;
   top.freeVariables :=
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
@@ -266,12 +221,8 @@ top::Expr ::= lhs::Expr rhs::Expr
 abstract production orBitExpr
 top::Expr ::= lhs::Expr rhs::Expr
 {
-  propagate host;
+  propagate host, errors, globalDecls, functionDecls, defs;
   top.pp = parens( ppConcat([lhs.pp, space(), text("|"), space(), rhs.pp]) );
-  top.errors := lhs.errors ++ rhs.errors;
-  top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
-  top.functionDecls := lhs.functionDecls ++ rhs.functionDecls;
-  top.defs := lhs.defs ++ rhs.defs;
   top.freeVariables :=
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
@@ -283,12 +234,8 @@ top::Expr ::= lhs::Expr rhs::Expr
 abstract production xorExpr
 top::Expr ::= lhs::Expr rhs::Expr
 {
-  propagate host;
+  propagate host, errors, globalDecls, functionDecls, defs;
   top.pp = parens( ppConcat([lhs.pp, space(), text("^"), space(), rhs.pp]) );
-  top.errors := lhs.errors ++ rhs.errors;
-  top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
-  top.functionDecls := lhs.functionDecls ++ rhs.functionDecls;
-  top.defs := lhs.defs ++ rhs.defs;
   top.freeVariables :=
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
@@ -300,12 +247,8 @@ top::Expr ::= lhs::Expr rhs::Expr
 abstract production lshExpr
 top::Expr ::= lhs::Expr rhs::Expr
 {
-  propagate host;
+  propagate host, errors, globalDecls, functionDecls, defs;
   top.pp = parens( ppConcat([lhs.pp, space(), text("<<"), space(), rhs.pp]) );
-  top.errors := lhs.errors ++ rhs.errors;
-  top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
-  top.functionDecls := lhs.functionDecls ++ rhs.functionDecls;
-  top.defs := lhs.defs ++ rhs.defs;
   top.freeVariables :=
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
@@ -317,12 +260,8 @@ top::Expr ::= lhs::Expr rhs::Expr
 abstract production rshExpr
 top::Expr ::= lhs::Expr rhs::Expr
 {
-  propagate host;
+  propagate host, errors, globalDecls, functionDecls, defs;
   top.pp = parens( ppConcat([lhs.pp, space(), text(">>"), space(), rhs.pp]) );
-  top.errors := lhs.errors ++ rhs.errors;
-  top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
-  top.functionDecls := lhs.functionDecls ++ rhs.functionDecls;
-  top.defs := lhs.defs ++ rhs.defs;
   top.freeVariables :=
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
@@ -334,12 +273,8 @@ top::Expr ::= lhs::Expr rhs::Expr
 abstract production equalsExpr
 top::Expr ::= lhs::Expr rhs::Expr
 {
-  propagate host;
+  propagate host, errors, globalDecls, functionDecls, defs;
   top.pp = parens( ppConcat([lhs.pp, space(), text("=="), space(), rhs.pp]) );
-  top.errors := lhs.errors ++ rhs.errors;
-  top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
-  top.functionDecls := lhs.functionDecls ++ rhs.functionDecls;
-  top.defs := lhs.defs ++ rhs.defs;
   top.freeVariables :=
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
@@ -351,12 +286,8 @@ top::Expr ::= lhs::Expr rhs::Expr
 abstract production notEqualsExpr
 top::Expr ::= lhs::Expr rhs::Expr
 {
-  propagate host;
+  propagate host, errors, globalDecls, functionDecls, defs;
   top.pp = parens( ppConcat([lhs.pp, space(), text("!="), space(), rhs.pp]) );
-  top.errors := lhs.errors ++ rhs.errors;
-  top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
-  top.functionDecls := lhs.functionDecls ++ rhs.functionDecls;
-  top.defs := lhs.defs ++ rhs.defs;
   top.freeVariables :=
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
@@ -368,12 +299,8 @@ top::Expr ::= lhs::Expr rhs::Expr
 abstract production gtExpr
 top::Expr ::= lhs::Expr rhs::Expr
 {
-  propagate host;
+  propagate host, errors, globalDecls, functionDecls, defs;
   top.pp = parens( ppConcat([lhs.pp, space(), text(">"), space(), rhs.pp]) );
-  top.errors := lhs.errors ++ rhs.errors;
-  top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
-  top.functionDecls := lhs.functionDecls ++ rhs.functionDecls;
-  top.defs := lhs.defs ++ rhs.defs;
   top.freeVariables :=
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
@@ -385,12 +312,8 @@ top::Expr ::= lhs::Expr rhs::Expr
 abstract production ltExpr
 top::Expr ::= lhs::Expr rhs::Expr
 {
-  propagate host;
+  propagate host, errors, globalDecls, functionDecls, defs;
   top.pp = parens( ppConcat([lhs.pp, space(), text("<"), space(), rhs.pp]) );
-  top.errors := lhs.errors ++ rhs.errors;
-  top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
-  top.functionDecls := lhs.functionDecls ++ rhs.functionDecls;
-  top.defs := lhs.defs ++ rhs.defs;
   top.freeVariables :=
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
@@ -402,12 +325,8 @@ top::Expr ::= lhs::Expr rhs::Expr
 abstract production gteExpr
 top::Expr ::= lhs::Expr rhs::Expr
 {
-  propagate host;
+  propagate host, errors, globalDecls, functionDecls, defs;
   top.pp = parens( ppConcat([lhs.pp, space(), text(">="), space(), rhs.pp]) );
-  top.errors := lhs.errors ++ rhs.errors;
-  top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
-  top.functionDecls := lhs.functionDecls ++ rhs.functionDecls;
-  top.defs := lhs.defs ++ rhs.defs;
   top.freeVariables :=
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
@@ -419,12 +338,8 @@ top::Expr ::= lhs::Expr rhs::Expr
 abstract production lteExpr
 top::Expr ::= lhs::Expr rhs::Expr
 {
-  propagate host;
+  propagate host, errors, globalDecls, functionDecls, defs;
   top.pp = parens( ppConcat([lhs.pp, space(), text("<="), space(), rhs.pp]) );
-  top.errors := lhs.errors ++ rhs.errors;
-  top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
-  top.functionDecls := lhs.functionDecls ++ rhs.functionDecls;
-  top.defs := lhs.defs ++ rhs.defs;
   top.freeVariables :=
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
@@ -436,12 +351,8 @@ top::Expr ::= lhs::Expr rhs::Expr
 abstract production addExpr
 top::Expr ::= lhs::Expr rhs::Expr
 {
-  propagate host;
+  propagate host, errors, globalDecls, functionDecls, defs;
   top.pp = parens( ppConcat([lhs.pp, space(), text("+"), space(), rhs.pp]) );
-  top.errors := lhs.errors ++ rhs.errors;
-  top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
-  top.functionDecls := lhs.functionDecls ++ rhs.functionDecls;
-  top.defs := lhs.defs ++ rhs.defs;
   top.freeVariables :=
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
@@ -453,12 +364,8 @@ top::Expr ::= lhs::Expr rhs::Expr
 abstract production subExpr
 top::Expr ::= lhs::Expr rhs::Expr
 {
-  propagate host;
+  propagate host, errors, globalDecls, functionDecls, defs;
   top.pp = parens( ppConcat([lhs.pp, space(), text("-"), space(), rhs.pp]) );
-  top.errors := lhs.errors ++ rhs.errors;
-  top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
-  top.functionDecls := lhs.functionDecls ++ rhs.functionDecls;
-  top.defs := lhs.defs ++ rhs.defs;
   top.freeVariables :=
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
@@ -470,12 +377,8 @@ top::Expr ::= lhs::Expr rhs::Expr
 abstract production mulExpr
 top::Expr ::= lhs::Expr rhs::Expr
 {
-  propagate host;
+  propagate host, errors, globalDecls, functionDecls, defs;
   top.pp = parens( ppConcat([lhs.pp, space(), text("*"), space(), rhs.pp]) );
-  top.errors := lhs.errors ++ rhs.errors;
-  top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
-  top.functionDecls := lhs.functionDecls ++ rhs.functionDecls;
-  top.defs := lhs.defs ++ rhs.defs;
   top.freeVariables :=
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
@@ -487,12 +390,8 @@ top::Expr ::= lhs::Expr rhs::Expr
 abstract production divExpr
 top::Expr ::= lhs::Expr rhs::Expr
 {
-  propagate host;
+  propagate host, errors, globalDecls, functionDecls, defs;
   top.pp = parens( ppConcat([lhs.pp, space(), text("/"), space(), rhs.pp]) );
-  top.errors := lhs.errors ++ rhs.errors;
-  top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
-  top.functionDecls := lhs.functionDecls ++ rhs.functionDecls;
-  top.defs := lhs.defs ++ rhs.defs;
   top.freeVariables :=
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
@@ -504,12 +403,8 @@ top::Expr ::= lhs::Expr rhs::Expr
 abstract production modExpr
 top::Expr ::= lhs::Expr rhs::Expr
 {
-  propagate host;
+  propagate host, errors, globalDecls, functionDecls, defs;
   top.pp = parens( ppConcat([lhs.pp, space(), text("%"), space(), rhs.pp]) );
-  top.errors := lhs.errors ++ rhs.errors;
-  top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
-  top.functionDecls := lhs.functionDecls ++ rhs.functionDecls;
-  top.defs := lhs.defs ++ rhs.defs;
   top.freeVariables :=
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
@@ -521,12 +416,8 @@ top::Expr ::= lhs::Expr rhs::Expr
 abstract production commaExpr
 top::Expr ::= lhs::Expr rhs::Expr
 {
-  propagate host;
+  propagate host, errors, globalDecls, functionDecls, defs;
   top.pp = parens( ppConcat([lhs.pp, space(), comma(), space(), rhs.pp]) );
-  top.errors := lhs.errors ++ rhs.errors;
-  top.globalDecls := lhs.globalDecls ++ rhs.globalDecls;
-  top.functionDecls := lhs.functionDecls ++ rhs.functionDecls;
-  top.defs := lhs.defs ++ rhs.defs;
   top.freeVariables :=
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);

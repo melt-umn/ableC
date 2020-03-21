@@ -63,7 +63,7 @@ top::Type ::=
   top.isScalarType = false;
   top.isArithmeticType = false;
   top.isCompleteType = \ Decorated Env -> true;
-  top.maybeRefId = nothing();
+  top.maybeRefId := nothing();
 }
 
 {-------------------------------------------------------------------------------
@@ -74,7 +74,7 @@ top::Type ::=
 abstract production errorType
 top::Type ::=
 {
-  propagate host, canonicalType;
+  propagate host, canonicalType, errors, freeVariables;
   top.lpp = text("/*err*/");
   top.rpp = text("");
   top.baseTypeExpr = errorTypeExpr([]);
@@ -88,8 +88,6 @@ top::Type ::=
   top.withoutExtensionQualifiers = top;
   top.mergeQualifiers = \t2::Type -> errorType();
   top.qualifiers = [];
-  top.errors := [];
-  top.freeVariables := [];
 
   -- The semantics for all flags is that they should be TRUE is no error is to be
   -- raised. Thus, all should be true here, to suppress errors.
@@ -106,7 +104,7 @@ top::Type ::=
 abstract production builtinType
 top::Type ::= q::Qualifiers  bt::BuiltinType
 {
-  propagate host, canonicalType;
+  propagate host, canonicalType, errors, freeVariables;
   top.lpp =
     ppConcat([terminate(space(), q.pps), bt.pp]);
   top.rpp = notext();
@@ -130,9 +128,7 @@ top::Type ::= q::Qualifiers  bt::BuiltinType
     | _ -> builtinType(q, bt)
     end;
   top.qualifiers = q.qualifiers;
-  top.errors := q.errors;
   q.typeToQualify = top;
-  top.freeVariables := [];
 }
 
 
@@ -144,7 +140,7 @@ top::Type ::= q::Qualifiers  bt::BuiltinType
 abstract production pointerType
 top::Type ::= q::Qualifiers  target::Type
 {
-  propagate host, canonicalType;
+  propagate host, canonicalType, errors, freeVariables;
   
   local wrapTarget::Boolean = 
     case target of
@@ -179,11 +175,9 @@ top::Type ::= q::Qualifiers  target::Type
     | _ -> pointerType(q, target)
     end;
   top.qualifiers = q.qualifiers;
-  top.errors := q.errors ++ target.errors;
   
   top.isScalarType = true;
   q.typeToQualify = top;
-  top.freeVariables := target.freeVariables;
 }
 
 
@@ -210,7 +204,7 @@ top::Type ::= q::Qualifiers  target::Type
 abstract production arrayType
 top::Type ::= element::Type  indexQualifiers::Qualifiers  sizeModifier::ArraySizeModifier  sub::ArrayType
 {
-  propagate host, canonicalType;
+  propagate host, canonicalType, errors, freeVariables;
   top.lpp = element.lpp;
   
   top.rpp = cat(brackets(ppConcat([
@@ -254,8 +248,6 @@ top::Type ::= element::Type  indexQualifiers::Qualifiers  sizeModifier::ArraySiz
     | _ -> arrayType(element, indexQualifiers, sizeModifier, sub)
     end;
   top.qualifiers = indexQualifiers.qualifiers;
-  top.errors := element.errors ++ indexQualifiers.errors;
-  top.freeVariables := element.freeVariables ++ sub.freeVariables;
   indexQualifiers.typeToQualify = top;
 }
 
@@ -266,17 +258,15 @@ flowtype ArrayType = decorate {};
 abstract production constantArrayType
 top::ArrayType ::= size::Integer
 {
-  propagate host;
+  propagate host, freeVariables;
   top.pp = text(toString(size));
-  top.freeVariables := [];
   -- TODO: include the Decorated Expr here too maybe?
 }
 abstract production incompleteArrayType
 top::ArrayType ::=
 {
-  propagate host;
+  propagate host, freeVariables;
   top.pp = notext();
-  top.freeVariables := [];
 }
 abstract production variableArrayType
 top::ArrayType ::= size::Decorated Expr
@@ -311,7 +301,7 @@ top::ArraySizeModifier ::= { top.pps = [text("*")]; }
 abstract production functionType
 top::Type ::= result::Type  sub::FunctionType  q::Qualifiers
 {
-  propagate host, canonicalType, withoutExtensionQualifiers;
+  propagate host, canonicalType, withoutExtensionQualifiers, errors, freeVariables;
   --TODO should this space be here? also TODO: ordering? result lpp before sub.lpp maybe? TODO: actually sub.lpp is always nothing. FIXME
   top.lpp = ppConcat([ sub.lpp, space(), result.lpp ]);
   top.rpp = cat(sub.rpp, result.rpp);
@@ -337,8 +327,7 @@ top::Type ::= result::Type  sub::FunctionType  q::Qualifiers
     | _ -> functionType(result, sub, q)
     end;
   top.qualifiers = q.qualifiers;
-  top.errors := result.errors ++ sub.errors;
-  top.freeVariables := result.freeVariables ++ sub.freeVariables;
+  q.typeToQualify = top;
 }
 
 {-- The subtypes of functions -}
@@ -377,13 +366,11 @@ top::FunctionType ::= args::[Type]  variadic::Boolean
 abstract production noProtoFunctionType
 top::FunctionType ::=
 {
-  propagate host, canonicalType, withoutExtensionQualifiers;
+  propagate host, canonicalType, withoutExtensionQualifiers, errors, freeVariables;
   top.mergeQualifiers = \t2::FunctionType -> noProtoFunctionType();
   top.lpp = notext();
   top.rpp = text("()");
   top.mangledName = "noproto";
-  top.errors := [];
-  top.freeVariables := [];
 }
 
 function argTypesToParameters
@@ -406,7 +393,7 @@ Parameters ::= args::[Type]
 abstract production extType
 top::Type ::= q::Qualifiers  sub::ExtType
 {
-  propagate canonicalType;
+  propagate canonicalType, errors, freeVariables;
   top.lpp = sub.lpp;
   top.rpp = sub.rpp;
   top.host = sub.host;
@@ -427,14 +414,12 @@ top::Type ::= q::Qualifiers  sub::ExtType
     | _ -> top
     end;
   top.qualifiers = q.qualifiers;
-  top.errors := q.errors;
-  top.freeVariables := sub.freeVariables;
   
   top.isIntegerType = sub.isIntegerType;
   top.isArithmeticType = sub.isArithmeticType;
   top.isScalarType = sub.isScalarType;
   top.isCompleteType = sub.isCompleteType;
-  top.maybeRefId = sub.maybeRefId;
+  top.maybeRefId := sub.maybeRefId;
 
   q.typeToQualify = top;
   sub.givenQualifiers = q;
@@ -470,7 +455,7 @@ top::ExtType ::=
   top.isArithmeticType = false;
   top.isScalarType = false;
   top.isCompleteType = \ Decorated Env -> true;
-  top.maybeRefId = nothing();
+  top.maybeRefId := nothing();
 }
 
 abstract production enumExtType
@@ -544,7 +529,7 @@ top::ExtType ::= kwd::StructOrEnumOrUnion  n::String  refId::String
       end;
   top.isCompleteType =
     \ env::Decorated Env -> !null(lookupRefId(refId, env));
-  top.maybeRefId = just(refId);
+  top.maybeRefId := just(refId);
 }
 
 nonterminal StructOrEnumOrUnion with pp, mangledName; -- Silver enums would be nice.
@@ -561,7 +546,7 @@ top::StructOrEnumOrUnion ::= { top.pp = text("enum"); top.mangledName = "enum"; 
 abstract production atomicType
 top::Type ::= q::Qualifiers  bt::Type
 {
-  propagate host, canonicalType;
+  propagate host, canonicalType, errors, freeVariables;
   top.lpp = ppConcat([ terminate(space(), q.pps),
                      text("_Atomic"), parens(cat(bt.lpp, bt.rpp))]);
   top.rpp = notext();
@@ -584,8 +569,6 @@ top::Type ::= q::Qualifiers  bt::Type
     | _ -> atomicType(q, bt)
     end;
   top.qualifiers = q.qualifiers;
-  top.errors := q.errors ++ bt.errors;
-  top.freeVariables := bt.freeVariables;
   q.typeToQualify = top;
 }
 
@@ -599,7 +582,7 @@ top::Type ::= q::Qualifiers  bt::Type
 abstract production attributedType
 top::Type ::= attrs::Attributes  bt::Type
 {
-  propagate host, canonicalType, withoutExtensionQualifiers;
+  propagate host, canonicalType, withoutExtensionQualifiers, errors, freeVariables;
   top.lpp = ppConcat([ ppAttributes(attrs), space(), bt.lpp]);
   top.rpp = bt.rpp;
   top.mangledName = bt.mangledName;
@@ -624,9 +607,7 @@ top::Type ::= attrs::Attributes  bt::Type
   top.isScalarType = bt.isScalarType;
   top.isArithmeticType = bt.isArithmeticType;
   top.isCompleteType = bt.isCompleteType;
-  top.maybeRefId = bt.maybeRefId;
-  top.errors := bt.errors;
-  top.freeVariables := bt.freeVariables;
+  top.maybeRefId := bt.maybeRefId;
   
   -- Whatever...
   attrs.env = emptyEnv();
@@ -641,7 +622,7 @@ top::Type ::= attrs::Attributes  bt::Type
 abstract production vectorType
 top::Type ::= bt::Type  bytes::Integer
 {
-  propagate host, canonicalType, withoutExtensionQualifiers;
+  propagate host, canonicalType, withoutExtensionQualifiers, errors, freeVariables;
   top.lpp = ppConcat([ text("__attribute__((__vector_size__(" ++ toString(bytes) ++ "))) "), bt.lpp]);
   top.rpp = bt.rpp;
   top.mangledName = s"vector_${bt.mangledName}_${toString(bytes)}_";
@@ -676,8 +657,6 @@ top::Type ::= bt::Type  bytes::Integer
   top.isScalarType = false;
   top.isArithmeticType = false;
   top.isCompleteType = bt.isCompleteType;
-  top.errors := bt.errors;
-  top.freeVariables := bt.freeVariables;
 }
 
 {-------------------------------------------------------------------------------

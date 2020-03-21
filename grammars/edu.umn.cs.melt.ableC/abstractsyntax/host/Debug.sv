@@ -14,39 +14,23 @@ import silver:util:raw:treemap as tm;
 abstract production txtExpr
 e::Expr ::= txt::String
 {
-  propagate host;
+  propagate host, errors, globalDecls, functionDecls, defs, freeVariables;
   e.pp = text(txt);
-  e.errors := [];
-  e.globalDecls := [];
-  e.functionDecls := [];
-  e.defs := [];
-  e.freeVariables := [];
   e.typerep = errorType(); -- error("Need a type on txtExpr"); 
   e.isLValue = false;
 }
 abstract production txtStmt
 s::Stmt ::= txt::String
 {
-  propagate host;
+  propagate host, errors, globalDecls, functionDecls, defs, functionDefs, freeVariables;
   s.pp = text(txt);
-  s.errors := [];
-  s.globalDecls := [];
-  s.functionDecls := [];
-  s.defs := [];
-  s.functionDefs := [];
-  s.freeVariables := [];
 }
 
 abstract production txtDecl
 d::Decl ::= txt::String
 {
-  propagate host;
+  propagate host, errors, globalDecls, functionDecls, defs, freeVariables;
   d.pp = text(txt);
-  d.errors := [ ];
-  d.globalDecls := [];
-  d.functionDecls := [];
-  d.defs := [ ];
-  d.freeVariables := [];
 }
 
 {- ------------------------------------------------------------
@@ -61,10 +45,7 @@ d::Decl ::= txt::String
 abstract production printEnv
 e::Expr ::=
 {
-  e.errors := [];
-  e.globalDecls := [];
-  e.functionDecls := [];
-  e.defs := [];
+  propagate errors, globalDecls, functionDecls, defs;
   e.pp =
     decorate comment("printEnv pp should be demanded through host pp", location=e.location)
     with {env = e.env;
