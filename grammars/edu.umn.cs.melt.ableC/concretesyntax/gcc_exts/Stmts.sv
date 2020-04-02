@@ -1,6 +1,6 @@
 grammar edu:umn:cs:melt:ableC:concretesyntax:gcc_exts;
 
-terminal GNU_UULabel_t '__label__' lexer classes {Ckeyword};
+terminal GNU_UULabel_t '__label__' lexer classes {Keyword, Reserved};
 
 concrete production localLabelsCompoundBlock_c
 top::CompoundStatement_c ::= '{' ll::LabelDeclarations_c dcls::BlockItemList_c '}'

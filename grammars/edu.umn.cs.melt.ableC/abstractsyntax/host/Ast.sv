@@ -4,7 +4,7 @@ imports silver:langutil;
 imports silver:langutil:pp;
 imports edu:umn:cs:melt:ableC:abstractsyntax:env;
 imports edu:umn:cs:melt:ableC:abstractsyntax:construction;
-imports edu:umn:cs:melt:ableC:abstractsyntax:substitution;
+imports edu:umn:cs:melt:ableC:abstractsyntax:rewriting;
 
 -- Flowtypes for imported attributes that are the same w.r.t. the reference set on all nonterminals
 flowtype pp {} on

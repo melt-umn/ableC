@@ -1,8 +1,8 @@
 grammar edu:umn:cs:melt:ableC:concretesyntax:gcc_exts;
 
-terminal Asm_t 'asm' lexer classes {Ckeyword};
-terminal CPP_Asm_t '__asm__' lexer classes {Ckeyword};
-terminal CPP_UUAsm_t '__asm' lexer classes {Ckeyword};
+terminal Asm_t 'asm' lexer classes {Keyword, Reserved};
+terminal CPP_Asm_t '__asm__' lexer classes {Keyword, Reserved};
+terminal CPP_UUAsm_t '__asm' lexer classes {Keyword, Reserved};
 
 -- Syntax used external to this file:
 

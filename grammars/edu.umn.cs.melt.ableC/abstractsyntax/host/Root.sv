@@ -5,13 +5,13 @@ import edu:umn:cs:melt:ableC:abstractsyntax:builtins as builtinfunctions;
 
 global fullErrorCheck::Boolean = true;
 
-nonterminal Root with pp, host<Root>, lifted<Root>, errors, env;
+nonterminal Root with pp, host<Root>, errors, env;
 flowtype Root = decorate {env};
 
 abstract production root
 top::Root ::= d::GlobalDecls
 {
-  propagate host, lifted;
+  propagate host;
   
   top.pp = terminate(line(), d.pps);
   top.errors := d.errors;
@@ -23,17 +23,14 @@ top::Root ::= d::GlobalDecls
 
 synthesized attribute srcAst::Root;
 synthesized attribute hostAst::Root;
-synthesized attribute liftedAst::Root;
 synthesized attribute srcPP::Document;
 synthesized attribute hostPP::Document;
-synthesized attribute liftedPP::Document;
 synthesized attribute finalPP::Document;
 -- functions that given an error return false if the error should be dropped
 synthesized attribute srcErrorFilters::[(Boolean ::= Message)] with ++;
 synthesized attribute hostErrorFilters::[(Boolean ::= Message)] with ++;
-synthesized attribute liftedErrorFilters::[(Boolean ::= Message)] with ++;
-nonterminal Compilation with srcAst, hostAst, liftedAst, srcPP, hostPP, liftedPP, finalPP, errors, env, srcErrorFilters, hostErrorFilters, liftedErrorFilters;
-flowtype Compilation = decorate {env}, srcAst {}, hostAst {env}, liftedAst {env}, srcPP {}, hostPP {env}, liftedPP {env}, finalPP {env};
+nonterminal Compilation with srcAst, hostAst, srcPP, hostPP, finalPP, errors, env, srcErrorFilters, hostErrorFilters;
+flowtype Compilation = decorate {env}, srcAst {}, hostAst {env}, srcPP {}, hostPP {env}, finalPP {env};
 
 abstract production compilation
 top::Compilation ::= srcAst::Root
@@ -41,20 +38,14 @@ top::Compilation ::= srcAst::Root
   srcAst.env = top.env;
   production hostAst::Root = srcAst.host;
   hostAst.env = top.env;
-  production liftedAst::Root = hostAst.lifted;
-  liftedAst.env = top.env;
   top.srcErrorFilters := [];
   top.hostErrorFilters := [];
-  top.liftedErrorFilters := [];
 
   local srcErrors :: [Message] =
     foldr(\f::(Boolean ::= Message) e::[Message] -> filter(f, e), srcAst.errors, top.srcErrorFilters);
 
   local hostErrors :: [Message] =
     foldr(\f::(Boolean ::= Message) e::[Message] -> filter(f, e), hostAst.errors, top.hostErrorFilters);
-
-  local liftedErrors :: [Message] =
-    foldr(\f::(Boolean ::= Message) e::[Message] -> filter(f, e), liftedAst.errors, top.liftedErrorFilters);
   
   top.errors :=
     if !null(srcErrors)
@@ -63,17 +54,13 @@ top::Compilation ::= srcAst::Root
     then []
     else if !null(hostErrors)
     then [nested(loc("", -1, -1, -1, -1, -1, -1), "Errors in host tree:", hostErrors)]
-    else if !null(liftedErrors)
-    then [nested(loc("", -1, -1, -1, -1, -1, -1), "Errors in lifted tree:", liftedErrors)]
     else [];
   
   top.srcAst = srcAst;
   top.hostAst = hostAst;
-  top.liftedAst = liftedAst;
   top.srcPP = srcAst.pp;
   top.hostPP = hostAst.pp;
-  top.liftedPP = liftedAst.pp;
-  top.finalPP = top.liftedPP;
+  top.finalPP = top.hostPP;
 }
 
 {- There seem to be some efficiency issues with the way globalDecls are

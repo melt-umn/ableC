@@ -7,7 +7,7 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 abstract production realConstant
 top::Expr ::= c::NumericConstant
 {
-  propagate host, lifted;
+  propagate host;
   top.pp = c.pp;
   top.errors := [];
   top.globalDecls := [];
@@ -16,12 +16,13 @@ top::Expr ::= c::NumericConstant
   top.freeVariables := [];
   top.typerep = builtinType(nilQualifier(), c.constanttyperep);
   top.isLValue = false;
+  top.isSimple = true;
   top.integerConstantValue = c.integerConstantValue;
 }
 abstract production imaginaryConstant
 top::Expr ::= c::NumericConstant
 {
-  propagate host, lifted;
+  propagate host;
   top.pp = c.pp;
   top.errors := [];
   top.globalDecls := [];
@@ -34,11 +35,12 @@ top::Expr ::= c::NumericConstant
     | unsignedType(it) -> complexIntegerType(it) -- probably not possible, but buggy!
     end);
   top.isLValue = false;
+  top.isSimple = true;
 }
 abstract production characterConstant
 top::Expr ::= num::String  c::CharPrefix
 {
-  propagate host, lifted;
+  propagate host;
   top.pp = text(num);
   top.errors := [];
   top.globalDecls := [];
@@ -47,9 +49,10 @@ top::Expr ::= num::String  c::CharPrefix
   top.freeVariables := [];
   top.typerep = builtinType(nilQualifier(), signedType(charType())); -- TODO: no idea
   top.isLValue = false;
+  top.isSimple = true;
 }
 
-nonterminal NumericConstant with location, pp, mangledName, host<NumericConstant>, lifted<NumericConstant>, errors, env, constanttyperep, integerConstantValue;
+nonterminal NumericConstant with location, pp, mangledName, host<NumericConstant>, errors, env, constanttyperep, integerConstantValue;
 flowtype NumericConstant = decorate {env}, constanttyperep {decorate}, integerConstantValue {decorate};
 
 synthesized attribute constanttyperep :: BuiltinType;
@@ -57,7 +60,7 @@ synthesized attribute constanttyperep :: BuiltinType;
 abstract production integerConstant
 top::NumericConstant ::= num::String  unsigned::Boolean  suffix::IntSuffix
 {
-  propagate host, lifted;
+  propagate host;
   top.pp = text(num);
   top.mangledName = substitute(".", "_", num);
   top.errors := [];
@@ -67,7 +70,7 @@ top::NumericConstant ::= num::String  unsigned::Boolean  suffix::IntSuffix
 abstract production hexIntegerConstant
 top::NumericConstant ::= num::String  unsigned::Boolean  suffix::IntSuffix
 {
-  propagate host, lifted;
+  propagate host;
   top.pp = text(num);
   top.mangledName = substitute(".", "_", num);
   top.errors := [];
@@ -77,7 +80,7 @@ top::NumericConstant ::= num::String  unsigned::Boolean  suffix::IntSuffix
 abstract production octIntegerConstant
 top::NumericConstant ::= num::String  unsigned::Boolean  suffix::IntSuffix
 {
-  propagate host, lifted;
+  propagate host;
   top.pp = text(num);
   top.mangledName = substitute(".", "_", num);
   top.errors := [];
@@ -88,7 +91,7 @@ top::NumericConstant ::= num::String  unsigned::Boolean  suffix::IntSuffix
 abstract production floatConstant
 top::NumericConstant ::= num::String  suffix::FloatSuffix
 {
-  propagate host, lifted;
+  propagate host;
   top.pp = text(num);
   top.mangledName = substitute(".", "_", num);
   top.errors := [];
@@ -98,7 +101,7 @@ top::NumericConstant ::= num::String  suffix::FloatSuffix
 abstract production hexFloatConstant
 top::NumericConstant ::= num::String  suffix::FloatSuffix
 {
-  propagate host, lifted;
+  propagate host;
   top.pp = text(num);
   top.mangledName = substitute(".", "_", num);
   top.errors := [];

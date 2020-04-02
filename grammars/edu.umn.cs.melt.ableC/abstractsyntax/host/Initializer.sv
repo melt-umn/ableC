@@ -1,12 +1,12 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 
-nonterminal MaybeInitializer with pp, host<MaybeInitializer>, lifted<MaybeInitializer>, errors, globalDecls, functionDecls, defs, env, freeVariables, returnType;
+nonterminal MaybeInitializer with pp, host<MaybeInitializer>, errors, globalDecls, functionDecls, defs, env, freeVariables, returnType;
 flowtype MaybeInitializer = decorate {env, returnType};
 
 abstract production nothingInitializer
 top::MaybeInitializer ::=
 {
-  propagate host, lifted;
+  propagate host;
   top.pp = notext();
   top.errors := [];
   top.globalDecls := [];
@@ -17,7 +17,7 @@ top::MaybeInitializer ::=
 abstract production justInitializer
 top::MaybeInitializer ::= i::Initializer
 {
-  propagate host, lifted;
+  propagate host;
   top.pp = ppConcat([ text(" = "), i.pp ]);
   top.errors := i.errors;
   top.globalDecls := i.globalDecls;
@@ -26,13 +26,13 @@ top::MaybeInitializer ::= i::Initializer
   top.freeVariables := i.freeVariables;
 }
 
-nonterminal Initializer with pp, host<Initializer>, lifted<Initializer>, errors, globalDecls, functionDecls, defs, env, freeVariables, returnType;
+nonterminal Initializer with pp, host<Initializer>, errors, globalDecls, functionDecls, defs, env, freeVariables, returnType;
 flowtype Initializer = decorate {env, returnType};
 
 abstract production exprInitializer
 top::Initializer ::= e::Expr
 {
-  propagate host, lifted;
+  propagate host;
   top.pp = e.pp;
   top.errors := e.errors;
   top.globalDecls := e.globalDecls;
@@ -44,7 +44,7 @@ top::Initializer ::= e::Expr
 abstract production objectInitializer
 top::Initializer ::= l::InitList
 {
-  propagate host, lifted;
+  propagate host;
   top.pp = ppConcat([text("{"), ppImplode(text(", "), l.pps), text("}")]);
   top.errors := l.errors;
   top.globalDecls := l.globalDecls;
@@ -53,13 +53,13 @@ top::Initializer ::= l::InitList
   top.freeVariables := l.freeVariables;
 }
 
-nonterminal InitList with pps, host<InitList>, lifted<InitList>, errors, globalDecls, functionDecls, defs, env, freeVariables, returnType;
+nonterminal InitList with pps, host<InitList>, errors, globalDecls, functionDecls, defs, env, freeVariables, returnType;
 flowtype InitList = decorate {env, returnType};
 
 abstract production consInit
 top::InitList ::= h::Init  t::InitList
 {
-  propagate host, lifted;
+  propagate host;
   top.pps = h.pp :: t.pps;
   top.errors := h.errors ++ t.errors;
   top.globalDecls := h.globalDecls ++ t.globalDecls;
@@ -73,7 +73,7 @@ top::InitList ::= h::Init  t::InitList
 abstract production nilInit
 top::InitList ::=
 {
-  propagate host, lifted;
+  propagate host;
   top.pps = [];
   top.errors := [];
   top.globalDecls := [];
@@ -82,13 +82,13 @@ top::InitList ::=
   top.freeVariables := [];
 }
 
-nonterminal Init with pp, host<Init>, lifted<Init>, errors, globalDecls, functionDecls, defs, env, freeVariables, returnType;
+nonterminal Init with pp, host<Init>, errors, globalDecls, functionDecls, defs, env, freeVariables, returnType;
 flowtype Init = decorate {env, returnType};
 
 abstract production positionalInit
 top::Init ::= i::Initializer
 {
-  propagate host, lifted;
+  propagate host;
   top.pp = i.pp;
   top.errors := i.errors;
   top.globalDecls := i.globalDecls;
@@ -100,7 +100,7 @@ top::Init ::= i::Initializer
 abstract production designatedInit
 top::Init ::= d::Designator  i::Initializer
 {
-  propagate host, lifted;
+  propagate host;
   top.pp = ppConcat([d.pp, text(" = "), i.pp]);
   top.errors := d.errors ++ i.errors;
   top.globalDecls := d.globalDecls ++ i.globalDecls;
@@ -115,13 +115,13 @@ top::Init ::= d::Designator  i::Initializer
  - Tree access pattern for designators.
  - e.g.  "[1].d[0] = e" gives "array(0, field(d, array(1, initial)))"
  -}
-nonterminal Designator with pp, host<Designator>, lifted<Designator>, errors, globalDecls, functionDecls, defs, env, freeVariables, returnType;
+nonterminal Designator with pp, host<Designator>, errors, globalDecls, functionDecls, defs, env, freeVariables, returnType;
 flowtype Designator = decorate {env, returnType};
 
 abstract production initialDesignator
 top::Designator ::=
 {
-  propagate host, lifted;
+  propagate host;
   top.pp = notext();
   top.errors := [];
   top.globalDecls := [];
@@ -133,7 +133,7 @@ top::Designator ::=
 abstract production fieldDesignator
 top::Designator ::= d::Designator  f::Name
 {
-  propagate host, lifted;
+  propagate host;
   top.pp = ppConcat([d.pp, text("."), f.pp]);
   top.errors := d.errors;
   top.globalDecls := d.globalDecls;
@@ -145,7 +145,7 @@ top::Designator ::= d::Designator  f::Name
 abstract production arrayDesignator
 top::Designator ::= d::Designator  e::Expr
 {
-  propagate host, lifted;
+  propagate host;
   top.pp = ppConcat([d.pp, text("["), e.pp, text("]")]);
   top.errors := d.errors ++ e.errors;
   top.globalDecls := d.globalDecls ++ e.globalDecls;
@@ -160,7 +160,7 @@ top::Designator ::= d::Designator  e::Expr
 abstract production arrayRangeDesignator
 top::Designator ::= d::Designator  l::Expr  u::Expr
 {
-  propagate host, lifted;
+  propagate host;
   top.pp = ppConcat([d.pp, text("["), l.pp, text("..."), u.pp, text("]")]);
   top.errors := d.errors ++ l.errors ++ u.errors;
   top.globalDecls := d.globalDecls ++ l.globalDecls ++ u.globalDecls;

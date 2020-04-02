@@ -2,17 +2,17 @@ grammar edu:umn:cs:melt:ableC:concretesyntax:gcc_exts;
 
 import edu:umn:cs:melt:ableC:abstractsyntax:overloadable as ovrld;
 
-terminal GNU_AlignOf_T '__alignof' lexer classes {Ckeyword};
-terminal GNU_AlignOfUU_T '__alignof__' lexer classes {Ckeyword};
+terminal GNU_AlignOf_T '__alignof' lexer classes {Keyword, Reserved};
+terminal GNU_AlignOfUU_T '__alignof__' lexer classes {Keyword, Reserved};
 
-terminal GNU_Builtin_VaArg_t '__builtin_va_arg' lexer classes {Ckeyword};
-terminal GNU_Builtin_Offsetof_t '__builtin_offsetof' lexer classes {Ckeyword};
-terminal GNU_Builtin_TypesCompatible_t '__builtin_types_compatible_p' lexer classes {Ckeyword};
-terminal GNU_Builtin_ConstantP_t '__builtin_constant_p' lexer classes {Ckeyword};
-terminal GNU_Builtin_VaArgPack_t '__builtin_va_arg_pack' lexer classes {Ckeyword};
-terminal GNU_Builtin_Expect_t '__builtin_expect' lexer classes {Ckeyword};
-terminal GNU_Builtin_VaStart_t '__builtin_va_start' lexer classes {Ckeyword};
-terminal GNU_Builtin_VaEnd_t '__builtin_va_end' lexer classes {Ckeyword};
+terminal GNU_Builtin_VaArg_t '__builtin_va_arg' lexer classes {Keyword, Reserved};
+terminal GNU_Builtin_Offsetof_t '__builtin_offsetof' lexer classes {Keyword, Reserved};
+terminal GNU_Builtin_TypesCompatible_t '__builtin_types_compatible_p' lexer classes {Keyword, Reserved};
+terminal GNU_Builtin_ConstantP_t '__builtin_constant_p' lexer classes {Keyword, Reserved};
+terminal GNU_Builtin_VaArgPack_t '__builtin_va_arg_pack' lexer classes {Keyword, Reserved};
+terminal GNU_Builtin_Expect_t '__builtin_expect' lexer classes {Keyword, Reserved};
+terminal GNU_Builtin_VaStart_t '__builtin_va_start' lexer classes {Keyword, Reserved};
+terminal GNU_Builtin_VaEnd_t '__builtin_va_end' lexer classes {Keyword, Reserved};
 
 
 -- If not null, otherwise

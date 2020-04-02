@@ -6,7 +6,7 @@ imports edu:umn:cs:melt:ableC:abstractsyntax:construction as ast;
 imports silver:langutil;
 
 -- Alignas
-terminal C11_AlignAs_t '_Alignas' lexer classes {Ckeyword};
+terminal C11_AlignAs_t '_Alignas' lexer classes {Keyword, Reserved};
 
 concrete productions top::DeclarationSpecifiers_c
 | h::AlignmentSpecifier_c  t::DeclarationSpecifiers_c
@@ -44,14 +44,14 @@ concrete productions top::AlignmentSpecifier_c
     { top.specialSpecifiers = [ast:alignasSpecifier(e.ast)]; }
 
 -- Noreturn
-terminal C11_Noreturn_t '_Noreturn' lexer classes {Ckeyword};
+terminal C11_Noreturn_t '_Noreturn' lexer classes {Keyword, Reserved};
 
 concrete productions top::FunctionSpecifier_c
 | '_Noreturn'
     { top.specialSpecifiers = [ast:noreturnQualifier()]; }
 
 -- Generic
-terminal C11_Generic_t '_Generic' lexer classes {Ckeyword};
+terminal C11_Generic_t '_Generic' lexer classes {Keyword, Reserved};
 
 concrete productions top::PrimaryExpr_c
 | g::GenericSelection_c
@@ -101,8 +101,8 @@ concrete productions top::GenericAssoc_c
 -- One could imagine an alternative solution involving terminal precedence,
 -- but that would require the original '(' to have a precedence!
 
-terminal C11_Atomic_t '_Atomic' lexer classes {Ckeyword};
-terminal C11_Atomic_Specifier_t /_Atomic[\t\ \r\n]*\(/ lexer classes {Ckeyword};
+terminal C11_Atomic_t '_Atomic' lexer classes {Keyword, Reserved};
+terminal C11_Atomic_Specifier_t /_Atomic[\t\ \r\n]*\(/ lexer classes {Keyword, Reserved};
 
 concrete productions top::TypeSpecifier_c
 | C11_Atomic_Specifier_t t::TypeName_c ')'
@@ -121,7 +121,7 @@ ast:BaseTypeExpr ::= q::ast:Qualifiers bt::ast:BaseTypeExpr
 }
 
 -- Thread_local
-terminal C11_Thread_local_t '_Thread_local' lexer classes {Ckeyword};
+terminal C11_Thread_local_t '_Thread_local' lexer classes {Keyword, Reserved};
 
 concrete productions top::StorageClassSpecifier_c
 | '_Thread_local'
@@ -129,7 +129,7 @@ concrete productions top::StorageClassSpecifier_c
       top.storageClass = [ast:threadLocalStorageClass()]; } -- Storage class MODIFIER of some sort. only with 'static' or 'extern'.
 
 -- Static assert
-terminal C11_Static_assert_t '_Static_assert' lexer classes {Ckeyword};
+terminal C11_Static_assert_t '_Static_assert' lexer classes {Keyword, Reserved};
 
 closed nonterminal StaticAssertDeclaration_c with location, ast<ast:Decl>;
 concrete productions top::StaticAssertDeclaration_c
@@ -141,7 +141,7 @@ concrete productions top::Declaration_c
     { top.ast = s.ast; }
 
 -- _Alignof
-terminal C11_Alignof_t '_Alignof' lexer classes {Ckeyword};
+terminal C11_Alignof_t '_Alignof' lexer classes {Keyword, Reserved};
 
 concrete productions top::UnaryExpr_c
 | '_Alignof' '(' t::TypeName_c ')'

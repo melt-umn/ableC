@@ -1,11 +1,11 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
-nonterminal AsmStatement with location, pp, host<AsmStatement>, lifted<AsmStatement>, env, returnType, freeVariables;
+nonterminal AsmStatement with location, pp, host<AsmStatement>, env, returnType, freeVariables;
 flowtype AsmStatement = decorate {env, returnType};
 
 abstract production asmStatement
 a::AsmStatement ::= arg::AsmArgument
 {
-  propagate host, lifted;
+  propagate host;
   a.pp = ppConcat( [ text("asm ("), arg.pp, text(")"), text(";") ] );
   a.freeVariables := arg.freeVariables;
 }
@@ -13,18 +13,18 @@ a::AsmStatement ::= arg::AsmArgument
 abstract production asmStatementTypeQual
 a::AsmStatement ::= tq::Qualifier arg::AsmArgument
 {
-  propagate host, lifted;
+  propagate host;
   a.pp = ppConcat( [ text("asm "), tq.pp, text(" ("), arg.pp, text(")"), text(";") ] );
   a.freeVariables := arg.freeVariables;
 }
 
-nonterminal AsmArgument with location, pp, host<AsmArgument>, lifted<AsmArgument>, env, returnType, freeVariables;
+nonterminal AsmArgument with location, pp, host<AsmArgument>, env, returnType, freeVariables;
 flowtype AsmArgument = decorate {env, returnType};
 
 abstract production asmArgument
 top::AsmArgument ::= s::String asmOps1::AsmOperands asmOps2::AsmOperands asmC::AsmClobbers
 {
-  propagate host, lifted;
+  propagate host;
   top.pp = ppConcat( [ text(s) ]
              ++ (if asmOps1.exists || asmOps2.exists || asmC.exists then [text(": ")] else [ ])  
              ++ [asmOps1.pp]
@@ -38,38 +38,38 @@ top::AsmArgument ::= s::String asmOps1::AsmOperands asmOps2::AsmOperands asmC::A
 
 synthesized attribute exists::Boolean;
 
-nonterminal AsmClobbers with location, pp, exists, host<AsmClobbers>, lifted<AsmClobbers>;
+nonterminal AsmClobbers with location, pp, exists, host<AsmClobbers>;
 flowtype AsmClobbers = decorate {}, exists {};
 
 abstract production noneAsmClobbers 
 top::AsmClobbers ::=
 {
-  propagate host, lifted;
+  propagate host;
   top.exists = false;
   top.pp = notext();
 }
 abstract production oneAsmClobbers 
 top::AsmClobbers ::= s::String
 {
-  propagate host, lifted;
+  propagate host;
   top.exists = true;
   top.pp = text(s);
 }
 abstract production snocAsmClobbers 
 top::AsmClobbers ::= asmC::AsmClobbers s::String
 {
-  propagate host, lifted;
+  propagate host;
   top.exists = true;
   top.pp = ppConcat( [asmC.pp, text(", "), text(s) ] );
 }
 
-nonterminal AsmOperands with location, pp, exists, host<AsmOperands>, lifted<AsmOperands>, env, returnType, freeVariables;
+nonterminal AsmOperands with location, pp, exists, host<AsmOperands>, env, returnType, freeVariables;
 flowtype AsmOperands = decorate {env, returnType}, exists {};
 
 abstract production noneAsmOps
 top::AsmOperands ::= 
 {
-  propagate host, lifted;
+  propagate host;
   top.pp = notext();
   top.exists = false;
   top.freeVariables := [];
@@ -77,7 +77,7 @@ top::AsmOperands ::=
 abstract production oneAsmOps
 top::AsmOperands ::= asmOp::AsmOperand
 {
-  propagate host, lifted;
+  propagate host;
   top.pp = asmOp.pp;
   top.exists = true;
   top.freeVariables := asmOp.freeVariables;
@@ -85,19 +85,19 @@ top::AsmOperands ::= asmOp::AsmOperand
 abstract production snocAsmOps
 top::AsmOperands ::= asmOps::AsmOperands asmOp::AsmOperand
 {
-  propagate host, lifted;
+  propagate host;
   top.pp = ppConcat ( [asmOps.pp, text(", "), asmOp.pp] );
   top.exists = true;
   top.freeVariables := asmOp.freeVariables ++ asmOps.freeVariables;
 }
 
-nonterminal AsmOperand with location, pp, host<AsmOperand>, lifted<AsmOperand>, env, returnType, freeVariables;
+nonterminal AsmOperand with location, pp, host<AsmOperand>, env, returnType, freeVariables;
 flowtype AsmOperand = decorate {env, returnType};
 
 abstract production asmOperand
 top::AsmOperand ::= s::String e::Expr
 { 
-  propagate host, lifted;
+  propagate host;
   top.pp = ppConcat( [ text(s), text(" ("), e.pp, text(")") ] );
   top.freeVariables := e.freeVariables;
 }
@@ -105,7 +105,7 @@ top::AsmOperand ::= s::String e::Expr
 abstract production asmOperandId
 top::AsmOperand ::= id::Name  s::String e::Expr
 {
-  propagate host, lifted;
+  propagate host;
   top.pp = ppConcat( [ text("["), id.pp, text("] "), text(s), text(" ("), e.pp, text(")") ] ); 
   top.freeVariables := e.freeVariables;
 }
