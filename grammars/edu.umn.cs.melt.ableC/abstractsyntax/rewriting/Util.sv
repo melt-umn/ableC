@@ -27,8 +27,9 @@ global normalizeDecProds::Strategy =
   | decTypeModifierExpr(a) -> a
   end;
 
+-- Based on allTopDown strategy, but also looks through decorated wrapper productions 
 abstract production topDownSubs
 top::Strategy ::= s::Strategy
 {
-  forwards to try(normalizeDecProds) <* try(s <+ all(topDownSubs(s)));
+  forwards to try(normalizeDecProds) <* (s <+ all(topDownSubs(s)));
 }
