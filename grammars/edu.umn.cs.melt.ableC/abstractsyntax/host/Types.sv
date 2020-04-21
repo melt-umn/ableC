@@ -9,11 +9,11 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
  - Variants: builtin, pointer, array, function, tagged, noncanonical.
  - Noncanonical forwards, and so doesn't need any attributes, etc attached to it.
  -}
-nonterminal Type with lpp, rpp, host<Type>, canonicalType<Type>, baseTypeExpr, typeModifierExpr, mangledName, integerPromotions, defaultArgumentPromotions, defaultLvalueConversion, defaultFunctionArrayLvalueConversion, isIntegerType, isScalarType, isArithmeticType, isCompleteType, maybeRefId, withoutAttributes, withoutTypeQualifiers, withoutExtensionQualifiers<Type>, withTypeQualifiers, addedTypeQualifiers, qualifiers, mergeQualifiers<Type>, errors, freeVariables;
+nonterminal Type with lpp, rpp, host, canonicalType, baseTypeExpr, typeModifierExpr, mangledName, integerPromotions, defaultArgumentPromotions, defaultLvalueConversion, defaultFunctionArrayLvalueConversion, isIntegerType, isScalarType, isArithmeticType, isCompleteType, maybeRefId, withoutAttributes, withoutTypeQualifiers, withoutExtensionQualifiers, withTypeQualifiers, addedTypeQualifiers, qualifiers, mergeQualifiers<Type>, errors, freeVariables;
 flowtype Type = decorate {}, canonicalType {}, baseTypeExpr {}, typeModifierExpr {}, integerPromotions {}, defaultArgumentPromotions {}, defaultLvalueConversion {}, defaultFunctionArrayLvalueConversion {}, isIntegerType {}, isScalarType {}, isArithmeticType {}, isCompleteType {}, maybeRefId {}, withoutAttributes {}, withoutTypeQualifiers {}, withoutExtensionQualifiers {}, withTypeQualifiers {addedTypeQualifiers}, qualifiers {}, mergeQualifiers {};
 
 -- Transform away noncanonical types such as typedefs, etc. while preserving extension types
-synthesized attribute canonicalType<a> :: a;
+functor attribute canonicalType;
 
 -- Used to turn a Type back into a TypeName
 synthesized attribute baseTypeExpr :: BaseTypeExpr;
@@ -43,7 +43,7 @@ synthesized attribute withoutAttributes :: Type;
 synthesized attribute withoutTypeQualifiers :: Type;
 
 -- Strip non-host qualifiers from all levels of the type
-synthesized attribute withoutExtensionQualifiers<a> :: a;
+functor attribute withoutExtensionQualifiers;
 
 -- To support accumulation of extension qualifiers on redeclaration
 synthesized attribute mergeQualifiers<a> :: (a ::= a);
@@ -260,7 +260,7 @@ top::Type ::= element::Type  indexQualifiers::Qualifiers  sizeModifier::ArraySiz
 }
 
 {-- The subtypes of arrays -}
-nonterminal ArrayType with pp, host<ArrayType>, freeVariables;
+nonterminal ArrayType with pp, host, freeVariables;
 flowtype ArrayType = decorate {};
 
 abstract production constantArrayType
@@ -342,7 +342,7 @@ top::Type ::= result::Type  sub::FunctionType  q::Qualifiers
 }
 
 {-- The subtypes of functions -}
-nonterminal FunctionType with lpp, rpp, host<FunctionType>, canonicalType<FunctionType>, mangledName, withoutExtensionQualifiers<FunctionType>, mergeQualifiers<FunctionType>, errors, freeVariables;
+nonterminal FunctionType with lpp, rpp, host, canonicalType, mangledName, withoutExtensionQualifiers, mergeQualifiers<FunctionType>, errors, freeVariables;
 flowtype FunctionType = decorate {}, canonicalType {};
 -- clang has an 'extinfo' structure with calling convention, noreturn, 'produces'?, regparam
 
@@ -445,7 +445,7 @@ inherited attribute givenQualifiers::Qualifiers;
 -- t1.isEqualTo(t2) iff t1.mangledName == t2.mangledName
 synthesized attribute isEqualTo::(Boolean ::= ExtType);
 
-closed nonterminal ExtType with givenQualifiers, pp, lpp, rpp, host<Type>, canonicalType<ExtType>, baseTypeExpr, typeModifierExpr, mangledName, isEqualTo, integerPromotions, defaultArgumentPromotions, defaultLvalueConversion, defaultFunctionArrayLvalueConversion, isIntegerType, isScalarType, isArithmeticType, isCompleteType, maybeRefId, freeVariables;
+closed nonterminal ExtType with givenQualifiers, pp, lpp, rpp, host<Type>, canonicalType, baseTypeExpr, typeModifierExpr, mangledName, isEqualTo, integerPromotions, defaultArgumentPromotions, defaultLvalueConversion, defaultFunctionArrayLvalueConversion, isIntegerType, isScalarType, isArithmeticType, isCompleteType, maybeRefId, freeVariables;
 flowtype ExtType = decorate {givenQualifiers}, lpp {givenQualifiers}, rpp {givenQualifiers}, canonicalType {decorate}, baseTypeExpr {decorate}, typeModifierExpr {decorate}, isEqualTo {}, integerPromotions {decorate}, defaultArgumentPromotions {decorate}, defaultLvalueConversion {decorate}, defaultFunctionArrayLvalueConversion {decorate}, isIntegerType {}, isScalarType {}, isArithmeticType {}, isCompleteType {}, maybeRefId {};
 
 -- Forward flowtype is empty, since extensions would primarilly introduce new non-forwarding
@@ -707,7 +707,7 @@ top::Type ::= sub::NoncanonicalType
 }
 
 {-- Types that resolve to other types. -}
-nonterminal NoncanonicalType with canonicalType<Type>, lpp, rpp, host<NoncanonicalType>, baseTypeExpr, typeModifierExpr, withTypeQualifiers, addedTypeQualifiers;
+nonterminal NoncanonicalType with canonicalType<Type>, lpp, rpp, host, baseTypeExpr, typeModifierExpr, withTypeQualifiers, addedTypeQualifiers;
 flowtype NoncanonicalType = decorate {}, canonicalType {}, baseTypeExpr {}, typeModifierExpr {}, withTypeQualifiers {addedTypeQualifiers};
 
 {-- A NoncanonicalType that is really just a normal Type

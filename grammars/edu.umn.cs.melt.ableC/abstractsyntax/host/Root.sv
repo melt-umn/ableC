@@ -5,7 +5,7 @@ import edu:umn:cs:melt:ableC:abstractsyntax:builtins as builtinfunctions;
 
 global fullErrorCheck::Boolean = true;
 
-nonterminal Root with pp, host<Root>, errors, env;
+nonterminal Root with pp, host, errors, env;
 flowtype Root = decorate {env};
 
 abstract production root

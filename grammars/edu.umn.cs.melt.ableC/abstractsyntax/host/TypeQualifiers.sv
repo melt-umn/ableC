@@ -1,6 +1,6 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 
-nonterminal Qualifiers with mangledName, qualifiers, pps, host<Qualifiers>, typeToQualify, errors;
+nonterminal Qualifiers with mangledName, qualifiers, pps, host, typeToQualify, errors;
 flowtype Qualifiers = decorate {}, qualifiers {}, errors {typeToQualify};
 
 autocopy attribute typeToQualify :: Type;
@@ -141,13 +141,14 @@ top::Qualifier ::=
  - e.g. Function specifiers (inline, _Noreturn)
  -      Alignment specifiers (_Alignas)
  -}
-nonterminal SpecialSpecifier with pp, host<SpecialSpecifier>, env, returnType, errors, globalDecls, functionDecls, defs;
+nonterminal SpecialSpecifier with pp, host, env, returnType, errors, globalDecls, functionDecls, defs;
 flowtype SpecialSpecifier = decorate {env, returnType};
+
+propagate host on SpecialSpecifier;
 
 abstract production inlineQualifier
 top::SpecialSpecifier ::=
 {
-  propagate host;
   top.pp = text("inline");
   top.errors := [];
   top.globalDecls := [];
@@ -159,7 +160,6 @@ top::SpecialSpecifier ::=
 abstract production noreturnQualifier
 top::SpecialSpecifier ::=
 {
-  propagate host;
   top.pp = text("_Noreturn");
   top.errors := [];
   top.globalDecls := [];
@@ -171,7 +171,6 @@ top::SpecialSpecifier ::=
 abstract production alignasSpecifier
 top::SpecialSpecifier ::= e::Expr
 {
-  propagate host;
   top.pp = ppConcat([text("_Alignas"), parens(e.pp)]);
   top.errors := e.errors;
   top.globalDecls := e.globalDecls;
@@ -179,13 +178,14 @@ top::SpecialSpecifier ::= e::Expr
   top.defs := e.defs;
 }
 
-nonterminal SpecialSpecifiers with pps, host<SpecialSpecifiers>, env, returnType, errors, globalDecls, functionDecls, defs;
+nonterminal SpecialSpecifiers with pps, host, env, returnType, errors, globalDecls, functionDecls, defs;
 flowtype SpecialSpecifiers = decorate {env, returnType};
+
+propagate host on SpecialSpecifiers;
 
 abstract production consSpecialSpecifier
 top::SpecialSpecifiers ::= h::SpecialSpecifier t::SpecialSpecifiers
 {
-  propagate host;
   top.pps = h.pp :: t.pps;
   top.errors := h.errors ++ t.errors;
   top.globalDecls := h.globalDecls ++ t.globalDecls;
@@ -196,7 +196,6 @@ top::SpecialSpecifiers ::= h::SpecialSpecifier t::SpecialSpecifiers
 abstract production nilSpecialSpecifier
 top::SpecialSpecifiers ::=
 {
-  propagate host;
   top.pps = [];
   top.errors := [];
   top.globalDecls := [];

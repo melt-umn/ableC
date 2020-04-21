@@ -42,7 +42,7 @@ top::Expr ::= ty::TypeName  e::MemberDesignator
   top.isSimple = true;
 }
 
-nonterminal MemberDesignator with pp, host<MemberDesignator>, errors, globalDecls, functionDecls, defs, env, returnType, freeVariables;
+nonterminal MemberDesignator with pp, host, errors, globalDecls, functionDecls, defs, env, returnType, freeVariables;
 flowtype MemberDesignator = decorate {env, returnType};
 
 abstract production initialMemberDesignator

@@ -52,15 +52,16 @@ top::Expr ::= num::String  c::CharPrefix
   top.isSimple = true;
 }
 
-nonterminal NumericConstant with location, pp, mangledName, host<NumericConstant>, errors, env, constanttyperep, integerConstantValue;
+nonterminal NumericConstant with location, pp, mangledName, host, errors, env, constanttyperep, integerConstantValue;
 flowtype NumericConstant = decorate {env}, constanttyperep {decorate}, integerConstantValue {decorate};
 
 synthesized attribute constanttyperep :: BuiltinType;
 
+propagate host on NumericConstant;
+
 abstract production integerConstant
 top::NumericConstant ::= num::String  unsigned::Boolean  suffix::IntSuffix
 {
-  propagate host;
   top.pp = text(num);
   top.mangledName = substitute(".", "_", num);
   top.errors := [];
@@ -70,7 +71,6 @@ top::NumericConstant ::= num::String  unsigned::Boolean  suffix::IntSuffix
 abstract production hexIntegerConstant
 top::NumericConstant ::= num::String  unsigned::Boolean  suffix::IntSuffix
 {
-  propagate host;
   top.pp = text(num);
   top.mangledName = substitute(".", "_", num);
   top.errors := [];
@@ -80,7 +80,6 @@ top::NumericConstant ::= num::String  unsigned::Boolean  suffix::IntSuffix
 abstract production octIntegerConstant
 top::NumericConstant ::= num::String  unsigned::Boolean  suffix::IntSuffix
 {
-  propagate host;
   top.pp = text(num);
   top.mangledName = substitute(".", "_", num);
   top.errors := [];
@@ -91,7 +90,6 @@ top::NumericConstant ::= num::String  unsigned::Boolean  suffix::IntSuffix
 abstract production floatConstant
 top::NumericConstant ::= num::String  suffix::FloatSuffix
 {
-  propagate host;
   top.pp = text(num);
   top.mangledName = substitute(".", "_", num);
   top.errors := [];
@@ -101,7 +99,6 @@ top::NumericConstant ::= num::String  suffix::FloatSuffix
 abstract production hexFloatConstant
 top::NumericConstant ::= num::String  suffix::FloatSuffix
 {
-  propagate host;
   top.pp = text(num);
   top.mangledName = substitute(".", "_", num);
   top.errors := [];

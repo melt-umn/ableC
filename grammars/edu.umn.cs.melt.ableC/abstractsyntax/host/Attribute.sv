@@ -21,42 +21,40 @@ Attributes ::= l1::Attributes l2::Attributes
     end;
 }
 
-nonterminal Attributes with pps, host<Attributes>, env, returnType;
+propagate host on Attributes, Attribute, Attrib, AttribName;
+
+nonterminal Attributes with pps, host, env, returnType;
 flowtype Attributes = decorate {env, returnType};
 
 abstract production consAttribute
 top::Attributes ::= h::Attribute t::Attributes
 {
-  propagate host;
   top.pps = h.pp :: t.pps;
 }
 
 abstract production nilAttribute
 top::Attributes ::= 
 {
-  propagate host;
   top.pps = [];
 }
 
 {-- __attribute__ syntax representation -}
-nonterminal Attribute with pp, host<Attribute>, env, returnType;
+nonterminal Attribute with pp, host, env, returnType;
 flowtype Attribute = decorate {env, returnType};
 
 abstract production gccAttribute
 top::Attribute ::= l::Attribs
 {
-  propagate host;
   top.pp = ppConcat([text("__attribute__(("), l.pp, text("))")]);
 }
 
 abstract production simpleAsm
 top::Attribute ::= s::String
 {
-  propagate host;
   top.pp = text("__asm__(" ++ s ++ ")");
 }
 
-nonterminal Attribs with pp, host<Attribs>, env, returnType;
+nonterminal Attribs with pp, host, env, returnType;
 flowtype Attribs = decorate {env, returnType};
 
 abstract production consAttrib
@@ -77,28 +75,25 @@ top::Attribs ::=
   top.pp = text("");
 }
 
-nonterminal Attrib with pp, host<Attrib>, env, returnType;
+nonterminal Attrib with pp, host, env, returnType;
 flowtype Attrib = decorate {env, returnType};
 
 -- e.g. __attribute__(())
 abstract production emptyAttrib
 top::Attrib ::=
 {
-  propagate host;
   top.pp = notext();
 }
 -- e.g. __attribute__((deprecated))
 abstract production wordAttrib
 top::Attrib ::= n::AttribName
 {
-  propagate host;
   top.pp = n.pp;
 }
 -- e.g. __attribute__((deprecated("don't use this duh")))
 abstract production appliedAttrib
 top::Attrib ::= n::AttribName  e::Exprs
 {
-  propagate host;
   top.pp = ppConcat([n.pp, parens(ppImplode(text(", "), e.pps))]);
 }
 -- e.g. __attribute__((something(foo, "well whatever")))
@@ -106,18 +101,16 @@ top::Attrib ::= n::AttribName  e::Exprs
 abstract production idAppliedAttrib
 top::Attrib ::= n::AttribName  id::Name  e::Exprs
 {
-  propagate host;
   top.pp = ppConcat([n.pp, parens(ppImplode(text(", "), id.pp :: e.pps))]);
   top.isHostAttrib = true;
 }
 
-nonterminal AttribName with pp, env, host<AttribName>;
+nonterminal AttribName with pp, env, host;
 flowtype AttribName = decorate {env};
 
 abstract production attribName
 top::AttribName ::= n::Name
 {
-  propagate host;
   top.pp = n.pp;
 }
 
