@@ -11,10 +11,9 @@ flowtype Root = decorate {env};
 abstract production root
 top::Root ::= d::GlobalDecls
 {
-  propagate host;
+  propagate host, errors;
   
   top.pp = terminate(line(), d.pps);
-  top.errors := d.errors;
   
 --  d.env = addEnv(builtinfunctions:initialEnv;
   d.env = addEnv(builtinfunctions:getInitialEnvDefs(), top.env);

@@ -7,6 +7,8 @@ autocopy attribute typeToQualify :: Type;
 
 synthesized attribute qualifiers :: [Qualifier];
 
+propagate errors on Qualifiers;
+
 abstract production consQualifier
 top::Qualifiers ::= h::Qualifier  t::Qualifiers
 {
@@ -14,7 +16,6 @@ top::Qualifiers ::= h::Qualifier  t::Qualifiers
   top.mangledName = h.mangledName ++ "_" ++ t.mangledName;
   top.qualifiers = cons(h, t.qualifiers);
   top.pps = cons(h.pp, t.pps);
-  top.errors := h.errors ++ t.errors;
 }
 
 abstract production nilQualifier
@@ -24,7 +25,6 @@ top::Qualifiers ::=
   top.mangledName = "";
   top.qualifiers = [];
   top.pps = [];
-  top.errors := [];
 }
 
 function unionQualifiers
@@ -144,16 +144,12 @@ top::Qualifier ::=
 nonterminal SpecialSpecifier with pp, host, env, returnType, errors, globalDecls, functionDecls, defs;
 flowtype SpecialSpecifier = decorate {env, returnType};
 
-propagate host on SpecialSpecifier;
+propagate host, errors, globalDecls, functionDecls, defs on SpecialSpecifier;
 
 abstract production inlineQualifier
 top::SpecialSpecifier ::=
 {
   top.pp = text("inline");
-  top.errors := [];
-  top.globalDecls := [];
-  top.functionDecls := [];
-  top.defs := [];
 }
 
 -- C11
@@ -161,10 +157,6 @@ abstract production noreturnQualifier
 top::SpecialSpecifier ::=
 {
   top.pp = text("_Noreturn");
-  top.errors := [];
-  top.globalDecls := [];
-  top.functionDecls := [];
-  top.defs := [];
 }
 
 -- C11
@@ -172,35 +164,23 @@ abstract production alignasSpecifier
 top::SpecialSpecifier ::= e::Expr
 {
   top.pp = ppConcat([text("_Alignas"), parens(e.pp)]);
-  top.errors := e.errors;
-  top.globalDecls := e.globalDecls;
-  top.functionDecls := e.functionDecls;
-  top.defs := e.defs;
 }
 
 nonterminal SpecialSpecifiers with pps, host, env, returnType, errors, globalDecls, functionDecls, defs;
 flowtype SpecialSpecifiers = decorate {env, returnType};
 
-propagate host on SpecialSpecifiers;
+propagate host, errors, globalDecls, functionDecls, defs on SpecialSpecifiers;
 
 abstract production consSpecialSpecifier
 top::SpecialSpecifiers ::= h::SpecialSpecifier t::SpecialSpecifiers
 {
   top.pps = h.pp :: t.pps;
-  top.errors := h.errors ++ t.errors;
-  top.globalDecls := h.globalDecls ++ t.globalDecls;
-  top.functionDecls := h.functionDecls ++ t.functionDecls;
-  top.defs := h.defs ++ t.defs;
 }
 
 abstract production nilSpecialSpecifier
 top::SpecialSpecifiers ::=
 {
   top.pps = [];
-  top.errors := [];
-  top.globalDecls := [];
-  top.functionDecls := [];
-  top.defs := [];
 }
 	
 

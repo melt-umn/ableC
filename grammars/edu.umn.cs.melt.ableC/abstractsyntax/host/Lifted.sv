@@ -55,8 +55,8 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
  - everything would be kind of a pain
  -}
 
-synthesized attribute globalDecls::[Decorated Decl] with ++;
-synthesized attribute functionDecls::[Decorated Decl] with ++;
+monoid attribute globalDecls::[Decorated Decl] with [], ++;
+monoid attribute functionDecls::[Decorated Decl] with [], ++;
 synthesized attribute unfoldedGlobalDecls::[Decorated Decl];
 synthesized attribute unfoldedFunctionDecls::[Decorated Decl];
 
@@ -125,7 +125,7 @@ top::Decl ::= name::String decl::Decl
 abstract production injectGlobalDeclsExpr
 top::Expr ::= decls::Decls lifted::Expr
 {
-  top.errors := decls.errors ++ lifted.errors;
+  propagate errors, functionDecls;
   top.pp = pp"injectGlobalDeclsExpr ${braces(nestlines(2, ppImplode(line(), decls.pps)))} (${lifted.pp})";
   
   -- Insert defs from decls at the global scope
@@ -133,7 +133,6 @@ top::Expr ::= decls::Decls lifted::Expr
 
   -- Note that the invariant over `globalDecls` and `lifted` is maintained.
   top.globalDecls := decls.unfoldedGlobalDecls ++ lifted.globalDecls;
-  top.functionDecls := decls.functionDecls ++ lifted.functionDecls;
   top.host = lifted.host;
   
   -- Variables corresponing to lifted values are *not* considered free, since they are either bound
@@ -156,7 +155,7 @@ top::Expr ::= decls::Decls lifted::Expr
 abstract production injectGlobalDeclsStmt
 top::Stmt ::= decls::Decls lifted::Stmt
 {
-  top.errors := decls.errors ++ lifted.errors;
+  propagate errors, functionDecls;
   top.pp = pp"injectGlobalDeclsStmt ${braces(nestlines(2, ppImplode(line(), decls.pps)))} ${braces(nestlines(2, lifted.pp))}";
   
   -- Insert defs from decls at the global scope
@@ -164,7 +163,6 @@ top::Stmt ::= decls::Decls lifted::Stmt
 
   -- Note that the invariant over `globalDecls` and `lifted` is maintained.
   top.globalDecls := decls.unfoldedGlobalDecls ++ lifted.globalDecls;
-  top.functionDecls := decls.functionDecls ++ lifted.functionDecls;
   top.host = lifted.host;
   
   -- Variables corresponing to lifted values are *not* considered free, since they are either bound
@@ -185,15 +183,14 @@ top::Stmt ::= decls::Decls lifted::Stmt
 abstract production injectGlobalDeclsTypeExpr
 top::BaseTypeExpr ::= decls::Decls lifted::BaseTypeExpr
 {
+  propagate errors, functionDecls;
   top.pp = pp"injectGlobalDeclsTypeExpr ${braces(nestlines(2, ppImplode(line(), decls.pps)))} (${lifted.pp})";
-  top.errors := decls.errors ++ lifted.errors;
   
   -- Insert defs from decls at the global scope
   top.defs := globalDefsDef(decls.defs) :: lifted.defs;
 
   -- Note that the invariant over `globalDecls` and `lifted` is maintained.
   top.globalDecls := decls.unfoldedGlobalDecls ++ lifted.globalDecls;
-  top.functionDecls := decls.functionDecls ++ lifted.functionDecls;
   top.host = lifted.host;
   
   -- Variables corresponing to lifted values are *not* considered free, since they are either bound
@@ -201,7 +198,7 @@ top::BaseTypeExpr ::= decls::Decls lifted::BaseTypeExpr
   top.freeVariables := removeDefsFromNames(decls.defs, lifted.freeVariables);
   
   -- Preserve injected decls when transforming to and back from typerep
-  top.decls = [injectGlobalDeclsDecl(decls)];
+  top.decls := [injectGlobalDeclsDecl(decls)];
   
   -- Define other attributes to be the same as on lifted
   top.typerep = lifted.typerep;
@@ -218,7 +215,7 @@ top::BaseTypeExpr ::= decls::Decls lifted::BaseTypeExpr
 abstract production injectGlobalDeclsDecl
 top::Decl ::= decls::Decls
 {
-  top.errors := decls.errors;
+  propagate errors, functionDecls;
   top.pp = pp"injectGlobalDeclsDecl ${braces(nestlines(2, ppImplode(line(), decls.pps)))}";
   
   -- Insert defs from decls at the global scope
@@ -226,7 +223,6 @@ top::Decl ::= decls::Decls
 
   -- Note that the invariant over `globalDecls` and `lifted` is maintained.
   top.globalDecls := decls.unfoldedGlobalDecls;
-  top.functionDecls := decls.functionDecls;
   top.host = edu:umn:cs:melt:ableC:abstractsyntax:host:decls(nilDecl());
   
   -- Define other attributes to be the same as on "lifted" (i.e. nilDecl())
@@ -240,12 +236,11 @@ top::Decl ::= decls::Decls
 abstract production injectFunctionDeclsDecl
 top::Decl ::= decls::Decls
 {
-  top.errors := decls.errors;
+  propagate errors, globalDecls;
   top.pp = pp"injectFunctionDeclsStmt ${braces(nestlines(2, ppImplode(line(), decls.pps)))}";
 
   top.defs := [functionDefsDef(decls.defs)];
 
-  top.globalDecls := decls.globalDecls;
   top.functionDecls := decls.unfoldedFunctionDecls;
   top.host = edu:umn:cs:melt:ableC:abstractsyntax:host:decls(nilDecl());
 

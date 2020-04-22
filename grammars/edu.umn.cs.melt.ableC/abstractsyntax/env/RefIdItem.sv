@@ -29,7 +29,7 @@ abstract production structRefIdItem
 top::RefIdItem ::= s::Decorated StructDecl
 {
   top.tagEnv = s.tagEnv;
-  top.hasConstField = s.hasConstField;
+  top.hasConstField := s.hasConstField;
 }
 
 {-- Name resolves to a full union declaration -}
@@ -37,6 +37,6 @@ abstract production unionRefIdItem
 top::RefIdItem ::= s::Decorated UnionDecl
 {
   top.tagEnv = s.tagEnv;
-  top.hasConstField = s.hasConstField;
+  top.hasConstField := s.hasConstField;
 }
 
