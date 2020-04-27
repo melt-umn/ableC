@@ -262,7 +262,7 @@ lexer class Operator extends AbleC, font = font_special_symbol;
 terminal Question_t    '?'    lexer classes {Operator};
 terminal Colon_t       ':'    lexer classes {Operator};
 
--- Dereference operators
+-- Member operators
 terminal Dot_t         '.'    lexer classes {Operator};
 terminal PtrDot_t      '->'   lexer classes {Operator};
 
@@ -294,10 +294,10 @@ terminal Minus_t       '-'  precedence = 5, association = left, lexer classes {O
 terminal Plus_t        '+'  precedence = 5, association = left, lexer classes {Operator}; -- positive
 terminal Star_t        '*'  precedence = 6, association = left, lexer classes {Operator}; -- pointer, deref
 terminal Divide_t      '/'  precedence = 6, association = left, lexer classes {Operator};
-terminal Mod_t         '%';
+terminal Mod_t         '%'  precedence = 6, association = left, lexer classes {Operator};
 
 -- Logical operators
-terminal Not_t   '!';
+terminal Not_t   '!'  lexer classes {Operator};
 terminal AndOp_t '&&' precedence = 4, association = left, lexer classes {Operator};
 terminal OrOp_t  '||' precedence = 4, association = left, lexer classes {Operator};
 
