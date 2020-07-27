@@ -108,8 +108,7 @@ String ::= m::Message
     | nothing() -> "<nothing>"++
     "\n  ochain : " ++ implode("\n -> ", map(hackUnparse, getOriginInfoChain(m))) ++ "\n\n\n"
   end;
-  return m.output ++
-    "\n  origins reports source as: "++locStr ;
+  return m.output;
 }
 
 

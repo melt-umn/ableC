@@ -42,7 +42,7 @@ Qualifiers ::= q1::[Qualifier]  q2::[Qualifier]
 }
 
 {-- Type qualifiers (cv or cvr qualifiers) -}
-closed nonterminal Qualifier with location, pp, qualIsPositive, qualIsNegative, qualAppliesWithinRef, qualCompat, qualIsHost, mangledName, typeToQualify, errors;
+closed nonterminal Qualifier with pp, qualIsPositive, qualIsNegative, qualAppliesWithinRef, qualCompat, qualIsHost, mangledName, typeToQualify, errors;
 flowtype Qualifier = decorate {}, qualIsPositive {}, qualIsNegative {}, qualAppliesWithinRef {}, qualCompat {}, qualIsHost {}, errors {typeToQualify};
 
 synthesized attribute qualIsPositive :: Boolean;
@@ -111,7 +111,7 @@ top::Qualifier ::=
   top.errors :=
 		case top.typeToQualify.defaultFunctionArrayLvalueConversion of
 			pointerType(_, _) -> []
-		| _                 -> [err(top.location, "invalid use of `restrict'")]
+		| _                 -> [errFromOrigin(top, "invalid use of `restrict'")]
 		end;
 }
 
@@ -133,7 +133,7 @@ top::Qualifier ::=
   top.errors :=
 		case top.typeToQualify.defaultFunctionArrayLvalueConversion of
 			pointerType(_, _) -> []
-		| _                 -> [err(top.location, "invalid use of `restrict'")]
+		| _                 -> [errFromOrigin(top, "invalid use of `restrict'")]
 		end;
 }
 

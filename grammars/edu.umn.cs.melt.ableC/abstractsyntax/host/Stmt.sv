@@ -127,7 +127,7 @@ top::Stmt ::= c::Expr  t::Stmt  e::Stmt
   
   top.errors <-
     if c.typerep.defaultFunctionArrayLvalueConversion.isScalarType then []
-    else [err(c.location, "If condition must be scalar type, instead it is " ++ showType(c.typerep))];
+    else [errFromOrigin(c, "If condition must be scalar type, instead it is " ++ showType(c.typerep))];
 }
 
 abstract production ifStmtNoElse
@@ -163,7 +163,7 @@ top::Stmt ::= e::Expr  b::Stmt
 
   top.errors <-
     if e.typerep.defaultFunctionArrayLvalueConversion.isScalarType then []
-    else [err(e.location, "While condition must be scalar type, instead it is " ++ showType(e.typerep))];
+    else [errFromOrigin(e, "While condition must be scalar type, instead it is " ++ showType(e.typerep))];
 }
 
 abstract production doStmt
@@ -191,7 +191,7 @@ top::Stmt ::= b::Stmt  e::Expr
 
   top.errors <-
     if e.typerep.defaultFunctionArrayLvalueConversion.isScalarType then []
-    else [err(e.location, "Do-while condition must be scalar type, instead it is " ++ showType(e.typerep))];
+    else [errFromOrigin(e, "Do-while condition must be scalar type, instead it is " ++ showType(e.typerep))];
 }
 
 abstract production forStmt
@@ -277,7 +277,7 @@ top::Stmt ::= i::Decl  c::MaybeExpr  s::MaybeExpr  b::Stmt
 }
 
 abstract production returnStmt
-top::Stmt ::= e::MaybeExpr {- loc::Location -} -- TODO: Add location to signature
+top::Stmt ::= e::MaybeExpr {- -} -- TODO: Add location to signature
 {
   propagate host;
   top.pp = ppConcat([text("return"), space(), e.pp, semi()]);
@@ -286,10 +286,10 @@ top::Stmt ::= e::MaybeExpr {- loc::Location -} -- TODO: Add location to signatur
                 | just(builtinType(_, voidType())), nothing() -> []
                 | just(expected), just(actual) ->
                     if typeAssignableTo(expected, actual) then []
-                    else [err(case e of justExpr(e1) -> e1.location end,
+                    else [errFromOrigin(case e of justExpr(e1) -> e1 end,
                               "Incorrect return type, expected " ++ showType(expected) ++ " but found " ++ showType(actual))]
-                | nothing(), just(actual) -> [err(case e of justExpr(e1) -> e1.location end, "Unexpected return")]
-                | just(expected), nothing() -> [err({-loc-} loc("TODOreturn",-1,-1,-1,-1,-1,-1), "Expected return value, but found valueless return")] -- TODO: location
+                | nothing(), just(actual) -> [errFromOrigin(case e of justExpr(e1) -> e1 end, "Unexpected return")]
+                | just(expected), nothing() -> [errFromOrigin(top, "Expected return value, but found valueless return")]
                 end ++ e.errors;
   top.globalDecls := e.globalDecls;
   top.functionDecls := e.functionDecls;
@@ -323,7 +323,7 @@ top::Stmt ::= e::Expr  b::Stmt
 
   top.errors <-
     if e.typerep.defaultFunctionArrayLvalueConversion.isIntegerType then []
-    else [err(e.location, "Switch expression must have integer type, instead it is " ++ showType(e.typerep))];
+    else [errFromOrigin(e, "Switch expression must have integer type, instead it is " ++ showType(e.typerep))];
 }
 
 abstract production gotoStmt
@@ -380,7 +380,7 @@ top::Stmt ::= l::Name  s::Stmt
   top.functionDefs := s.functionDefs;
   
   top.errors <- l.labelRedeclarationCheck;
-  top.functionDefs <- [labelDef(l.name, labelItem(l.location))];
+  top.functionDefs <- [labelDef(l.name, labelItem())];
 }
 
 abstract production caseLabelStmt

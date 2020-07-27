@@ -2,7 +2,7 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 
 import edu:umn:cs:melt:ableC:abstractsyntax:overloadable as ovrld;
 
-nonterminal Expr with location, pp, host, globalDecls, functionDecls, errors, defs, env, returnType, freeVariables, typerep, isLValue, isSimple, integerConstantValue;
+nonterminal Expr with pp, host, globalDecls, functionDecls, errors, defs, env, returnType, freeVariables, typerep, isLValue, isSimple, integerConstantValue;
 
 flowtype Expr = decorate {env, returnType}, isLValue {decorate}, isSimple {decorate}, integerConstantValue {decorate};
 
@@ -37,9 +37,9 @@ top::Expr ::= msg::[Message] e::Expr
 }
 -- only wrap in warnExpr if have messages
 function wrapWarnExpr
-Expr ::= msg::[Message] e::Expr l::Location
+Expr ::= msg::[Message] e::Expr
 {
-  return if null(msg) then e else warnExpr(msg, e, location=l);
+  return if null(msg) then e else warnExpr(msg, e);
 }
 
 {--
@@ -79,9 +79,9 @@ top::Expr ::= q::Qualifiers e::Expr
 }
 -- only wrap in qualifiedExpr if have qualifiers to wrap with
 function wrapQualifiedExpr
-Expr ::= q::[Qualifier]  e::Expr  l::Location
+Expr ::= q::[Qualifier]  e::Expr 
 {
-  return if null(q) then e else qualifiedExpr(foldQualifier(q), e, location=l);
+  return if null(q) then e else qualifiedExpr(foldQualifier(q), e);
 }
 -- Wraps the result of a forwarding transformation (e.g. overloading or injection)
 -- to allow for "syntactic" analyses on the original host Expr.  Otherwise this
@@ -106,13 +106,13 @@ top::Expr ::= id::Name
   -- Forwarding depends on env. We must be able to compute a pp without using env.
   top.pp = id.pp;
 
-  forwards to id.valueItem.directRefHandler(id, top.location);
+  forwards to id.valueItem.directRefHandler(id);
 }
 -- If the identifier is an ordinary one, use the normal var reference production
 function ordinaryVariableHandler
-Expr ::= id::Name  l::Location
+Expr ::= id::Name 
 {
-  return declRefExpr(id, location=l);
+  return declRefExpr(id);
 }
 abstract production declRefExpr
 top::Expr ::= id::Name
@@ -127,7 +127,7 @@ top::Expr ::= id::Name
   top.errors <- id.valueLookupCheck;
   top.errors <-
     if id.valueItem.isItemValue then []
-    else [err(id.location, "'" ++ id.name ++ "' does not refer to a value.")];
+    else [errFromOrigin(id, "'" ++ id.name ++ "' does not refer to a value.")];
 }
 abstract production stringLiteral
 top::Expr ::= l::String
@@ -159,14 +159,14 @@ top::Expr ::= lhs::Expr  rhs::Expr
     case lhs.typerep.defaultFunctionArrayLvalueConversion, rhs.typerep.defaultFunctionArrayLvalueConversion of
     | pointerType(_, sub), otherty ->
         if otherty.isIntegerType then left(sub)
-        else right([err(top.location, "index expression does not have integer type (got " ++ showType(otherty) ++ ")")])
+        else right([errFromOrigin(top, "index expression does not have integer type (got " ++ showType(otherty) ++ ")")])
     | otherty, pointerType(_, sub) ->
         if otherty.isIntegerType then left(sub)
-        else right([err(top.location, "index expression does not have integer type (got " ++ showType(otherty) ++ ")")])
+        else right([errFromOrigin(top, "index expression does not have integer type (got " ++ showType(otherty) ++ ")")])
     | errorType(), _ -> right([])
     | _, errorType() -> right([])
     | _, _ ->
-        right([err(top.location, "expression is not an indexable type (got " ++ showType(lhs.typerep) ++ ")")])
+        right([errFromOrigin(top, "expression is not an indexable type (got " ++ showType(lhs.typerep) ++ ")")])
     end;
   top.typerep = case subtype of
                 | left(t) -> t
@@ -186,14 +186,14 @@ top::Expr ::= f::Name  a::Exprs
   -- Forwarding depends on env. We must be able to compute a pp without using env.
   top.pp = parens( ppConcat([ f.pp, parens( ppImplode( cat( comma(), space() ), a.pps ))]) );
 
-  forwards to f.valueItem.directCallHandler(f, a, top.location);
+  forwards to f.valueItem.directCallHandler(f, a);
 }
 -- If the identifier is an ordinary one, use the normal function call production
 -- Or, if it's a pass-through builtin one, this works too!
 function ordinaryFunctionHandler
-Expr ::= f::Name  a::Exprs  l::Location
+Expr ::= f::Name  a::Exprs 
 {
-  return ovrld:callExpr(declRefExpr(f, location=f.location), a, location=l);
+  return ovrld:callExpr(declRefExpr(f), a);
 }
 
 {- Calls where the function is determined by an arbitrary expression. -}
@@ -209,7 +209,7 @@ top::Expr ::= f::Expr  a::Exprs
     case f.typerep.defaultFunctionArrayLvalueConversion of
     | pointerType(_, functionType(rt, sub, _)) -> left(pair(rt, sub))
     | errorType() -> right([]) -- error already raised.
-    | _ -> right([err(f.location, "call expression is not function type (got " ++ showType(f.typerep) ++ ")")])
+    | _ -> right([errFromOrigin(f, "call expression is not function type (got " ++ showType(f.typerep) ++ ")")])
     end;
   top.typerep =
     case subtype of
@@ -282,13 +282,13 @@ top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
     | true, pointerType(_, errorType()) -> []
     | _, _ ->
       if null(refids) then 
-        [err(lhs.location, "expression does not have defined fields (got " ++ showType(lhs.typerep) ++ ")")]
+        [errFromOrigin(lhs, "expression does not have defined fields (got " ++ showType(lhs.typerep) ++ ")")]
       else if isPointer != deref then 
         if deref
-        then [err(lhs.location, "expression does not have pointer to struct or union type (got " ++ showType(lhs.typerep) ++ ")")]
-        else [err(lhs.location, "expression does not have struct or union type (got " ++ showType(lhs.typerep) ++ ", did you mean to use -> ?)")]
+        then [errFromOrigin(lhs, "expression does not have pointer to struct or union type (got " ++ showType(lhs.typerep) ++ ")")]
+        else [errFromOrigin(lhs, "expression does not have struct or union type (got " ++ showType(lhs.typerep) ++ ", did you mean to use -> ?)")]
       else if null(valueitems) then
-        [err(lhs.location, "expression does not have field " ++ rhs.name)]
+        [errFromOrigin(lhs, "expression does not have field " ++ rhs.name)]
       else []
     end;
   top.isSimple = !deref && lhs.isSimple;
@@ -352,7 +352,7 @@ top::Expr ::=
   propagate host, errors, globalDecls, functionDecls, defs, freeVariables;
   top.pp = parens( text("__func__") );
   top.typerep = pointerType(nilQualifier(),
-  builtinType(foldQualifier([constQualifier(location=builtinLoc("host"))]), signedType(charType()))); -- const char *
+  builtinType(foldQualifier([constQualifier()]), signedType(charType()))); -- const char *
 }
 
 -- C11
@@ -400,7 +400,7 @@ top::GenericAssocs ::=
   top.pps = [];
 }
 
-nonterminal GenericAssoc with location, pp, host, globalDecls, functionDecls, errors, defs, env, selectionType, compatibleSelections, returnType, freeVariables;
+nonterminal GenericAssoc with pp, host, globalDecls, functionDecls, errors, defs, env, selectionType, compatibleSelections, returnType, freeVariables;
 flowtype GenericAssoc = decorate {env, returnType}, compatibleSelections {decorate, selectionType};
 
 propagate host, errors, globalDecls, functionDecls, defs, freeVariables on GenericAssoc;

@@ -37,7 +37,7 @@ top::Expr ::= num::String  c::CharPrefix
   top.isSimple = true;
 }
 
-nonterminal NumericConstant with location, pp, mangledName, host, errors, env, constanttyperep, integerConstantValue;
+nonterminal NumericConstant with pp, mangledName, host, errors, env, constanttyperep, integerConstantValue;
 flowtype NumericConstant = decorate {env}, constanttyperep {decorate}, integerConstantValue {decorate};
 
 synthesized attribute constanttyperep :: BuiltinType;

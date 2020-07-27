@@ -19,9 +19,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   forwards to
     host:wrapWarnExpr(lerrors,
       host:wrapQualifiedExpr(injectedQualifiers,
-        host:arraySubscriptExpr(modLhsRhs.fst, modLhsRhs.snd, location=top.location),
-        top.location),
-      top.location);
+        host:arraySubscriptExpr(modLhsRhs.fst, modLhsRhs.snd)));
 }
 
 abstract production memberExpr
@@ -41,7 +39,7 @@ top::host:Expr ::= lhs::host:Expr  deref::Boolean  rhs::host:Name
   --  an eqExpr, replace x.m with (&x)->m
   local preModLhs :: host:Expr =
     if null(runtimeMods) then lhs
-    else mkAddressOf(lhs, lhs.location);
+    else mkAddressOf(lhs);
   preModLhs.env = lhs.env;
   preModLhs.host:returnType = lhs.host:returnType;
 
@@ -50,9 +48,7 @@ top::host:Expr ::= lhs::host:Expr  deref::Boolean  rhs::host:Name
   forwards to
     host:wrapWarnExpr(lerrors,
       host:wrapQualifiedExpr(injectedQualifiers,
-        host:memberExpr(applyMods(runtimeMods, preModLhs), preModDeref, rhs, location=top.location),
-        top.location),
-      top.location);
+        host:memberExpr(applyMods(runtimeMods, preModLhs), preModDeref, rhs)));
 }
 
 abstract production explicitCastExpr
@@ -71,9 +67,7 @@ top::host:Expr ::= ty::host:TypeName  e::host:Expr
   forwards to
     host:wrapWarnExpr(lerrors,
       host:wrapQualifiedExpr(injectedQualifiers,
-        host:explicitCastExpr(ty, applyMods(runtimeMods, e), location=top.location),
-        top.location),
-      top.location);
+        host:explicitCastExpr(ty, applyMods(runtimeMods, e))));
 }
 
 abstract production callExpr
@@ -97,7 +91,7 @@ top::host:Expr ::= f::host:Expr  a::host:Exprs
   tmpArgs.env = top.env;
   tmpArgs.host:returnType = top.host:returnType;
 
-  local callFunc :: host:Expr = host:callExpr(f, tmpArgs, location=top.location);
+  local callFunc :: host:Expr = host:callExpr(f, tmpArgs);
   callFunc.env = top.env;
   callFunc.host:returnType = top.host:returnType;
 
@@ -105,14 +99,11 @@ top::host:Expr ::= f::host:Expr  a::host:Exprs
     mkDecl(
       tmpNamePrefix ++ "_result",
       callFunc.host:typerep,
-      callFunc,
-      callFunc.location
-    );
+      callFunc);
 
   local tmpResultRef :: host:Expr =
     host:declRefExpr(
-      host:name(tmpNamePrefix ++ "_result", location=top.location),
-      location=top.location
+      host:name(tmpNamePrefix ++ "_result")
     );
   tmpResultRef.env = top.env;
   tmpResultRef.host:returnType = top.host:returnType;
@@ -127,16 +118,14 @@ top::host:Expr ::= f::host:Expr  a::host:Exprs
         map(\ins::(host:Stmt ::= Decorated host:Exprs  Decorated host:Expr) ->
           ins(tmpArgs, tmpResultRef), postInsertions)
       ),
-      tmpResultRef,
-      location=top.location
+      tmpResultRef
     );
 
   forwards to
     host:wrapWarnExpr(lerrors,
       if null(preInsertions) && null(postInsertions)
-      then host:callExpr(f, a, location=top.location)
-      else injExpr,
-      top.location);
+      then host:callExpr(f, a)
+      else injExpr);
 }
 
 function mkTmpExprsDecls
@@ -146,7 +135,7 @@ function mkTmpExprsDecls
     case es of
       host:consExpr(h, t) ->
         cons(
-          mkDecl(tmpNamePrefix ++ "_" ++ toString(i), h.host:typerep, h, h.location),
+          mkDecl(tmpNamePrefix ++ "_" ++ toString(i), h.host:typerep, h),
           mkTmpExprsDecls(t, tmpNamePrefix, i+1)
         )
     | host:nilExpr() -> []
@@ -161,8 +150,7 @@ function mkTmpExprsRefs
       host:consExpr(h, t) ->
         cons(
           host:declRefExpr(
-            host:name(tmpNamePrefix ++ "_" ++ toString(i), location=h.location),
-            location=h.location
+            host:name(tmpNamePrefix ++ "_" ++ toString(i))
           ),
           mkTmpExprsRefs(t, tmpNamePrefix, i+1)
         )

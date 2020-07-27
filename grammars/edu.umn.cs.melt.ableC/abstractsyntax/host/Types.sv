@@ -219,7 +219,7 @@ top::Type ::= element::Type  indexQualifiers::Qualifiers  sizeModifier::ArraySiz
           element.typeModifierExpr,
           indexQualifiers,
           sizeModifier,
-          mkIntConst(size, bogusLoc())) -- TODO: location
+          mkIntConst(size)) -- TODO: location
     | incompleteArrayType() ->
         arrayTypeExprWithoutExpr(
           element.typeModifierExpr,
@@ -517,7 +517,7 @@ top::ExtType ::= kwd::StructOrEnumOrUnion  n::String  refId::String
   propagate canonicalType;
   top.host = extType(top.givenQualifiers, top);
   top.baseTypeExpr =
-    tagReferenceTypeExpr(top.givenQualifiers, kwd, name(n, location=builtinLoc("host")));
+    tagReferenceTypeExpr(top.givenQualifiers, kwd, name(n));
   top.pp = ppConcat([kwd.pp, space(), text(n)]);
   top.mangledName =
     s"${kwd.mangledName}_${if n == "<anon>" then "anon" else n}_${substitute(":", "_", refId)}";
@@ -633,8 +633,8 @@ top::Type ::= bt::Type  bytes::Integer
         gccAttribute(
           consAttrib(
             appliedAttrib(
-              attribName(name("__vector_size__", location=builtinLoc("host"))),
-              consExpr(mkIntConst(bytes, builtinLoc("host")), nilExpr())),
+              attribName(name("__vector_size__")),
+              consExpr(mkIntConst(bytes), nilExpr())),
           nilAttrib())),
         nilAttribute()),
       bt.baseTypeExpr);
@@ -778,7 +778,7 @@ top::NoncanonicalType ::= q::Qualifiers  n::String  resolved::Type
   propagate host;
   top.lpp = ppConcat([ terminate(space(), q.pps), text(n) ]);
   top.rpp = notext();
-  top.baseTypeExpr = typedefTypeExpr(q, name(n, location=builtinLoc("host")));
+  top.baseTypeExpr = typedefTypeExpr(q, name(n));
   top.typeModifierExpr = baseTypeExpr();
   top.withTypeQualifiers =
     noncanonicalType(

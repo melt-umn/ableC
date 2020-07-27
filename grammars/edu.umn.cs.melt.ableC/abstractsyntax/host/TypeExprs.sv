@@ -275,15 +275,15 @@ top::BaseTypeExpr ::= q::Qualifiers  kwd::StructOrEnumOrUnion  n::Name
     case kwd, tags of
     -- It's an enum and we see the declaration.
     | enumSEU(), enumTagItem(d) :: _ -> []
-    | enumSEU(), [] -> [err(n.location, "Undeclared enum " ++ n.name)]
-    | enumSEU(), _ :: _ -> [err(n.location, "Tag " ++ n.name ++ " is not an enum")]
+    | enumSEU(), [] -> [errFromOrigin(n, "Undeclared enum " ++ n.name)]
+    | enumSEU(), _ :: _ -> [errFromOrigin(n, "Tag " ++ n.name ++ " is not an enum")]
     -- We don't see the declaration, so we're adding it.
     | _, [] -> []
     -- It's a struct/union and the tag type agrees.
     | structSEU(), refIdTagItem(structSEU(), rid) :: _ -> []
-    | structSEU(), _ :: _ -> [err(n.location, "Tag " ++ n.name ++ " is not a struct")]
+    | structSEU(), _ :: _ -> [errFromOrigin(n, "Tag " ++ n.name ++ " is not a struct")]
     | unionSEU(), refIdTagItem(unionSEU(), rid) :: _ -> []
-    | unionSEU(), _ :: _ -> [err(n.location, "Tag " ++ n.name ++ " is not a union")]
+    | unionSEU(), _ :: _ -> [errFromOrigin(n, "Tag " ++ n.name ++ " is not a union")]
     end;
   
   top.typeModifier = baseTypeExpr();
@@ -297,7 +297,7 @@ top::BaseTypeExpr ::= q::Qualifiers  kwd::StructOrEnumOrUnion  n::Name
          top,
          consDeclarator(
            declarator(
-             name("_unused_" ++ toString(genInt()), location=builtinLoc("host")),
+             name("_unused_" ++ toString(genInt())),
              baseTypeExpr(),
              nilAttribute(),
              nothingInitializer()),
@@ -404,7 +404,7 @@ top::BaseTypeExpr ::= q::Qualifiers  name::Name
   top.errors <- name.valueLookupCheck;
   top.errors <-
     if name.valueItem.isItemType then []
-    else [err(name.location, "'" ++ name.name ++ "' does not refer to a type.")];
+    else [errFromOrigin(name, "'" ++ name.name ++ "' does not refer to a type.")];
   q.typeToQualify = top.typerep;
 }
 {--
@@ -421,7 +421,7 @@ top::BaseTypeExpr ::= attrs::Attributes  bt::BaseTypeExpr
   top.pp = cat(ppAttributes(attrs), bt.pp);
 
   local liftedName::Name =
-    name(s"_attributedType_${toString(genInt())}", location=builtinLoc("host"));
+    name(s"_attributedType_${toString(genInt())}");
   forwards to
     -- TODO: We can currently only lift to the global level, but this should be lifted to the closest scope
     injectGlobalDeclsTypeExpr(

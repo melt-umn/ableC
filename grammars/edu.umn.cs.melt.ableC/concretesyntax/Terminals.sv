@@ -321,12 +321,12 @@ terminal Cpp_Attribute_high_prec '' precedence = 20;
 
 -- Wrappers for identifiers, as extensions may wish to introduce new syntax
 -- representing an arbitrary Name
-closed nonterminal Identifier_c with location, ast<ast:Name>;
+closed nonterminal Identifier_c with ast<ast:Name>;
 concrete productions top::Identifier_c
 | id::Identifier_t
     { top.ast = ast:fromId(id); }
 
-closed nonterminal TypeIdName_c with location, ast<ast:Name>;
+closed nonterminal TypeIdName_c with ast<ast:Name>;
 concrete productions top::TypeIdName_c
 | t::TypeName_t
     { top.ast = ast:fromTy(t); }
@@ -336,6 +336,5 @@ concrete productions top::TypeIdName_c
 terminal TypeIdName_NEVER_t 'TypeIdName_Never!!!nevernever1234567890';
 concrete productions top::Expr_c
 | 'TypeIdName_Never!!!nevernever1234567890' TypeIdName_c '<'
-    { top.ast = ast:errorExpr ( [ err (top.location, "Internal Error. " ++
-        "Placeholder for TypeIdName_c should not appear in the tree.") ],
-        location=top.location ) ; }
+    { top.ast = ast:errorExpr ( [ errFromOrigin(top, "Internal Error. " ++
+        "Placeholder for TypeIdName_c should not appear in the tree.") ] ) ; }

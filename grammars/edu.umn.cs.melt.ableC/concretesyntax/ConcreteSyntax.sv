@@ -13,7 +13,7 @@ exports edu:umn:cs:melt:ableC:concretesyntax:gcc_exts;
 -- C's concrete syntax is so permissive that we are unable to translate some
 -- constructs to abstract syntax. This is the *only* use for errors on
 -- concrete syntax, no further semantic analysis is made.
-imports silver:langutil only ast, errors, err, wrn;
+imports silver:langutil only ast, errors, errFromOrigin, wrnFromOrigin;
 
 -- errors it prefixed with ast, to avoid any name clashes.
 imports edu:umn:cs:melt:ableC:abstractsyntax:host as ast;

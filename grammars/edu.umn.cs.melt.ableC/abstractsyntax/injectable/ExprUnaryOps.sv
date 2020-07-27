@@ -20,9 +20,7 @@ top::host:Expr ::= e::host:Expr
   forwards to
     host:wrapWarnExpr(lerrors,
       host:wrapQualifiedExpr(injectedQualifiers,
-        host:preIncExpr(applyMods(runtimeMods, e), location=top.location),
-        top.location),
-      top.location);
+        host:preIncExpr(applyMods(runtimeMods, e))));
 }
 abstract production preDecExpr
 top::host:Expr ::= e::host:Expr
@@ -44,9 +42,7 @@ top::host:Expr ::= e::host:Expr
   forwards to
     host:wrapWarnExpr(lerrors,
       host:wrapQualifiedExpr(injectedQualifiers,
-        host:preDecExpr(applyMods(runtimeMods, e), location=top.location),
-        top.location),
-      top.location);
+        host:preDecExpr(applyMods(runtimeMods, e))));
 }
 abstract production postIncExpr
 top::host:Expr ::= e::host:Expr
@@ -68,9 +64,7 @@ top::host:Expr ::= e::host:Expr
   forwards to
     host:wrapWarnExpr(lerrors,
       host:wrapQualifiedExpr(injectedQualifiers,
-        host:postIncExpr(applyMods(runtimeMods, e), location=top.location),
-        top.location),
-      top.location);
+        host:postIncExpr(applyMods(runtimeMods, e))));
 }
 abstract production postDecExpr
 top::host:Expr ::= e::host:Expr
@@ -92,9 +86,7 @@ top::host:Expr ::= e::host:Expr
   forwards to
     host:wrapWarnExpr(lerrors,
       host:wrapQualifiedExpr(injectedQualifiers,
-        host:postDecExpr(applyMods(runtimeMods, e), location=top.location),
-        top.location),
-      top.location);
+        host:postDecExpr(applyMods(runtimeMods, e))));
 }
 abstract production addressOfExpr
 top::host:Expr ::= e::host:Expr
@@ -116,9 +108,7 @@ top::host:Expr ::= e::host:Expr
   forwards to
     host:wrapWarnExpr(lerrors,
       host:wrapQualifiedExpr(injectedQualifiers,
-        host:addressOfExpr(applyMods(runtimeMods, e), location=top.location),
-        top.location),
-      top.location);
+        host:addressOfExpr(applyMods(runtimeMods, e))));
 }
 abstract production dereferenceExpr
 top::host:Expr ::= e::host:Expr
@@ -140,9 +130,7 @@ top::host:Expr ::= e::host:Expr
   forwards to
     host:wrapWarnExpr(lerrors,
       host:wrapQualifiedExpr(injectedQualifiers,
-        host:dereferenceExpr(applyMods(runtimeMods, e), location=top.location),
-        top.location),
-      top.location);
+        host:dereferenceExpr(applyMods(runtimeMods, e))));
 }
 abstract production positiveExpr
 top::host:Expr ::= e::host:Expr
@@ -164,9 +152,7 @@ top::host:Expr ::= e::host:Expr
   forwards to
     host:wrapWarnExpr(lerrors,
       host:wrapQualifiedExpr(injectedQualifiers,
-        host:positiveExpr(applyMods(runtimeMods, e), location=top.location),
-        top.location),
-      top.location);
+        host:positiveExpr(applyMods(runtimeMods, e))));
 }
 abstract production negativeExpr
 top::host:Expr ::= e::host:Expr
@@ -188,9 +174,7 @@ top::host:Expr ::= e::host:Expr
   forwards to
     host:wrapWarnExpr(lerrors,
       host:wrapQualifiedExpr(injectedQualifiers,
-        host:negativeExpr(applyMods(runtimeMods, e), location=top.location),
-        top.location),
-      top.location);
+        host:negativeExpr(applyMods(runtimeMods, e))));
 }
 abstract production bitNegateExpr
 top::host:Expr ::= e::host:Expr
@@ -212,9 +196,7 @@ top::host:Expr ::= e::host:Expr
   forwards to
     host:wrapWarnExpr(lerrors,
       host:wrapQualifiedExpr(injectedQualifiers,
-        host:bitNegateExpr(applyMods(runtimeMods, e), location=top.location),
-        top.location),
-      top.location);
+        host:bitNegateExpr(applyMods(runtimeMods, e))));
 }
 abstract production notExpr
 top::host:Expr ::= e::host:Expr
@@ -236,9 +218,7 @@ top::host:Expr ::= e::host:Expr
   forwards to
     host:wrapWarnExpr(lerrors,
       host:wrapQualifiedExpr(injectedQualifiers,
-        host:notExpr(applyMods(runtimeMods, e), location=top.location),
-        top.location),
-      top.location);
+        host:notExpr(applyMods(runtimeMods, e))));
 }
 
 -- GCC extension
@@ -262,9 +242,7 @@ top::host:Expr ::= e::host:Expr
   forwards to
     host:wrapWarnExpr(lerrors,
       host:wrapQualifiedExpr(injectedQualifiers,
-        host:realExpr(applyMods(runtimeMods, e), location=top.location),
-        top.location),
-      top.location);
+        host:realExpr(applyMods(runtimeMods, e))));
 }
 -- GCC extension
 abstract production imagExpr
@@ -287,9 +265,7 @@ top::host:Expr ::= e::host:Expr
   forwards to
     host:wrapWarnExpr(lerrors,
       host:wrapQualifiedExpr(injectedQualifiers,
-        host:imagExpr(applyMods(runtimeMods, e), location=top.location),
-        top.location),
-      top.location);
+        host:imagExpr(applyMods(runtimeMods, e))));
 }
 
 abstract production sizeofExpr
@@ -309,9 +285,7 @@ top::host:Expr ::= e::host:ExprOrTypeName
   forwards to
     host:wrapWarnExpr(lerrors,
       host:wrapQualifiedExpr(injectedQualifiers,
-        host:sizeofExpr(e, location=top.location),
-        top.location),
-      top.location);
+        host:sizeofExpr(e)));
 }
 -- C11
 abstract production alignofExpr
@@ -331,8 +305,6 @@ top::host:Expr ::= e::host:ExprOrTypeName
   forwards to
     host:wrapWarnExpr(lerrors,
       host:wrapQualifiedExpr(injectedQualifiers,
-        host:alignofExpr(e, location=top.location),
-        top.location),
-      top.location);
+        host:alignofExpr(e)));
 }
 

@@ -12,27 +12,27 @@ imports edu:umn:cs:melt:ableC:abstractsyntax:host as host;
 imports edu:umn:cs:melt:ableC:abstractsyntax:injectable as inj;
 
 -- Useful defs to make signatures more managable
-type UnaryProd = (host:Expr ::= host:Expr Location);
-type BinaryProd = (host:Expr ::= host:Expr host:Expr Location);
+type UnaryProd = (host:Expr ::= host:Expr);
+type BinaryProd = (host:Expr ::= host:Expr host:Expr);
 
 synthesized attribute arraySubscriptProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
 flowtype arraySubscriptProd {decorate} on host:Type, host:ExtType;
 
 synthesized attribute callProd<a>::Maybe<a>;
-attribute callProd<(host:Expr ::= host:Exprs Location)> occurs on host:Expr;
-attribute callProd<(host:Expr ::= host:Expr host:Exprs Location)> occurs on host:Type, host:ExtType;
+attribute callProd<(host:Expr ::= host:Exprs)> occurs on host:Expr;
+attribute callProd<(host:Expr ::= host:Expr host:Exprs)> occurs on host:Type, host:ExtType;
 flowtype callProd {decorate} on host:Expr, host:Type, host:ExtType;
 
 inherited attribute isDeref::Boolean occurs on host:Type;
 synthesized attribute callMemberProd<a>::Maybe<a>;
-attribute callMemberProd<(host:Expr ::= host:Expr host:Name host:Exprs Location)> occurs on host:Type;
-attribute callMemberProd<(host:Expr ::= host:Expr Boolean host:Name host:Exprs Location)> occurs on host:ExtType;
+attribute callMemberProd<(host:Expr ::= host:Expr host:Name host:Exprs)> occurs on host:Type;
+attribute callMemberProd<(host:Expr ::= host:Expr Boolean host:Name host:Exprs)> occurs on host:ExtType;
 flowtype callMemberProd {decorate, isDeref} on host:Type;
 flowtype callMemberProd {decorate} on host:ExtType;
 
 synthesized attribute memberProd<a>::Maybe<a>;
-attribute memberProd<(host:Expr ::= host:Expr host:Name Location)> occurs on host:Type;
-attribute memberProd<(host:Expr ::= host:Expr Boolean host:Name Location)> occurs on host:ExtType;
+attribute memberProd<(host:Expr ::= host:Expr host:Name)> occurs on host:Type;
+attribute memberProd<(host:Expr ::= host:Expr Boolean host:Name)> occurs on host:ExtType;
 flowtype memberProd {decorate, isDeref} on host:Type;
 flowtype memberProd {decorate} on host:ExtType;
 
@@ -49,19 +49,19 @@ synthesized attribute postDecProd::Maybe<UnaryProd> occurs on host:Type, host:Ex
 flowtype postDecProd {decorate} on host:Type, host:ExtType;
 
 synthesized attribute addressOfProd<a>::Maybe<a>;
-attribute addressOfProd<(host:Expr ::= Location)> occurs on host:Expr;
+attribute addressOfProd<(host:Expr ::=)> occurs on host:Expr;
 attribute addressOfProd<UnaryProd> occurs on host:Type, host:ExtType;
 flowtype addressOfProd {decorate} on host:Expr, host:Type, host:ExtType;
 
-synthesized attribute addressOfArraySubscriptProd::Maybe<(host:Expr ::= host:Expr host:Expr Location)> occurs on host:Type, host:ExtType;
+synthesized attribute addressOfArraySubscriptProd::Maybe<(host:Expr ::= host:Expr host:Expr)> occurs on host:Type, host:ExtType;
 flowtype addressOfArraySubscriptProd {decorate} on host:Type, host:ExtType;
 
-synthesized attribute addressOfCallProd::Maybe<(host:Expr ::= host:Expr host:Exprs Location)> occurs on host:Type, host:ExtType;
+synthesized attribute addressOfCallProd::Maybe<(host:Expr ::= host:Expr host:Exprs)> occurs on host:Type, host:ExtType;
 flowtype addressOfCallProd {decorate} on host:Type, host:ExtType;
 
 synthesized attribute addressOfMemberProd<a>::Maybe<a>;
-attribute addressOfMemberProd<(host:Expr ::= host:Expr host:Name Location)> occurs on host:Type;
-attribute addressOfMemberProd<(host:Expr ::= host:Expr Boolean host:Name Location)> occurs on host:ExtType;
+attribute addressOfMemberProd<(host:Expr ::= host:Expr host:Name)> occurs on host:Type;
+attribute addressOfMemberProd<(host:Expr ::= host:Expr Boolean host:Name)> occurs on host:ExtType;
 flowtype addressOfMemberProd {decorate, isDeref} on host:Type;
 flowtype addressOfMemberProd {decorate} on host:ExtType;
 
@@ -89,15 +89,15 @@ flowtype lEqProd {decorate, otherType} on host:Type, host:ExtType;
 synthesized attribute rEqProd::Maybe<BinaryProd> occurs on host:Type, host:ExtType;
 flowtype rEqProd {decorate, otherType} on host:Type, host:ExtType;
 
-synthesized attribute eqArraySubscriptProd::Maybe<(host:Expr ::= host:Expr host:Expr host:Expr Location)> occurs on host:Type, host:ExtType;
+synthesized attribute eqArraySubscriptProd::Maybe<(host:Expr ::= host:Expr host:Expr host:Expr)> occurs on host:Type, host:ExtType;
 flowtype eqArraySubscriptProd {decorate, otherType} on host:Type, host:ExtType;
 
-synthesized attribute eqCallProd::Maybe<(host:Expr ::= host:Expr host:Exprs host:Expr Location)> occurs on host:Type, host:ExtType;
+synthesized attribute eqCallProd::Maybe<(host:Expr ::= host:Expr host:Exprs host:Expr)> occurs on host:Type, host:ExtType;
 flowtype eqCallProd {decorate, otherType} on host:Type, host:ExtType;
 
 synthesized attribute eqMemberProd<a>::Maybe<a>;
-attribute eqMemberProd<(host:Expr ::= host:Expr host:Name host:Expr Location)> occurs on host:Type;
-attribute eqMemberProd<(host:Expr ::= host:Expr Boolean host:Name host:Expr Location)> occurs on host:ExtType;
+attribute eqMemberProd<(host:Expr ::= host:Expr host:Name host:Expr)> occurs on host:Type;
+attribute eqMemberProd<(host:Expr ::= host:Expr Boolean host:Name host:Expr)> occurs on host:ExtType;
 flowtype eqMemberProd {decorate, otherType, isDeref} on host:Type;
 flowtype eqMemberProd {decorate, otherType} on host:ExtType;
 
@@ -246,18 +246,18 @@ top::host:Expr ::=
 {
   top.callProd =
     case top.host:typerep.callProd of
-    | just(prod) -> just(prod(host:decExpr(top, location=top.location), _, _))
+    | just(prod) -> just(prod(host:decExpr(top), _))
     | nothing() -> nothing()
     end;
   top.addressOfProd =
     case top.host:typerep.addressOfProd of
-    | just(prod) -> just(prod(host:decExpr(top, location=top.location), _))
+    | just(prod) -> just((\ -> prod(host:decExpr(top))))
     | nothing() -> nothing()
     end;
   top.lEqProd =
     -- Can't use a local here, unfourtunately
     case decorate top.host:typerep with {otherType=top.otherType;}.lEqProd of
-    | just(prod) -> just(prod(host:decExpr(top, location=top.location), _, _))
+    | just(prod) -> just(prod(host:decExpr(top), _))
     | nothing() -> nothing()
     end;
 }
@@ -282,14 +282,13 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
       case lhs.host:typerep.addressOfArraySubscriptProd of
       | just(prod) ->
         just(
-          prod(
-            host:decExpr(lhs, location=lhs.location),
-            host:decExpr(rhs, location=rhs.location),
-            _))
+          (\ -> prod(
+            host:decExpr(lhs),
+            host:decExpr(rhs))))
       | nothing() -> nothing()
       end,
       case top.host:typerep.addressOfProd of
-      | just(prod) -> just(prod(host:decExpr(top, location=top.location), _))
+      | just(prod) -> just((\ -> prod(host:decExpr(top))))
       | nothing() -> nothing()
       end);
   top.lEqProd =
@@ -298,13 +297,13 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
       | just(prod) ->
         just(
           prod(
-            host:decExpr(lhs, location=lhs.location),
-            host:decExpr(rhs, location=rhs.location),
-            _, _))
+            host:decExpr(lhs),
+            host:decExpr(rhs),
+            _))
       | nothing() -> nothing()
       end,
       case t.lEqProd of
-      | just(prod) -> just(prod(host:decExpr(top, location=top.location), _, _))
+      | just(prod) -> just(prod(host:decExpr(top), _))
       | nothing() -> nothing()
       end);
   lhs.otherType = top.otherType;
@@ -319,22 +318,22 @@ top::host:Expr ::= f::host:Expr  a::host:Exprs
     orElse(
       case f.host:typerep.addressOfCallProd of
       | just(prod) ->
-        just(prod(host:decExpr(f, location=f.location), host:decExprs(a), _))
+        just((\ -> prod(host:decExpr(f), host:decExprs(a))))
       | nothing() -> nothing()
       end,
       case top.host:typerep.addressOfProd of
-      | just(prod) -> just(prod(host:decExpr(top, location=top.location), _))
+      | just(prod) -> just((\ -> prod(host:decExpr(top))))
       | nothing() -> nothing()
       end);
   top.lEqProd =
     orElse(
       case t.eqCallProd of
       | just(prod) ->
-        just(prod(host:decExpr(f, location=f.location), host:decExprs(a), _, _))
+        just(prod(host:decExpr(f), host:decExprs(a), _))
       | nothing() -> nothing()
       end,
       case t.lEqProd of
-      | just(prod) -> just(prod(host:decExpr(top, location=top.location), _, _))
+      | just(prod) -> just(prod(host:decExpr(top), _))
       | nothing() -> nothing()
       end);
   f.otherType = top.otherType;
@@ -352,12 +351,12 @@ top::host:Expr ::= lhs::host:Expr  deref::Boolean  rhs::host:Name
       | just(prod) ->
         just(
           prod(
-            host:decExpr(lhs, location=lhs.location),
-            rhs, _, _))
+            host:decExpr(lhs),
+            rhs, _))
       | nothing() -> nothing()
       end,
       case top.host:typerep.callProd of
-      | just(prod) -> just(prod(host:decExpr(top, location=top.location), _, _))
+      | just(prod) -> just(prod(host:decExpr(top), _))
       | nothing() -> nothing()
       end);
   top.addressOfProd =
@@ -365,13 +364,13 @@ top::host:Expr ::= lhs::host:Expr  deref::Boolean  rhs::host:Name
       case t.addressOfMemberProd of
       | just(prod) ->
         just(
-          prod(
-            host:decExpr(lhs, location=lhs.location),
-            rhs, _))
+          (\ -> prod(
+            host:decExpr(lhs),
+            rhs)))
       | nothing() -> nothing()
       end,
       case top.host:typerep.addressOfProd of
-      | just(prod) -> just(prod(host:decExpr(top, location=top.location), _))
+      | just(prod) -> just((\ -> prod(host:decExpr(top))))
       | nothing() -> nothing()
       end);
   top.lEqProd =
@@ -380,12 +379,12 @@ top::host:Expr ::= lhs::host:Expr  deref::Boolean  rhs::host:Name
       | just(prod) ->
         just(
           prod(
-            host:decExpr(lhs, location=lhs.location),
-            rhs, _, _))
+            host:decExpr(lhs),
+            rhs, _))
       | nothing() -> nothing()
       end,
       case t.lEqProd of
-      | just(prod) -> just(prod(host:decExpr(top, location=top.location), _, _))
+      | just(prod) -> just(prod(host:decExpr(top), _))
       | nothing() -> nothing()
       end);
   lhs.otherType = top.otherType;
@@ -502,12 +501,12 @@ top::host:Type ::= q::host:Qualifiers  sub::host:ExtType
   top.callProd = sub.callProd;
   top.callMemberProd =
     case sub.callMemberProd of
-    | just(prod) -> just(prod(_, top.isDeref, _, _, _))
+    | just(prod) -> just(prod(_, top.isDeref, _, _))
     | nothing() -> nothing()
     end;
   top.memberProd =
     case sub.memberProd of
-    | just(prod) -> just(prod(_, top.isDeref, _, _))
+    | just(prod) -> just(prod(_, top.isDeref, _))
     | nothing() -> nothing()
     end;
   
@@ -520,7 +519,7 @@ top::host:Type ::= q::host:Qualifiers  sub::host:ExtType
   top.addressOfCallProd = sub.addressOfCallProd;
   top.addressOfMemberProd =
     case sub.addressOfMemberProd of
-    | just(prod) -> just(prod(_, top.isDeref, _, _))
+    | just(prod) -> just(prod(_, top.isDeref, _))
     | nothing() -> nothing()
     end;
   top.dereferenceProd = sub.dereferenceProd;
@@ -536,7 +535,7 @@ top::host:Type ::= q::host:Qualifiers  sub::host:ExtType
   top.eqCallProd = sub.eqCallProd;
   top.eqMemberProd =
     case sub.eqMemberProd of
-    | just(prod) -> just(prod(_, top.isDeref, _, _, _))
+    | just(prod) -> just(prod(_, top.isDeref, _, _))
     | nothing() -> nothing()
     end;
   top.lMulEqProd = sub.lMulEqProd;

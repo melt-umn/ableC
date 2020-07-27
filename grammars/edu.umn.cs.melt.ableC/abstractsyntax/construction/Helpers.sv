@@ -6,28 +6,28 @@ imports edu:umn:cs:melt:ableC:concretesyntax as cst;
 
 
 function figureOutTypeFromSpecifiers
-BaseTypeExpr ::= l::Location  q::Qualifiers  pre_ts::[String]  real_ts::[BaseTypeExpr]  mod::[TypeSpecifierMutator]
+BaseTypeExpr ::=  q::Qualifiers  pre_ts::[String]  real_ts::[BaseTypeExpr]  mod::[TypeSpecifierMutator]
 {
   return if !null(mod) then
     case mod of
     | modifyTypeSpecifier(f) :: [] -> 
-        f(q, figureOutTypeFromSpecifiers(l, nilQualifier(), pre_ts, real_ts, []))
+        f(q, figureOutTypeFromSpecifiers(nilQualifier(), pre_ts, real_ts, []))
     | _ ->
-        errorTypeExpr([err(l, "Multiple type specifiers" {- TODO -})])
+        errorTypeExpr([errFromOrigin(q, "Multiple type specifiers" {- TODO -})])
     end
   else if null(pre_ts) && null(real_ts) then
-    warnTypeExpr([wrn(l, "Implicit int type specifier -- illegal in C11")],
+    warnTypeExpr([wrnFromOrigin(q, "Implicit int type specifier -- illegal in C11")],
       builtinTypeExpr(q, signedType(intType())))
   else if !null(pre_ts) && !null(real_ts) then
-    errorTypeExpr([err(l, "Multiple type specifiers" {- TODO -})])
+    errorTypeExpr([errFromOrigin(q, "Multiple type specifiers" {- TODO -})])
   else if null(pre_ts) then
     if length(real_ts) > 1 then
-      errorTypeExpr([err(l, "Multiple type specifiers" {- TODO -})])
+      errorTypeExpr([errFromOrigin(q, "Multiple type specifiers" {- TODO -})])
     else
       head(real_ts)
   else
     fromMaybe(
-      errorTypeExpr([err(l, "Unable to interpret type specifiers: " ++ implode(" ", pre_ts))]),
+      errorTypeExpr([errFromOrigin(q, "Unable to interpret type specifiers: " ++ implode(" ", pre_ts))]),
       interpretTypeSpecifiers(q, sortBy(stringLte, pre_ts)));
 }
 

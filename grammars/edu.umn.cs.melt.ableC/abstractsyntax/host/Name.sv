@@ -21,7 +21,7 @@ synthesized attribute valueItem :: Decorated ValueItem;
 synthesized attribute tagItem :: Decorated TagItem;
 synthesized attribute labelItem :: Decorated LabelItem;
 
-nonterminal Name with location, name, pp, host, env, valueLocalLookup, labelRedeclarationCheck, valueLookupCheck, tagLookupCheck, labelLookupCheck, valueItem, tagItem, labelItem, tagLocalLookup, tagHasForwardDcl, tagRefId, valueRedeclarationCheck, valueRedeclarationCheckNoCompatible, valueMergeRedeclExtnQualifiers;
+nonterminal Name with name, pp, host, env, valueLocalLookup, labelRedeclarationCheck, valueLookupCheck, tagLookupCheck, labelLookupCheck, valueItem, tagItem, labelItem, tagLocalLookup, tagHasForwardDcl, tagRefId, valueRedeclarationCheck, valueRedeclarationCheckNoCompatible, valueMergeRedeclExtnQualifiers;
 flowtype Name = decorate {env}, name {}, valueLocalLookup {env}, labelRedeclarationCheck {env}, valueLookupCheck {env}, tagLookupCheck {env}, labelLookupCheck {env}, valueItem {env}, tagItem {env}, labelItem {env}, tagLocalLookup {env}, tagHasForwardDcl {env}, tagRefId {env}, valueRedeclarationCheck {decorate}, valueRedeclarationCheckNoCompatible {decorate}, valueMergeRedeclExtnQualifiers {decorate};
 
 abstract production name
@@ -49,9 +49,9 @@ top::Name ::= n::String
   local labdcls :: [LabelItem] = lookupLabel(n, top.env);
   top.labelRedeclarationCheck =
     case labdcls of
-    | [] -> [err(top.location, "INTERNAL compiler error: expected to find label in function scope, was missing.")] -- TODO?
+    | [] -> [errFromOrigin(top, "INTERNAL compiler error: expected to find label in function scope, was missing.")] -- TODO?
     | [_] -> [] -- We found ourselves. Labels are in function scope, so a-okay!
-    | _ :: _ :: _ -> [err(top.location, "Redeclaration of " ++ n)]
+    | _ :: _ :: _ -> [errFromOrigin(top, "Redeclaration of " ++ n)]
     end;
   
   local values :: [ValueItem] = lookupValue(n, top.env);
@@ -59,17 +59,17 @@ top::Name ::= n::String
   local labels :: [LabelItem] = lookupLabel(n, top.env);
   top.valueLookupCheck =
     case values of
-    | [] -> [err(top.location, "Undeclared value " ++ n)]
+    | [] -> [errFromOrigin(top, "Undeclared value " ++ n)]
     | _ :: _ -> []
     end;
   top.labelLookupCheck =
     case labels of
-    | [] -> [err(top.location, "Undeclared label " ++ n)]
+    | [] -> [errFromOrigin(top, "Undeclared label " ++ n)]
     | _ :: _ -> []
     end;
   top.tagLookupCheck =
     case tags of
-    | [] -> [err(top.location, "Undeclared tag " ++ n)]
+    | [] -> [errFromOrigin(top, "Undeclared tag " ++ n)]
     | _ :: _ -> []
     end;
   
@@ -172,9 +172,9 @@ function doValueRedeclarationCheck
         let originalPP :: String = show(100, cat(v.typerep.lpp, v.typerep.rpp)),
             herePP :: String = show(100, cat(t.lpp, t.rpp))
          in
-            [err(n.location, 
+            [errFromOrigin(n, 
               "Redeclaration of " ++ n.name ++ " with incompatible types. Original (from " ++
-              v.sourceLocation.unparse ++ ") " ++ originalPP ++
+              getParsedOriginLocationOrFallback(v).unparse ++ ") " ++ originalPP ++
               " but here it is " ++ herePP)]
         end
   end;
@@ -186,9 +186,9 @@ function doValueRedeclarationCheckNoCompatible
   return case n.valueLocalLookup of
   | [] -> []
   | v :: _ -> 
-      [err(n.location, 
+      [errFromOrigin(n, 
         "Redeclaration of " ++ n.name ++ ". Original (from " ++
-        v.sourceLocation.unparse ++ ")")]
+        getParsedOriginLocationOrFallback(v).unparse ++ ")")]
   end;
 }
 
@@ -212,7 +212,7 @@ Type ::= t::Type  n::Decorated Name
 --        let originalPP :: String = show(100, cat(v.typerep.lpp, v.typerep.rpp)),
 --            herePP :: String = show(100, cat(t.lpp, t.rpp))
 --         in
---            [err(n.location, 
+--            [errFromOrigin(n, 
 --              "Redeclaration of " ++ n.name ++ " with incompatible types. Original (from line " ++
 --              toString(v.sourceLocation.line) ++ ") " ++ originalPP ++ 
 --              " but here it is " ++ herePP)]

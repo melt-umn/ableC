@@ -38,7 +38,7 @@ Message ::= Integer
   return if genRand() < 0.5 then err(bogusLocation, "err1") else err(bogusLocation, "err2");
 }
 
-global bogusLocation :: Location = loc("<generated>", -1,-1,-1,-1,-1,-1);
+global bogusLocation :: = loc("<generated>", -1,-1,-1,-1,-1,-1);
 
 function checkEqString
 Boolean ::= l::String  r::String

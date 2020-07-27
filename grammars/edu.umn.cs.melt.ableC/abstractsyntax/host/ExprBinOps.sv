@@ -5,7 +5,7 @@ top::Expr ::= lhs::Expr rhs::Expr
 {
   propagate host, errors, globalDecls, functionDecls, defs;
   top.pp = parens( ppConcat([lhs.pp, space(), text("="), space(), rhs.pp]) );
-  top.errors <- assignErrors(lhs, rhs, top.location);
+  top.errors <- assignErrors(lhs, rhs);
   top.freeVariables :=
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
@@ -19,7 +19,7 @@ top::Expr ::= lhs::Expr rhs::Expr
 {
   propagate host, errors, globalDecls, functionDecls, defs;
   top.pp = parens( ppConcat([lhs.pp, space(), text("*="), space(), rhs.pp]) );
-  top.errors <- assignErrors(lhs, rhs, top.location);
+  top.errors <- assignErrors(lhs, rhs);
   top.freeVariables :=
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
@@ -33,7 +33,7 @@ top::Expr ::= lhs::Expr rhs::Expr
 {
   propagate host, errors, globalDecls, functionDecls, defs;
   top.pp = parens( ppConcat([lhs.pp, space(), text("/="), space(), rhs.pp]) );
-  top.errors <- assignErrors(lhs, rhs, top.location);
+  top.errors <- assignErrors(lhs, rhs);
   top.freeVariables :=
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
@@ -47,7 +47,7 @@ top::Expr ::= lhs::Expr rhs::Expr
 {
   propagate host, errors, globalDecls, functionDecls, defs;
   top.pp = parens( ppConcat([lhs.pp, space(), text("%="), space(), rhs.pp]) );
-  top.errors <- assignErrors(lhs, rhs, top.location);
+  top.errors <- assignErrors(lhs, rhs);
   top.freeVariables :=
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
@@ -61,7 +61,7 @@ top::Expr ::= lhs::Expr rhs::Expr
 {
   propagate host, errors, globalDecls, functionDecls, defs;
   top.pp = parens( ppConcat([lhs.pp, space(), text("+="), space(), rhs.pp]) );
-  top.errors <- assignErrors(lhs, rhs, top.location);
+  top.errors <- assignErrors(lhs, rhs);
   top.freeVariables :=
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
@@ -75,7 +75,7 @@ top::Expr ::= lhs::Expr rhs::Expr
 {
   propagate host, errors, globalDecls, functionDecls, defs;
   top.pp = parens( ppConcat([lhs.pp, space(), text("-="), space(), rhs.pp]) );
-  top.errors <- assignErrors(lhs, rhs, top.location);
+  top.errors <- assignErrors(lhs, rhs);
   top.freeVariables :=
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
@@ -89,7 +89,7 @@ top::Expr ::= lhs::Expr rhs::Expr
 {
   propagate host, errors, globalDecls, functionDecls, defs;
   top.pp = parens( ppConcat([lhs.pp, space(), text("<<="), space(), rhs.pp]) );
-  top.errors <- assignErrors(lhs, rhs, top.location);
+  top.errors <- assignErrors(lhs, rhs);
   top.freeVariables :=
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
@@ -103,7 +103,7 @@ top::Expr ::= lhs::Expr rhs::Expr
 {
   propagate host, errors, globalDecls, functionDecls, defs;
   top.pp = parens( ppConcat([lhs.pp, space(), text(">>="), space(), rhs.pp]) );
-  top.errors <- assignErrors(lhs, rhs, top.location);
+  top.errors <- assignErrors(lhs, rhs);
   top.freeVariables :=
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
@@ -117,7 +117,7 @@ top::Expr ::= lhs::Expr rhs::Expr
 {
   propagate host, errors, globalDecls, functionDecls, defs;
   top.pp = parens( ppConcat([lhs.pp, space(), text("&="), space(), rhs.pp]) );
-  top.errors <- assignErrors(lhs, rhs, top.location);
+  top.errors <- assignErrors(lhs, rhs);
   top.freeVariables :=
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
@@ -131,7 +131,7 @@ top::Expr ::= lhs::Expr rhs::Expr
 {
   propagate host, errors, globalDecls, functionDecls, defs;
   top.pp = parens( ppConcat([lhs.pp, space(), text("^="), space(), rhs.pp]) );
-  top.errors <- assignErrors(lhs, rhs, top.location);
+  top.errors <- assignErrors(lhs, rhs);
   top.freeVariables :=
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
@@ -145,7 +145,7 @@ top::Expr ::= lhs::Expr rhs::Expr
 {
   propagate host, errors, globalDecls, functionDecls, defs;
   top.pp = parens( ppConcat([lhs.pp, space(), text("|="), space(), rhs.pp]) );
-  top.errors <- assignErrors(lhs, rhs, top.location);
+  top.errors <- assignErrors(lhs, rhs);
   top.freeVariables :=
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
@@ -155,28 +155,28 @@ top::Expr ::= lhs::Expr rhs::Expr
 }
 
 function assignErrors
-[Message] ::= lhs::Decorated Expr  rhs::Decorated Expr  loc::Location
+[Message] ::= lhs::Decorated Expr  rhs::Decorated Expr 
 {
 	return
     (if typeAssignableTo(lhs.typerep, rhs.typerep)
      then
-       (if containsQualifier(constQualifier(location=bogusLoc()), lhs.typerep)
-        then [err(loc, "Assignment of read-only variable")]
+       (if containsQualifier(constQualifier(), lhs.typerep)
+        then [errFromOrigin(lhs, "Assignment of read-only variable")]
         else []) ++
        case lhs.typerep of
          extType(_, refIdExtType(_, _, refId)) ->
            case lookupRefId(refId, lhs.env) of
              item :: _ ->
                if item.hasConstField
-               then [err(loc, s"Assignment of read-only variable (${show(80, lhs.pp)} has const fields)")]
+               then [errFromOrigin(lhs, s"Assignment of read-only variable (${show(80, lhs.pp)} has const fields)")]
                else []
            | [] -> []
            end 
        | _ -> []
        end
-     else [err(loc, "Incompatible type in rhs of assignment, expected " ++ showType(lhs.typerep) ++ " but found " ++ showType(rhs.typerep))]) ++
+     else [errFromOrigin(rhs, "Incompatible type in rhs of assignment, expected " ++ showType(lhs.typerep) ++ " but found " ++ showType(rhs.typerep))]) ++
     if lhs.isLValue then []
-      else [err(lhs.location, "lvalue required as left operand of assignment")];
+      else [errFromOrigin(lhs, "lvalue required as left operand of assignment")];
 }
 
 abstract production andExpr

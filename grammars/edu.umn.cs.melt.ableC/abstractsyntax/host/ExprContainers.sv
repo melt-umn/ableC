@@ -60,10 +60,10 @@ top::Exprs ::= h::Expr  t::Exprs
     if null(top.expectedTypes) then
       if top.callVariadic then []
       else
-        [err(top.callExpr.location, s"call expected ${toString(top.argumentPosition - 1)} arguments, got ${toString(top.argumentPosition + t.count)}")]
+        [errFromOrigin(top.callExpr, s"call expected ${toString(top.argumentPosition - 1)} arguments, got ${toString(top.argumentPosition + t.count)}")]
     else
       if !typeAssignableTo(head(top.expectedTypes), h.typerep) then
-        [err(h.location, s"argument ${toString(top.argumentPosition)} expected type ${showType(head(top.expectedTypes))} (got ${showType(h.typerep)})")] ++ t.argumentErrors
+        [errFromOrigin(h, s"argument ${toString(top.argumentPosition)} expected type ${showType(head(top.expectedTypes))} (got ${showType(h.typerep)})")] ++ t.argumentErrors
       else
         t.argumentErrors;
   t.expectedTypes = tail(top.expectedTypes);
@@ -85,7 +85,7 @@ top::Exprs ::=
   top.argumentErrors =
     if null(top.expectedTypes) then []
     else
-      [err(top.callExpr.location, s"call expected ${toString(top.argumentPosition + length(top.expectedTypes) - 1)} arguments, got only ${toString(top.argumentPosition - 1)}")];
+      [errFromOrigin(top.callExpr, s"call expected ${toString(top.argumentPosition + length(top.expectedTypes) - 1)} arguments, got only ${toString(top.argumentPosition - 1)}")];
 }
 {--
  - The purpose of this production is for an extension production to use to wrap

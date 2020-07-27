@@ -248,8 +248,8 @@ top::TypeSuffix ::=
 concrete productions top::TypeSuffix
 | '*' {-pointer-} { top.pointercount = 1; }
 | '&' {-C++-} { top.ignoreMe = true; } -- ignore these
-| 'C' {-const-} { top.qualifiers = a:consQualifier(a:constQualifier(location=builtinLoc("host")), a:nilQualifier()); }
-| 'D' {-volatile-} { top.qualifiers = a:consQualifier(a:volatileQualifier(location=builtinLoc("host")), a:nilQualifier()); }
+| 'C' {-const-} { top.qualifiers = a:consQualifier(a:constQualifier(), a:nilQualifier()); }
+| 'D' {-volatile-} { top.qualifiers = a:consQualifier(a:volatileQualifier(), a:nilQualifier()); }
 
 
 nonterminal MaybeDots with hasdots;
