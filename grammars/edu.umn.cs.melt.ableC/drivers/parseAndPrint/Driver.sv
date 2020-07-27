@@ -7,6 +7,8 @@ imports silver:langutil;
 imports silver:langutil:pp;
 imports core:monad;
 
+imports core:originsimpl;
+
 import edu:umn:cs:melt:ableC:abstractsyntax:env ; --only env, emptyEnv;
 
 function driver
@@ -75,7 +77,7 @@ IOVal<Integer> ::= args::[String] ioIn::IO
             }
             else {
               if !null(comp.errors) then
-                printM(messagesToString(comp.errors) ++ "\n");
+                printM(messagesToStringWithOrigins(comp.errors) ++ "\n");
               if containsBy(stringEq, "--force-trans", args) || !containsErrors(comp.errors, false) then
                 writeFileM(ppFileName, show(80, comp.abs:finalPP));
               if containsErrors(comp.errors, false) then
@@ -90,6 +92,24 @@ IOVal<Integer> ::= args::[String] ioIn::IO
   };
   
   return evalIO(result, ioIn);
+}
+
+function messagesToStringWithOrigins
+String ::= msgs::[Message]
+{
+  return implode("\n", map(showMessage, sortBy(messageLte, msgs)));
+}
+
+function showMessage
+String ::= m::Message
+{
+  local locStr :: String = case getParsedOriginLocation(m) of
+    | just(l) -> toString(l.filename)++":"++toString(l.line)++":"++toString(l.column)
+    | nothing() -> "<nothing>"++
+    "\n  ochain : " ++ implode("\n -> ", map(hackUnparse, getOriginInfoChain(m))) ++ "\n\n\n"
+  end;
+  return m.output ++
+    "\n  origins reports source as: "++locStr ;
 }
 
 
@@ -129,5 +149,3 @@ function removeNonCppArgs
          end;
 }
 -}
-
-
