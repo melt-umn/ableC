@@ -26,7 +26,7 @@ inherited attribute givenStmt :: ast:Stmt;
 
 -- "Exported" nonterminals
 
-closed nonterminal FunctionDefinition_c with ast<ast:FunctionDecl>;
+closed tracked nonterminal FunctionDefinition_c with ast<ast:FunctionDecl>;
 concrete productions top::FunctionDefinition_c
 | d::InitialFunctionDefinition_c  s::CompoundStatement_c 
     { top.ast = d.ast;
@@ -36,7 +36,7 @@ concrete productions top::FunctionDefinition_c
       context = closeScope(context); -- Opened by InitialFunctionDefinition.
     }
 
-closed nonterminal Declaration_c with ast<ast:Decl>;
+closed tracked nonterminal Declaration_c with ast<ast:Decl>;
 concrete productions top::Declaration_c
 | ds::DeclarationSpecifiers_c  idcl::InitDeclaratorList_c  ';'
     {
@@ -75,7 +75,7 @@ concrete productions top::Declaration_c
     }
 
 
-closed nonterminal Declarator_c with declaredIdent, declaredParamIdents, ast<ast:TypeModifierExpr>, givenType; 
+closed tracked nonterminal Declarator_c with declaredIdent, declaredParamIdents, ast<ast:TypeModifierExpr>, givenType; 
 concrete productions top::Declarator_c
 | p::Pointer_c dd::DirectDeclarator_c
     { top.declaredIdent = dd.declaredIdent; 
@@ -90,7 +90,7 @@ concrete productions top::Declarator_c
       top.ast = dd.ast; }
 
 
-closed nonterminal TypeName_c with ast<ast:TypeName>;
+closed tracked nonterminal TypeName_c with ast<ast:TypeName>;
 concrete productions top::TypeName_c
 | sqs::SpecifierQualifierList_c
     { 
@@ -121,7 +121,7 @@ concrete productions top::TypeName_c
     }
 
 -- Not actually used in the host language, just really useful for extensions
-closed nonterminal TypeNames_c with ast<ast:TypeNames>;
+closed tracked nonterminal TypeNames_c with ast<ast:TypeNames>;
 concrete productions top::TypeNames_c
 | h::TypeName_c ',' t::TypeNames_c
     { top.ast = ast:consTypeName(h.ast, t.ast); }
@@ -130,7 +130,7 @@ concrete productions top::TypeNames_c
 | 
     { top.ast = ast:nilTypeName(); }
 
-closed nonterminal Names_c with ast<[ast:Name]>;
+closed tracked nonterminal Names_c with ast<[ast:Name]>;
 concrete productions top::Names_c
 | h::Identifier_c ',' t::Names_c
   { top.ast = h.ast :: t.ast; }
@@ -193,7 +193,7 @@ concrete productions top::Expr_c
  - rule for FunctionDefinition. This is to handle adding parameter names
  - with the correct scoping rules.
  -}
-closed nonterminal InitialFunctionDefinition_c with ast<ast:FunctionDecl>, givenStmt;
+closed tracked nonterminal InitialFunctionDefinition_c with ast<ast:FunctionDecl>, givenStmt;
 concrete productions top::InitialFunctionDefinition_c
 | ds::DeclarationSpecifiers_c  d::Declarator_c  l::InitiallyUnqualifiedDeclarationList_c
     {
@@ -284,7 +284,7 @@ concrete productions top::InitialFunctionDefinition_c
  - attaching any qualifiers from a single 'declaration' with no specifiers, as
  - that would require significantly more invasive grammar modifications. 
  -}
-closed nonterminal InitiallyUnqualifiedDeclaration_c with ast<ast:Decl>, givenQualifiers;
+closed tracked nonterminal InitiallyUnqualifiedDeclaration_c with ast<ast:Decl>, givenQualifiers;
 concrete productions top::InitiallyUnqualifiedDeclaration_c
 | ds::InitiallyUnqualifiedDeclarationSpecifiers_c  idcl::InitDeclaratorList_c  ';'
     {
@@ -334,7 +334,7 @@ synthesized attribute isDeclListEmpty :: Boolean;
  - since it's only use is in (our) InitialFunctionDefinition,
  - where it's optional.
  -}
-closed nonterminal InitiallyUnqualifiedDeclarationList_c with ast<[ast:Decl]>, isDeclListEmpty, givenQualifiers;
+closed tracked nonterminal InitiallyUnqualifiedDeclarationList_c with ast<[ast:Decl]>, isDeclListEmpty, givenQualifiers;
 concrete productions top::InitiallyUnqualifiedDeclarationList_c
 |
     { top.ast = [];
@@ -343,7 +343,7 @@ concrete productions top::InitiallyUnqualifiedDeclarationList_c
     { top.ast = h.ast :: t.ast;
       top.isDeclListEmpty = false; }
 
-closed nonterminal DeclarationList_c with ast<[ast:Decl]>, isDeclListEmpty;
+closed tracked nonterminal DeclarationList_c with ast<[ast:Decl]>, isDeclListEmpty;
 concrete productions top::DeclarationList_c
 |
     { top.ast = [];
@@ -353,7 +353,7 @@ concrete productions top::DeclarationList_c
       top.isDeclListEmpty = false; }
 
 
-closed nonterminal Pointer_c with ast<ast:TypeModifierExpr>, givenType; 
+closed tracked nonterminal Pointer_c with ast<ast:TypeModifierExpr>, givenType; 
 concrete productions top::Pointer_c
 | '*'
     { top.ast = ast:pointerTypeExpr(ast:nilQualifier(), top.givenType); }
@@ -367,7 +367,7 @@ concrete productions top::Pointer_c
       top.ast = t.ast; }
 
 
-closed nonterminal DirectDeclarator_c with declaredIdent, declaredParamIdents, ast<ast:TypeModifierExpr>, givenType;
+closed tracked nonterminal DirectDeclarator_c with declaredIdent, declaredParamIdents, ast<ast:TypeModifierExpr>, givenType;
 concrete productions top::DirectDeclarator_c
 | id::Identifier_c 
     { top.declaredIdent = id.ast;
@@ -457,7 +457,7 @@ concrete productions top::DirectDeclarator_c
     }
 
 
-closed nonterminal OptTypeQualifierList_c with typeQualifiers;
+closed tracked nonterminal OptTypeQualifierList_c with typeQualifiers;
 concrete productions top::OptTypeQualifierList_c
 |
     { top.typeQualifiers = ast:nilQualifier(); }
@@ -465,7 +465,7 @@ concrete productions top::OptTypeQualifierList_c
     { top.typeQualifiers = q.typeQualifiers; }
 
 
-closed nonterminal AbstractDeclarator_c with ast<ast:TypeModifierExpr>, givenType;
+closed tracked nonterminal AbstractDeclarator_c with ast<ast:TypeModifierExpr>, givenType;
 concrete productions top::AbstractDeclarator_c
 | p::Pointer_c  dd::DirectAbstractDeclarator_c
     { p.givenType = top.givenType;
@@ -482,7 +482,7 @@ concrete productions top::AbstractDeclarator_c
     }
 
 
-closed nonterminal DirectAbstractDeclarator_c with ast<ast:TypeModifierExpr>, givenType;
+closed tracked nonterminal DirectAbstractDeclarator_c with ast<ast:TypeModifierExpr>, givenType;
 concrete productions top::DirectAbstractDeclarator_c
 | '(' d::AbstractDeclarator_c ')'
     {
@@ -538,7 +538,7 @@ concrete productions top::DirectAbstractDeclarator_c
 
 synthesized attribute isVariadic :: Boolean;
 
-closed nonterminal ParameterTypeList_c with declaredIdents, ast<[ast:ParameterDecl]>, isVariadic;
+closed tracked nonterminal ParameterTypeList_c with declaredIdents, ast<[ast:ParameterDecl]>, isVariadic;
 concrete productions top::ParameterTypeList_c
 | pl::ParameterList_c
     { top.declaredIdents = pl.declaredIdents;
@@ -550,7 +550,7 @@ concrete productions top::ParameterTypeList_c
       top.isVariadic = true; }
 
 
-closed nonterminal ParameterList_c with declaredIdents, ast<[ast:ParameterDecl]>;
+closed tracked nonterminal ParameterList_c with declaredIdents, ast<[ast:ParameterDecl]>;
 concrete productions top::ParameterList_c
 | h::ParameterDeclaration_c 
     { top.declaredIdents = h.declaredIdents;
@@ -562,7 +562,7 @@ concrete productions top::ParameterList_c
     }
 
 
-closed nonterminal ParameterDeclaration_c with declaredIdents, ast<ast:ParameterDecl>;
+closed tracked nonterminal ParameterDeclaration_c with declaredIdents, ast<ast:ParameterDecl>;
 concrete productions top::ParameterDeclaration_c
 | ds::DeclarationSpecifiers_c d::Declarator_c
     { top.declaredIdents = [d.declaredIdent];
@@ -589,7 +589,7 @@ concrete productions top::ParameterDeclaration_c
     }
 
 
-closed nonterminal IdentifierList_c with declaredIdents;
+closed tracked nonterminal IdentifierList_c with declaredIdents;
 concrete productions top::IdentifierList_c
 | id::Identifier_c
     { top.declaredIdents = [id.ast]; }
@@ -597,7 +597,7 @@ concrete productions top::IdentifierList_c
     { top.declaredIdents = l.declaredIdents ++ [id.ast]; }
 
 
-closed nonterminal InitDeclaratorList_c with declaredIdents, ast<[ast:Declarator]>;
+closed tracked nonterminal InitDeclaratorList_c with declaredIdents, ast<[ast:Declarator]>;
 concrete productions top::InitDeclaratorList_c
 | h::InitDeclarator_c
     { top.declaredIdents = [h.declaredIdent];
@@ -607,7 +607,7 @@ concrete productions top::InitDeclaratorList_c
       top.ast = h.ast ++ t.ast; }
 
 
-closed nonterminal InitDeclarator_c with declaredIdent, ast<[ast:Declarator]>;
+closed tracked nonterminal InitDeclarator_c with declaredIdent, ast<[ast:Declarator]>;
 concrete productions top::InitDeclarator_c
 | d::Declarator_c 
     operator=Cpp_Attribute_high_prec

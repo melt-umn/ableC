@@ -2,7 +2,7 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 
 propagate host on BuiltinType, IntegerType, RealType;
 
-nonterminal BuiltinType with pp, host, mangledName, integerPromotionsBuiltin, defaultArgumentPromotionsBuiltin, isIntegerType, isArithmeticType;
+tracked nonterminal BuiltinType with pp, host, mangledName, integerPromotionsBuiltin, defaultArgumentPromotionsBuiltin, isIntegerType, isArithmeticType;
 flowtype BuiltinType = decorate {}, integerPromotionsBuiltin {}, defaultArgumentPromotionsBuiltin {}, isIntegerType {}, isArithmeticType {};
 
 synthesized attribute integerPromotionsBuiltin :: BuiltinType;

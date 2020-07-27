@@ -321,12 +321,12 @@ terminal Cpp_Attribute_high_prec '' precedence = 20;
 
 -- Wrappers for identifiers, as extensions may wish to introduce new syntax
 -- representing an arbitrary Name
-closed nonterminal Identifier_c with ast<ast:Name>;
+closed tracked nonterminal Identifier_c with ast<ast:Name>;
 concrete productions top::Identifier_c
 | id::Identifier_t
     { top.ast = ast:fromId(id); }
 
-closed nonterminal TypeIdName_c with ast<ast:Name>;
+closed tracked nonterminal TypeIdName_c with ast<ast:Name>;
 concrete productions top::TypeIdName_c
 | t::TypeName_t
     { top.ast = ast:fromTy(t); }

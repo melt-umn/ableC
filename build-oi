@@ -1,1 +1,1 @@
-../silver/support/bin/silver-custom ../silver/build/silver.composed.Default.jar -G generated-oi/ -I grammars/ -o ableC-oi.jar $@ edu:umn:cs:melt:ableC:compiler
+../silver/support/bin/silver-custom ../silver/build/silver.composed.Default.jar -G generated-oi/ -I grammars/ $@ edu:umn:cs:melt:ableC:compiler

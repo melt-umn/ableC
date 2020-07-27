@@ -5,7 +5,7 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 -- Declaration is rooted in External, but also in stmts. Either a variableDecl or a typedefDecl.
 -- ParameterDecl should probably be something special, distinct from variableDecl.
 
-nonterminal GlobalDecls with pps, host, errors, env, returnType, freeVariables;
+tracked nonterminal GlobalDecls with pps, host, errors, env, returnType, freeVariables;
 flowtype GlobalDecls = decorate {env, returnType};
 
 propagate errors on GlobalDecls;
@@ -244,7 +244,7 @@ top::Decl ::= n::Name  e::Expr
 monoid attribute hasModifiedTypeExpr::Boolean with false, ||;
 synthesized attribute hostDecls::[Decl];
 
-nonterminal Declarators with pps, host, hostDecls, hasModifiedTypeExpr, errors, globalDecls, functionDecls, defs, env, baseType, typeModifierIn, isTopLevel, isTypedef, givenStorageClasses, givenAttributes, returnType, freeVariables;
+tracked nonterminal Declarators with pps, host, hostDecls, hasModifiedTypeExpr, errors, globalDecls, functionDecls, defs, env, baseType, typeModifierIn, isTopLevel, isTypedef, givenStorageClasses, givenAttributes, returnType, freeVariables;
 flowtype Declarators = decorate {env, returnType, baseType, typeModifierIn, givenStorageClasses, givenAttributes, isTopLevel, isTypedef}, hostDecls {decorate}, hasModifiedTypeExpr {decorate};
 
 propagate host, errors, defs, globalDecls, functionDecls, hasModifiedTypeExpr on Declarators;
@@ -270,7 +270,7 @@ top::Declarators ::=
 
 synthesized attribute hostDecl::Decl;
 
-nonterminal Declarator with pps, host, hostDecl, hasModifiedTypeExpr, errors, globalDecls, functionDecls, defs, env, baseType, typeModifierIn, typerep, isTopLevel, isTypedef, givenStorageClasses, givenAttributes, returnType, freeVariables;
+tracked nonterminal Declarator with pps, host, hostDecl, hasModifiedTypeExpr, errors, globalDecls, functionDecls, defs, env, baseType, typeModifierIn, typerep, isTopLevel, isTypedef, givenStorageClasses, givenAttributes, returnType, freeVariables;
 flowtype Declarator = decorate {env, returnType, baseType, typeModifierIn, givenStorageClasses, givenAttributes, isTopLevel, isTypedef}, hostDecl {decorate}, hasModifiedTypeExpr {decorate};
 
 autocopy attribute isTypedef :: Boolean;
@@ -372,7 +372,7 @@ top::Declarator ::= msg::[Message]
   top.typerep = errorType(); -- TODO fix this? add locaiton maybe?
 }
 
-nonterminal FunctionDecl with pp, host<Decl>, errors, globalDecls, defs, env, typerep, name, returnType, freeVariables;
+tracked nonterminal FunctionDecl with pp, host<Decl>, errors, globalDecls, defs, env, typerep, name, returnType, freeVariables;
 flowtype FunctionDecl = decorate {env, returnType}, name {};
 
 propagate errors, globalDecls on FunctionDecl;
@@ -648,7 +648,7 @@ synthesized attribute refId :: String; -- TODO move this later?
 
 monoid attribute hasConstField::Boolean with false, ||;
 
-nonterminal StructDecl with pp, host, maybename, errors, globalDecls, functionDecls, defs, env, localDefs, tagEnv, isLast, givenRefId, refId, hasConstField, returnType, freeVariables;
+tracked nonterminal StructDecl with pp, host, maybename, errors, globalDecls, functionDecls, defs, env, localDefs, tagEnv, isLast, givenRefId, refId, hasConstField, returnType, freeVariables;
 flowtype StructDecl = decorate {env, isLast, givenRefId, returnType}, localDefs {decorate}, tagEnv {decorate}, refId {decorate}, hasConstField {decorate};
 
 propagate host, errors, globalDecls, functionDecls, localDefs, hasConstField, freeVariables on StructDecl;
@@ -919,7 +919,7 @@ top::StructItem ::= msg::[Message]
 
 synthesized attribute hostStructItems::[StructItem];
 
-nonterminal StructDeclarators with pps, host, hostStructItems, hasModifiedTypeExpr, errors, globalDecls, functionDecls, defs, localDefs, hasConstField, env, baseType, inStruct, isLast, typeModifierIn, givenAttributes, returnType, freeVariables;
+tracked nonterminal StructDeclarators with pps, host, hostStructItems, hasModifiedTypeExpr, errors, globalDecls, functionDecls, defs, localDefs, hasConstField, env, baseType, inStruct, isLast, typeModifierIn, givenAttributes, returnType, freeVariables;
 flowtype StructDeclarators = decorate {env, returnType, baseType, inStruct, isLast, typeModifierIn, givenAttributes}, hostStructItems {decorate}, hasModifiedTypeExpr {decorate};
 
 propagate host, hasModifiedTypeExpr, errors, globalDecls, functionDecls, defs, localDefs, hasConstField on StructDeclarators;
@@ -954,7 +954,7 @@ top::StructDeclarators ::=
 
 synthesized attribute hostStructItem::StructItem;
 
-nonterminal StructDeclarator with pps, host, hostStructItem, hasModifiedTypeExpr, errors, globalDecls, functionDecls, defs, localDefs, hasConstField, env, typerep, baseType, inStruct, isLast, typeModifierIn, givenAttributes, returnType, freeVariables;
+tracked nonterminal StructDeclarator with pps, host, hostStructItem, hasModifiedTypeExpr, errors, globalDecls, functionDecls, defs, localDefs, hasConstField, env, typerep, baseType, inStruct, isLast, typeModifierIn, givenAttributes, returnType, freeVariables;
 flowtype StructDeclarator = decorate {env, returnType, baseType, inStruct, isLast, typeModifierIn, givenAttributes}, hostStructItem {decorate}, hasModifiedTypeExpr {decorate};
 
 propagate host, errors, globalDecls, functionDecls, defs, freeVariables on StructDeclarator;
@@ -1067,7 +1067,7 @@ monoid attribute isStatic::Boolean with false, ||;
 autocopy attribute appendedStorageClasses :: StorageClasses;
 synthesized attribute appendedStorageClassesRes :: StorageClasses;
 
-nonterminal StorageClasses with pps, isExtern, isStatic, appendedStorageClasses, appendedStorageClassesRes;
+tracked nonterminal StorageClasses with pps, isExtern, isStatic, appendedStorageClasses, appendedStorageClassesRes;
 flowtype StorageClasses = decorate {}, isExtern {}, isStatic {}, appendedStorageClassesRes {appendedStorageClasses};
 
 propagate isExtern, isStatic on StorageClasses;
@@ -1093,7 +1093,7 @@ StorageClasses ::= s1::StorageClasses s2::StorageClasses
   return s1.appendedStorageClassesRes;
 }
 
-nonterminal StorageClass with pp, isExtern, isStatic;
+tracked nonterminal StorageClass with pp, isExtern, isStatic;
 flowtype StorageClass = decorate {}, isExtern {}, isStatic {};
 
 propagate isExtern, isStatic on StorageClass;

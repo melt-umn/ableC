@@ -2,7 +2,7 @@ grammar edu:umn:cs:melt:ableC:concretesyntax;
 
 -- "Exported" nonterminals
 
-closed nonterminal CompoundStatement_c with ast<ast:Stmt>; 
+closed tracked nonterminal CompoundStatement_c with ast<ast:Stmt>; 
 concrete productions top::CompoundStatement_c
 | '{' l::BlockItemList_c '}'
     { top.ast = ast:compoundStmt(ast:foldStmt(l.ast)); }
@@ -11,7 +11,7 @@ concrete productions top::CompoundStatement_c
 
 
 -- "Non-exported" nonterminals
-closed nonterminal BlockItemList_c with ast<[ast:Stmt]>, firstBlockItemList_c, lastBlockItem_c ;
+closed tracked nonterminal BlockItemList_c with ast<[ast:Stmt]>, firstBlockItemList_c, lastBlockItem_c ;
 
 -- Following used to extract last element for gcc stmtExpr production.
 synthesized attribute lastBlockItem_c :: BlockItem_c ;
@@ -30,7 +30,7 @@ concrete productions top::BlockItemList_c
 
 
 
-closed nonterminal BlockItem_c with ast<[ast:Stmt]>;
+closed tracked nonterminal BlockItem_c with ast<[ast:Stmt]>;
 concrete productions top::BlockItem_c
 | d::Declaration_c
     { top.ast = [ast:declStmt(d.ast)]; }
@@ -38,7 +38,7 @@ concrete productions top::BlockItem_c
     { top.ast = [s.ast]; }
 
 
-closed nonterminal Stmt_c with ast<ast:Stmt>;
+closed tracked nonterminal Stmt_c with ast<ast:Stmt>;
 concrete productions top::Stmt_c
 | ls::LabeledStmt_c
     { top.ast = ls.ast; }
@@ -54,7 +54,7 @@ concrete productions top::Stmt_c
     { top.ast = js.ast; }
 
 
-closed nonterminal LabeledStmt_c with ast<ast:Stmt>;
+closed tracked nonterminal LabeledStmt_c with ast<ast:Stmt>;
 concrete productions top::LabeledStmt_c
 | id::Identifier_c ':' s::Stmt_c
     { top.ast = ast:labelStmt(id.ast, s.ast); }
@@ -66,7 +66,7 @@ concrete productions top::LabeledStmt_c
 
 synthesized attribute asMaybeExpr :: ast:MaybeExpr;
 
-closed nonterminal ExprStmt_c with ast<ast:Stmt>, asMaybeExpr;
+closed tracked nonterminal ExprStmt_c with ast<ast:Stmt>, asMaybeExpr;
 concrete productions top::ExprStmt_c
 (emptyExprStmt_c) 
 | ';'
@@ -78,7 +78,7 @@ concrete productions top::ExprStmt_c
       top.asMaybeExpr = ast:justExpr(e.ast); }
 
 
-closed nonterminal SelectionStmt_c with ast<ast:Stmt>;
+closed tracked nonterminal SelectionStmt_c with ast<ast:Stmt>;
 concrete productions top::SelectionStmt_c
 | 'if' '(' cond::Expr_c ')' tc::Stmt_c
     { top.ast = ast:ifStmtNoElse(cond.ast, tc.ast); }
@@ -88,7 +88,7 @@ concrete productions top::SelectionStmt_c
     { top.ast = ast:switchStmt(cond.ast, body.ast); }
 
 
-closed nonterminal IterationStmt_c with ast<ast:Stmt>;
+closed tracked nonterminal IterationStmt_c with ast<ast:Stmt>;
 concrete productions top::IterationStmt_c
 | 'while' '(' cond::Expr_c ')' body::Stmt_c
     { top.ast = ast:whileStmt(cond.ast, body.ast); }
@@ -109,7 +109,7 @@ concrete productions top::IterationStmt_c
 -- We should open a scope after 'for', unfortunately.
 
 
-closed nonterminal JumpStmt_c with ast<ast:Stmt>;
+closed tracked nonterminal JumpStmt_c with ast<ast:Stmt>;
 concrete productions top::JumpStmt_c
 | 'goto' id::Identifier_c ';'
     { top.ast = ast:gotoStmt(id.ast); }

@@ -84,7 +84,7 @@ concrete productions top::PrimaryExpr_c
     { top.ast = ast:vaEndExpr(id.ast); }
 
 
-closed nonterminal MemberDesignator_c with ast<ast:MemberDesignator>;
+closed tracked nonterminal MemberDesignator_c with ast<ast:MemberDesignator>;
 concrete productions top::MemberDesignator_c
 | id::Identifier_c
     { top.ast = ast:initialMemberDesignator(id.ast); }

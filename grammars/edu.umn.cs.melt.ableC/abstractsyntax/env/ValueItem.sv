@@ -1,6 +1,6 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax:env;
 
-closed nonterminal ValueItem with typerep, directRefHandler, directCallHandler, isItemValue, isItemType;
+closed tracked nonterminal ValueItem with typerep, directRefHandler, directCallHandler, isItemValue, isItemType;
 
 synthesized attribute directRefHandler :: (Expr ::= Name);
 synthesized attribute directCallHandler :: (Expr ::= Name Exprs);

@@ -4,7 +4,7 @@ import edu:umn:cs:melt:ableC:abstractsyntax:env only env;
 import edu:umn:cs:melt:ableC:abstractsyntax:overloadable as ovrld;
 -- "Exported" nonterminals
 
-closed nonterminal Expr_c with ast<ast:Expr>; 
+closed tracked nonterminal Expr_c with ast<ast:Expr>; 
 concrete productions top::Expr_c
 | e::AssignExpr_c
     { top.ast = e.ast; }
@@ -12,7 +12,7 @@ concrete productions top::Expr_c
     { top.ast = ast:commaExpr(l.ast, r.ast); }
 
 
-closed nonterminal AssignExpr_c with ast<ast:Expr>, directName; 
+closed tracked nonterminal AssignExpr_c with ast<ast:Expr>, directName; 
 aspect default production
 top::AssignExpr_c ::=
 {
@@ -27,13 +27,13 @@ concrete productions top::AssignExpr_c
       op.leftExpr=l.ast; op.rightExpr=r.ast; }
 
 
-closed nonterminal ConstantExpr_c with ast<ast:Expr>;
+closed tracked nonterminal ConstantExpr_c with ast<ast:Expr>;
 concrete productions top::ConstantExpr_c
 | e::ConditionalExpr_c
     { top.ast = e.ast; }
 
 
-closed nonterminal Initializer_c with ast<ast:Initializer>; 
+closed tracked nonterminal Initializer_c with ast<ast:Initializer>; 
 concrete productions top::Initializer_c
 | e::AssignExpr_c
     { top.ast = ast:exprInitializer(e.ast); }
@@ -46,7 +46,7 @@ concrete productions top::Initializer_c
 -- "Non-exported" nonterminals
 
 
-closed nonterminal AssignOp_c with ast<ast:Expr>, leftExpr, rightExpr;
+closed tracked nonterminal AssignOp_c with ast<ast:Expr>, leftExpr, rightExpr;
 concrete productions top::AssignOp_c
 | '='   { top.ast = ovrld:eqExpr(top.leftExpr, top.rightExpr); }
 | '*='  { top.ast = ovrld:mulEqExpr(top.leftExpr, top.rightExpr); }
@@ -61,7 +61,7 @@ concrete productions top::AssignOp_c
 | '|='  { top.ast = ovrld:orEqExpr(top.leftExpr, top.rightExpr); }
 
 
-closed nonterminal ConditionalExpr_c with ast<ast:Expr>, directName;
+closed tracked nonterminal ConditionalExpr_c with ast<ast:Expr>, directName;
 aspect default production
 top::ConditionalExpr_c ::=
 {
@@ -75,7 +75,7 @@ concrete productions top::ConditionalExpr_c
       top.directName = e.directName; }
 
 
-closed nonterminal LogicalOrExpr_c with ast<ast:Expr>, directName;
+closed tracked nonterminal LogicalOrExpr_c with ast<ast:Expr>, directName;
 aspect default production
 top::LogicalOrExpr_c ::=
 {
@@ -89,12 +89,12 @@ concrete productions top::LogicalOrExpr_c
     { top.ast = op.ast; 
       op.leftExpr=l.ast; op.rightExpr=r.ast; }
 
-closed nonterminal LogicalOrOp_c with ast<ast:Expr>, leftExpr, rightExpr;
+closed tracked nonterminal LogicalOrOp_c with ast<ast:Expr>, leftExpr, rightExpr;
 concrete productions top::LogicalOrOp_c
 | '||'   { top.ast = ovrld:orExpr(top.leftExpr, top.rightExpr); }
 
 
-closed nonterminal LogicalAndExpr_c with ast<ast:Expr>, directName;
+closed tracked nonterminal LogicalAndExpr_c with ast<ast:Expr>, directName;
 aspect default production
 top::LogicalAndExpr_c ::=
 {
@@ -108,12 +108,12 @@ concrete productions top::LogicalAndExpr_c
     { top.ast = op.ast; 
       op.leftExpr=l.ast; op.rightExpr=r.ast; }
 
-closed nonterminal LogicalAndOp_c with ast<ast:Expr>, leftExpr, rightExpr;
+closed tracked nonterminal LogicalAndOp_c with ast<ast:Expr>, leftExpr, rightExpr;
 concrete productions top::LogicalAndOp_c
 | '&&'   { top.ast = ovrld:andExpr(top.leftExpr, top.rightExpr); }
 
 
-closed nonterminal InclusiveOrExpr_c with ast<ast:Expr>, directName;
+closed tracked nonterminal InclusiveOrExpr_c with ast<ast:Expr>, directName;
 aspect default production
 top::InclusiveOrExpr_c ::=
 {
@@ -127,12 +127,12 @@ concrete productions top::InclusiveOrExpr_c
     { top.ast = op.ast; 
       op.leftExpr=l.ast; op.rightExpr=r.ast; }
 
-closed nonterminal InclusiveOrOp_c with ast<ast:Expr>, leftExpr, rightExpr;
+closed tracked nonterminal InclusiveOrOp_c with ast<ast:Expr>, leftExpr, rightExpr;
 concrete productions top::InclusiveOrOp_c
 | '|'   { top.ast = ovrld:orBitExpr(top.leftExpr, top.rightExpr); }
 
 
-closed nonterminal ExclusiveOrExpr_c with ast<ast:Expr>, directName;
+closed tracked nonterminal ExclusiveOrExpr_c with ast<ast:Expr>, directName;
 aspect default production
 top::ExclusiveOrExpr_c ::=
 {
@@ -146,12 +146,12 @@ concrete productions top::ExclusiveOrExpr_c
     { top.ast = op.ast; 
       op.leftExpr=l.ast; op.rightExpr=r.ast; }
 
-closed nonterminal ExclusiveOrOp_c with ast<ast:Expr>, leftExpr, rightExpr;
+closed tracked nonterminal ExclusiveOrOp_c with ast<ast:Expr>, leftExpr, rightExpr;
 concrete productions top::ExclusiveOrOp_c
 | '^'   { top.ast = ovrld:xorExpr(top.leftExpr, top.rightExpr); }
 
 
-closed nonterminal AndExpr_c with ast<ast:Expr>, directName;
+closed tracked nonterminal AndExpr_c with ast<ast:Expr>, directName;
 aspect default production
 top::AndExpr_c ::=
 {
@@ -165,12 +165,12 @@ concrete productions top::AndExpr_c
     { top.ast = op.ast; 
       op.leftExpr=l.ast; op.rightExpr=r.ast; }
 
-closed nonterminal AndOp_c with ast<ast:Expr>, leftExpr, rightExpr;
+closed tracked nonterminal AndOp_c with ast<ast:Expr>, leftExpr, rightExpr;
 concrete productions top::AndOp_c
 | '&'   { top.ast = ovrld:andBitExpr(top.leftExpr, top.rightExpr); }
 
 
-closed nonterminal EqualityExpr_c with ast<ast:Expr>, directName;
+closed tracked nonterminal EqualityExpr_c with ast<ast:Expr>, directName;
 aspect default production
 top::EqualityExpr_c ::=
 {
@@ -184,13 +184,13 @@ concrete productions top::EqualityExpr_c
     { top.ast = op.ast; 
       op.leftExpr=l.ast; op.rightExpr=r.ast; }
 
-closed nonterminal EqualityOp_c with ast<ast:Expr>, leftExpr, rightExpr;
+closed tracked nonterminal EqualityOp_c with ast<ast:Expr>, leftExpr, rightExpr;
 concrete productions top::EqualityOp_c
 | '=='   { top.ast = ovrld:equalsExpr(top.leftExpr, top.rightExpr); }
 | '!='   { top.ast = ovrld:notEqualsExpr(top.leftExpr, top.rightExpr); }
 
 
-closed nonterminal RelationalExpr_c with ast<ast:Expr>, directName;
+closed tracked nonterminal RelationalExpr_c with ast<ast:Expr>, directName;
 aspect default production
 top::RelationalExpr_c ::=
 {
@@ -204,7 +204,7 @@ concrete productions top::RelationalExpr_c
     { top.ast = op.ast; 
       op.leftExpr=l.ast; op.rightExpr=r.ast; }
 
-closed nonterminal RelationalOp_c with ast<ast:Expr>, leftExpr, rightExpr;
+closed tracked nonterminal RelationalOp_c with ast<ast:Expr>, leftExpr, rightExpr;
 concrete productions top::RelationalOp_c
 | '<'   { top.ast = ovrld:ltExpr(top.leftExpr, top.rightExpr); }
 | '>'   { top.ast = ovrld:gtExpr(top.leftExpr, top.rightExpr); }
@@ -212,7 +212,7 @@ concrete productions top::RelationalOp_c
 | '>='   { top.ast = ovrld:gteExpr(top.leftExpr, top.rightExpr); }
 
 
-closed nonterminal ShiftExpr_c with ast<ast:Expr>, directName;
+closed tracked nonterminal ShiftExpr_c with ast<ast:Expr>, directName;
 aspect default production
 top::ShiftExpr_c ::=
 {
@@ -226,7 +226,7 @@ concrete productions top::ShiftExpr_c
     { top.ast = op.ast; 
       op.leftExpr=l.ast; op.rightExpr=r.ast; }
 
-closed nonterminal ShiftOp_c with ast<ast:Expr>, leftExpr, rightExpr;
+closed tracked nonterminal ShiftOp_c with ast<ast:Expr>, leftExpr, rightExpr;
 concrete productions top::ShiftOp_c
 | '<<'   { top.ast = ovrld:lshExpr(top.leftExpr, top.rightExpr); }
 | '>>'   { top.ast = ovrld:rshExpr(top.leftExpr, top.rightExpr); }
@@ -234,7 +234,7 @@ concrete productions top::ShiftOp_c
 
 -- Additive Expressions --
 --------------------------
-closed nonterminal AdditiveExpr_c with ast<ast:Expr>, directName;
+closed tracked nonterminal AdditiveExpr_c with ast<ast:Expr>, directName;
 aspect default production
 top::AdditiveExpr_c ::=
 {
@@ -259,7 +259,7 @@ concrete productions top::AdditiveExpr_c
 inherited attribute leftExpr :: ast:Expr;
 inherited attribute rightExpr :: ast:Expr;
 
-closed nonterminal AdditiveOp_c 
+closed tracked nonterminal AdditiveOp_c 
   with ast<ast:Expr>, leftExpr, rightExpr ;
 
 -- Additive Operators
@@ -272,7 +272,7 @@ concrete productions top::AdditiveOp_c
 -- Operators with precedence between Additive and Multiplicitive opererators
 
 -- Left Associative
-closed nonterminal AddMulLeft_c with ast<ast:Expr>, directName;
+closed tracked nonterminal AddMulLeft_c with ast<ast:Expr>, directName;
 aspect default production
 top::AddMulLeft_c ::=
 {
@@ -286,7 +286,7 @@ concrete productions top::AddMulLeft_c
     { top.ast = op.ast; 
       op.leftExpr=l.ast; op.rightExpr=r.ast; }
 
-closed nonterminal AddMulLeftOp_c
+closed tracked nonterminal AddMulLeftOp_c
   with ast<ast:Expr>, leftExpr, rightExpr ;
 flowtype AddMulLeftOp_c = ast {leftExpr, rightExpr};
 
@@ -297,7 +297,7 @@ concrete productions top::AddMulLeftOp_c
         "Placeholder for AddMulLeftOp_c should not appear in the tree.") ] ) ; }
 
 -- Right Associative
-closed nonterminal AddMulRight_c with ast<ast:Expr>, directName;
+closed tracked nonterminal AddMulRight_c with ast<ast:Expr>, directName;
 aspect default production
 top::AddMulRight_c ::=
 {
@@ -311,7 +311,7 @@ concrete productions top::AddMulRight_c
     { top.ast = op.ast; 
       op.leftExpr=l.ast; op.rightExpr=r.ast; }
 
-closed nonterminal AddMulRightOp_c
+closed tracked nonterminal AddMulRightOp_c
   with ast<ast:Expr>, leftExpr, rightExpr ;
 flowtype AddMulRightOp_c = ast {leftExpr, rightExpr};
 
@@ -322,7 +322,7 @@ concrete productions top::AddMulRightOp_c
         "Placeholder for AddMulRightOp_c should not appear in the tree." ) ] ) ; }
 
 -- Non-associative
-closed nonterminal AddMulNone_c with ast<ast:Expr>, directName;
+closed tracked nonterminal AddMulNone_c with ast<ast:Expr>, directName;
 aspect default production
 top::AddMulNone_c ::=
 {
@@ -336,7 +336,7 @@ concrete productions top::AddMulNone_c
     { top.ast = op.ast; 
       op.leftExpr=l.ast; op.rightExpr=r.ast; }
 
-closed nonterminal AddMulNoneOp_c
+closed tracked nonterminal AddMulNoneOp_c
   with ast<ast:Expr>, leftExpr, rightExpr ;
 flowtype AddMulNoneOp_c = ast {leftExpr, rightExpr};
 
@@ -349,7 +349,7 @@ concrete productions top::AddMulNoneOp_c
 
 -- Multiplicative Expressions --
 --------------------------------
-closed nonterminal MultiplicativeExpr_c with ast<ast:Expr>, directName;
+closed tracked nonterminal MultiplicativeExpr_c with ast<ast:Expr>, directName;
 aspect default production
 top::MultiplicativeExpr_c ::=
 {
@@ -363,14 +363,14 @@ concrete productions top::MultiplicativeExpr_c
     { top.ast = op.ast; 
       op.leftExpr=l.ast; op.rightExpr=r.ast; }
 
-closed nonterminal MultiplicativeOp_c with ast<ast:Expr>, leftExpr, rightExpr;
+closed tracked nonterminal MultiplicativeOp_c with ast<ast:Expr>, leftExpr, rightExpr;
 concrete productions top::MultiplicativeOp_c
 | '*'   { top.ast = ovrld:mulExpr(top.leftExpr, top.rightExpr); }
 | '/'   { top.ast = ovrld:divExpr(top.leftExpr, top.rightExpr); }
 | '%'   { top.ast = ovrld:modExpr(top.leftExpr, top.rightExpr); }
 
 
-closed nonterminal CastExpr_c with ast<ast:Expr>, directName;
+closed tracked nonterminal CastExpr_c with ast<ast:Expr>, directName;
 aspect default production
 top::CastExpr_c ::=
 {
@@ -384,7 +384,7 @@ concrete productions top::CastExpr_c
     { top.ast = ovrld:explicitCastExpr(tn.ast, e.ast); }
 
 
-closed nonterminal UnaryExpr_c with ast<ast:Expr>, directName;
+closed tracked nonterminal UnaryExpr_c with ast<ast:Expr>, directName;
 aspect default production
 top::UnaryExpr_c ::=
 {
@@ -408,7 +408,7 @@ concrete productions top::UnaryExpr_c
 
 
 inherited attribute expr :: ast:Expr;
-closed nonterminal UnaryOp_c with ast<ast:Expr>, expr;
+closed tracked nonterminal UnaryOp_c with ast<ast:Expr>, expr;
 concrete productions top::UnaryOp_c
 | '&'  { top.ast = ovrld:addressOfExpr(top.expr); }
 | '*'  { top.ast = ovrld:dereferenceExpr(top.expr); }
@@ -420,7 +420,7 @@ concrete productions top::UnaryOp_c
 -- Needed for constructing calls correctly
 synthesized attribute directName::Maybe<Identifier_c>;
 
-closed nonterminal PostfixExpr_c with ast<ast:Expr>, directName;
+closed tracked nonterminal PostfixExpr_c with ast<ast:Expr>, directName;
 aspect default production
 top::PostfixExpr_c ::=
 {
@@ -459,7 +459,7 @@ concrete productions top::PostfixExpr_c
 | '(' ty::TypeName_c ')' '{' il::InitializerList_c ',' '}'
     { top.ast = ast:compoundLiteralExpr(ty.ast, ast:foldInit(il.ast)); }
 
-closed nonterminal PostfixOp_c with ast<ast:Expr>, expr;
+closed tracked nonterminal PostfixOp_c with ast<ast:Expr>, expr;
 concrete productions top::PostfixOp_c
 | '.' id::Identifier_c
     { top.ast = ovrld:memberExpr(top.expr, false, id.ast); }
@@ -469,7 +469,7 @@ concrete productions top::PostfixOp_c
 | '--'   { top.ast = ovrld:postDecExpr(top.expr); }
 
 
-closed nonterminal ArgumentExprList_c with ast<[ast:Expr]>, directName;
+closed tracked nonterminal ArgumentExprList_c with ast<[ast:Expr]>, directName;
 aspect default production
 top::ArgumentExprList_c ::=
 {
@@ -484,7 +484,7 @@ concrete productions top::ArgumentExprList_c
     { top.ast = h.ast ++ [t.ast];
       top.directName = h.directName;  }
 
-closed nonterminal PrimaryExpr_c with ast<ast:Expr>, directName;
+closed tracked nonterminal PrimaryExpr_c with ast<ast:Expr>, directName;
 aspect default production
 top::PrimaryExpr_c ::=
 {
@@ -503,7 +503,7 @@ concrete productions top::PrimaryExpr_c
     { top.ast = ast:parenExpr(e.ast); }
 
 
-closed nonterminal InitializerList_c with ast<[ast:Init]>;
+closed tracked nonterminal InitializerList_c with ast<[ast:Init]>;
 concrete productions top::InitializerList_c
 | i::Initializer_c 
     { top.ast = [ast:positionalInit(i.ast)]; }
@@ -515,14 +515,14 @@ concrete productions top::InitializerList_c
     { top.ast = il.ast ++ [ast:designatedInit(d.ast, i.ast)]; }
 
 
-closed nonterminal Designation_c with ast<ast:Designator>;
+closed tracked nonterminal Designation_c with ast<ast:Designator>;
 concrete productions top::Designation_c
 | d::DesignatorList_c '='
     { top.ast = d.ast;
       d.givenDesignator = ast:initialDesignator(); }
 
 
-closed nonterminal DesignatorList_c with ast<ast:Designator>, givenDesignator;
+closed tracked nonterminal DesignatorList_c with ast<ast:Designator>, givenDesignator;
 concrete productions top::DesignatorList_c
 | h::DesignatorList_c  t::Designator_c
     { top.ast = t.ast;
@@ -533,7 +533,7 @@ concrete productions top::DesignatorList_c
 -- The previous designator to operate upon.
 autocopy attribute givenDesignator :: ast:Designator;
 
-closed nonterminal Designator_c with ast<ast:Designator>, givenDesignator;
+closed tracked nonterminal Designator_c with ast<ast:Designator>, givenDesignator;
 concrete productions top::Designator_c
 | d::ArrayDesignator_c
     { top.ast = d.ast; }
@@ -542,13 +542,13 @@ concrete productions top::Designator_c
 
 
 -- This Nt not strictly part of C99. Exists for ease of extensions.
-closed nonterminal ArrayDesignator_c with ast<ast:Designator>, givenDesignator;
+closed tracked nonterminal ArrayDesignator_c with ast<ast:Designator>, givenDesignator;
 concrete productions top::ArrayDesignator_c
 | '[' e::ConstantExpr_c ']'
     { top.ast = ast:arrayDesignator(top.givenDesignator, e.ast); }
 
 
-closed nonterminal StringConstant_c with ast<String>; -- TODO: THIS should expand to ast nodes!
+closed tracked nonterminal StringConstant_c with ast<String>; -- TODO: THIS should expand to ast nodes!
 concrete productions top::StringConstant_c
 | sl::StringLiteral_c
     { top.ast = sl.ast; }
@@ -556,7 +556,7 @@ concrete productions top::StringConstant_c
     { top.ast = h.ast ++ " " ++ t.ast; }
 
 
-closed nonterminal StringLiteral_c with ast<String>;
+closed tracked nonterminal StringLiteral_c with ast<String>;
 concrete productions top::StringLiteral_c
 | s::StringConstant_t       -- ""
     { top.ast = s.lexeme; }
@@ -570,7 +570,7 @@ concrete productions top::StringLiteral_c
     { top.ast = s.lexeme; }
     
 
-closed nonterminal Constant_c with ast<ast:Expr>;
+closed tracked nonterminal Constant_c with ast<ast:Expr>;
 concrete productions top::Constant_c
 -- dec
 | c::DecConstant_t

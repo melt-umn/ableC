@@ -10,12 +10,12 @@ top::CompoundStatement_c ::= '{' ll::LabelDeclarations_c dcls::BlockItemList_c '
     dcls.ast));
 }
 
-closed nonterminal LabelDeclarations_c;
+closed tracked nonterminal LabelDeclarations_c;
 concrete productions top::LabelDeclarations_c
 | LabelDeclaration_c {}
 | LabelDeclarations_c  LabelDeclaration_c {}
 
-closed nonterminal LabelDeclaration_c;
+closed tracked nonterminal LabelDeclaration_c;
 concrete productions top::LabelDeclaration_c
 | '__label__' IdentifierList_c ';' {}
 

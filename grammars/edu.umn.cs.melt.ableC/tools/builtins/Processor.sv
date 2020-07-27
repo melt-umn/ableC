@@ -62,7 +62,7 @@ terminal IgnoredStuff /[nrctFfipP:NPsSeju0-9]*/;
 -- Actual builtin translation stuff
 synthesized attribute ignoredBuiltins :: [String];
 
-nonterminal Builtins with ignoredBuiltins;
+tracked nonterminal Builtins with ignoredBuiltins;
 
 concrete production consBuiltins
 top::Builtins ::= h::Builtin  t::Builtins
@@ -75,7 +75,7 @@ top::Builtins ::=
   top.ignoredBuiltins = [];
 }
 
-nonterminal Builtin with ignoredBuiltins;
+tracked nonterminal Builtin with ignoredBuiltins;
 
 concrete production builtinFunction
 top::Builtin ::= BUILTIN '(' id::Identifier ',' '"' t::Types dots::MaybeDots '"' ',' '"' x::IgnoredStuff '"' ')'
@@ -100,7 +100,7 @@ top::Builtin ::= LIBBUILTIN_NotProcessed
   top.ignoredBuiltins = []; -- We know about this. Just the others.
 }
 
-nonterminal Types with ignoreMe, signature;
+tracked nonterminal Types with ignoreMe, signature;
 
 synthesized attribute ignoreMe :: Boolean;
 synthesized attribute signature :: [a:Type];
@@ -118,7 +118,7 @@ top::Types ::=
   top.signature = [];
 }
 
-nonterminal Type with ignoreMe, typerep;
+tracked nonterminal Type with ignoreMe, typerep;
 
 synthesized attribute typerep :: a:Type;
 
@@ -139,7 +139,7 @@ a:Type ::= count::Integer  t::a:Type
   return if count == 0 then t else addpointers(count-1, a:pointerType(a:nilQualifier(), t));
 }
 
-nonterminal TypePrefixes with ignoreMe, issigned;
+tracked nonterminal TypePrefixes with ignoreMe, issigned;
 
 concrete production consTypePrefixes
 top::TypePrefixes ::= h::TypePrefix  t::TypePrefixes
@@ -154,7 +154,7 @@ top::TypePrefixes ::=
   top.issigned = true;
 }
 
-nonterminal TypeSuffixes with ignoreMe, qualifiers, pointercount;
+tracked nonterminal TypeSuffixes with ignoreMe, qualifiers, pointercount;
 
 concrete production consTypeSuffixes
 top::TypeSuffixes ::= h::TypeSuffix  t::TypeSuffixes
@@ -171,7 +171,7 @@ top::TypeSuffixes ::=
   top.pointercount = 0;
 }
 
-nonterminal TypePrefix with ignoreMe, issigned;
+tracked nonterminal TypePrefix with ignoreMe, issigned;
 
 synthesized attribute issigned :: Boolean;
 
@@ -190,7 +190,7 @@ concrete productions top::TypePrefix
 | 'U' { top.issigned = false;}
 | 'I' { }-- top.ignoreMe = true; } -- maybe ignore all of these? -- TODO: for now, allowing it!
 
-nonterminal TypeSpecifier with ignoreMe, specifier, givenSign, givenDomain;
+tracked nonterminal TypeSpecifier with ignoreMe, specifier, givenSign, givenDomain;
 
 synthesized attribute specifier :: (a:Type ::= a:Qualifiers);
 autocopy attribute givenSign :: (a:BuiltinType ::= a:IntegerType);
@@ -232,7 +232,7 @@ a:Type ::= qs::a:Qualifiers more::(a:Type ::= a:Qualifiers) n::String
   return a:vectorType(more(qs), toInteger(n));
 }
 
-nonterminal TypeSuffix with ignoreMe, qualifiers, pointercount;
+tracked nonterminal TypeSuffix with ignoreMe, qualifiers, pointercount;
 
 synthesized attribute qualifiers :: a:Qualifiers;
 synthesized attribute pointercount :: Integer;
@@ -252,7 +252,7 @@ concrete productions top::TypeSuffix
 | 'D' {-volatile-} { top.qualifiers = a:consQualifier(a:volatileQualifier(), a:nilQualifier()); }
 
 
-nonterminal MaybeDots with hasdots;
+tracked nonterminal MaybeDots with hasdots;
 
 synthesized attribute hasdots :: Boolean;
 

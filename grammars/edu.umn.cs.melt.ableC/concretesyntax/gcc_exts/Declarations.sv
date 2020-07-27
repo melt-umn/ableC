@@ -75,7 +75,7 @@ concrete productions top::TypeSpecifier_c
     { top.realTypeSpecifiers = [];
       top.preTypeSpecifiers = ["__int128"]; }
 
-closed nonterminal TypeofStarter_c;
+closed tracked nonterminal TypeofStarter_c;
 concrete productions top::TypeofStarter_c
 | 'typeof' {}
 | '__typeof__' {}
@@ -87,7 +87,7 @@ concrete productions top::StructDeclaration_c
 
 -- We need a separate nonterminal for this because we're *requiring* the initial DeclSpecs, to avoid ambiguity.
 -- We also don't allow old-style DeclarationLists.
-closed nonterminal NestedFunctionDefinition_c with ast<ast:FunctionDecl>;
+closed tracked nonterminal NestedFunctionDefinition_c with ast<ast:FunctionDecl>;
 concrete productions top::NestedFunctionDefinition_c
 | d::InitialNestedFunctionDefinition_c  s::CompoundStatement_c 
     { top.ast = d.ast;
@@ -96,7 +96,7 @@ concrete productions top::NestedFunctionDefinition_c
     action {
       context = closeScope(context); -- Opened by InitialNestedFunctionDefinition.
     }
-closed nonterminal InitialNestedFunctionDefinition_c with ast<ast:FunctionDecl>, givenStmt;
+closed tracked nonterminal InitialNestedFunctionDefinition_c with ast<ast:FunctionDecl>, givenStmt;
 concrete productions top::InitialNestedFunctionDefinition_c
 | ds::DeclarationSpecifiers_c  d::Declarator_c
     {

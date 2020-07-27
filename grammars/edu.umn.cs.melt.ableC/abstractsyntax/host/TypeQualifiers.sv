@@ -1,6 +1,6 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 
-nonterminal Qualifiers with mangledName, qualifiers, pps, host, typeToQualify, errors;
+tracked nonterminal Qualifiers with mangledName, qualifiers, pps, host, typeToQualify, errors;
 flowtype Qualifiers = decorate {}, qualifiers {}, errors {typeToQualify};
 
 autocopy attribute typeToQualify :: Type;
@@ -42,7 +42,7 @@ Qualifiers ::= q1::[Qualifier]  q2::[Qualifier]
 }
 
 {-- Type qualifiers (cv or cvr qualifiers) -}
-closed nonterminal Qualifier with pp, qualIsPositive, qualIsNegative, qualAppliesWithinRef, qualCompat, qualIsHost, mangledName, typeToQualify, errors;
+closed tracked nonterminal Qualifier with pp, qualIsPositive, qualIsNegative, qualAppliesWithinRef, qualCompat, qualIsHost, mangledName, typeToQualify, errors;
 flowtype Qualifier = decorate {}, qualIsPositive {}, qualIsNegative {}, qualAppliesWithinRef {}, qualCompat {}, qualIsHost {}, errors {typeToQualify};
 
 synthesized attribute qualIsPositive :: Boolean;

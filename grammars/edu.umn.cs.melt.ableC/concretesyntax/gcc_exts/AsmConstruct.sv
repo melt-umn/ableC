@@ -6,12 +6,12 @@ terminal CPP_UUAsm_t '__asm' lexer classes {Keyword, Reserved};
 
 -- Syntax used external to this file:
 
-closed nonterminal SimpleAsmStatement_c with ast<String>;
+closed tracked nonterminal SimpleAsmStatement_c with ast<String>;
 concrete productions top::SimpleAsmStatement_c
 | Asm_Starter_c '(' s::StringConstant_c ')'
     { top.ast = s.ast; }
 
-closed nonterminal Asm_Statement_c with ast<ast:AsmStatement>;
+closed tracked nonterminal Asm_Statement_c with ast<ast:AsmStatement>;
 concrete productions top::Asm_Statement_c
 | Asm_Starter_c ds::TypeQualifier_c '(' arg::AsmArgument_c ')' ';'
     { top.ast = ast:asmStatementTypeQual( 
@@ -27,7 +27,7 @@ concrete productions top::Asm_Statement_c
 
 -- Details:
 
-closed nonterminal Asm_Starter_c;
+closed tracked nonterminal Asm_Starter_c;
 concrete productions top::Asm_Starter_c
 | 'asm'
     {}
@@ -36,7 +36,7 @@ concrete productions top::Asm_Starter_c
 | '__asm'
     {}
 
-closed nonterminal AsmArgument_c with ast<ast:AsmArgument>;
+closed tracked nonterminal AsmArgument_c with ast<ast:AsmArgument>;
 concrete productions top::AsmArgument_c
 | s::StringConstant_c
     { top.ast = ast:asmArgument( s.ast, 
@@ -94,21 +94,21 @@ concrete productions top::AsmArgument_c
                   ast:noneAsmOps(), 
                   asmC.ast ); }
 
-closed nonterminal AsmClobbers_c with ast<ast:AsmClobbers>;
+closed tracked nonterminal AsmClobbers_c with ast<ast:AsmClobbers>;
 concrete productions top::AsmClobbers_c
 | s::StringConstant_t
     { top.ast = ast:oneAsmClobbers( s.lexeme ); }
 | asmC::AsmClobbers_c ',' s::StringConstant_t
     { top.ast = ast:snocAsmClobbers( asmC.ast, s.lexeme ); }
 
-closed nonterminal AsmOperands_c with ast<ast:AsmOperands>;
+closed tracked nonterminal AsmOperands_c with ast<ast:AsmOperands>;
 concrete productions top::AsmOperands_c
 | asmOp::AsmOperand_c
     { top.ast = ast:oneAsmOps ( asmOp.ast ); }
 | asmOps::AsmOperands_c ',' asmOp::AsmOperand_c
     { top.ast = ast:snocAsmOps( asmOps.ast, asmOp.ast ); }
 
-closed nonterminal AsmOperand_c with ast<ast:AsmOperand> ;
+closed tracked nonterminal AsmOperand_c with ast<ast:AsmOperand> ;
 concrete productions top::AsmOperand_c
 | s::StringConstant_t '(' e::Expr_c ')'
     { top.ast = ast:asmOperand( s.lexeme, e.ast ); }

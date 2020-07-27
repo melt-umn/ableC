@@ -59,7 +59,7 @@ flowtype decls {decorate} on
 synthesized attribute bty :: BaseTypeExpr;
 synthesized attribute mty :: TypeModifierExpr;
 
-nonterminal TypeName with env, typerep, bty, mty, pp, host, errors, globalDecls, functionDecls, decls, defs, returnType, freeVariables;
+tracked nonterminal TypeName with env, typerep, bty, mty, pp, host, errors, globalDecls, functionDecls, decls, defs, returnType, freeVariables;
 flowtype TypeName = decorate {env, returnType}, bty {}, mty {};
 
 abstract production typeName
@@ -472,7 +472,7 @@ top::BaseTypeExpr ::= q::Qualifiers  e::ExprOrTypeName
  - Typically, these are just anchored somewhere to obtain the env,
  - and then turn into an environment-independent Type.
  -}
-nonterminal TypeModifierExpr with env, typerep, lpp, rpp, host, modifiedBaseTypeExpr, isFunctionArrayTypeExpr, baseType, typeModifierIn, errors, globalDecls, functionDecls, decls, defs, returnType, freeVariables;
+tracked nonterminal TypeModifierExpr with env, typerep, lpp, rpp, host, modifiedBaseTypeExpr, isFunctionArrayTypeExpr, baseType, typeModifierIn, errors, globalDecls, functionDecls, decls, defs, returnType, freeVariables;
 flowtype TypeModifierExpr = decorate {env, baseType, typeModifierIn, returnType}, modifiedBaseTypeExpr {decorate}, isFunctionArrayTypeExpr {};
 
 synthesized attribute modifiedBaseTypeExpr::Maybe<BaseTypeExpr>;
@@ -662,7 +662,7 @@ top::TypeModifierExpr ::= wrapped::TypeModifierExpr
 autocopy attribute appendedTypeNames :: TypeNames;
 synthesized attribute appendedTypeNamesRes :: TypeNames;
 
-nonterminal TypeNames with pps, host, env, typereps, count, errors, globalDecls, functionDecls, decls, defs, returnType, freeVariables, appendedTypeNames, appendedTypeNamesRes;
+tracked nonterminal TypeNames with pps, host, env, typereps, count, errors, globalDecls, functionDecls, decls, defs, returnType, freeVariables, appendedTypeNames, appendedTypeNamesRes;
 flowtype TypeNames = decorate {env, returnType}, count {}, appendedTypeNamesRes {appendedTypeNames};
 
 propagate host, errors, globalDecls, functionDecls, decls, defs, freeVariables on TypeNames;

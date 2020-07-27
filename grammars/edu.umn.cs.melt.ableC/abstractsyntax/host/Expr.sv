@@ -2,7 +2,7 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 
 import edu:umn:cs:melt:ableC:abstractsyntax:overloadable as ovrld;
 
-nonterminal Expr with pp, host, globalDecls, functionDecls, errors, defs, env, returnType, freeVariables, typerep, isLValue, isSimple, integerConstantValue;
+tracked nonterminal Expr with pp, host, globalDecls, functionDecls, errors, defs, env, returnType, freeVariables, typerep, isLValue, isSimple, integerConstantValue;
 
 flowtype Expr = decorate {env, returnType}, isLValue {decorate}, isSimple {decorate}, integerConstantValue {decorate};
 

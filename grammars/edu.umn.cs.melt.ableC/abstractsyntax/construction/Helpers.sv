@@ -157,7 +157,7 @@ Maybe<BaseTypeExpr> ::= q::Qualifiers  sorted_type_specifiers::[String]
   end;
 }
 
-nonterminal TypeSpecifierMutator;
+tracked nonterminal TypeSpecifierMutator;
 {-- Takes a type specifier, *and* qualifiers (instead of allowing that te to have them)
  -}
 abstract production modifyTypeSpecifier

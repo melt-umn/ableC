@@ -32,7 +32,7 @@ concrete productions top::DeclarationSpecifiers_c
 -- maybe we can unify those somehow. "SpecialSpecifiers" instead of FnQualifers in the
 -- abstract syntax, perhaps.
 
-closed nonterminal AlignmentSpecifier_c with specialSpecifiers;
+closed tracked nonterminal AlignmentSpecifier_c with specialSpecifiers;
 concrete productions top::AlignmentSpecifier_c
 | '_Alignas' '(' t::TypeName_c ')' -- equivalent to _Alignas( _Alignof( tn ) )
     { top.specialSpecifiers = 
@@ -56,7 +56,7 @@ concrete productions top::PrimaryExpr_c
 | g::GenericSelection_c
     { top.ast = g.ast; }
 
-closed nonterminal GenericSelection_c with ast<ast:Expr>;
+closed tracked nonterminal GenericSelection_c with ast<ast:Expr>;
 concrete productions top::GenericSelection_c
 | '_Generic' '(' e::AssignExpr_c ',' l::GenericAssocList_c ')'
     { top.ast = 
@@ -70,7 +70,7 @@ concrete productions top::GenericSelection_c
 
 synthesized attribute defaultExpr :: [ast:Expr];
 
-closed nonterminal GenericAssocList_c with ast<[ast:GenericAssoc]>, defaultExpr;
+closed tracked nonterminal GenericAssocList_c with ast<[ast:GenericAssoc]>, defaultExpr;
 concrete productions top::GenericAssocList_c
 | h::GenericAssoc_c
     { top.ast = h.ast; 
@@ -79,7 +79,7 @@ concrete productions top::GenericAssocList_c
     { top.ast = h.ast ++ t.ast;
       top.defaultExpr = h.defaultExpr ++ t.defaultExpr; }
 
-closed nonterminal GenericAssoc_c with ast<[ast:GenericAssoc]>, defaultExpr;
+closed tracked nonterminal GenericAssoc_c with ast<[ast:GenericAssoc]>, defaultExpr;
 concrete productions top::GenericAssoc_c
 | ty::TypeName_c ':' e::AssignExpr_c
     { top.ast = [ast:genericAssoc(ty.ast, e.ast)];
@@ -130,7 +130,7 @@ concrete productions top::StorageClassSpecifier_c
 -- Static assert
 terminal C11_Static_assert_t '_Static_assert' lexer classes {Keyword, Reserved};
 
-closed nonterminal StaticAssertDeclaration_c with ast<ast:Decl>;
+closed tracked nonterminal StaticAssertDeclaration_c with ast<ast:Decl>;
 concrete productions top::StaticAssertDeclaration_c
 | '_Static_assert' '(' e::ConstantExpr_c ',' s::StringConstant_c ')' ';'
     { top.ast = ast:staticAssertDecl(e.ast, s.ast); }
