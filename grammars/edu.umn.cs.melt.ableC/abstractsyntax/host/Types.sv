@@ -240,6 +240,10 @@ top::Type ::= element::Type  indexQualifiers::Qualifiers  sizeModifier::ArraySiz
     noncanonicalType(decayedType(top,
       pointerType(indexQualifiers, element)));
   top.withoutExtensionQualifiers = arrayType(element.withoutExtensionQualifiers, filterExtensionQualifiers(indexQualifiers), sizeModifier, sub);
+  -- Added qualfiers go on the element type!
+  top.withTypeQualifiers = arrayType(element.withTypeQualifiers, indexQualifiers, sizeModifier, sub);
+  element.addedTypeQualifiers = top.addedTypeQualifiers;
+  
   top.mergeQualifiers = \t2::Type ->
     case t2 of
       arrayType(element2, q2, _, _) ->
