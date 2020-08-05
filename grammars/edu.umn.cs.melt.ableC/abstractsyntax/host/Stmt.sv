@@ -40,7 +40,7 @@ abstract production warnStmt
 top::Stmt ::= msg::[Message]
 {
   propagate host, globalDecls, functionDecls, defs, freeVariables, functionDefs;
-  top.pp = text("/*err*/");
+  top.pp = text(s"/*${messagesToString(msg)}*/");
   top.errors := msg;
 }
 
