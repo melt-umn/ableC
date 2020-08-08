@@ -2,6 +2,8 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 
 import edu:umn:cs:melt:ableC:abstractsyntax:overloadable as ovrld;
 
+import core:monad;
+
 nonterminal Expr with location, pp, host, globalDecls, functionDecls, errors, defs, env, returnType, freeVariables, typerep, isLValue, isSimple, integerConstantValue;
 
 flowtype Expr = decorate {env, returnType}, isLValue {decorate}, isSimple {decorate}, integerConstantValue {decorate};
@@ -123,6 +125,7 @@ top::Expr ::= id::Name
   top.freeVariables := top.typerep.freeVariables ++ [id];
   top.isLValue = true;
   top.isSimple = true;
+  top.integerConstantValue = id.valueItem.integerConstantValue;
   
   top.errors <- id.valueLookupCheck;
   top.errors <-
@@ -146,6 +149,7 @@ top::Expr ::= e::Expr
   top.typerep = e.typerep;
   top.isLValue = e.isLValue;
   top.isSimple = e.isSimple;
+  top.integerConstantValue = e.integerConstantValue;
 }
 abstract production arraySubscriptExpr
 top::Expr ::= lhs::Expr  rhs::Expr
@@ -306,6 +310,14 @@ top::Expr ::= cond::Expr  t::Expr  e::Expr
   
   top.typerep = t.typerep; -- TODO: this is wrong, but it's an approximation for now
   
+  top.integerConstantValue =
+    do (bindMaybe, returnMaybe) {
+      i1::Integer <- cond.integerConstantValue;
+      i2::Integer <- t.integerConstantValue;
+      i3::Integer <- e.integerConstantValue;
+      return if i1 != 0 then i2 else i3;
+    };
+  
   t.env = addEnv(cond.defs, cond.env);
   e.env = addEnv(t.defs, t.env);
   
@@ -319,6 +331,13 @@ top::Expr ::= cond::Expr  e::Expr
   top.freeVariables := cond.freeVariables ++ removeDefsFromNames(cond.defs, e.freeVariables);
   
   top.typerep = e.typerep; -- TODO: not even sure what this should be
+  
+  top.integerConstantValue =
+    do (bindMaybe, returnMaybe) {
+      i1::Integer <- cond.integerConstantValue;
+      i2::Integer <- e.integerConstantValue;
+      return if i1 != 0 then i1 else i2;
+    };
   
   -- TODO: type checking!!
 }

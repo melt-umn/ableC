@@ -837,8 +837,11 @@ StructItemList ::= s1::StructItemList s2::StructItemList
 autocopy attribute appendedEnumItemList :: EnumItemList;
 synthesized attribute appendedEnumItemListRes :: EnumItemList;
 
-nonterminal EnumItemList with pps, host, errors, globalDecls, functionDecls, defs, env, containingEnum, returnType, freeVariables, appendedEnumItemList, appendedEnumItemListRes;
-flowtype EnumItemList = decorate {env, containingEnum, returnType}, appendedEnumItemListRes {appendedEnumItemList};
+inherited attribute enumItemValueIn::Integer;
+synthesized attribute enumItemValue::Integer;
+
+nonterminal EnumItemList with pps, host, errors, globalDecls, functionDecls, defs, env, containingEnum, returnType, freeVariables, appendedEnumItemList, appendedEnumItemListRes, enumItemValueIn;
+flowtype EnumItemList = decorate {env, containingEnum, enumItemValueIn, returnType}, appendedEnumItemListRes {appendedEnumItemList};
 
 autocopy attribute containingEnum :: Type;
 
@@ -854,6 +857,9 @@ top::EnumItemList ::= h::EnumItem  t::EnumItemList
   top.appendedEnumItemListRes = consEnumItem(h, t.appendedEnumItemListRes);
   
   t.env = addEnv(h.defs, h.env);
+
+  h.enumItemValueIn = top.enumItemValueIn;
+  t.enumItemValueIn = h.enumItemValue + 1;
 }
 
 abstract production nilEnumItem
@@ -1061,8 +1067,8 @@ top::StructDeclarator ::= msg::[Message]
   top.sourceLocation = loc("nowhere", -1, -1, -1, -1, -1, -1); -- TODO fix this? add locaiton maybe?
 }
 
-nonterminal EnumItem with pp, name, host, errors, globalDecls, functionDecls, defs, env, containingEnum, typerep, sourceLocation, returnType, freeVariables;
-flowtype EnumItem = decorate {env, containingEnum, returnType}, name {};
+nonterminal EnumItem with pp, name, host, errors, globalDecls, functionDecls, defs, env, containingEnum, enumItemValue, enumItemValueIn, typerep, sourceLocation, returnType, freeVariables;
+flowtype EnumItem = decorate {env, containingEnum, returnType}, name {}, enumItemValue {enumItemValueIn};
 
 propagate host, errors, globalDecls, functionDecls, freeVariables on EnumItem;
 
@@ -1072,10 +1078,15 @@ top::EnumItem ::= name::Name  e::MaybeExpr
   top.pp = ppConcat([name.pp] ++ if e.isJust then [text(" = "), e.pp] else []);
   top.name = name.name;
   top.defs := valueDef(name.name, enumValueItem(top)) :: e.defs;
+  top.enumItemValue = fromMaybe(top.enumItemValueIn, e.integerConstantValue);
   top.typerep = top.containingEnum;
   top.sourceLocation = name.location;
   
   top.errors <- name.valueRedeclarationCheckNoCompatible;
+  top.errors <-
+    if e.isJust && !e.integerConstantValue.isJust
+    then [err(name.location, s"Enum item value must be a constant (got ${show(80, e.pp)})")]
+    else [];
 }
 
 monoid attribute isExtern::Boolean with false, ||;

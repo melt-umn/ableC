@@ -1,8 +1,8 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 
-nonterminal MaybeExpr with pp, host, isJust, errors, globalDecls, functionDecls, defs, env, maybeTyperep, returnType, freeVariables, justTheExpr, isLValue;
+nonterminal MaybeExpr with pp, host, isJust, errors, globalDecls, functionDecls, defs, env, maybeTyperep, returnType, freeVariables, justTheExpr, isLValue, integerConstantValue;
 
-flowtype MaybeExpr = decorate {env, returnType}, isJust {}, justTheExpr {}, maybeTyperep {decorate};
+flowtype MaybeExpr = decorate {env, returnType}, isJust {}, justTheExpr {}, maybeTyperep {decorate}, integerConstantValue {decorate};
 
 synthesized attribute maybeTyperep :: Maybe<Type>;
 synthesized attribute justTheExpr :: Maybe<Expr>;
@@ -17,6 +17,7 @@ top::MaybeExpr ::= e::Expr
   top.justTheExpr = just(e);
   top.maybeTyperep = just(e.typerep);
   top.isLValue = e.isLValue;
+  top.integerConstantValue = e.integerConstantValue;
 }
 abstract production nothingExpr
 top::MaybeExpr ::=
@@ -26,6 +27,7 @@ top::MaybeExpr ::=
   top.justTheExpr = nothing();
   top.maybeTyperep = nothing();
   top.isLValue = false;
+  top.integerConstantValue = nothing();
 }
 
 nonterminal Exprs with pps, host, errors, globalDecls, functionDecls, defs, env, expectedTypes, argumentPosition, callExpr, argumentErrors, typereps, count, callVariadic, returnType, freeVariables, appendedExprs, appendedRes, isLValue;

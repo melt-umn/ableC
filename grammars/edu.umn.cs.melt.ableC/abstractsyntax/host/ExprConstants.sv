@@ -58,7 +58,14 @@ top::NumericConstant ::= num::String  unsigned::Boolean  suffix::IntSuffix
   top.pp = text(num);
   top.mangledName = substitute(".", "_", num);
   top.constanttyperep = if unsigned then unsignedType(suffix.constinttyperep) else signedType(suffix.constinttyperep);
-  top.integerConstantValue = nothing(); -- TODO
+  top.integerConstantValue =
+    just(
+      foldr(\ n1::Integer n2::Integer -> n1 + 16 * n2, 0,
+        flatMap(\ c::Integer ->
+          if 48 <= c && c <= 57 then [c - 48] else
+          if 65 <= c && c <= 70 then [c - 65] else
+          if 97 <= c && c <= 102 then [c - 97] else [],
+          stringToChars(num))));
 }
 abstract production octIntegerConstant
 top::NumericConstant ::= num::String  unsigned::Boolean  suffix::IntSuffix
@@ -66,7 +73,12 @@ top::NumericConstant ::= num::String  unsigned::Boolean  suffix::IntSuffix
   top.pp = text(num);
   top.mangledName = substitute(".", "_", num);
   top.constanttyperep = if unsigned then unsignedType(suffix.constinttyperep) else signedType(suffix.constinttyperep);
-  top.integerConstantValue = nothing(); -- TODO
+  top.integerConstantValue =
+    just(
+      foldr(\ n1::Integer n2::Integer -> n1 + 8 * n2, 0,
+        flatMap(\ c::Integer ->
+          if 48 <= c && c <= 55 then [c - 48] else [],
+          stringToChars(num))));
 }
 
 abstract production floatConstant

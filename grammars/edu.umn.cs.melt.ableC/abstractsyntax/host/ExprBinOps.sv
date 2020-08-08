@@ -1,5 +1,7 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 
+import core:monad;
+
 abstract production eqExpr
 top::Expr ::= lhs::Expr rhs::Expr
 {
@@ -190,6 +192,12 @@ top::Expr ::= lhs::Expr rhs::Expr
   top.typerep = builtinType(nilQualifier(), signedType(intType()));
   rhs.env = addEnv(lhs.defs, lhs.env);
   top.isLValue = false;
+  top.integerConstantValue =
+    do (bindMaybe, returnMaybe) {
+      i1::Integer <- lhs.integerConstantValue;
+      i2::Integer <- rhs.integerConstantValue;
+      return if i1 != 0 && i2 != 0 then 1 else 0;
+    };
 }
 
 abstract production orExpr
@@ -203,6 +211,12 @@ top::Expr ::= lhs::Expr rhs::Expr
   top.typerep = builtinType(nilQualifier(), signedType(intType()));
   rhs.env = addEnv(lhs.defs, lhs.env);
   top.isLValue = false;
+  top.integerConstantValue =
+    do (bindMaybe, returnMaybe) {
+      i1::Integer <- lhs.integerConstantValue;
+      i2::Integer <- rhs.integerConstantValue;
+      return if i1 != 0 || i2 != 0 then 1 else 0;
+    };
 }
 
 abstract production andBitExpr
@@ -255,6 +269,12 @@ top::Expr ::= lhs::Expr rhs::Expr
   top.typerep = usualArithmeticConversionsOnTypes(lhs.typerep, rhs.typerep);
   rhs.env = addEnv(lhs.defs, lhs.env);
   top.isLValue = false;
+  top.integerConstantValue =
+    do (bindMaybe, returnMaybe) {
+      i1::Integer <- lhs.integerConstantValue;
+      i2::Integer <- rhs.integerConstantValue;
+      return foldr(\ Unit i::Integer -> i * 2, i1, repeat(unit(), i2));
+    };
 }
 
 abstract production rshExpr
@@ -268,6 +288,12 @@ top::Expr ::= lhs::Expr rhs::Expr
   top.typerep = usualArithmeticConversionsOnTypes(lhs.typerep, rhs.typerep);
   rhs.env = addEnv(lhs.defs, lhs.env);
   top.isLValue = false;
+  top.integerConstantValue =
+    do (bindMaybe, returnMaybe) {
+      i1::Integer <- lhs.integerConstantValue;
+      i2::Integer <- rhs.integerConstantValue;
+      return foldr(\ Unit i::Integer -> i / 2, i1, repeat(unit(), i2));
+    };
 }
 
 abstract production equalsExpr
@@ -281,6 +307,12 @@ top::Expr ::= lhs::Expr rhs::Expr
   top.typerep = builtinType(nilQualifier(), signedType(intType()));
   rhs.env = addEnv(lhs.defs, lhs.env);
   top.isLValue = false;
+  top.integerConstantValue =
+    do (bindMaybe, returnMaybe) {
+      i1::Integer <- lhs.integerConstantValue;
+      i2::Integer <- rhs.integerConstantValue;
+      return if i1 == i2 then 1 else 0;
+    };
 }
 
 abstract production notEqualsExpr
@@ -294,6 +326,12 @@ top::Expr ::= lhs::Expr rhs::Expr
   top.typerep = builtinType(nilQualifier(), signedType(intType()));
   rhs.env = addEnv(lhs.defs, lhs.env);
   top.isLValue = false;
+  top.integerConstantValue =
+    do (bindMaybe, returnMaybe) {
+      i1::Integer <- lhs.integerConstantValue;
+      i2::Integer <- rhs.integerConstantValue;
+      return if i1 != i2 then 1 else 0;
+    };
 }
 
 abstract production gtExpr
@@ -307,6 +345,12 @@ top::Expr ::= lhs::Expr rhs::Expr
   top.typerep = builtinType(nilQualifier(), signedType(intType()));
   rhs.env = addEnv(lhs.defs, lhs.env);
   top.isLValue = false;
+  top.integerConstantValue =
+    do (bindMaybe, returnMaybe) {
+      i1::Integer <- lhs.integerConstantValue;
+      i2::Integer <- rhs.integerConstantValue;
+      return if i1 > i2 then 1 else 0;
+    };
 }
 
 abstract production ltExpr
@@ -320,6 +364,12 @@ top::Expr ::= lhs::Expr rhs::Expr
   top.typerep = builtinType(nilQualifier(), signedType(intType()));
   rhs.env = addEnv(lhs.defs, lhs.env);
   top.isLValue = false;
+  top.integerConstantValue =
+    do (bindMaybe, returnMaybe) {
+      i1::Integer <- lhs.integerConstantValue;
+      i2::Integer <- rhs.integerConstantValue;
+      return if i1 < i2 then 1 else 0;
+    };
 }
 
 abstract production gteExpr
@@ -333,6 +383,12 @@ top::Expr ::= lhs::Expr rhs::Expr
   top.typerep = builtinType(nilQualifier(), signedType(intType()));
   rhs.env = addEnv(lhs.defs, lhs.env);
   top.isLValue = false;
+  top.integerConstantValue =
+    do (bindMaybe, returnMaybe) {
+      i1::Integer <- lhs.integerConstantValue;
+      i2::Integer <- rhs.integerConstantValue;
+      return if i1 >= i2 then 1 else 0;
+    };
 }
 
 abstract production lteExpr
@@ -346,6 +402,12 @@ top::Expr ::= lhs::Expr rhs::Expr
   top.typerep = builtinType(nilQualifier(), signedType(intType()));
   rhs.env = addEnv(lhs.defs, lhs.env);
   top.isLValue = false;
+  top.integerConstantValue =
+    do (bindMaybe, returnMaybe) {
+      i1::Integer <- lhs.integerConstantValue;
+      i2::Integer <- rhs.integerConstantValue;
+      return if i1 <= i2 then 1 else 0;
+    };
 }
 
 abstract production addExpr
@@ -359,6 +421,12 @@ top::Expr ::= lhs::Expr rhs::Expr
   top.typerep = usualAdditiveConversionsOnTypes(lhs.typerep, rhs.typerep);
   rhs.env = addEnv(lhs.defs, lhs.env);
   top.isLValue = false;
+  top.integerConstantValue =
+    do (bindMaybe, returnMaybe) {
+      i1::Integer <- lhs.integerConstantValue;
+      i2::Integer <- rhs.integerConstantValue;
+      return i1 + i2;
+    };
 }
 
 abstract production subExpr
@@ -372,6 +440,12 @@ top::Expr ::= lhs::Expr rhs::Expr
   top.typerep = usualSubtractiveConversionsOnTypes(lhs.typerep, rhs.typerep);
   rhs.env = addEnv(lhs.defs, lhs.env);
   top.isLValue = false;
+  top.integerConstantValue =
+    do (bindMaybe, returnMaybe) {
+      i1::Integer <- lhs.integerConstantValue;
+      i2::Integer <- rhs.integerConstantValue;
+      return i1 - i2;
+    };
 }
 
 abstract production mulExpr
@@ -385,6 +459,12 @@ top::Expr ::= lhs::Expr rhs::Expr
   top.typerep = usualArithmeticConversionsOnTypes(lhs.typerep, rhs.typerep);
   rhs.env = addEnv(lhs.defs, lhs.env);
   top.isLValue = false;
+  top.integerConstantValue =
+    do (bindMaybe, returnMaybe) {
+      i1::Integer <- lhs.integerConstantValue;
+      i2::Integer <- rhs.integerConstantValue;
+      return i1 * i2;
+    };
 }
 
 abstract production divExpr
@@ -398,6 +478,12 @@ top::Expr ::= lhs::Expr rhs::Expr
   top.typerep = usualArithmeticConversionsOnTypes(lhs.typerep, rhs.typerep);
   rhs.env = addEnv(lhs.defs, lhs.env);
   top.isLValue = false;
+  top.integerConstantValue =
+    do (bindMaybe, returnMaybe) {
+      i1::Integer <- lhs.integerConstantValue;
+      i2::Integer <- rhs.integerConstantValue;
+      return i1 / i2;
+    };
 }
 
 abstract production modExpr
@@ -411,6 +497,12 @@ top::Expr ::= lhs::Expr rhs::Expr
   top.typerep = usualArithmeticConversionsOnTypes(lhs.typerep, rhs.typerep);
   rhs.env = addEnv(lhs.defs, lhs.env);
   top.isLValue = false;
+  top.integerConstantValue =
+    do (bindMaybe, returnMaybe) {
+      i1::Integer <- lhs.integerConstantValue;
+      i2::Integer <- rhs.integerConstantValue;
+      return i1 % i2;
+    };
 }
 
 abstract production commaExpr

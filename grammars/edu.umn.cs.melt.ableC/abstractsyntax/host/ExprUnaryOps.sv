@@ -87,6 +87,7 @@ top::Expr ::= e::Expr
   propagate host, errors, globalDecls, functionDecls, defs, freeVariables;
   top.pp = parens( cat( text("+"), e.pp ) );
   top.typerep = e.typerep.defaultLvalueConversion.integerPromotions;
+  top.integerConstantValue = e.integerConstantValue;
 }
 abstract production negativeExpr
 top::Expr ::= e::Expr
@@ -94,6 +95,7 @@ top::Expr ::= e::Expr
   propagate host, errors, globalDecls, functionDecls, defs, freeVariables;
   top.pp = parens( cat( text("-"), e.pp ) );
   top.typerep = e.typerep.defaultLvalueConversion.integerPromotions;
+  top.integerConstantValue = mapMaybe(\ i::Integer -> -i, e.integerConstantValue);
 }
 abstract production bitNegateExpr
 top::Expr ::= e::Expr
@@ -101,6 +103,7 @@ top::Expr ::= e::Expr
   propagate host, errors, globalDecls, functionDecls, defs, freeVariables;
   top.pp = parens( cat( text("~"), e.pp ) );
   top.typerep = e.typerep.defaultLvalueConversion.integerPromotions;
+  top.integerConstantValue = nothing(); -- TODO
 }
 abstract production notExpr
 top::Expr ::= e::Expr
@@ -108,6 +111,7 @@ top::Expr ::= e::Expr
   propagate host, errors, globalDecls, functionDecls, defs, freeVariables;
   top.pp = parens( cat( text("!"), e.pp ) );
   top.typerep = e.typerep.defaultLvalueConversion.integerPromotions;
+  top.integerConstantValue = mapMaybe(\ i::Integer -> if i != 0 then 1 else 0, e.integerConstantValue);
 }
 
 -- GCC extension
