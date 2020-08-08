@@ -780,7 +780,7 @@ top::EnumDecl ::= name::MaybeName  dcls::EnumItemList
   
   dcls.env = addEnv(thisdcl, top.env);
   dcls.containingEnum = extType(nilQualifier(), enumExtType(top));
-  
+  dcls.enumItemValueIn = 0;
 
   top.errors <-
     if null(name.tagLocalLookup) then []
@@ -1068,7 +1068,7 @@ top::StructDeclarator ::= msg::[Message]
 }
 
 nonterminal EnumItem with pp, name, host, errors, globalDecls, functionDecls, defs, env, containingEnum, enumItemValue, enumItemValueIn, typerep, sourceLocation, returnType, freeVariables;
-flowtype EnumItem = decorate {env, containingEnum, returnType}, name {}, enumItemValue {enumItemValueIn};
+flowtype EnumItem = decorate {env, containingEnum, enumItemValueIn, returnType}, name {}, enumItemValue {enumItemValueIn};
 
 propagate host, errors, globalDecls, functionDecls, freeVariables on EnumItem;
 
