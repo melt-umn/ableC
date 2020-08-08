@@ -1068,7 +1068,7 @@ top::StructDeclarator ::= msg::[Message]
 }
 
 nonterminal EnumItem with pp, name, host, errors, globalDecls, functionDecls, defs, env, containingEnum, enumItemValue, enumItemValueIn, typerep, sourceLocation, returnType, freeVariables;
-flowtype EnumItem = decorate {env, containingEnum, enumItemValueIn, returnType}, name {}, enumItemValue {enumItemValueIn};
+flowtype EnumItem = decorate {env, containingEnum, enumItemValueIn, returnType}, name {}, enumItemValue {decorate};
 
 propagate host, errors, globalDecls, functionDecls, freeVariables on EnumItem;
 
