@@ -451,7 +451,9 @@ top::FunctionDecl ::= storage::StorageClasses  fnquals::SpecialSpecifiers  bty::
         builtinType(
           consQualifier(constQualifier(location=builtinLoc("host")), nilQualifier()),
           signedType(charType()))));
-  implicitDefs <- map(valueDef(_, nameValueItem), ["__func__", "__FUNCTION__", "__PRETTY_FUNCTION__"]);
+  implicitDefs <-
+    [globalDefsDef( -- These should be seen as "global" for the purpose of computing free variables
+       map(valueDef(_, nameValueItem), ["__func__", "__FUNCTION__", "__PRETTY_FUNCTION__"]))];
 
   top.defs :=
     funcDefs ++
