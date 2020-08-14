@@ -348,6 +348,7 @@ top::Expr ::= ty::TypeName  e::Expr
   top.pp = parens( ppConcat([parens(ty.pp), e.pp]) );
   top.freeVariables := ty.freeVariables ++ removeDefsFromNames(ty.defs, e.freeVariables);
   top.typerep = ty.typerep;
+  top.integerConstantValue = e.integerConstantValue;
   
   e.env = addEnv(ty.defs, ty.env);
   

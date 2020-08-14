@@ -1087,7 +1087,7 @@ top::EnumItem ::= name::Name  e::MaybeExpr
   top.errors <- name.valueRedeclarationCheckNoCompatible;
   top.errors <-
     if e.isJust && !e.integerConstantValue.isJust
-    then [err(name.location, s"Enum item value must be a constant (got ${show(80, e.pp)})")]
+    then [err(name.location, s"Enum item value must be an integer constant expression (got ${show(80, e.pp)})")]
     else [];
 }
 

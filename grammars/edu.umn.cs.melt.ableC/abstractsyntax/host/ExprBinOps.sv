@@ -230,6 +230,12 @@ top::Expr ::= lhs::Expr rhs::Expr
   top.typerep = usualArithmeticConversionsOnTypes(lhs.typerep, rhs.typerep);
   rhs.env = addEnv(lhs.defs, lhs.env);
   top.isLValue = false;
+  top.integerConstantValue =
+    do (bindMaybe, returnMaybe) {
+      i1::Integer <- lhs.integerConstantValue;
+      i2::Integer <- rhs.integerConstantValue;
+      return fromBits(zipWithPad(\ a::Boolean b::Boolean -> a && b, false, toBits(i1), toBits(i2)));
+    };
 }
 
 abstract production orBitExpr
@@ -243,6 +249,12 @@ top::Expr ::= lhs::Expr rhs::Expr
   top.typerep = usualArithmeticConversionsOnTypes(lhs.typerep, rhs.typerep);
   rhs.env = addEnv(lhs.defs, lhs.env);
   top.isLValue = false;
+  top.integerConstantValue =
+    do (bindMaybe, returnMaybe) {
+      i1::Integer <- lhs.integerConstantValue;
+      i2::Integer <- rhs.integerConstantValue;
+      return fromBits(zipWithPad(\ a::Boolean b::Boolean -> a || b, false, toBits(i1), toBits(i2)));
+    };
 }
 
 abstract production xorExpr
@@ -256,6 +268,12 @@ top::Expr ::= lhs::Expr rhs::Expr
   top.typerep = usualArithmeticConversionsOnTypes(lhs.typerep, rhs.typerep);
   rhs.env = addEnv(lhs.defs, lhs.env);
   top.isLValue = false;
+  top.integerConstantValue =
+    do (bindMaybe, returnMaybe) {
+      i1::Integer <- lhs.integerConstantValue;
+      i2::Integer <- rhs.integerConstantValue;
+      return fromBits(zipWithPad(\ a::Boolean b::Boolean -> (a && !b) || (!a && b), false, toBits(i1), toBits(i2)));
+    };
 }
 
 abstract production lshExpr
@@ -516,5 +534,35 @@ top::Expr ::= lhs::Expr rhs::Expr
   top.typerep = rhs.typerep;
   rhs.env = addEnv(lhs.defs, lhs.env);
   top.isLValue = false;
+}
+
+-- These are little-endian
+function toBits
+[Boolean] ::= i::Integer
+{
+  return if i == 0 then [] else (i % 2 == 1) :: toBits(i / 2);
+}
+
+function fromBits
+Integer ::= bs::[Boolean]
+{
+  return
+    case bs of
+    | [] -> 0
+    | true :: t -> 1 + 2 * fromBits(t)
+    | false :: t -> 2 * fromBits(t)
+    end;
+}
+
+function zipWithPad
+[a] ::= fn::(a ::= a a) pad::a l1::[a] l2::[a]
+{
+  return
+    case l1, l2 of
+    | [], [] -> []
+    | h1::t1, [] -> fn(h1, pad) :: zipWithPad(fn, pad, t1, [])
+    | [], h2::t2 -> fn(h2, pad) :: zipWithPad(fn, pad, [], t2)
+    | h1::t1, h2::t2 -> fn(h1, h2) :: zipWithPad(fn, pad, t1, t2)
+    end;
 }
 

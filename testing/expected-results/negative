@@ -78,10 +78,10 @@ Negative test       - FAIL: NO ERROR    tests/kframework/negative/j052a.c
 Negative test       - FAIL: NO ERROR    tests/kframework/negative/j052b.c
 Negative test       - FAIL: NO ERROR    tests/kframework/negative/j053a.c
 Negative test       - FAIL: NO ERROR    tests/kframework/negative/j055a.c
-Negative test       - FAIL: NO ERROR    tests/kframework/negative/j055b.c
-Negative test       - FAIL: NO ERROR    tests/kframework/negative/j055c.c
+Negative test       - PASS:             tests/kframework/negative/j055b.c
+Negative test       - PASS:             tests/kframework/negative/j055c.c
 Negative test       - FAIL: NO ERROR    tests/kframework/negative/j055d.c
-Negative test       - FAIL: NO ERROR    tests/kframework/negative/j055e.c
+Negative test       - PASS:             tests/kframework/negative/j055e.c
 Negative test       - FAIL: NO ERROR    tests/kframework/negative/j056a.c
 Negative test       - FAIL: NO ERROR    tests/kframework/negative/j058a.c
 Negative test       - FAIL: NO ERROR    tests/kframework/negative/j058b.c
@@ -277,10 +277,7 @@ Failures:
                         tests/kframework/negative/j052b.c
                         tests/kframework/negative/j053a.c
                         tests/kframework/negative/j055a.c
-                        tests/kframework/negative/j055b.c
-                        tests/kframework/negative/j055c.c
                         tests/kframework/negative/j055d.c
-                        tests/kframework/negative/j055e.c
                         tests/kframework/negative/j056a.c
                         tests/kframework/negative/j058a.c
                         tests/kframework/negative/j058b.c
@@ -363,10 +360,10 @@ Pass: 0
 Fail: 0
 
 Negative tests:
-Pass: 56
-Fail: 150
+Pass: 59
+Fail: 147
 
 Summary:
-Pass: 56
-Fail: 150
+Pass: 59
+Fail: 147
 
