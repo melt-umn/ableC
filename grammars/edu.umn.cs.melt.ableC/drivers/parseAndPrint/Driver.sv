@@ -2,6 +2,7 @@ grammar edu:umn:cs:melt:ableC:drivers:parseAndPrint ;
 
 imports edu:umn:cs:melt:ableC:concretesyntax as cst;
 imports edu:umn:cs:melt:ableC:abstractsyntax:host as abs;
+imports edu:umn:cs:melt:ableC:extutil;
 
 imports silver:langutil;
 imports silver:langutil:pp;
@@ -103,12 +104,46 @@ String ::= msgs::[Message]
 function showMessage
 String ::= m::Message
 {
-  local locStr :: String = case getParsedOriginLocation(m) of
-    | just(l) -> toString(l.filename)++":"++toString(l.line)++":"++toString(l.column)
-    | nothing() -> "<nothing>"++
-    "\n  ochain : " ++ implode("\n -> ", map(hackUnparse, getOriginInfoChain(m))) ++ "\n\n\n"
-  end;
-  return m.output;
+  local fromExt::Maybe<String> = originatesInExt(getOriginInfoChain(m));
+  local originsSource::Maybe<Location> = getParsedOriginLocation(m);
+  local fromExtMessage::String = 
+    "\n\n" ++
+    "\nINTERNAL ERROR: The following error message originated in extension-generated code." ++
+    "\nThis is probably indicative of a bug in the extension as opposed to your code." ++
+    "\nThe offending extension was: '" ++ fromExt.fromJust ++ "' - please report this to it's developers." ++
+    "\nThe error was: " ++ m.noLocOutput ++ "." ++ -- We do not expect the location to be useful/correct
+    (if originsSource.isJust
+     then "\nOrigins reports the following source location: " ++ originsSource.fromJust.unparse ++ "."
+     else "\nOrigins chain terminates without location.") ++
+    "\nOrigins chain follows:" ++
+    "\n  -> " ++ implode("\n  -> ", map(hackUnparse, getOriginInfoChain(m))) ++
+    "\n\n";
+
+
+  return if fromExt.isJust
+         then fromExtMessage
+         else m.output;
+}
+
+function originatesInExt
+Maybe<String> ::= chain::[OriginInfo]
+{
+  return case chain of
+         | [] -> nothing()
+         | link::rest -> 
+             orElse(findExtensionGeneratedNote(link.originNotes),
+              originatesInExt(rest))
+         end;
+}
+
+function findExtensionGeneratedNote
+Maybe<String> ::= notes::[OriginNote]
+{
+  return case notes of
+         | [] -> nothing()
+         | extensionGenerated(l)::_ -> just(l)
+         | x::r -> findExtensionGeneratedNote(r)
+         end;
 }
 
 
