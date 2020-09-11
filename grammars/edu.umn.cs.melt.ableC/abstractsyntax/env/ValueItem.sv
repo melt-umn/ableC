@@ -1,6 +1,6 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax:env;
 
-closed nonterminal ValueItem with typerep, sourceLocation, directRefHandler, directCallHandler, isItemValue, isItemType;
+closed nonterminal ValueItem with typerep, sourceLocation, directRefHandler, directCallHandler, isItemValue, isItemType, integerConstantValue;
 
 synthesized attribute sourceLocation :: Location;
 synthesized attribute directRefHandler :: (Expr ::= Name Location);
@@ -15,6 +15,7 @@ top::ValueItem ::=
   top.directCallHandler = ordinaryFunctionHandler;
   top.isItemValue = false;
   top.isItemType = false;
+  top.integerConstantValue = nothing();
 }
 
 -- TODO: we might consider splitting this into values and typedef names.
@@ -65,11 +66,12 @@ top::ValueItem ::= s::Decorated StructDeclarator
 }
 
 abstract production enumValueItem
-top::ValueItem ::= s::Decorated EnumItem
+top::ValueItem ::= e::Decorated EnumItem
 {
-  top.typerep = s.typerep;
-  top.sourceLocation = s.sourceLocation;
+  top.typerep = e.typerep;
+  top.sourceLocation = e.sourceLocation;
   top.isItemValue = true;
+  top.integerConstantValue = just(e.enumItemValue);
 }
 
 abstract production parameterValueItem

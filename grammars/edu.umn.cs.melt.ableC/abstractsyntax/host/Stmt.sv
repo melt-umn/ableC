@@ -1,6 +1,6 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 
-nonterminal Stmt with pp, host<Stmt>, errors, globalDecls, functionDecls, defs, env, functionDefs, returnType, freeVariables;
+nonterminal Stmt with pp, host, errors, globalDecls, functionDecls, defs, env, functionDefs, returnType, freeVariables;
 flowtype Stmt = decorate {env, returnType};
 
 autocopy attribute returnType :: Maybe<Type>;
@@ -8,29 +8,18 @@ autocopy attribute returnType :: Maybe<Type>;
 abstract production nullStmt
 top::Stmt ::=
 {
-  propagate host;
+  propagate host, errors, globalDecls, functionDecls, defs, freeVariables, functionDefs;
   top.pp = semi();
-  top.errors := [];
-  top.globalDecls := [];
-  top.functionDecls := [];
-  top.defs := [];
-  top.freeVariables := [];
-  top.functionDefs := [];
 }
 
 abstract production seqStmt
 top::Stmt ::= h::Stmt  t::Stmt
 {
-  propagate host;
+  propagate host, errors, globalDecls, functionDecls, defs, functionDefs;
   top.pp = ppConcat([ h.pp, line(), t.pp ]);
-  top.errors := h.errors ++ t.errors;
-  top.globalDecls := h.globalDecls ++ t.globalDecls;
-  top.functionDecls := h.functionDecls ++ t.functionDecls;
-  top.defs := h.defs ++ t.defs;
   top.freeVariables :=
     h.freeVariables ++
     removeDefsFromNames(h.defs, t.freeVariables);
-  top.functionDefs := h.functionDefs ++ t.functionDefs;
   
   t.env = addEnv(h.defs, top.env);
 }
@@ -38,14 +27,9 @@ top::Stmt ::= h::Stmt  t::Stmt
 abstract production compoundStmt
 top::Stmt ::= s::Stmt
 {
-  propagate host;
+  propagate host, errors, globalDecls, functionDecls, functionDefs, freeVariables;
   top.pp = braces(nestlines(2, s.pp));
-  top.errors := s.errors;
-  top.globalDecls := s.globalDecls;
-  top.functionDecls := s.functionDecls;
   top.defs := globalDeclsDefs(s.globalDecls) ++ functionDeclsDefs(s.functionDecls); -- compound prevents defs from bubbling up
-  top.freeVariables := s.freeVariables;
-  top.functionDefs := s.functionDefs;
 
   s.env = openScopeEnv(top.env);
 }
@@ -55,14 +39,9 @@ top::Stmt ::= s::Stmt
 abstract production warnStmt
 top::Stmt ::= msg::[Message]
 {
-  propagate host;
-  top.pp = text("/*err*/");
+  propagate host, globalDecls, functionDecls, defs, freeVariables, functionDefs;
+  top.pp = text(s"/*${messagesToString(msg)}*/");
   top.errors := msg;
-  top.globalDecls := [];
-  top.functionDecls := [];
-  top.defs := [];
-  top.freeVariables := [];
-  top.functionDefs := [];
 }
 
 {--
@@ -91,14 +70,8 @@ top::Stmt ::= s::Decorated Stmt
 abstract production declStmt
 top::Stmt ::= d::Decl
 {
-  propagate host;
+  propagate host, errors, globalDecls, functionDecls, defs, freeVariables, functionDefs;
   top.pp = d.pp;
-  top.errors := d.errors;
-  top.globalDecls := d.globalDecls;
-  top.functionDecls := d.functionDecls;
-  top.defs := d.defs;
-  top.freeVariables := d.freeVariables;
-  top.functionDefs := [];
   d.isTopLevel = false;
 }
 
@@ -125,28 +98,18 @@ top::Stmt ::= t::Type n::Name init::Expr
 abstract production exprStmt
 top::Stmt ::= d::Expr
 {
-  propagate host;
+  propagate host, errors, globalDecls, functionDecls, defs, freeVariables, functionDefs;
   top.pp = cat( d.pp, semi() );
-  top.errors := d.errors;
-  top.globalDecls := d.globalDecls;
-  top.functionDecls := d.functionDecls;
-  top.defs := d.defs;
-  top.freeVariables := d.freeVariables;
-  top.functionDefs := [];
 }
 
 abstract production ifStmt
 top::Stmt ::= c::Expr  t::Stmt  e::Stmt
 {
-  propagate host;
+  propagate host, errors, globalDecls, functionDecls, functionDefs;
   top.pp = ppConcat([
     text("if"), space(), parens(c.pp), line(),
     braces(nestlines(2, t.pp)),
     text(" else "), braces(nestlines(2, e.pp))]);
-  top.errors := c.errors ++ t.errors ++ e.errors;
-  top.globalDecls := c.globalDecls ++ t.globalDecls ++ e.globalDecls;
-  top.functionDecls := c.functionDecls ++ t.functionDecls ++ e.functionDecls;
-  top.functionDefs := t.functionDefs ++ e.functionDefs;
   
   -- A selection statement is a block whose scope is a strict subset of the scope of its
   -- enclosing block. Each associated substatement is also a block whose scope is a strict

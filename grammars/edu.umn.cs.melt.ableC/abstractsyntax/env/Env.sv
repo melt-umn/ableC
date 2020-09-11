@@ -30,13 +30,13 @@ closed nonterminal Def
  - we can only make use of this 'shortcut' of adding new defs to the environment when the same thing could be implemented
  - in a more complex way by mirroring defs and env with another pair of synthesized and inherited attributes.
  -}
-synthesized attribute defs :: [Def] with ++;
+monoid attribute defs :: [Def] with [], ++;
 {--
  - For Function-Scope definitions (e.g. Labels in functions)
  - Note that since the env may determine the forward, and functionDefs on a production determine the env provided to that
  - production, functionDefs must be computed without using the forward. 
  -}
-synthesized attribute functionDefs :: [Def] with ++;
+monoid attribute functionDefs :: [Def] with [], ++;
 {--
  - For local-scope only definitions (e.g. struct and union fields)
  - Used in conjunction with 'tagEnv'.
@@ -46,7 +46,7 @@ synthesized attribute functionDefs :: [Def] with ++;
  -
  - @see defs for normal definitions
  -}
-synthesized attribute localDefs :: [Def] with ++;
+monoid attribute localDefs :: [Def] with [], ++;
 {--
  - The environment, on which all lookups are performed.
  -}

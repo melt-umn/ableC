@@ -1,44 +1,36 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 
-nonterminal MaybeExpr with pp, host<MaybeExpr>, isJust, errors, globalDecls, functionDecls, defs, env, maybeTyperep, returnType, freeVariables, justTheExpr, isLValue;
+nonterminal MaybeExpr with pp, host, isJust, errors, globalDecls, functionDecls, defs, env, maybeTyperep, returnType, freeVariables, justTheExpr, isLValue, integerConstantValue;
 
-flowtype MaybeExpr = decorate {env, returnType}, isJust {}, justTheExpr {}, maybeTyperep {decorate};
+flowtype MaybeExpr = decorate {env, returnType}, isJust {}, justTheExpr {}, maybeTyperep {decorate}, integerConstantValue {decorate};
 
 synthesized attribute maybeTyperep :: Maybe<Type>;
 synthesized attribute justTheExpr :: Maybe<Expr>;
 
+propagate host, errors, globalDecls, functionDecls, defs, freeVariables on MaybeExpr;
+
 abstract production justExpr
 top::MaybeExpr ::= e::Expr
 {
-  propagate host;
   top.pp = e.pp;
   top.isJust = true;
   top.justTheExpr = just(e);
-  top.errors := e.errors;
-  top.globalDecls := e.globalDecls;
-  top.functionDecls := e.functionDecls;
-  top.defs := e.defs;
-  top.freeVariables := e.freeVariables;
   top.maybeTyperep = just(e.typerep);
   top.isLValue = e.isLValue;
+  top.integerConstantValue = e.integerConstantValue;
 }
 abstract production nothingExpr
 top::MaybeExpr ::=
 {
-  propagate host;
   top.pp = notext();
   top.isJust = false;
   top.justTheExpr = nothing();
-  top.errors := [];
-  top.globalDecls := [];
-  top.functionDecls := [];
-  top.defs := [];
-  top.freeVariables := [];
   top.maybeTyperep = nothing();
   top.isLValue = false;
+  top.integerConstantValue = nothing();
 }
 
-nonterminal Exprs with pps, host<Exprs>, errors, globalDecls, functionDecls, defs, env, expectedTypes, argumentPosition, callExpr, argumentErrors, typereps, count, callVariadic, returnType, freeVariables, appendedExprs, appendedRes, isLValue;
+nonterminal Exprs with pps, host, errors, globalDecls, functionDecls, defs, env, expectedTypes, argumentPosition, callExpr, argumentErrors, typereps, count, callVariadic, returnType, freeVariables, appendedExprs, appendedRes, isLValue;
 
 flowtype Exprs = decorate {env, returnType}, argumentErrors {decorate, expectedTypes, argumentPosition, callExpr, callVariadic}, count {}, appendedRes {appendedExprs};
 
@@ -54,15 +46,12 @@ synthesized attribute count :: Integer;
 inherited attribute appendedExprs :: Exprs;
 synthesized attribute appendedRes :: Exprs;
 
+propagate host, errors, globalDecls, functionDecls, defs on Exprs;
+
 abstract production consExpr
 top::Exprs ::= h::Expr  t::Exprs
 {
-  propagate host;
   top.pps = h.pp :: t.pps;
-  top.errors := h.errors ++ t.errors;
-  top.globalDecls := h.globalDecls ++ t.globalDecls;
-  top.functionDecls := h.functionDecls ++ t.functionDecls;
-  top.defs := h.defs ++ t.defs;
   top.freeVariables := h.freeVariables ++ removeDefsFromNames(h.defs, t.freeVariables);
   top.typereps = h.typerep :: t.typereps;
   top.count = 1 + t.count;
@@ -88,12 +77,7 @@ top::Exprs ::= h::Expr  t::Exprs
 abstract production nilExpr
 top::Exprs ::=
 {
-  propagate host;
   top.pps = [];
-  top.errors := [];
-  top.globalDecls := [];
-  top.functionDecls := [];
-  top.defs := [];
   top.freeVariables := [];
   top.typereps = [];
   top.count = 0;
@@ -137,33 +121,23 @@ Exprs ::= e1::Exprs e2::Exprs
   return e1.appendedRes;
 }
 
-nonterminal ExprOrTypeName with pp, host<ExprOrTypeName>, errors, globalDecls, functionDecls, defs, env, typerep, returnType, freeVariables, isLValue;
+nonterminal ExprOrTypeName with pp, host, errors, globalDecls, functionDecls, defs, env, typerep, returnType, freeVariables, isLValue;
 
 flowtype ExprOrTypeName = decorate {env, returnType};
+
+propagate host, errors, globalDecls, functionDecls, defs, freeVariables on ExprOrTypeName;
 
 abstract production exprExpr
 top::ExprOrTypeName ::= e::Expr
 {
-  propagate host;
   top.pp = e.pp;
-  top.errors := e.errors;
-  top.globalDecls := e.globalDecls;
-  top.functionDecls := e.functionDecls;
-  top.defs := e.defs;
-  top.freeVariables := e.freeVariables;
   top.typerep = e.typerep;
   top.isLValue = e.isLValue;
 }
 abstract production typeNameExpr
 top::ExprOrTypeName ::= ty::TypeName
 {
-  propagate host;
   top.pp = ty.pp;
-  top.errors := ty.errors;
-  top.globalDecls := ty.globalDecls;
-  top.functionDecls := ty.functionDecls;
-  top.defs := ty.defs;
-  top.freeVariables := ty.freeVariables;
   top.typerep = ty.typerep;
   top.isLValue = false;
 }
