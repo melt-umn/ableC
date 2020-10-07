@@ -101,7 +101,7 @@ concrete productions top::MemberDesignator_c
 
 concrete productions top::Initializer_c
 | '{' '}'
-    { top.ast = ast:objectInitializer(ast:nilInit()); }
+    { top.ast = ast:objectInitializer(ast:nilInit(), location=top.location); }
 
 concrete productions top::Designation_c
 | d::ArrayDesignator_c

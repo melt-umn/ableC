@@ -125,7 +125,7 @@ Negative test       - FAIL: NO ERROR    tests/kframework/negative/j079g.c
 Negative test       - PASS:             tests/kframework/negative/j079h.c
 Negative test       - FAIL: NO ERROR    tests/kframework/negative/j079i.c
 Negative test       - FAIL: NO ERROR    tests/kframework/negative/j079j.c
-Negative test       - FAIL: NO ERROR    tests/kframework/negative/j082a.c
+Negative test       - PASS:             tests/kframework/negative/j082a.c
 Negative test       - PASS:             tests/kframework/negative/j082b.c
 Negative test       - PASS:             tests/kframework/negative/j083a.c
 Negative test       - PASS:             tests/kframework/negative/j083b.c
@@ -136,7 +136,7 @@ Negative test       - FAIL: NO ERROR    tests/kframework/negative/j089a.c
 Negative test       - FAIL: NO ERROR    tests/kframework/negative/j089b.c
 Negative test       - FAIL: NO ERROR    tests/kframework/negative/j090a.c
 Negative test       - FAIL: NO ERROR    tests/kframework/negative/j301a.c
-Negative test       - FAIL: NO ERROR    tests/kframework/negative/j302a.c
+Negative test       - PASS:             tests/kframework/negative/j302a.c
 Negative test       - FAIL: NO ERROR    tests/kframework/negative/j303a.c
 Negative test       - PASS:             tests/kframework/negative/j303b.c
 Negative test       - FAIL: NO ERROR    tests/kframework/negative/j304a.c
@@ -316,14 +316,12 @@ Failures:
                         tests/kframework/negative/j079g.c
                         tests/kframework/negative/j079i.c
                         tests/kframework/negative/j079j.c
-                        tests/kframework/negative/j082a.c
                         tests/kframework/negative/j084a.c
                         tests/kframework/negative/j088a.c
                         tests/kframework/negative/j089a.c
                         tests/kframework/negative/j089b.c
                         tests/kframework/negative/j090a.c
                         tests/kframework/negative/j301a.c
-                        tests/kframework/negative/j302a.c
                         tests/kframework/negative/j303a.c
                         tests/kframework/negative/j304a.c
                         tests/kframework/negative/j305a.c
@@ -360,10 +358,10 @@ Pass: 0
 Fail: 0
 
 Negative tests:
-Pass: 59
-Fail: 147
+Pass: 61
+Fail: 145
 
 Summary:
-Pass: 59
-Fail: 147
+Pass: 61
+Fail: 145
 

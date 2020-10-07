@@ -360,11 +360,43 @@ top::Expr ::= ty::TypeName  init::InitList
   propagate host, errors, globalDecls, functionDecls, defs;
   top.pp = parens( ppConcat([parens(ty.pp), text("{"), ppImplode(text(", "), init.pps), text("}")]) );
   top.freeVariables := ty.freeVariables ++ removeDefsFromNames(ty.defs, init.freeVariables);
-  top.typerep = ty.typerep; -- TODO: actually may involve learning from the initializer e.g. the length of the array.
+  top.typerep = init.typerep;
+
+  local refId::Maybe<String> =
+    case ty.typerep of
+    | extType( _, e) -> e.maybeRefId
+    | _ -> nothing()
+    end;
+
+  local refIdLookup::[RefIdItem] =
+    case refId of
+    | just(rid) -> lookupRefId(rid, top.env)
+    | nothing() -> []
+    end;
+
+  top.errors <-
+    case ty.typerep, refId, refIdLookup of
+    | errorType(), _, _ -> []
+    -- Check that expected type for this initializer is some sort of object type
+    | arrayType(_, _, _, _), _, _ -> []
+    | t, nothing(), _ -> [err(top.location, s"Compound literal initializer only permitted for array, struct or union types (got ${showType(t)}).")]
+    -- Check that this type has a definition
+    | t, just(id), [] -> [err(top.location, s"${showType(t)} does not have a definition.")]
+    | _, _, _ -> []
+    end;
 
   init.env = addEnv(ty.defs, ty.env);
-  
-  -- TODO: type checking!!
+  init.tagEnvIn =
+    case refIdLookup of
+    | item :: _ -> item.tagEnv
+    | [] -> emptyEnv()
+    end;
+  init.fieldNamesIn =
+    case refIdLookup of
+    | item :: _ -> item.fieldNames
+    | [] -> []
+    end;
+  init.expectedType = ty.typerep;
 }
 abstract production predefinedFuncExpr
 top::Expr ::= 

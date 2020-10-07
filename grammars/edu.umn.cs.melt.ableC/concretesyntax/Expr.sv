@@ -36,11 +36,11 @@ concrete productions top::ConstantExpr_c
 closed nonterminal Initializer_c with location, ast<ast:Initializer>; 
 concrete productions top::Initializer_c
 | e::AssignExpr_c
-    { top.ast = ast:exprInitializer(e.ast); }
+    { top.ast = ast:exprInitializer(e.ast, location=top.location); }
 | '{' il::InitializerList_c '}'
-    { top.ast = ast:objectInitializer(ast:foldInit(il.ast)); }
+    { top.ast = ast:objectInitializer(ast:foldInit(il.ast), location=top.location); }
 | '{' il::InitializerList_c ',' '}' 
-    { top.ast = ast:objectInitializer(ast:foldInit(il.ast)); }
+    { top.ast = ast:objectInitializer(ast:foldInit(il.ast), location=top.location); }
 
 
 -- "Non-exported" nonterminals
