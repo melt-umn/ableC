@@ -323,6 +323,7 @@ Positive test       - PASS:             tests/kframework/positive/j506a.c
 Positive test       - PASS:             tests/melt/positive/1.c
 Positive test       - PASS:             tests/melt/positive/asm-1.c
 Positive test       - PASS:             tests/melt/positive/expr-stmt-types.c
+Positive test       - PASS:             tests/melt/positive/struct-init.c
 Positive test       - PASS:             tests/melt/positive/struct-scoping.c
 Positive test       - PASS:             tests/melt/positive/typedef_1.c
 
