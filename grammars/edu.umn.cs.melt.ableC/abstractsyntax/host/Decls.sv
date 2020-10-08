@@ -885,7 +885,8 @@ EnumItemList ::= e1::EnumItemList e2::EnumItemList
 nonterminal StructItem with pp, host, errors, globalDecls, functionDecls, defs, env, localDefs, hasConstField, fieldNames, inStruct, isLast, returnType, freeVariables;
 flowtype StructItem = decorate {env, returnType, inStruct, isLast}, hasConstField {decorate}, fieldNames {decorate};
 
-propagate errors, globalDecls, functionDecls, defs, freeVariables, localDefs, hasConstField, fieldNames on StructItem;
+propagate errors, globalDecls, functionDecls, defs, freeVariables, localDefs, hasConstField on StructItem;
+propagate fieldNames on StructItem excluding anonUnionStructItem;
 
 abstract production structItem
 top::StructItem ::= attrs::Attributes  ty::BaseTypeExpr  dcls::StructDeclarators
@@ -925,6 +926,11 @@ top::StructItem ::= d::UnionDecl
 {
   propagate host;
   top.pp = cat(d.pp, semi());
+  top.fieldNames :=
+    case d.fieldNames of
+    | h :: _ -> [h]
+    | [] -> []
+    end;
   
   d.isLast = top.isLast;
   d.givenRefId = nothing();

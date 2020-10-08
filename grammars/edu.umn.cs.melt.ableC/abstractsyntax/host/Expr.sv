@@ -362,23 +362,25 @@ top::Expr ::= ty::TypeName  init::InitList
   top.freeVariables := ty.freeVariables ++ removeDefsFromNames(ty.defs, init.freeVariables);
   top.typerep = init.typerep;
 
-  local refId::Maybe<String> =
+  init.refIdIn =
     case ty.typerep of
     | extType( _, e) -> e.maybeRefId
     | _ -> nothing()
     end;
 
   local refIdLookup::[RefIdItem] =
-    case refId of
+    case init.refIdIn of
     | just(rid) -> lookupRefId(rid, top.env)
     | nothing() -> []
     end;
 
   top.errors <-
-    case ty.typerep, refId, refIdLookup of
+    case ty.typerep, init.refIdIn, refIdLookup of
     | errorType(), _, _ -> []
-    -- Check that expected type for this initializer is some sort of object type
+    -- Check that expected type for this initializer is some sort of object type or a scalar with a single init
     | arrayType(_, _, _, _), _, _ -> []
+    | t, nothing(), _ when init.positionalInitCount > 1 -> [err(top.location, s"Excess elements in scalar initializer for type ${showType(t)}.")]
+    | t, nothing(), _ when init.positionalInitCount < 1 -> [err(top.location, s"Empty scalar initializer for type ${showType(t)}.")]
     | t, nothing(), _ -> [err(top.location, s"Compound literal initializer only permitted for array, struct or union types (got ${showType(t)}).")]
     -- Check that this type has a definition
     | t, just(id), [] -> [err(top.location, s"${showType(t)} does not have a definition.")]

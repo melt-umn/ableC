@@ -44,24 +44,25 @@ top::Initializer ::= l::InitList
   top.pp = ppConcat([text("{"), ppImplode(text(", "), l.pps), text("}")]);
   top.typerep = l.typerep;
 
-  local refId::Maybe<String> =
+  l.refIdIn =
     case top.expectedType of
     | extType( _, e) -> e.maybeRefId
     | _ -> nothing()
     end;
 
   local refIdLookup::[RefIdItem] =
-    case refId of
+    case l.refIdIn of
     | just(rid) -> lookupRefId(rid, top.env)
     | nothing() -> []
     end;
 
   top.errors <-
-    case top.expectedType, refId, refIdLookup of
+    case top.expectedType, l.refIdIn, refIdLookup of
     | errorType(), _, _ -> []
-    -- Check that expected type for this initializer is some sort of object type
+    -- Check that expected type for this initializer is some sort of object type or a scalar with a single init
     | arrayType(_, _, _, _), _, _ -> []
-    | t, nothing(), _ -> [err(top.location, s"Object initializer only permitted for array, struct or union types (got ${showType(t)}).")]
+    | t, nothing(), _ when l.positionalInitCount > 1 -> [err(top.location, s"Excess elements in scalar initializer for type ${showType(t)}.")]
+    | t, nothing(), _ when l.positionalInitCount < 1 -> [err(top.location, s"Empty scalar initializer for type ${showType(t)}.")]
     -- Check that this type has a definition
     | t, just(id), [] -> [err(top.location, s"${showType(t)} does not have a definition.")]
     | _, _, _ -> []
@@ -84,12 +85,13 @@ monoid attribute positionalInitCount::Integer with 0, +;
 monoid attribute maxIndex::Integer with -1, max;
 propagate positionalInitCount, maxIndex on InitList, Init;
 
+autocopy attribute refIdIn::Maybe<String>;
 autocopy attribute tagEnvIn::Decorated Env;
 inherited attribute fieldNamesIn::[String];
 
 -- TODO: warn on duplicate initialization of the same member
-nonterminal InitList with pps, positionalInitCount, maxIndex, host, typerep, errors, globalDecls, functionDecls, defs, env, expectedType, tagEnvIn, fieldNamesIn, freeVariables, returnType;
-flowtype InitList = decorate {env, expectedType, tagEnvIn, fieldNamesIn, returnType}, positionalInitCount {decorate}, maxIndex {decorate};
+nonterminal InitList with pps, positionalInitCount, maxIndex, host, typerep, errors, globalDecls, functionDecls, defs, env, expectedType, refIdIn, tagEnvIn, fieldNamesIn, freeVariables, returnType;
+flowtype InitList = decorate {env, expectedType, refIdIn, tagEnvIn, fieldNamesIn, returnType}, positionalInitCount {decorate}, maxIndex {decorate};
 
 aspect default production
 top::InitList ::=
@@ -108,14 +110,10 @@ top::InitList ::= h::Init  t::InitList
   top.pps = h.pp :: t.pps;
   top.freeVariables := h.freeVariables ++ removeDefsFromNames(h.defs, t.freeVariables);
   
-  h.expectedType = top.expectedType;
-  
   t.env = addEnv(h.defs, h.env);
-  t.expectedType = top.expectedType;
   
-  -- TODO: Use threading here
-  h.fieldNamesIn = top.fieldNamesIn;
-  t.fieldNamesIn = h.fieldNames;
+  propagate expectedType;
+  thread fieldNamesIn, fieldNames on top, h, t;
 }
 
 abstract production nilInit
@@ -125,8 +123,8 @@ top::InitList ::=
   top.freeVariables := [];
 }
 
-nonterminal Init with pp, positionalInitCount, maxIndex, host, errors, globalDecls, functionDecls, defs, env, expectedType, tagEnvIn, fieldNamesIn, fieldNames, freeVariables, returnType;
-flowtype Init = decorate {env, expectedType, tagEnvIn, fieldNamesIn, returnType}, fieldNames {decorate}, maxIndex {decorate};
+nonterminal Init with pp, positionalInitCount, maxIndex, host, errors, globalDecls, functionDecls, defs, env, expectedType, refIdIn, tagEnvIn, fieldNamesIn, fieldNames, freeVariables, returnType;
+flowtype Init = decorate {env, expectedType, refIdIn, tagEnvIn, fieldNamesIn, returnType}, fieldNames {decorate}, maxIndex {decorate};
 
 abstract production positionalInit
 top::Init ::= i::Initializer
@@ -140,11 +138,11 @@ top::Init ::= i::Initializer
     end;
 
   top.errors <-
-    case top.expectedType of
-    | errorType() -> []
-    | arrayType(_, _, _, _) -> []
-    | _ when null(top.fieldNamesIn) -> [err(i.location, s"Too many positional initializers for type ${showType(top.expectedType)}")]
-    | _ -> []
+    case top.expectedType, top.refIdIn of
+    | errorType(), _ -> []
+    | arrayType(_, _, _, _), _ -> []
+    | _, just(_) when null(top.fieldNamesIn) -> [err(i.location, s"Too many positional initializers for type ${showType(top.expectedType)}")]
+    | _, _ -> []
     end;
 
   i.initializerPos =
@@ -153,14 +151,15 @@ top::Init ::= i::Initializer
     | _ -> "positional initializer"
     end;
   i.expectedType =
-    case top.expectedType, top.fieldNamesIn of
-    | arrayType(e, _, _, _), _ -> e
-    | _, f :: _ ->
+    case top.expectedType, top.refIdIn, top.fieldNamesIn of
+    | arrayType(e, _, _, _), _, _ -> e
+    | _, just(_), f :: _ ->
       case lookupValue(f, top.tagEnvIn) of
       | v :: _ -> v.typerep
       | [] -> error(s"Field ${f} not in tag env!")
-      end 
-    | _, _ -> errorType()
+      end
+    | t, nothing(), _ -> t
+    | _, _, _ -> errorType()
     end;
 }
 
