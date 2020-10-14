@@ -113,3 +113,24 @@ top::host:Expr ::= lhs::host:Expr  deref::Boolean  rhs::host:Name
   
   forwards to host:wrapWarnExpr(lerrors, fwrd, top.location);
 }
+abstract production compoundLiteralExpr
+top::host:Expr ::= ty::host:TypeName  init::host:InitList
+{
+  top.pp = parens( ppConcat([parens(ty.pp), text("{"), ppImplode(text(", "), init.pps), text("}")]) );
+  
+  local t::host:Type = ty.host:typerep;
+  local host::host:Expr =
+    host:compoundLiteralExpr(
+      host:decTypeName(ty),
+      init,
+      location=top.location);
+  forwards to
+    case t.compoundLiteralProd of
+    | just(prod) ->
+       host:transformedExpr(
+         host,
+         prod(ty, init, top.location),
+         location=top.location)
+    | nothing() -> host
+    end;
+}
