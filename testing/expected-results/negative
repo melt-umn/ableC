@@ -1,7 +1,7 @@
-Negative test       - FAIL: NO ERROR    tests/kframework/negative/j004a.c
+Negative test       - PASS:             tests/kframework/negative/j004a.c
 Negative test       - FAIL: NO ERROR    tests/kframework/negative/j004b.c
 Negative test       - FAIL: NO ERROR    tests/kframework/negative/j004c.c
-Negative test       - FAIL: NO ERROR    tests/kframework/negative/j004d.c
+Negative test       - PASS:             tests/kframework/negative/j004d.c
 Negative test       - FAIL: NO ERROR    tests/kframework/negative/j004e.c
 Negative test       - FAIL: NO ERROR    tests/kframework/negative/j004f.c
 Negative test       - FAIL: NO ERROR    tests/kframework/negative/j004g.c
@@ -135,8 +135,8 @@ Negative test       - FAIL: NO ERROR    tests/kframework/negative/j088a.c
 Negative test       - FAIL: NO ERROR    tests/kframework/negative/j089a.c
 Negative test       - FAIL: NO ERROR    tests/kframework/negative/j089b.c
 Negative test       - FAIL: NO ERROR    tests/kframework/negative/j090a.c
-Negative test       - FAIL: NO ERROR    tests/kframework/negative/j301a.c
-Negative test       - PASS:             tests/kframework/negative/j302a.c
+Negative test       - PASS:             tests/kframework/negative/j301a.c
+Negative test       - FAIL: NO ERROR    tests/kframework/negative/j302a.c
 Negative test       - FAIL: NO ERROR    tests/kframework/negative/j303a.c
 Negative test       - PASS:             tests/kframework/negative/j303b.c
 Negative test       - FAIL: NO ERROR    tests/kframework/negative/j304a.c
@@ -207,10 +207,8 @@ Negative test       - PASS:             tests/melt/negative/stmt_type_switch_1.c
 
 Failures:
             NO ERROR
-                        tests/kframework/negative/j004a.c
                         tests/kframework/negative/j004b.c
                         tests/kframework/negative/j004c.c
-                        tests/kframework/negative/j004d.c
                         tests/kframework/negative/j004e.c
                         tests/kframework/negative/j004f.c
                         tests/kframework/negative/j004g.c
@@ -321,7 +319,7 @@ Failures:
                         tests/kframework/negative/j089a.c
                         tests/kframework/negative/j089b.c
                         tests/kframework/negative/j090a.c
-                        tests/kframework/negative/j301a.c
+                        tests/kframework/negative/j302a.c
                         tests/kframework/negative/j303a.c
                         tests/kframework/negative/j304a.c
                         tests/kframework/negative/j305a.c
@@ -358,10 +356,10 @@ Pass: 0
 Fail: 0
 
 Negative tests:
-Pass: 61
-Fail: 145
+Pass: 62
+Fail: 144
 
 Summary:
-Pass: 61
-Fail: 145
+Pass: 62
+Fail: 144
 
