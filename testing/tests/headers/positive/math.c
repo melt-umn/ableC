@@ -1,486 +1,818 @@
-/* Declarations for math functions.
-   Copyright (C) 1991-1993, 1995-1999, 2001, 2002, 2004, 2006, 2009, 2011
-   Free Software Foundation, Inc.
-   This file is part of the GNU C Library.
-
-   The GNU C Library is free software; you can redistribute it and/or
-   modify it under the terms of the GNU Lesser General Public
-   License as published by the Free Software Foundation; either
-   version 2.1 of the License, or (at your option) any later version.
-
-   The GNU C Library is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-   Lesser General Public License for more details.
-
-   You should have received a copy of the GNU Lesser General Public
-   License along with the GNU C Library; if not, write to the Free
-   Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307 USA.  */
-
-/*
- *	ISO C99 Standard: 7.12 Mathematics	<math.h>
- */
-
-#ifndef	_MATH_H
-#define	_MATH_H	1
-
-#include <features.h>
-
-__BEGIN_DECLS
-
-/* Get machine-dependent HUGE_VAL value (returned on overflow).
-   On all IEEE754 machines, this is +Infinity.  */
-#include <bits/huge_val.h>
-#ifdef __USE_ISOC99
-# include <bits/huge_valf.h>
-# include <bits/huge_vall.h>
-
-/* Get machine-dependent INFINITY value.  */
-# include <bits/inf.h>
-
-/* Get machine-dependent NAN value (returned for some domain errors).  */
-# include <bits/nan.h>
-#endif /* __USE_ISOC99 */
-
-/* Get general and ISO C99 specific information.  */
-#include <bits/mathdef.h>
-
-/* The file <bits/mathcalls.h> contains the prototypes for all the
-   actual math functions.  These macros are used for those prototypes,
-   so we can easily declare each function as both `name' and `__name',
-   and can declare the float versions `namef' and `__namef'.  */
-
-#define __MATHCALL(function,suffix, args)	\
-  __MATHDECL (_Mdouble_,function,suffix, args)
-#define __MATHDECL(type, function,suffix, args) \
-  __MATHDECL_1(type, function,suffix, args); \
-  __MATHDECL_1(type, __CONCAT(__,function),suffix, args)
-#define __MATHCALLX(function,suffix, args, attrib)	\
-  __MATHDECLX (_Mdouble_,function,suffix, args, attrib)
-#define __MATHDECLX(type, function,suffix, args, attrib) \
-  __MATHDECL_1(type, function,suffix, args) __attribute__ (attrib); \
-  __MATHDECL_1(type, __CONCAT(__,function),suffix, args) __attribute__ (attrib)
-#define __MATHDECL_1(type, function,suffix, args) \
-  extern type __MATH_PRECNAME(function,suffix) args __THROW
-
-#define _Mdouble_		double
-#define __MATH_PRECNAME(name,r)	__CONCAT(name,r)
-#define _Mdouble_BEGIN_NAMESPACE __BEGIN_NAMESPACE_STD
-#define _Mdouble_END_NAMESPACE   __END_NAMESPACE_STD
-#include <bits/mathcalls.h>
-#undef	_Mdouble_
-#undef _Mdouble_BEGIN_NAMESPACE
-#undef _Mdouble_END_NAMESPACE
-#undef	__MATH_PRECNAME
-
-#if defined __USE_MISC || defined __USE_ISOC99
+# 1 "math.c"
+# 1 "<built-in>"
+# 1 "<command-line>"
+# 1 "/usr/include/stdc-predef.h" 1 3 4
+# 1 "<command-line>" 2
+# 1 "math.c"
+# 28 "math.c"
+# 1 "/usr/include/features.h" 1 3 4
+# 367 "/usr/include/features.h" 3 4
+# 1 "/usr/include/x86_64-linux-gnu/sys/cdefs.h" 1 3 4
+# 410 "/usr/include/x86_64-linux-gnu/sys/cdefs.h" 3 4
+# 1 "/usr/include/x86_64-linux-gnu/bits/wordsize.h" 1 3 4
+# 411 "/usr/include/x86_64-linux-gnu/sys/cdefs.h" 2 3 4
+# 368 "/usr/include/features.h" 2 3 4
+# 391 "/usr/include/features.h" 3 4
+# 1 "/usr/include/x86_64-linux-gnu/gnu/stubs.h" 1 3 4
+# 10 "/usr/include/x86_64-linux-gnu/gnu/stubs.h" 3 4
+# 1 "/usr/include/x86_64-linux-gnu/gnu/stubs-64.h" 1 3 4
+# 11 "/usr/include/x86_64-linux-gnu/gnu/stubs.h" 2 3 4
+# 392 "/usr/include/features.h" 2 3 4
+# 29 "math.c" 2
 
 
-/* Include the file of declarations again, this time using `float'
-   instead of `double' and appending f to each function name.  */
 
-# ifndef _Mfloat_
-#  define _Mfloat_		float
-# endif
-# define _Mdouble_		_Mfloat_
-# ifdef __STDC__
-#  define __MATH_PRECNAME(name,r) name##f##r
-# else
-#  define __MATH_PRECNAME(name,r) name/**/f/**/r
-# endif
-# define _Mdouble_BEGIN_NAMESPACE __BEGIN_NAMESPACE_C99
-# define _Mdouble_END_NAMESPACE   __END_NAMESPACE_C99
-# include <bits/mathcalls.h>
-# undef	_Mdouble_
-# undef _Mdouble_BEGIN_NAMESPACE
-# undef _Mdouble_END_NAMESPACE
-# undef	__MATH_PRECNAME
 
-# if (__STDC__ - 0 || __GNUC__ - 0) \
-     && (!(defined __NO_LONG_DOUBLE_MATH && defined _LIBC) \
-	 || defined __LDBL_COMPAT)
-#  ifdef __LDBL_COMPAT
 
-#   ifdef __USE_ISOC99
-extern float __nldbl_nexttowardf (float __x, long double __y)
-				  __THROW __attribute__ ((__const__));
-#    ifdef __REDIRECT_NTH
-extern float __REDIRECT_NTH (nexttowardf, (float __x, long double __y),
-			     __nldbl_nexttowardf)
+# 1 "/usr/include/x86_64-linux-gnu/bits/huge_val.h" 1 3 4
+# 35 "math.c" 2
+
+# 1 "/usr/include/x86_64-linux-gnu/bits/huge_valf.h" 1 3 4
+# 37 "math.c" 2
+# 1 "/usr/include/x86_64-linux-gnu/bits/huge_vall.h" 1 3 4
+# 38 "math.c" 2
+
+
+# 1 "/usr/include/x86_64-linux-gnu/bits/inf.h" 1 3 4
+# 41 "math.c" 2
+
+
+# 1 "/usr/include/x86_64-linux-gnu/bits/nan.h" 1 3 4
+# 44 "math.c" 2
+
+
+
+# 1 "/usr/include/x86_64-linux-gnu/bits/mathdef.h" 1 3 4
+# 28 "/usr/include/x86_64-linux-gnu/bits/mathdef.h" 3 4
+typedef float float_t;
+typedef double double_t;
+# 48 "math.c" 2
+# 71 "math.c"
+# 1 "/usr/include/x86_64-linux-gnu/bits/mathcalls.h" 1 3 4
+# 52 "/usr/include/x86_64-linux-gnu/bits/mathcalls.h" 3 4
+
+
+extern double acos (double __x) __attribute__ ((__nothrow__ , __leaf__)); extern double __acos (double __x) __attribute__ ((__nothrow__ , __leaf__));
+
+extern double asin (double __x) __attribute__ ((__nothrow__ , __leaf__)); extern double __asin (double __x) __attribute__ ((__nothrow__ , __leaf__));
+
+extern double atan (double __x) __attribute__ ((__nothrow__ , __leaf__)); extern double __atan (double __x) __attribute__ ((__nothrow__ , __leaf__));
+
+extern double atan2 (double __y, double __x) __attribute__ ((__nothrow__ , __leaf__)); extern double __atan2 (double __y, double __x) __attribute__ ((__nothrow__ , __leaf__));
+
+
+__MATHCALL_VEC (cos,, (double __x));
+
+__MATHCALL_VEC (sin,, (double __x));
+
+extern double tan (double __x) __attribute__ ((__nothrow__ , __leaf__)); extern double __tan (double __x) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+
+extern double cosh (double __x) __attribute__ ((__nothrow__ , __leaf__)); extern double __cosh (double __x) __attribute__ ((__nothrow__ , __leaf__));
+
+extern double sinh (double __x) __attribute__ ((__nothrow__ , __leaf__)); extern double __sinh (double __x) __attribute__ ((__nothrow__ , __leaf__));
+
+extern double tanh (double __x) __attribute__ ((__nothrow__ , __leaf__)); extern double __tanh (double __x) __attribute__ ((__nothrow__ , __leaf__));
+
+# 86 "/usr/include/x86_64-linux-gnu/bits/mathcalls.h" 3 4
+
+
+extern double acosh (double __x) __attribute__ ((__nothrow__ , __leaf__)); extern double __acosh (double __x) __attribute__ ((__nothrow__ , __leaf__));
+
+extern double asinh (double __x) __attribute__ ((__nothrow__ , __leaf__)); extern double __asinh (double __x) __attribute__ ((__nothrow__ , __leaf__));
+
+extern double atanh (double __x) __attribute__ ((__nothrow__ , __leaf__)); extern double __atanh (double __x) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+
+
+
+
+__MATHCALL_VEC (exp,, (double __x));
+
+
+extern double frexp (double __x, int *__exponent) __attribute__ ((__nothrow__ , __leaf__)); extern double __frexp (double __x, int *__exponent) __attribute__ ((__nothrow__ , __leaf__));
+
+
+extern double ldexp (double __x, int __exponent) __attribute__ ((__nothrow__ , __leaf__)); extern double __ldexp (double __x, int __exponent) __attribute__ ((__nothrow__ , __leaf__));
+
+
+__MATHCALL_VEC (log,, (double __x));
+
+
+extern double log10 (double __x) __attribute__ ((__nothrow__ , __leaf__)); extern double __log10 (double __x) __attribute__ ((__nothrow__ , __leaf__));
+
+
+extern double modf (double __x, double *__iptr) __attribute__ ((__nothrow__ , __leaf__)); extern double __modf (double __x, double *__iptr) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (2)));
+
+# 126 "/usr/include/x86_64-linux-gnu/bits/mathcalls.h" 3 4
+
+
+extern double expm1 (double __x) __attribute__ ((__nothrow__ , __leaf__)); extern double __expm1 (double __x) __attribute__ ((__nothrow__ , __leaf__));
+
+
+extern double log1p (double __x) __attribute__ ((__nothrow__ , __leaf__)); extern double __log1p (double __x) __attribute__ ((__nothrow__ , __leaf__));
+
+
+extern double logb (double __x) __attribute__ ((__nothrow__ , __leaf__)); extern double __logb (double __x) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+
+
+
+extern double exp2 (double __x) __attribute__ ((__nothrow__ , __leaf__)); extern double __exp2 (double __x) __attribute__ ((__nothrow__ , __leaf__));
+
+
+extern double log2 (double __x) __attribute__ ((__nothrow__ , __leaf__)); extern double __log2 (double __x) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+
+
+
+
+
+__MATHCALL_VEC (pow,, (double __x, double __y));
+
+
+extern double sqrt (double __x) __attribute__ ((__nothrow__ , __leaf__)); extern double __sqrt (double __x) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+
+
+extern double hypot (double __x, double __y) __attribute__ ((__nothrow__ , __leaf__)); extern double __hypot (double __x, double __y) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+
+
+
+extern double cbrt (double __x) __attribute__ ((__nothrow__ , __leaf__)); extern double __cbrt (double __x) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+
+
+
+
+
+extern double ceil (double __x) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__)); extern double __ceil (double __x) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__));
+
+
+extern double fabs (double __x) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__)); extern double __fabs (double __x) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__));
+
+
+extern double floor (double __x) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__)); extern double __floor (double __x) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__));
+
+
+extern double fmod (double __x, double __y) __attribute__ ((__nothrow__ , __leaf__)); extern double __fmod (double __x, double __y) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+
+extern int __isinf (double __value) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__));
+
+
+extern int __finite (double __value) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__));
+
+# 219 "/usr/include/x86_64-linux-gnu/bits/mathcalls.h" 3 4
+
+
+extern double copysign (double __x, double __y) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__)); extern double __copysign (double __x, double __y) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__));
+
+
+
+
+
+
+extern double nan (const char *__tagb) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__)); extern double __nan (const char *__tagb) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__));
+
+
+
+
+
+extern int __isnan (double __value) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__));
+# 257 "/usr/include/x86_64-linux-gnu/bits/mathcalls.h" 3 4
+
+
+extern double erf (double) __attribute__ ((__nothrow__ , __leaf__)); extern double __erf (double) __attribute__ ((__nothrow__ , __leaf__));
+extern double erfc (double) __attribute__ ((__nothrow__ , __leaf__)); extern double __erfc (double) __attribute__ ((__nothrow__ , __leaf__));
+extern double lgamma (double) __attribute__ ((__nothrow__ , __leaf__)); extern double __lgamma (double) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+
+
+
+extern double tgamma (double) __attribute__ ((__nothrow__ , __leaf__)); extern double __tgamma (double) __attribute__ ((__nothrow__ , __leaf__));
+
+# 286 "/usr/include/x86_64-linux-gnu/bits/mathcalls.h" 3 4
+
+
+
+extern double rint (double __x) __attribute__ ((__nothrow__ , __leaf__)); extern double __rint (double __x) __attribute__ ((__nothrow__ , __leaf__));
+
+
+extern double nextafter (double __x, double __y) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__)); extern double __nextafter (double __x, double __y) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__));
+
+extern double nexttoward (double __x, long double __y) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__)); extern double __nexttoward (double __x, long double __y) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__));
+
+
+
+extern double remainder (double __x, double __y) __attribute__ ((__nothrow__ , __leaf__)); extern double __remainder (double __x, double __y) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+extern double scalbn (double __x, int __n) __attribute__ ((__nothrow__ , __leaf__)); extern double __scalbn (double __x, int __n) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+extern int ilogb (double __x) __attribute__ ((__nothrow__ , __leaf__)); extern int __ilogb (double __x) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+
+extern double scalbln (double __x, long int __n) __attribute__ ((__nothrow__ , __leaf__)); extern double __scalbln (double __x, long int __n) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+extern double nearbyint (double __x) __attribute__ ((__nothrow__ , __leaf__)); extern double __nearbyint (double __x) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+extern double round (double __x) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__)); extern double __round (double __x) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__));
+
+
+
+extern double trunc (double __x) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__)); extern double __trunc (double __x) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__));
+
+
+
+
+extern double remquo (double __x, double __y, int *__quo) __attribute__ ((__nothrow__ , __leaf__)); extern double __remquo (double __x, double __y, int *__quo) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+
+
+
+extern long int lrint (double __x) __attribute__ ((__nothrow__ , __leaf__)); extern long int __lrint (double __x) __attribute__ ((__nothrow__ , __leaf__));
+__extension__
+extern long long int llrint (double __x) __attribute__ ((__nothrow__ , __leaf__)); extern long long int __llrint (double __x) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+extern long int lround (double __x) __attribute__ ((__nothrow__ , __leaf__)); extern long int __lround (double __x) __attribute__ ((__nothrow__ , __leaf__));
+__extension__
+extern long long int llround (double __x) __attribute__ ((__nothrow__ , __leaf__)); extern long long int __llround (double __x) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+extern double fdim (double __x, double __y) __attribute__ ((__nothrow__ , __leaf__)); extern double __fdim (double __x, double __y) __attribute__ ((__nothrow__ , __leaf__));
+
+
+extern double fmax (double __x, double __y) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__)); extern double __fmax (double __x, double __y) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__));
+
+
+extern double fmin (double __x, double __y) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__)); extern double __fmin (double __x, double __y) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__));
+
+
+
+extern int __fpclassify (double __value) __attribute__ ((__nothrow__ , __leaf__))
      __attribute__ ((__const__));
-extern double __REDIRECT_NTH (nexttoward, (double __x, long double __y),
-			      nextafter) __attribute__ ((__const__));
-extern long double __REDIRECT_NTH (nexttowardl,
-				   (long double __x, long double __y),
-				   nextafter) __attribute__ ((__const__));
-#    endif
-#   endif
-#  endif
-
-#  if defined __LDBL_COMPAT || defined __NO_LONG_DOUBLE_MATH
-
-#   undef __MATHDECL_1
-#   define __MATHDECL_2(type, function,suffix, args, alias) \
-  extern type __REDIRECT_NTH(__MATH_PRECNAME(function,suffix), \
-			     args, alias)
-#   define __MATHDECL_1(type, function,suffix, args) \
-  __MATHDECL_2(type, function,suffix, args, __CONCAT(function,suffix))
-#  endif
-
-/* Include the file of declarations again, this time using `long double'
-   instead of `double' and appending l to each function name.  */
-
-#  ifndef _Mlong_double_
-#   define _Mlong_double_	long double
-#  endif
-#  define _Mdouble_		_Mlong_double_
-#  ifdef __STDC__
-#   define __MATH_PRECNAME(name,r) name##l##r
-#  else
-#   define __MATH_PRECNAME(name,r) name/**/l/**/r
-#  endif
-#  define _Mdouble_BEGIN_NAMESPACE __BEGIN_NAMESPACE_C99
-#  define _Mdouble_END_NAMESPACE   __END_NAMESPACE_C99
-#  define __MATH_DECLARE_LDOUBLE   1
-#  include <bits/mathcalls.h>
-#  undef _Mdouble_
-#  undef _Mdouble_BEGIN_NAMESPACE
-#  undef _Mdouble_END_NAMESPACE
-#  undef __MATH_PRECNAME
-
-# endif /* __STDC__ || __GNUC__ */
-
-#endif	/* Use misc or ISO C99.  */
-#undef	__MATHDECL_1
-#undef	__MATHDECL
-#undef	__MATHCALL
 
 
-#if defined __USE_MISC || defined __USE_XOPEN
-/* This variable is used by `gamma' and `lgamma'.  */
-extern int signgam;
-#endif
+extern int __signbit (double __value) __attribute__ ((__nothrow__ , __leaf__))
+     __attribute__ ((__const__));
 
 
-/* ISO C99 defines some generic macros which work on any data type.  */
-#ifdef __USE_ISOC99
 
-/* Get the architecture specific values describing the floating-point
-   evaluation.  The following symbols will get defined:
+extern double fma (double __x, double __y, double __z) __attribute__ ((__nothrow__ , __leaf__)); extern double __fma (double __x, double __y, double __z) __attribute__ ((__nothrow__ , __leaf__));
 
-    float_t	floating-point type at least as wide as `float' used
-		to evaluate `float' expressions
-    double_t	floating-point type at least as wide as `double' used
-		to evaluate `double' expressions
 
-    FLT_EVAL_METHOD
-		Defined to
-		  0	if `float_t' is `float' and `double_t' is `double'
-		  1	if `float_t' and `double_t' are `double'
-		  2	if `float_t' and `double_t' are `long double'
-		  else	`float_t' and `double_t' are unspecified
 
-    INFINITY	representation of the infinity value of type `float'
 
-    FP_FAST_FMA
-    FP_FAST_FMAF
-    FP_FAST_FMAL
-		If defined it indicates that the `fma' function
-		generally executes about as fast as a multiply and an add.
-		This macro is defined only iff the `fma' function is
-		implemented directly with a hardware multiply-add instructions.
+# 72 "math.c" 2
+# 94 "math.c"
+# 1 "/usr/include/x86_64-linux-gnu/bits/mathcalls.h" 1 3 4
+# 52 "/usr/include/x86_64-linux-gnu/bits/mathcalls.h" 3 4
 
-    FP_ILOGB0	Expands to a value returned by `ilogb (0.0)'.
-    FP_ILOGBNAN	Expands to a value returned by `ilogb (NAN)'.
 
-    DECIMAL_DIG	Number of decimal digits supported by conversion between
-		decimal and all internal floating-point formats.
+extern float acosf (float __x) __attribute__ ((__nothrow__ , __leaf__)); extern float __acosf (float __x) __attribute__ ((__nothrow__ , __leaf__));
 
-*/
+extern float asinf (float __x) __attribute__ ((__nothrow__ , __leaf__)); extern float __asinf (float __x) __attribute__ ((__nothrow__ , __leaf__));
 
-/* All floating-point numbers can be put in one of these categories.  */
+extern float atanf (float __x) __attribute__ ((__nothrow__ , __leaf__)); extern float __atanf (float __x) __attribute__ ((__nothrow__ , __leaf__));
+
+extern float atan2f (float __y, float __x) __attribute__ ((__nothrow__ , __leaf__)); extern float __atan2f (float __y, float __x) __attribute__ ((__nothrow__ , __leaf__));
+
+
+__MATHCALL_VEC (cos,, (float __x));
+
+__MATHCALL_VEC (sin,, (float __x));
+
+extern float tanf (float __x) __attribute__ ((__nothrow__ , __leaf__)); extern float __tanf (float __x) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+
+extern float coshf (float __x) __attribute__ ((__nothrow__ , __leaf__)); extern float __coshf (float __x) __attribute__ ((__nothrow__ , __leaf__));
+
+extern float sinhf (float __x) __attribute__ ((__nothrow__ , __leaf__)); extern float __sinhf (float __x) __attribute__ ((__nothrow__ , __leaf__));
+
+extern float tanhf (float __x) __attribute__ ((__nothrow__ , __leaf__)); extern float __tanhf (float __x) __attribute__ ((__nothrow__ , __leaf__));
+
+# 86 "/usr/include/x86_64-linux-gnu/bits/mathcalls.h" 3 4
+
+
+extern float acoshf (float __x) __attribute__ ((__nothrow__ , __leaf__)); extern float __acoshf (float __x) __attribute__ ((__nothrow__ , __leaf__));
+
+extern float asinhf (float __x) __attribute__ ((__nothrow__ , __leaf__)); extern float __asinhf (float __x) __attribute__ ((__nothrow__ , __leaf__));
+
+extern float atanhf (float __x) __attribute__ ((__nothrow__ , __leaf__)); extern float __atanhf (float __x) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+
+
+
+
+__MATHCALL_VEC (exp,, (float __x));
+
+
+extern float frexpf (float __x, int *__exponent) __attribute__ ((__nothrow__ , __leaf__)); extern float __frexpf (float __x, int *__exponent) __attribute__ ((__nothrow__ , __leaf__));
+
+
+extern float ldexpf (float __x, int __exponent) __attribute__ ((__nothrow__ , __leaf__)); extern float __ldexpf (float __x, int __exponent) __attribute__ ((__nothrow__ , __leaf__));
+
+
+__MATHCALL_VEC (log,, (float __x));
+
+
+extern float log10f (float __x) __attribute__ ((__nothrow__ , __leaf__)); extern float __log10f (float __x) __attribute__ ((__nothrow__ , __leaf__));
+
+
+extern float modff (float __x, float *__iptr) __attribute__ ((__nothrow__ , __leaf__)); extern float __modff (float __x, float *__iptr) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (2)));
+
+# 126 "/usr/include/x86_64-linux-gnu/bits/mathcalls.h" 3 4
+
+
+extern float expm1f (float __x) __attribute__ ((__nothrow__ , __leaf__)); extern float __expm1f (float __x) __attribute__ ((__nothrow__ , __leaf__));
+
+
+extern float log1pf (float __x) __attribute__ ((__nothrow__ , __leaf__)); extern float __log1pf (float __x) __attribute__ ((__nothrow__ , __leaf__));
+
+
+extern float logbf (float __x) __attribute__ ((__nothrow__ , __leaf__)); extern float __logbf (float __x) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+
+
+
+extern float exp2f (float __x) __attribute__ ((__nothrow__ , __leaf__)); extern float __exp2f (float __x) __attribute__ ((__nothrow__ , __leaf__));
+
+
+extern float log2f (float __x) __attribute__ ((__nothrow__ , __leaf__)); extern float __log2f (float __x) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+
+
+
+
+
+__MATHCALL_VEC (pow,, (float __x, float __y));
+
+
+extern float sqrtf (float __x) __attribute__ ((__nothrow__ , __leaf__)); extern float __sqrtf (float __x) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+
+
+extern float hypotf (float __x, float __y) __attribute__ ((__nothrow__ , __leaf__)); extern float __hypotf (float __x, float __y) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+
+
+
+extern float cbrtf (float __x) __attribute__ ((__nothrow__ , __leaf__)); extern float __cbrtf (float __x) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+
+
+
+
+
+extern float ceilf (float __x) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__)); extern float __ceilf (float __x) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__));
+
+
+extern float fabsf (float __x) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__)); extern float __fabsf (float __x) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__));
+
+
+extern float floorf (float __x) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__)); extern float __floorf (float __x) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__));
+
+
+extern float fmodf (float __x, float __y) __attribute__ ((__nothrow__ , __leaf__)); extern float __fmodf (float __x, float __y) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+
+extern int __isinff (float __value) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__));
+
+
+extern int __finitef (float __value) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__));
+
+# 219 "/usr/include/x86_64-linux-gnu/bits/mathcalls.h" 3 4
+
+
+extern float copysignf (float __x, float __y) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__)); extern float __copysignf (float __x, float __y) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__));
+
+
+
+
+
+
+extern float nanf (const char *__tagb) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__)); extern float __nanf (const char *__tagb) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__));
+
+
+
+
+
+extern int __isnanf (float __value) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__));
+# 257 "/usr/include/x86_64-linux-gnu/bits/mathcalls.h" 3 4
+
+
+extern float erff (float) __attribute__ ((__nothrow__ , __leaf__)); extern float __erff (float) __attribute__ ((__nothrow__ , __leaf__));
+extern float erfcf (float) __attribute__ ((__nothrow__ , __leaf__)); extern float __erfcf (float) __attribute__ ((__nothrow__ , __leaf__));
+extern float lgammaf (float) __attribute__ ((__nothrow__ , __leaf__)); extern float __lgammaf (float) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+
+
+
+extern float tgammaf (float) __attribute__ ((__nothrow__ , __leaf__)); extern float __tgammaf (float) __attribute__ ((__nothrow__ , __leaf__));
+
+# 286 "/usr/include/x86_64-linux-gnu/bits/mathcalls.h" 3 4
+
+
+
+extern float rintf (float __x) __attribute__ ((__nothrow__ , __leaf__)); extern float __rintf (float __x) __attribute__ ((__nothrow__ , __leaf__));
+
+
+extern float nextafterf (float __x, float __y) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__)); extern float __nextafterf (float __x, float __y) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__));
+
+extern float nexttowardf (float __x, long double __y) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__)); extern float __nexttowardf (float __x, long double __y) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__));
+
+
+
+extern float remainderf (float __x, float __y) __attribute__ ((__nothrow__ , __leaf__)); extern float __remainderf (float __x, float __y) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+extern float scalbnf (float __x, int __n) __attribute__ ((__nothrow__ , __leaf__)); extern float __scalbnf (float __x, int __n) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+extern int ilogbf (float __x) __attribute__ ((__nothrow__ , __leaf__)); extern int __ilogbf (float __x) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+
+extern float scalblnf (float __x, long int __n) __attribute__ ((__nothrow__ , __leaf__)); extern float __scalblnf (float __x, long int __n) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+extern float nearbyintf (float __x) __attribute__ ((__nothrow__ , __leaf__)); extern float __nearbyintf (float __x) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+extern float roundf (float __x) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__)); extern float __roundf (float __x) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__));
+
+
+
+extern float truncf (float __x) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__)); extern float __truncf (float __x) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__));
+
+
+
+
+extern float remquof (float __x, float __y, int *__quo) __attribute__ ((__nothrow__ , __leaf__)); extern float __remquof (float __x, float __y, int *__quo) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+
+
+
+extern long int lrintf (float __x) __attribute__ ((__nothrow__ , __leaf__)); extern long int __lrintf (float __x) __attribute__ ((__nothrow__ , __leaf__));
+__extension__
+extern long long int llrintf (float __x) __attribute__ ((__nothrow__ , __leaf__)); extern long long int __llrintf (float __x) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+extern long int lroundf (float __x) __attribute__ ((__nothrow__ , __leaf__)); extern long int __lroundf (float __x) __attribute__ ((__nothrow__ , __leaf__));
+__extension__
+extern long long int llroundf (float __x) __attribute__ ((__nothrow__ , __leaf__)); extern long long int __llroundf (float __x) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+extern float fdimf (float __x, float __y) __attribute__ ((__nothrow__ , __leaf__)); extern float __fdimf (float __x, float __y) __attribute__ ((__nothrow__ , __leaf__));
+
+
+extern float fmaxf (float __x, float __y) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__)); extern float __fmaxf (float __x, float __y) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__));
+
+
+extern float fminf (float __x, float __y) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__)); extern float __fminf (float __x, float __y) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__));
+
+
+
+extern int __fpclassifyf (float __value) __attribute__ ((__nothrow__ , __leaf__))
+     __attribute__ ((__const__));
+
+
+extern int __signbitf (float __value) __attribute__ ((__nothrow__ , __leaf__))
+     __attribute__ ((__const__));
+
+
+
+extern float fmaf (float __x, float __y, float __z) __attribute__ ((__nothrow__ , __leaf__)); extern float __fmaf (float __x, float __y, float __z) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+
+# 95 "math.c" 2
+# 146 "math.c"
+# 1 "/usr/include/x86_64-linux-gnu/bits/mathcalls.h" 1 3 4
+# 52 "/usr/include/x86_64-linux-gnu/bits/mathcalls.h" 3 4
+
+
+extern long double acosl (long double __x) __attribute__ ((__nothrow__ , __leaf__)); extern long double __acosl (long double __x) __attribute__ ((__nothrow__ , __leaf__));
+
+extern long double asinl (long double __x) __attribute__ ((__nothrow__ , __leaf__)); extern long double __asinl (long double __x) __attribute__ ((__nothrow__ , __leaf__));
+
+extern long double atanl (long double __x) __attribute__ ((__nothrow__ , __leaf__)); extern long double __atanl (long double __x) __attribute__ ((__nothrow__ , __leaf__));
+
+extern long double atan2l (long double __y, long double __x) __attribute__ ((__nothrow__ , __leaf__)); extern long double __atan2l (long double __y, long double __x) __attribute__ ((__nothrow__ , __leaf__));
+
+
+__MATHCALL_VEC (cos,, (long double __x));
+
+__MATHCALL_VEC (sin,, (long double __x));
+
+extern long double tanl (long double __x) __attribute__ ((__nothrow__ , __leaf__)); extern long double __tanl (long double __x) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+
+extern long double coshl (long double __x) __attribute__ ((__nothrow__ , __leaf__)); extern long double __coshl (long double __x) __attribute__ ((__nothrow__ , __leaf__));
+
+extern long double sinhl (long double __x) __attribute__ ((__nothrow__ , __leaf__)); extern long double __sinhl (long double __x) __attribute__ ((__nothrow__ , __leaf__));
+
+extern long double tanhl (long double __x) __attribute__ ((__nothrow__ , __leaf__)); extern long double __tanhl (long double __x) __attribute__ ((__nothrow__ , __leaf__));
+
+# 86 "/usr/include/x86_64-linux-gnu/bits/mathcalls.h" 3 4
+
+
+extern long double acoshl (long double __x) __attribute__ ((__nothrow__ , __leaf__)); extern long double __acoshl (long double __x) __attribute__ ((__nothrow__ , __leaf__));
+
+extern long double asinhl (long double __x) __attribute__ ((__nothrow__ , __leaf__)); extern long double __asinhl (long double __x) __attribute__ ((__nothrow__ , __leaf__));
+
+extern long double atanhl (long double __x) __attribute__ ((__nothrow__ , __leaf__)); extern long double __atanhl (long double __x) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+
+
+
+
+__MATHCALL_VEC (exp,, (long double __x));
+
+
+extern long double frexpl (long double __x, int *__exponent) __attribute__ ((__nothrow__ , __leaf__)); extern long double __frexpl (long double __x, int *__exponent) __attribute__ ((__nothrow__ , __leaf__));
+
+
+extern long double ldexpl (long double __x, int __exponent) __attribute__ ((__nothrow__ , __leaf__)); extern long double __ldexpl (long double __x, int __exponent) __attribute__ ((__nothrow__ , __leaf__));
+
+
+__MATHCALL_VEC (log,, (long double __x));
+
+
+extern long double log10l (long double __x) __attribute__ ((__nothrow__ , __leaf__)); extern long double __log10l (long double __x) __attribute__ ((__nothrow__ , __leaf__));
+
+
+extern long double modfl (long double __x, long double *__iptr) __attribute__ ((__nothrow__ , __leaf__)); extern long double __modfl (long double __x, long double *__iptr) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (2)));
+
+# 126 "/usr/include/x86_64-linux-gnu/bits/mathcalls.h" 3 4
+
+
+extern long double expm1l (long double __x) __attribute__ ((__nothrow__ , __leaf__)); extern long double __expm1l (long double __x) __attribute__ ((__nothrow__ , __leaf__));
+
+
+extern long double log1pl (long double __x) __attribute__ ((__nothrow__ , __leaf__)); extern long double __log1pl (long double __x) __attribute__ ((__nothrow__ , __leaf__));
+
+
+extern long double logbl (long double __x) __attribute__ ((__nothrow__ , __leaf__)); extern long double __logbl (long double __x) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+
+
+
+extern long double exp2l (long double __x) __attribute__ ((__nothrow__ , __leaf__)); extern long double __exp2l (long double __x) __attribute__ ((__nothrow__ , __leaf__));
+
+
+extern long double log2l (long double __x) __attribute__ ((__nothrow__ , __leaf__)); extern long double __log2l (long double __x) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+
+
+
+
+
+__MATHCALL_VEC (pow,, (long double __x, long double __y));
+
+
+extern long double sqrtl (long double __x) __attribute__ ((__nothrow__ , __leaf__)); extern long double __sqrtl (long double __x) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+
+
+extern long double hypotl (long double __x, long double __y) __attribute__ ((__nothrow__ , __leaf__)); extern long double __hypotl (long double __x, long double __y) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+
+
+
+extern long double cbrtl (long double __x) __attribute__ ((__nothrow__ , __leaf__)); extern long double __cbrtl (long double __x) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+
+
+
+
+
+extern long double ceill (long double __x) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__)); extern long double __ceill (long double __x) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__));
+
+
+extern long double fabsl (long double __x) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__)); extern long double __fabsl (long double __x) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__));
+
+
+extern long double floorl (long double __x) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__)); extern long double __floorl (long double __x) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__));
+
+
+extern long double fmodl (long double __x, long double __y) __attribute__ ((__nothrow__ , __leaf__)); extern long double __fmodl (long double __x, long double __y) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+
+extern int __isinfl (long double __value) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__));
+
+
+extern int __finitel (long double __value) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__));
+
+# 219 "/usr/include/x86_64-linux-gnu/bits/mathcalls.h" 3 4
+
+
+extern long double copysignl (long double __x, long double __y) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__)); extern long double __copysignl (long double __x, long double __y) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__));
+
+
+
+
+
+
+extern long double nanl (const char *__tagb) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__)); extern long double __nanl (const char *__tagb) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__));
+
+
+
+
+
+extern int __isnanl (long double __value) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__));
+# 257 "/usr/include/x86_64-linux-gnu/bits/mathcalls.h" 3 4
+
+
+extern long double erfl (long double) __attribute__ ((__nothrow__ , __leaf__)); extern long double __erfl (long double) __attribute__ ((__nothrow__ , __leaf__));
+extern long double erfcl (long double) __attribute__ ((__nothrow__ , __leaf__)); extern long double __erfcl (long double) __attribute__ ((__nothrow__ , __leaf__));
+extern long double lgammal (long double) __attribute__ ((__nothrow__ , __leaf__)); extern long double __lgammal (long double) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+
+
+
+extern long double tgammal (long double) __attribute__ ((__nothrow__ , __leaf__)); extern long double __tgammal (long double) __attribute__ ((__nothrow__ , __leaf__));
+
+# 286 "/usr/include/x86_64-linux-gnu/bits/mathcalls.h" 3 4
+
+
+
+extern long double rintl (long double __x) __attribute__ ((__nothrow__ , __leaf__)); extern long double __rintl (long double __x) __attribute__ ((__nothrow__ , __leaf__));
+
+
+extern long double nextafterl (long double __x, long double __y) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__)); extern long double __nextafterl (long double __x, long double __y) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__));
+
+extern long double nexttowardl (long double __x, long double __y) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__)); extern long double __nexttowardl (long double __x, long double __y) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__));
+
+
+
+extern long double remainderl (long double __x, long double __y) __attribute__ ((__nothrow__ , __leaf__)); extern long double __remainderl (long double __x, long double __y) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+extern long double scalbnl (long double __x, int __n) __attribute__ ((__nothrow__ , __leaf__)); extern long double __scalbnl (long double __x, int __n) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+extern int ilogbl (long double __x) __attribute__ ((__nothrow__ , __leaf__)); extern int __ilogbl (long double __x) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+
+extern long double scalblnl (long double __x, long int __n) __attribute__ ((__nothrow__ , __leaf__)); extern long double __scalblnl (long double __x, long int __n) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+extern long double nearbyintl (long double __x) __attribute__ ((__nothrow__ , __leaf__)); extern long double __nearbyintl (long double __x) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+extern long double roundl (long double __x) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__)); extern long double __roundl (long double __x) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__));
+
+
+
+extern long double truncl (long double __x) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__)); extern long double __truncl (long double __x) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__));
+
+
+
+
+extern long double remquol (long double __x, long double __y, int *__quo) __attribute__ ((__nothrow__ , __leaf__)); extern long double __remquol (long double __x, long double __y, int *__quo) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+
+
+
+extern long int lrintl (long double __x) __attribute__ ((__nothrow__ , __leaf__)); extern long int __lrintl (long double __x) __attribute__ ((__nothrow__ , __leaf__));
+__extension__
+extern long long int llrintl (long double __x) __attribute__ ((__nothrow__ , __leaf__)); extern long long int __llrintl (long double __x) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+extern long int lroundl (long double __x) __attribute__ ((__nothrow__ , __leaf__)); extern long int __lroundl (long double __x) __attribute__ ((__nothrow__ , __leaf__));
+__extension__
+extern long long int llroundl (long double __x) __attribute__ ((__nothrow__ , __leaf__)); extern long long int __llroundl (long double __x) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+extern long double fdiml (long double __x, long double __y) __attribute__ ((__nothrow__ , __leaf__)); extern long double __fdiml (long double __x, long double __y) __attribute__ ((__nothrow__ , __leaf__));
+
+
+extern long double fmaxl (long double __x, long double __y) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__)); extern long double __fmaxl (long double __x, long double __y) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__));
+
+
+extern long double fminl (long double __x, long double __y) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__)); extern long double __fminl (long double __x, long double __y) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__));
+
+
+
+extern int __fpclassifyl (long double __value) __attribute__ ((__nothrow__ , __leaf__))
+     __attribute__ ((__const__));
+
+
+extern int __signbitl (long double __value) __attribute__ ((__nothrow__ , __leaf__))
+     __attribute__ ((__const__));
+
+
+
+extern long double fmal (long double __x, long double __y, long double __z) __attribute__ ((__nothrow__ , __leaf__)); extern long double __fmal (long double __x, long double __y, long double __z) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+
+# 147 "math.c" 2
+# 203 "math.c"
 enum
   {
     FP_NAN,
-# define FP_NAN FP_NAN
+
     FP_INFINITE,
-# define FP_INFINITE FP_INFINITE
+
     FP_ZERO,
-# define FP_ZERO FP_ZERO
+
     FP_SUBNORMAL,
-# define FP_SUBNORMAL FP_SUBNORMAL
+
     FP_NORMAL
-# define FP_NORMAL FP_NORMAL
+
   };
+# 483 "math.c"
 
-/* Return number of classification appropriate for X.  */
-# ifdef __NO_LONG_DOUBLE_MATH
-#  define fpclassify(x) \
-     (sizeof (x) == sizeof (float) ? __fpclassifyf (x) : __fpclassify (x))
-# else
-#  define fpclassify(x) \
-     (sizeof (x) == sizeof (float)					      \
-      ? __fpclassifyf (x)						      \
-      : sizeof (x) == sizeof (double)					      \
-      ? __fpclassify (x) : __fpclassifyl (x))
-# endif
-
-/* Return nonzero value if sign of X is negative.  */
-# ifdef __NO_LONG_DOUBLE_MATH
-#  define signbit(x) \
-     (sizeof (x) == sizeof (float) ? __signbitf (x) : __signbit (x))
-# else
-#  define signbit(x) \
-     (sizeof (x) == sizeof (float)					      \
-      ? __signbitf (x)							      \
-      : sizeof (x) == sizeof (double)					      \
-      ? __signbit (x) : __signbitl (x))
-# endif
-
-/* Return nonzero value if X is not +-Inf or NaN.  */
-# ifdef __NO_LONG_DOUBLE_MATH
-#  define isfinite(x) \
-     (sizeof (x) == sizeof (float) ? __finitef (x) : __finite (x))
-# else
-#  define isfinite(x) \
-     (sizeof (x) == sizeof (float)					      \
-      ? __finitef (x)							      \
-      : sizeof (x) == sizeof (double)					      \
-      ? __finite (x) : __finitel (x))
-# endif
-
-/* Return nonzero value if X is neither zero, subnormal, Inf, nor NaN.  */
-# define isnormal(x) (fpclassify (x) == FP_NORMAL)
-
-/* Return nonzero value if X is a NaN.  We could use `fpclassify' but
-   we already have this functions `__isnan' and it is faster.  */
-# ifdef __NO_LONG_DOUBLE_MATH
-#  define isnan(x) \
-     (sizeof (x) == sizeof (float) ? __isnanf (x) : __isnan (x))
-# else
-#  define isnan(x) \
-     (sizeof (x) == sizeof (float)					      \
-      ? __isnanf (x)							      \
-      : sizeof (x) == sizeof (double)					      \
-      ? __isnan (x) : __isnanl (x))
-# endif
-
-/* Return nonzero value if X is positive or negative infinity.  */
-# ifdef __NO_LONG_DOUBLE_MATH
-#  define isinf(x) \
-     (sizeof (x) == sizeof (float) ? __isinff (x) : __isinf (x))
-# else
-#  define isinf(x) \
-     (sizeof (x) == sizeof (float)					      \
-      ? __isinff (x)							      \
-      : sizeof (x) == sizeof (double)					      \
-      ? __isinf (x) : __isinfl (x))
-# endif
-
-/* Bitmasks for the math_errhandling macro.  */
-# define MATH_ERRNO	1	/* errno set by math functions.  */
-# define MATH_ERREXCEPT	2	/* Exceptions raised by math functions.  */
-
-/* By default all functions support both errno and exception handling.
-   In gcc's fast math mode and if inline functions are defined this
-   might not be true.  */
-# ifndef __FAST_MATH__
-#  define math_errhandling	(MATH_ERRNO | MATH_ERREXCEPT)
-# endif
-
-#endif /* Use ISO C99.  */
-
-#ifdef	__USE_MISC
-/* Support for various different standard error handling behaviors.  */
-typedef enum
-{
-  _IEEE_ = -1,	/* According to IEEE 754/IEEE 854.  */
-  _SVID_,	/* According to System V, release 4.  */
-  _XOPEN_,	/* Nowadays also Unix98.  */
-  _POSIX_,
-  _ISOC_	/* Actually this is ISO C99.  */
-} _LIB_VERSION_TYPE;
-
-/* This variable can be changed at run-time to any of the values above to
-   affect floating point error handling behavior (it may also be necessary
-   to change the hardware FPU exception settings).  */
-extern _LIB_VERSION_TYPE _LIB_VERSION;
-#endif
-
-
-#ifdef __USE_SVID
-/* In SVID error handling, `matherr' is called with this description
-   of the exceptional condition.
-
-   We have a problem when using C++ since `exception' is a reserved
-   name in C++.  */
-# ifdef __cplusplus
-struct __exception
-# else
-struct exception
-# endif
-  {
-    int type;
-    char *name;
-    double arg1;
-    double arg2;
-    double retval;
-  };
-
-# ifdef __cplusplus
-extern int matherr (struct __exception *__exc) throw ();
-# else
-extern int matherr (struct exception *__exc);
-# endif
-
-# define X_TLOSS	1.41484755040568800000e+16
-
-/* Types of exceptions in the `type' field.  */
-# define DOMAIN		1
-# define SING		2
-# define OVERFLOW	3
-# define UNDERFLOW	4
-# define TLOSS		5
-# define PLOSS		6
-
-/* SVID mode specifies returning this large value instead of infinity.  */
-# define HUGE		3.40282347e+38F
-
-#else	/* !SVID */
-
-# ifdef __USE_XOPEN
-/* X/Open wants another strange constant.  */
-#  define MAXFLOAT	3.40282347e+38F
-# endif
-
-#endif	/* SVID */
-
-
-/* Some useful constants.  */
-#if defined __USE_BSD || defined __USE_XOPEN
-# define M_E		2.7182818284590452354	/* e */
-# define M_LOG2E	1.4426950408889634074	/* log_2 e */
-# define M_LOG10E	0.43429448190325182765	/* log_10 e */
-# define M_LN2		0.69314718055994530942	/* log_e 2 */
-# define M_LN10		2.30258509299404568402	/* log_e 10 */
-# define M_PI		3.14159265358979323846	/* pi */
-# define M_PI_2		1.57079632679489661923	/* pi/2 */
-# define M_PI_4		0.78539816339744830962	/* pi/4 */
-# define M_1_PI		0.31830988618379067154	/* 1/pi */
-# define M_2_PI		0.63661977236758134308	/* 2/pi */
-# define M_2_SQRTPI	1.12837916709551257390	/* 2/sqrt(pi) */
-# define M_SQRT2	1.41421356237309504880	/* sqrt(2) */
-# define M_SQRT1_2	0.70710678118654752440	/* 1/sqrt(2) */
-#endif
-
-/* The above constants are not adequate for computation using `long double's.
-   Therefore we provide as an extension constants with similar names as a
-   GNU extension.  Provide enough digits for the 128-bit IEEE quad.  */
-#ifdef __USE_GNU
-# define M_El		2.7182818284590452353602874713526625L  /* e */
-# define M_LOG2El	1.4426950408889634073599246810018921L  /* log_2 e */
-# define M_LOG10El	0.4342944819032518276511289189166051L  /* log_10 e */
-# define M_LN2l		0.6931471805599453094172321214581766L  /* log_e 2 */
-# define M_LN10l	2.3025850929940456840179914546843642L  /* log_e 10 */
-# define M_PIl		3.1415926535897932384626433832795029L  /* pi */
-# define M_PI_2l	1.5707963267948966192313216916397514L  /* pi/2 */
-# define M_PI_4l	0.7853981633974483096156608458198757L  /* pi/4 */
-# define M_1_PIl	0.3183098861837906715377675267450287L  /* 1/pi */
-# define M_2_PIl	0.6366197723675813430755350534900574L  /* 2/pi */
-# define M_2_SQRTPIl	1.1283791670955125738961589031215452L  /* 2/sqrt(pi) */
-# define M_SQRT2l	1.4142135623730950488016887242096981L  /* sqrt(2) */
-# define M_SQRT1_2l	0.7071067811865475244008443621048490L  /* 1/sqrt(2) */
-#endif
-
-
-/* When compiling in strict ISO C compatible mode we must not use the
-   inline functions since they, among other things, do not set the
-   `errno' variable correctly.  */
-#if defined __STRICT_ANSI__ && !defined __NO_MATH_INLINES
-# define __NO_MATH_INLINES	1
-#endif
-
-#if defined __USE_ISOC99 && __GNUC_PREREQ(2,97)
-/* ISO C99 defines some macros to compare number while taking care for
-   unordered numbers.  Many FPUs provide special instructions to support
-   these operations.  Generic support in GCC for these as builtins went
-   in before 3.0.0, but not all cpus added their patterns.  We define
-   versions that use the builtins here, and <bits/mathinline.h> will
-   undef/redefine as appropriate for the specific GCC version in use.  */
-# define isgreater(x, y)	__builtin_isgreater(x, y)
-# define isgreaterequal(x, y)	__builtin_isgreaterequal(x, y)
-# define isless(x, y)		__builtin_isless(x, y)
-# define islessequal(x, y)	__builtin_islessequal(x, y)
-# define islessgreater(x, y)	__builtin_islessgreater(x, y)
-# define isunordered(u, v)	__builtin_isunordered(u, v)
-#endif
-
-/* Get machine-dependent inline versions (if there are any).  */
-#ifdef __USE_EXTERN_INLINES
-# include <bits/mathinline.h>
-#endif
-
-/* Define special entry points to use when the compiler got told to
-   only expect finite results.  */
-#if defined __FINITE_MATH_ONLY__ && __FINITE_MATH_ONLY__ > 0
-# include <bits/math-finite.h>
-#endif
-
-#ifdef __USE_ISOC99
-/* If we've still got undefined comparison macros, provide defaults.  */
-
-/* Return nonzero value if X is greater than Y.  */
-# ifndef isgreater
-#  define isgreater(x, y) \
-  (__extension__							      \
-   ({ __typeof__(x) __x = (x); __typeof__(y) __y = (y);			      \
-      !isunordered (__x, __y) && __x > __y; }))
-# endif
-
-/* Return nonzero value if X is greater than or equal to Y.  */
-# ifndef isgreaterequal
-#  define isgreaterequal(x, y) \
-  (__extension__							      \
-   ({ __typeof__(x) __x = (x); __typeof__(y) __y = (y);			      \
-      !isunordered (__x, __y) && __x >= __y; }))
-# endif
-
-/* Return nonzero value if X is less than Y.  */
-# ifndef isless
-#  define isless(x, y) \
-  (__extension__							      \
-   ({ __typeof__(x) __x = (x); __typeof__(y) __y = (y);			      \
-      !isunordered (__x, __y) && __x < __y; }))
-# endif
-
-/* Return nonzero value if X is less than or equal to Y.  */
-# ifndef islessequal
-#  define islessequal(x, y) \
-  (__extension__							      \
-   ({ __typeof__(x) __x = (x); __typeof__(y) __y = (y);			      \
-      !isunordered (__x, __y) && __x <= __y; }))
-# endif
-
-/* Return nonzero value if either X is less than Y or Y is less than X.  */
-# ifndef islessgreater
-#  define islessgreater(x, y) \
-  (__extension__							      \
-   ({ __typeof__(x) __x = (x); __typeof__(y) __y = (y);			      \
-      !isunordered (__x, __y) && (__x < __y || __y < __x); }))
-# endif
-
-/* Return nonzero value if arguments are unordered.  */
-# ifndef isunordered
-#  define isunordered(u, v) \
-  (__extension__							      \
-   ({ __typeof__(u) __u = (u); __typeof__(v) __v = (v);			      \
-      fpclassify (__u) == FP_NAN || fpclassify (__v) == FP_NAN; }))
-# endif
-
-#endif
-
-__END_DECLS
-
-
-#endif /* math.h  */
