@@ -30,7 +30,7 @@ threaded attribute expectedTypes, expectedTypesOut :: [Type];
 threaded attribute nestedInits, nestedInitsOut :: Integer;
 
 nonterminal Initializer with location, pp, host, typerep, errors, globalDecls, functionDecls, defs, env, initializerPos, inObject, expectedType, expectedTypesOut, nestedInits, nestedInitsOut, freeVariables, returnType;
-flowtype Initializer = decorate {env, initializerPos, inObject, expectedType, returnType};
+flowtype Initializer = decorate {env, initializerPos, inObject, expectedType, returnType}, expectedTypesOut {decorate};
 
 abstract production exprInitializer
 top::Initializer ::= e::Expr
@@ -99,7 +99,7 @@ monoid attribute maxIndex::Integer with -1, max;
 autocopy attribute tagEnvIn::Decorated Env;
 
 nonterminal InitList with pps, initIndex, initIndexOut, maxIndex, host, typerep, errors, globalDecls, functionDecls, defs, env, expectedType, expectedTypes, nestedInits, tagEnvIn, freeVariables, returnType;
-flowtype InitList = decorate {initIndex, env, expectedType, expectedTypes, tagEnvIn, returnType};
+flowtype InitList = decorate {initIndex, env, expectedType, expectedTypes, tagEnvIn, returnType}, maxIndex {decorate};
 propagate initIndex, initIndexOut, maxIndex, expectedTypes, nestedInits on InitList;
 
 aspect default production
@@ -131,7 +131,7 @@ top::InitList ::=
 }
 
 nonterminal Init with pp, initIndex, initIndexOut, maxIndex, host, errors, globalDecls, functionDecls, defs, env, expectedType, expectedTypes, expectedTypesOut, nestedInits, nestedInitsOut, tagEnvIn, freeVariables, returnType;
-flowtype Init = decorate {env, expectedType, expectedTypes, tagEnvIn, returnType}, expectedTypesOut {decorate};
+flowtype Init = decorate {initIndex, env, expectedType, expectedTypes, tagEnvIn, returnType}, maxIndex {decorate}, initIndexOut {decorate}, expectedTypesOut {decorate};
 
 abstract production positionalInit
 top::Init ::= i::Initializer
@@ -184,7 +184,7 @@ top::Init ::= d::Designator  i::Initializer
  - e.g.  "[1].d[0] = e" gives "array(0, field(d, array(1, initial)))"
  -}
 nonterminal Designator with pp, maxIndex, host, errors, globalDecls, functionDecls, defs, env, expectedType, expectedTypesOut, typerep, freeVariables, returnType;
-flowtype Designator = decorate {env, expectedType, returnType}, maxIndex {decorate};
+flowtype Designator = decorate {env, expectedType, returnType}, maxIndex {decorate}, expectedTypesOut {decorate};
 
 abstract production initialDesignator
 top::Designator ::=
