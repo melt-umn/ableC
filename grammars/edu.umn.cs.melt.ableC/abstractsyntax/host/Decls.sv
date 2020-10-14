@@ -311,13 +311,6 @@ top::Declarator ::= name::Name  ty::TypeModifierExpr  attrs::Attributes  initial
   
   initializer.expectedType = ty.typerep;
   
-  top.errors <-
-    case initializer of
-      justInitializer(exprInitializer(e)) ->
-        if typeAssignableTo(top.typerep, e.typerep) then []
-        else [err(top.sourceLocation, s"Incompatible type in initialization, expected ${showType(top.typerep)} but found ${showType(e.typerep)}")]
-    | _ -> []
-    end;
   top.defs <-
     [valueDef(name.name, declaratorValueItem(top))] ++ 
     globalDeclsDefs(ty.globalDecls) ++
@@ -660,7 +653,7 @@ inherited attribute isLast::Boolean;
 synthesized attribute refId :: String; -- TODO move this later?
 
 monoid attribute hasConstField::Boolean with false, ||;
-monoid attribute fieldNames::[String] with [], ++;
+monoid attribute fieldNames::[Either<String ExtType>] with [], ++;
 
 nonterminal StructDecl with location, pp, host, maybename, errors, globalDecls, functionDecls, defs, env, localDefs, tagEnv, isLast, givenRefId, refId, hasConstField, fieldNames, returnType, freeVariables;
 flowtype StructDecl = decorate {env, isLast, givenRefId, returnType}, localDefs {decorate}, tagEnv {decorate}, refId {decorate}, hasConstField {decorate}, fieldNames {decorate};
@@ -724,7 +717,7 @@ top::StructDecl ::= attrs::Attributes  name::MaybeName  dcls::StructItemList
 nonterminal UnionDecl with location, pp, host, maybename, errors, globalDecls, functionDecls, defs, env, localDefs, tagEnv, isLast, givenRefId, refId, hasConstField, fieldNames, returnType, freeVariables;
 flowtype UnionDecl = decorate {env, isLast, givenRefId, returnType}, localDefs {decorate}, tagEnv {decorate}, refId {decorate}, hasConstField {decorate}, fieldNames {decorate};
 
-propagate host, errors, globalDecls, functionDecls, localDefs, hasConstField, fieldNames, freeVariables on UnionDecl;
+propagate host, errors, globalDecls, functionDecls, localDefs, hasConstField, freeVariables on UnionDecl;
 
 abstract production unionDecl
 top::UnionDecl ::= attrs::Attributes  name::MaybeName  dcls::StructItemList
@@ -741,6 +734,11 @@ top::UnionDecl ::= attrs::Attributes  name::MaybeName  dcls::StructItemList
   top.refId = fromMaybe(name.tagRefId, maybeAttribRefIdName);
   
   top.tagEnv = addEnv(dcls.localDefs, emptyEnv());
+  top.fieldNames :=
+    case dcls.fieldNames of
+    | f :: _ -> [f]
+    | [] -> []
+    end;
   
   -- If there is no forward declaration, and we have a name, then add a tag dcl for the refid.
   local preDefs :: [Def] = 
@@ -886,7 +884,7 @@ nonterminal StructItem with pp, host, errors, globalDecls, functionDecls, defs, 
 flowtype StructItem = decorate {env, returnType, inStruct, isLast}, hasConstField {decorate}, fieldNames {decorate};
 
 propagate errors, globalDecls, functionDecls, defs, freeVariables, localDefs, hasConstField on StructItem;
-propagate fieldNames on StructItem excluding anonUnionStructItem;
+propagate fieldNames on StructItem excluding anonStructStructItem, anonUnionStructItem;
 
 abstract production structItem
 top::StructItem ::= attrs::Attributes  ty::BaseTypeExpr  dcls::StructDeclarators
@@ -917,6 +915,8 @@ top::StructItem ::= d::StructDecl
 {
   propagate host;
   top.pp = cat(d.pp, semi());
+  top.fieldNames :=
+    [right(refIdExtType(structSEU(), fromMaybe("<anon>", mapMaybe((.name), d.maybename)), d.refId))];
   
   d.isLast = top.isLast;
   d.givenRefId = nothing();
@@ -927,10 +927,7 @@ top::StructItem ::= d::UnionDecl
   propagate host;
   top.pp = cat(d.pp, semi());
   top.fieldNames :=
-    case d.fieldNames of
-    | h :: _ -> [h]
-    | [] -> []
-    end;
+    [right(refIdExtType(unionSEU(), fromMaybe("<anon>", mapMaybe((.name), d.maybename)), d.refId))];
   
   d.isLast = top.isLast;
   d.givenRefId = nothing();
@@ -999,7 +996,7 @@ top::StructDeclarator ::= name::Name  ty::TypeModifierExpr  attrs::Attributes
   
   top.localDefs := [valueDef(name.name, fieldValueItem(top))];
   top.hasConstField := containsQualifier(constQualifier(location=bogusLoc()), ty.typerep);
-  top.fieldNames := [name.name];
+  top.fieldNames := [left(name.name)];
   top.typerep = animateAttributeOnType(allAttrs, ty.typerep);
   top.sourceLocation = name.location;
   
@@ -1044,7 +1041,7 @@ top::StructDeclarator ::= name::MaybeName  ty::TypeModifierExpr  e::Expr  attrs:
   top.hasConstField := containsQualifier(constQualifier(location=bogusLoc()), ty.typerep);
   top.fieldNames :=
     case name.maybename of
-    | just(n) -> [n.name]
+    | just(n) -> [left(n.name)]
     | _ -> []
     end;
   top.typerep = animateAttributeOnType(allAttrs, ty.typerep);

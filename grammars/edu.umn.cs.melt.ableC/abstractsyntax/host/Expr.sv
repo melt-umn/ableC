@@ -362,43 +362,39 @@ top::Expr ::= ty::TypeName  init::InitList
   top.freeVariables := ty.freeVariables ++ removeDefsFromNames(ty.defs, init.freeVariables);
   top.typerep = init.typerep;
 
-  init.refIdIn =
+  local refId::Maybe<String> =
     case ty.typerep of
     | extType( _, e) -> e.maybeRefId
     | _ -> nothing()
     end;
 
   local refIdLookup::[RefIdItem] =
-    case init.refIdIn of
+    case refId of
     | just(rid) -> lookupRefId(rid, top.env)
     | nothing() -> []
     end;
 
   top.errors <-
-    case ty.typerep, init.refIdIn, refIdLookup of
+    case ty.typerep, refId, refIdLookup of
     | errorType(), _, _ -> []
     -- Check that expected type for this initializer is some sort of object type or a scalar with a single init
     | arrayType(_, _, _, _), _, _ -> []
-    | t, nothing(), _ when init.positionalInitCount > 1 -> [err(top.location, s"Excess elements in scalar initializer for type ${showType(t)}.")]
-    | t, nothing(), _ when init.positionalInitCount < 1 -> [err(top.location, s"Empty scalar initializer for type ${showType(t)}.")]
+    | t, nothing(), _ when init.maxIndex < 0 -> [err(top.location, s"Empty scalar initializer for type ${showType(t)}.")]
     | t, nothing(), _ -> [err(top.location, s"Compound literal initializer only permitted for array, struct or union types (got ${showType(t)}).")]
     -- Check that this type has a definition
-    | t, just(id), [] -> [err(top.location, s"${showType(t)} does not have a definition.")]
+    | t, just(_), [] -> [err(top.location, s"${showType(t)} does not have a definition.")]
     | _, _, _ -> []
     end;
 
+  init.initIndex = 0;
   init.env = addEnv(ty.defs, ty.env);
   init.tagEnvIn =
     case refIdLookup of
     | item :: _ -> item.tagEnv
     | [] -> emptyEnv()
     end;
-  init.fieldNamesIn =
-    case refIdLookup of
-    | item :: _ -> item.fieldNames
-    | [] -> []
-    end;
   init.expectedType = ty.typerep;
+  init.expectedTypes = fromMaybe([ty.typerep], objectMembers(top.env, ty.typerep));
 }
 abstract production predefinedFuncExpr
 top::Expr ::= 

@@ -1,5 +1,7 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 
+import core:monad;
+
 -- Some attributes for Type and BuiltinType.
 
 -- RULE for using these: it must *ALWAYS* be the case than an error occurs if
@@ -376,4 +378,61 @@ Type ::= qs::[Qualifier] base::Type
       \q::Qualifier -> !containsBy(qualifierCompat, q, base.qualifiers),
       nubBy(qualifierCompat, qs));
   return base.withTypeQualifiers;
+}
+
+function repeatInfinite
+[a] ::= x::a
+{ return x :: repeatInfinite(x); }
+
+function objectMembers
+Maybe<[Type]> ::= env::Decorated Env t::Type
+{
+  return
+    case t of
+    | arrayType(e, _, _, constantArrayType(size)) -> just(repeat(e, size))
+    | arrayType(e, _, _, incompleteArrayType()) -> just(repeatInfinite(e))
+    | extType(_, sub) when sub.maybeRefId matches just(refId) ->
+      case lookupRefId(refId, env) of
+      | r :: _ ->
+        just(
+          map(
+            \ f::Either<String ExtType> ->
+              case f of
+              | left(fn) -> head(lookupValue(fn, r.tagEnv)).typerep
+              | right(e) -> extType(nilQualifier(), e)
+              end,
+            r.fieldNames))
+      | [] -> nothing()
+      end
+    | _ -> nothing()
+    end;
+}
+
+function remainingObjectMembers
+Maybe<[Type]> ::= env::Decorated Env expected::Type actual::Type
+{
+  return
+    if typeAssignableTo(expected, actual)
+    then just([])
+    else do (bindMaybe, returnMaybe) {
+      ts1 :: [Type] <- objectMembers(env, expected);
+      if null(ts1) then nothing(); else {
+        ts2 :: [Type] <- remainingObjectMembers(env, head(ts1), actual);
+        return ts2 ++ tail(ts1);
+      }
+    };
+}
+
+function objectTagEnv
+Decorated Env ::= env::Decorated Env t::Type
+{
+  return
+    case t of
+    | extType(_, sub) when sub.maybeRefId matches just(refId) ->
+      case lookupRefId(refId, env) of
+      | r :: _ -> r.tagEnv
+      | [] -> emptyEnv()
+      end
+    | _ -> emptyEnv()
+    end;
 }

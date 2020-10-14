@@ -34,7 +34,6 @@ nonterminal Exprs with pps, host, errors, globalDecls, functionDecls, defs, env,
 
 flowtype Exprs = decorate {env, returnType}, argumentErrors {decorate, expectedTypes, argumentPosition, callExpr, callVariadic}, count {}, appendedRes {appendedExprs};
 
-inherited attribute expectedTypes :: [Type];
 {-- Initially 1. -}
 inherited attribute argumentPosition :: Integer;
 autocopy attribute callExpr :: Decorated Expr;

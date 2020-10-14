@@ -2,6 +2,7 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 
 inherited attribute initializerPos::String;
 inherited attribute expectedType::Type;
+autocopy attribute inObject::Boolean;
 
 propagate host, errors, globalDecls, functionDecls, defs on MaybeInitializer, Initializer, InitList, Init, Designator;
 propagate freeVariables on MaybeInitializer, Initializer, Init, Designator;
@@ -22,19 +23,28 @@ top::MaybeInitializer ::= i::Initializer
   top.typerep = i.typerep;
   i.initializerPos = "initializer";
   i.expectedType = top.expectedType;
+  i.inObject = false;
 }
 
-nonterminal Initializer with location, pp, host, typerep, errors, globalDecls, functionDecls, defs, env, initializerPos, expectedType, freeVariables, returnType;
-flowtype Initializer = decorate {env, initializerPos, expectedType, returnType};
+threaded attribute expectedTypes, expectedTypesOut :: [Type];
+threaded attribute nestedInits, nestedInitsOut :: Integer;
+
+nonterminal Initializer with location, pp, host, typerep, errors, globalDecls, functionDecls, defs, env, initializerPos, inObject, expectedType, expectedTypesOut, nestedInits, nestedInitsOut, freeVariables, returnType;
+flowtype Initializer = decorate {env, initializerPos, inObject, expectedType, returnType};
 
 abstract production exprInitializer
 top::Initializer ::= e::Expr
 {
   top.pp = e.pp;
   top.typerep = top.expectedType;
+  
+  local newMembers::Maybe<[Type]> = remainingObjectMembers(top.env, top.expectedType, e.typerep);
+  top.expectedTypesOut = fromMaybe([], newMembers);
+  top.nestedInitsOut = max(0, top.nestedInits + length(top.expectedTypesOut) - 1);
+  
   top.errors <-
-    if !typeAssignableTo(top.expectedType, e.typerep)
-    then [err(e.location, s"Incompatible types for ${top.initializerPos}, expected ${showType(top.expectedType)} but found ${showType(e.typerep)}")]
+    if (if top.inObject then !newMembers.isJust else !typeAssignableTo(top.expectedType, e.typerep))
+    then [err(e.location, s"Incompatible types in ${top.initializerPos}, expected ${showType(top.expectedType)} but found ${showType(e.typerep)}")]
     else [];
 }
 
@@ -43,55 +53,54 @@ top::Initializer ::= l::InitList
 {
   top.pp = ppConcat([text("{"), ppImplode(text(", "), l.pps), text("}")]);
   top.typerep = l.typerep;
+  
+  top.expectedTypesOut = [];
+  top.nestedInitsOut = max(0, top.nestedInits - 1);
 
-  l.refIdIn =
+  l.initIndex = 0;
+  l.expectedType = top.expectedType;
+  l.expectedTypes = fromMaybe([top.expectedType], objectMembers(top.env, top.expectedType));
+  l.tagEnvIn = objectTagEnv(top.env, top.expectedType);
+
+  local refId::Maybe<String> =
     case top.expectedType of
     | extType( _, e) -> e.maybeRefId
     | _ -> nothing()
     end;
 
   local refIdLookup::[RefIdItem] =
-    case l.refIdIn of
+    case refId of
     | just(rid) -> lookupRefId(rid, top.env)
     | nothing() -> []
     end;
 
   top.errors <-
-    case top.expectedType, l.refIdIn, refIdLookup of
+    case top.expectedType, refId, refIdLookup of
     | errorType(), _, _ -> []
     -- Check that expected type for this initializer is some sort of object type or a scalar with a single init
     | arrayType(_, _, _, _), _, _ -> []
-    | t, nothing(), _ when l.positionalInitCount > 1 -> [err(top.location, s"Excess elements in scalar initializer for type ${showType(t)}.")]
-    | t, nothing(), _ when l.positionalInitCount < 1 -> [err(top.location, s"Empty scalar initializer for type ${showType(t)}.")]
+    | t, nothing(), _ when l.maxIndex < 0 -> [err(top.location, s"Empty scalar initializer for type ${showType(t)}.")]
     -- Check that this type has a definition
-    | t, just(id), [] -> [err(top.location, s"${showType(t)} does not have a definition.")]
+    | t, just(_), [] -> [err(top.location, s"${showType(t)} does not have a definition.")]
     | _, _, _ -> []
     end;
-
-  l.tagEnvIn =
-    case refIdLookup of
-    | item :: _ -> item.tagEnv
-    | [] -> emptyEnv()
+  top.errors <-
+    case top.expectedType, refId of
+    | errorType(), _ -> []
+    | arrayType(_, _, _, _), _ -> []
+    | t, nothing() when top.inObject -> [wrn(top.location, s"Braces around scalar initializer for type ${showType(t)}.")]
+    | _, just(_) -> []
     end;
-  l.fieldNamesIn =
-    case refIdLookup of
-    | item :: _ -> item.fieldNames
-    | [] -> []
-    end;
-  l.expectedType = top.expectedType;
 }
 
-monoid attribute positionalInitCount::Integer with 0, +;
+threaded attribute initIndex, initIndexOut::Integer;
 monoid attribute maxIndex::Integer with -1, max;
-propagate positionalInitCount, maxIndex on InitList, Init;
 
-autocopy attribute refIdIn::Maybe<String>;
 autocopy attribute tagEnvIn::Decorated Env;
-inherited attribute fieldNamesIn::[String];
 
--- TODO: warn on duplicate initialization of the same member
-nonterminal InitList with pps, positionalInitCount, maxIndex, host, typerep, errors, globalDecls, functionDecls, defs, env, expectedType, refIdIn, tagEnvIn, fieldNamesIn, freeVariables, returnType;
-flowtype InitList = decorate {env, expectedType, refIdIn, tagEnvIn, fieldNamesIn, returnType}, positionalInitCount {decorate}, maxIndex {decorate};
+nonterminal InitList with pps, initIndex, initIndexOut, maxIndex, host, typerep, errors, globalDecls, functionDecls, defs, env, expectedType, expectedTypes, nestedInits, tagEnvIn, freeVariables, returnType;
+flowtype InitList = decorate {initIndex, env, expectedType, expectedTypes, tagEnvIn, returnType};
+propagate initIndex, initIndexOut, maxIndex, expectedTypes, nestedInits on InitList;
 
 aspect default production
 top::InitList ::=
@@ -99,7 +108,7 @@ top::InitList ::=
   top.typerep =
     case top.expectedType of
     | arrayType(e, i, sm, incompleteArrayType()) ->
-      arrayType(e, i, sm, constantArrayType(max(top.positionalInitCount, top.maxIndex + 1)))
+      arrayType(e, i, sm, constantArrayType(top.maxIndex + 1))
     | t -> t
     end;
 }
@@ -109,11 +118,9 @@ top::InitList ::= h::Init  t::InitList
 {
   top.pps = h.pp :: t.pps;
   top.freeVariables := h.freeVariables ++ removeDefsFromNames(h.defs, t.freeVariables);
-  
-  t.env = addEnv(h.defs, h.env);
-  
+
   propagate expectedType;
-  thread fieldNamesIn, fieldNames on top, h, t;
+  t.env = addEnv(h.defs, h.env);
 }
 
 abstract production nilInit
@@ -123,56 +130,52 @@ top::InitList ::=
   top.freeVariables := [];
 }
 
-nonterminal Init with pp, positionalInitCount, maxIndex, host, errors, globalDecls, functionDecls, defs, env, expectedType, refIdIn, tagEnvIn, fieldNamesIn, fieldNames, freeVariables, returnType;
-flowtype Init = decorate {env, expectedType, refIdIn, tagEnvIn, fieldNamesIn, returnType}, fieldNames {decorate}, maxIndex {decorate};
+nonterminal Init with pp, initIndex, initIndexOut, maxIndex, host, errors, globalDecls, functionDecls, defs, env, expectedType, expectedTypes, expectedTypesOut, nestedInits, nestedInitsOut, tagEnvIn, freeVariables, returnType;
+flowtype Init = decorate {env, expectedType, expectedTypes, tagEnvIn, returnType}, expectedTypesOut {decorate};
 
 abstract production positionalInit
 top::Init ::= i::Initializer
 {
   top.pp = i.pp;
-  top.positionalInitCount <- 1;
-  top.fieldNames :=
-    case top.fieldNamesIn of
-    | _ :: fs -> fs
-    | [] -> []
-    end;
-
-  top.errors <-
-    case top.expectedType, top.refIdIn of
-    | errorType(), _ -> []
-    | arrayType(_, _, _, _), _ -> []
-    | _, just(_) when null(top.fieldNamesIn) -> [err(i.location, s"Too many positional initializers for type ${showType(top.expectedType)}")]
-    | _, _ -> []
-    end;
-
-  i.initializerPos =
-    case top.fieldNames of
-    | f :: _ -> s"field ${f} of ${showType(top.expectedType)}"
-    | _ -> "positional initializer"
-    end;
+  top.initIndexOut = 1 + top.initIndex;
+  top.maxIndex := top.initIndex;
+  
+  i.inObject = true;
   i.expectedType =
-    case top.expectedType, top.refIdIn, top.fieldNamesIn of
-    | arrayType(e, _, _, _), _, _ -> e
-    | _, just(_), f :: _ ->
-      case lookupValue(f, top.tagEnvIn) of
-      | v :: _ -> v.typerep
-      | [] -> error(s"Field ${f} not in tag env!")
-      end
-    | t, nothing(), _ -> t
-    | _, _, _ -> errorType()
+    case top.expectedTypes of
+    | h :: _ -> h
+    | _ -> errorType()
     end;
+  top.expectedTypesOut =
+    case top.expectedTypes of
+    | _ :: t -> i.expectedTypesOut ++ t
+    | _ -> []
+    end;
+  propagate nestedInits, nestedInitsOut;
+  
+  top.errors <-
+    if null(top.expectedTypes)
+    then [wrn(i.location, s"Excess elements in initializer for type ${showType(top.expectedType)}")]
+    else [];
+    
+  i.initializerPos = s"positional initializer for type ${showType(top.expectedType)}"; -- TODO: Include the field name, somehow.
 }
 
 abstract production designatedInit
 top::Init ::= d::Designator  i::Initializer
 {
   top.pp = ppConcat([d.pp, text(" = "), i.pp]);
-  top.fieldNames := top.fieldNamesIn;
+  top.initIndexOut = d.maxIndex + 1;
+  top.maxIndex := d.maxIndex;
+  
+  top.expectedTypesOut = d.expectedTypesOut;
+  top.nestedInitsOut = 0;
   
   d.expectedType = top.expectedType;
   
   i.env = addEnv(d.defs, d.env);
   i.initializerPos = s"member ${show(80, d.pp)} of ${showType(top.expectedType)}";
+  i.inObject = true;
   i.expectedType = d.typerep;
 }
 
@@ -180,7 +183,7 @@ top::Init ::= d::Designator  i::Initializer
  - Tree access pattern for designators.
  - e.g.  "[1].d[0] = e" gives "array(0, field(d, array(1, initial)))"
  -}
-nonterminal Designator with pp, maxIndex, host, errors, globalDecls, functionDecls, defs, env, expectedType, typerep, freeVariables, returnType;
+nonterminal Designator with pp, maxIndex, host, errors, globalDecls, functionDecls, defs, env, expectedType, expectedTypesOut, typerep, freeVariables, returnType;
 flowtype Designator = decorate {env, expectedType, returnType}, maxIndex {decorate};
 
 abstract production initialDesignator
@@ -188,6 +191,7 @@ top::Designator ::=
 {
   top.pp = notext();
   top.maxIndex := -1;
+  top.expectedTypesOut = [];
   top.typerep = top.expectedType;
 }
 
@@ -219,19 +223,35 @@ top::Designator ::= d::Designator  f::Name
   d.expectedType =
     case fieldLookup of
     | v :: _ -> v.typerep
-    | _ -> errorType()
+    | [] -> errorType()
     end;
 
   top.errors <-
-    case top.expectedType, refId, refIdLookup of
-    | errorType(), _, _ -> []
+    case top.expectedType, refId, refIdLookup, fieldLookup of
+    | errorType(), _, _, _ -> []
     -- Check that expected type for this designator is some sort of type with fields
-    | t, nothing(), _ -> [err(f.location, s"Field designator only permitted on struct or union types (got ${showType(t)}).")]
+    | t, nothing(), _, _ -> [err(f.location, s"Field designator only permitted on struct or union types (got ${showType(t)})")]
     -- Check that this type has a definition
-    | t, just(id), [] -> [err(f.location, s"${showType(t)} does not have a definition.")]
-    | _, _, _ -> []
+    | t, just(_), [], _ -> [err(f.location, s"${showType(t)} does not have a definition")]
+    | t, just(_), _, [] -> [err(f.location, s"${showType(t)} does not have field ${f.name}")]
+    | _, _, _, _ -> []
     end;
 
+  top.expectedTypesOut =
+    case refIdLookup of
+    | r :: _ ->
+      map(
+        \ f::Either<String ExtType> ->
+          case f of
+          | left(fn) -> head(lookupValue(fn, r.tagEnv)).typerep
+          | right(e) -> extType(nilQualifier(), e)
+          end,
+        case dropWhile(\ f1::Either<String ExtType> -> f1.isRight || f1.fromLeft != f.name, r.fieldNames) of
+        | _ :: fs -> fs
+        | [] -> []
+        end)
+    | [] -> []
+    end;
   top.typerep = d.typerep;
 }
 
@@ -262,6 +282,13 @@ top::Designator ::= d::Designator  e::Expr
     case top.expectedType of
     | arrayType(e, _, _, _) -> e
     | _ -> errorType()
+    end;
+  top.expectedTypesOut =
+    case top.expectedType of
+    | arrayType(elem, _, _, constantArrayType(size))
+      when e.integerConstantValue matches just(i) -> repeat(elem, size - (i + 1))
+    | arrayType(elem, _, _, incompleteArrayType()) -> repeatInfinite(elem)
+    | _ -> []
     end;
   
   e.env = addEnv(d.defs, d.env);
@@ -311,6 +338,13 @@ top::Designator ::= d::Designator  l::Expr  u::Expr
     case top.expectedType of
     | arrayType(e, _, _, _) -> e
     | _ -> errorType()
+    end;
+  top.expectedTypesOut =
+    case top.expectedType of
+    | arrayType(elem, _, _, constantArrayType(size))
+      when u.integerConstantValue matches just(i) -> repeat(elem, size - (i + 1))
+    | arrayType(elem, _, _, incompleteArrayType()) -> repeatInfinite(elem)
+    | _ -> []
     end;
   
   top.typerep = d.typerep;
