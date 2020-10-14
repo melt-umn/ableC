@@ -58,4 +58,7 @@ int main() {
   //struct riq r4 = {42, .y=3.14};
   struct riq r5 = {42, .q2={123, 43.34, "x"}, 32, 3.14, "zxcv"};
   //struct riq r6 = {42, .q2={123, 43.34, "x"}, 32, 3.14, "zxcv", 32, 3.14, "zxcv", 54};
+
+  int x = {0};
+  int y = (int){0};
 }

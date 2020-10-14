@@ -380,7 +380,6 @@ top::Expr ::= ty::TypeName  init::InitList
     -- Check that expected type for this initializer is some sort of object type or a scalar with a single init
     | arrayType(_, _, _, _), _, _ -> []
     | t, nothing(), _ when init.maxIndex < 0 -> [err(top.location, s"Empty scalar initializer for type ${showType(t)}.")]
-    | t, nothing(), _ -> [err(top.location, s"Compound literal initializer only permitted for array, struct or union types (got ${showType(t)}).")]
     -- Check that this type has a definition
     | t, just(_), [] -> [err(top.location, s"${showType(t)} does not have a definition.")]
     | _, _, _ -> []
