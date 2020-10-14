@@ -89,7 +89,7 @@ top::Initializer ::= l::InitList
     | errorType(), _ -> []
     | arrayType(_, _, _, _), _ -> []
     | t, nothing() when top.inObject -> [wrn(top.location, s"Braces around scalar initializer for type ${showType(t)}.")]
-    | _, just(_) -> []
+    | _, _ -> []
     end;
 }
 
