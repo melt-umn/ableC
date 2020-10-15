@@ -1,351 +1,240 @@
-/* Copyright (C) 1991,92,93,95,96,97,98,99,2001,2002,2004,2007,2008,2009,2011
-	Free Software Foundation, Inc.
-   This file is part of the GNU C Library.
+# 1 "ctype.c"
+# 1 "<built-in>"
+# 1 "<command-line>"
+# 1 "/usr/include/stdc-predef.h" 1 3 4
+# 1 "<command-line>" 2
+# 1 "ctype.c"
+# 27 "ctype.c"
+# 1 "/usr/include/features.h" 1 3 4
+# 367 "/usr/include/features.h" 3 4
+# 1 "/usr/include/x86_64-linux-gnu/sys/cdefs.h" 1 3 4
+# 410 "/usr/include/x86_64-linux-gnu/sys/cdefs.h" 3 4
+# 1 "/usr/include/x86_64-linux-gnu/bits/wordsize.h" 1 3 4
+# 411 "/usr/include/x86_64-linux-gnu/sys/cdefs.h" 2 3 4
+# 368 "/usr/include/features.h" 2 3 4
+# 391 "/usr/include/features.h" 3 4
+# 1 "/usr/include/x86_64-linux-gnu/gnu/stubs.h" 1 3 4
+# 10 "/usr/include/x86_64-linux-gnu/gnu/stubs.h" 3 4
+# 1 "/usr/include/x86_64-linux-gnu/gnu/stubs-64.h" 1 3 4
+# 11 "/usr/include/x86_64-linux-gnu/gnu/stubs.h" 2 3 4
+# 392 "/usr/include/features.h" 2 3 4
+# 28 "ctype.c" 2
+# 1 "/usr/include/x86_64-linux-gnu/bits/types.h" 1 3 4
+# 27 "/usr/include/x86_64-linux-gnu/bits/types.h" 3 4
+# 1 "/usr/include/x86_64-linux-gnu/bits/wordsize.h" 1 3 4
+# 28 "/usr/include/x86_64-linux-gnu/bits/types.h" 2 3 4
 
-   The GNU C Library is free software; you can redistribute it and/or
-   modify it under the terms of the GNU Lesser General Public
-   License as published by the Free Software Foundation; either
-   version 2.1 of the License, or (at your option) any later version.
 
-   The GNU C Library is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-   Lesser General Public License for more details.
+typedef unsigned char __u_char;
+typedef unsigned short int __u_short;
+typedef unsigned int __u_int;
+typedef unsigned long int __u_long;
 
-   You should have received a copy of the GNU Lesser General Public
-   License along with the GNU C Library; if not, write to the Free
-   Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307 USA.  */
 
-/*
- *	ISO C99 Standard 7.4: Character handling	<ctype.h>
- */
+typedef signed char __int8_t;
+typedef unsigned char __uint8_t;
+typedef signed short int __int16_t;
+typedef unsigned short int __uint16_t;
+typedef signed int __int32_t;
+typedef unsigned int __uint32_t;
 
-#ifndef	_CTYPE_H
-#define	_CTYPE_H	1
+typedef signed long int __int64_t;
+typedef unsigned long int __uint64_t;
 
-#include <features.h>
-#include <bits/types.h>
 
-__BEGIN_DECLS
 
-#ifndef _ISbit
-/* These are all the characteristics of characters.
-   If there get to be more than 16 distinct characteristics,
-   many things must be changed that use `unsigned short int's.
 
-   The characteristics are stored always in network byte order (big
-   endian).  We define the bit value interpretations here dependent on the
-   machine's byte order.  */
 
-# include <endian.h>
-# if __BYTE_ORDER == __BIG_ENDIAN
-#  define _ISbit(bit)	(1 << (bit))
-# else /* __BYTE_ORDER == __LITTLE_ENDIAN */
-#  define _ISbit(bit)	((bit) < 8 ? ((1 << (bit)) << 8) : ((1 << (bit)) >> 8))
-# endif
+
+
+typedef long int __quad_t;
+typedef unsigned long int __u_quad_t;
+# 121 "/usr/include/x86_64-linux-gnu/bits/types.h" 3 4
+# 1 "/usr/include/x86_64-linux-gnu/bits/typesizes.h" 1 3 4
+# 122 "/usr/include/x86_64-linux-gnu/bits/types.h" 2 3 4
+
+
+typedef unsigned long int __dev_t;
+typedef unsigned int __uid_t;
+typedef unsigned int __gid_t;
+typedef unsigned long int __ino_t;
+typedef unsigned long int __ino64_t;
+typedef unsigned int __mode_t;
+typedef unsigned long int __nlink_t;
+typedef long int __off_t;
+typedef long int __off64_t;
+typedef int __pid_t;
+typedef struct { int __val[2]; } __fsid_t;
+typedef long int __clock_t;
+typedef unsigned long int __rlim_t;
+typedef unsigned long int __rlim64_t;
+typedef unsigned int __id_t;
+typedef long int __time_t;
+typedef unsigned int __useconds_t;
+typedef long int __suseconds_t;
+
+typedef int __daddr_t;
+typedef int __key_t;
+
+
+typedef int __clockid_t;
+
+
+typedef void * __timer_t;
+
+
+typedef long int __blksize_t;
+
+
+
+
+typedef long int __blkcnt_t;
+typedef long int __blkcnt64_t;
+
+
+typedef unsigned long int __fsblkcnt_t;
+typedef unsigned long int __fsblkcnt64_t;
+
+
+typedef unsigned long int __fsfilcnt_t;
+typedef unsigned long int __fsfilcnt64_t;
+
+
+typedef long int __fsword_t;
+
+typedef long int __ssize_t;
+
+
+typedef long int __syscall_slong_t;
+
+typedef unsigned long int __syscall_ulong_t;
+
+
+
+typedef __off64_t __loff_t;
+typedef __quad_t *__qaddr_t;
+typedef char *__caddr_t;
+
+
+typedef long int __intptr_t;
+
+
+typedef unsigned int __socklen_t;
+# 29 "ctype.c" 2
+
+
+# 41 "ctype.c"
+# 1 "/usr/include/endian.h" 1 3 4
+# 36 "/usr/include/endian.h" 3 4
+# 1 "/usr/include/x86_64-linux-gnu/bits/endian.h" 1 3 4
+# 37 "/usr/include/endian.h" 2 3 4
+# 42 "ctype.c" 2
+
+
+
+
+
 
 enum
 {
-  _ISupper = _ISbit (0),	/* UPPERCASE.  */
-  _ISlower = _ISbit (1),	/* lowercase.  */
-  _ISalpha = _ISbit (2),	/* Alphabetic.  */
-  _ISdigit = _ISbit (3),	/* Numeric.  */
-  _ISxdigit = _ISbit (4),	/* Hexadecimal numeric.  */
-  _ISspace = _ISbit (5),	/* Whitespace.  */
-  _ISprint = _ISbit (6),	/* Printing.  */
-  _ISgraph = _ISbit (7),	/* Graphical.  */
-  _ISblank = _ISbit (8),	/* Blank (usually SPC and TAB).  */
-  _IScntrl = _ISbit (9),	/* Control character.  */
-  _ISpunct = _ISbit (10),	/* Punctuation.  */
-  _ISalnum = _ISbit (11)	/* Alphanumeric.  */
+  _ISupper = ((0) < 8 ? ((1 << (0)) << 8) : ((1 << (0)) >> 8)),
+  _ISlower = ((1) < 8 ? ((1 << (1)) << 8) : ((1 << (1)) >> 8)),
+  _ISalpha = ((2) < 8 ? ((1 << (2)) << 8) : ((1 << (2)) >> 8)),
+  _ISdigit = ((3) < 8 ? ((1 << (3)) << 8) : ((1 << (3)) >> 8)),
+  _ISxdigit = ((4) < 8 ? ((1 << (4)) << 8) : ((1 << (4)) >> 8)),
+  _ISspace = ((5) < 8 ? ((1 << (5)) << 8) : ((1 << (5)) >> 8)),
+  _ISprint = ((6) < 8 ? ((1 << (6)) << 8) : ((1 << (6)) >> 8)),
+  _ISgraph = ((7) < 8 ? ((1 << (7)) << 8) : ((1 << (7)) >> 8)),
+  _ISblank = ((8) < 8 ? ((1 << (8)) << 8) : ((1 << (8)) >> 8)),
+  _IScntrl = ((9) < 8 ? ((1 << (9)) << 8) : ((1 << (9)) >> 8)),
+  _ISpunct = ((10) < 8 ? ((1 << (10)) << 8) : ((1 << (10)) >> 8)),
+  _ISalnum = ((11) < 8 ? ((1 << (11)) << 8) : ((1 << (11)) >> 8))
 };
-#endif /* ! _ISbit  */
-
-/* These are defined in ctype-info.c.
-   The declarations here must match those in localeinfo.h.
-
-   In the thread-specific locale model (see `uselocale' in <locale.h>)
-   we cannot use global variables for these as was done in the past.
-   Instead, the following accessor functions return the address of
-   each variable, which is local to the current thread if multithreaded.
-
-   These point into arrays of 384, so they can be indexed by any `unsigned
-   char' value [0,255]; by EOF (-1); or by any `signed char' value
-   [-128,-1).  ISO C requires that the ctype functions work for `unsigned
-   char' values and for EOF; we also support negative `signed char' values
-   for broken old programs.  The case conversion arrays are of `int's
-   rather than `unsigned char's because tolower (EOF) must be EOF, which
-   doesn't fit into an `unsigned char'.  But today more important is that
-   the arrays are also used for multi-byte character sets.  */
+# 81 "ctype.c"
 extern __const unsigned short int **__ctype_b_loc (void)
-     __THROW __attribute__ ((__const));
+     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const));
 extern __const __int32_t **__ctype_tolower_loc (void)
-     __THROW __attribute__ ((__const));
+     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const));
 extern __const __int32_t **__ctype_toupper_loc (void)
-     __THROW __attribute__ ((__const));
+     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const));
+# 106 "ctype.c"
 
 
-#ifndef __cplusplus
-# define __isctype(c, type) \
-  ((*__ctype_b_loc ())[(int) (c)] & (unsigned short int) type)
-#elif defined __USE_EXTERN_INLINES
-# define __isctype_f(type) \
-  __extern_inline int							      \
-  is##type (int __c) __THROW						      \
-  {									      \
-    return (*__ctype_b_loc ())[(int) (__c)] & (unsigned short int) _IS##type; \
-  }
-#endif
-
-#define	__isascii(c)	(((c) & ~0x7f) == 0)	/* If C is a 7 bit value.  */
-#define	__toascii(c)	((c) & 0x7f)		/* Mask off high bits.  */
-
-#define	__exctype(name)	extern int name (int) __THROW
-
-__BEGIN_NAMESPACE_STD
-
-/* The following names are all functions:
-     int isCHARACTERISTIC(int c);
-   which return nonzero iff C has CHARACTERISTIC.
-   For the meaning of the characteristic names, see the `enum' above.  */
-__exctype (isalnum);
-__exctype (isalpha);
-__exctype (iscntrl);
-__exctype (isdigit);
-__exctype (islower);
-__exctype (isgraph);
-__exctype (isprint);
-__exctype (ispunct);
-__exctype (isspace);
-__exctype (isupper);
-__exctype (isxdigit);
 
 
-/* Return the lowercase version of C.  */
-extern int tolower (int __c) __THROW;
-
-/* Return the uppercase version of C.  */
-extern int toupper (int __c) __THROW;
-
-__END_NAMESPACE_STD
 
 
-/* ISO C99 introduced one new function.  */
-#ifdef	__USE_ISOC99
-__BEGIN_NAMESPACE_C99
+extern int isalnum (int) __attribute__ ((__nothrow__ , __leaf__));
+extern int isalpha (int) __attribute__ ((__nothrow__ , __leaf__));
+extern int iscntrl (int) __attribute__ ((__nothrow__ , __leaf__));
+extern int isdigit (int) __attribute__ ((__nothrow__ , __leaf__));
+extern int islower (int) __attribute__ ((__nothrow__ , __leaf__));
+extern int isgraph (int) __attribute__ ((__nothrow__ , __leaf__));
+extern int isprint (int) __attribute__ ((__nothrow__ , __leaf__));
+extern int ispunct (int) __attribute__ ((__nothrow__ , __leaf__));
+extern int isspace (int) __attribute__ ((__nothrow__ , __leaf__));
+extern int isupper (int) __attribute__ ((__nothrow__ , __leaf__));
+extern int isxdigit (int) __attribute__ ((__nothrow__ , __leaf__));
 
-__exctype (isblank);
 
-__END_NAMESPACE_C99
-#endif
 
-#ifdef __USE_GNU
-/* Test C for a set of character classes according to MASK.  */
-extern int isctype (int __c, int __mask) __THROW;
-#endif
+extern int tolower (int __c) __attribute__ ((__nothrow__ , __leaf__));
 
-#if defined __USE_SVID || defined __USE_MISC || defined __USE_XOPEN
 
-/* Return nonzero iff C is in the ASCII set
-   (i.e., is no more than 7 bits wide).  */
-extern int isascii (int __c) __THROW;
+extern int toupper (int __c) __attribute__ ((__nothrow__ , __leaf__));
 
-/* Return the part of C that is in the ASCII set
-   (i.e., the low-order 7 bits of C).  */
-extern int toascii (int __c) __THROW;
 
-/* These are the same as `toupper' and `tolower' except that they do not
-   check the argument for being in the range of a `char'.  */
-__exctype (_toupper);
-__exctype (_tolower);
-#endif /* Use SVID or use misc.  */
 
-/* This code is needed for the optimized mapping functions.  */
-#define __tobody(c, f, a, args) \
-  (__extension__							      \
-   ({ int __res;							      \
-      if (sizeof (c) > 1)						      \
-	{								      \
-	  if (__builtin_constant_p (c))					      \
-	    {								      \
-	      int __c = (c);						      \
-	      __res = __c < -128 || __c > 255 ? __c : (a)[__c];		      \
-	    }								      \
-	  else								      \
-	    __res = f args;						      \
-	}								      \
-      else								      \
-	__res = (a)[(int) (c)];						      \
-      __res; }))
 
-#if !defined __NO_CTYPE
-# ifdef __isctype_f
-__isctype_f (alnum)
-__isctype_f (alpha)
-__isctype_f (cntrl)
-__isctype_f (digit)
-__isctype_f (lower)
-__isctype_f (graph)
-__isctype_f (print)
-__isctype_f (punct)
-__isctype_f (space)
-__isctype_f (upper)
-__isctype_f (xdigit)
-#  ifdef __USE_ISOC99
-__isctype_f (blank)
-#  endif
-# elif defined __isctype
-# define isalnum(c)	__isctype((c), _ISalnum)
-# define isalpha(c)	__isctype((c), _ISalpha)
-# define iscntrl(c)	__isctype((c), _IScntrl)
-# define isdigit(c)	__isctype((c), _ISdigit)
-# define islower(c)	__isctype((c), _ISlower)
-# define isgraph(c)	__isctype((c), _ISgraph)
-# define isprint(c)	__isctype((c), _ISprint)
-# define ispunct(c)	__isctype((c), _ISpunct)
-# define isspace(c)	__isctype((c), _ISspace)
-# define isupper(c)	__isctype((c), _ISupper)
-# define isxdigit(c)	__isctype((c), _ISxdigit)
-#  ifdef __USE_ISOC99
-#   define isblank(c)	__isctype((c), _ISblank)
-#  endif
-# endif
 
-# ifdef __USE_EXTERN_INLINES
-__extern_inline int
-__NTH (tolower (int __c))
+
+
+
+extern int isblank (int) __attribute__ ((__nothrow__ , __leaf__));
+
+
+# 259 "ctype.c"
+# 1 "/usr/include/xlocale.h" 1 3 4
+# 27 "/usr/include/xlocale.h" 3 4
+typedef struct __locale_struct
 {
-  return __c >= -128 && __c < 256 ? (*__ctype_tolower_loc ())[__c] : __c;
-}
 
-__extern_inline int
-__NTH (toupper (int __c))
-{
-  return __c >= -128 && __c < 256 ? (*__ctype_toupper_loc ())[__c] : __c;
-}
-# endif
-
-# if __GNUC__ >= 2 && defined __OPTIMIZE__ && !defined __cplusplus
-#  define tolower(c)	__tobody (c, tolower, *__ctype_tolower_loc (), (c))
-#  define toupper(c)	__tobody (c, toupper, *__ctype_toupper_loc (), (c))
-# endif /* Optimizing gcc */
-
-# if defined __USE_SVID || defined __USE_MISC || defined __USE_XOPEN
-#  define isascii(c)	__isascii (c)
-#  define toascii(c)	__toascii (c)
-
-#  define _tolower(c)	((int) (*__ctype_tolower_loc ())[(int) (c)])
-#  define _toupper(c)	((int) (*__ctype_toupper_loc ())[(int) (c)])
-# endif
-
-#endif /* Not __NO_CTYPE.  */
+  struct __locale_data *__locales[13];
 
 
-#ifdef __USE_XOPEN2K8
-/* The concept of one static locale per category is not very well
-   thought out.  Many applications will need to process its data using
-   information from several different locales.  Another application is
-   the implementation of the internationalization handling in the
-   upcoming ISO C++ standard library.  To support this another set of
-   the functions using locale data exist which have an additional
-   argument.
-
-   Attention: all these functions are *not* standardized in any form.
-   This is a proof-of-concept implementation.  */
-
-/* Structure for reentrant locale using functions.  This is an
-   (almost) opaque type for the user level programs.  */
-# include <xlocale.h>
-
-/* These definitions are similar to the ones above but all functions
-   take as an argument a handle for the locale which shall be used.  */
-#  define __isctype_l(c, type, locale) \
-  ((locale)->__ctype_b[(int) (c)] & (unsigned short int) type)
-
-# define __exctype_l(name) 						      \
-  extern int name (int, __locale_t) __THROW
-
-/* The following names are all functions:
-     int isCHARACTERISTIC(int c, locale_t *locale);
-   which return nonzero iff C has CHARACTERISTIC.
-   For the meaning of the characteristic names, see the `enum' above.  */
-__exctype_l (isalnum_l);
-__exctype_l (isalpha_l);
-__exctype_l (iscntrl_l);
-__exctype_l (isdigit_l);
-__exctype_l (islower_l);
-__exctype_l (isgraph_l);
-__exctype_l (isprint_l);
-__exctype_l (ispunct_l);
-__exctype_l (isspace_l);
-__exctype_l (isupper_l);
-__exctype_l (isxdigit_l);
-
-__exctype_l (isblank_l);
+  const unsigned short int *__ctype_b;
+  const int *__ctype_tolower;
+  const int *__ctype_toupper;
 
 
-/* Return the lowercase version of C in locale L.  */
-extern int __tolower_l (int __c, __locale_t __l) __THROW;
-extern int tolower_l (int __c, __locale_t __l) __THROW;
-
-/* Return the uppercase version of C.  */
-extern int __toupper_l (int __c, __locale_t __l) __THROW;
-extern int toupper_l (int __c, __locale_t __l) __THROW;
-
-# if __GNUC__ >= 2 && defined __OPTIMIZE__ && !defined __cplusplus
-#  define __tolower_l(c, locale) \
-  __tobody (c, __tolower_l, (locale)->__ctype_tolower, (c, locale))
-#  define __toupper_l(c, locale) \
-  __tobody (c, __toupper_l, (locale)->__ctype_toupper, (c, locale))
-#  define tolower_l(c, locale)	__tolower_l ((c), (locale))
-#  define toupper_l(c, locale)	__toupper_l ((c), (locale))
-# endif	/* Optimizing gcc */
+  const char *__names[13];
+} *__locale_t;
 
 
-# ifndef __NO_CTYPE
-#  define __isalnum_l(c,l)	__isctype_l((c), _ISalnum, (l))
-#  define __isalpha_l(c,l)	__isctype_l((c), _ISalpha, (l))
-#  define __iscntrl_l(c,l)	__isctype_l((c), _IScntrl, (l))
-#  define __isdigit_l(c,l)	__isctype_l((c), _ISdigit, (l))
-#  define __islower_l(c,l)	__isctype_l((c), _ISlower, (l))
-#  define __isgraph_l(c,l)	__isctype_l((c), _ISgraph, (l))
-#  define __isprint_l(c,l)	__isctype_l((c), _ISprint, (l))
-#  define __ispunct_l(c,l)	__isctype_l((c), _ISpunct, (l))
-#  define __isspace_l(c,l)	__isctype_l((c), _ISspace, (l))
-#  define __isupper_l(c,l)	__isctype_l((c), _ISupper, (l))
-#  define __isxdigit_l(c,l)	__isctype_l((c), _ISxdigit, (l))
+typedef __locale_t locale_t;
+# 260 "ctype.c" 2
+# 273 "ctype.c"
+extern int isalnum_l (int, __locale_t) __attribute__ ((__nothrow__ , __leaf__));
+extern int isalpha_l (int, __locale_t) __attribute__ ((__nothrow__ , __leaf__));
+extern int iscntrl_l (int, __locale_t) __attribute__ ((__nothrow__ , __leaf__));
+extern int isdigit_l (int, __locale_t) __attribute__ ((__nothrow__ , __leaf__));
+extern int islower_l (int, __locale_t) __attribute__ ((__nothrow__ , __leaf__));
+extern int isgraph_l (int, __locale_t) __attribute__ ((__nothrow__ , __leaf__));
+extern int isprint_l (int, __locale_t) __attribute__ ((__nothrow__ , __leaf__));
+extern int ispunct_l (int, __locale_t) __attribute__ ((__nothrow__ , __leaf__));
+extern int isspace_l (int, __locale_t) __attribute__ ((__nothrow__ , __leaf__));
+extern int isupper_l (int, __locale_t) __attribute__ ((__nothrow__ , __leaf__));
+extern int isxdigit_l (int, __locale_t) __attribute__ ((__nothrow__ , __leaf__));
 
-#  define __isblank_l(c,l)	__isctype_l((c), _ISblank, (l))
+extern int isblank_l (int, __locale_t) __attribute__ ((__nothrow__ , __leaf__));
 
-#  if defined __USE_SVID || defined __USE_MISC
-#   define __isascii_l(c,l)	((l), __isascii (c))
-#   define __toascii_l(c,l)	((l), __toascii (c))
-#  endif
 
-#  define isalnum_l(c,l)	__isalnum_l ((c), (l))
-#  define isalpha_l(c,l)	__isalpha_l ((c), (l))
-#  define iscntrl_l(c,l)	__iscntrl_l ((c), (l))
-#  define isdigit_l(c,l)	__isdigit_l ((c), (l))
-#  define islower_l(c,l)	__islower_l ((c), (l))
-#  define isgraph_l(c,l)	__isgraph_l ((c), (l))
-#  define isprint_l(c,l)	__isprint_l ((c), (l))
-#  define ispunct_l(c,l)	__ispunct_l ((c), (l))
-#  define isspace_l(c,l)	__isspace_l ((c), (l))
-#  define isupper_l(c,l)	__isupper_l ((c), (l))
-#  define isxdigit_l(c,l)	__isxdigit_l ((c), (l))
 
-#  define isblank_l(c,l)	__isblank_l ((c), (l))
+extern int __tolower_l (int __c, __locale_t __l) __attribute__ ((__nothrow__ , __leaf__));
+extern int tolower_l (int __c, __locale_t __l) __attribute__ ((__nothrow__ , __leaf__));
 
-#  if defined __USE_SVID || defined __USE_MISC
-#   define isascii_l(c,l)	__isascii_l ((c), (l))
-#   define toascii_l(c,l)	__toascii_l ((c), (l))
-#  endif
 
-# endif /* Not __NO_CTYPE.  */
+extern int __toupper_l (int __c, __locale_t __l) __attribute__ ((__nothrow__ , __leaf__));
+extern int toupper_l (int __c, __locale_t __l) __attribute__ ((__nothrow__ , __leaf__));
+# 349 "ctype.c"
 
-#endif /* Use POSIX 2008.  */
-
-__END_DECLS
-
-#endif /* ctype.h  */
