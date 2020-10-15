@@ -370,7 +370,7 @@ top::Expr ::= ty::TypeName  init::InitList
 
   local refIdLookup::[RefIdItem] =
     case refId of
-    | just(rid) -> lookupRefId(rid, top.env)
+    | just(rid) -> lookupRefId(rid, init.env)
     | nothing() -> []
     end;
 
