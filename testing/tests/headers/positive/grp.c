@@ -1,209 +1,179 @@
-/* Copyright (C) 1991,1992,1995-2001,2003,2004,2010
-   Free Software Foundation, Inc.
-   This file is part of the GNU C Library.
-
-   The GNU C Library is free software; you can redistribute it and/or
-   modify it under the terms of the GNU Lesser General Public
-   License as published by the Free Software Foundation; either
-   version 2.1 of the License, or (at your option) any later version.
-
-   The GNU C Library is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-   Lesser General Public License for more details.
-
-   You should have received a copy of the GNU Lesser General Public
-   License along with the GNU C Library; if not, write to the Free
-   Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307 USA.  */
-
-/*
- *	POSIX Standard: 9.2.1 Group Database Access	<grp.h>
- */
-
-#ifndef	_GRP_H
-#define	_GRP_H	1
-
-#include <features.h>
-
-__BEGIN_DECLS
-
-#include <bits/types.h>
-
-#define __need_size_t
-#include <stddef.h>
+# 1 "grp.c"
+# 1 "<built-in>"
+# 1 "<command-line>"
+# 1 "/usr/include/stdc-predef.h" 1 3 4
+# 1 "<command-line>" 2
+# 1 "grp.c"
+# 27 "grp.c"
+# 1 "/usr/include/features.h" 1 3 4
+# 367 "/usr/include/features.h" 3 4
+# 1 "/usr/include/x86_64-linux-gnu/sys/cdefs.h" 1 3 4
+# 410 "/usr/include/x86_64-linux-gnu/sys/cdefs.h" 3 4
+# 1 "/usr/include/x86_64-linux-gnu/bits/wordsize.h" 1 3 4
+# 411 "/usr/include/x86_64-linux-gnu/sys/cdefs.h" 2 3 4
+# 368 "/usr/include/features.h" 2 3 4
+# 391 "/usr/include/features.h" 3 4
+# 1 "/usr/include/x86_64-linux-gnu/gnu/stubs.h" 1 3 4
+# 10 "/usr/include/x86_64-linux-gnu/gnu/stubs.h" 3 4
+# 1 "/usr/include/x86_64-linux-gnu/gnu/stubs-64.h" 1 3 4
+# 11 "/usr/include/x86_64-linux-gnu/gnu/stubs.h" 2 3 4
+# 392 "/usr/include/features.h" 2 3 4
+# 28 "grp.c" 2
 
 
-/* For the Single Unix specification we must define this type here.  */
-#if (defined __USE_XOPEN || defined __USE_XOPEN2K) && !defined __gid_t_defined
+
+# 1 "/usr/include/x86_64-linux-gnu/bits/types.h" 1 3 4
+# 27 "/usr/include/x86_64-linux-gnu/bits/types.h" 3 4
+# 1 "/usr/include/x86_64-linux-gnu/bits/wordsize.h" 1 3 4
+# 28 "/usr/include/x86_64-linux-gnu/bits/types.h" 2 3 4
+
+
+typedef unsigned char __u_char;
+typedef unsigned short int __u_short;
+typedef unsigned int __u_int;
+typedef unsigned long int __u_long;
+
+
+typedef signed char __int8_t;
+typedef unsigned char __uint8_t;
+typedef signed short int __int16_t;
+typedef unsigned short int __uint16_t;
+typedef signed int __int32_t;
+typedef unsigned int __uint32_t;
+
+typedef signed long int __int64_t;
+typedef unsigned long int __uint64_t;
+
+
+
+
+
+
+
+typedef long int __quad_t;
+typedef unsigned long int __u_quad_t;
+# 121 "/usr/include/x86_64-linux-gnu/bits/types.h" 3 4
+# 1 "/usr/include/x86_64-linux-gnu/bits/typesizes.h" 1 3 4
+# 122 "/usr/include/x86_64-linux-gnu/bits/types.h" 2 3 4
+
+
+typedef unsigned long int __dev_t;
+typedef unsigned int __uid_t;
+typedef unsigned int __gid_t;
+typedef unsigned long int __ino_t;
+typedef unsigned long int __ino64_t;
+typedef unsigned int __mode_t;
+typedef unsigned long int __nlink_t;
+typedef long int __off_t;
+typedef long int __off64_t;
+typedef int __pid_t;
+typedef struct { int __val[2]; } __fsid_t;
+typedef long int __clock_t;
+typedef unsigned long int __rlim_t;
+typedef unsigned long int __rlim64_t;
+typedef unsigned int __id_t;
+typedef long int __time_t;
+typedef unsigned int __useconds_t;
+typedef long int __suseconds_t;
+
+typedef int __daddr_t;
+typedef int __key_t;
+
+
+typedef int __clockid_t;
+
+
+typedef void * __timer_t;
+
+
+typedef long int __blksize_t;
+
+
+
+
+typedef long int __blkcnt_t;
+typedef long int __blkcnt64_t;
+
+
+typedef unsigned long int __fsblkcnt_t;
+typedef unsigned long int __fsblkcnt64_t;
+
+
+typedef unsigned long int __fsfilcnt_t;
+typedef unsigned long int __fsfilcnt64_t;
+
+
+typedef long int __fsword_t;
+
+typedef long int __ssize_t;
+
+
+typedef long int __syscall_slong_t;
+
+typedef unsigned long int __syscall_ulong_t;
+
+
+
+typedef __off64_t __loff_t;
+typedef __quad_t *__qaddr_t;
+typedef char *__caddr_t;
+
+
+typedef long int __intptr_t;
+
+
+typedef unsigned int __socklen_t;
+# 32 "grp.c" 2
+
+
+# 1 "/soft/gcc/4.9.2/ubuntuamd2010/lib/gcc/x86_64-linux-gnu/4.9.2/include/stddef.h" 1 3 4
+# 212 "/soft/gcc/4.9.2/ubuntuamd2010/lib/gcc/x86_64-linux-gnu/4.9.2/include/stddef.h" 3 4
+typedef long unsigned int size_t;
+# 35 "grp.c" 2
+
+
+
+
 typedef __gid_t gid_t;
-# define __gid_t_defined
-#endif
 
-/* The group structure.	 */
+
+
+
 struct group
   {
-    char *gr_name;		/* Group name.	*/
-    char *gr_passwd;		/* Password.	*/
-    __gid_t gr_gid;		/* Group ID.	*/
-    char **gr_mem;		/* Member list.	*/
+    char *gr_name;
+    char *gr_passwd;
+    __gid_t gr_gid;
+    char **gr_mem;
   };
-
-
-#if defined __USE_SVID || defined __USE_GNU
-# define __need_FILE
-# include <stdio.h>
-#endif
-
-
-#if defined __USE_SVID || defined __USE_BSD || defined __USE_XOPEN_EXTENDED
-/* Rewind the group-file stream.
-
-   This function is a possible cancellation point and therefore not
-   marked with __THROW.  */
-extern void setgrent (void);
-#endif
-
-#if defined __USE_SVID || defined __USE_BSD || defined __USE_XOPEN_EXTENDED \
-    || defined __USE_XOPEN2K8
-/* Close the group-file stream.
-
-   This function is a possible cancellation point and therefore not
-   marked with __THROW.  */
+# 73 "grp.c"
 extern void endgrent (void);
 
-/* Read an entry from the group-file stream, opening it if necessary.
 
-   This function is a possible cancellation point and therefore not
-   marked with __THROW.  */
+
+
+
 extern struct group *getgrent (void);
-#endif
-
-#ifdef	__USE_SVID
-/* Read a group entry from STREAM.
-
-   This function is not part of POSIX and therefore no official
-   cancellation point.  But due to similarity with an POSIX interface
-   or due to the implementation it is a cancellation point and
-   therefore not marked with __THROW.  */
-extern struct group *fgetgrent (FILE *__stream);
-#endif
-
-#ifdef __USE_GNU
-/* Write the given entry onto the given stream.
-
-   This function is not part of POSIX and therefore no official
-   cancellation point.  But due to similarity with an POSIX interface
-   or due to the implementation it is a cancellation point and
-   therefore not marked with __THROW.  */
-extern int putgrent (__const struct group *__restrict __p,
-		     FILE *__restrict __f);
-#endif
-
-/* Search for an entry with a matching group ID.
-
-   This function is a possible cancellation point and therefore not
-   marked with __THROW.  */
+# 107 "grp.c"
 extern struct group *getgrgid (__gid_t __gid);
 
-/* Search for an entry with a matching group name.
 
-   This function is a possible cancellation point and therefore not
-   marked with __THROW.  */
+
+
+
 extern struct group *getgrnam (__const char *__name);
-
-#if defined __USE_POSIX || defined __USE_MISC
-
-# ifdef __USE_MISC
-/* Reasonable value for the buffer sized used in the reentrant
-   functions below.  But better use `sysconf'.  */
-#  define NSS_BUFLEN_GROUP	1024
-# endif
-
-/* Reentrant versions of some of the functions above.
-
-   PLEASE NOTE: the `getgrent_r' function is not (yet) standardized.
-   The interface may change in later versions of this library.  But
-   the interface is designed following the principals used for the
-   other reentrant functions so the chances are good this is what the
-   POSIX people would choose.
-
-   This function is not part of POSIX and therefore no official
-   cancellation point.  But due to similarity with an POSIX interface
-   or due to the implementation it is a cancellation point and
-   therefore not marked with __THROW.  */
-
-# ifdef __USE_GNU
-extern int getgrent_r (struct group *__restrict __resultbuf,
-		       char *__restrict __buffer, size_t __buflen,
-		       struct group **__restrict __result);
-# endif
-
-/* Search for an entry with a matching group ID.
-
-   This function is a possible cancellation point and therefore not
-   marked with __THROW.  */
+# 146 "grp.c"
 extern int getgrgid_r (__gid_t __gid, struct group *__restrict __resultbuf,
-		       char *__restrict __buffer, size_t __buflen,
-		       struct group **__restrict __result);
+         char *__restrict __buffer, size_t __buflen,
+         struct group **__restrict __result);
 
-/* Search for an entry with a matching group name.
 
-   This function is a possible cancellation point and therefore not
-   marked with __THROW.  */
+
+
+
 extern int getgrnam_r (__const char *__restrict __name,
-		       struct group *__restrict __resultbuf,
-		       char *__restrict __buffer, size_t __buflen,
-		       struct group **__restrict __result);
+         struct group *__restrict __resultbuf,
+         char *__restrict __buffer, size_t __buflen,
+         struct group **__restrict __result);
+# 207 "grp.c"
 
-# ifdef	__USE_SVID
-/* Read a group entry from STREAM.  This function is not standardized
-   an probably never will.
-
-   This function is not part of POSIX and therefore no official
-   cancellation point.  But due to similarity with an POSIX interface
-   or due to the implementation it is a cancellation point and
-   therefore not marked with __THROW.  */
-extern int fgetgrent_r (FILE *__restrict __stream,
-			struct group *__restrict __resultbuf,
-			char *__restrict __buffer, size_t __buflen,
-			struct group **__restrict __result);
-# endif
-
-#endif	/* POSIX or reentrant */
-
-
-#ifdef	__USE_BSD
-
-# define __need_size_t
-# include <stddef.h>
-
-/* Set the group set for the current user to GROUPS (N of them).  */
-extern int setgroups (size_t __n, __const __gid_t *__groups) __THROW;
-
-/* Store at most *NGROUPS members of the group set for USER into
-   *GROUPS.  Also include GROUP.  The actual number of groups found is
-   returned in *NGROUPS.  Return -1 if the if *NGROUPS is too small.
-
-   This function is not part of POSIX and therefore no official
-   cancellation point.  But due to similarity with an POSIX interface
-   or due to the implementation it is a cancellation point and
-   therefore not marked with __THROW.  */
-extern int getgrouplist (__const char *__user, __gid_t __group,
-			 __gid_t *__groups, int *__ngroups);
-
-/* Initialize the group set for the current user
-   by reading the group database and using all groups
-   of which USER is a member.  Also include GROUP.
-
-   This function is not part of POSIX and therefore no official
-   cancellation point.  But due to similarity with an POSIX interface
-   or due to the implementation it is a cancellation point and
-   therefore not marked with __THROW.  */
-extern int initgroups (__const char *__user, __gid_t __group);
-
-#endif /* Use BSD.  */
-
-__END_DECLS
-
-#endif /* grp.h  */

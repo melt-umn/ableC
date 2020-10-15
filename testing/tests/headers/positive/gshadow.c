@@ -1,131 +1,111 @@
-/* Copyright (C) 2009 Free Software Foundation, Inc.
-   This file is part of the GNU C Library.
+# 1 "gshadow.c"
+# 1 "<built-in>"
+# 1 "<command-line>"
+# 1 "/usr/include/stdc-predef.h" 1 3 4
+# 1 "<command-line>" 2
+# 1 "gshadow.c"
+# 24 "gshadow.c"
+# 1 "/usr/include/features.h" 1 3 4
+# 367 "/usr/include/features.h" 3 4
+# 1 "/usr/include/x86_64-linux-gnu/sys/cdefs.h" 1 3 4
+# 410 "/usr/include/x86_64-linux-gnu/sys/cdefs.h" 3 4
+# 1 "/usr/include/x86_64-linux-gnu/bits/wordsize.h" 1 3 4
+# 411 "/usr/include/x86_64-linux-gnu/sys/cdefs.h" 2 3 4
+# 368 "/usr/include/features.h" 2 3 4
+# 391 "/usr/include/features.h" 3 4
+# 1 "/usr/include/x86_64-linux-gnu/gnu/stubs.h" 1 3 4
+# 10 "/usr/include/x86_64-linux-gnu/gnu/stubs.h" 3 4
+# 1 "/usr/include/x86_64-linux-gnu/gnu/stubs-64.h" 1 3 4
+# 11 "/usr/include/x86_64-linux-gnu/gnu/stubs.h" 2 3 4
+# 392 "/usr/include/features.h" 2 3 4
+# 25 "gshadow.c" 2
 
-   The GNU C Library is free software; you can redistribute it and/or
-   modify it under the terms of the GNU Lesser General Public
-   License as published by the Free Software Foundation; either
-   version 2.1 of the License, or (at your option) any later version.
-
-   The GNU C Library is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-   Lesser General Public License for more details.
-
-   You should have received a copy of the GNU Lesser General Public
-   License along with the GNU C Library; if not, write to the Free
-   Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307 USA.  */
-
-/* Declaration of types and functions for shadow group suite.  */
-
-#ifndef _GSHADOW_H
-#define _GSHADOW_H	1
-
-#include <features.h>
-
-#include <paths.h>
-
-#define	__need_FILE
-#include <stdio.h>
-#define __need_size_t
-#include <stddef.h>
-
-/* Path to the user database files.  */
-#define	GSHADOW _PATH_GSHADOW
+# 1 "/usr/include/paths.h" 1 3 4
+# 27 "gshadow.c" 2
 
 
-__BEGIN_DECLS
+# 1 "/usr/include/stdio.h" 1 3 4
+# 44 "/usr/include/stdio.h" 3 4
+struct _IO_FILE;
 
-/* Structure of the group file.  */
+
+
+typedef struct _IO_FILE FILE;
+
+
+
+
+
+# 30 "gshadow.c" 2
+
+# 1 "/soft/gcc/4.9.2/ubuntuamd2010/lib/gcc/x86_64-linux-gnu/4.9.2/include/stddef.h" 1 3 4
+# 212 "/soft/gcc/4.9.2/ubuntuamd2010/lib/gcc/x86_64-linux-gnu/4.9.2/include/stddef.h" 3 4
+typedef long unsigned int size_t;
+# 32 "gshadow.c" 2
+
+
+
+
+
+
+
+
 struct sgrp
   {
-    char *sg_namp;		/* Group name.  */
-    char *sg_passwd;		/* Encrypted password.  */
-    char **sg_adm;		/* Group administrator list.  */
-    char **sg_mem;		/* Group member list.  */
+    char *sg_namp;
+    char *sg_passwd;
+    char **sg_adm;
+    char **sg_mem;
   };
-
-
-/* Open database for reading.
-
-   This function is not part of POSIX and therefore no official
-   cancellation point.  But due to similarity with an POSIX interface
-   or due to the implementation it is a cancellation point and
-   therefore not marked with __THROW.  */
+# 55 "gshadow.c"
 extern void setsgent (void);
 
-/* Close database.
 
-   This function is not part of POSIX and therefore no official
-   cancellation point.  But due to similarity with an POSIX interface
-   or due to the implementation it is a cancellation point and
-   therefore not marked with __THROW.  */
+
+
+
+
+
 extern void endsgent (void);
 
-/* Get next entry from database, perhaps after opening the file.
 
-   This function is not part of POSIX and therefore no official
-   cancellation point.  But due to similarity with an POSIX interface
-   or due to the implementation it is a cancellation point and
-   therefore not marked with __THROW.  */
+
+
+
+
+
 extern struct sgrp *getsgent (void);
 
-/* Get shadow entry matching NAME.
 
-   This function is not part of POSIX and therefore no official
-   cancellation point.  But due to similarity with an POSIX interface
-   or due to the implementation it is a cancellation point and
-   therefore not marked with __THROW.  */
+
+
+
+
+
 extern struct sgrp *getsgnam (__const char *__name);
 
-/* Read shadow entry from STRING.
 
-   This function is not part of POSIX and therefore no official
-   cancellation point.  But due to similarity with an POSIX interface
-   or due to the implementation it is a cancellation point and
-   therefore not marked with __THROW.  */
+
+
+
+
+
 extern struct sgrp *sgetsgent (__const char *__string);
 
-/* Read next shadow entry from STREAM.
 
-   This function is not part of POSIX and therefore no official
-   cancellation point.  But due to similarity with an POSIX interface
-   or due to the implementation it is a cancellation point and
-   therefore not marked with __THROW.  */
+
+
+
+
+
 extern struct sgrp *fgetsgent (FILE *__stream);
 
-/* Write line containing shadow password entry to stream.
 
-   This function is not part of POSIX and therefore no official
-   cancellation point.  But due to similarity with an POSIX interface
-   or due to the implementation it is a cancellation point and
-   therefore not marked with __THROW.  */
+
+
+
+
+
 extern int putsgent (__const struct sgrp *__g, FILE *__stream);
+# 129 "gshadow.c"
 
-
-#ifdef __USE_MISC
-/* Reentrant versions of some of the functions above.
-
-   These functions are not part of POSIX and therefore no official
-   cancellation point.  But due to similarity with an POSIX interface
-   or due to the implementation they are cancellation points and
-   therefore not marked with __THROW.  */
-extern int getsgent_r (struct sgrp *__result_buf, char *__buffer,
-		       size_t __buflen, struct sgrp **__result);
-
-extern int getsgnam_r (__const char *__name, struct sgrp *__result_buf,
-		       char *__buffer, size_t __buflen,
-		       struct sgrp **__result);
-
-extern int sgetsgent_r (__const char *__string, struct sgrp *__result_buf,
-			char *__buffer, size_t __buflen,
-			struct sgrp **__result);
-
-extern int fgetsgent_r (FILE *__stream, struct sgrp *__result_buf,
-			char *__buffer, size_t __buflen,
-			struct sgrp **__result);
-#endif	/* misc */
-
-__END_DECLS
-
-#endif /* gshadow.h */
