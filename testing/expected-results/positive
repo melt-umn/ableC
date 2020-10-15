@@ -349,7 +349,7 @@ Failures:
                         tests/kframework/positive/j079h.c
 
 Positive tests:
-Pass: 310
+Pass: 312
 Fail: 17
 
 Negative tests:
@@ -357,6 +357,6 @@ Pass: 0
 Fail: 0
 
 Summary:
-Pass: 310
+Pass: 312
 Fail: 17
 
