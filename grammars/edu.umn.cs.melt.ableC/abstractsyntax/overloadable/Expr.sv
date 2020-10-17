@@ -124,12 +124,26 @@ top::host:Expr ::= ty::host:TypeName  init::host:InitList
       host:decTypeName(ty),
       init,
       location=top.location);
+  local tmpName::host:Name = host:name("_res_" ++ toString(genInt()), location=top.location);
   forwards to
-    case t.compoundLiteralProd of
+    case t.objectInitProd of
     | just(prod) ->
        host:transformedExpr(
          host,
-         prod(ty, init, top.location),
+         host:stmtExpr(
+           host:declStmt(
+             host:variableDecls(
+               host:nilStorageClass(), host:nilAttribute(),
+               ty.host:bty,
+               host:consDeclarator(
+                 host:declarator(
+                   tmpName,
+                   ty.host:mty,
+                   host:nilAttribute(),
+                   host:justInitializer(prod(init, top.location))),
+                 host:nilDeclarator()))),
+           host:declRefExpr(tmpName, location=top.location),
+           location=top.location),
          location=top.location)
     | nothing() -> host
     end;
