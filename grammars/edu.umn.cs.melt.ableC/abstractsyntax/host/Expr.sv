@@ -360,11 +360,40 @@ top::Expr ::= ty::TypeName  init::InitList
   propagate host, errors, globalDecls, functionDecls, defs;
   top.pp = parens( ppConcat([parens(ty.pp), text("{"), ppImplode(text(", "), init.pps), text("}")]) );
   top.freeVariables := ty.freeVariables ++ removeDefsFromNames(ty.defs, init.freeVariables);
-  top.typerep = ty.typerep; -- TODO: actually may involve learning from the initializer e.g. the length of the array.
+  top.typerep = init.typerep;
 
+  local refId::Maybe<String> =
+    case ty.typerep of
+    | extType( _, e) -> e.maybeRefId
+    | _ -> nothing()
+    end;
+
+  local refIdLookup::[RefIdItem] =
+    case refId of
+    | just(rid) -> lookupRefId(rid, init.env)
+    | nothing() -> []
+    end;
+
+  top.errors <-
+    case ty.typerep, refId, refIdLookup of
+    | errorType(), _, _ -> []
+    -- Check that expected type for this initializer is some sort of object type or a scalar with a single init
+    | arrayType(_, _, _, _), _, _ -> []
+    | t, nothing(), _ when init.maxIndex < 0 -> [err(top.location, s"Empty scalar initializer for type ${showType(t)}.")]
+    -- Check that this type has a definition
+    | t, just(_), [] -> [err(top.location, s"${showType(t)} does not have a definition.")]
+    | _, _, _ -> []
+    end;
+
+  init.initIndex = 0;
   init.env = addEnv(ty.defs, ty.env);
-  
-  -- TODO: type checking!!
+  init.tagEnvIn =
+    case refIdLookup of
+    | item :: _ -> item.tagEnv
+    | [] -> emptyEnv()
+    end;
+  init.expectedType = ty.typerep;
+  init.expectedTypes = fromMaybe([ty.typerep], objectMembers(top.env, ty.typerep));
 }
 abstract production predefinedFuncExpr
 top::Expr ::= 

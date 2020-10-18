@@ -1,6 +1,9 @@
 import edu:umn:cs:melt:ableC:abstractsyntax:env;
 import silver:langutil:pp;
 
+-- TODO: Most of these are essentially obsolete with the use of silver-ableC,
+-- we should remove them at some point.
+
 -- Decl --
 
 -- int n ;
@@ -23,7 +26,7 @@ Stmt ::= n::String val::String l::Location
   return mkIntDeclGeneral( 
            n, 
            justInitializer(
-             exprInitializer( mkIntExpr(val, l) ) ),
+             exprInitializer( mkIntExpr(val, l), location=l ) ),
            l);
 }
 
@@ -33,7 +36,7 @@ Stmt ::= n::String val::Expr l::Location
   return mkIntDeclGeneral( 
            n, 
            justInitializer(
-             exprInitializer( val ) ),
+             exprInitializer( val, location=l ) ),
            l);
 }
 
@@ -79,7 +82,7 @@ Stmt ::= n::String typ::Type v::Expr l::Location
             variableDecls(nilStorageClass(), nilAttribute(), bty,
               consDeclarator( 
                 declarator( name(n, location=l), baseTypeExpr(), nilAttribute(), 
-                    justInitializer(exprInitializer(v)) ) , 
+                    justInitializer(exprInitializer(v, location=l)) ) , 
                 nilDeclarator() )
             )
           ) ;
@@ -91,7 +94,7 @@ Decl ::= n::String val::String l::Location
   return makeDeclIntGeneral( 
            n, 
            justInitializer(
-             exprInitializer( mkIntExpr(val, l) ) ),
+             exprInitializer( mkIntExpr(val, l), location=l ) ),
            l);
 }
 function makeDeclIntGeneral

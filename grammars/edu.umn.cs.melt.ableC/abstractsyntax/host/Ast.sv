@@ -70,6 +70,7 @@ flowtype localDefs {decorate} on
 flowtype typerep {decorate} on
   Declarator, FunctionDecl, ParameterDecl, StructDeclarator, EnumItem,
   Expr,
+  MaybeInitializer, Initializer, InitList, Designator,
   TypeName, BaseTypeExpr, TypeModifierExpr,
   ExprOrTypeName;
 

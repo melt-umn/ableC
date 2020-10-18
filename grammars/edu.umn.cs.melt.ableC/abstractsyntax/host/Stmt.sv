@@ -90,7 +90,7 @@ top::Stmt ::= t::Type n::Name init::Expr
             n,
             baseTypeExpr(),
             nilAttribute(),
-            justInitializer(exprInitializer(init))),
+            justInitializer(exprInitializer(init, location=init.location))),
           nilDeclarator())));
         
 }

@@ -36,11 +36,11 @@ concrete productions top::ConstantExpr_c
 closed nonterminal Initializer_c with location, ast<ast:Initializer>; 
 concrete productions top::Initializer_c
 | e::AssignExpr_c
-    { top.ast = ast:exprInitializer(e.ast); }
+    { top.ast = ovrld:exprInitializer(e.ast, location=top.location); }
 | '{' il::InitializerList_c '}'
-    { top.ast = ast:objectInitializer(ast:foldInit(il.ast)); }
+    { top.ast = ovrld:objectInitializer(ast:foldInit(il.ast), location=top.location); }
 | '{' il::InitializerList_c ',' '}' 
-    { top.ast = ast:objectInitializer(ast:foldInit(il.ast)); }
+    { top.ast = ovrld:objectInitializer(ast:foldInit(il.ast), location=top.location); }
 
 
 -- "Non-exported" nonterminals
@@ -461,9 +461,9 @@ concrete productions top::PostfixExpr_c
       op.expr = e.ast;
       op.exprLocation = top.location; }
 | '(' ty::TypeName_c ')' '{' il::InitializerList_c '}'
-    { top.ast = ast:compoundLiteralExpr(ty.ast, ast:foldInit(il.ast), location=top.location); }
+    { top.ast = ovrld:compoundLiteralExpr(ty.ast, ast:foldInit(il.ast), location=top.location); }
 | '(' ty::TypeName_c ')' '{' il::InitializerList_c ',' '}'
-    { top.ast = ast:compoundLiteralExpr(ty.ast, ast:foldInit(il.ast), location=top.location); }
+    { top.ast = ovrld:compoundLiteralExpr(ty.ast, ast:foldInit(il.ast), location=top.location); }
 
 closed nonterminal PostfixOp_c with location, ast<ast:Expr>, expr, exprLocation;
 concrete productions top::PostfixOp_c
