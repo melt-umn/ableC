@@ -61,7 +61,7 @@ lexer class Scoped
         case shiftableGlobals of
         | [id] -> id
         | ids when lookupBy(terminalSetEq, ids, globalPreferences) matches just(id) -> id
-        | [] -> disambiguationFailure
+        | _ -> disambiguationFailure
         end
       | _ when containsBy(terminalIdEq, Identifier_t, shiftable) -> Identifier_t
       | _ when containsBy(terminalIdEq, TypeName_t, shiftable) -> TypeName_t
