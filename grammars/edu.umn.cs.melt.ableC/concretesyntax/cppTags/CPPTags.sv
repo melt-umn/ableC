@@ -1,5 +1,5 @@
 grammar edu:umn:cs:melt:ableC:concretesyntax:cppTags;
-
+{-
 -- After the file name comes zero or more flags, which are `1', `2',
 -- `3', or `4'.  If there are multiple flags, spaces separate them.  Here
 -- is what the flags mean:
@@ -22,8 +22,13 @@ synthesized attribute tagIsSystem :: Boolean;
 --     This indicates that the following text should be treated as being
 --     wrapped in an implicit `extern "C"' block.
 synthesized attribute tagIsExternC :: Boolean;
+-}
 
 -- I give up!
+
+parser attribute inSystemHeader::Boolean
+  action { inSystemHeader = false; };
+
 ignore terminal CPP_Location_Tag_t /\#\ [0-9]+\ \"[^\"]+\"[\ 0-9]*([\r]?[\n]?)/
   action {
     filename = 
@@ -37,6 +42,16 @@ ignore terminal CPP_Location_Tag_t /\#\ [0-9]+\ \"[^\"]+\"[\ 0-9]*([\r]?[\n]?)/
         indexOf("\"", lexeme) - 1, -- end before <space>"
         lexeme));
     column = 0;
+    
+    local flags::[Integer] =
+      map(\ f::String -> toInteger(f),
+        filter(isDigit,
+          explode(" ",
+            substring(
+              lastIndexOf("\"", lexeme), -- after "
+              length(lexeme),            -- rest of the token
+              lexeme))));
+    inSystemHeader = containsBy(\ a::Integer b::Integer -> a == b, 3, flags);
   };
 
 {-

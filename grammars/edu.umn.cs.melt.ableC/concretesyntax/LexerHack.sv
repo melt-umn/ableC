@@ -42,32 +42,30 @@ lexer class Scoped
         else nothing()
       | nothing() -> nothing()
       end;
+    local shiftableGlobals::[TerminalId] = intersectBy(terminalIdEq, shiftable, Global);
     
     {- In order of preference:
      - * Looked-up terminal from context
-     - * Any valid, unambigous terminal from Global lexer class
+     - * Any valid, unambigous terminal from Global lexer class (if not in a system header file)
      -   * If there are more than one, check the globalPrerences parser attribute
-     -   * Otherwise, fail
+     -   * Otherwise, fail (this is a conflict between two extensions that must be resolved with explict preferences/prefixes)
      - * Identifier_t, if valid
      - * TypeName_t, if valid
      - * Any (arbitrary) thing that is valid: if the parse succeeds there will
-     -   be a semantic error.
+     -   be a (better) semantic error.
      -}
     pluck
-      case lookupResult, intersectBy(terminalIdEq, shiftable, Global) of
-      | just(id), _ -> id
-      | nothing(), [id] -> id
-      | nothing(), [] ->
-        if containsBy(terminalIdEq, Identifier_t, shiftable)
-        then Identifier_t
-        else if containsBy(terminalIdEq, TypeName_t, shiftable)
-        then TypeName_t
-        else head(shiftable) -- Always has length >= 2
-      | nothing(), ids ->
-        case lookupBy(terminalSetEq, ids, globalPreferences) of
-        | just(id) -> id
-        | nothing() -> disambiguationFailure
+      case lookupResult of
+      | just(id) -> id
+      | nothing() when !inSystemHeader && !null(shiftableGlobals) ->
+        case shiftableGlobals of
+        | [id] -> id
+        | ids when lookupBy(terminalSetEq, ids, globalPreferences) matches just(id) -> id
+        | [] -> disambiguationFailure
         end
+      | _ when containsBy(terminalIdEq, Identifier_t, shiftable) -> Identifier_t
+      | _ when containsBy(terminalIdEq, TypeName_t, shiftable) -> TypeName_t
+      | _ -> head(shiftable) -- Always has length >= 2
       end;
   };
 
