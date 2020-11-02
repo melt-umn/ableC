@@ -29,30 +29,38 @@ synthesized attribute tagIsExternC :: Boolean;
 parser attribute inSystemHeader::Boolean
   action { inSystemHeader = false; };
 
-ignore terminal CPP_Location_Tag_t /\#\ [0-9]+\ \"[^\"]+\"[\ 0-9]*([\r]?[\n]?)/
-  action {
-    filename = 
-      substring(
-        indexOf("\"", lexeme) + 1, -- after "
-        lastIndexOf("\"", lexeme), -- end before "
-        lexeme);
-    line = toInteger(
-      substring(
-        2, -- after #<space>
-        indexOf("\"", lexeme) - 1, -- end before <space>"
-        lexeme));
-    column = 0;
-    
-    local flags::[Integer] =
-      map(\ f::String -> toInteger(f),
-        filter(isDigit,
-          explode(" ",
-            substring(
-              lastIndexOf("\"", lexeme), -- after "
-              length(lexeme),            -- rest of the token
-              lexeme))));
-    inSystemHeader = containsBy(\ a::Integer b::Integer -> a == b, 3, flags);
-  };
+-- Annoying hack: semantic actions for ignore terminals get executed after the
+-- disambiguation for the following real terminals.  This is an issue since we
+-- depend on the context from CPP tags for disambiguating identifiers.
+-- Workaround: define a second ignore terminal that is ambiguous with this one,
+-- and set the context in a disambiguation function.
+ignore terminal CPP_Location_Tag_t /\#\ [0-9]+\ \"[^\"]+\"[\ 0-9]*([\r]?[\n]?)/;
+ignore terminal CPP_Location_Tag2_t /\#\ [0-9]+\ \"[^\"]+\"[\ 0-9]*([\r]?[\n]?)/;
+disambiguate CPP_Location_Tag_t, CPP_Location_Tag2_t {
+  filename =
+    substring(
+      indexOf("\"", lexeme) + 1, -- after "
+      lastIndexOf("\"", lexeme), -- end before "
+      lexeme);
+  line = toInteger(
+    substring(
+      2, -- after #<space>
+      indexOf("\"", lexeme) - 1, -- end before <space>"
+      lexeme));
+  column = 0;
+  
+  local flags::[Integer] =
+    map(\ f::String -> toInteger(f),
+      filter(isDigit,
+        explode(" ",
+          substring(
+            lastIndexOf("\"", lexeme), -- after "
+            length(lexeme),            -- rest of the token
+            lexeme))));
+  inSystemHeader = containsBy(\ a::Integer b::Integer -> a == b, 3, flags);
+  
+  pluck CPP_Location_Tag_t;
+}
 
 {-
 terminal Newline_t /\n/;
