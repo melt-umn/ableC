@@ -322,6 +322,7 @@ Positive test       - PASS:             tests/kframework/positive/j504a.c
 Positive test       - PASS:             tests/kframework/positive/j506a.c
 Positive test       - PASS:             tests/melt/positive/1.c
 Positive test       - PASS:             tests/melt/positive/asm-1.c
+Positive test       - PASS:             tests/melt/positive/empty_compound_init.c
 Positive test       - PASS:             tests/melt/positive/expr-stmt-types.c
 Positive test       - PASS:             tests/melt/positive/struct-init.c
 Positive test       - PASS:             tests/melt/positive/struct-init2.c
@@ -349,7 +350,7 @@ Failures:
                         tests/kframework/positive/j079h.c
 
 Positive tests:
-Pass: 312
+Pass: 313
 Fail: 17
 
 Negative tests:
@@ -357,6 +358,6 @@ Pass: 0
 Fail: 0
 
 Summary:
-Pass: 312
+Pass: 313
 Fail: 17
 
