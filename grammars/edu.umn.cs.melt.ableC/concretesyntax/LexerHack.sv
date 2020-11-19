@@ -46,17 +46,24 @@ lexer class Scoped
     
     {- In order of preference:
      - * Looked-up terminal from context
-     - * Any valid, unambigous terminal from Global lexer class (if not in a system header file)
+     -   * If the name has previously been defined as a TypeName_t and we have already seen a
+           specifier in the current specifier list, then return Identifier_t instead (needed to
+           handle C11 typedef re-declarations)
+     - * Any valid, unambigous terminal from the Global lexer class (if not in a system header file)
      -   * If there are more than one, check the globalPrerences parser attribute
-     -   * Otherwise, fail (this is a conflict between two extensions that must be resolved with explict preferences/prefixes)
+     -   * Otherwise, fail (this is a conflict between two extensions that must be resolved with
+           explict preferences/prefixes)
      - * Identifier_t, if valid
      - * TypeName_t, if valid
      - * Any (arbitrary) thing that is valid: if the parse succeeds there will
-     -   be a (better) semantic error.
+     -   be a semantic error that is better than a syntax error.
      -}
     pluck
       case lookupResult of
-      | just(id) -> id
+      | just(id) ->
+        if id == TypeName_t && seenTypeSpecifier && containsBy(terminalIdEq, Identifier_t, shiftable)
+        then Identifier_t
+        else id
       | nothing() when !inSystemHeader && !null(shiftableGlobals) ->
         case shiftableGlobals of
         | [id] -> id
