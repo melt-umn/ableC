@@ -61,7 +61,7 @@ lexer class Scoped
     pluck
       case lookupResult of
       | just(id) ->
-        if id == TypeName_t && seenTypeSpecifier
+        if id == TypeName_t && seenTypeSpecifier && containsBy(terminalIdEq, Identifier_t, shiftable)
         then Identifier_t
         else id
       | nothing() when !inSystemHeader && !null(shiftableGlobals) ->
