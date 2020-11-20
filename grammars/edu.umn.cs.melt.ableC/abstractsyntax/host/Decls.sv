@@ -664,7 +664,8 @@ abstract production structDecl
 top::StructDecl ::= attrs::Attributes  name::MaybeName  dcls::StructItemList
 {
   top.maybename = name.maybename;
-  top.pp = ppConcat([text("struct "), ppAttributes(attrs), name.pp,
+  top.pp = ppConcat([text("struct "), ppAttributes(attrs),
+    if name.hasName then name.pp else text("anon_" ++ name.anonTagRefId),
     -- DEBUGGING
     --text("/*" ++ top.refId ++ "*/"),
     -- END DEBUGGING
@@ -689,6 +690,13 @@ top::StructDecl ::= attrs::Attributes  name::MaybeName  dcls::StructItemList
 -}
 
   local maybeAttribRefIdName::Maybe<String> = orElse(attrs.maybeRefId, top.givenRefId);
+  -- Derive the default refId from the location - this needs to be fixed since
+  -- we don't have a tag name available for the lookup.
+  -- Somewhat brittle with generated locations, but by convention extensions
+  -- shouldn't be forwarding to anon structs anyway.
+  name.anonTagRefId =
+    sflatMap(\ s::String -> if isAlpha(s) || isDigit(s) then s else "_", explode("", top.location.filename)) ++
+    "_" ++ toString(top.location.line) ++ "_" ++ toString(top.location.column);
   top.refId = fromMaybe(name.tagRefId, maybeAttribRefIdName);
   
   top.tagEnv = addEnv(dcls.localDefs, emptyEnv());
@@ -723,7 +731,8 @@ abstract production unionDecl
 top::UnionDecl ::= attrs::Attributes  name::MaybeName  dcls::StructItemList
 {
   top.maybename = name.maybename;
-  top.pp = ppConcat([text("union "), ppAttributes(attrs), name.pp, 
+  top.pp = ppConcat([text("union "), ppAttributes(attrs),
+    if name.hasName then name.pp else text("anon_" ++ name.anonTagRefId),
     -- DEBUGGING
     --text("/*" ++ top.refId ++ "*/"),
     -- END DEBUGGING
@@ -731,6 +740,9 @@ top::UnionDecl ::= attrs::Attributes  name::MaybeName  dcls::StructItemList
     text("}")]);
 
   local maybeAttribRefIdName::Maybe<String> = orElse(attrs.maybeRefId, top.givenRefId);
+  name.anonTagRefId =
+    sflatMap(\ s::String -> if isAlpha(s) || isDigit(s) then s else "_", explode("", top.location.filename)) ++
+    "_" ++ toString(top.location.line) ++ "_" ++ toString(top.location.column);
   top.refId = fromMaybe(name.tagRefId, maybeAttribRefIdName);
   
   top.tagEnv = addEnv(dcls.localDefs, emptyEnv());
@@ -915,8 +927,7 @@ top::StructItem ::= d::StructDecl
 {
   propagate host;
   top.pp = cat(d.pp, semi());
-  top.fieldNames :=
-    [right(refIdExtType(structSEU(), fromMaybe("<anon>", mapMaybe((.name), d.maybename)), d.refId))];
+  top.fieldNames := [right(refIdExtType(structSEU(), mapMaybe((.name), d.maybename), d.refId))];
   
   d.isLast = top.isLast;
   d.givenRefId = nothing();
@@ -926,8 +937,7 @@ top::StructItem ::= d::UnionDecl
 {
   propagate host;
   top.pp = cat(d.pp, semi());
-  top.fieldNames :=
-    [right(refIdExtType(unionSEU(), fromMaybe("<anon>", mapMaybe((.name), d.maybename)), d.refId))];
+  top.fieldNames := [right(refIdExtType(unionSEU(), mapMaybe((.name), d.maybename), d.refId))];
   
   d.isLast = top.isLast;
   d.givenRefId = nothing();

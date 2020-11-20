@@ -106,7 +106,7 @@ top::host:Expr ::= lhs::host:Expr  deref::Boolean  rhs::host:Name
     | just(prod) ->
        host:transformedExpr(
          host,
-         prod(lhs, rhs, top.location),
+         prod(host:decExpr(lhs, location=lhs.location), rhs, top.location),
          location=top.location)
     | nothing() -> host
     end;

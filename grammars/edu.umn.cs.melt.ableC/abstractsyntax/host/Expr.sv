@@ -381,7 +381,7 @@ top::Expr ::= ty::TypeName  init::InitList
     | arrayType(_, _, _, _), _, _ -> []
     | t, nothing(), _ when init.maxIndex < 0 -> [err(top.location, s"Empty scalar initializer for type ${showType(t)}.")]
     -- Check that this type has a definition
-    | t, just(_), [] -> [err(top.location, s"${showType(t)} does not have a definition.")]
+    | t, just(_), [] -> [err(top.location, s"${showType(t)} ${hackUnparse(t)} does not have a definition.")]
     | _, _, _ -> []
     end;
 
