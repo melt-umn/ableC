@@ -658,7 +658,7 @@ monoid attribute hasConstField::Boolean with false, ||;
 monoid attribute fieldNames::[Either<String ExtType>] with [], ++;
 
 nonterminal StructDecl with location, pp, host, maybename, errors, globalDecls, functionDecls, defs, env, localDefs, tagEnv, isLast, inAnonStructItem, givenRefId, refId, hasConstField, fieldNames, returnType, freeVariables;
-flowtype StructDecl = decorate {env, isLast, inAnonStructItem, givenRefId, returnType}, localDefs {decorate}, tagEnv {decorate}, refId {decorate}, hasConstField {decorate}, fieldNames {decorate};
+flowtype StructDecl = decorate {env, isLast, inAnonStructItem, givenRefId, returnType}, pp {inAnonStructItem}, localDefs {decorate}, tagEnv {decorate}, refId {decorate}, hasConstField {decorate}, fieldNames {decorate};
 
 propagate host, errors, globalDecls, functionDecls, localDefs, hasConstField, fieldNames, freeVariables on StructDecl;
 
@@ -725,7 +725,7 @@ top::StructDecl ::= attrs::Attributes  name::MaybeName  dcls::StructItemList
 }
 
 nonterminal UnionDecl with location, pp, host, maybename, errors, globalDecls, functionDecls, defs, env, localDefs, tagEnv, isLast, inAnonStructItem, givenRefId, refId, hasConstField, fieldNames, returnType, freeVariables;
-flowtype UnionDecl = decorate {env, isLast, inAnonStructItem, givenRefId, returnType}, localDefs {decorate}, tagEnv {decorate}, refId {decorate}, hasConstField {decorate}, fieldNames {decorate};
+flowtype UnionDecl = decorate {env, isLast, inAnonStructItem, givenRefId, returnType}, pp {inAnonStructItem}, localDefs {decorate}, tagEnv {decorate}, refId {decorate}, hasConstField {decorate}, fieldNames {decorate};
 
 propagate host, errors, globalDecls, functionDecls, localDefs, hasConstField, freeVariables on UnionDecl;
 
