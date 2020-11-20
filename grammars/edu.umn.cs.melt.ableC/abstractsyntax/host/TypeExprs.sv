@@ -346,6 +346,7 @@ top::BaseTypeExpr ::= q::Qualifiers  def::StructDecl
   top.decls := [typeExprDecl(nilAttribute(), decTypeExpr(top))];
   q.typeToQualify = top.typerep;
   def.isLast = true;
+  def.inAnonStructItem = false;
 }
 
 {-- An actual declaration of, not reference to, a union. -}
@@ -360,6 +361,7 @@ top::BaseTypeExpr ::= q::Qualifiers  def::UnionDecl
   top.decls := [typeExprDecl(nilAttribute(), decTypeExpr(top))];
   q.typeToQualify = top.typerep;
   def.isLast = true;
+  def.inAnonStructItem = false;
 }
 
 {-- An actual declaration of, not reference to, an enum. -}
