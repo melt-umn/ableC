@@ -1,5 +1,7 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 
+import core:monad;
+
 abstract production preIncExpr
 top::Expr ::= e::Expr
 {
@@ -95,7 +97,7 @@ top::Expr ::= e::Expr
   propagate host, errors, globalDecls, functionDecls, defs, freeVariables;
   top.pp = parens( cat( text("-"), e.pp ) );
   top.typerep = e.typerep.defaultLvalueConversion.integerPromotions;
-  top.integerConstantValue = mapMaybe(\ i::Integer -> -i, e.integerConstantValue);
+  top.integerConstantValue = -e.integerConstantValue;
 }
 abstract production bitNegateExpr
 top::Expr ::= e::Expr
@@ -111,7 +113,7 @@ top::Expr ::= e::Expr
   propagate host, errors, globalDecls, functionDecls, defs, freeVariables;
   top.pp = parens( cat( text("!"), e.pp ) );
   top.typerep = e.typerep.defaultLvalueConversion.integerPromotions;
-  top.integerConstantValue = mapMaybe(\ i::Integer -> if i != 0 then 1 else 0, e.integerConstantValue);
+  top.integerConstantValue = if e.integerConstantValue != 0 then 1 else 0;
 }
 
 -- GCC extension

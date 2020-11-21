@@ -17,9 +17,9 @@ synthesized attribute valueLookupCheck :: [Message];
 synthesized attribute tagLookupCheck :: [Message];
 synthesized attribute labelLookupCheck :: [Message];
 
-synthesized attribute valueItem :: Decorated ValueItem;
-synthesized attribute tagItem :: Decorated TagItem;
-synthesized attribute labelItem :: Decorated LabelItem;
+restricted synthesized attribute valueItem :: Decorated ValueItem;
+restricted synthesized attribute tagItem :: Decorated TagItem;
+restricted synthesized attribute labelItem :: Decorated LabelItem;
 
 nonterminal Name with location, name, pp, host, env, valueLocalLookup, labelRedeclarationCheck, valueLookupCheck, tagLookupCheck, labelLookupCheck, valueItem, tagItem, labelItem, tagLocalLookup, tagHasForwardDcl, tagRefId, valueRedeclarationCheck, valueRedeclarationCheckNoCompatible, valueMergeRedeclExtnQualifiers;
 flowtype Name = decorate {env}, name {}, valueLocalLookup {env}, labelRedeclarationCheck {env}, valueLookupCheck {env}, tagLookupCheck {env}, labelLookupCheck {env}, valueItem {env}, tagItem {env}, labelItem {env}, tagLocalLookup {env}, tagHasForwardDcl {env}, tagRefId {env}, valueRedeclarationCheck {decorate}, valueRedeclarationCheckNoCompatible {decorate}, valueMergeRedeclExtnQualifiers {decorate};
