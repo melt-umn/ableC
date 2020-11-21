@@ -402,8 +402,9 @@ Maybe<[Type]> ::= env::Decorated Env t::Type
               | right(e) -> extType(nilQualifier(), e)
               end,
             r.fieldNames))
-      | [] -> nothing()
+      | [] -> just([]) -- Don't know the members yet, but still not a scalar
       end
+    | extType(_, _) -> just([]) -- May translate into an object type, so don't treat as scalar
     | _ -> nothing()
     end;
 }
