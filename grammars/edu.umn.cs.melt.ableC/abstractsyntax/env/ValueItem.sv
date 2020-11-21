@@ -1,5 +1,7 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax:env;
 
+import core:monad;
+
 closed nonterminal ValueItem with typerep, sourceLocation, directRefHandler, directCallHandler, isItemValue, isItemType, integerConstantValue;
 
 synthesized attribute sourceLocation :: Location;
@@ -71,7 +73,7 @@ top::ValueItem ::= e::Decorated EnumItem
   top.typerep = e.typerep;
   top.sourceLocation = e.sourceLocation;
   top.isItemValue = true;
-  top.integerConstantValue = just(e.enumItemValue);
+  top.integerConstantValue = e.enumItemValue;
 }
 
 abstract production parameterValueItem

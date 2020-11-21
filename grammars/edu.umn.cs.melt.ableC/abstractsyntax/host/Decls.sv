@@ -840,8 +840,8 @@ StructItemList ::= s1::StructItemList s2::StructItemList
 autocopy attribute appendedEnumItemList :: EnumItemList;
 synthesized attribute appendedEnumItemListRes :: EnumItemList;
 
-inherited attribute enumItemValueIn::Integer;
-synthesized attribute enumItemValue::Integer;
+restricted inherited attribute enumItemValueIn::Integer;
+restricted synthesized attribute enumItemValue::Integer;
 
 nonterminal EnumItemList with pps, host, errors, globalDecls, functionDecls, defs, env, containingEnum, returnType, freeVariables, appendedEnumItemList, appendedEnumItemListRes, enumItemValueIn;
 flowtype EnumItemList = decorate {env, containingEnum, enumItemValueIn, returnType}, appendedEnumItemListRes {appendedEnumItemList};

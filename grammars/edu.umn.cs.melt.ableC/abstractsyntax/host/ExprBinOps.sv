@@ -193,11 +193,7 @@ top::Expr ::= lhs::Expr rhs::Expr
   rhs.env = addEnv(lhs.defs, lhs.env);
   top.isLValue = false;
   top.integerConstantValue =
-    do (bindMaybe, returnMaybe) {
-      i1::Integer <- lhs.integerConstantValue;
-      i2::Integer <- rhs.integerConstantValue;
-      return if i1 != 0 && i2 != 0 then 1 else 0;
-    };
+    if lhs.integerConstantValue != 0 && rhs.integerConstantValue != 0 then 1 else 0;
 }
 
 abstract production orExpr
@@ -212,11 +208,7 @@ top::Expr ::= lhs::Expr rhs::Expr
   rhs.env = addEnv(lhs.defs, lhs.env);
   top.isLValue = false;
   top.integerConstantValue =
-    do (bindMaybe, returnMaybe) {
-      i1::Integer <- lhs.integerConstantValue;
-      i2::Integer <- rhs.integerConstantValue;
-      return if i1 != 0 || i2 != 0 then 1 else 0;
-    };
+    if lhs.integerConstantValue != 0 || rhs.integerConstantValue != 0 then 1 else 0;
 }
 
 abstract production andBitExpr
@@ -230,12 +222,10 @@ top::Expr ::= lhs::Expr rhs::Expr
   top.typerep = usualArithmeticConversionsOnTypes(lhs.typerep, rhs.typerep);
   rhs.env = addEnv(lhs.defs, lhs.env);
   top.isLValue = false;
-  top.integerConstantValue =
-    do (bindMaybe, returnMaybe) {
-      i1::Integer <- lhs.integerConstantValue;
-      i2::Integer <- rhs.integerConstantValue;
-      return fromBits(zipWithPad(\ a::Boolean b::Boolean -> a && b, false, toBits(i1), toBits(i2)));
-    };
+  top.integerConstantValue = fromBits(
+      zipWithPad(\ a::Boolean b::Boolean -> a && b, false,
+        toBits(lhs.integerConstantValue),
+        toBits(rhs.integerConstantValue)));
 }
 
 abstract production orBitExpr
@@ -249,12 +239,10 @@ top::Expr ::= lhs::Expr rhs::Expr
   top.typerep = usualArithmeticConversionsOnTypes(lhs.typerep, rhs.typerep);
   rhs.env = addEnv(lhs.defs, lhs.env);
   top.isLValue = false;
-  top.integerConstantValue =
-    do (bindMaybe, returnMaybe) {
-      i1::Integer <- lhs.integerConstantValue;
-      i2::Integer <- rhs.integerConstantValue;
-      return fromBits(zipWithPad(\ a::Boolean b::Boolean -> a || b, false, toBits(i1), toBits(i2)));
-    };
+  top.integerConstantValue = fromBits(
+      zipWithPad(\ a::Boolean b::Boolean -> a || b, false,
+        toBits(lhs.integerConstantValue),
+        toBits(rhs.integerConstantValue)));
 }
 
 abstract production xorExpr
@@ -268,12 +256,10 @@ top::Expr ::= lhs::Expr rhs::Expr
   top.typerep = usualArithmeticConversionsOnTypes(lhs.typerep, rhs.typerep);
   rhs.env = addEnv(lhs.defs, lhs.env);
   top.isLValue = false;
-  top.integerConstantValue =
-    do (bindMaybe, returnMaybe) {
-      i1::Integer <- lhs.integerConstantValue;
-      i2::Integer <- rhs.integerConstantValue;
-      return fromBits(zipWithPad(\ a::Boolean b::Boolean -> (a && !b) || (!a && b), false, toBits(i1), toBits(i2)));
-    };
+  top.integerConstantValue = fromBits(
+      zipWithPad(\ a::Boolean b::Boolean -> (a && !b) || (!a && b), false,
+        toBits(lhs.integerConstantValue),
+        toBits(rhs.integerConstantValue)));
 }
 
 abstract production lshExpr
@@ -288,11 +274,7 @@ top::Expr ::= lhs::Expr rhs::Expr
   rhs.env = addEnv(lhs.defs, lhs.env);
   top.isLValue = false;
   top.integerConstantValue =
-    do (bindMaybe, returnMaybe) {
-      i1::Integer <- lhs.integerConstantValue;
-      i2::Integer <- rhs.integerConstantValue;
-      return foldr(\ Unit i::Integer -> i * 2, i1, repeat(unit(), i2));
-    };
+    foldr(\ Unit i::Integer -> i * 2, lhs.integerConstantValue, repeat(unit(), rhs.integerConstantValue));
 }
 
 abstract production rshExpr
@@ -307,11 +289,7 @@ top::Expr ::= lhs::Expr rhs::Expr
   rhs.env = addEnv(lhs.defs, lhs.env);
   top.isLValue = false;
   top.integerConstantValue =
-    do (bindMaybe, returnMaybe) {
-      i1::Integer <- lhs.integerConstantValue;
-      i2::Integer <- rhs.integerConstantValue;
-      return foldr(\ Unit i::Integer -> i / 2, i1, repeat(unit(), i2));
-    };
+    foldr(\ Unit i::Integer -> i / 2, lhs.integerConstantValue, repeat(unit(), rhs.integerConstantValue));
 }
 
 abstract production equalsExpr
@@ -326,11 +304,7 @@ top::Expr ::= lhs::Expr rhs::Expr
   rhs.env = addEnv(lhs.defs, lhs.env);
   top.isLValue = false;
   top.integerConstantValue =
-    do (bindMaybe, returnMaybe) {
-      i1::Integer <- lhs.integerConstantValue;
-      i2::Integer <- rhs.integerConstantValue;
-      return if i1 == i2 then 1 else 0;
-    };
+    if lhs.integerConstantValue == rhs.integerConstantValue then 1 else 0;
 }
 
 abstract production notEqualsExpr
@@ -345,11 +319,7 @@ top::Expr ::= lhs::Expr rhs::Expr
   rhs.env = addEnv(lhs.defs, lhs.env);
   top.isLValue = false;
   top.integerConstantValue =
-    do (bindMaybe, returnMaybe) {
-      i1::Integer <- lhs.integerConstantValue;
-      i2::Integer <- rhs.integerConstantValue;
-      return if i1 != i2 then 1 else 0;
-    };
+    if lhs.integerConstantValue != rhs.integerConstantValue then 1 else 0;
 }
 
 abstract production gtExpr
@@ -364,11 +334,7 @@ top::Expr ::= lhs::Expr rhs::Expr
   rhs.env = addEnv(lhs.defs, lhs.env);
   top.isLValue = false;
   top.integerConstantValue =
-    do (bindMaybe, returnMaybe) {
-      i1::Integer <- lhs.integerConstantValue;
-      i2::Integer <- rhs.integerConstantValue;
-      return if i1 > i2 then 1 else 0;
-    };
+    if lhs.integerConstantValue > rhs.integerConstantValue then 1 else 0;
 }
 
 abstract production ltExpr
@@ -383,11 +349,7 @@ top::Expr ::= lhs::Expr rhs::Expr
   rhs.env = addEnv(lhs.defs, lhs.env);
   top.isLValue = false;
   top.integerConstantValue =
-    do (bindMaybe, returnMaybe) {
-      i1::Integer <- lhs.integerConstantValue;
-      i2::Integer <- rhs.integerConstantValue;
-      return if i1 < i2 then 1 else 0;
-    };
+    if lhs.integerConstantValue < rhs.integerConstantValue then 1 else 0;
 }
 
 abstract production gteExpr
@@ -402,11 +364,7 @@ top::Expr ::= lhs::Expr rhs::Expr
   rhs.env = addEnv(lhs.defs, lhs.env);
   top.isLValue = false;
   top.integerConstantValue =
-    do (bindMaybe, returnMaybe) {
-      i1::Integer <- lhs.integerConstantValue;
-      i2::Integer <- rhs.integerConstantValue;
-      return if i1 >= i2 then 1 else 0;
-    };
+    if lhs.integerConstantValue >= rhs.integerConstantValue then 1 else 0;
 }
 
 abstract production lteExpr
@@ -421,11 +379,7 @@ top::Expr ::= lhs::Expr rhs::Expr
   rhs.env = addEnv(lhs.defs, lhs.env);
   top.isLValue = false;
   top.integerConstantValue =
-    do (bindMaybe, returnMaybe) {
-      i1::Integer <- lhs.integerConstantValue;
-      i2::Integer <- rhs.integerConstantValue;
-      return if i1 <= i2 then 1 else 0;
-    };
+    if lhs.integerConstantValue <= rhs.integerConstantValue then 1 else 0;
 }
 
 abstract production addExpr
@@ -440,11 +394,7 @@ top::Expr ::= lhs::Expr rhs::Expr
   rhs.env = addEnv(lhs.defs, lhs.env);
   top.isLValue = false;
   top.integerConstantValue =
-    do (bindMaybe, returnMaybe) {
-      i1::Integer <- lhs.integerConstantValue;
-      i2::Integer <- rhs.integerConstantValue;
-      return i1 + i2;
-    };
+    lhs.integerConstantValue + rhs.integerConstantValue;
 }
 
 abstract production subExpr
@@ -459,11 +409,7 @@ top::Expr ::= lhs::Expr rhs::Expr
   rhs.env = addEnv(lhs.defs, lhs.env);
   top.isLValue = false;
   top.integerConstantValue =
-    do (bindMaybe, returnMaybe) {
-      i1::Integer <- lhs.integerConstantValue;
-      i2::Integer <- rhs.integerConstantValue;
-      return i1 - i2;
-    };
+    lhs.integerConstantValue - rhs.integerConstantValue;
 }
 
 abstract production mulExpr
@@ -478,11 +424,7 @@ top::Expr ::= lhs::Expr rhs::Expr
   rhs.env = addEnv(lhs.defs, lhs.env);
   top.isLValue = false;
   top.integerConstantValue =
-    do (bindMaybe, returnMaybe) {
-      i1::Integer <- lhs.integerConstantValue;
-      i2::Integer <- rhs.integerConstantValue;
-      return i1 * i2;
-    };
+    lhs.integerConstantValue * rhs.integerConstantValue;
 }
 
 abstract production divExpr
@@ -497,11 +439,7 @@ top::Expr ::= lhs::Expr rhs::Expr
   rhs.env = addEnv(lhs.defs, lhs.env);
   top.isLValue = false;
   top.integerConstantValue =
-    do (bindMaybe, returnMaybe) {
-      i1::Integer <- lhs.integerConstantValue;
-      i2::Integer <- rhs.integerConstantValue;
-      return i1 / i2;
-    };
+    lhs.integerConstantValue / rhs.integerConstantValue;
 }
 
 abstract production modExpr
@@ -516,11 +454,7 @@ top::Expr ::= lhs::Expr rhs::Expr
   rhs.env = addEnv(lhs.defs, lhs.env);
   top.isLValue = false;
   top.integerConstantValue =
-    do (bindMaybe, returnMaybe) {
-      i1::Integer <- lhs.integerConstantValue;
-      i2::Integer <- rhs.integerConstantValue;
-      return i1 % i2;
-    };
+    lhs.integerConstantValue % rhs.integerConstantValue;
 }
 
 abstract production commaExpr

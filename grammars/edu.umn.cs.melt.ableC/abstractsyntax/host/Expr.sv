@@ -10,14 +10,14 @@ flowtype Expr = decorate {env, returnType}, isLValue {decorate}, isSimple {decor
 
 synthesized attribute isLValue::Boolean;
 synthesized attribute isSimple::Boolean; -- true if expression can be duplicated without encurring any addtional work (is a name, constant, field access, etc.)
-synthesized attribute integerConstantValue::Maybe<Integer>;
+implicit synthesized attribute integerConstantValue::Maybe<Integer>;
 
 aspect default production
 top::Expr ::=
 {
   top.isLValue = false;
   top.isSimple = false;
-  top.integerConstantValue = nothing();
+  implicit top.integerConstantValue = ;
 }
 
 abstract production errorExpr
@@ -311,12 +311,9 @@ top::Expr ::= cond::Expr  t::Expr  e::Expr
   top.typerep = t.typerep; -- TODO: this is wrong, but it's an approximation for now
   
   top.integerConstantValue =
-    do (bindMaybe, returnMaybe) {
-      i1::Integer <- cond.integerConstantValue;
-      i2::Integer <- t.integerConstantValue;
-      i3::Integer <- e.integerConstantValue;
-      return if i1 != 0 then i2 else i3;
-    };
+    if cond.integerConstantValue != 0
+    then t.integerConstantValue
+    else e.integerConstantValue;
   
   t.env = addEnv(cond.defs, cond.env);
   e.env = addEnv(t.defs, t.env);
@@ -333,11 +330,9 @@ top::Expr ::= cond::Expr  e::Expr
   top.typerep = e.typerep; -- TODO: not even sure what this should be
   
   top.integerConstantValue =
-    do (bindMaybe, returnMaybe) {
-      i1::Integer <- cond.integerConstantValue;
-      i2::Integer <- e.integerConstantValue;
-      return if i1 != 0 then i1 else i2;
-    };
+    if cond.integerConstantValue != 0
+    then cond.integerConstantValue
+    else e.integerConstantValue;
   
   -- TODO: type checking!!
 }
