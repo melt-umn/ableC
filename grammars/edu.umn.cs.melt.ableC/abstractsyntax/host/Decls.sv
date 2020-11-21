@@ -378,7 +378,7 @@ abstract production functionDecl
 top::FunctionDecl ::= storage::StorageClasses  fnquals::SpecialSpecifiers  bty::BaseTypeExpr mty::TypeModifierExpr  name::Name  attrs::Attributes  ds::Decls  body::Stmt
 {
   top.pp = ppConcat([terminate(space(), storage.pps), terminate( space(), fnquals.pps ),
-    bty.pp, space(), mty.lpp, name.pp, mty.rpp, ppAttributesRHS(attrs), line(), terminate(cat(semi(), line()), ds.pps),
+    bty.pp, space(), mty.lpp, space(), ppAttributes(attrs), name.pp, mty.rpp, line(), terminate(cat(semi(), line()), ds.pps),
     text("{"), line(), nestlines(2,body.pp), text("}")]);
   
   local functionDecls :: [Decorated Decl] = bty.functionDecls ++ 
