@@ -516,15 +516,19 @@ top::ExtType ::= ref::Decorated EnumDecl
  - This production, despite its signature, only represents structs and unions, not enums.
  -}
 abstract production refIdExtType
-top::ExtType ::= kwd::StructOrEnumOrUnion  n::String  refId::String
+top::ExtType ::= kwd::StructOrEnumOrUnion  mn::Maybe<String>  refId::String
 {
   propagate canonicalType;
   top.host = extType(top.givenQualifiers, top);
   top.baseTypeExpr =
-    tagReferenceTypeExpr(top.givenQualifiers, kwd, name(n, location=builtinLoc("host")));
-  top.pp = ppConcat([kwd.pp, space(), text(n)]);
+    case mn of
+    | just(n) -> tagReferenceTypeExpr(top.givenQualifiers, kwd, name(n, location=builtinLoc("host")))
+    | nothing() -> anonTagReferenceTypeExpr(top.givenQualifiers, kwd, refId)
+    end;
+  production tagName::String = fromMaybe(s"<anon ${refId}>", mn);
+  top.pp = ppConcat([kwd.pp, space(), text(tagName)]);
   top.mangledName =
-    s"${kwd.mangledName}_${if n == "<anon>" then "anon" else n}_${substitute(":", "_", refId)}";
+    s"${kwd.mangledName}_${fromMaybe("anon", mn)}_${substitute(":", "_", refId)}";
   top.isEqualTo =
     \ other::ExtType ->
       case other of

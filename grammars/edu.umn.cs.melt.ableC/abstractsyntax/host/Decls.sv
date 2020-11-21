@@ -650,13 +650,15 @@ top::ParameterDecl ::= storage::StorageClasses  bty::BaseTypeExpr  mty::TypeModi
 -- This is the last item in a struct/union declaration
 inherited attribute isLast::Boolean;
 
+inherited attribute inAnonStructItem::Boolean;
+
 synthesized attribute refId :: String; -- TODO move this later?
 
 monoid attribute hasConstField::Boolean with false, ||;
 monoid attribute fieldNames::[Either<String ExtType>] with [], ++;
 
-nonterminal StructDecl with location, pp, host, maybename, errors, globalDecls, functionDecls, defs, env, localDefs, tagEnv, isLast, givenRefId, refId, hasConstField, fieldNames, returnType, freeVariables;
-flowtype StructDecl = decorate {env, isLast, givenRefId, returnType}, localDefs {decorate}, tagEnv {decorate}, refId {decorate}, hasConstField {decorate}, fieldNames {decorate};
+nonterminal StructDecl with location, pp, host, maybename, errors, globalDecls, functionDecls, defs, env, localDefs, tagEnv, isLast, inAnonStructItem, givenRefId, refId, hasConstField, fieldNames, returnType, freeVariables;
+flowtype StructDecl = decorate {env, isLast, inAnonStructItem, givenRefId, returnType}, pp {inAnonStructItem}, localDefs {decorate}, tagEnv {decorate}, refId {decorate}, hasConstField {decorate}, fieldNames {decorate};
 
 propagate host, errors, globalDecls, functionDecls, localDefs, hasConstField, fieldNames, freeVariables on StructDecl;
 
@@ -664,7 +666,8 @@ abstract production structDecl
 top::StructDecl ::= attrs::Attributes  name::MaybeName  dcls::StructItemList
 {
   top.maybename = name.maybename;
-  top.pp = ppConcat([text("struct "), ppAttributes(attrs), name.pp,
+  top.pp = ppConcat([text("struct "), ppAttributes(attrs),
+    if name.hasName || top.inAnonStructItem then name.pp else text("anon_" ++ name.anonTagRefId),
     -- DEBUGGING
     --text("/*" ++ top.refId ++ "*/"),
     -- END DEBUGGING
@@ -689,6 +692,13 @@ top::StructDecl ::= attrs::Attributes  name::MaybeName  dcls::StructItemList
 -}
 
   local maybeAttribRefIdName::Maybe<String> = orElse(attrs.maybeRefId, top.givenRefId);
+  -- Derive the default refId from the location - this needs to be fixed since
+  -- we don't have a tag name available for the lookup.
+  -- Somewhat brittle with generated locations, but by convention extensions
+  -- shouldn't be forwarding to anon structs anyway.
+  name.anonTagRefId =
+    sflatMap(\ s::String -> if isAlpha(s) || isDigit(s) then s else "_", explode("", top.location.filename)) ++
+    "_" ++ toString(top.location.line) ++ "_" ++ toString(top.location.column);
   top.refId = fromMaybe(name.tagRefId, maybeAttribRefIdName);
   
   top.tagEnv = addEnv(dcls.localDefs, emptyEnv());
@@ -714,8 +724,8 @@ top::StructDecl ::= attrs::Attributes  name::MaybeName  dcls::StructItemList
     else [err(top.location, "Redeclaration of struct " ++ name.maybename.fromJust.name)];
 }
 
-nonterminal UnionDecl with location, pp, host, maybename, errors, globalDecls, functionDecls, defs, env, localDefs, tagEnv, isLast, givenRefId, refId, hasConstField, fieldNames, returnType, freeVariables;
-flowtype UnionDecl = decorate {env, isLast, givenRefId, returnType}, localDefs {decorate}, tagEnv {decorate}, refId {decorate}, hasConstField {decorate}, fieldNames {decorate};
+nonterminal UnionDecl with location, pp, host, maybename, errors, globalDecls, functionDecls, defs, env, localDefs, tagEnv, isLast, inAnonStructItem, givenRefId, refId, hasConstField, fieldNames, returnType, freeVariables;
+flowtype UnionDecl = decorate {env, isLast, inAnonStructItem, givenRefId, returnType}, pp {inAnonStructItem}, localDefs {decorate}, tagEnv {decorate}, refId {decorate}, hasConstField {decorate}, fieldNames {decorate};
 
 propagate host, errors, globalDecls, functionDecls, localDefs, hasConstField, freeVariables on UnionDecl;
 
@@ -723,7 +733,8 @@ abstract production unionDecl
 top::UnionDecl ::= attrs::Attributes  name::MaybeName  dcls::StructItemList
 {
   top.maybename = name.maybename;
-  top.pp = ppConcat([text("union "), ppAttributes(attrs), name.pp, 
+  top.pp = ppConcat([text("union "), ppAttributes(attrs),
+    if name.hasName || top.inAnonStructItem then name.pp else text("anon_" ++ name.anonTagRefId),
     -- DEBUGGING
     --text("/*" ++ top.refId ++ "*/"),
     -- END DEBUGGING
@@ -731,6 +742,9 @@ top::UnionDecl ::= attrs::Attributes  name::MaybeName  dcls::StructItemList
     text("}")]);
 
   local maybeAttribRefIdName::Maybe<String> = orElse(attrs.maybeRefId, top.givenRefId);
+  name.anonTagRefId =
+    sflatMap(\ s::String -> if isAlpha(s) || isDigit(s) then s else "_", explode("", top.location.filename)) ++
+    "_" ++ toString(top.location.line) ++ "_" ++ toString(top.location.column);
   top.refId = fromMaybe(name.tagRefId, maybeAttribRefIdName);
   
   top.tagEnv = addEnv(dcls.localDefs, emptyEnv());
@@ -915,10 +929,10 @@ top::StructItem ::= d::StructDecl
 {
   propagate host;
   top.pp = cat(d.pp, semi());
-  top.fieldNames :=
-    [right(refIdExtType(structSEU(), fromMaybe("<anon>", mapMaybe((.name), d.maybename)), d.refId))];
+  top.fieldNames := [right(refIdExtType(structSEU(), mapMaybe((.name), d.maybename), d.refId))];
   
   d.isLast = top.isLast;
+  d.inAnonStructItem = true;
   d.givenRefId = nothing();
 }
 abstract production anonUnionStructItem
@@ -926,10 +940,10 @@ top::StructItem ::= d::UnionDecl
 {
   propagate host;
   top.pp = cat(d.pp, semi());
-  top.fieldNames :=
-    [right(refIdExtType(unionSEU(), fromMaybe("<anon>", mapMaybe((.name), d.maybename)), d.refId))];
+  top.fieldNames := [right(refIdExtType(unionSEU(), mapMaybe((.name), d.maybename), d.refId))];
   
   d.isLast = top.isLast;
+  d.inAnonStructItem = true;
   d.givenRefId = nothing();
 }
 abstract production warnStructItem

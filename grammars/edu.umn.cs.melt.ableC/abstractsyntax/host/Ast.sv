@@ -9,7 +9,7 @@ imports edu:umn:cs:melt:ableC:abstractsyntax:rewriting;
 -- Flowtypes for imported attributes that are the same w.r.t. the reference set on all nonterminals
 flowtype pp {} on
   Attribute, Attribs, Attrib, AttribName,
-  Decl, FunctionDecl, ParameterDecl, StructDecl, UnionDecl, EnumDecl, StructItem, EnumItem, StorageClass,
+  Decl, FunctionDecl, ParameterDecl, EnumDecl, StructItem, EnumItem, StorageClass,
   MemberDesignator,
   ArrayType, ExtType, StructOrEnumOrUnion,
   AsmStatement, AsmArgument, AsmClobbers, AsmOperands, AsmOperand,

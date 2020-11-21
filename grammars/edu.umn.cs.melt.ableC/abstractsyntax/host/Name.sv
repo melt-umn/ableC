@@ -82,11 +82,12 @@ top::Name ::= n::String
   top.labelItem = label;
 }
 
+inherited attribute anonTagRefId::String;
 synthesized attribute maybename :: Maybe<Name>;
 synthesized attribute hasName :: Boolean;
 
-nonterminal MaybeName with maybename, pp, host, env, valueLocalLookup, tagLocalLookup, tagHasForwardDcl, tagRefId, hasName, valueRedeclarationCheckNoCompatible, valueRedeclarationCheck, valueMergeRedeclExtnQualifiers;
-flowtype MaybeName = decorate {env}, maybename {}, hasName {}, valueLocalLookup {env}, tagLocalLookup {env}, tagHasForwardDcl {env}, tagRefId {env}, valueRedeclarationCheckNoCompatible {decorate}, valueRedeclarationCheck {decorate}, valueMergeRedeclExtnQualifiers {decorate};
+nonterminal MaybeName with maybename, pp, host, env, valueLocalLookup, tagLocalLookup, tagHasForwardDcl, anonTagRefId, tagRefId, hasName, valueRedeclarationCheckNoCompatible, valueRedeclarationCheck, valueMergeRedeclExtnQualifiers;
+flowtype MaybeName = decorate {env}, maybename {}, hasName {}, valueLocalLookup {env}, tagLocalLookup {env}, tagHasForwardDcl {env}, tagRefId {anonTagRefId, env}, valueRedeclarationCheckNoCompatible {decorate}, valueRedeclarationCheck {decorate}, valueMergeRedeclExtnQualifiers {decorate};
 
 abstract production justName
 top::MaybeName ::= n::Name
@@ -119,7 +120,7 @@ top::MaybeName ::=
   top.valueLocalLookup = [];
   top.tagLocalLookup = [];
   top.tagHasForwardDcl = false;
-  top.tagRefId = toString(genInt());
+  top.tagRefId = top.anonTagRefId;
 }
 
 synthesized attribute names :: [String];
