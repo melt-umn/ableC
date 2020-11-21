@@ -250,13 +250,13 @@ top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
   top.pp = parens(ppConcat([lhs.pp, text(if deref then "->" else "."), rhs.pp]));
   
   local isPointer::Boolean =
-    case lhs.typerep.withoutAttributes of
+    case lhs.typerep.defaultFunctionArrayLvalueConversion.withoutAttributes of
     | pointerType(_, sub) -> true
     | _ -> false
     end;
   
   local quals_refid :: Pair<Qualifiers String> =
-    case lhs.typerep.withoutAttributes of
+    case lhs.typerep.defaultFunctionArrayLvalueConversion.withoutAttributes of
     | pointerType(_, sub) ->
         case sub.withoutAttributes of
         | extType(q, e) -> pair(q, fromMaybe("", e.maybeRefId))
@@ -281,7 +281,7 @@ top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
       errorType()
     else addQualifiers(quals_refid.fst.qualifiers, head(valueitems).typerep);
   top.errors <-
-    case isPointer, lhs.typerep of
+    case isPointer, lhs.typerep.defaultFunctionArrayLvalueConversion of
     | _, errorType() -> []
     | true, pointerType(_, errorType()) -> []
     | _, _ ->

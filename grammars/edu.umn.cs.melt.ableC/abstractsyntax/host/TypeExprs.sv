@@ -263,10 +263,10 @@ top::BaseTypeExpr ::= q::Qualifiers  kwd::StructOrEnumOrUnion  n::Name
     -- It's an enum and we see the declaration.
     | enumSEU(), enumTagItem(d) :: _ -> extType(q, enumExtType(d))
     -- We don't see the declaration, so we're adding it.
-    | _, [] -> extType(q, refIdExtType(kwd, n.name, fromMaybe(n.tagRefId, top.givenRefId)))
+    | _, [] -> extType(q, refIdExtType(kwd, just(n.name), fromMaybe(n.tagRefId, top.givenRefId)))
     -- It's a struct/union and the tag type agrees.
-    | structSEU(), refIdTagItem(structSEU(), rid) :: _ -> extType(q, refIdExtType(kwd, n.name, rid))
-    | unionSEU(), refIdTagItem(unionSEU(), rid) :: _ -> extType(q, refIdExtType(kwd, n.name, rid))
+    | structSEU(), refIdTagItem(structSEU(), rid) :: _ -> extType(q, refIdExtType(kwd, just(n.name), rid))
+    | unionSEU(), refIdTagItem(unionSEU(), rid) :: _ -> extType(q, refIdExtType(kwd, just(n.name), rid))
     -- Otherwise, error!
     | _, _ -> errorType()
     end;
@@ -320,24 +320,33 @@ top::BaseTypeExpr ::= q::Qualifiers  kwd::StructOrEnumOrUnion  n::Name
   q.typeToQualify = top.typerep;
 }
 
+{-- References to anon tag types by refId.  Can't appear in code, but can be generated
+ - by turning an anon tag type back into a type expression. -}
+abstract production anonTagReferenceTypeExpr
+top::BaseTypeExpr ::= q::Qualifiers  kwd::StructOrEnumOrUnion  refId::String
+{
+  propagate host, errors, globalDecls, functionDecls, defs, freeVariables;
+  top.pp = ppConcat([terminate(space(), q.pps), kwd.pp, space(), text("anon_" ++ refId)]);
+  top.typerep = extType(q, refIdExtType(kwd, nothing(), refId));
+  top.typeModifier = baseTypeExpr();
+  top.decls := [];
+  
+  q.typeToQualify = top.typerep;
+}
+
 {-- An actual declaration of, not reference to, a struct. -}
 abstract production structTypeExpr
 top::BaseTypeExpr ::= q::Qualifiers  def::StructDecl
 {
   propagate host, errors, globalDecls, functionDecls, defs, freeVariables;
   top.pp = ppConcat([terminate(space(), q.pps), def.pp ]);
-  local name :: String = 
-    case def.maybename of
-    | just(n) -> n.name
-    -- TODO: Figure out how to properly handle anon structs
-    | nothing() -> "<anon>"
-    end;
-  top.typerep = extType(q, refIdExtType(structSEU(), name, def.refId));
+  top.typerep = extType(q, refIdExtType(structSEU(), mapMaybe((.name), def.maybename), def.refId));
   top.typeModifier = baseTypeExpr();
   -- Avoid re-decorating and re-generating refIds
   top.decls := [typeExprDecl(nilAttribute(), decTypeExpr(top))];
   q.typeToQualify = top.typerep;
   def.isLast = true;
+  def.inAnonStructItem = false;
 }
 
 {-- An actual declaration of, not reference to, a union. -}
@@ -346,18 +355,13 @@ top::BaseTypeExpr ::= q::Qualifiers  def::UnionDecl
 {
   propagate host, errors, globalDecls, functionDecls, defs, freeVariables;
   top.pp = ppConcat([terminate(space(), q.pps), def.pp ]);
-  local name :: String = 
-    case def.maybename of
-    | just(n) -> n.name
-    -- TODO: Figure out how to properly handle anon unions
-    | nothing() -> "<anon>"
-    end;
-  top.typerep = extType(q, refIdExtType(unionSEU(), name, def.refId));
+  top.typerep = extType(q, refIdExtType(unionSEU(), mapMaybe((.name), def.maybename), def.refId));
   top.typeModifier = baseTypeExpr();
   -- Avoid re-decorating and re-generating refIds
   top.decls := [typeExprDecl(nilAttribute(), decTypeExpr(top))];
   q.typeToQualify = top.typerep;
   def.isLast = true;
+  def.inAnonStructItem = false;
 }
 
 {-- An actual declaration of, not reference to, an enum. -}
