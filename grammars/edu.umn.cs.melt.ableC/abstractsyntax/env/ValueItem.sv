@@ -17,7 +17,7 @@ top::ValueItem ::=
   top.directCallHandler = ordinaryFunctionHandler;
   top.isItemValue = false;
   top.isItemType = false;
-  top.integerConstantValue = nothing();
+  implicit top.integerConstantValue = ;
 }
 
 -- TODO: we might consider splitting this into values and typedef names.

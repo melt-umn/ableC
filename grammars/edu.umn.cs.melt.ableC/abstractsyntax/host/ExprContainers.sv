@@ -27,7 +27,7 @@ top::MaybeExpr ::=
   top.justTheExpr = nothing();
   top.maybeTyperep = nothing();
   top.isLValue = false;
-  top.integerConstantValue = nothing();
+  implicit top.integerConstantValue = ;
 }
 
 nonterminal Exprs with pps, host, errors, globalDecls, functionDecls, defs, env, expectedTypes, argumentPosition, callExpr, argumentErrors, typereps, count, callVariadic, returnType, freeVariables, appendedExprs, appendedRes, isLValue;

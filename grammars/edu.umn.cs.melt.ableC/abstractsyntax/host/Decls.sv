@@ -854,6 +854,7 @@ StructItemList ::= s1::StructItemList s2::StructItemList
 autocopy attribute appendedEnumItemList :: EnumItemList;
 synthesized attribute appendedEnumItemListRes :: EnumItemList;
 
+-- These are restricted since they are used by the implicit integerConstantValue attribute
 restricted inherited attribute enumItemValueIn::Integer;
 restricted synthesized attribute enumItemValue::Integer;
 
