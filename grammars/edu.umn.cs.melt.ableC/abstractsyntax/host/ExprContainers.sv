@@ -1,5 +1,7 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 
+import core:monad;
+
 nonterminal MaybeExpr with pp, host, isJust, errors, globalDecls, functionDecls, defs, env, maybeTyperep, returnType, freeVariables, justTheExpr, isLValue, integerConstantValue;
 
 flowtype MaybeExpr = decorate {env, returnType}, isJust {}, justTheExpr {}, maybeTyperep {decorate}, integerConstantValue {decorate};
