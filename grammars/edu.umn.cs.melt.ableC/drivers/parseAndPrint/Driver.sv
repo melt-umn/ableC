@@ -8,8 +8,6 @@ imports silver:langutil;
 imports silver:langutil:pp;
 imports core:monad;
 
-imports core:originsimpl;
-
 import edu:umn:cs:melt:ableC:abstractsyntax:env ; --only env, emptyEnv;
 
 function driver
