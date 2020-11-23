@@ -325,11 +325,11 @@ Boolean ::= lval::Type  rval::Type
     | _ -> false
     end ||
 
-    case lval.defaultFunctionArrayLvalueConversion, rval.defaultFunctionArrayLvalueConversion of
+    case lval, rval of
 -- the left operand has an atomic, qualified, or unqualified version of a structure, enum, union or extension type compatible with the type
     | extType(_, _), _ -> compatibleTypes(lval.defaultFunctionArrayLvalueConversion, rval.defaultFunctionArrayLvalueConversion, true, true)
 -- the left operand has atomic, qualified, or unqualified pointer type, and (considering the type the left operand would have after lvalue conversion) both operands are pointers to qualified or unqualified versions of compatible types, and the type pointed to by the left has all the qualifiers of the type pointed to by the right;
-    | pointerType(q1, p1), pointerType(q2, p2) ->
+    | pointerType(q1, p1), _ when rval.defaultFunctionArrayLvalueConversion matches pointerType(q2, p2) ->
         (compatibleTypes(p1, p2, containsQualifier(constQualifier(location=bogusLoc()), p1), false) ||
           compatibleTypes(
             pointerType(nilQualifier(), builtinType(nilQualifier(), voidType())),
@@ -364,7 +364,7 @@ Boolean ::= lval::Type  rval::Type
     | vectorType(b1, s1), vectorType(b2, s2) ->
             compatibleTypes(b1, b2, true, true) && s1 == s2 -- TODO: no idea
 -- the left operand has type atomic, qualified, or unqualified _Bool, and the right is a pointer.
-    | builtinType(_, boolType()), pointerType(_, _) -> true
+    | builtinType(_, boolType()), _ when rval.defaultFunctionArrayLvalueConversion matches pointerType(_, _) -> true
     | _, _ -> false
     end;
 }

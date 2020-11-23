@@ -60,15 +60,20 @@ top::Exprs ::= h::Expr  t::Exprs
   top.isLValue = t.isLValue;
   
   top.argumentErrors =
-    if null(top.expectedTypes) then
+   if null(top.expectedTypes) then
       if top.callVariadic then []
       else
         [err(top.callExpr.location, s"call expected ${toString(top.argumentPosition - 1)} arguments, got ${toString(top.argumentPosition + t.count)}")]
     else
-      if !typeAssignableTo(head(top.expectedTypes), h.typerep) then
+     (if !typeAssignableTo(head(top.expectedTypes).defaultFunctionArrayLvalueConversion, h.typerep) then
         [err(h.location, s"argument ${toString(top.argumentPosition)} expected type ${showType(head(top.expectedTypes))} (got ${showType(h.typerep)})")] ++ t.argumentErrors
       else
-        t.argumentErrors;
+        t.argumentErrors) ++
+      case head(top.expectedTypes), h.typerep of
+      | arrayType(_, _, staticArraySize(), constantArrayType(s1)), arrayType(_, _, _, constantArrayType(s2)) when s1 > s2 ->
+        [wrn(h.location, s"array argument is too small; contains ${toString(s2)} elements, callee requires at least ${toString(s1)}")]
+      | _, _ -> []
+      end;
   t.expectedTypes = tail(top.expectedTypes);
   t.argumentPosition = top.argumentPosition + 1;
   t.appendedExprs = top.appendedExprs;

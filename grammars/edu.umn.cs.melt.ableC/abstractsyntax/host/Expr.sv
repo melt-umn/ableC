@@ -137,8 +137,10 @@ top::Expr ::= l::String
 {
   propagate host, errors, globalDecls, functionDecls, defs, freeVariables;
   top.pp = text(l);
-  top.typerep = pointerType(nilQualifier(),
-    builtinType(foldQualifier([]), signedType(charType())));
+  top.typerep =
+    arrayType(
+      builtinType(foldQualifier([]), signedType(charType())),
+      nilQualifier(), normalArraySize(), incompleteArrayType());
   top.isSimple = true;
 }
 abstract production parenExpr

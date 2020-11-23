@@ -43,9 +43,19 @@ top::Initializer ::= e::Expr
   top.nestedInitsOut = max(0, top.nestedInits + length(top.expectedTypesOut) - 1);
   
   top.errors <-
-    if (if top.inObject then !newMembers.isJust else !typeAssignableTo(top.expectedType, e.typerep))
-    then [err(e.location, s"Incompatible types in ${top.initializerPos}, expected ${showType(top.expectedType)} but found ${showType(e.typerep)}")]
-    else [];
+    if top.inObject
+    then
+      if newMembers.isJust then []
+      else [err(e.location, s"Incompatible types in ${top.initializerPos}, expected ${showType(top.expectedType)} but found ${showType(e.typerep)}")]
+    else case top.expectedType of
+    | arrayType(_, _, _, _) ->
+      case e of
+      | stringLiteral(_) -> []
+      | _ -> [err(e.location, "invalid array initializer")]
+      end
+    | _ when typeAssignableTo(top.expectedType, e.typerep) -> []
+    | _ -> [err(e.location, s"Incompatible types in ${top.initializerPos}, expected ${showType(top.expectedType)} but found ${showType(e.typerep)}")]
+    end;
 }
 
 abstract production objectInitializer
