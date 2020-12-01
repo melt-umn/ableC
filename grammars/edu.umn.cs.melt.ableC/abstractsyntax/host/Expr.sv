@@ -32,7 +32,6 @@ top::Expr ::= msg::[Message]
 abstract production warnExpr
 top::Expr ::= msg::[Message] e::Expr
 {
-  propagate host;
   top.pp = ppConcat([ text("/*"), text(messagesToString(msg)), text("*/"), e.pp ]);
   top.errors <- msg;
   forwards to e;
