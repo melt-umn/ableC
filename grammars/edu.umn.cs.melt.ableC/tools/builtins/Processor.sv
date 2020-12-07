@@ -60,27 +60,21 @@ terminal Volatile 'D';
 terminal IgnoredStuff /[nrctFfipP:NPsSeju0-9]*/;
 
 -- Actual builtin translation stuff
-synthesized attribute ignoredBuiltins :: [String];
+monoid attribute ignoredBuiltins :: [String] with [], ++;
 
 nonterminal Builtins with ignoredBuiltins;
+propagate ignoredBuiltins on Builtins;
 
-concrete production consBuiltins
-top::Builtins ::= h::Builtin  t::Builtins
-{
-  top.ignoredBuiltins = h.ignoredBuiltins ++ t.ignoredBuiltins;
-}
-concrete production nilBultins
-top::Builtins ::=
-{
-  top.ignoredBuiltins = [];
-}
+concrete productions top::Builtins
+| h::Builtin  t::Builtins  {}
+| {}
 
 nonterminal Builtin with ignoredBuiltins;
 
 concrete production builtinFunction
 top::Builtin ::= BUILTIN '(' id::Identifier ',' '"' t::Types dots::MaybeDots '"' ',' '"' x::IgnoredStuff '"' ')'
 {
-  top.ignoredBuiltins = 
+  top.ignoredBuiltins := 
     if t.ignoreMe || indexOf("t", x.lexeme) != -1 || indexOf("u", x.lexeme) != -1 then
       ["-- Ignored " ++ id.lexeme ++ " on line " ++ toString(id.location.line)]
       --[]
@@ -97,35 +91,29 @@ top::Builtin ::= BUILTIN '(' id::Identifier ',' '"' t::Types dots::MaybeDots '"'
 concrete production ignoredLIBBUILTIN
 top::Builtin ::= LIBBUILTIN_NotProcessed
 {
-  top.ignoredBuiltins = []; -- We know about this. Just the others.
+  top.ignoredBuiltins := []; -- We know about this. Just the others.
 }
 
-nonterminal Types with ignoreMe, signature;
-
-synthesized attribute ignoreMe :: Boolean;
+monoid attribute ignoreMe :: Boolean with false, ||;
 synthesized attribute signature :: [a:Type];
 
-concrete production consTypes
-top::Types ::= h::Type  t::Types
-{
-  top.ignoreMe = h.ignoreMe || t.ignoreMe;
-  top.signature = h.typerep :: t.signature;
-}
-concrete production nilTypes
-top::Types ::=
-{
-  top.ignoreMe = false;
-  top.signature = [];
-}
+nonterminal Types with ignoreMe, signature;
+propagate ignoreMe on Types;
+
+concrete productions top::Types
+| h::Type  t::Types
+  { top.signature = h.typerep :: t.signature; }
+|
+  { top.signature = []; }
 
 nonterminal Type with ignoreMe, typerep;
+propagate ignoreMe on Type;
 
 synthesized attribute typerep :: a:Type;
 
 concrete production typeString
 top::Type ::= p::TypePrefixes  t::TypeSpecifier  s::TypeSuffixes
 {
-  top.ignoreMe = p.ignoreMe || t.ignoreMe || s.ignoreMe;
   t.givenSign = if p.issigned then a:signedType else a:unsignedType;
   t.givenDomain = a:realType;
   local typerep1 :: a:Type = t.specifier(s.qualifiers);
@@ -139,47 +127,34 @@ a:Type ::= count::Integer  t::a:Type
   return if count == 0 then t else addpointers(count-1, a:pointerType(a:nilQualifier(), t));
 }
 
+monoid attribute issigned :: Boolean with true, &&;
+
 nonterminal TypePrefixes with ignoreMe, issigned;
+propagate ignoreMe, issigned on TypePrefixes;
 
 concrete production consTypePrefixes
 top::TypePrefixes ::= h::TypePrefix  t::TypePrefixes
-{
-  top.ignoreMe = h.ignoreMe || t.ignoreMe;
-  top.issigned = h.issigned && t.issigned;
-}
+{}
 concrete production nilTypePrefixes
 top::TypePrefixes ::=
-{
-  top.ignoreMe = false;
-  top.issigned = true;
-}
+{}
+
+monoid attribute qualifiers :: a:Qualifiers with a:nilQualifier(), a:qualifierCat;
+monoid attribute pointercount :: Integer with 0, +;
 
 nonterminal TypeSuffixes with ignoreMe, qualifiers, pointercount;
+propagate ignoreMe, qualifiers, pointercount on TypeSuffixes;
 
-concrete production consTypeSuffixes
-top::TypeSuffixes ::= h::TypeSuffix  t::TypeSuffixes
-{
-  top.ignoreMe = h.ignoreMe || t.ignoreMe;
-  top.qualifiers = a:qualifierCat(h.qualifiers, t.qualifiers);
-  top.pointercount = h.pointercount + t.pointercount;
-}
-concrete production nilTypeSuffixes
-top::TypeSuffixes ::=
-{
-  top.ignoreMe = false;
-  top.qualifiers = a:nilQualifier();
-  top.pointercount = 0;
-}
+concrete productions top::TypeSuffixes
+| h::TypeSuffix  t::TypeSuffixes  {}
+| {}
 
 nonterminal TypePrefix with ignoreMe, issigned;
-
-synthesized attribute issigned :: Boolean;
 
 aspect default production
 top::TypePrefix ::=
 {
-  top.ignoreMe = false;
-  top.issigned = true;
+  propagate ignoreMe, issigned;
 }
 
 concrete productions top::TypePrefix
@@ -187,7 +162,7 @@ concrete productions top::TypePrefix
 --| 'LL' {}
 --| 'LLL' {}
 | 'S' {}
-| 'U' { top.issigned = false;}
+| 'U' { top.issigned := false;}
 | 'I' { }-- top.ignoreMe = true; } -- maybe ignore all of these? -- TODO: for now, allowing it!
 
 nonterminal TypeSpecifier with ignoreMe, specifier, givenSign, givenDomain;
@@ -199,7 +174,7 @@ autocopy attribute givenDomain :: (a:BuiltinType ::= a:RealType);
 aspect default production
 top::TypeSpecifier ::=
 {
-  top.ignoreMe = false;
+  propagate ignoreMe;
 }
 
 concrete productions top::TypeSpecifier
@@ -216,8 +191,8 @@ concrete productions top::TypeSpecifier
 | 'd' {-double-} { top.specifier = a:builtinType(_, top.givenDomain(a:doubleType())); }
 | 'L' 'd' {-long double-} { top.specifier = a:builtinType(_, top.givenDomain(a:longdoubleType())); }
 
-| 'F' {-ObjC crap-} { top.ignoreMe = true; } -- Ignore anything with this spec
-| 'P' {-FILE-} { top.ignoreMe = true; } -- dunno what to do with this?
+| 'F' {-ObjC crap-} { top.ignoreMe := true; } -- Ignore anything with this spec
+| 'P' {-FILE-} { top.ignoreMe := true; } -- dunno what to do with this?
 | 'z' {-size_t-} { top.specifier = a:builtinType(_, top.givenSign(a:intType())); } -- TODO: do better?
 | 'a' {-valist-} { top.specifier = a:builtinType(_, a:voidType()); } -- TODO
 | 'A' {-valist?pointer maybe?-} { top.specifier = a:pointerType(_, a:builtinType(a:nilQualifier(), a:voidType())); }-- TODO ALSO: underscore in wrong spot
@@ -234,22 +209,17 @@ a:Type ::= qs::a:Qualifiers more::(a:Type ::= a:Qualifiers) n::String
 
 nonterminal TypeSuffix with ignoreMe, qualifiers, pointercount;
 
-synthesized attribute qualifiers :: a:Qualifiers;
-synthesized attribute pointercount :: Integer;
-
 aspect default production
 top::TypeSuffix ::=
 {
-  top.ignoreMe = false;
-  top.qualifiers = a:nilQualifier();
-  top.pointercount = 0;
+  propagate ignoreMe, qualifiers, pointercount;
 }
 
 concrete productions top::TypeSuffix
-| '*' {-pointer-} { top.pointercount = 1; }
-| '&' {-C++-} { top.ignoreMe = true; } -- ignore these
-| 'C' {-const-} { top.qualifiers = a:consQualifier(a:constQualifier(location=builtinLoc("host")), a:nilQualifier()); }
-| 'D' {-volatile-} { top.qualifiers = a:consQualifier(a:volatileQualifier(location=builtinLoc("host")), a:nilQualifier()); }
+| '*' {-pointer-} { top.pointercount := 1; }
+| '&' {-C++-} { top.ignoreMe := true; } -- ignore these
+| 'C' {-const-} { top.qualifiers := a:consQualifier(a:constQualifier(location=builtinLoc("host")), a:nilQualifier()); }
+| 'D' {-volatile-} { top.qualifiers := a:consQualifier(a:volatileQualifier(location=builtinLoc("host")), a:nilQualifier()); }
 
 
 nonterminal MaybeDots with hasdots;
@@ -265,7 +235,6 @@ concrete productions top::MaybeDots
 synthesized attribute translation<a>::a;
 
 attribute translation<String> occurs on AST;
-
 aspect production nonterminalAST
 top::AST ::= prodName::String children::ASTs annotations::NamedASTs
 {
@@ -273,37 +242,21 @@ top::AST ::= prodName::String children::ASTs annotations::NamedASTs
   top.translation = 
     s"${prodShortName}(${implode(", ", children.translation ++ annotations.translation)})";
 }
-
 aspect production listAST
 top::AST ::= vals::ASTs
-{
-  top.translation = s"[${implode(", ", vals.translation)}]";
-}
-
+{ top.translation = s"[${implode(", ", vals.translation)}]"; }
 aspect production stringAST
 top::AST ::= s::String
-{
-  top.translation = s"\"${escapeString(s)}\"";
-}
-
+{ top.translation = s"\"${escapeString(s)}\""; }
 aspect production integerAST
 top::AST ::= i::Integer
-{
-  top.translation = toString(i);
-}
-
+{ top.translation = toString(i); }
 aspect production floatAST
 top::AST ::= f::Float
-{
-  top.translation = toString(f);
-}
-
+{ top.translation = toString(f); }
 aspect production booleanAST
 top::AST ::= b::Boolean
-{
-  top.translation = toString(b);
-}
-
+{ top.translation = toString(b); }
 aspect production anyAST
 top::AST ::= x::a
 {
@@ -315,40 +268,25 @@ top::AST ::= x::a
 }
 
 attribute translation<[String]> occurs on ASTs;
-
 aspect production consAST
 top::ASTs ::= h::AST t::ASTs
-{
-  top.translation = h.translation :: t.translation;
-}
-
+{ top.translation = h.translation :: t.translation; }
 aspect production nilAST
 top::ASTs ::=
-{
-  top.translation = [];
-}
+{ top.translation = []; }
 
 attribute translation<[String]> occurs on NamedASTs;
-
 aspect production consNamedAST
 top::NamedASTs ::= h::NamedAST t::NamedASTs
-{
-  top.translation = h.translation :: t.translation;
-}
-
+{ top.translation = h.translation :: t.translation; }
 aspect production nilNamedAST
 top::NamedASTs ::=
-{
-  top.translation = [];
-}
+{ top.translation = []; }
 
 attribute translation<String> occurs on NamedAST;
-
 aspect production namedAST
 top::NamedAST ::= n::String v::AST
-{
-  top.translation = s"${last(explode(":", n))}=${v.translation}";
-}
+{ top.translation = s"${last(explode(":", n))}=${v.translation}"; }
 
 -- Main driver
 parser parseDef :: Builtins {
@@ -373,6 +311,4 @@ IOVal<Integer> ::= args::[String]  ioin::IO
 
   return if parseresult.parseSuccess then onsuccess else onerror;
 }
-
-
 
