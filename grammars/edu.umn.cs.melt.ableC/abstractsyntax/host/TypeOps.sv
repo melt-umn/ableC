@@ -67,6 +67,9 @@ Boolean ::= a::Type  b::Type  allowSubtypes::Boolean  dropOuterQual::Boolean
   -- otherwise
   | noncanonicalType(s1), _ -> compatibleTypes(s1.canonicalType, b, allowSubtypes, dropOuterQual)
   | _, noncanonicalType(s2) -> compatibleTypes(a, s2.canonicalType, allowSubtypes, dropOuterQual)
+  -- atomics
+  | atomicType(q1, t1), _ -> compatibleTypes((decorate t1 with {addedTypeQualifiers=q1.qualifiers;}).withTypeQualifiers, b, allowSubtypes, dropOuterQual)
+  | _, atomicType(q2, t2) -> compatibleTypes(a, (decorate t2 with {addedTypeQualifiers=q2.qualifiers;}).withTypeQualifiers, allowSubtypes, dropOuterQual)
   | _, _ -> false
   end;
 }

@@ -578,6 +578,11 @@ top::Type ::= q::Qualifiers  bt::Type
     end;
   top.qualifiers = q.qualifiers;
   q.typeToQualify = top;
+
+  top.isIntegerType = bt.isIntegerType;
+  top.isScalarType = bt.isScalarType;
+  top.isArithmeticType = bt.isArithmeticType;
+  top.isCompleteType = bt.isCompleteType;
 }
 
 {-------------------------------------------------------------------------------
