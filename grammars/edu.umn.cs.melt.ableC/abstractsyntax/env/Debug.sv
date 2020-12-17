@@ -37,6 +37,10 @@ aspect production parameterValueItem
 top::ValueItem ::= s::Decorated ParameterDecl
 { top.pp = text("ParameterDecl");} -- s.pp; }
 
+aspect production autoValueItem
+top::ValueItem ::= e::Decorated Expr
+{ top.pp = text("autoValueItem"); }
+
 aspect production errorValueItem
 top::ValueItem ::=
 { top.pp = text("errorValueItem"); }

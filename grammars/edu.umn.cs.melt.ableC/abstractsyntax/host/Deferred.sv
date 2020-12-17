@@ -37,9 +37,6 @@ function defsDeferredDecls
     else [];
 }
 
--- Because extensions can use defsDecl to introduce refIds, we handle rewriting of deferredDecl
--- productions using host rather than lifted.
-
 aspect production defsDecl
 top::Decl ::= d::[Def]
 {

@@ -1,5 +1,6 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax:env;
 
+import silver:langutil;
 import core:monad;
 
 closed nonterminal ValueItem with typerep, sourceLocation, directRefHandler, directCallHandler, isItemValue, isItemType, integerConstantValue;
@@ -56,6 +57,8 @@ top::ValueItem ::= t::Type  handler::(Expr ::= Name Exprs Location)
   top.typerep = t;
   top.sourceLocation = loc("<builtin>", 1, 0, 1, 0, 0, 1);
   top.directCallHandler = handler;
+  top.directRefHandler = \ n::Name loc::Location ->
+    errorExpr([err(loc, s"use of built-in function ${n.name} as a value")], location=loc);
   top.isItemValue = true; -- TODO: Workaround to let us use ordinaryFunctionHandler here
 }
 
