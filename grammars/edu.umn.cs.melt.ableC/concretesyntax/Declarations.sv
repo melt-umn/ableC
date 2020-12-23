@@ -447,8 +447,6 @@ concrete productions top::Pointer_c
       top.ast = t.ast; }
 
 
-synthesized attribute exprAst :: ast:Expr;
-
 closed nonterminal PostfixModifier_c with location, declaredParamIdents, ast<ast:TypeModifierExpr>, givenType;
 concrete productions top::PostfixModifier_c
 | '[' ']'
