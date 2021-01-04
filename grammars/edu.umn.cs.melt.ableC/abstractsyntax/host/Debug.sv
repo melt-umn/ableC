@@ -1,6 +1,6 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 
-import silver:util:raw:treemap as tm;
+import silver:util:treemap as tm;
 
 {- ------------------------------------------------------------
    The helper functions below simplify the creation of ASTs.  They are

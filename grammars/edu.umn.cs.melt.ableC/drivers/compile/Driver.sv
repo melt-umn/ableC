@@ -48,7 +48,6 @@ imports edu:umn:cs:melt:ableC:abstractsyntax:host as abs;
 
 imports silver:langutil;
 imports silver:langutil:pp;
-imports core:monad;
 
 import edu:umn:cs:melt:ableC:abstractsyntax:env;
 

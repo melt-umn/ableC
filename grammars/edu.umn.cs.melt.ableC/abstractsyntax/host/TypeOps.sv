@@ -1,7 +1,5 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 
-import core:monad;
-
 -- Some attributes for Type and BuiltinType.
 
 -- RULE for using these: it must *ALWAYS* be the case than an error occurs if

@@ -1,6 +1,6 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax:env;
 
-import silver:util:raw:treemap as tm;
+import silver:util:treemap as tm;
 
 -- TODO: Move this to langutil:env?
 

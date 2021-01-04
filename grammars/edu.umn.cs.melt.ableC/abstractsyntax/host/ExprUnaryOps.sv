@@ -1,7 +1,5 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 
-import core:monad;
-
 abstract production preIncExpr
 top::Expr ::= e::Expr
 {

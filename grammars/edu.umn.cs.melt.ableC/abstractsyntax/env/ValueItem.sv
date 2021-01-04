@@ -1,7 +1,6 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax:env;
 
 import silver:langutil;
-import core:monad;
 
 closed nonterminal ValueItem with typerep, sourceLocation, directRefHandler, directCallHandler, isItemValue, isItemType, integerConstantValue;
 
