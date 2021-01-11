@@ -15,7 +15,7 @@ IOVal<Integer> ::= args::[String] ioIn::IO
   local fileName :: String = head(args);
   local splitFileName :: Pair<String String> = splitFileNameAndExtension(fileName);
   local baseFileName :: String = splitFileName.fst;
-  local skipCpp :: Boolean = containsBy(stringEq, "--skip-cpp", args);
+  local skipCpp :: Boolean = contains("--skip-cpp", args);
   local cppFileName :: String = if skipCpp then fileName else baseFileName ++ ".gen_cpp";
   local ppFileName :: String = baseFileName ++ ".pp_out.c";
 
@@ -37,7 +37,7 @@ IOVal<Integer> ::= args::[String] ioIn::IO
         printM("File \"" ++ fileName ++ "\" not found.\n");
         return 1;
       } else {
-        if containsBy(stringEq, "--show-cpp", args) then
+        if contains("--show-cpp", args) then
           printM("CPP command: " ++ fullCppCmd ++ "\n");
         mkCppFile::Integer <-
           if skipCpp then returnIO(0)
@@ -56,26 +56,26 @@ IOVal<Integer> ::= args::[String] ioIn::IO
               decorate abs:compilation(result.parseTree.ast) with {
                 env = addEnv( map(xcArgDef, xcArgs) , emptyEnv() );
               };
-            if containsBy(stringEq, "--show-ast", args) then {
+            if contains("--show-ast", args) then {
               printM(substitute("edu:umn:cs:melt:", "", hackUnparse(comp.abs:srcAst)) ++ "\n");
               return 0;
             }
-            else if containsBy(stringEq, "--show-host-ast", args) then {
+            else if contains("--show-host-ast", args) then {
               printM(substitute("edu:umn:cs:melt:", "", hackUnparse(comp.abs:hostAst)) ++ "\n");
               return 0;
             }
-            else if containsBy(stringEq, "--show-pp", args) then {
+            else if contains("--show-pp", args) then {
               printM(show(100, comp.abs:srcPP) ++ "\n");
               return 0;
             }
-            else if containsBy(stringEq, "--show-host-pp", args) then {
+            else if contains("--show-host-pp", args) then {
               printM(show(100, comp.abs:hostPP) ++ "\n");
               return 0;
             }
             else {
               if !null(comp.errors) then
                 printM(messagesToString(comp.errors) ++ "\n");
-              if containsBy(stringEq, "--force-trans", args) || !containsErrors(comp.errors, false) then
+              if contains("--force-trans", args) || !containsErrors(comp.errors, false) then
                 writeFileM(ppFileName, show(80, comp.abs:finalPP));
               if containsErrors(comp.errors, true) then
                 return 4;

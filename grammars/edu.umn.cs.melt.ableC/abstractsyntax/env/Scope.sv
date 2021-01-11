@@ -20,7 +20,7 @@ type Contribs<a> = [Pair<String a>];
 function emptyScope
 Scopes<a> ::= 
 {
-  return [tm:empty(compareString)];
+  return [tm:empty()];
 }
 {-- Adds contributions to the innermost scope -}
 function addScope
@@ -56,7 +56,7 @@ Scopes<a> ::= d::Contribs<a> s::Scopes<a>
 function openScope
 Scopes<a> ::= s::Scopes<a>
 {
-  return tm:empty(compareString) :: s;
+  return tm:empty() :: s;
 }
 {-- Get the outermost scope -}
 function globalScope

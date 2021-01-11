@@ -34,15 +34,15 @@ lexer class Scoped
   disambiguate {
     local lookupResult::Maybe<TerminalId> =
       -- Look up the lexeme in the current context
-      case lookupBy(stringEq, lexeme, head(context)) of
+      case lookup(lexeme, head(context)) of
       | just(id) ->
-        if containsBy(terminalIdEq, id, shiftable)
+        if contains(id, shiftable)
         -- Only disambiguate to an extension terminal if that terminal is valid at this point.
         then just(id)
         else nothing()
       | nothing() -> nothing()
       end;
-    local shiftableGlobals::[TerminalId] = intersectBy(terminalIdEq, shiftable, Global);
+    local shiftableGlobals::[TerminalId] = intersect(shiftable, Global);
     
     {- In order of preference:
      - * Looked-up terminal from context
@@ -61,7 +61,7 @@ lexer class Scoped
     pluck
       case lookupResult of
       | just(id) ->
-        if id == TypeName_t && seenTypeSpecifier && containsBy(terminalIdEq, Identifier_t, shiftable)
+        if id == TypeName_t && seenTypeSpecifier && contains(Identifier_t, shiftable)
         then Identifier_t
         else id
       | nothing() when !inSystemHeader && !null(shiftableGlobals) ->
@@ -70,8 +70,8 @@ lexer class Scoped
         | ids when lookupBy(terminalSetEq, ids, globalPreferences) matches just(id) -> id
         | _ -> disambiguationFailure
         end
-      | _ when containsBy(terminalIdEq, Identifier_t, shiftable) -> Identifier_t
-      | _ when containsBy(terminalIdEq, TypeName_t, shiftable) -> TypeName_t
+      | _ when contains(Identifier_t, shiftable) -> Identifier_t
+      | _ when contains(TypeName_t, shiftable) -> TypeName_t
       | _ -> head(shiftable) -- Always has length >= 2
       end;
   };
