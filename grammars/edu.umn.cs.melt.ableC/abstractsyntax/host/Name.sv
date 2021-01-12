@@ -82,6 +82,10 @@ top::Name ::= n::String
   top.labelItem = label;
 }
 
+instance Eq Name {
+  eq = \ n1::Name n2::Name -> n1.name == n2.name;
+}
+
 inherited attribute anonTagRefId::String;
 synthesized attribute maybename :: Maybe<Name>;
 synthesized attribute hasName :: Boolean;
