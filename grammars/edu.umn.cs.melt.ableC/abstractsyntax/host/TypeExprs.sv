@@ -50,7 +50,7 @@ autocopy attribute typeModifierIn :: TypeModifierExpr;
 autocopy attribute givenRefId :: Maybe<String>;
 
 {-- The declarations contained in this TypeExpr, corresponding to defs -}
-monoid attribute decls :: [Decl] with [], ++;
+monoid attribute decls :: [Decl];
 flowtype decls {decorate} on
   Parameters, ParameterDecl,
   TypeName, BaseTypeExpr, TypeModifierExpr, TypeNames;

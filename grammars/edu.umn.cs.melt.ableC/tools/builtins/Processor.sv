@@ -60,7 +60,7 @@ terminal Volatile 'D';
 terminal IgnoredStuff /[nrctFfipP:NPsSeju0-9]*/;
 
 -- Actual builtin translation stuff
-monoid attribute ignoredBuiltins :: [String] with [], ++;
+monoid attribute ignoredBuiltins :: [String];
 
 nonterminal Builtins with ignoredBuiltins;
 propagate ignoredBuiltins on Builtins;

@@ -55,8 +55,8 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
  - everything would be kind of a pain
  -}
 
-monoid attribute globalDecls::[Decorated Decl] with [], ++;
-monoid attribute functionDecls::[Decorated Decl] with [], ++;
+monoid attribute globalDecls::[Decorated Decl];
+monoid attribute functionDecls::[Decorated Decl];
 synthesized attribute unfoldedGlobalDecls::[Decorated Decl];
 synthesized attribute unfoldedFunctionDecls::[Decorated Decl];
 

@@ -428,7 +428,7 @@ nonterminal GenericAssocs with pps, host, errors, globalDecls, functionDecls, de
 flowtype GenericAssocs = decorate {env, returnType}, compatibleSelections {decorate, selectionType};
 
 autocopy attribute selectionType :: Type;
-monoid attribute compatibleSelections :: [Decorated Expr] with [], ++;
+monoid attribute compatibleSelections :: [Decorated Expr];
 
 propagate host, errors, globalDecls, functionDecls, defs, freeVariables, compatibleSelections on GenericAssocs;
 

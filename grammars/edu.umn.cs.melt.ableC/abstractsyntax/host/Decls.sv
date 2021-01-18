@@ -655,7 +655,7 @@ inherited attribute inAnonStructItem::Boolean;
 synthesized attribute refId :: String; -- TODO move this later?
 
 monoid attribute hasConstField::Boolean with false, ||;
-monoid attribute fieldNames::[Either<String ExtType>] with [], ++;
+monoid attribute fieldNames::[Either<String ExtType>];
 
 nonterminal StructDecl with location, pp, host, maybename, errors, globalDecls, functionDecls, defs, env, localDefs, tagEnv, isLast, inAnonStructItem, givenRefId, refId, hasConstField, fieldNames, returnType, freeVariables;
 flowtype StructDecl = decorate {env, isLast, inAnonStructItem, givenRefId, returnType}, pp {inAnonStructItem}, localDefs {decorate}, tagEnv {decorate}, refId {decorate}, hasConstField {decorate}, fieldNames {decorate};
