@@ -697,7 +697,7 @@ top::StructDecl ::= attrs::Attributes  name::MaybeName  dcls::StructItemList
   -- Somewhat brittle with generated locations, but by convention extensions
   -- shouldn't be forwarding to anon structs anyway.
   name.anonTagRefId =
-    sflatMap(\ s::String -> if isAlpha(s) || isDigit(s) then s else "_", explode("", top.location.filename)) ++
+    flatMap(\ s::String -> if isAlpha(s) || isDigit(s) then s else "_", explode("", top.location.filename)) ++
     "_" ++ toString(top.location.line) ++ "_" ++ toString(top.location.column);
   top.refId = fromMaybe(name.tagRefId, maybeAttribRefIdName);
   
@@ -743,7 +743,7 @@ top::UnionDecl ::= attrs::Attributes  name::MaybeName  dcls::StructItemList
 
   local maybeAttribRefIdName::Maybe<String> = orElse(attrs.maybeRefId, top.givenRefId);
   name.anonTagRefId =
-    sflatMap(\ s::String -> if isAlpha(s) || isDigit(s) then s else "_", explode("", top.location.filename)) ++
+    flatMap(\ s::String -> if isAlpha(s) || isDigit(s) then s else "_", explode("", top.location.filename)) ++
     "_" ++ toString(top.location.line) ++ "_" ++ toString(top.location.column);
   top.refId = fromMaybe(name.tagRefId, maybeAttribRefIdName);
   
