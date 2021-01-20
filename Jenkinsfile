@@ -9,6 +9,12 @@ melt.trynode('ableC') {
   def ABLEC_GEN = "${ABLEC_BASE}/generated"
   def SILVER_BASE = silver.resolveSilver()
   def newenv = silver.getSilverEnv(SILVER_BASE)
+  def SILVER_HOST_GEN = []
+  if (params.SILVER_GEN != 'no') {
+    echo "Using existing Silver generated files: ${params.SILVER_GEN}"
+    SILVER_HOST_GEN << "${params.SILVER_GEN}"
+  }
+  newenv << "SILVER_HOST_GEN=${SILVER_HOST_GEN.join(':')}"
 
   stage ("Build") {
 
