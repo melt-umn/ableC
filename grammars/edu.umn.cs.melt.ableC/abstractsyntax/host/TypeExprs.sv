@@ -340,7 +340,7 @@ top::BaseTypeExpr ::= q::Qualifiers  def::StructDecl
 {
   propagate host, errors, globalDecls, functionDecls, defs, freeVariables;
   top.pp = ppConcat([terminate(space(), q.pps), def.pp ]);
-  top.typerep = extType(q, refIdExtType(structSEU(), mapMaybe((.name), def.maybename), def.refId));
+  top.typerep = extType(q, refIdExtType(structSEU(), map((.name), def.maybename), def.refId));
   top.typeModifier = baseTypeExpr();
   -- Avoid re-decorating and re-generating refIds
   top.decls := [typeExprDecl(nilAttribute(), decTypeExpr(top))];
@@ -355,7 +355,7 @@ top::BaseTypeExpr ::= q::Qualifiers  def::UnionDecl
 {
   propagate host, errors, globalDecls, functionDecls, defs, freeVariables;
   top.pp = ppConcat([terminate(space(), q.pps), def.pp ]);
-  top.typerep = extType(q, refIdExtType(unionSEU(), mapMaybe((.name), def.maybename), def.refId));
+  top.typerep = extType(q, refIdExtType(unionSEU(), map((.name), def.maybename), def.refId));
   top.typeModifier = baseTypeExpr();
   -- Avoid re-decorating and re-generating refIds
   top.decls := [typeExprDecl(nilAttribute(), decTypeExpr(top))];

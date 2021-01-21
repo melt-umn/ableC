@@ -37,7 +37,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
       host:decExpr(rhs, location=rhs.location),
       location=top.location);
   local fwrd::host:Expr =
-    case orElse(lhs.lEqProd, orElse(mapMaybe(\ p::BinaryProd -> p(lhs, _, _), rType.rEqProd), rewriteProd)) of
+    case orElse(lhs.lEqProd, orElse(map(\ p::BinaryProd -> p(lhs, _, _), rType.rEqProd), rewriteProd)) of
     | just(prod) ->
       host:transformedExpr(
         host, 

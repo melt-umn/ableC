@@ -930,7 +930,7 @@ top::StructItem ::= d::StructDecl
 {
   propagate host;
   top.pp = cat(d.pp, semi());
-  top.fieldNames := [right(refIdExtType(structSEU(), mapMaybe((.name), d.maybename), d.refId))];
+  top.fieldNames := [right(refIdExtType(structSEU(), map((.name), d.maybename), d.refId))];
   
   d.isLast = top.isLast;
   d.inAnonStructItem = true;
@@ -941,7 +941,7 @@ top::StructItem ::= d::UnionDecl
 {
   propagate host;
   top.pp = cat(d.pp, semi());
-  top.fieldNames := [right(refIdExtType(unionSEU(), mapMaybe((.name), d.maybename), d.refId))];
+  top.fieldNames := [right(refIdExtType(unionSEU(), map((.name), d.maybename), d.refId))];
   
   d.isLast = top.isLast;
   d.inAnonStructItem = true;
