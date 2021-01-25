@@ -416,12 +416,12 @@ Maybe<[Type]> ::= env::Decorated Env expected::Type actual::Type
   return
     if typeAssignableTo(expected, actual)
     then just([])
-    else do (bindMaybe, returnMaybe) {
+    else do {
       ts1 :: [Type] <- objectMembers(env, expected);
-      if null(ts1) then nothing(); else {
+      if null(ts1) then nothing() else do {
         ts2 :: [Type] <- remainingObjectMembers(env, head(ts1), actual);
         return ts2 ++ tail(ts1);
-      }
+      };
     };
 }
 

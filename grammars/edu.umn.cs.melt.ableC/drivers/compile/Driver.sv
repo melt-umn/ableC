@@ -70,65 +70,58 @@ IOVal<Integer> ::= args::[String] ioIn::IO
   local cppCmd :: String = "gcc -E -x c -D _POSIX_C_SOURCE=200908L -std=gnu1x -I . " ++ cppOptions;
   local fullCppCmd :: String = cppCmd ++ " \"" ++ fileName ++ "\" > " ++ cppFileName;
   
-  local result::IOMonad<Integer> = do (bindIO, returnIO) {
-    if null(args) then {
+  local result::IOMonad<Integer> = do {
+    if null(args) then do {
       printM("Usage: [ableC invocation] [file name] [c preprocessor arguments]\n");
       return 5;
-    } else {
+    } else do {
       isF::Boolean <- isFileM(fileName);
-      if !isF then {
+      if !isF then do {
         printM("File \"" ++ fileName ++ "\" not found.\n");
         return 1;
-      } else {
-        if contains("--show-cpp", args) then
-          printM("CPP command: " ++ fullCppCmd ++ "\n");
+      } else do {
+        when_(contains("--show-cpp", args),
+          printM("CPP command: " ++ fullCppCmd ++ "\n"));
         mkCppFile::Integer <-
           if skipCpp then returnIO(0)
           else systemM(fullCppCmd);
-        if mkCppFile != 0 then {
+        if mkCppFile != 0 then do {
           printM("CPP call failed: " ++ fullCppCmd ++ "\n");
           return 3;
-        } else {
+        } else do {
           text :: String <- readFileM(cppFileName);
-          result :: ParseResult<cst:Root> = theParser(text, cppFileName);
-          if !result.parseSuccess then {
+          let result :: ParseResult<cst:Root> = theParser(text, cppFileName);
+          if !result.parseSuccess then do {
             printM(result.parseErrors ++ "\n");
             return 2;
-          } else {
-            comp :: Decorated abs:Compilation =
+          } else do {
+            let comp :: Decorated abs:Compilation =
               decorate abs:compilation(result.parseTree.ast) with {
                 env = addEnv( map(xcArgDef, xcArgs) , emptyEnv() );
               };
-            if contains("--show-ast", args) then {
+            if contains("--show-ast", args) then do {
               printM(substitute("edu:umn:cs:melt:", "", hackUnparse(comp.abs:srcAst)) ++ "\n");
               return 0;
-            }
-            else if contains("--show-host-ast", args) then {
+            } else if contains("--show-host-ast", args) then do {
               printM(substitute("edu:umn:cs:melt:", "", hackUnparse(comp.abs:hostAst)) ++ "\n");
               return 0;
-            }
-            else if contains("--show-pp", args) then {
+            } else if contains("--show-pp", args) then do {
               printM(show(100, comp.abs:srcPP) ++ "\n");
               return 0;
-            }
-            else if contains("--show-host-pp", args) then {
+            } else if contains("--show-host-pp", args) then do {
               printM(show(100, comp.abs:hostPP) ++ "\n");
               return 0;
-            }
-            else {
-              if !null(comp.errors) then
-                printM(messagesToString(comp.errors) ++ "\n");
-              if contains("--force-trans", args) || !containsErrors(comp.errors, false) then
-                writeFileM(ppFileName, show(80, comp.abs:finalPP));
-              if containsErrors(comp.errors, false) then
-                return 4;
-              else
-                return 0;
-            }
-          }
-        }
-      }
-    }
+            } else do {
+              unless(null(comp.errors),
+                printM(messagesToString(comp.errors) ++ "\n"));
+              when_(contains("--force-trans", args) || !containsErrors(comp.errors, false),
+                writeFileM(ppFileName, show(80, comp.abs:finalPP)));
+              return if containsErrors(comp.errors, false) then 4 else 0;
+            };
+          };
+        };
+      };
+    };
   };
   
   return evalIO(result, ioIn);
