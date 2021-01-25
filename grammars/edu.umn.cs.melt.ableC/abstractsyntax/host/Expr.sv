@@ -286,7 +286,7 @@ top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
     | _, _ ->
       if null(refids) then 
         [err(lhs.location, "expression does not have defined fields (got " ++ showType(lhs.typerep) ++ ")")]
-      else if isPointer != deref then 
+      else if isPointer != deref then
         if deref
         then [err(lhs.location, "expression does not have pointer to struct or union type (got " ++ showType(lhs.typerep) ++ ")")]
         else [err(lhs.location, "expression does not have struct or union type (got " ++ showType(lhs.typerep) ++ ", did you mean to use -> ?)")]
