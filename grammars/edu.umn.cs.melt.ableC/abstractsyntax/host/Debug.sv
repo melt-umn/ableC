@@ -16,7 +16,7 @@ e::Expr ::= txt::String
 {
   propagate host, errors, globalDecls, functionDecls, defs, freeVariables;
   e.pp = text(txt);
-  e.typerep = errorType(); -- error("Need a type on txtExpr"); 
+  e.typerep = errorType(); -- error("Need a type on txtExpr");
   e.isLValue = false;
 }
 abstract production txtStmt
@@ -48,8 +48,8 @@ e::Expr ::=
   propagate errors, globalDecls, functionDecls, defs;
   e.pp =
     decorate comment("printEnv pp should be demanded through host pp", location=e.location)
-    with {env = e.env;
-          returnType = e.returnType;}.pp;
+    with {env = e.env; returnType = e.returnType;
+        breakValid = e.breakValid; continueValid = e.continueValid;}.pp;
   forwards to comment( show(80,showEnv(e.env)), location=e.location );
 }
 
@@ -60,7 +60,7 @@ Document ::= e::Decorated Env
 {
   return ppConcat( [
     text(" Environment:"),
-    nestlines(5, 
+    nestlines(5,
       ppConcat([
        text("Labels:"),line(),
          nestlines(5, labelsD),

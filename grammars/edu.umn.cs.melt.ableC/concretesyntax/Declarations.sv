@@ -28,7 +28,7 @@ inherited attribute givenStmt :: ast:Stmt;
 
 closed nonterminal FunctionDefinition_c with location, ast<ast:FunctionDecl>;
 concrete productions top::FunctionDefinition_c
-| d::InitialFunctionDefinition_c  s::CompoundStatement_c 
+| d::InitialFunctionDefinition_c  s::CompoundStatement_c
     { top.ast = d.ast;
       d.givenStmt = s.ast;
     }
@@ -41,16 +41,16 @@ concrete productions top::Declaration_c
 | ds::DeclarationSpecifiers_c  idcl::InitDeclaratorList_c  ';'
     {
       ds.givenQualifiers = ds.typeQualifiers;
-      
+
       local bt :: ast:BaseTypeExpr =
         ast:figureOutTypeFromSpecifiers(ds.location, ds.typeQualifiers, ds.preTypeSpecifiers, ds.realTypeSpecifiers, ds.mutateTypeSpecifiers);
       local dcls :: ast:Declarators =
         ast:foldDeclarator(idcl.ast);
-      
-      top.ast = 
+
+      top.ast =
         if ds.isTypedef then
           if !null(ds.storageClass) then
-            ast:typedefDecls(ds.attributes, 
+            ast:typedefDecls(ds.attributes,
               ast:warnTypeExpr(
                 [err(ds.location, "Typedef declaration also claims another storage class")],
                 bt),
@@ -75,10 +75,10 @@ concrete productions top::Declaration_c
     }
 
 
-closed nonterminal Declarator_c with location, declaredIdent, declaredParamIdents, ast<ast:TypeModifierExpr>, givenType; 
+closed nonterminal Declarator_c with location, declaredIdent, declaredParamIdents, ast<ast:TypeModifierExpr>, givenType;
 concrete productions top::Declarator_c
 | p::Pointer_c dd::DirectDeclarator_c
-    { top.declaredIdent = dd.declaredIdent; 
+    { top.declaredIdent = dd.declaredIdent;
       top.declaredParamIdents = dd.declaredParamIdents;
       p.givenType = top.givenType;
       dd.givenType = p.ast;
@@ -160,27 +160,27 @@ concrete productions top::DirectAbstractDeclarator_c
 closed nonterminal TypeName_c with location, ast<ast:TypeName>;
 concrete productions top::TypeName_c
 | sqs::SpecifierQualifierList_c
-    { 
+    {
       sqs.givenQualifiers = sqs.typeQualifiers;
       local bt :: ast:BaseTypeExpr =
         ast:figureOutTypeFromSpecifiers(sqs.location, sqs.typeQualifiers, sqs.preTypeSpecifiers, sqs.realTypeSpecifiers, sqs.mutateTypeSpecifiers);
       top.ast =
         ast:typeName(
-          case decorate sqs.attributes with { ast:returnType = nothing(); } of
+          case decorate sqs.attributes with { ast:returnType = nothing(); ast:breakValid = false; ast:continueValid = false;} of
           | ast:nilAttribute() -> bt
           | _ -> ast:warnTypeExpr([wrn(top.location, "Ignoring attributes in type name")], bt)
           end,
           ast:baseTypeExpr());
     }
 | sqs::SpecifierQualifierList_c d::AbstractDeclarator_c
-    { 
+    {
       sqs.givenQualifiers = sqs.typeQualifiers;
       d.givenType = ast:baseTypeExpr();
       local bt :: ast:BaseTypeExpr =
         ast:figureOutTypeFromSpecifiers(sqs.location, sqs.typeQualifiers, sqs.preTypeSpecifiers, sqs.realTypeSpecifiers, sqs.mutateTypeSpecifiers);
       top.ast =
         ast:typeName(
-          case decorate sqs.attributes with { ast:returnType = nothing(); } of
+          case decorate sqs.attributes with { ast:returnType = nothing(); ast:breakValid = false; ast:continueValid = false;} of
           | ast:nilAttribute() -> bt
           | _ -> ast:warnTypeExpr([wrn(top.location, "Ignoring attributes in type name")], bt)
           end,
@@ -192,9 +192,9 @@ closed nonterminal TypeNames_c with ast<ast:TypeNames>;
 concrete productions top::TypeNames_c
 | h::TypeName_c ',' t::TypeNames_c
     { top.ast = ast:consTypeName(h.ast, t.ast); }
-| h::TypeName_c 
+| h::TypeName_c
     { top.ast = ast:consTypeName(h.ast, ast:nilTypeName()); }
-| 
+|
     { top.ast = ast:nilTypeName(); }
 
 closed nonterminal Names_c with location, ast<[ast:Name]>;
@@ -203,7 +203,7 @@ concrete productions top::Names_c
   { top.ast = h.ast :: t.ast; }
 | h::Identifier_c
   { top.ast = [h.ast]; }
-| 
+|
   { top.ast = []; }
 
 -- Ugly hack to add things to the follow sets of several nonterminals
@@ -278,7 +278,7 @@ concrete productions top::InitialFunctionDefinition_c
     {
       ds.givenQualifiers = ds.typeQualifiers;
       d.givenType = ast:baseTypeExpr();
-      l.givenQualifiers = 
+      l.givenQualifiers =
         case baseMT of
         | ast:functionTypeExprWithArgs(t, p, v, q) -> q
         | ast:functionTypeExprWithoutArgs(t, v, q) -> q
@@ -286,15 +286,17 @@ concrete productions top::InitialFunctionDefinition_c
 
       local specialSpecifiers :: ast:SpecialSpecifiers =
         foldr(ast:consSpecialSpecifier, ast:nilSpecialSpecifier(), ds.specialSpecifiers);
-      
+
       local bt :: ast:BaseTypeExpr =
         ast:figureOutTypeFromSpecifiers(ds.location, ds.typeQualifiers, ds.preTypeSpecifiers, ds.realTypeSpecifiers, ds.mutateTypeSpecifiers);
-      
+
       -- If this is a K&R-style declaration, attatch any function qualifiers to the first declaration instead
       local baseMT  :: ast:TypeModifierExpr = d.ast;
       baseMT.ast:baseType = ast:errorType();
       baseMT.ast:typeModifierIn = ast:baseTypeExpr();
       baseMT.ast:returnType = nothing();
+      baseMT.ast:breakValid = false;
+      baseMT.ast:continueValid = false;
       local mt :: ast:TypeModifierExpr =
         case l.isDeclListEmpty, baseMT of
         | false, ast:functionTypeExprWithArgs(t, p, v, q) ->
@@ -304,7 +306,7 @@ concrete productions top::InitialFunctionDefinition_c
         | _, mt -> mt
         end;
 
-      top.ast = 
+      top.ast =
         ast:functionDecl(ast:foldStorageClass(ds.storageClass), specialSpecifiers, bt, mt, d.declaredIdent, ds.attributes, ast:foldDecl(l.ast), top.givenStmt);
     }
     action {
@@ -315,20 +317,22 @@ concrete productions top::InitialFunctionDefinition_c
 | d::Declarator_c  l::InitiallyUnqualifiedDeclarationList_c
     {
       d.givenType = ast:baseTypeExpr();
-      l.givenQualifiers = 
+      l.givenQualifiers =
         case baseMT of
         | ast:functionTypeExprWithArgs(t, p, v, q) -> q
         | ast:functionTypeExprWithoutArgs(t, v, q) -> q
         end;
-      
+
       local bt :: ast:BaseTypeExpr =
         ast:figureOutTypeFromSpecifiers(d.location, ast:nilQualifier(), [], [], []);
-      
+
       -- If this is a K&R-style declaration, attatch any function qualifiers to the first declaration instead
       local baseMT  :: ast:TypeModifierExpr = d.ast;
       baseMT.ast:baseType = ast:errorType();
       baseMT.ast:typeModifierIn = ast:baseTypeExpr();
       baseMT.ast:returnType = nothing();
+      baseMT.ast:breakValid = false;
+      baseMT.ast:continueValid = false;
       local mt :: ast:TypeModifierExpr =
         case l.isDeclListEmpty, baseMT of
         | false, ast:functionTypeExprWithArgs(t, p, v, q) ->
@@ -338,7 +342,7 @@ concrete productions top::InitialFunctionDefinition_c
         | _, mt -> mt
         end;
 
-      top.ast = 
+      top.ast =
         ast:functionDecl(ast:nilStorageClass(), ast:nilSpecialSpecifier(), bt, mt, d.declaredIdent, ast:nilAttribute(), ast:foldDecl(l.ast), top.givenStmt);
     }
     action {
@@ -361,23 +365,23 @@ concrete productions top::InitialFunctionDefinition_c
  - list present while constructing the abstract syntax.  This is prefered to
  - the approach of disallowing function qualifiers on function declarations and
  - attaching any qualifiers from a single 'declaration' with no specifiers, as
- - that would require significantly more invasive grammar modifications. 
+ - that would require significantly more invasive grammar modifications.
  -}
 closed nonterminal InitiallyUnqualifiedDeclaration_c with location, ast<ast:Decl>, givenQualifiers;
 concrete productions top::InitiallyUnqualifiedDeclaration_c
 | ds::InitiallyUnqualifiedDeclarationSpecifiers_c  idcl::InitDeclaratorList_c  ';'
     {
       ds.givenQualifiers = ast:qualifierCat(top.givenQualifiers, ds.typeQualifiers);
-      
+
       local bt :: ast:BaseTypeExpr =
         ast:figureOutTypeFromSpecifiers(ds.location, ds.typeQualifiers, ds.preTypeSpecifiers, ds.realTypeSpecifiers, ds.mutateTypeSpecifiers);
       local dcls :: ast:Declarators =
         ast:foldDeclarator(idcl.ast);
-      
-      top.ast = 
+
+      top.ast =
         if ds.isTypedef then
           if !null(ds.storageClass) then
-            ast:typedefDecls(ds.attributes, 
+            ast:typedefDecls(ds.attributes,
               ast:warnTypeExpr(
                 [err(ds.location, "Typedef declaration also claims another storage class")],
                 bt),
@@ -433,7 +437,7 @@ concrete productions top::DeclarationList_c
       top.isDeclListEmpty = false; }
 
 
-closed nonterminal Pointer_c with location, ast<ast:TypeModifierExpr>, givenType; 
+closed nonterminal Pointer_c with location, ast<ast:TypeModifierExpr>, givenType;
 concrete productions top::Pointer_c
 | '*'
     { top.ast = ast:pointerTypeExpr(ast:nilQualifier(), top.givenType); }
@@ -533,7 +537,7 @@ concrete productions top::ParameterTypeList_c
 
 closed nonterminal ParameterList_c with location, declaredIdents, ast<[ast:ParameterDecl]>;
 concrete productions top::ParameterList_c
-| h::ParameterDeclaration_c 
+| h::ParameterDeclaration_c
     { top.declaredIdents = h.declaredIdents;
       top.ast = [h.ast];
     }
@@ -553,7 +557,7 @@ concrete productions top::ParameterDeclaration_c
         ast:figureOutTypeFromSpecifiers(ds.location, ds.typeQualifiers, ds.preTypeSpecifiers, ds.realTypeSpecifiers, ds.mutateTypeSpecifiers);
       top.ast = ast:parameterDecl(ast:foldStorageClass(ds.storageClass), bt, d.ast, ast:justName(d.declaredIdent), ds.attributes);
       }
-| ds::DeclarationSpecifiers_c d::AbstractDeclarator_c 
+| ds::DeclarationSpecifiers_c d::AbstractDeclarator_c
     { top.declaredIdents = [];
       ds.givenQualifiers = ds.typeQualifiers;
       d.givenType = ast:baseTypeExpr();
@@ -561,7 +565,7 @@ concrete productions top::ParameterDeclaration_c
         ast:figureOutTypeFromSpecifiers(ds.location, ds.typeQualifiers, ds.preTypeSpecifiers, ds.realTypeSpecifiers, ds.mutateTypeSpecifiers);
       top.ast = ast:parameterDecl(ast:foldStorageClass(ds.storageClass), bt, d.ast, ast:nothingName(), ds.attributes);
     }
-| ds::DeclarationSpecifiers_c 
+| ds::DeclarationSpecifiers_c
     { top.declaredIdents = [];
       ds.givenQualifiers = ds.typeQualifiers;
       local bt :: ast:BaseTypeExpr =
@@ -574,7 +578,7 @@ closed nonterminal IdentifierList_c with location, declaredIdents;
 concrete productions top::IdentifierList_c
 | id::Identifier_c
     { top.declaredIdents = [id.ast]; }
-| l::IdentifierList_c ',' id::Identifier_c 
+| l::IdentifierList_c ',' id::Identifier_c
     { top.declaredIdents = l.declaredIdents ++ [id.ast]; }
 
 
@@ -590,7 +594,7 @@ concrete productions top::InitDeclaratorList_c
 
 closed nonterminal InitDeclarator_c with location, declaredIdent, ast<[ast:Declarator]>;
 concrete productions top::InitDeclarator_c
-| d::Declarator_c 
+| d::Declarator_c
     operator=Cpp_Attribute_high_prec
     { top.declaredIdent = d.declaredIdent;
       d.givenType = ast:baseTypeExpr();

@@ -4,7 +4,7 @@ abstract production deferredDecl
 top::Decl ::= refId::String d::Decl
 {
   top.pp = ppConcat([pp"deferredDecl", space(), parens(text(refId)), space(), braces(nestlines(2, d.pp))]);
-  
+
   production refIdExists::Boolean = !null(lookupRefId(refId, top.env));
   top.host = if refIdExists then d.host else decls(nilDecl());
   top.errors := if refIdExists then d.errors else [];
@@ -15,7 +15,8 @@ top::Decl ::= refId::String d::Decl
 }
 
 function defsDeferredDecls
-[Decorated Decl] ::= env::Decorated Env returnType::Maybe<Type> isTopLevel::Boolean defs::[Def]
+[Decorated Decl] ::= env::Decorated Env returnType::Maybe<Type> isTopLevel::Boolean
+                    breakValid::Boolean continueValid::Boolean defs::[Def]
 {
   local deferredDecls::Decl =
     decls(
@@ -27,13 +28,16 @@ function defsDeferredDecls
   deferredDecls.env = env;
   deferredDecls.returnType = returnType;
   deferredDecls.isTopLevel = isTopLevel;
-  
+  deferredDecls.breakValid = breakValid;
+  deferredDecls.continueValid = continueValid;
+
   return
     if !null(deferredDecls.defs)
     then
       deferredDecls ::
       defsDeferredDecls(
-        addEnv(deferredDecls.defs, env), returnType, isTopLevel, deferredDecls.defs)
+        addEnv(deferredDecls.defs, env), returnType, isTopLevel, breakValid,
+          continueValid, deferredDecls.defs)
     else [];
 }
 
@@ -44,7 +48,8 @@ top::Decl ::= d::[Def]
   -- host is not simply propagated, because Def is a closed 'collection' nonterminal with special
   -- semantics.
   local deferredDecls::[Decorated Decl] =
-    defsDeferredDecls(addEnv(d, top.env), top.returnType, top.isTopLevel, d);
+    defsDeferredDecls(addEnv(d, top.env), top.returnType, top.isTopLevel,
+      top.breakValid, top.continueValid, d);
   top.host = decls(foldDecl(map(\ d::Decorated Decl -> d.host, deferredDecls)));
   top.defs <- concat(map((.defs), deferredDecls));
   top.freeVariables <- concat(map((.freeVariables), deferredDecls));
@@ -63,10 +68,12 @@ top::Decl ::= storage::StorageClasses  attrs::Attributes  ty::BaseTypeExpr  dcls
           -- decorate needed here because of flowtype for decls
           decorate ty.host with {
             env = ty.env; returnType = ty.returnType; givenRefId = ty.givenRefId;
+            breakValid = ty.breakValid; continueValid = ty.continueValid;
           }.decls ++ dcls.hostDecls))
     else variableDecls(storage, attrs.host, ty.host, dcls.host);
   local deferredDecls::[Decorated Decl] =
-    defsDeferredDecls(addEnv(dcls.defs, dcls.env), top.returnType, top.isTopLevel, ty.defs ++ dcls.defs);
+    defsDeferredDecls(addEnv(dcls.defs, dcls.env), top.returnType, top.isTopLevel,
+      top.breakValid, top.continueValid, ty.defs ++ dcls.defs);
   top.host =
     if !null(deferredDecls)
     then decls(foldDecl(host :: map(\ d::Decorated Decl -> d.host, deferredDecls)))
@@ -82,7 +89,8 @@ top::Decl ::= attrs::Attributes ty::BaseTypeExpr
 {
   local host::Decl = typeExprDecl(attrs.host, ty.host);
   local deferredDecls::[Decorated Decl] =
-    defsDeferredDecls(addEnv(ty.defs, ty.env), top.returnType, top.isTopLevel, ty.defs);
+    defsDeferredDecls(addEnv(ty.defs, ty.env), top.returnType, top.isTopLevel,
+      top.breakValid, top.continueValid, ty.defs);
   top.host =
     if !null(deferredDecls)
     then decls(foldDecl(host :: map(\ d::Decorated Decl -> d.host, deferredDecls)))
@@ -104,10 +112,12 @@ top::Decl ::= attrs::Attributes  ty::BaseTypeExpr  dcls::Declarators
           -- decorate needed here because of flowtype for decls
           decorate ty.host with {
             env = ty.env; returnType = ty.returnType; givenRefId = ty.givenRefId;
+            breakValid = ty.breakValid; continueValid = ty.continueValid;
           }.decls ++ dcls.hostDecls))
     else typedefDecls(attrs.host, ty.host, dcls.host);
   local deferredDecls::[Decorated Decl] =
-    defsDeferredDecls(addEnv(dcls.defs, dcls.env), top.returnType, top.isTopLevel, ty.defs ++ dcls.defs);
+    defsDeferredDecls(addEnv(dcls.defs, dcls.env), top.returnType, top.isTopLevel,
+      top.breakValid, top.continueValid, ty.defs ++ dcls.defs);
   top.host =
     if !null(deferredDecls)
     then decls(foldDecl(host :: map(\ d::Decorated Decl -> d.host, deferredDecls)))
@@ -123,7 +133,8 @@ top::Decl ::= f::FunctionDecl
 {
   local host::Decl = f.host;
   local deferredDecls::[Decorated Decl] =
-    defsDeferredDecls(addEnv(f.defs, f.env), top.returnType, top.isTopLevel, f.defs);
+    defsDeferredDecls(addEnv(f.defs, f.env), top.returnType, top.isTopLevel,
+      top.breakValid, top.continueValid, f.defs);
   top.host =
     if !null(deferredDecls)
     then decls(foldDecl(host :: map(\ d::Decorated Decl -> d.host, deferredDecls)))

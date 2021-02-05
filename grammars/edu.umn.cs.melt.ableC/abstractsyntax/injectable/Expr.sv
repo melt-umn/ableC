@@ -44,6 +44,8 @@ top::host:Expr ::= lhs::host:Expr  deref::Boolean  rhs::host:Name
     else mkAddressOf(lhs, lhs.location);
   preModLhs.env = lhs.env;
   preModLhs.host:returnType = lhs.host:returnType;
+  preModLhs.host:breakValid = lhs.host:breakValid;
+  preModLhs.host:continueValid = lhs.host:continueValid;
 
   local preModDeref :: Boolean = deref || !null(runtimeMods);
 
@@ -96,10 +98,14 @@ top::host:Expr ::= f::host:Expr  a::host:Exprs
   local tmpArgs :: host:Exprs = foldExpr(mkTmpExprsRefs(a, tmpNamePrefix, 0));
   tmpArgs.env = top.env;
   tmpArgs.host:returnType = top.host:returnType;
+  tmpArgs.host:breakValid = top.host:breakValid;
+  tmpArgs.host:continueValid = top.host:continueValid;
 
   local callFunc :: host:Expr = host:callExpr(f, tmpArgs, location=top.location);
   callFunc.env = top.env;
   callFunc.host:returnType = top.host:returnType;
+  callFunc.host:breakValid = top.host:breakValid;
+  callFunc.host:continueValid = top.host:continueValid;
 
   local tmpResultDecl :: host:Stmt =
     mkDecl(
@@ -116,6 +122,8 @@ top::host:Expr ::= f::host:Expr  a::host:Exprs
     );
   tmpResultRef.env = top.env;
   tmpResultRef.host:returnType = top.host:returnType;
+  tmpResultRef.host:breakValid = top.host:breakValid;
+  tmpResultRef.host:continueValid = top.host:continueValid;
 
   local injExpr :: host:Expr =
     host:stmtExpr(
