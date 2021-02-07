@@ -372,7 +372,7 @@ top::Stmt ::=
   top.pp = cat( text("continue"), semi() );
   top.errors := if top.continueValid then []
                 else [err(loc("TODOcontinue",-1,-1,-1,-1,-1,-1), -- TODO: Location
-                  "Continue statement not within a loop")];
+                  "continue statement is in an invalid location")];
   top.globalDecls := [];
   top.functionDecls := [];
   top.defs := [];
@@ -387,7 +387,7 @@ top::Stmt ::=
   top.pp = ppConcat([ text("break"), semi()  ]);
   top.errors := if top.breakValid then []
                 else [err(loc("TODObreak",-1,-1,-1,-1,-1,-1), -- TODO: Location
-                  "Break statement not within a loop or switch statement")];
+                  "break statement is in an invalid location")];
   top.globalDecls := [];
   top.functionDecls := [];
   top.defs := [];
