@@ -1,9 +1,19 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 
-nonterminal Stmt with pp, host, errors, globalDecls, functionDecls, defs, env, functionDefs, returnType, freeVariables;
-flowtype Stmt = decorate {env, returnType};
+nonterminal Stmt with pp, host, errors, globalDecls, functionDecls, defs, env,
+  functionDefs, returnType, freeVariables, breakValid, continueValid;
+flowtype Stmt = decorate {env, returnType, breakValid, continueValid};
 
 autocopy attribute returnType :: Maybe<Type>;
+
+{-
+ - These variables track whether a break/continue statement are valid at a
+ - particular place. Per the C standard, a break is valid in the body of a
+ - loop or switch statement and a continue is valid only within the body
+ - of a loop
+ -}
+autocopy attribute breakValid :: Boolean;
+autocopy attribute continueValid :: Boolean;
 
 abstract production nullStmt
 top::Stmt ::=
@@ -20,7 +30,7 @@ top::Stmt ::= h::Stmt  t::Stmt
   top.freeVariables :=
     h.freeVariables ++
     removeDefsFromNames(h.defs, t.freeVariables);
-  
+
   t.env = addEnv(h.defs, top.env);
 }
 
@@ -92,7 +102,7 @@ top::Stmt ::= t::Type n::Name init::Expr
             nilAttribute(),
             justInitializer(exprInitializer(init, location=init.location))),
           nilDeclarator())));
-        
+
 }
 
 abstract production exprStmt
@@ -110,7 +120,7 @@ top::Stmt ::= c::Expr  t::Stmt  e::Stmt
     text("if"), space(), parens(c.pp), line(),
     braces(nestlines(2, t.pp)),
     text(" else "), braces(nestlines(2, e.pp))]);
-  
+
   -- A selection statement is a block whose scope is a strict subset of the scope of its
   -- enclosing block. Each associated substatement is also a block whose scope is a strict
   -- subset of the scope of the selection statement.
@@ -120,11 +130,11 @@ top::Stmt ::= c::Expr  t::Stmt  e::Stmt
     c.freeVariables ++
     removeDefsFromNames(c.defs, t.freeVariables) ++
     removeDefsFromNames(c.defs, e.freeVariables);
-  
+
   c.env = openScopeEnv(top.env);
   t.env = addEnv(c.defs, c.env);
   e.env = addEnv(globalDeclsDefs(t.globalDecls) ++ functionDeclsDefs(t.functionDecls), t.env);
-  
+
   top.errors <-
     if c.typerep.defaultFunctionArrayLvalueConversion.isScalarType then []
     else [err(c.location, "If condition must be scalar type, instead it is " ++ showType(c.typerep))];
@@ -143,13 +153,13 @@ abstract production whileStmt
 top::Stmt ::= e::Expr  b::Stmt
 {
   propagate host;
-  top.pp = ppConcat([ text("while"), space(), parens(e.pp), line(), 
+  top.pp = ppConcat([ text("while"), space(), parens(e.pp), line(),
                     braces(nestlines(2, b.pp)) ]);
   top.errors := e.errors ++ b.errors;
   top.globalDecls := e.globalDecls ++ b.globalDecls;
   top.functionDecls := e.functionDecls ++ b.functionDecls;
   top.functionDefs := b.functionDefs;
-  
+
   -- An iteration statement is a block whose scope is a strict subset of the scope of its
   -- enclosing block. The loop body is also a block whose scope is a strict subset of the scope
   -- of the iteration statement.
@@ -157,27 +167,30 @@ top::Stmt ::= e::Expr  b::Stmt
   top.freeVariables :=
     e.freeVariables ++
     removeDefsFromNames(e.defs, b.freeVariables);
-  
+
   e.env = openScopeEnv(top.env);
   b.env = addEnv(e.defs, e.env);
 
   top.errors <-
     if e.typerep.defaultFunctionArrayLvalueConversion.isScalarType then []
     else [err(e.location, "While condition must be scalar type, instead it is " ++ showType(e.typerep))];
+
+  b.breakValid = true;
+  b.continueValid = true;
 }
 
 abstract production doStmt
 top::Stmt ::= b::Stmt  e::Expr
 {
   propagate host;
-  top.pp = ppConcat([ text("do"),  line(), 
-                    braces(nestlines(2,b.pp)), line(), 
+  top.pp = ppConcat([ text("do"),  line(),
+                    braces(nestlines(2,b.pp)), line(),
                     text("while"), space(), parens(e.pp), semi()]);
   top.errors := b.errors ++ e.errors;
   top.globalDecls := b.globalDecls ++ e.globalDecls;
   top.functionDecls := b.functionDecls ++ e.functionDecls;
   top.functionDefs := b.functionDefs;
-  
+
   -- An iteration statement is a block whose scope is a strict subset of the scope of its
   -- enclosing block. The loop body is also a block whose scope is a strict subset of the scope
   -- of the iteration statement.
@@ -185,27 +198,30 @@ top::Stmt ::= b::Stmt  e::Expr
   top.freeVariables :=
     b.freeVariables ++
     removeDefsFromNames(b.defs, e.freeVariables);
-  
+
   b.env = openScopeEnv(top.env);
   e.env = addEnv(globalDeclsDefs(b.globalDecls) ++ functionDeclsDefs(b.functionDecls), b.env);
 
   top.errors <-
     if e.typerep.defaultFunctionArrayLvalueConversion.isScalarType then []
     else [err(e.location, "Do-while condition must be scalar type, instead it is " ++ showType(e.typerep))];
+
+  b.breakValid = true;
+  b.continueValid = true;
 }
 
 abstract production forStmt
 top::Stmt ::= i::MaybeExpr  c::MaybeExpr  s::MaybeExpr  b::Stmt
 {
   propagate host;
-  top.pp = 
+  top.pp =
     ppConcat([text("for"), parens(ppConcat([i.pp, semi(), space(), c.pp, semi(), space(), s.pp])), line(),
       braces(nestlines(2, b.pp)) ]);
   top.errors := i.errors ++ c.errors ++ s.errors ++ b.errors;
   top.globalDecls := i.globalDecls ++ c.globalDecls ++ s.globalDecls ++ b.globalDecls;
   top.functionDecls := i.functionDecls ++ c.functionDecls ++ s.functionDecls ++ b.functionDecls;
   top.functionDefs := b.functionDefs;
-  
+
   -- An iteration statement is a block whose scope is a strict subset of the scope of its
   -- enclosing block. The loop body is also a block whose scope is a strict subset of the scope
   -- of the iteration statement.
@@ -223,7 +239,7 @@ top::Stmt ::= i::MaybeExpr  c::MaybeExpr  s::MaybeExpr  b::Stmt
     removeDefsFromNames(i.defs, c.freeVariables) ++
     removeDefsFromNames(i.defs ++ c.defs, s.freeVariables) ++
     removeDefsFromNames(i.defs ++ c.defs ++ s.defs, b.freeVariables);
-  
+
   i.env = openScopeEnv(top.env);
   c.env = addEnv(i.defs, i.env);
   s.env = addEnv(c.defs, c.env);
@@ -233,19 +249,22 @@ top::Stmt ::= i::MaybeExpr  c::MaybeExpr  s::MaybeExpr  b::Stmt
   top.errors <-
     if cty.defaultFunctionArrayLvalueConversion.isScalarType then []
     else [err(loc("TODOfor1",-1,-1,-1,-1,-1,-1), "For condition must be scalar type, instead it is " ++ showType(cty))]; -- TODO: location
+
+  b.breakValid = true;
+  b.continueValid = true;
 }
 
 abstract production forDeclStmt
 top::Stmt ::= i::Decl  c::MaybeExpr  s::MaybeExpr  b::Stmt
 {
   propagate host;
-  top.pp = ppConcat([ text("for"), space(), parens( ppConcat([ i.pp, space(), c.pp, semi(), space(), s.pp]) ), 
+  top.pp = ppConcat([ text("for"), space(), parens( ppConcat([ i.pp, space(), c.pp, semi(), space(), s.pp]) ),
                     line(), braces(nestlines(2, b.pp)) ]);
   top.errors := i.errors ++ c.errors ++ s.errors ++ b.errors;
   top.globalDecls := i.globalDecls ++ c.globalDecls ++ s.globalDecls ++ b.globalDecls;
   top.functionDecls := i.functionDecls ++ c.functionDecls ++ s.functionDecls ++ b.functionDecls;
   top.functionDefs := b.functionDefs;
-  
+
   -- An iteration statement is a block whose scope is a strict subset of the scope of its
   -- enclosing block. The loop body is also a block whose scope is a strict subset of the scope
   -- of the iteration statement.
@@ -263,7 +282,7 @@ top::Stmt ::= i::Decl  c::MaybeExpr  s::MaybeExpr  b::Stmt
     removeDefsFromNames(i.defs, c.freeVariables) ++
     removeDefsFromNames(i.defs ++ c.defs, s.freeVariables) ++
     removeDefsFromNames(i.defs ++ c.defs ++ s.defs, b.freeVariables);
-  
+
   i.env = openScopeEnv(top.env);
   c.env = addEnv(i.defs, i.env);
   s.env = addEnv(c.defs, c.env);
@@ -274,6 +293,9 @@ top::Stmt ::= i::Decl  c::MaybeExpr  s::MaybeExpr  b::Stmt
   top.errors <-
     if cty.defaultFunctionArrayLvalueConversion.isScalarType then []
     else [err(loc("TODOfor2",-1,-1,-1,-1,-1,-1), "For condition must be scalar type, instead it is " ++ showType(cty))]; -- TODO: location
+
+  b.breakValid = true;
+  b.continueValid = true;
 }
 
 abstract production returnStmt
@@ -303,13 +325,13 @@ abstract production switchStmt
 top::Stmt ::= e::Expr  b::Stmt
 {
   propagate host;
-  top.pp = ppConcat([ text("switch"), space(), parens(e.pp),  line(), 
+  top.pp = ppConcat([ text("switch"), space(), parens(e.pp),  line(),
                     braces(nestlines(2, b.pp)) ]);
   top.errors := e.errors ++ b.errors;
   top.globalDecls := e.globalDecls ++ b.globalDecls;
   top.functionDecls := e.functionDecls ++ b.functionDecls;
   top.functionDefs := b.functionDefs;
-  
+
   -- A selection statement is a block whose scope is a strict subset of the scope of its
   -- enclosing block. Each associated substatement is also a block whose scope is a strict
   -- subset of the scope of the selection statement.
@@ -317,13 +339,15 @@ top::Stmt ::= e::Expr  b::Stmt
   top.freeVariables :=
     e.freeVariables ++
     removeDefsFromNames(e.defs, b.freeVariables);
-  
+
   e.env = openScopeEnv(top.env);
   b.env = addEnv(e.defs, e.env);
 
   top.errors <-
     if e.typerep.defaultFunctionArrayLvalueConversion.isIntegerType then []
     else [err(e.location, "Switch expression must have integer type, instead it is " ++ showType(e.typerep))];
+
+  b.breakValid = true;
 }
 
 abstract production gotoStmt
@@ -337,7 +361,7 @@ top::Stmt ::= l::Name
   top.defs := [];
   top.freeVariables := [];
   top.functionDefs := [];
-  
+
   top.errors <- l.labelLookupCheck;
 }
 
@@ -346,7 +370,9 @@ top::Stmt ::=
 {
   propagate host;
   top.pp = cat( text("continue"), semi() );
-  top.errors := [];
+  top.errors := if top.continueValid then []
+                else [err(loc("TODOcontinue",-1,-1,-1,-1,-1,-1), -- TODO: Location
+                  "continue statement is in an invalid location")];
   top.globalDecls := [];
   top.functionDecls := [];
   top.defs := [];
@@ -359,7 +385,9 @@ top::Stmt ::=
 {
   propagate host;
   top.pp = ppConcat([ text("break"), semi()  ]);
-  top.errors := [];
+  top.errors := if top.breakValid then []
+                else [err(loc("TODObreak",-1,-1,-1,-1,-1,-1), -- TODO: Location
+                  "break statement is in an invalid location")];
   top.globalDecls := [];
   top.functionDecls := [];
   top.defs := [];
@@ -378,7 +406,7 @@ top::Stmt ::= l::Name  s::Stmt
   top.defs := s.defs;
   top.freeVariables := s.freeVariables;
   top.functionDefs := s.functionDefs;
-  
+
   top.errors <- l.labelRedeclarationCheck;
   top.functionDefs <- [labelDef(l.name, labelItem(l.location))];
 }
@@ -387,7 +415,7 @@ abstract production caseLabelStmt
 top::Stmt ::= v::Expr  s::Stmt
 {
   propagate host;
-  top.pp = ppConcat([text("case"), space(), v.pp, text(":"), nestlines(2,s.pp)]); 
+  top.pp = ppConcat([text("case"), space(), v.pp, text(":"), nestlines(2,s.pp)]);
   top.errors := v.errors ++ s.errors;
   top.globalDecls := v.globalDecls ++ s.globalDecls;
   top.functionDecls := v.functionDecls ++ s.functionDecls;
@@ -396,7 +424,7 @@ top::Stmt ::= v::Expr  s::Stmt
     v.freeVariables ++
     removeDefsFromNames(v.defs, s.freeVariables);
   top.functionDefs := s.functionDefs; -- ??
-  
+
   s.env = addEnv(v.defs, v.env);
 }
 
@@ -432,7 +460,7 @@ abstract production caseLabelRangeStmt
 top::Stmt ::= l::Expr  u::Expr  s::Stmt
 {
   propagate host;
-  top.pp = ppConcat([text("case"), space(), l.pp, text("..."), u.pp, text(":"), space(),s.pp]); 
+  top.pp = ppConcat([text("case"), space(), l.pp, text("..."), u.pp, text(":"), space(),s.pp]);
   top.errors := l.errors ++ u.errors ++ s.errors;
   top.globalDecls := l.globalDecls ++ u.globalDecls ++ s.globalDecls;
   top.functionDecls := l.functionDecls ++ u.functionDecls ++ s.functionDecls;

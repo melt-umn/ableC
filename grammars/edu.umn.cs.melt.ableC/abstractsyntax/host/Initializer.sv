@@ -7,8 +7,10 @@ autocopy attribute inObject::Boolean;
 propagate host, errors, globalDecls, functionDecls, defs on MaybeInitializer, Initializer, InitList, Init, Designator;
 propagate freeVariables on MaybeInitializer, Initializer, Init, Designator;
 
-nonterminal MaybeInitializer with pp, host, typerep, errors, globalDecls, functionDecls, defs, env, expectedType, freeVariables, returnType;
-flowtype MaybeInitializer = decorate {env, expectedType, returnType};
+nonterminal MaybeInitializer with pp, host, typerep, errors, globalDecls,
+  functionDecls, defs, env, expectedType, freeVariables, returnType,
+  breakValid, continueValid;
+flowtype MaybeInitializer = decorate {env, expectedType, returnType, breakValid, continueValid};
 
 abstract production nothingInitializer
 top::MaybeInitializer ::=
@@ -29,19 +31,23 @@ top::MaybeInitializer ::= i::Initializer
 threaded attribute expectedTypes, expectedTypesOut :: [Type];
 threaded attribute nestedInits, nestedInitsOut :: Integer;
 
-nonterminal Initializer with location, pp, host, typerep, errors, globalDecls, functionDecls, defs, env, initializerPos, inObject, expectedType, expectedTypesOut, nestedInits, nestedInitsOut, freeVariables, returnType;
-flowtype Initializer = decorate {env, initializerPos, inObject, expectedType, returnType}, expectedTypesOut {decorate};
+nonterminal Initializer with location, pp, host, typerep, errors, globalDecls,
+  functionDecls, defs, env, initializerPos, inObject, expectedType, expectedTypesOut,
+  nestedInits, nestedInitsOut, freeVariables, returnType, breakValid, continueValid;
+flowtype Initializer = decorate {env, initializerPos, inObject, expectedType,
+  returnType, breakValid, continueValid},
+  expectedTypesOut {decorate};
 
 abstract production exprInitializer
 top::Initializer ::= e::Expr
 {
   top.pp = e.pp;
   top.typerep = top.expectedType;
-  
+
   local newMembers::Maybe<[Type]> = remainingObjectMembers(top.env, top.expectedType, e.typerep);
   top.expectedTypesOut = fromMaybe([], newMembers);
   top.nestedInitsOut = max(0, top.nestedInits + length(top.expectedTypesOut) - 1);
-  
+
   top.errors <-
     if top.inObject
     then
@@ -63,7 +69,7 @@ top::Initializer ::= l::InitList
 {
   top.pp = ppConcat([text("{"), ppImplode(text(", "), l.pps), text("}")]);
   top.typerep = l.typerep;
-  
+
   top.expectedTypesOut = [];
   top.nestedInitsOut = max(0, top.nestedInits - 1);
 
@@ -108,8 +114,12 @@ monoid attribute maxIndex::Integer with -1, max;
 
 autocopy attribute tagEnvIn::Decorated Env;
 
-nonterminal InitList with pps, initIndex, initIndexOut, maxIndex, host, typerep, errors, globalDecls, functionDecls, defs, env, expectedType, expectedTypes, nestedInits, tagEnvIn, freeVariables, returnType;
-flowtype InitList = decorate {initIndex, env, expectedType, expectedTypes, tagEnvIn, returnType}, maxIndex {decorate};
+nonterminal InitList with pps, initIndex, initIndexOut, maxIndex, host, typerep,
+  errors, globalDecls, functionDecls, defs, env, expectedType, expectedTypes,
+  nestedInits, tagEnvIn, freeVariables, returnType, breakValid, continueValid;
+flowtype InitList = decorate {initIndex, env, expectedType, expectedTypes, tagEnvIn,
+  returnType, breakValid, continueValid},
+  maxIndex {decorate};
 propagate initIndex, initIndexOut, maxIndex, expectedTypes, nestedInits on InitList;
 
 aspect default production
@@ -140,8 +150,13 @@ top::InitList ::=
   top.freeVariables := [];
 }
 
-nonterminal Init with pp, initIndex, initIndexOut, maxIndex, host, errors, globalDecls, functionDecls, defs, env, expectedType, expectedTypes, expectedTypesOut, nestedInits, nestedInitsOut, tagEnvIn, freeVariables, returnType;
-flowtype Init = decorate {initIndex, env, expectedType, expectedTypes, tagEnvIn, returnType}, maxIndex {decorate}, initIndexOut {decorate}, expectedTypesOut {decorate};
+nonterminal Init with pp, initIndex, initIndexOut, maxIndex, host, errors,
+  globalDecls, functionDecls, defs, env, expectedType, expectedTypes, expectedTypesOut,
+  nestedInits, nestedInitsOut, tagEnvIn, freeVariables, returnType, breakValid,
+  continueValid;
+flowtype Init = decorate {initIndex, env, expectedType, expectedTypes, tagEnvIn,
+  returnType, breakValid, continueValid},
+  maxIndex {decorate}, initIndexOut {decorate}, expectedTypesOut {decorate};
 
 abstract production positionalInit
 top::Init ::= i::Initializer
@@ -149,7 +164,7 @@ top::Init ::= i::Initializer
   top.pp = i.pp;
   top.initIndexOut = 1 + top.initIndex;
   top.maxIndex := top.initIndex;
-  
+
   i.inObject = true;
   i.expectedType =
     case top.expectedTypes of
@@ -162,12 +177,12 @@ top::Init ::= i::Initializer
     | _ -> []
     end;
   propagate nestedInits, nestedInitsOut;
-  
+
   top.errors <-
     if null(top.expectedTypes)
     then [wrn(i.location, s"Excess elements in initializer for type ${showType(top.expectedType)}")]
     else [];
-    
+
   i.initializerPos = s"positional initializer for type ${showType(top.expectedType)}"; -- TODO: Include the field name, somehow.
 }
 
@@ -177,12 +192,12 @@ top::Init ::= d::Designator  i::Initializer
   top.pp = ppConcat([d.pp, text(" = "), i.pp]);
   top.initIndexOut = d.maxIndex + 1;
   top.maxIndex := d.maxIndex;
-  
+
   top.expectedTypesOut = d.expectedTypesOut;
   top.nestedInitsOut = 0;
-  
+
   d.expectedType = top.expectedType;
-  
+
   i.env = addEnv(d.defs, d.env);
   i.initializerPos = s"member ${show(80, d.pp)} of ${showType(top.expectedType)}";
   i.inObject = true;
@@ -193,8 +208,11 @@ top::Init ::= d::Designator  i::Initializer
  - Tree access pattern for designators.
  - e.g.  "[1].d[0] = e" gives "array(0, field(d, array(1, initial)))"
  -}
-nonterminal Designator with pp, maxIndex, host, errors, globalDecls, functionDecls, defs, env, expectedType, expectedTypesOut, typerep, freeVariables, returnType;
-flowtype Designator = decorate {env, expectedType, returnType}, maxIndex {decorate}, expectedTypesOut {decorate};
+nonterminal Designator with pp, maxIndex, host, errors, globalDecls, functionDecls,
+  defs, env, expectedType, expectedTypesOut, typerep, freeVariables, returnType,
+  breakValid, continueValid;
+flowtype Designator = decorate {env, expectedType, returnType, breakValid, continueValid},
+  maxIndex {decorate}, expectedTypesOut {decorate};
 
 abstract production initialDesignator
 top::Designator ::=
@@ -270,7 +288,7 @@ top::Designator ::= d::Designator  e::Expr
 {
   top.pp = ppConcat([d.pp, text("["), e.pp, text("]")]);
   top.maxIndex := fromMaybe(-1, e.integerConstantValue);
-  
+
   top.errors <-
     case top.expectedType of
     | errorType() -> []
@@ -287,7 +305,7 @@ top::Designator ::= d::Designator  e::Expr
     if !e.integerConstantValue.isJust
     then [err(e.location, "Non-constant array index in initializer")]
     else [];
-  
+
   d.expectedType =
     case top.expectedType of
     | arrayType(e, _, _, _) -> e
@@ -300,9 +318,9 @@ top::Designator ::= d::Designator  e::Expr
     | arrayType(elem, _, _, incompleteArrayType()) -> repeatInfinite(elem)
     | _ -> []
     end;
-  
+
   e.env = addEnv(d.defs, d.env);
-  
+
   top.typerep = d.typerep;
 }
 
@@ -312,7 +330,7 @@ top::Designator ::= d::Designator  l::Expr  u::Expr
 {
   top.pp = ppConcat([d.pp, text("["), l.pp, text("..."), u.pp, text("]")]);
   top.maxIndex := fromMaybe(-1, u.integerConstantValue);
-  
+
   top.errors <-
     case top.expectedType of
     | errorType() -> []
@@ -343,7 +361,7 @@ top::Designator ::= d::Designator  l::Expr  u::Expr
     if !l.integerConstantValue.isJust
     then [err(l.location, "Non-constant array index in initializer")]
     else [];
-  
+
   d.expectedType =
     case top.expectedType of
     | arrayType(e, _, _, _) -> e
@@ -356,7 +374,7 @@ top::Designator ::= d::Designator  l::Expr  u::Expr
     | arrayType(elem, _, _, incompleteArrayType()) -> repeatInfinite(elem)
     | _ -> []
     end;
-  
+
   top.typerep = d.typerep;
 }
 

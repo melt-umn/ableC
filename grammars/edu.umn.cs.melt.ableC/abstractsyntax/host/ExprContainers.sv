@@ -1,8 +1,11 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 
-nonterminal MaybeExpr with pp, host, isJust, errors, globalDecls, functionDecls, defs, env, maybeTyperep, returnType, freeVariables, justTheExpr, isLValue, integerConstantValue;
+nonterminal MaybeExpr with pp, host, isJust, errors, globalDecls, functionDecls,
+  defs, env, maybeTyperep, returnType, freeVariables, justTheExpr, isLValue,
+  integerConstantValue, breakValid, continueValid;
 
-flowtype MaybeExpr = decorate {env, returnType}, isJust {}, justTheExpr {}, maybeTyperep {decorate}, integerConstantValue {decorate};
+flowtype MaybeExpr = decorate {env, returnType, breakValid, continueValid},
+  isJust {}, justTheExpr {}, maybeTyperep {decorate}, integerConstantValue {decorate};
 
 synthesized attribute maybeTyperep :: Maybe<Type>;
 synthesized attribute justTheExpr :: Maybe<Expr>;
@@ -30,9 +33,14 @@ top::MaybeExpr ::=
   implicit top.integerConstantValue = ;
 }
 
-nonterminal Exprs with pps, host, errors, globalDecls, functionDecls, defs, env, expectedTypes, argumentPosition, callExpr, argumentErrors, typereps, count, callVariadic, returnType, freeVariables, appendedExprs, appendedRes, isLValue;
+nonterminal Exprs with pps, host, errors, globalDecls, functionDecls, defs, env,
+  expectedTypes, argumentPosition, callExpr, argumentErrors, typereps, count,
+  callVariadic, returnType, freeVariables, appendedExprs, appendedRes, isLValue,
+  breakValid, continueValid;
 
-flowtype Exprs = decorate {env, returnType}, argumentErrors {decorate, expectedTypes, argumentPosition, callExpr, callVariadic}, count {}, appendedRes {appendedExprs};
+flowtype Exprs = decorate {env, returnType, breakValid, continueValid},
+  argumentErrors {decorate, expectedTypes, argumentPosition, callExpr, callVariadic},
+  count {}, appendedRes {appendedExprs};
 
 {-- Initially 1. -}
 inherited attribute argumentPosition :: Integer;
@@ -56,7 +64,7 @@ top::Exprs ::= h::Expr  t::Exprs
   top.count = 1 + t.count;
   top.appendedRes = consExpr(h, t.appendedRes);
   top.isLValue = t.isLValue;
-  
+
   top.argumentErrors =
    if null(top.expectedTypes) then
       if top.callVariadic then []
@@ -75,7 +83,7 @@ top::Exprs ::= h::Expr  t::Exprs
   t.expectedTypes = tail(top.expectedTypes);
   t.argumentPosition = top.argumentPosition + 1;
   t.appendedExprs = top.appendedExprs;
-  
+
   t.env = addEnv(h.defs, h.env);
 }
 abstract production nilExpr
@@ -87,7 +95,7 @@ top::Exprs ::=
   top.count = 0;
   top.appendedRes = top.appendedExprs;
   top.isLValue = false;
-  
+
   top.argumentErrors =
     if null(top.expectedTypes) then []
     else
@@ -125,9 +133,10 @@ Exprs ::= e1::Exprs e2::Exprs
   return e1.appendedRes;
 }
 
-nonterminal ExprOrTypeName with pp, host, errors, globalDecls, functionDecls, defs, env, typerep, returnType, freeVariables, isLValue;
+nonterminal ExprOrTypeName with pp, host, errors, globalDecls, functionDecls,
+  defs, env, typerep, returnType, freeVariables, isLValue, breakValid, continueValid;
 
-flowtype ExprOrTypeName = decorate {env, returnType};
+flowtype ExprOrTypeName = decorate {env, returnType, breakValid, continueValid};
 
 propagate host, errors, globalDecls, functionDecls, defs, freeVariables on ExprOrTypeName;
 

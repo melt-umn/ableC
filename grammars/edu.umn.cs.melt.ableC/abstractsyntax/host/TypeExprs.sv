@@ -22,14 +22,14 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
  -
  - TypeModifierExpr are terminated by "baseTypeExpr" which provides a typerep
  - value that is equal to the Type obtained from the corresponding BaseTypeExpr.
- - 
+ -
  - Invariant: a BaseTypeExpr and its corresponding TypeModifierExpr should have
  - the same environment
  -
  - Since BaseTypeExpr may contain new declarations, another invariant is that
  - extension productions containing a BaseTypeExpr must forward to a tree
  - containing that BaseTypeExpr exactly once.  However, they are free to use
- - directTypeExpr(ty.typerep) as many times as needed.    
+ - directTypeExpr(ty.typerep) as many times as needed.
  -}
 
 autocopy attribute baseType :: Type;
@@ -59,8 +59,10 @@ flowtype decls {decorate} on
 synthesized attribute bty :: BaseTypeExpr;
 synthesized attribute mty :: TypeModifierExpr;
 
-nonterminal TypeName with env, typerep, bty, mty, pp, host, errors, globalDecls, functionDecls, decls, defs, returnType, freeVariables;
-flowtype TypeName = decorate {env, returnType}, bty {}, mty {};
+nonterminal TypeName with env, typerep, bty, mty, pp, host, errors, globalDecls,
+  functionDecls, decls, defs, returnType, freeVariables, breakValid, continueValid;
+flowtype TypeName = decorate {env, returnType, breakValid, continueValid},
+  bty {}, mty {};
 
 abstract production typeName
 top::TypeName ::= bty::BaseTypeExpr  mty::TypeModifierExpr
@@ -85,10 +87,12 @@ top::TypeName ::= bty::BaseTypeExpr  mty::TypeModifierExpr
       -- TODO: Should be lifting decls to the closest scope, not global!
       map(
         \ d::Decl ->
-          decorate d with {env = top.env; returnType = top.returnType; isTopLevel = true;},
+          decorate d with {env = top.env; returnType = top.returnType; isTopLevel = true;
+            breakValid = top.breakValid; continueValid = top.continueValid;},
         -- decorate needed here because of flowtype for decls
         decorate bty.host with {
           env = bty.env; returnType = bty.returnType; givenRefId = bty.givenRefId;
+          breakValid = bty.breakValid; continueValid = bty.continueValid;
         }.decls)
     | nothing() -> []
     end ++ bty.globalDecls ++ mty.globalDecls;
@@ -124,8 +128,11 @@ top::TypeName ::= ty::Decorated TypeName
 {--
  - Corresponds to types obtainable from a TypeSpecifiers.
  -}
-nonterminal BaseTypeExpr with env, typerep, pp, host, errors, globalDecls, functionDecls, typeModifier, decls, defs, givenRefId, returnType, freeVariables;
-flowtype BaseTypeExpr = decorate {env, givenRefId, returnType}, typeModifier {decorate};
+nonterminal BaseTypeExpr with env, typerep, pp, host, errors, globalDecls,
+  functionDecls, typeModifier, decls, defs, givenRefId, returnType, freeVariables,
+  breakValid, continueValid;
+flowtype BaseTypeExpr = decorate {env, givenRefId, returnType, breakValid, continueValid},
+  typeModifier {decorate};
 
 abstract production errorTypeExpr
 top::BaseTypeExpr ::= msg::[Message]
@@ -152,7 +159,7 @@ top::BaseTypeExpr ::= msg::[Message]  ty::BaseTypeExpr
  - This is NOT a host production, since Type should not occur in the host tree.
  - Instead we transform the parameter type into a TypeExpr and return that.
  - Note that directTypeExpr(te.typerep) is not necessarily equivalent to te, since TypeExprs can
- - contain extra information relevant only to the declaration, not to the meaning of the type.  
+ - contain extra information relevant only to the declaration, not to the meaning of the type.
  - However, directTypeExpr(ty).typerep should be the same as ty, and
  - directTypeExpr(te.typerep).host.typerep should be the same as te.typerep.host
  -}
@@ -203,7 +210,7 @@ top::BaseTypeExpr ::= d::[Def]  bty::BaseTypeExpr
   top.typeModifier = bty.typeModifier;
   top.decls := defsDecl(d) :: bty.decls;
   top.defs <- d;
-  
+
   bty.env = addEnv(d, top.env);
 }
 
@@ -218,7 +225,7 @@ top::BaseTypeExpr ::= bty::BaseTypeExpr  mty::TypeModifierExpr
   top.host = fromMaybe(bty.host, mty.modifiedBaseTypeExpr);
   top.typerep = mty.typerep;
   top.typeModifier = mty.host;
-  
+
   mty.env = addEnv(bty.defs, bty.env);
   mty.baseType = bty.typerep;
   mty.typeModifierIn = bty.typeModifier;
@@ -257,7 +264,7 @@ top::BaseTypeExpr ::= q::Qualifiers  kwd::StructOrEnumOrUnion  n::Name
   -- This code is nassssty. TODO. Possibly split enum references to a separate production? This might simplify the logic considerably.
 
   local tags :: [TagItem] = lookupTag(n.name, top.env);
-  
+
   top.typerep =
     case kwd, tags of
     -- It's an enum and we see the declaration.
@@ -270,7 +277,7 @@ top::BaseTypeExpr ::= q::Qualifiers  kwd::StructOrEnumOrUnion  n::Name
     -- Otherwise, error!
     | _, _ -> errorType()
     end;
-  
+
   top.errors <-
     case kwd, tags of
     -- It's an enum and we see the declaration.
@@ -285,9 +292,9 @@ top::BaseTypeExpr ::= q::Qualifiers  kwd::StructOrEnumOrUnion  n::Name
     | unionSEU(), refIdTagItem(unionSEU(), rid) :: _ -> []
     | unionSEU(), _ :: _ -> [err(n.location, "Tag " ++ n.name ++ " is not a union")]
     end;
-  
+
   top.typeModifier = baseTypeExpr();
-  
+
   top.decls :=
     if null(lookupTag(n.name, top.env))
     then
@@ -303,7 +310,7 @@ top::BaseTypeExpr ::= q::Qualifiers  kwd::StructOrEnumOrUnion  n::Name
              nothingInitializer()),
            nilDeclarator()))]
     else [];
-  
+
   top.defs <-
     case kwd, tags of
     -- It's an enum and we see the declaration.
@@ -316,7 +323,7 @@ top::BaseTypeExpr ::= q::Qualifiers  kwd::StructOrEnumOrUnion  n::Name
     -- Otherwise, error!
     | _, _ -> []
     end;
-  
+
   q.typeToQualify = top.typerep;
 }
 
@@ -330,7 +337,7 @@ top::BaseTypeExpr ::= q::Qualifiers  kwd::StructOrEnumOrUnion  refId::String
   top.typerep = extType(q, refIdExtType(kwd, nothing(), refId));
   top.typeModifier = baseTypeExpr();
   top.decls := [];
-  
+
   q.typeToQualify = top.typerep;
 }
 
@@ -395,8 +402,8 @@ top::BaseTypeExpr ::= q::Qualifiers  name::Name
 {
   propagate host, errors, globalDecls, functionDecls, defs, decls, freeVariables;
   top.pp = ppConcat([terminate(space(), q.pps), name.pp ]);
-  
-  top.typerep = 
+
+  top.typerep =
     noncanonicalType(
       typedefType(
         q, name.name,
@@ -404,7 +411,7 @@ top::BaseTypeExpr ::= q::Qualifiers  name::Name
         then errorType()
         else addQualifiers(q.qualifiers, name.valueItem.typerep)));
   top.typeModifier = baseTypeExpr();
-  
+
   top.errors <- name.valueLookupCheck;
   top.errors <-
     if name.valueItem.isItemType then []
@@ -417,7 +424,7 @@ top::BaseTypeExpr ::= q::Qualifiers  name::Name
  - can only be attatched on declarations.  Thus this production is never actually introduced by
  - concrete syntax, but it can be created when translating a transformed attributed type back to a
  - BaseTypeExpr.  To enable this, we must lift a typedef with the appropriate attributes and refer
- - to that.  
+ - to that.
  -}
 abstract production attributedTypeExpr
 top::BaseTypeExpr ::= attrs::Attributes  bt::BaseTypeExpr
@@ -476,8 +483,12 @@ top::BaseTypeExpr ::= q::Qualifiers  e::ExprOrTypeName
  - Typically, these are just anchored somewhere to obtain the env,
  - and then turn into an environment-independent Type.
  -}
-nonterminal TypeModifierExpr with env, typerep, lpp, rpp, host, modifiedBaseTypeExpr, isFunctionArrayTypeExpr, baseType, typeModifierIn, errors, globalDecls, functionDecls, decls, defs, returnType, freeVariables;
-flowtype TypeModifierExpr = decorate {env, baseType, typeModifierIn, returnType}, modifiedBaseTypeExpr {decorate}, isFunctionArrayTypeExpr {};
+nonterminal TypeModifierExpr with env, typerep, lpp, rpp, host, modifiedBaseTypeExpr,
+  isFunctionArrayTypeExpr, baseType, typeModifierIn, errors, globalDecls,
+  functionDecls, decls, defs, returnType, freeVariables, breakValid, continueValid;
+flowtype TypeModifierExpr = decorate {env, baseType, typeModifierIn, returnType,
+  breakValid, continueValid},
+  modifiedBaseTypeExpr {decorate}, isFunctionArrayTypeExpr {};
 
 synthesized attribute modifiedBaseTypeExpr::Maybe<BaseTypeExpr>;
 synthesized attribute isFunctionArrayTypeExpr::Boolean;
@@ -489,9 +500,9 @@ top::TypeModifierExpr ::=
 }
 
 {--
- - A TypeModifierExpr that corresponds to whatever the base TypeExpr was.  
+ - A TypeModifierExpr that corresponds to whatever the base TypeExpr was.
  - This gets transformed via host to include type modifiers that were included in the base
- - TypeExpr via typeModifierTypeExpr.  
+ - TypeExpr via typeModifierTypeExpr.
  -}
 abstract production baseTypeExpr
 top::TypeModifierExpr ::=
@@ -521,7 +532,7 @@ top::TypeModifierExpr ::= bty::BaseTypeExpr
   top.host = bty.typeModifier; -- top.typeModifierIn discarded
   top.modifiedBaseTypeExpr = just(bty.host);
   top.typerep = bty.typerep;
-  
+
   bty.givenRefId = nothing();
 }
 
@@ -571,14 +582,14 @@ top::TypeModifierExpr ::= element::TypeModifierExpr  indexQualifiers::Qualifiers
 {
   propagate host, errors, globalDecls, functionDecls, defs, decls, freeVariables;
   top.lpp = element.lpp;
-  
+
   top.rpp = cat(brackets(ppConcat([
     terminate(space(), indexQualifiers.pps ++ sizeModifier.pps),
     size.pp
     ])), element.rpp);
-  
+
   top.modifiedBaseTypeExpr = element.modifiedBaseTypeExpr;
-  
+
   top.isFunctionArrayTypeExpr = true;
 
   top.typerep =
@@ -595,13 +606,13 @@ top::TypeModifierExpr ::= element::TypeModifierExpr  indexQualifiers::Qualifiers
 {
   propagate host, errors, globalDecls, functionDecls, defs, decls, freeVariables;
   top.lpp = element.lpp;
-  
+
   top.rpp = cat(brackets(
     ppImplode(space(), indexQualifiers.pps ++ sizeModifier.pps)
     ), element.rpp);
-  
+
   top.modifiedBaseTypeExpr = element.modifiedBaseTypeExpr;
-  
+
   top.isFunctionArrayTypeExpr = true;
 
   top.typerep = arrayType(element.typerep, indexQualifiers, sizeModifier, incompleteArrayType());
@@ -615,25 +626,25 @@ top::TypeModifierExpr ::= result::TypeModifierExpr  args::Parameters  variadic::
   propagate host, errors, globalDecls, functionDecls, defs, decls, freeVariables;
   top.lpp = ppConcat([ result.lpp ]);
 
-  top.rpp = 
+  top.rpp =
     cat(parens(
-      if null(args.pps) 
+      if null(args.pps)
       then text("void")
-      else ppImplode(text(", "), 
-            (if variadic then args.pps ++ [text("...")] else args.pps) 
+      else ppImplode(text(", "),
+            (if variadic then args.pps ++ [text("...")] else args.pps)
            )
      ), result.rpp);
-  
+
   top.modifiedBaseTypeExpr = result.modifiedBaseTypeExpr;
-  
+
   top.isFunctionArrayTypeExpr = true;
-  
-  top.typerep = functionType(result.typerep, 
+
+  top.typerep = functionType(result.typerep,
                              protoFunctionType(args.typereps, variadic), q);
-  
+
   args.env = openScopeEnv(top.env);
   args.position = 0;
-  
+
   q.typeToQualify = top.typerep;
 }
 abstract production functionTypeExprWithoutArgs
@@ -642,11 +653,11 @@ top::TypeModifierExpr ::= result::TypeModifierExpr  ids::[Name]  q::Qualifiers -
   propagate host, errors, globalDecls, functionDecls, defs, decls, freeVariables;
   top.lpp = result.lpp;
   top.rpp = cat( parens(ppImplode(text(", "), map((.pp), ids))), result.rpp );
-  
+
   top.modifiedBaseTypeExpr = result.modifiedBaseTypeExpr;
-  
+
   top.isFunctionArrayTypeExpr = true;
-  
+
   top.typerep = functionType(result.typerep, noProtoFunctionType(), q);
   q.typeToQualify = top.typerep;
 }
@@ -666,8 +677,11 @@ top::TypeModifierExpr ::= wrapped::TypeModifierExpr
 autocopy attribute appendedTypeNames :: TypeNames;
 synthesized attribute appendedTypeNamesRes :: TypeNames;
 
-nonterminal TypeNames with pps, host, env, typereps, count, errors, globalDecls, functionDecls, decls, defs, returnType, freeVariables, appendedTypeNames, appendedTypeNamesRes;
-flowtype TypeNames = decorate {env, returnType}, count {}, appendedTypeNamesRes {appendedTypeNames};
+nonterminal TypeNames with pps, host, env, typereps, count, errors, globalDecls,
+  functionDecls, decls, defs, returnType, freeVariables, appendedTypeNames,
+  appendedTypeNamesRes, breakValid, continueValid;
+flowtype TypeNames = decorate {env, returnType, breakValid, continueValid},
+  count {}, appendedTypeNamesRes {appendedTypeNames};
 
 propagate host, errors, globalDecls, functionDecls, decls, defs, freeVariables on TypeNames;
 
@@ -678,12 +692,12 @@ top::TypeNames ::= h::TypeName t::TypeNames
   top.typereps = h.typerep :: t.typereps;
   top.count = t.count + 1;
   top.appendedTypeNamesRes = consTypeName(h, t.appendedTypeNamesRes);
-  
+
   t.env = addEnv(h.defs, h.env);
 }
 
 abstract production nilTypeName
-top::TypeNames ::= 
+top::TypeNames ::=
 {
   top.pps = [];
   top.typereps = [];

@@ -73,7 +73,8 @@ Parameters ::= l::[ParameterDecl]
   return case l of
   -- A special case.  "type name(void)"  means no parameters.
   | [d] ->
-    case decorate d with {env = emptyEnv(); returnType = nothing(); position = 0;} of
+    case decorate d with {env = emptyEnv(); returnType = nothing(); position = 0; 
+            breakValid=false; continueValid=false;} of
       parameterDecl(nilStorageClass(), builtinTypeExpr(nilQualifier(), voidType()), baseTypeExpr(), nothingName(), nilAttribute()) -> nilParameters()
     | _ -> foldr(consParameters, nilParameters(), l)
     end
