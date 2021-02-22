@@ -34,6 +34,7 @@ Scopes<a> ::= d::Contribs<a>  s::Scopes<a>
 {
   return case d, s of
     | [], _ -> s
+    | _, [] -> error("No scopes in env!")
     | _, [_] -> addScope(d, s)
     | _, h :: t -> h :: addGlobalScope(d, t)
     end;
@@ -47,6 +48,7 @@ Scopes<a> ::= d::Contribs<a> s::Scopes<a>
 {
   return case d, s of
     | [], _ -> s
+    | _, [] -> error("No scopes in env!")
     | _, [_] -> addScope(d, s)
     | _, h :: m :: [] -> addScope(d, h :: m :: [])
     | _, h :: t -> h :: addFunctionScope(d, t)

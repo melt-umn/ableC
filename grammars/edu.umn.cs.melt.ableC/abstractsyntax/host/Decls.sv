@@ -504,6 +504,7 @@ top::FunctionDecl ::= storage::StorageClasses  fnquals::SpecialSpecifiers  bty::
     case mty of
     | functionTypeExprWithArgs(ret, _, _, _) -> ret
     | functionTypeExprWithoutArgs(ret, _, _) -> ret
+    | _ -> error("functionDecl TypeModifierExpr should always be a functionTypeExpr")
     end;
   retMty.env = mty.env;
   retMty.returnType = mty.returnType;

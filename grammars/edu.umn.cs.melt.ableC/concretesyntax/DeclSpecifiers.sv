@@ -361,7 +361,7 @@ concrete productions top::StructOrUnionSpecifier_c
         end; }
 
 
-closed nonterminal StructOrUnion_c with location; 
+nonterminal StructOrUnion_c with location; 
 concrete productions top::StructOrUnion_c
 (struct_c) | 'struct'  {}
 (union_c)  | 'union'  {}

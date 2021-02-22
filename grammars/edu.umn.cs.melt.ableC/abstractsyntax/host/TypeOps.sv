@@ -168,7 +168,7 @@ BuiltinType ::= a::BuiltinType  b::BuiltinType
   | complexType(rt), _ -> a
   | imaginaryType(rt), _ -> a
   -- Invariant: function always called with 'a' as one of these three contructors
-  --| _, _ -> error("floating conversion called with " ++ show(100, a.pp) ++ " and " ++ show(100, b.pp))
+  | _, _ -> error("floating conversion called with " ++ show(100, a.pp) ++ " and " ++ show(100, b.pp))
   end;
 }
 
@@ -209,6 +209,7 @@ BuiltinType ::= a::BuiltinType  b::BuiltinType
   | complexIntegerType(at), unsignedType(bt) -> complexIntegerType(maximumConversionRank(at, bt))
   | complexIntegerType(at), complexIntegerType(bt) -> complexIntegerType(maximumConversionRank(at, bt))
   -- No bools thanks to promotions, Invariant: always called with on of these three *only*
+  | _, _ -> error("integer conversion called with " ++ show(100, a.pp) ++ " and " ++ show(100, b.pp))
   end;
 }
 

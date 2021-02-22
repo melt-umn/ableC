@@ -308,9 +308,9 @@ top::Stmt ::= e::MaybeExpr {- loc::Location -} -- TODO: Add location to signatur
                 | just(builtinType(_, voidType())), nothing() -> []
                 | just(expected), just(actual) ->
                     if typeAssignableTo(expected, actual) then []
-                    else [err(case e of justExpr(e1) -> e1.location end,
+                    else [err(e.justTheExpr.fromJust.location,
                               "Incorrect return type, expected " ++ showType(expected) ++ " but found " ++ showType(actual))]
-                | nothing(), just(actual) -> [err(case e of justExpr(e1) -> e1.location end, "Unexpected return")]
+                | nothing(), just(actual) -> [err(e.justTheExpr.fromJust.location, "Unexpected return")]
                 | just(expected), nothing() -> [err({-loc-} loc("TODOreturn",-1,-1,-1,-1,-1,-1), "Expected return value, but found valueless return")] -- TODO: location
                 end ++ e.errors;
   top.globalDecls := e.globalDecls;
