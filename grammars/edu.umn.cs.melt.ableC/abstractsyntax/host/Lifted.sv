@@ -144,9 +144,7 @@ top::Expr ::= decls::Decls lifted::Expr
 
   decls.env = globalEnv(top.env);
   decls.isTopLevel = true;
-  decls.returnType = nothing();
-  decls.breakValid = false;
-  decls.continueValid = false;
+  decls.controlStmtContext = initialControlStmtContext;
 
   lifted.env = addEnv([globalDefsDef(decls.defs)], top.env);
 
@@ -176,9 +174,7 @@ top::Stmt ::= decls::Decls lifted::Stmt
 
   decls.env = globalEnv(top.env);
   decls.isTopLevel = true;
-  decls.returnType = nothing();
-  decls.breakValid = false;
-  decls.continueValid = false;
+  decls.controlStmtContext = initialControlStmtContext;
 
   lifted.env = addEnv([globalDefsDef(decls.defs)], top.env);
 }
@@ -210,9 +206,7 @@ top::BaseTypeExpr ::= decls::Decls lifted::BaseTypeExpr
 
   decls.env = globalEnv(top.env);
   decls.isTopLevel = true;
-  decls.returnType = nothing();
-  decls.breakValid = false;
-  decls.continueValid = false;
+  decls.controlStmtContext = initialControlStmtContext;
 
   lifted.env = addEnv([globalDefsDef(decls.defs)], top.env);
 }
@@ -236,9 +230,7 @@ top::Decl ::= decls::Decls
 
   decls.env = globalEnv(top.env);
   decls.isTopLevel = true;
-  decls.returnType = nothing();
-  decls.breakValid = false;
-  decls.continueValid = false;
+  decls.controlStmtContext = initialControlStmtContext;
 }
 
 abstract production injectFunctionDeclsDecl
@@ -256,9 +248,7 @@ top::Decl ::= decls::Decls
 
   decls.env = functionEnv(top.env);
   decls.isTopLevel = false;
-  decls.returnType = nothing();
-  decls.breakValid = false;
-  decls.continueValid = false;
+  decls.controlStmtContext = initialControlStmtContext;
 }
 
 {--

@@ -8,9 +8,8 @@ propagate host, errors, globalDecls, functionDecls, defs on MaybeInitializer, In
 propagate freeVariables on MaybeInitializer, Initializer, Init, Designator;
 
 nonterminal MaybeInitializer with pp, host, typerep, errors, globalDecls,
-  functionDecls, defs, env, expectedType, freeVariables, returnType,
-  breakValid, continueValid;
-flowtype MaybeInitializer = decorate {env, expectedType, returnType, breakValid, continueValid};
+  functionDecls, defs, env, expectedType, freeVariables, controlStmtContext;
+flowtype MaybeInitializer = decorate {env, expectedType, controlStmtContext};
 
 abstract production nothingInitializer
 top::MaybeInitializer ::=
@@ -33,9 +32,9 @@ threaded attribute nestedInits, nestedInitsOut :: Integer;
 
 nonterminal Initializer with location, pp, host, typerep, errors, globalDecls,
   functionDecls, defs, env, initializerPos, inObject, expectedType, expectedTypesOut,
-  nestedInits, nestedInitsOut, freeVariables, returnType, breakValid, continueValid;
+  nestedInits, nestedInitsOut, freeVariables, controlStmtContext;
 flowtype Initializer = decorate {env, initializerPos, inObject, expectedType,
-  returnType, breakValid, continueValid},
+  controlStmtContext},
   expectedTypesOut {decorate};
 
 abstract production exprInitializer
@@ -116,9 +115,9 @@ autocopy attribute tagEnvIn::Decorated Env;
 
 nonterminal InitList with pps, initIndex, initIndexOut, maxIndex, host, typerep,
   errors, globalDecls, functionDecls, defs, env, expectedType, expectedTypes,
-  nestedInits, tagEnvIn, freeVariables, returnType, breakValid, continueValid;
+  nestedInits, tagEnvIn, freeVariables, controlStmtContext;
 flowtype InitList = decorate {initIndex, env, expectedType, expectedTypes, tagEnvIn,
-  returnType, breakValid, continueValid},
+  controlStmtContext},
   maxIndex {decorate};
 propagate initIndex, initIndexOut, maxIndex, expectedTypes, nestedInits on InitList;
 
@@ -152,10 +151,9 @@ top::InitList ::=
 
 nonterminal Init with pp, initIndex, initIndexOut, maxIndex, host, errors,
   globalDecls, functionDecls, defs, env, expectedType, expectedTypes, expectedTypesOut,
-  nestedInits, nestedInitsOut, tagEnvIn, freeVariables, returnType, breakValid,
-  continueValid;
+  nestedInits, nestedInitsOut, tagEnvIn, freeVariables, controlStmtContext;
 flowtype Init = decorate {initIndex, env, expectedType, expectedTypes, tagEnvIn,
-  returnType, breakValid, continueValid},
+  controlStmtContext},
   maxIndex {decorate}, initIndexOut {decorate}, expectedTypesOut {decorate};
 
 abstract production positionalInit
@@ -209,9 +207,8 @@ top::Init ::= d::Designator  i::Initializer
  - e.g.  "[1].d[0] = e" gives "array(0, field(d, array(1, initial)))"
  -}
 nonterminal Designator with pp, maxIndex, host, errors, globalDecls, functionDecls,
-  defs, env, expectedType, expectedTypesOut, typerep, freeVariables, returnType,
-  breakValid, continueValid;
-flowtype Designator = decorate {env, expectedType, returnType, breakValid, continueValid},
+  defs, env, expectedType, expectedTypesOut, typerep, freeVariables, controlStmtContext;
+flowtype Designator = decorate {env, expectedType, controlStmtContext},
   maxIndex {decorate}, expectedTypesOut {decorate};
 
 abstract production initialDesignator

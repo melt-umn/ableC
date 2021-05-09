@@ -1,19 +1,8 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 
 nonterminal Stmt with pp, host, errors, globalDecls, functionDecls, defs, env,
-  functionDefs, returnType, freeVariables, breakValid, continueValid;
-flowtype Stmt = decorate {env, returnType, breakValid, continueValid};
-
-autocopy attribute returnType :: Maybe<Type>;
-
-{-
- - These variables track whether a break/continue statement are valid at a
- - particular place. Per the C standard, a break is valid in the body of a
- - loop or switch statement and a continue is valid only within the body
- - of a loop
- -}
-autocopy attribute breakValid :: Boolean;
-autocopy attribute continueValid :: Boolean;
+  functionDefs, freeVariables, controlStmtContext;
+flowtype Stmt = decorate {env, controlStmtContext};
 
 abstract production nullStmt
 top::Stmt ::=
@@ -175,8 +164,7 @@ top::Stmt ::= e::Expr  b::Stmt
     if e.typerep.defaultFunctionArrayLvalueConversion.isScalarType then []
     else [err(e.location, "While condition must be scalar type, instead it is " ++ showType(e.typerep))];
 
-  b.breakValid = true;
-  b.continueValid = true;
+  b.controlStmtContext = controlEnterLoop(top.controlStmtContext);
 }
 
 abstract production doStmt
@@ -206,8 +194,7 @@ top::Stmt ::= b::Stmt  e::Expr
     if e.typerep.defaultFunctionArrayLvalueConversion.isScalarType then []
     else [err(e.location, "Do-while condition must be scalar type, instead it is " ++ showType(e.typerep))];
 
-  b.breakValid = true;
-  b.continueValid = true;
+  b.controlStmtContext = controlEnterLoop(top.controlStmtContext);
 }
 
 abstract production forStmt
@@ -250,8 +237,7 @@ top::Stmt ::= i::MaybeExpr  c::MaybeExpr  s::MaybeExpr  b::Stmt
     if cty.defaultFunctionArrayLvalueConversion.isScalarType then []
     else [err(loc("TODOfor1",-1,-1,-1,-1,-1,-1), "For condition must be scalar type, instead it is " ++ showType(cty))]; -- TODO: location
 
-  b.breakValid = true;
-  b.continueValid = true;
+  b.controlStmtContext = controlEnterLoop(top.controlStmtContext);
 }
 
 abstract production forDeclStmt
@@ -294,8 +280,7 @@ top::Stmt ::= i::Decl  c::MaybeExpr  s::MaybeExpr  b::Stmt
     if cty.defaultFunctionArrayLvalueConversion.isScalarType then []
     else [err(loc("TODOfor2",-1,-1,-1,-1,-1,-1), "For condition must be scalar type, instead it is " ++ showType(cty))]; -- TODO: location
 
-  b.breakValid = true;
-  b.continueValid = true;
+  b.controlStmtContext = controlEnterLoop(top.controlStmtContext);
 }
 
 abstract production returnStmt
@@ -303,7 +288,7 @@ top::Stmt ::= e::MaybeExpr {- loc::Location -} -- TODO: Add location to signatur
 {
   propagate host;
   top.pp = ppConcat([text("return"), space(), e.pp, semi()]);
-  top.errors := case top.returnType, e.maybeTyperep of
+  top.errors := case top.controlStmtContext.returnType, e.maybeTyperep of
                   nothing(), nothing() -> []
                 | just(builtinType(_, voidType())), nothing() -> []
                 | just(expected), just(actual) ->
@@ -347,7 +332,7 @@ top::Stmt ::= e::Expr  b::Stmt
     if e.typerep.defaultFunctionArrayLvalueConversion.isIntegerType then []
     else [err(e.location, "Switch expression must have integer type, instead it is " ++ showType(e.typerep))];
 
-  b.breakValid = true;
+  b.controlStmtContext = controlEnterSwitch(top.controlStmtContext);
 }
 
 abstract production gotoStmt
@@ -370,7 +355,7 @@ top::Stmt ::=
 {
   propagate host;
   top.pp = cat( text("continue"), semi() );
-  top.errors := if top.continueValid then []
+  top.errors := if top.controlStmtContext.continueValid then []
                 else [err(loc("TODOcontinue",-1,-1,-1,-1,-1,-1), -- TODO: Location
                   "continue statement is in an invalid location")];
   top.globalDecls := [];
@@ -385,7 +370,7 @@ top::Stmt ::=
 {
   propagate host;
   top.pp = ppConcat([ text("break"), semi()  ]);
-  top.errors := if top.breakValid then []
+  top.errors := if top.controlStmtContext.breakValid then []
                 else [err(loc("TODObreak",-1,-1,-1,-1,-1,-1), -- TODO: Location
                   "break statement is in an invalid location")];
   top.globalDecls := [];

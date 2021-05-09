@@ -2,9 +2,9 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 
 propagate host on AsmStatement, AsmArgument, AsmClobbers, AsmOperands, AsmOperand;
 
-nonterminal AsmStatement with location, pp, host, env, returnType, freeVariables,
-  breakValid, continueValid;
-flowtype AsmStatement = decorate {env, returnType, breakValid, continueValid};
+nonterminal AsmStatement with location, pp, host, env, freeVariables,
+  controlStmtContext;
+flowtype AsmStatement = decorate {env, controlStmtContext};
 
 abstract production asmStatement
 a::AsmStatement ::= arg::AsmArgument
@@ -20,9 +20,9 @@ a::AsmStatement ::= tq::Qualifier arg::AsmArgument
   a.freeVariables := arg.freeVariables;
 }
 
-nonterminal AsmArgument with location, pp, host, env, returnType, freeVariables,
-  breakValid, continueValid;
-flowtype AsmArgument = decorate {env, returnType, breakValid, continueValid};
+nonterminal AsmArgument with location, pp, host, env, freeVariables,
+  controlStmtContext;
+flowtype AsmArgument = decorate {env, controlStmtContext};
 
 abstract production asmArgument
 top::AsmArgument ::= s::String asmOps1::AsmOperands asmOps2::AsmOperands asmC::AsmClobbers
@@ -62,9 +62,9 @@ top::AsmClobbers ::= asmC::AsmClobbers s::String
   top.pp = ppConcat( [asmC.pp, text(", "), text(s) ] );
 }
 
-nonterminal AsmOperands with location, pp, exists, host, env, returnType,
-  freeVariables, breakValid, continueValid;
-flowtype AsmOperands = decorate {env, returnType, breakValid, continueValid}, exists {};
+nonterminal AsmOperands with location, pp, exists, host, env, freeVariables,
+  controlStmtContext;
+flowtype AsmOperands = decorate {env, controlStmtContext}, exists {};
 
 abstract production noneAsmOps
 top::AsmOperands ::=
@@ -88,9 +88,9 @@ top::AsmOperands ::= asmOps::AsmOperands asmOp::AsmOperand
   top.freeVariables := asmOp.freeVariables ++ asmOps.freeVariables;
 }
 
-nonterminal AsmOperand with location, pp, host, env, returnType, freeVariables,
-  breakValid, continueValid;
-flowtype AsmOperand = decorate {env, returnType, breakValid, continueValid};
+nonterminal AsmOperand with location, pp, host, env, freeVariables,
+  controlStmtContext;
+flowtype AsmOperand = decorate {env, controlStmtContext};
 
 abstract production asmOperand
 top::AsmOperand ::= s::String e::Expr

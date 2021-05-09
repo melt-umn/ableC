@@ -5,7 +5,7 @@ top::host:Expr ::= ty::host:TypeName  e::host:Expr
 {
   top.pp = parens( ppConcat([parens(ty.pp), e.pp]) );
   production attribute lerrors :: [Message] with ++;
-  lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  lerrors := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
   
   e.env = addEnv(ty.defs, ty.env);
 
@@ -22,7 +22,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 {
   top.pp = parens( ppConcat([ lhs.pp, brackets( rhs.pp )]) );
   production attribute lerrors :: [Message] with ++;
-  lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  lerrors := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
   
   rhs.env = addEnv(lhs.defs, lhs.env);
   
@@ -92,7 +92,7 @@ top::host:Expr ::= lhs::host:Expr  deref::Boolean  rhs::host:Name
 {
   top.pp = parens(ppConcat([lhs.pp, text(if deref then "->" else "."), rhs.pp]));
   production attribute lerrors :: [Message] with ++;
-  lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  lerrors := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   local t::host:Type = lhs.host:typerep;
   t.isDeref = deref;

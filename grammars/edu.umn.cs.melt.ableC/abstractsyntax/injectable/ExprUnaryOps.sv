@@ -9,13 +9,13 @@ top::host:Expr ::= e::host:Expr
     These equations exist only to seed dependencies on env and returnType so
     extensions can freely compute these synthesized attributes based on them
     while still passing the modular well-definedness analysis. -}
-  lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  lerrors := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   production attribute runtimeMods::[RuntimeMod] with ++;
-  runtimeMods := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  runtimeMods := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
-  injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  injectedQualifiers := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   forwards to
     host:wrapWarnExpr(lerrors,
@@ -33,13 +33,13 @@ top::host:Expr ::= e::host:Expr
     These equations exist only to seed dependencies on env and returnType so
     extensions can freely compute these synthesized attributes based on them
     while still passing the modular well-definedness analysis. -}
-  lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  lerrors := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   production attribute runtimeMods::[RuntimeMod] with ++;
-  runtimeMods := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  runtimeMods := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
-  injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  injectedQualifiers := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   forwards to
     host:wrapWarnExpr(lerrors,
@@ -57,13 +57,13 @@ top::host:Expr ::= e::host:Expr
     These equations exist only to seed dependencies on env and returnType so
     extensions can freely compute these synthesized attributes based on them
     while still passing the modular well-definedness analysis. -}
-  lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  lerrors := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   production attribute runtimeMods::[RuntimeMod] with ++;
-  runtimeMods := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  runtimeMods := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
-  injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  injectedQualifiers := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   forwards to
     host:wrapWarnExpr(lerrors,
@@ -81,13 +81,13 @@ top::host:Expr ::= e::host:Expr
     These equations exist only to seed dependencies on env and returnType so
     extensions can freely compute these synthesized attributes based on them
     while still passing the modular well-definedness analysis. -}
-  lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  lerrors := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   production attribute runtimeMods::[RuntimeMod] with ++;
-  runtimeMods := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  runtimeMods := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
-  injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  injectedQualifiers := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   forwards to
     host:wrapWarnExpr(lerrors,
@@ -105,13 +105,13 @@ top::host:Expr ::= e::host:Expr
     These equations exist only to seed dependencies on env and returnType so
     extensions can freely compute these synthesized attributes based on them
     while still passing the modular well-definedness analysis. -}
-  lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  lerrors := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   production attribute runtimeMods::[RuntimeMod] with ++;
-  runtimeMods := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  runtimeMods := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
-  injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  injectedQualifiers := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   forwards to
     host:wrapWarnExpr(lerrors,
@@ -129,13 +129,13 @@ top::host:Expr ::= e::host:Expr
     These equations exist only to seed dependencies on env and returnType so
     extensions can freely compute these synthesized attributes based on them
     while still passing the modular well-definedness analysis. -}
-  lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  lerrors := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   production attribute runtimeMods::[RuntimeMod] with ++;
-  runtimeMods := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  runtimeMods := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
-  injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  injectedQualifiers := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   forwards to
     host:wrapWarnExpr(lerrors,
@@ -153,13 +153,13 @@ top::host:Expr ::= e::host:Expr
     These equations exist only to seed dependencies on env and returnType so
     extensions can freely compute these synthesized attributes based on them
     while still passing the modular well-definedness analysis. -}
-  lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  lerrors := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   production attribute runtimeMods::[RuntimeMod] with ++;
-  runtimeMods := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  runtimeMods := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
-  injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  injectedQualifiers := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   forwards to
     host:wrapWarnExpr(lerrors,
@@ -177,13 +177,13 @@ top::host:Expr ::= e::host:Expr
     These equations exist only to seed dependencies on env and returnType so
     extensions can freely compute these synthesized attributes based on them
     while still passing the modular well-definedness analysis. -}
-  lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  lerrors := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   production attribute runtimeMods::[RuntimeMod] with ++;
-  runtimeMods := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  runtimeMods := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
-  injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  injectedQualifiers := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   forwards to
     host:wrapWarnExpr(lerrors,
@@ -201,13 +201,13 @@ top::host:Expr ::= e::host:Expr
     These equations exist only to seed dependencies on env and returnType so
     extensions can freely compute these synthesized attributes based on them
     while still passing the modular well-definedness analysis. -}
-  lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  lerrors := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   production attribute runtimeMods::[RuntimeMod] with ++;
-  runtimeMods := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  runtimeMods := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
-  injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  injectedQualifiers := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   forwards to
     host:wrapWarnExpr(lerrors,
@@ -225,13 +225,13 @@ top::host:Expr ::= e::host:Expr
     These equations exist only to seed dependencies on env and returnType so
     extensions can freely compute these synthesized attributes based on them
     while still passing the modular well-definedness analysis. -}
-  lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  lerrors := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   production attribute runtimeMods::[RuntimeMod] with ++;
-  runtimeMods := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  runtimeMods := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
-  injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  injectedQualifiers := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   forwards to
     host:wrapWarnExpr(lerrors,
@@ -251,13 +251,13 @@ top::host:Expr ::= e::host:Expr
     These equations exist only to seed dependencies on env and returnType so
     extensions can freely compute these synthesized attributes based on them
     while still passing the modular well-definedness analysis. -}
-  lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  lerrors := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   production attribute runtimeMods::[RuntimeMod] with ++;
-  runtimeMods := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  runtimeMods := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
-  injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  injectedQualifiers := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   forwards to
     host:wrapWarnExpr(lerrors,
@@ -276,13 +276,13 @@ top::host:Expr ::= e::host:Expr
     These equations exist only to seed dependencies on env and returnType so
     extensions can freely compute these synthesized attributes based on them
     while still passing the modular well-definedness analysis. -}
-  lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  lerrors := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   production attribute runtimeMods::[RuntimeMod] with ++;
-  runtimeMods := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  runtimeMods := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
-  injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  injectedQualifiers := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   forwards to
     host:wrapWarnExpr(lerrors,
@@ -301,10 +301,10 @@ top::host:Expr ::= e::host:ExprOrTypeName
     These equations exist only to seed dependencies on env and returnType so
     extensions can freely compute these synthesized attributes based on them
     while still passing the modular well-definedness analysis. -}
-  lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  lerrors := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
-  injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  injectedQualifiers := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   forwards to
     host:wrapWarnExpr(lerrors,
@@ -323,10 +323,10 @@ top::host:Expr ::= e::host:ExprOrTypeName
     These equations exist only to seed dependencies on env and returnType so
     extensions can freely compute these synthesized attributes based on them
     while still passing the modular well-definedness analysis. -}
-  lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  lerrors := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
-  injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  injectedQualifiers := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   forwards to
     host:wrapWarnExpr(lerrors,

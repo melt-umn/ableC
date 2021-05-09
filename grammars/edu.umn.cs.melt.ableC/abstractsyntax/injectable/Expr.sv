@@ -7,14 +7,14 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 {
   top.pp = parens( ppConcat([ lhs.pp, brackets( rhs.pp )]) );
   production attribute lerrors :: [Message] with ++;
-  lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  lerrors := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   production attribute runtimeMods :: [LhsOrRhsRuntimeMod] with ++;
-  runtimeMods := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  runtimeMods := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
   local modLhsRhs :: Pair<host:Expr host:Expr> = applyLhsRhsMods(runtimeMods, lhs, rhs);
 
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
-  injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  injectedQualifiers := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   forwards to
     host:wrapWarnExpr(lerrors,
@@ -29,13 +29,13 @@ top::host:Expr ::= lhs::host:Expr  deref::Boolean  rhs::host:Name
 {
   top.pp = parens(ppConcat([lhs.pp, text(if deref then "->" else "."), rhs.pp]));
   production attribute lerrors :: [Message] with ++;
-  lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  lerrors := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   production attribute runtimeMods::[RuntimeMod] with ++;
-  runtimeMods := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  runtimeMods := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
-  injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  injectedQualifiers := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   -- to ensure modified lhs is an lvalue in case this memberExpr is enclosed in
   --  an eqExpr, replace x.m with (&x)->m
@@ -43,9 +43,7 @@ top::host:Expr ::= lhs::host:Expr  deref::Boolean  rhs::host:Name
     if null(runtimeMods) then lhs
     else mkAddressOf(lhs, lhs.location);
   preModLhs.env = lhs.env;
-  preModLhs.host:returnType = lhs.host:returnType;
-  preModLhs.host:breakValid = lhs.host:breakValid;
-  preModLhs.host:continueValid = lhs.host:continueValid;
+  preModLhs.host:controlStmtContext = lhs.host:controlStmtContext;
 
   local preModDeref :: Boolean = deref || !null(runtimeMods);
 
@@ -62,13 +60,13 @@ top::host:Expr ::= ty::host:TypeName  e::host:Expr
 {
   top.pp = parens( ppConcat([parens(ty.pp), e.pp]) );
   production attribute lerrors :: [Message] with ++;
-  lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  lerrors := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   production attribute runtimeMods :: [RuntimeMod] with ++;
-  runtimeMods := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  runtimeMods := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
-  injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  injectedQualifiers := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   forwards to
     host:wrapWarnExpr(lerrors,
@@ -84,28 +82,24 @@ top::host:Expr ::= f::host:Expr  a::host:Exprs
   top.pp = parens( ppConcat([ f.pp, parens( ppImplode( cat( comma(), space() ), a.pps ))]) );
 
   production attribute lerrors :: [Message] with ++;
-  lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  lerrors := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   production attribute preInsertions :: [(host:Stmt ::= Decorated host:Exprs)] with ++;
-  preInsertions := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  preInsertions := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   -- TODO: wrap result in Maybe in case return void
   production attribute postInsertions :: [(host:Stmt ::= Decorated host:Exprs  Decorated host:Expr)] with ++;
-  postInsertions := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  postInsertions := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   local tmpNamePrefix :: String = "_tmp" ++ toString(genInt());
 
   local tmpArgs :: host:Exprs = foldExpr(mkTmpExprsRefs(a, tmpNamePrefix, 0));
   tmpArgs.env = top.env;
-  tmpArgs.host:returnType = top.host:returnType;
-  tmpArgs.host:breakValid = top.host:breakValid;
-  tmpArgs.host:continueValid = top.host:continueValid;
+  tmpArgs.host:controlStmtContext = top.host:controlStmtContext;
 
   local callFunc :: host:Expr = host:callExpr(f, tmpArgs, location=top.location);
   callFunc.env = top.env;
-  callFunc.host:returnType = top.host:returnType;
-  callFunc.host:breakValid = top.host:breakValid;
-  callFunc.host:continueValid = top.host:continueValid;
+  callFunc.host:controlStmtContext = top.host:controlStmtContext;
 
   local tmpResultDecl :: host:Stmt =
     mkDecl(
@@ -121,9 +115,7 @@ top::host:Expr ::= f::host:Expr  a::host:Exprs
       location=top.location
     );
   tmpResultRef.env = top.env;
-  tmpResultRef.host:returnType = top.host:returnType;
-  tmpResultRef.host:breakValid = top.host:breakValid;
-  tmpResultRef.host:continueValid = top.host:continueValid;
+  tmpResultRef.host:controlStmtContext = top.host:controlStmtContext;
 
   local injExpr :: host:Expr =
     host:stmtExpr(

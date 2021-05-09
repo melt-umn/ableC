@@ -277,8 +277,8 @@ top::ArrayType ::= size::Decorated Expr
 {
   top.host =
     variableArrayType(
-      decorate size.host with {env = size.env; returnType = size.returnType;
-        breakValid = size.breakValid; continueValid = size.continueValid;});
+      decorate size.host with {env = size.env; 
+    controlStmtContext = size.controlStmtContext;});
   top.pp = size.pp;
   top.freeVariables := size.freeVariables;
 }
@@ -625,9 +625,7 @@ top::Type ::= attrs::Attributes  bt::Type
 
   -- Whatever...
   attrs.env = emptyEnv();
-  attrs.returnType = nothing();
-  attrs.breakValid = false;
-  attrs.continueValid = false;
+  attrs.controlStmtContext = initialControlStmtContext;
 }
 
 {-------------------------------------------------------------------------------

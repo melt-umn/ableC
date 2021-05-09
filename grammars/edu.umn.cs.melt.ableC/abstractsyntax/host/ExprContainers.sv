@@ -1,10 +1,10 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 
 nonterminal MaybeExpr with pp, host, isJust, errors, globalDecls, functionDecls,
-  defs, env, maybeTyperep, returnType, freeVariables, justTheExpr, isLValue,
-  integerConstantValue, breakValid, continueValid;
+  defs, env, maybeTyperep, freeVariables, justTheExpr, isLValue,
+  integerConstantValue, controlStmtContext;
 
-flowtype MaybeExpr = decorate {env, returnType, breakValid, continueValid},
+flowtype MaybeExpr = decorate {env, controlStmtContext},
   isJust {}, justTheExpr {}, maybeTyperep {decorate}, integerConstantValue {decorate};
 
 synthesized attribute maybeTyperep :: Maybe<Type>;
@@ -35,10 +35,10 @@ top::MaybeExpr ::=
 
 nonterminal Exprs with pps, host, errors, globalDecls, functionDecls, defs, env,
   expectedTypes, argumentPosition, callExpr, argumentErrors, typereps, count,
-  callVariadic, returnType, freeVariables, appendedExprs, appendedRes, isLValue,
-  breakValid, continueValid;
+  callVariadic, freeVariables, appendedExprs, appendedRes, isLValue,
+  controlStmtContext;
 
-flowtype Exprs = decorate {env, returnType, breakValid, continueValid},
+flowtype Exprs = decorate {env, controlStmtContext},
   argumentErrors {decorate, expectedTypes, argumentPosition, callExpr, callVariadic},
   count {}, appendedRes {appendedExprs};
 
@@ -134,9 +134,9 @@ Exprs ::= e1::Exprs e2::Exprs
 }
 
 nonterminal ExprOrTypeName with pp, host, errors, globalDecls, functionDecls,
-  defs, env, typerep, returnType, freeVariables, isLValue, breakValid, continueValid;
+  defs, env, typerep, freeVariables, isLValue, controlStmtContext;
 
-flowtype ExprOrTypeName = decorate {env, returnType, breakValid, continueValid};
+flowtype ExprOrTypeName = decorate {env, controlStmtContext};
 
 propagate host, errors, globalDecls, functionDecls, defs, freeVariables on ExprOrTypeName;
 
