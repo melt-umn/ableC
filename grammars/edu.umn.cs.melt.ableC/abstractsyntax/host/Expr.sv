@@ -482,6 +482,7 @@ top::Expr ::= body::Stmt result::Expr
   -- Add body.functionDefs to env here, since labels don't bubble up
   -- from expressions to the top-level function.
   body.env = addEnv(body.functionDefs, openScopeEnv(top.env));
+  body.controlStmtContext = controlAddLabels(top.controlStmtContext, body.labelDefs);
   result.env = addEnv(body.defs, body.env);
 }
 

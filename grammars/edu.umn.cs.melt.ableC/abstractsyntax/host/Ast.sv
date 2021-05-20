@@ -67,6 +67,9 @@ flowtype functionDefs {} on
 flowtype localDefs {decorate} on
   StructItemList, StructItem, StructDeclarators, StructDeclarator;
 
+flowtype labelDefs {decorate} on Parameters, ParameterDecl;
+flowtype labelDefs {} on Stmt;
+
 flowtype typerep {decorate} on
   Declarator, FunctionDecl, ParameterDecl, StructDeclarator, EnumItem,
   Expr,

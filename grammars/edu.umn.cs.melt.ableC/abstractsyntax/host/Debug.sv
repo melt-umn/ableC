@@ -1,6 +1,6 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 
-import silver:util:treemap as tm;
+imports silver:util:treemap as tm;
 
 {- ------------------------------------------------------------
    The helper functions below simplify the creation of ASTs.  They are
@@ -22,7 +22,8 @@ e::Expr ::= txt::String
 abstract production txtStmt
 s::Stmt ::= txt::String
 {
-  propagate host, errors, globalDecls, functionDecls, defs, functionDefs, freeVariables;
+  propagate host, errors, globalDecls, functionDecls, defs, functionDefs,
+    freeVariables, labelDefs;
   s.pp = text(txt);
 }
 
@@ -61,8 +62,8 @@ Document ::= e::Decorated Env
     text(" Environment:"),
     nestlines(5,
       ppConcat([
-       text("Labels:"),line(),
-         nestlines(5, labelsD),
+--       text("Labels:"),line(),
+--         nestlines(5, labelsD),
        text("Values:"),line(),
          nestlines(5, valuesD),
        text("Tags:"),line(),
@@ -74,8 +75,8 @@ Document ::= e::Decorated Env
        ]) )
    ] );
 
-  local labelsD :: Document
-    = ppImplode(line(), map( showScope(_,showLabelItemBinding), map( tm:toList, e.labels )));
+--  local labelsD :: Document
+--    = ppImplode(line(), map( showScope(_,showLabelItemBinding), map( tm:toList, e.labels )));
   local valuesD :: Document
     = ppImplode(line(), map( showScope(_,showValueItemBinding), map( tm:toList, e.values )));
   local tagsD :: Document

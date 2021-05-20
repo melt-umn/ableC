@@ -511,7 +511,7 @@ top::FunctionDecl ::= storage::StorageClasses  fnquals::SpecialSpecifiers  bty::
       | functionTypeExprWithoutArgs(ret, _, _) -> just(retMty.typerep)
       | _ -> nothing() -- Don't error here, this is caught in type checking
       end,
-      false, false);
+      false, false, tm:add(body.labelDefs, tm:empty()));
 
   mty.env = addEnv(implicitDefs, openScopeEnv(addEnv(funcDefs, top.env)));
   ds.env = addEnv(mty.defs ++ parameters.functionDefs, mty.env);
@@ -560,14 +560,15 @@ inherited attribute position::Integer;
 
 nonterminal Parameters with typereps, pps, count, host, errors, globalDecls,
   functionDecls, decls, defs, functionDefs, env, position, freeVariables,
-  appendedParameters, appendedParametersRes, controlStmtContext;
+  appendedParameters, appendedParametersRes, controlStmtContext, labelDefs;
 flowtype Parameters = decorate {env, controlStmtContext, position},
   appendedParametersRes {appendedParameters};
 
 autocopy attribute appendedParameters :: Parameters;
 synthesized attribute appendedParametersRes :: Parameters;
 
-propagate host, errors, globalDecls, functionDecls, decls, defs, functionDefs on Parameters;
+propagate host, errors, globalDecls, functionDecls, decls, defs, functionDefs,
+  labelDefs on Parameters;
 
 abstract production consParameters
 top::Parameters ::= h::ParameterDecl  t::Parameters
@@ -608,6 +609,7 @@ top::Parameters ::= p::Decorated Parameters
   top.decls := p.decls;
   top.defs := p.defs;
   top.functionDefs := p.functionDefs;
+  top.labelDefs := p.labelDefs;
   top.freeVariables := p.freeVariables;
   forwards to new(p);
 }
@@ -624,7 +626,7 @@ synthesized attribute paramname :: Maybe<Name>;
 
 nonterminal ParameterDecl with paramname, typerep, pp, host, errors, globalDecls,
   functionDecls, decls, defs, functionDefs, env, position, sourceLocation,
-  freeVariables, controlStmtContext;
+  freeVariables, controlStmtContext, labelDefs;
 flowtype ParameterDecl = decorate {env, position, controlStmtContext},
   paramname {};
 
@@ -667,6 +669,7 @@ top::ParameterDecl ::= storage::StorageClasses  bty::BaseTypeExpr  mty::TypeModi
     | just(n) -> [valueDef(n.name, parameterValueItem(top))]
     | _ -> []
     end;
+  top.labelDefs := [];
 
   bty.givenRefId = nothing();
 

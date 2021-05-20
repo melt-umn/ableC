@@ -171,6 +171,7 @@ top::Stmt ::= decls::Decls lifted::Stmt
 
   -- Define other attributes to be the same as on lifted
   top.functionDefs := lifted.functionDefs;
+  top.labelDefs := lifted.labelDefs;
 
   decls.env = globalEnv(top.env);
   decls.isTopLevel = true;

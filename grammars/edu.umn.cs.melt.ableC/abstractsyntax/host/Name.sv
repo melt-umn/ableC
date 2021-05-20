@@ -21,8 +21,8 @@ restricted synthesized attribute valueItem :: Decorated ValueItem;
 restricted synthesized attribute tagItem :: Decorated TagItem;
 restricted synthesized attribute labelItem :: Decorated LabelItem;
 
-nonterminal Name with location, name, pp, host, env, valueLocalLookup, labelRedeclarationCheck, valueLookupCheck, tagLookupCheck, labelLookupCheck, valueItem, tagItem, labelItem, tagLocalLookup, tagHasForwardDcl, tagRefId, valueRedeclarationCheck, valueRedeclarationCheckNoCompatible, valueMergeRedeclExtnQualifiers;
-flowtype Name = decorate {env}, name {}, valueLocalLookup {env}, labelRedeclarationCheck {env}, valueLookupCheck {env}, tagLookupCheck {env}, labelLookupCheck {env}, valueItem {env}, tagItem {env}, labelItem {env}, tagLocalLookup {env}, tagHasForwardDcl {env}, tagRefId {env}, valueRedeclarationCheck {decorate}, valueRedeclarationCheckNoCompatible {decorate}, valueMergeRedeclExtnQualifiers {decorate};
+nonterminal Name with location, name, pp, host, env, valueLocalLookup, labelRedeclarationCheck, valueLookupCheck, tagLookupCheck, labelLookupCheck, valueItem, tagItem, labelItem, tagLocalLookup, tagHasForwardDcl, tagRefId, valueRedeclarationCheck, valueRedeclarationCheckNoCompatible, valueMergeRedeclExtnQualifiers, controlStmtContext;
+flowtype Name = decorate {env}, name {}, valueLocalLookup {env}, labelRedeclarationCheck {controlStmtContext}, valueLookupCheck {env}, tagLookupCheck {env}, labelLookupCheck {controlStmtContext}, valueItem {env}, tagItem {env}, labelItem {controlStmtContext}, tagLocalLookup {env}, tagHasForwardDcl {env}, tagRefId {env}, valueRedeclarationCheck {decorate}, valueRedeclarationCheckNoCompatible {decorate}, valueMergeRedeclExtnQualifiers {decorate};
 
 abstract production name
 top::Name ::= n::String
@@ -46,7 +46,7 @@ top::Name ::= n::String
   top.tagHasForwardDcl = refIdIfOld.isJust;
   top.tagRefId = fromMaybe(toString(genInt()), refIdIfOld);
   
-  local labdcls :: [LabelItem] = lookupLabel(n, top.env);
+  local labdcls :: [LabelItem] = lookupLabel(n, top.controlStmtContext);
   top.labelRedeclarationCheck =
     case labdcls of
     | [] -> [err(top.location, "INTERNAL compiler error: expected to find label in function scope, was missing.")] -- TODO?
@@ -56,7 +56,7 @@ top::Name ::= n::String
   
   local values :: [ValueItem] = lookupValue(n, top.env);
   local tags :: [TagItem] = lookupTag(n, top.env);
-  local labels :: [LabelItem] = lookupLabel(n, top.env);
+  local labels :: [LabelItem] = lookupLabel(n, top.controlStmtContext);
   top.valueLookupCheck =
     case values of
     | [] -> [err(top.location, "Undeclared value " ++ n)]

@@ -1,20 +1,22 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 
 nonterminal Stmt with pp, host, errors, globalDecls, functionDecls, defs, env,
-  functionDefs, freeVariables, controlStmtContext;
+  functionDefs, freeVariables, controlStmtContext, labelDefs;
 flowtype Stmt = decorate {env, controlStmtContext};
 
 abstract production nullStmt
 top::Stmt ::=
 {
-  propagate host, errors, globalDecls, functionDecls, defs, freeVariables, functionDefs;
+  propagate host, errors, globalDecls, functionDecls, defs, freeVariables,
+    functionDefs, labelDefs;
   top.pp = semi();
 }
 
 abstract production seqStmt
 top::Stmt ::= h::Stmt  t::Stmt
 {
-  propagate host, errors, globalDecls, functionDecls, defs, functionDefs;
+  propagate host, errors, globalDecls, functionDecls, defs, functionDefs,
+    labelDefs;
   top.pp = ppConcat([ h.pp, line(), t.pp ]);
   top.freeVariables :=
     h.freeVariables ++
@@ -26,7 +28,8 @@ top::Stmt ::= h::Stmt  t::Stmt
 abstract production compoundStmt
 top::Stmt ::= s::Stmt
 {
-  propagate host, errors, globalDecls, functionDecls, functionDefs, freeVariables;
+  propagate host, errors, globalDecls, functionDecls, functionDefs, freeVariables,
+    labelDefs;
   top.pp = braces(nestlines(2, s.pp));
   top.defs := globalDeclsDefs(s.globalDecls) ++ functionDeclsDefs(s.functionDecls); -- compound prevents defs from bubbling up
 
@@ -38,7 +41,8 @@ top::Stmt ::= s::Stmt
 abstract production warnStmt
 top::Stmt ::= msg::[Message]
 {
-  propagate host, globalDecls, functionDecls, defs, freeVariables, functionDefs;
+  propagate host, globalDecls, functionDecls, defs, freeVariables, functionDefs,
+    labelDefs;
   top.pp = text(s"/*${messagesToString(msg)}*/");
   top.errors := msg;
 }
@@ -63,13 +67,15 @@ top::Stmt ::= s::Decorated Stmt
   top.defs := s.defs;
   top.freeVariables := s.freeVariables;
   top.functionDefs := s.functionDefs;
+  top.labelDefs := s.labelDefs;
   forwards to new(s); -- for easier pattern matching
 }
 
 abstract production declStmt
 top::Stmt ::= d::Decl
 {
-  propagate host, errors, globalDecls, functionDecls, defs, freeVariables, functionDefs;
+  propagate host, errors, globalDecls, functionDecls, defs, freeVariables,
+    functionDefs, labelDefs;
   top.pp = d.pp;
   d.isTopLevel = false;
 }
@@ -97,14 +103,15 @@ top::Stmt ::= t::Type n::Name init::Expr
 abstract production exprStmt
 top::Stmt ::= d::Expr
 {
-  propagate host, errors, globalDecls, functionDecls, defs, freeVariables, functionDefs;
+  propagate host, errors, globalDecls, functionDecls, defs, freeVariables,
+    functionDefs, labelDefs;
   top.pp = cat( d.pp, semi() );
 }
 
 abstract production ifStmt
 top::Stmt ::= c::Expr  t::Stmt  e::Stmt
 {
-  propagate host, errors, globalDecls, functionDecls, functionDefs;
+  propagate host, errors, globalDecls, functionDecls, functionDefs, labelDefs;
   top.pp = ppConcat([
     text("if"), space(), parens(c.pp), line(),
     braces(nestlines(2, t.pp)),
@@ -148,6 +155,7 @@ top::Stmt ::= e::Expr  b::Stmt
   top.globalDecls := e.globalDecls ++ b.globalDecls;
   top.functionDecls := e.functionDecls ++ b.functionDecls;
   top.functionDefs := b.functionDefs;
+  top.labelDefs := b.labelDefs;
 
   -- An iteration statement is a block whose scope is a strict subset of the scope of its
   -- enclosing block. The loop body is also a block whose scope is a strict subset of the scope
@@ -178,6 +186,7 @@ top::Stmt ::= b::Stmt  e::Expr
   top.globalDecls := b.globalDecls ++ e.globalDecls;
   top.functionDecls := b.functionDecls ++ e.functionDecls;
   top.functionDefs := b.functionDefs;
+  top.labelDefs := b.labelDefs;
 
   -- An iteration statement is a block whose scope is a strict subset of the scope of its
   -- enclosing block. The loop body is also a block whose scope is a strict subset of the scope
@@ -208,6 +217,7 @@ top::Stmt ::= i::MaybeExpr  c::MaybeExpr  s::MaybeExpr  b::Stmt
   top.globalDecls := i.globalDecls ++ c.globalDecls ++ s.globalDecls ++ b.globalDecls;
   top.functionDecls := i.functionDecls ++ c.functionDecls ++ s.functionDecls ++ b.functionDecls;
   top.functionDefs := b.functionDefs;
+  top.labelDefs := b.labelDefs;
 
   -- An iteration statement is a block whose scope is a strict subset of the scope of its
   -- enclosing block. The loop body is also a block whose scope is a strict subset of the scope
@@ -250,6 +260,7 @@ top::Stmt ::= i::Decl  c::MaybeExpr  s::MaybeExpr  b::Stmt
   top.globalDecls := i.globalDecls ++ c.globalDecls ++ s.globalDecls ++ b.globalDecls;
   top.functionDecls := i.functionDecls ++ c.functionDecls ++ s.functionDecls ++ b.functionDecls;
   top.functionDefs := b.functionDefs;
+  top.labelDefs := b.labelDefs;
 
   -- An iteration statement is a block whose scope is a strict subset of the scope of its
   -- enclosing block. The loop body is also a block whose scope is a strict subset of the scope
@@ -303,6 +314,7 @@ top::Stmt ::= e::MaybeExpr {- loc::Location -} -- TODO: Add location to signatur
   top.defs := e.defs;
   top.freeVariables := e.freeVariables;
   top.functionDefs := [];
+  top.labelDefs := [];
   -- TODO: this needs to follow the same rules as assignment. We should try to factor that out.
 }
 
@@ -316,6 +328,7 @@ top::Stmt ::= e::Expr  b::Stmt
   top.globalDecls := e.globalDecls ++ b.globalDecls;
   top.functionDecls := e.functionDecls ++ b.functionDecls;
   top.functionDefs := b.functionDefs;
+  top.labelDefs := b.labelDefs;
 
   -- A selection statement is a block whose scope is a strict subset of the scope of its
   -- enclosing block. Each associated substatement is also a block whose scope is a strict
@@ -346,6 +359,7 @@ top::Stmt ::= l::Name
   top.defs := [];
   top.freeVariables := [];
   top.functionDefs := [];
+  top.labelDefs := [];
 
   top.errors <- l.labelLookupCheck;
 }
@@ -363,6 +377,7 @@ top::Stmt ::=
   top.defs := [];
   top.freeVariables := [];
   top.functionDefs := [];
+  top.labelDefs := [];
 }
 
 abstract production breakStmt
@@ -378,6 +393,7 @@ top::Stmt ::=
   top.defs := [];
   top.freeVariables := [];
   top.functionDefs := [];
+  top.labelDefs := [];
 }
 
 abstract production labelStmt
@@ -391,9 +407,10 @@ top::Stmt ::= l::Name  s::Stmt
   top.defs := s.defs;
   top.freeVariables := s.freeVariables;
   top.functionDefs := s.functionDefs;
+  top.labelDefs := s.labelDefs;
 
   top.errors <- l.labelRedeclarationCheck;
-  top.functionDefs <- [labelDef(l.name, labelItem(l.location))];
+  top.labelDefs <- [(l.name, labelItem(l.location))];
 }
 
 abstract production caseLabelStmt
@@ -409,6 +426,7 @@ top::Stmt ::= v::Expr  s::Stmt
     v.freeVariables ++
     removeDefsFromNames(v.defs, s.freeVariables);
   top.functionDefs := s.functionDefs; -- ??
+  top.labelDefs := s.labelDefs;
 
   s.env = addEnv(v.defs, v.env);
 }
@@ -424,6 +442,7 @@ top::Stmt ::= s::Stmt
   top.defs := s.defs;
   top.freeVariables := s.freeVariables;
   top.functionDefs := s.functionDefs; -- ??
+  top.labelDefs := s.labelDefs;
 }
 
 -- GCC extension:
@@ -438,6 +457,7 @@ top::Stmt ::= d::FunctionDecl
   top.defs := d.defs;
   top.freeVariables := d.freeVariables;
   top.functionDefs := [];
+  top.labelDefs := [];
 }
 
 -- GCC extension:
@@ -452,6 +472,7 @@ top::Stmt ::= l::Expr  u::Expr  s::Stmt
   top.defs := l.defs ++ u.defs ++ s.defs;
   top.freeVariables := l.freeVariables ++ u.freeVariables ++ s.freeVariables;
   top.functionDefs := s.functionDefs;
+  top.labelDefs := s.labelDefs;
 }
 
 abstract production asmStmt
@@ -465,6 +486,7 @@ top::Stmt ::= asm::AsmStatement
   top.defs := [];
   top.freeVariables := asm.freeVariables;
   top.functionDefs := [];
+  top.labelDefs := [];
 }
 
 {-
