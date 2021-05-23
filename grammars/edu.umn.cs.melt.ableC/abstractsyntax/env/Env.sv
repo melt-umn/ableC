@@ -5,19 +5,19 @@ imports edu:umn:cs:melt:ableC:abstractsyntax:host;
 {--
  - The environment values that get passed around and used to look up names.
  -}
-nonterminal Env with labels, tags, values, refIds, deferredDecls, misc;
+nonterminal Env with tags, values, refIds, deferredDecls, misc;
 
 {--
  - A list of definitions, only used in contributing new names to the environment.
  -}
 nonterminal Defs 
-  with labelContribs, tagContribs, valueContribs, refIdContribs, deferredDeclContribs, miscContribs, globalDefs, functionScopeDefs;
+  with tagContribs, valueContribs, refIdContribs, deferredDeclContribs, miscContribs, globalDefs, functionScopeDefs;
 
 {--
  - An individual definition of a name.
  -}
 closed nonterminal Def 
-  with labelContribs, tagContribs, valueContribs, refIdContribs, deferredDeclContribs, miscContribs, globalDefs, functionScopeDefs;
+  with tagContribs, valueContribs, refIdContribs, deferredDeclContribs, miscContribs, globalDefs, functionScopeDefs;
 
 
 {--
@@ -32,7 +32,7 @@ closed nonterminal Def
  -}
 monoid attribute defs :: [Def];
 {--
- - For Function-Scope definitions (e.g. Labels in functions)
+ - For Function-Scope definitions
  - Note that since the env may determine the forward, and functionDefs on a production determine the env provided to that
  - production, functionDefs must be computed without using the forward. 
  -}
@@ -105,11 +105,6 @@ function lookupTag
 [TagItem] ::= n::String  e::Decorated Env
 {
   return lookupScope(n, e.tags);
-}
-function lookupLabel
-[LabelItem] ::= n::String  e::Decorated Env
-{
-  return lookupScope(n, e.labels);
 }
 function lookupRefId
 [RefIdItem] ::= n::String  e::Decorated Env

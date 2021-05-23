@@ -5,9 +5,9 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 -- Declaration is rooted in External, but also in stmts. Either a variableDecl or a typedefDecl.
 -- ParameterDecl should probably be something special, distinct from variableDecl.
 
-nonterminal GlobalDecls with pps, host, errors, env, returnType, freeVariables,
-  breakValid, continueValid;
-flowtype GlobalDecls = decorate {env, returnType, breakValid, continueValid};
+nonterminal GlobalDecls with pps, host, errors, env, freeVariables,
+  controlStmtContext;
+flowtype GlobalDecls = decorate {env, controlStmtContext};
 
 propagate errors on GlobalDecls;
 
@@ -38,9 +38,9 @@ top::GlobalDecls ::=
 }
 
 nonterminal Decls with pps, host, errors, globalDecls, functionDecls, unfoldedGlobalDecls,
-  unfoldedFunctionDecls, defs, env, isTopLevel, returnType, freeVariables,
-  breakValid, continueValid;
-flowtype Decls = decorate {env, isTopLevel, returnType, breakValid, continueValid};
+  unfoldedFunctionDecls, defs, env, isTopLevel, freeVariables,
+  controlStmtContext;
+flowtype Decls = decorate {env, isTopLevel, controlStmtContext};
 
 autocopy attribute isTopLevel :: Boolean;
 
@@ -76,9 +76,8 @@ Decls ::= d1::Decls d2::Decls
 
 
 nonterminal Decl with pp, host, errors, globalDecls, functionDecls, unfoldedGlobalDecls,
-  unfoldedFunctionDecls, defs, env, isTopLevel, returnType, freeVariables,
-  breakValid, continueValid;
-flowtype Decl = decorate {env, isTopLevel, returnType, breakValid, continueValid};
+  unfoldedFunctionDecls, defs, env, isTopLevel, freeVariables, controlStmtContext;
+flowtype Decl = decorate {env, isTopLevel, controlStmtContext};
 
 {-- Pass down from top-level declaration the list of attribute to each name-declaration -}
 autocopy attribute givenStorageClasses :: StorageClasses;
@@ -251,11 +250,11 @@ synthesized attribute hostDecls::[Decl];
 
 nonterminal Declarators with pps, host, hostDecls, hasModifiedTypeExpr, errors,
   globalDecls, functionDecls, defs, env, baseType, typeModifierIn, isTopLevel,
-  isTypedef, givenStorageClasses, givenAttributes, returnType, freeVariables,
-  breakValid, continueValid;
-flowtype Declarators = decorate {env, returnType, baseType, typeModifierIn,
-  givenStorageClasses, givenAttributes, isTopLevel, isTypedef, breakValid,
-  continueValid},
+  isTypedef, givenStorageClasses, givenAttributes, freeVariables,
+  controlStmtContext;
+flowtype Declarators = decorate {env, baseType, typeModifierIn,
+  givenStorageClasses, givenAttributes, isTopLevel, isTypedef,
+  controlStmtContext},
   hostDecls {decorate}, hasModifiedTypeExpr {decorate};
 
 propagate host, errors, defs, globalDecls, functionDecls, hasModifiedTypeExpr on Declarators;
@@ -284,10 +283,10 @@ synthesized attribute hostDecl::Decl;
 nonterminal Declarator with pps, host, hostDecl, hasModifiedTypeExpr, errors,
   globalDecls, functionDecls, defs, env, baseType, typeModifierIn, typerep,
   sourceLocation, isTopLevel, isTypedef, givenStorageClasses, givenAttributes,
-  returnType, freeVariables, breakValid, continueValid;
-flowtype Declarator = decorate {env, returnType, baseType, typeModifierIn,
-  givenStorageClasses, givenAttributes, isTopLevel, isTypedef, breakValid,
-  continueValid},
+  freeVariables, controlStmtContext;
+flowtype Declarator = decorate {env, baseType, typeModifierIn,
+  givenStorageClasses, givenAttributes, isTopLevel, isTypedef,
+  controlStmtContext},
   hostDecl {decorate}, hasModifiedTypeExpr {decorate};
 
 autocopy attribute isTypedef :: Boolean;
@@ -365,9 +364,7 @@ top::Declarator ::= name::Name  ty::TypeModifierExpr  attrs::Attributes  initial
 
   local allAttrs :: Attributes = appendAttribute(top.givenAttributes, attrs);
   allAttrs.env = top.env;
-  allAttrs.returnType = top.returnType;
-  allAttrs.breakValid = top.breakValid;
-  allAttrs.continueValid = top.continueValid;
+  allAttrs.controlStmtContext = top.controlStmtContext;
 
   local animatedTyperep :: Type = animateAttributeOnType(allAttrs, initializer.typerep);
 
@@ -389,9 +386,8 @@ top::Declarator ::= msg::[Message]
 }
 
 nonterminal FunctionDecl with pp, host<Decl>, errors, globalDecls, defs, env,
-  typerep, name, sourceLocation, returnType, freeVariables, breakValid,
-  continueValid;
-flowtype FunctionDecl = decorate {env, returnType, breakValid, continueValid},
+  typerep, name, sourceLocation, freeVariables, controlStmtContext;
+flowtype FunctionDecl = decorate {env, controlStmtContext},
   name {}, sourceLocation {};
 
 propagate errors, globalDecls on FunctionDecl;
@@ -422,8 +418,8 @@ top::FunctionDecl ::= storage::StorageClasses  fnquals::SpecialSpecifiers  bty::
         foldDecl(
           -- decorate needed here because of flowtype for decls
           decorate bty.host with {
-            env = bty.env; returnType = bty.returnType; givenRefId = bty.givenRefId;
-            breakValid = bty.breakValid; continueValid = bty.continueValid;
+            env = bty.env; givenRefId = bty.givenRefId;
+            controlStmtContext = bty.controlStmtContext;
           }.decls ++
           [functionDeclaration(
              functionDecl(
@@ -449,17 +445,14 @@ top::FunctionDecl ::= storage::StorageClasses  fnquals::SpecialSpecifiers  bty::
     end;
 
   fnquals.env = top.env;
-  fnquals.returnType = top.returnType;
-  fnquals.breakValid = top.breakValid;
-  fnquals.continueValid = top.continueValid;
+  fnquals.controlStmtContext = top.controlStmtContext;
 
   local parameters :: Decorated Parameters =
     case mty of
     | functionTypeExprWithArgs(result, args, variadic, q) ->
         args
     | _ -> decorate nilParameters() with { env = top.env;
-            returnType = top.returnType; position = 0;
-            breakValid = top.breakValid; continueValid = top.continueValid;}
+            position = 0; controlStmtContext = top.controlStmtContext;}
     end;
 
   local funcDefs::[Def] = bty.defs ++ [valueDef(name.name, functionValueItem(top))];
@@ -507,20 +500,18 @@ top::FunctionDecl ::= storage::StorageClasses  fnquals::SpecialSpecifiers  bty::
     | _ -> error("functionDecl TypeModifierExpr should always be a functionTypeExpr")
     end;
   retMty.env = mty.env;
-  retMty.returnType = mty.returnType;
-  retMty.breakValid = mty.breakValid;
-  retMty.continueValid = mty.continueValid;
+  retMty.controlStmtContext = mty.controlStmtContext;
   retMty.baseType = bty.typerep;
   retMty.typeModifierIn = bty.typeModifier;
 
-  body.returnType =
-    case mty of
-    | functionTypeExprWithArgs(ret, _, _, _) -> just(retMty.typerep)
-    | functionTypeExprWithoutArgs(ret, _, _) -> just(retMty.typerep)
-    | _ -> nothing() -- Don't error here, this is caught in type checking
-    end;
-  body.breakValid = false;
-  body.continueValid = false;
+  body.controlStmtContext = 
+    controlStmtContext(
+      case mty of
+      | functionTypeExprWithArgs(ret, _, _, _) -> just(retMty.typerep)
+      | functionTypeExprWithoutArgs(ret, _, _) -> just(retMty.typerep)
+      | _ -> nothing() -- Don't error here, this is caught in type checking
+      end,
+      false, false, tm:add(body.labelDefs, tm:empty()));
 
   mty.env = addEnv(implicitDefs, openScopeEnv(addEnv(funcDefs, top.env)));
   ds.env = addEnv(mty.defs ++ parameters.functionDefs, mty.env);
@@ -568,15 +559,16 @@ synthesized attribute len::Integer;
 inherited attribute position::Integer;
 
 nonterminal Parameters with typereps, pps, count, host, errors, globalDecls,
-  functionDecls, decls, defs, functionDefs, env, returnType, position, freeVariables,
-  appendedParameters, appendedParametersRes, breakValid, continueValid;
-flowtype Parameters = decorate {env, returnType, position, breakValid, continueValid},
+  functionDecls, decls, defs, functionDefs, env, position, freeVariables,
+  appendedParameters, appendedParametersRes, controlStmtContext, labelDefs;
+flowtype Parameters = decorate {env, controlStmtContext, position},
   appendedParametersRes {appendedParameters};
 
 autocopy attribute appendedParameters :: Parameters;
 synthesized attribute appendedParametersRes :: Parameters;
 
-propagate host, errors, globalDecls, functionDecls, decls, defs, functionDefs on Parameters;
+propagate host, errors, globalDecls, functionDecls, decls, defs, functionDefs,
+  labelDefs on Parameters;
 
 abstract production consParameters
 top::Parameters ::= h::ParameterDecl  t::Parameters
@@ -617,6 +609,7 @@ top::Parameters ::= p::Decorated Parameters
   top.decls := p.decls;
   top.defs := p.defs;
   top.functionDefs := p.functionDefs;
+  top.labelDefs := p.labelDefs;
   top.freeVariables := p.freeVariables;
   forwards to new(p);
 }
@@ -633,8 +626,8 @@ synthesized attribute paramname :: Maybe<Name>;
 
 nonterminal ParameterDecl with paramname, typerep, pp, host, errors, globalDecls,
   functionDecls, decls, defs, functionDefs, env, position, sourceLocation,
-  returnType, freeVariables, breakValid, continueValid;
-flowtype ParameterDecl = decorate {env, returnType, position, breakValid, continueValid},
+  freeVariables, controlStmtContext, labelDefs;
+flowtype ParameterDecl = decorate {env, position, controlStmtContext},
   paramname {};
 
 propagate errors, globalDecls, functionDecls, decls, defs, freeVariables on ParameterDecl;
@@ -662,13 +655,12 @@ top::ParameterDecl ::= storage::StorageClasses  bty::BaseTypeExpr  mty::TypeModi
       -- TODO: Should be lifting decls to the closest scope, not global!
       map(
         \ d::Decl ->
-          decorate d with {env = top.env; returnType = top.returnType;
-            isTopLevel = true; breakValid = top.breakValid;
-            continueValid = top.continueValid;},
+          decorate d with {env = top.env; isTopLevel = true;
+            controlStmtContext = top.controlStmtContext;},
         -- decorate needed here because of flowtype for decls
         decorate bty.host with {
-          env = bty.env; returnType = bty.returnType; givenRefId = bty.givenRefId;
-          breakValid = top.breakValid; continueValid = top.continueValid;
+          env = bty.env; givenRefId = bty.givenRefId;
+          controlStmtContext = top.controlStmtContext;
         }.decls)
     | nothing() -> []
     end;
@@ -677,6 +669,7 @@ top::ParameterDecl ::= storage::StorageClasses  bty::BaseTypeExpr  mty::TypeModi
     | just(n) -> [valueDef(n.name, parameterValueItem(top))]
     | _ -> []
     end;
+  top.labelDefs := [];
 
   bty.givenRefId = nothing();
 
@@ -700,10 +693,10 @@ monoid attribute fieldNames::[Either<String ExtType>];
 
 nonterminal StructDecl with location, pp, host, maybename, errors, globalDecls,
   functionDecls, defs, env, localDefs, tagEnv, isLast, inAnonStructItem,
-  givenRefId, refId, hasConstField, fieldNames, returnType, freeVariables,
-  breakValid, continueValid;
+  givenRefId, refId, hasConstField, fieldNames, freeVariables,
+  controlStmtContext;
 flowtype StructDecl = decorate {env, isLast, inAnonStructItem, givenRefId,
-  returnType, breakValid, continueValid},
+  controlStmtContext},
   pp {inAnonStructItem}, localDefs {decorate}, tagEnv {decorate},
   refId {decorate}, hasConstField {decorate}, fieldNames {decorate};
 
@@ -773,10 +766,10 @@ top::StructDecl ::= attrs::Attributes  name::MaybeName  dcls::StructItemList
 
 nonterminal UnionDecl with location, pp, host, maybename, errors, globalDecls,
   functionDecls, defs, env, localDefs, tagEnv, isLast, inAnonStructItem,
-  givenRefId, refId, hasConstField, fieldNames, returnType, freeVariables,
-  breakValid, continueValid;
+  givenRefId, refId, hasConstField, fieldNames, freeVariables,
+  controlStmtContext;
 flowtype UnionDecl = decorate {env, isLast, inAnonStructItem, givenRefId,
-  returnType, breakValid, continueValid},
+  controlStmtContext},
   pp {inAnonStructItem}, localDefs {decorate}, tagEnv {decorate},
   refId {decorate}, hasConstField {decorate}, fieldNames {decorate};
 
@@ -829,9 +822,9 @@ top::UnionDecl ::= attrs::Attributes  name::MaybeName  dcls::StructItemList
 }
 
 nonterminal EnumDecl with location, pp, host, maybename, errors, globalDecls,
-  functionDecls, defs, env, givenRefId, returnType, freeVariables,
-  breakValid, continueValid;
-flowtype EnumDecl = decorate {env, givenRefId, returnType, breakValid, continueValid};
+  functionDecls, defs, env, givenRefId, freeVariables,
+  controlStmtContext;
+flowtype EnumDecl = decorate {env, givenRefId, controlStmtContext};
 
 propagate host, errors, globalDecls, functionDecls, freeVariables on EnumDecl;
 
@@ -866,11 +859,11 @@ autocopy attribute appendedStructItemList :: StructItemList;
 synthesized attribute appendedStructItemListRes :: StructItemList;
 
 nonterminal StructItemList with pps, host, errors, globalDecls, functionDecls,
-  defs, env, localDefs, hasConstField, fieldNames, inStruct, isLast, returnType,
+  defs, env, localDefs, hasConstField, fieldNames, inStruct, isLast,
   freeVariables, appendedStructItemList, appendedStructItemListRes,
-  breakValid, continueValid;
-flowtype StructItemList = decorate {env, returnType, inStruct, isLast,
-  breakValid, continueValid},
+  controlStmtContext;
+flowtype StructItemList = decorate {env, inStruct, isLast,
+  controlStmtContext},
   hasConstField {decorate}, fieldNames {decorate}, appendedStructItemListRes {appendedStructItemList};
 
 propagate host, errors, globalDecls, functionDecls, defs, localDefs, hasConstField, fieldNames on StructItemList;
@@ -919,10 +912,10 @@ restricted inherited attribute enumItemValueIn::Integer;
 restricted synthesized attribute enumItemValue::Integer;
 
 nonterminal EnumItemList with pps, host, errors, globalDecls, functionDecls, defs,
-  env, containingEnum, returnType, freeVariables, appendedEnumItemList,
-  appendedEnumItemListRes, enumItemValueIn, breakValid, continueValid;
-flowtype EnumItemList = decorate {env, containingEnum, enumItemValueIn, returnType,
-  breakValid, continueValid},
+  env, containingEnum, freeVariables, appendedEnumItemList,
+  appendedEnumItemListRes, enumItemValueIn, controlStmtContext;
+flowtype EnumItemList = decorate {env, containingEnum, enumItemValueIn,
+  controlStmtContext},
   appendedEnumItemListRes {appendedEnumItemList};
 
 autocopy attribute containingEnum :: Type;
@@ -960,10 +953,9 @@ EnumItemList ::= e1::EnumItemList e2::EnumItemList
 }
 
 nonterminal StructItem with pp, host, errors, globalDecls, functionDecls, defs,
-  env, localDefs, hasConstField, fieldNames, inStruct, isLast, returnType,
-  freeVariables, breakValid, continueValid;
-flowtype StructItem = decorate {env, returnType, inStruct, isLast, breakValid,
-  continueValid},
+  env, localDefs, hasConstField, fieldNames, inStruct, isLast, freeVariables,
+  controlStmtContext;
+flowtype StructItem = decorate {env, inStruct, isLast, controlStmtContext},
   hasConstField {decorate}, fieldNames {decorate};
 
 propagate errors, globalDecls, functionDecls, defs, freeVariables, localDefs, hasConstField on StructItem;
@@ -1027,10 +1019,10 @@ synthesized attribute hostStructItems::[StructItem];
 
 nonterminal StructDeclarators with pps, host, hostStructItems, hasModifiedTypeExpr,
   errors, globalDecls, functionDecls, defs, localDefs, hasConstField, fieldNames,
-  env, baseType, inStruct, isLast, typeModifierIn, givenAttributes, returnType,
-  freeVariables, breakValid, continueValid;
-flowtype StructDeclarators = decorate {env, returnType, baseType, inStruct,
-  isLast, typeModifierIn, givenAttributes, breakValid, continueValid},
+  env, baseType, inStruct, isLast, typeModifierIn, givenAttributes,
+  freeVariables, controlStmtContext;
+flowtype StructDeclarators = decorate {env, baseType, inStruct,
+  isLast, typeModifierIn, givenAttributes, controlStmtContext},
   hostStructItems {decorate}, hasModifiedTypeExpr {decorate},
   hasConstField {decorate}, fieldNames {decorate};
 
@@ -1069,9 +1061,9 @@ synthesized attribute hostStructItem::StructItem;
 nonterminal StructDeclarator with pps, host, hostStructItem, hasModifiedTypeExpr,
   errors, globalDecls, functionDecls, defs, localDefs, hasConstField, fieldNames,
   env, typerep, sourceLocation, baseType, inStruct, isLast, typeModifierIn,
-  givenAttributes, returnType, freeVariables, breakValid, continueValid;
-flowtype StructDeclarator = decorate {env, returnType, baseType, inStruct, isLast,
-  typeModifierIn, givenAttributes, breakValid, continueValid},
+  givenAttributes, freeVariables, controlStmtContext;
+flowtype StructDeclarator = decorate {env, baseType, inStruct, isLast,
+  typeModifierIn, givenAttributes, controlStmtContext},
   hostStructItem {decorate}, hasModifiedTypeExpr {decorate}, hasConstField {decorate},
   fieldNames {decorate};
 
@@ -1113,9 +1105,7 @@ top::StructDeclarator ::= name::Name  ty::TypeModifierExpr  attrs::Attributes
 
   local allAttrs :: Attributes = appendAttribute(top.givenAttributes, attrs);
   allAttrs.env = top.env;
-  allAttrs.returnType = top.returnType;
-  allAttrs.breakValid = top.breakValid;
-  allAttrs.continueValid = top.continueValid;
+  allAttrs.controlStmtContext = top.controlStmtContext;
 }
 abstract production structBitfield
 top::StructDeclarator ::= name::MaybeName  ty::TypeModifierExpr  e::Expr  attrs::Attributes
@@ -1162,9 +1152,7 @@ top::StructDeclarator ::= name::MaybeName  ty::TypeModifierExpr  e::Expr  attrs:
 
   local allAttrs :: Attributes = appendAttribute(top.givenAttributes, attrs);
   allAttrs.env = top.env;
-  allAttrs.returnType = top.returnType;
-  allAttrs.breakValid = top.breakValid;
-  allAttrs.continueValid = top.continueValid;
+  allAttrs.controlStmtContext = top.controlStmtContext;
 }
 -- Similar to external declarations, this pretends not to exist if it's only a warning
 abstract production warnStructField
@@ -1183,9 +1171,9 @@ top::StructDeclarator ::= msg::[Message]
 
 nonterminal EnumItem with pp, name, host, errors, globalDecls, functionDecls,
   defs, env, containingEnum, enumItemValue, enumItemValueIn, typerep,
-  sourceLocation, returnType, freeVariables, breakValid, continueValid;
-flowtype EnumItem = decorate {env, containingEnum, enumItemValueIn, returnType,
-  breakValid, continueValid},
+  sourceLocation, freeVariables, controlStmtContext;
+flowtype EnumItem = decorate {env, containingEnum, enumItemValueIn, 
+  controlStmtContext},
   name {}, enumItemValue {decorate};
 
 propagate host, errors, globalDecls, functionDecls, freeVariables on EnumItem;

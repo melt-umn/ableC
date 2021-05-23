@@ -1,31 +1,22 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 
 nonterminal Stmt with pp, host, errors, globalDecls, functionDecls, defs, env,
-  functionDefs, returnType, freeVariables, breakValid, continueValid;
-flowtype Stmt = decorate {env, returnType, breakValid, continueValid};
-
-autocopy attribute returnType :: Maybe<Type>;
-
-{-
- - These variables track whether a break/continue statement are valid at a
- - particular place. Per the C standard, a break is valid in the body of a
- - loop or switch statement and a continue is valid only within the body
- - of a loop
- -}
-autocopy attribute breakValid :: Boolean;
-autocopy attribute continueValid :: Boolean;
+  functionDefs, freeVariables, controlStmtContext, labelDefs;
+flowtype Stmt = decorate {env, controlStmtContext};
 
 abstract production nullStmt
 top::Stmt ::=
 {
-  propagate host, errors, globalDecls, functionDecls, defs, freeVariables, functionDefs;
+  propagate host, errors, globalDecls, functionDecls, defs, freeVariables,
+    functionDefs, labelDefs;
   top.pp = semi();
 }
 
 abstract production seqStmt
 top::Stmt ::= h::Stmt  t::Stmt
 {
-  propagate host, errors, globalDecls, functionDecls, defs, functionDefs;
+  propagate host, errors, globalDecls, functionDecls, defs, functionDefs,
+    labelDefs;
   top.pp = ppConcat([ h.pp, line(), t.pp ]);
   top.freeVariables :=
     h.freeVariables ++
@@ -37,7 +28,8 @@ top::Stmt ::= h::Stmt  t::Stmt
 abstract production compoundStmt
 top::Stmt ::= s::Stmt
 {
-  propagate host, errors, globalDecls, functionDecls, functionDefs, freeVariables;
+  propagate host, errors, globalDecls, functionDecls, functionDefs, freeVariables,
+    labelDefs;
   top.pp = braces(nestlines(2, s.pp));
   top.defs := globalDeclsDefs(s.globalDecls) ++ functionDeclsDefs(s.functionDecls); -- compound prevents defs from bubbling up
 
@@ -49,7 +41,8 @@ top::Stmt ::= s::Stmt
 abstract production warnStmt
 top::Stmt ::= msg::[Message]
 {
-  propagate host, globalDecls, functionDecls, defs, freeVariables, functionDefs;
+  propagate host, globalDecls, functionDecls, defs, freeVariables, functionDefs,
+    labelDefs;
   top.pp = text(s"/*${messagesToString(msg)}*/");
   top.errors := msg;
 }
@@ -74,13 +67,15 @@ top::Stmt ::= s::Decorated Stmt
   top.defs := s.defs;
   top.freeVariables := s.freeVariables;
   top.functionDefs := s.functionDefs;
+  top.labelDefs := s.labelDefs;
   forwards to new(s); -- for easier pattern matching
 }
 
 abstract production declStmt
 top::Stmt ::= d::Decl
 {
-  propagate host, errors, globalDecls, functionDecls, defs, freeVariables, functionDefs;
+  propagate host, errors, globalDecls, functionDecls, defs, freeVariables,
+    functionDefs, labelDefs;
   top.pp = d.pp;
   d.isTopLevel = false;
 }
@@ -108,14 +103,15 @@ top::Stmt ::= t::Type n::Name init::Expr
 abstract production exprStmt
 top::Stmt ::= d::Expr
 {
-  propagate host, errors, globalDecls, functionDecls, defs, freeVariables, functionDefs;
+  propagate host, errors, globalDecls, functionDecls, defs, freeVariables,
+    functionDefs, labelDefs;
   top.pp = cat( d.pp, semi() );
 }
 
 abstract production ifStmt
 top::Stmt ::= c::Expr  t::Stmt  e::Stmt
 {
-  propagate host, errors, globalDecls, functionDecls, functionDefs;
+  propagate host, errors, globalDecls, functionDecls, functionDefs, labelDefs;
   top.pp = ppConcat([
     text("if"), space(), parens(c.pp), line(),
     braces(nestlines(2, t.pp)),
@@ -159,6 +155,7 @@ top::Stmt ::= e::Expr  b::Stmt
   top.globalDecls := e.globalDecls ++ b.globalDecls;
   top.functionDecls := e.functionDecls ++ b.functionDecls;
   top.functionDefs := b.functionDefs;
+  top.labelDefs := b.labelDefs;
 
   -- An iteration statement is a block whose scope is a strict subset of the scope of its
   -- enclosing block. The loop body is also a block whose scope is a strict subset of the scope
@@ -175,8 +172,7 @@ top::Stmt ::= e::Expr  b::Stmt
     if e.typerep.defaultFunctionArrayLvalueConversion.isScalarType then []
     else [err(e.location, "While condition must be scalar type, instead it is " ++ showType(e.typerep))];
 
-  b.breakValid = true;
-  b.continueValid = true;
+  b.controlStmtContext = controlEnterLoop(top.controlStmtContext);
 }
 
 abstract production doStmt
@@ -190,6 +186,7 @@ top::Stmt ::= b::Stmt  e::Expr
   top.globalDecls := b.globalDecls ++ e.globalDecls;
   top.functionDecls := b.functionDecls ++ e.functionDecls;
   top.functionDefs := b.functionDefs;
+  top.labelDefs := b.labelDefs;
 
   -- An iteration statement is a block whose scope is a strict subset of the scope of its
   -- enclosing block. The loop body is also a block whose scope is a strict subset of the scope
@@ -206,8 +203,7 @@ top::Stmt ::= b::Stmt  e::Expr
     if e.typerep.defaultFunctionArrayLvalueConversion.isScalarType then []
     else [err(e.location, "Do-while condition must be scalar type, instead it is " ++ showType(e.typerep))];
 
-  b.breakValid = true;
-  b.continueValid = true;
+  b.controlStmtContext = controlEnterLoop(top.controlStmtContext);
 }
 
 abstract production forStmt
@@ -221,6 +217,7 @@ top::Stmt ::= i::MaybeExpr  c::MaybeExpr  s::MaybeExpr  b::Stmt
   top.globalDecls := i.globalDecls ++ c.globalDecls ++ s.globalDecls ++ b.globalDecls;
   top.functionDecls := i.functionDecls ++ c.functionDecls ++ s.functionDecls ++ b.functionDecls;
   top.functionDefs := b.functionDefs;
+  top.labelDefs := b.labelDefs;
 
   -- An iteration statement is a block whose scope is a strict subset of the scope of its
   -- enclosing block. The loop body is also a block whose scope is a strict subset of the scope
@@ -250,8 +247,7 @@ top::Stmt ::= i::MaybeExpr  c::MaybeExpr  s::MaybeExpr  b::Stmt
     if cty.defaultFunctionArrayLvalueConversion.isScalarType then []
     else [err(loc("TODOfor1",-1,-1,-1,-1,-1,-1), "For condition must be scalar type, instead it is " ++ showType(cty))]; -- TODO: location
 
-  b.breakValid = true;
-  b.continueValid = true;
+  b.controlStmtContext = controlEnterLoop(top.controlStmtContext);
 }
 
 abstract production forDeclStmt
@@ -264,6 +260,7 @@ top::Stmt ::= i::Decl  c::MaybeExpr  s::MaybeExpr  b::Stmt
   top.globalDecls := i.globalDecls ++ c.globalDecls ++ s.globalDecls ++ b.globalDecls;
   top.functionDecls := i.functionDecls ++ c.functionDecls ++ s.functionDecls ++ b.functionDecls;
   top.functionDefs := b.functionDefs;
+  top.labelDefs := b.labelDefs;
 
   -- An iteration statement is a block whose scope is a strict subset of the scope of its
   -- enclosing block. The loop body is also a block whose scope is a strict subset of the scope
@@ -294,8 +291,7 @@ top::Stmt ::= i::Decl  c::MaybeExpr  s::MaybeExpr  b::Stmt
     if cty.defaultFunctionArrayLvalueConversion.isScalarType then []
     else [err(loc("TODOfor2",-1,-1,-1,-1,-1,-1), "For condition must be scalar type, instead it is " ++ showType(cty))]; -- TODO: location
 
-  b.breakValid = true;
-  b.continueValid = true;
+  b.controlStmtContext = controlEnterLoop(top.controlStmtContext);
 }
 
 abstract production returnStmt
@@ -303,7 +299,7 @@ top::Stmt ::= e::MaybeExpr {- loc::Location -} -- TODO: Add location to signatur
 {
   propagate host;
   top.pp = ppConcat([text("return"), space(), e.pp, semi()]);
-  top.errors := case top.returnType, e.maybeTyperep of
+  top.errors := case top.controlStmtContext.returnType, e.maybeTyperep of
                   nothing(), nothing() -> []
                 | just(builtinType(_, voidType())), nothing() -> []
                 | just(expected), just(actual) ->
@@ -318,6 +314,7 @@ top::Stmt ::= e::MaybeExpr {- loc::Location -} -- TODO: Add location to signatur
   top.defs := e.defs;
   top.freeVariables := e.freeVariables;
   top.functionDefs := [];
+  top.labelDefs := [];
   -- TODO: this needs to follow the same rules as assignment. We should try to factor that out.
 }
 
@@ -331,6 +328,7 @@ top::Stmt ::= e::Expr  b::Stmt
   top.globalDecls := e.globalDecls ++ b.globalDecls;
   top.functionDecls := e.functionDecls ++ b.functionDecls;
   top.functionDefs := b.functionDefs;
+  top.labelDefs := b.labelDefs;
 
   -- A selection statement is a block whose scope is a strict subset of the scope of its
   -- enclosing block. Each associated substatement is also a block whose scope is a strict
@@ -347,7 +345,7 @@ top::Stmt ::= e::Expr  b::Stmt
     if e.typerep.defaultFunctionArrayLvalueConversion.isIntegerType then []
     else [err(e.location, "Switch expression must have integer type, instead it is " ++ showType(e.typerep))];
 
-  b.breakValid = true;
+  b.controlStmtContext = controlEnterSwitch(top.controlStmtContext);
 }
 
 abstract production gotoStmt
@@ -361,6 +359,7 @@ top::Stmt ::= l::Name
   top.defs := [];
   top.freeVariables := [];
   top.functionDefs := [];
+  top.labelDefs := [];
 
   top.errors <- l.labelLookupCheck;
 }
@@ -370,7 +369,7 @@ top::Stmt ::=
 {
   propagate host;
   top.pp = cat( text("continue"), semi() );
-  top.errors := if top.continueValid then []
+  top.errors := if top.controlStmtContext.continueValid then []
                 else [err(loc("TODOcontinue",-1,-1,-1,-1,-1,-1), -- TODO: Location
                   "continue statement is in an invalid location")];
   top.globalDecls := [];
@@ -378,6 +377,7 @@ top::Stmt ::=
   top.defs := [];
   top.freeVariables := [];
   top.functionDefs := [];
+  top.labelDefs := [];
 }
 
 abstract production breakStmt
@@ -385,7 +385,7 @@ top::Stmt ::=
 {
   propagate host;
   top.pp = ppConcat([ text("break"), semi()  ]);
-  top.errors := if top.breakValid then []
+  top.errors := if top.controlStmtContext.breakValid then []
                 else [err(loc("TODObreak",-1,-1,-1,-1,-1,-1), -- TODO: Location
                   "break statement is in an invalid location")];
   top.globalDecls := [];
@@ -393,6 +393,7 @@ top::Stmt ::=
   top.defs := [];
   top.freeVariables := [];
   top.functionDefs := [];
+  top.labelDefs := [];
 }
 
 abstract production labelStmt
@@ -406,9 +407,10 @@ top::Stmt ::= l::Name  s::Stmt
   top.defs := s.defs;
   top.freeVariables := s.freeVariables;
   top.functionDefs := s.functionDefs;
+  top.labelDefs := s.labelDefs;
 
   top.errors <- l.labelRedeclarationCheck;
-  top.functionDefs <- [labelDef(l.name, labelItem(l.location))];
+  top.labelDefs <- [(l.name, labelItem(l.location))];
 }
 
 abstract production caseLabelStmt
@@ -424,6 +426,7 @@ top::Stmt ::= v::Expr  s::Stmt
     v.freeVariables ++
     removeDefsFromNames(v.defs, s.freeVariables);
   top.functionDefs := s.functionDefs; -- ??
+  top.labelDefs := s.labelDefs;
 
   s.env = addEnv(v.defs, v.env);
 }
@@ -439,6 +442,7 @@ top::Stmt ::= s::Stmt
   top.defs := s.defs;
   top.freeVariables := s.freeVariables;
   top.functionDefs := s.functionDefs; -- ??
+  top.labelDefs := s.labelDefs;
 }
 
 -- GCC extension:
@@ -453,6 +457,7 @@ top::Stmt ::= d::FunctionDecl
   top.defs := d.defs;
   top.freeVariables := d.freeVariables;
   top.functionDefs := [];
+  top.labelDefs := [];
 }
 
 -- GCC extension:
@@ -467,6 +472,7 @@ top::Stmt ::= l::Expr  u::Expr  s::Stmt
   top.defs := l.defs ++ u.defs ++ s.defs;
   top.freeVariables := l.freeVariables ++ u.freeVariables ++ s.freeVariables;
   top.functionDefs := s.functionDefs;
+  top.labelDefs := s.labelDefs;
 }
 
 abstract production asmStmt
@@ -480,6 +486,7 @@ top::Stmt ::= asm::AsmStatement
   top.defs := [];
   top.freeVariables := asm.freeVariables;
   top.functionDefs := [];
+  top.labelDefs := [];
 }
 
 {-

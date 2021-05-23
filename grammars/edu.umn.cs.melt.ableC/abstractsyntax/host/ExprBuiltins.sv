@@ -28,8 +28,8 @@ top::Expr ::= ty::TypeName  e::MemberDesignator
 }
 
 nonterminal MemberDesignator with pp, host, errors, globalDecls, functionDecls,
-  defs, env, returnType, freeVariables, breakValid, continueValid;
-flowtype MemberDesignator = decorate {env, returnType, breakValid, continueValid};
+  defs, env, freeVariables, controlStmtContext;
+flowtype MemberDesignator = decorate {env, controlStmtContext};
 
 propagate host, errors, globalDecls, functionDecls, defs, freeVariables on MemberDesignator;
 

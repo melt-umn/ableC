@@ -23,8 +23,8 @@ Attributes ::= l1::Attributes l2::Attributes
 
 propagate host on Attributes, Attribute, Attrib, AttribName;
 
-nonterminal Attributes with pps, host, env, returnType, breakValid, continueValid;
-flowtype Attributes = decorate {env, returnType, breakValid, continueValid};
+nonterminal Attributes with pps, host, env, controlStmtContext;
+flowtype Attributes = decorate {env, controlStmtContext};
 
 abstract production consAttribute
 top::Attributes ::= h::Attribute t::Attributes
@@ -39,8 +39,8 @@ top::Attributes ::=
 }
 
 {-- __attribute__ syntax representation -}
-nonterminal Attribute with pp, host, env, returnType, breakValid, continueValid;
-flowtype Attribute = decorate {env, returnType, breakValid, continueValid};
+nonterminal Attribute with pp, host, env, controlStmtContext;
+flowtype Attribute = decorate {env, controlStmtContext};
 
 abstract production gccAttribute
 top::Attribute ::= l::Attribs
@@ -54,8 +54,8 @@ top::Attribute ::= s::String
   top.pp = text("__asm__(" ++ s ++ ")");
 }
 
-nonterminal Attribs with pp, host, env, returnType, breakValid, continueValid;
-flowtype Attribs = decorate {env, returnType, breakValid, continueValid};
+nonterminal Attribs with pp, host, env, controlStmtContext;
+flowtype Attribs = decorate {env, controlStmtContext};
 
 abstract production consAttrib
 top::Attribs ::= h::Attrib t::Attribs
@@ -75,8 +75,8 @@ top::Attribs ::=
   top.pp = text("");
 }
 
-nonterminal Attrib with pp, host, env, returnType, breakValid, continueValid;
-flowtype Attrib = decorate {env, returnType, breakValid, continueValid};
+nonterminal Attrib with pp, host, env, controlStmtContext;
+flowtype Attrib = decorate {env, controlStmtContext};
 
 -- e.g. __attribute__(())
 abstract production emptyAttrib

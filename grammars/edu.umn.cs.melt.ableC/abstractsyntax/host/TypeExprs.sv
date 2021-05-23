@@ -60,8 +60,8 @@ synthesized attribute bty :: BaseTypeExpr;
 synthesized attribute mty :: TypeModifierExpr;
 
 nonterminal TypeName with env, typerep, bty, mty, pp, host, errors, globalDecls,
-  functionDecls, decls, defs, returnType, freeVariables, breakValid, continueValid;
-flowtype TypeName = decorate {env, returnType, breakValid, continueValid},
+  functionDecls, decls, defs, freeVariables, controlStmtContext;
+flowtype TypeName = decorate {env, controlStmtContext},
   bty {}, mty {};
 
 abstract production typeName
@@ -87,12 +87,12 @@ top::TypeName ::= bty::BaseTypeExpr  mty::TypeModifierExpr
       -- TODO: Should be lifting decls to the closest scope, not global!
       map(
         \ d::Decl ->
-          decorate d with {env = top.env; returnType = top.returnType; isTopLevel = true;
-            breakValid = top.breakValid; continueValid = top.continueValid;},
+          decorate d with {env = top.env; isTopLevel = true;
+                          controlStmtContext = top.controlStmtContext;},
         -- decorate needed here because of flowtype for decls
         decorate bty.host with {
-          env = bty.env; returnType = bty.returnType; givenRefId = bty.givenRefId;
-          breakValid = bty.breakValid; continueValid = bty.continueValid;
+          env = bty.env; givenRefId = bty.givenRefId;
+          controlStmtContext = bty.controlStmtContext;
         }.decls)
     | nothing() -> []
     end ++ bty.globalDecls ++ mty.globalDecls;
@@ -129,9 +129,9 @@ top::TypeName ::= ty::Decorated TypeName
  - Corresponds to types obtainable from a TypeSpecifiers.
  -}
 nonterminal BaseTypeExpr with env, typerep, pp, host, errors, globalDecls,
-  functionDecls, typeModifier, decls, defs, givenRefId, returnType, freeVariables,
-  breakValid, continueValid;
-flowtype BaseTypeExpr = decorate {env, givenRefId, returnType, breakValid, continueValid},
+  functionDecls, typeModifier, decls, defs, givenRefId, freeVariables,
+  controlStmtContext;
+flowtype BaseTypeExpr = decorate {env, givenRefId, controlStmtContext},
   typeModifier {decorate};
 
 abstract production errorTypeExpr
@@ -485,9 +485,8 @@ top::BaseTypeExpr ::= q::Qualifiers  e::ExprOrTypeName
  -}
 nonterminal TypeModifierExpr with env, typerep, lpp, rpp, host, modifiedBaseTypeExpr,
   isFunctionArrayTypeExpr, baseType, typeModifierIn, errors, globalDecls,
-  functionDecls, decls, defs, returnType, freeVariables, breakValid, continueValid;
-flowtype TypeModifierExpr = decorate {env, baseType, typeModifierIn, returnType,
-  breakValid, continueValid},
+  functionDecls, decls, defs, freeVariables, controlStmtContext;
+flowtype TypeModifierExpr = decorate {env, baseType, typeModifierIn, controlStmtContext},
   modifiedBaseTypeExpr {decorate}, isFunctionArrayTypeExpr {};
 
 synthesized attribute modifiedBaseTypeExpr::Maybe<BaseTypeExpr>;
@@ -678,9 +677,9 @@ autocopy attribute appendedTypeNames :: TypeNames;
 synthesized attribute appendedTypeNamesRes :: TypeNames;
 
 nonterminal TypeNames with pps, host, env, typereps, count, errors, globalDecls,
-  functionDecls, decls, defs, returnType, freeVariables, appendedTypeNames,
-  appendedTypeNamesRes, breakValid, continueValid;
-flowtype TypeNames = decorate {env, returnType, breakValid, continueValid},
+  functionDecls, decls, defs, freeVariables, appendedTypeNames,
+  appendedTypeNamesRes, controlStmtContext;
+flowtype TypeNames = decorate {env, controlStmtContext},
   count {}, appendedTypeNamesRes {appendedTypeNames};
 
 propagate host, errors, globalDecls, functionDecls, decls, defs, freeVariables on TypeNames;

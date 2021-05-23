@@ -92,9 +92,7 @@ top::Attrib ::= n::AttribName  e::Exprs
   -- Needed since we are matching on Expr
   -- Not a big deal since these are pretty much just constants
   e.env = emptyEnv();
-  e.returnType = nothing();
-  e.breakValid = false;
-  e.continueValid = false;
+  e.controlStmtContext = initialControlStmtContext;
 }
 -- e.g. __attribute__((something(foo, "well whatever")))
 -- OR __attribute__((something(foo)))

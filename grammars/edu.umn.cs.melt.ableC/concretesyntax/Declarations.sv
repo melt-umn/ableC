@@ -166,7 +166,7 @@ concrete productions top::TypeName_c
         ast:figureOutTypeFromSpecifiers(sqs.location, sqs.typeQualifiers, sqs.preTypeSpecifiers, sqs.realTypeSpecifiers, sqs.mutateTypeSpecifiers);
       top.ast =
         ast:typeName(
-          case decorate sqs.attributes with { ast:returnType = nothing(); ast:breakValid = false; ast:continueValid = false;} of
+          case decorate sqs.attributes with { ast:controlStmtContext = ast:initialControlStmtContext; } of
           | ast:nilAttribute() -> bt
           | _ -> ast:warnTypeExpr([wrn(top.location, "Ignoring attributes in type name")], bt)
           end,
@@ -180,7 +180,7 @@ concrete productions top::TypeName_c
         ast:figureOutTypeFromSpecifiers(sqs.location, sqs.typeQualifiers, sqs.preTypeSpecifiers, sqs.realTypeSpecifiers, sqs.mutateTypeSpecifiers);
       top.ast =
         ast:typeName(
-          case decorate sqs.attributes with { ast:returnType = nothing(); ast:breakValid = false; ast:continueValid = false;} of
+          case decorate sqs.attributes with { ast:controlStmtContext = ast:initialControlStmtContext; } of
           | ast:nilAttribute() -> bt
           | _ -> ast:warnTypeExpr([wrn(top.location, "Ignoring attributes in type name")], bt)
           end,
@@ -295,9 +295,7 @@ concrete productions top::InitialFunctionDefinition_c
       local baseMT  :: ast:TypeModifierExpr = d.ast;
       baseMT.ast:baseType = ast:errorType();
       baseMT.ast:typeModifierIn = ast:baseTypeExpr();
-      baseMT.ast:returnType = nothing();
-      baseMT.ast:breakValid = false;
-      baseMT.ast:continueValid = false;
+      baseMT.ast:controlStmtContext = ast:initialControlStmtContext;
       local mt :: ast:TypeModifierExpr =
         case l.isDeclListEmpty, baseMT of
         | false, ast:functionTypeExprWithArgs(t, p, v, q) ->
@@ -332,9 +330,7 @@ concrete productions top::InitialFunctionDefinition_c
       local baseMT  :: ast:TypeModifierExpr = d.ast;
       baseMT.ast:baseType = ast:errorType();
       baseMT.ast:typeModifierIn = ast:baseTypeExpr();
-      baseMT.ast:returnType = nothing();
-      baseMT.ast:breakValid = false;
-      baseMT.ast:continueValid = false;
+      baseMT.ast:controlStmtContext = ast:initialControlStmtContext;
       local mt :: ast:TypeModifierExpr =
         case l.isDeclListEmpty, baseMT of
         | false, ast:functionTypeExprWithArgs(t, p, v, q) ->

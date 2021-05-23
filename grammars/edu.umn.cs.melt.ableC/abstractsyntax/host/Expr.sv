@@ -3,10 +3,10 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 import edu:umn:cs:melt:ableC:abstractsyntax:overloadable as ovrld;
 
 nonterminal Expr with location, pp, host, globalDecls, functionDecls, errors,
-  defs, env, returnType, freeVariables, typerep, isLValue, isSimple,
-  integerConstantValue, breakValid, continueValid;
+  defs, env, freeVariables, typerep, isLValue, isSimple, integerConstantValue,
+  controlStmtContext;
 
-flowtype Expr = decorate {env, returnType, breakValid, continueValid},
+flowtype Expr = decorate {env, controlStmtContext},
   isLValue {decorate}, isSimple {decorate}, integerConstantValue {decorate};
 
 synthesized attribute isLValue::Boolean;
@@ -428,9 +428,9 @@ top::Expr ::= e::Expr  gl::GenericAssocs  def::MaybeExpr
 }
 
 nonterminal GenericAssocs with pps, host, errors, globalDecls, functionDecls,
-  defs, env, selectionType, compatibleSelections, returnType, freeVariables,
-  breakValid, continueValid;
-flowtype GenericAssocs = decorate {env, returnType, breakValid, continueValid},
+  defs, env, selectionType, compatibleSelections, freeVariables,
+  controlStmtContext;
+flowtype GenericAssocs = decorate {env, controlStmtContext},
   compatibleSelections {decorate, selectionType};
 
 autocopy attribute selectionType :: Type;
@@ -450,9 +450,9 @@ top::GenericAssocs ::=
 }
 
 nonterminal GenericAssoc with location, pp, host, globalDecls, functionDecls,
-  errors, defs, env, selectionType, compatibleSelections, returnType,
-  freeVariables, breakValid, continueValid;
-flowtype GenericAssoc = decorate {env, returnType, breakValid, continueValid},
+  errors, defs, env, selectionType, compatibleSelections, freeVariables, 
+  controlStmtContext;
+flowtype GenericAssoc = decorate {env, controlStmtContext},
   compatibleSelections {decorate, selectionType};
 
 propagate host, errors, globalDecls, functionDecls, defs, freeVariables on GenericAssoc;
@@ -482,6 +482,7 @@ top::Expr ::= body::Stmt result::Expr
   -- Add body.functionDefs to env here, since labels don't bubble up
   -- from expressions to the top-level function.
   body.env = addEnv(body.functionDefs, openScopeEnv(top.env));
+  body.controlStmtContext = controlAddLabels(top.controlStmtContext, body.labelDefs);
   result.env = addEnv(body.defs, body.env);
 }
 
