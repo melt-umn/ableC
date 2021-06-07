@@ -295,7 +295,7 @@ top::Stmt ::= i::Decl  c::MaybeExpr  s::MaybeExpr  b::Stmt
 }
 
 abstract production returnStmt
-top::Stmt ::= e::MaybeExpr {- loc::Location -} -- TODO: Add location to signature
+top::Stmt ::= e::MaybeExpr loc::Location
 {
   propagate host;
   top.pp = ppConcat([text("return"), space(), e.pp, semi()]);
@@ -307,7 +307,7 @@ top::Stmt ::= e::MaybeExpr {- loc::Location -} -- TODO: Add location to signatur
                     else [err(e.justTheExpr.fromJust.location,
                               "Incorrect return type, expected " ++ showType(expected) ++ " but found " ++ showType(actual))]
                 | nothing(), just(actual) -> [err(e.justTheExpr.fromJust.location, "Unexpected return")]
-                | just(expected), nothing() -> [err({-loc-} loc("TODOreturn",-1,-1,-1,-1,-1,-1), "Expected return value, but found valueless return")] -- TODO: location
+                | just(expected), nothing() -> [err(loc, "Expected return value, but found valueless return")]
                 end ++ e.errors;
   top.globalDecls := e.globalDecls;
   top.functionDecls := e.functionDecls;
@@ -365,13 +365,12 @@ top::Stmt ::= l::Name
 }
 
 abstract production continueStmt
-top::Stmt ::=
+top::Stmt ::= loc::Location
 {
   propagate host;
   top.pp = cat( text("continue"), semi() );
   top.errors := if top.controlStmtContext.continueValid then []
-                else [err(loc("TODOcontinue",-1,-1,-1,-1,-1,-1), -- TODO: Location
-                  "continue statement is in an invalid location")];
+                else [err(loc, "continue statement is in an invalid location")];
   top.globalDecls := [];
   top.functionDecls := [];
   top.defs := [];
@@ -381,13 +380,12 @@ top::Stmt ::=
 }
 
 abstract production breakStmt
-top::Stmt ::=
+top::Stmt ::= loc::Location
 {
   propagate host;
   top.pp = ppConcat([ text("break"), semi()  ]);
   top.errors := if top.controlStmtContext.breakValid then []
-                else [err(loc("TODObreak",-1,-1,-1,-1,-1,-1), -- TODO: Location
-                  "break statement is in an invalid location")];
+                else [err(loc, "break statement is in an invalid location")];
   top.globalDecls := [];
   top.functionDecls := [];
   top.defs := [];

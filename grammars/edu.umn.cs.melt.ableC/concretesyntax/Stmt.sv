@@ -115,11 +115,11 @@ concrete productions top::JumpStmt_c
 | 'goto' id::Identifier_c ';'
     { top.ast = ast:gotoStmt(id.ast); }
 | 'continue' ';'
-    { top.ast = ast:continueStmt(); }
+    { top.ast = ast:continueStmt(top.location); }
 | 'break' ';'
-    { top.ast = ast:breakStmt(); }
+    { top.ast = ast:breakStmt(top.location); }
 | 'return' ';'
-    { top.ast = ast:returnStmt(ast:nothingExpr()); }
+    { top.ast = ast:returnStmt(ast:nothingExpr(), top.location); }
 | 'return' rv::Expr_c ';'
-    { top.ast = ast:returnStmt(ast:justExpr(rv.ast)); }
+    { top.ast = ast:returnStmt(ast:justExpr(rv.ast), top.location); }
 
