@@ -21,13 +21,13 @@ restricted synthesized attribute valueItem :: Decorated ValueItem;
 restricted synthesized attribute tagItem :: Decorated TagItem;
 restricted synthesized attribute labelItem :: Decorated LabelItem;
 
-nonterminal Name with location, name, pp, host, env, valueLocalLookup, labelRedeclarationCheck, valueLookupCheck, tagLookupCheck, labelLookupCheck, valueItem, tagItem, labelItem, tagLocalLookup, tagHasForwardDcl, tagRefId, valueRedeclarationCheck, valueRedeclarationCheckNoCompatible, valueMergeRedeclExtnQualifiers, controlStmtContext;
+nonterminal Name with location, name, compareTo, isEqual, pp, host, env, valueLocalLookup, labelRedeclarationCheck, valueLookupCheck, tagLookupCheck, labelLookupCheck, valueItem, tagItem, labelItem, tagLocalLookup, tagHasForwardDcl, tagRefId, valueRedeclarationCheck, valueRedeclarationCheckNoCompatible, valueMergeRedeclExtnQualifiers, controlStmtContext;
 flowtype Name = decorate {env}, name {}, valueLocalLookup {env}, labelRedeclarationCheck {controlStmtContext}, valueLookupCheck {env}, tagLookupCheck {env}, labelLookupCheck {controlStmtContext}, valueItem {env}, tagItem {env}, labelItem {controlStmtContext}, tagLocalLookup {env}, tagHasForwardDcl {env}, tagRefId {env}, valueRedeclarationCheck {decorate}, valueRedeclarationCheckNoCompatible {decorate}, valueMergeRedeclExtnQualifiers {decorate};
 
 abstract production name
 top::Name ::= n::String
 {
-  propagate host;
+  propagate host, compareTo, isEqual;
   
   top.name = n;
   top.pp = text(n);
@@ -80,10 +80,6 @@ top::Name ::= n::String
   top.valueItem = value;
   top.tagItem = tag;
   top.labelItem = label;
-}
-
-instance Eq Name {
-  eq = \ n1::Name n2::Name -> n1.name == n2.name;
 }
 
 inherited attribute anonTagRefId::String;
