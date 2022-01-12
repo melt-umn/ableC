@@ -304,7 +304,7 @@ top::BaseTypeExpr ::= q::Qualifiers  kwd::StructOrEnumOrUnion  n::Name
          top,
          consDeclarator(
            declarator(
-             name("_unused_" ++ toString(genInt()), location=builtinLoc("host")),
+             name("_unused_" ++ toString(genIntT()), location=builtinLoc("host")),
              baseTypeExpr(),
              nilAttribute(),
              nothingInitializer()),
@@ -432,7 +432,7 @@ top::BaseTypeExpr ::= attrs::Attributes  bt::BaseTypeExpr
   top.pp = cat(ppAttributes(attrs), bt.pp);
 
   local liftedName::Name =
-    name(s"_attributedType_${toString(genInt())}", location=builtinLoc("host"));
+    name(s"_attributedType_${toString(genIntT())}", location=builtinLoc("host"));
   forwards to
     -- TODO: We can currently only lift to the global level, but this should be lifted to the closest scope
     injectGlobalDeclsTypeExpr(

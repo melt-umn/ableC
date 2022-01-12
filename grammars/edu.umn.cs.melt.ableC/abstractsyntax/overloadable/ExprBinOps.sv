@@ -1555,7 +1555,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 function mkEqRewriteExpr
 host:Expr ::= baseOpProd::BinaryProd  lhs::host:Expr  rhs::host:Expr  loc::Location
 {
-  local tmpName::host:Name = host:name("_tmp" ++ toString(genInt()), location=loc);
+  local tmpName::host:Name = host:name("_tmp" ++ toString(genIntT()), location=loc);
   -- ({auto ${tmpName} = &${lhs}; *${tmpName} = *${tmpName} ${baseOp} ${rhs};})
   return
     host:stmtExpr(
@@ -1572,8 +1572,8 @@ host:Expr ::= baseOpProd::BinaryProd  lhs::host:Expr  rhs::host:Expr  loc::Locat
 function mkTmpBinOpExpr
 host:Expr ::= baseOpProd::BinaryProd  lhs::host:Expr  rhs::host:Expr  loc::Location
 {
-  local tmpName1::host:Name = host:name("_tmp" ++ toString(genInt()), location=loc);
-  local tmpName2::host:Name = host:name("_tmp" ++ toString(genInt()), location=loc);
+  local tmpName1::host:Name = host:name("_tmp" ++ toString(genIntT()), location=loc);
+  local tmpName2::host:Name = host:name("_tmp" ++ toString(genIntT()), location=loc);
   -- ({auto ${tmpName1} = ${lhs}; auto ${tmpName2} = rhs; ${tmpName1} ${baseOp} ${tmpName2};})
   return
     host:stmtExpr(

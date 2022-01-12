@@ -32,9 +32,9 @@ top::LhsOrRhsRuntimeMods ::=
 function applyLhsRhsMods
 Pair<Expr Expr> ::= l::[LhsOrRhsRuntimeMod]  lhs::Decorated Expr  rhs::Decorated Expr
 {
-  local tmpLhsName :: String = "_tmpLhs" ++ toString(genInt());
+  local tmpLhsName :: String = "_tmpLhs" ++ toString(genIntT());
   local tmpLhs :: Expr = declRefExpr(name(tmpLhsName, location=lhs.location), location=lhs.location);
-  local tmpRhsName :: String = "_tmpRhs" ++ toString(genInt());
+  local tmpRhsName :: String = "_tmpRhs" ++ toString(genIntT());
   local tmpRhs :: Expr = declRefExpr(name(tmpRhsName, location=rhs.location), location=rhs.location);
 
   local mods :: LhsOrRhsRuntimeMods = foldr(consLhsOrRhsRuntimeMod, nilLhsOrRhsRuntimeMod(), l);
@@ -108,7 +108,7 @@ top::RuntimeMods ::=
 function applyMods
 Expr ::= l::[RuntimeMod] e::Decorated Expr
 {
-  local tmpName :: String = "_tmp" ++ toString(genInt());
+  local tmpName :: String = "_tmp" ++ toString(genIntT());
   local tmpDecl :: Stmt = mkDecl(tmpName, e.typerep, new(e), e.location);
 
   local mods :: RuntimeMods = foldr(consRuntimeMod, nilRuntimeMod(), l);

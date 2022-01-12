@@ -44,7 +44,7 @@ top::Name ::= n::String
     | _ -> nothing()
     end;
   top.tagHasForwardDcl = refIdIfOld.isJust;
-  top.tagRefId = fromMaybe(toString(genInt()), refIdIfOld);
+  top.tagRefId = fromMaybe(toString(genIntT()), refIdIfOld);
   
   local labdcls :: [LabelItem] = lookupLabel(n, top.controlStmtContext);
   top.labelRedeclarationCheck =

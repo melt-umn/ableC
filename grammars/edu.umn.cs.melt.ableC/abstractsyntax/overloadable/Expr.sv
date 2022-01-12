@@ -124,7 +124,7 @@ top::host:Expr ::= ty::host:TypeName  init::host:InitList
       host:decTypeName(ty),
       init,
       location=top.location);
-  local tmpName::host:Name = host:name("_res_" ++ toString(genInt()), location=top.location);
+  local tmpName::host:Name = host:name("_res_" ++ toString(genIntT()), location=top.location);
   forwards to
     case t.objectInitProd of
     | just(prod) ->
