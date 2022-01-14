@@ -52,11 +52,11 @@ imports silver:langutil:pp;
 import edu:umn:cs:melt:ableC:abstractsyntax:env;
 
 function driver
-IOVal<Integer> ::= args::[String] ioIn::IO 
+IOVal<Integer> ::= args::[String] ioIn::IOToken 
   theParser::(ParseResult<cst:Root>::=String String)
 {
   local fileName :: String = head(args);
-  local splitFileName :: Pair<String String> = splitFileNameAndExtension(fileName);
+  local splitFileName :: Pair<String String> = splitFileNameAndExtensionT(fileName);
   local baseFileName :: String = splitFileName.fst;
   local skipCpp :: Boolean = contains("--skip-cpp", args);
   local cppFileName :: String = if skipCpp then fileName else baseFileName ++ ".i";
@@ -70,29 +70,29 @@ IOVal<Integer> ::= args::[String] ioIn::IO
   local cppCmd :: String = "gcc -E -x c -D _POSIX_C_SOURCE=200908L -std=gnu1x -I . " ++ cppOptions;
   local fullCppCmd :: String = cppCmd ++ " \"" ++ fileName ++ "\" > " ++ cppFileName;
   
-  local result::IOMonad<Integer> = do {
+  local result::IO<Integer> = do {
     if null(args) then do {
-      printM("Usage: [ableC invocation] [file name] [c preprocessor arguments]\n");
+      print("Usage: [ableC invocation] [file name] [c preprocessor arguments]\n");
       return 5;
     } else do {
-      isF::Boolean <- isFileM(fileName);
+      isF::Boolean <- isFile(fileName);
       if !isF then do {
-        printM("File \"" ++ fileName ++ "\" not found.\n");
+        print("File \"" ++ fileName ++ "\" not found.\n");
         return 1;
       } else do {
         when_(contains("--show-cpp", args),
-          printM("CPP command: " ++ fullCppCmd ++ "\n"));
+          print("CPP command: " ++ fullCppCmd ++ "\n"));
         mkCppFile::Integer <-
           if skipCpp then returnIO(0)
-          else systemM(fullCppCmd);
+          else system(fullCppCmd);
         if mkCppFile != 0 then do {
-          printM("CPP call failed: " ++ fullCppCmd ++ "\n");
+          print("CPP call failed: " ++ fullCppCmd ++ "\n");
           return 3;
         } else do {
-          text :: String <- readFileM(cppFileName);
+          text :: String <- readFile(cppFileName);
           let result :: ParseResult<cst:Root> = theParser(text, cppFileName);
           if !result.parseSuccess then do {
-            printM(result.parseErrors ++ "\n");
+            print(result.parseErrors ++ "\n");
             return 2;
           } else do {
             let comp :: Decorated abs:Compilation =
@@ -100,22 +100,22 @@ IOVal<Integer> ::= args::[String] ioIn::IO
                 env = addEnv( map(xcArgDef, xcArgs) , emptyEnv() );
               };
             if contains("--show-ast", args) then do {
-              printM(substitute("edu:umn:cs:melt:", "", hackUnparse(comp.abs:srcAst)) ++ "\n");
+              print(substitute("edu:umn:cs:melt:", "", hackUnparse(comp.abs:srcAst)) ++ "\n");
               return 0;
             } else if contains("--show-host-ast", args) then do {
-              printM(substitute("edu:umn:cs:melt:", "", hackUnparse(comp.abs:hostAst)) ++ "\n");
+              print(substitute("edu:umn:cs:melt:", "", hackUnparse(comp.abs:hostAst)) ++ "\n");
               return 0;
             } else if contains("--show-pp", args) then do {
-              printM(show(100, comp.abs:srcPP) ++ "\n");
+              print(show(100, comp.abs:srcPP) ++ "\n");
               return 0;
             } else if contains("--show-host-pp", args) then do {
-              printM(show(100, comp.abs:hostPP) ++ "\n");
+              print(show(100, comp.abs:hostPP) ++ "\n");
               return 0;
             } else do {
               unless(null(comp.errors),
-                printM(messagesToString(comp.errors) ++ "\n"));
+                print(messagesToString(comp.errors) ++ "\n"));
               when_(contains("--force-trans", args) || !containsErrors(comp.errors, false),
-                writeFileM(ppFileName, show(80, comp.abs:finalPP)));
+                writeFile(ppFileName, show(80, comp.abs:finalPP)));
               return if containsErrors(comp.errors, false) then 4 else 0;
             };
           };
