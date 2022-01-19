@@ -91,7 +91,7 @@ top::host:Expr ::= f::host:Expr  a::host:Exprs
   production attribute postInsertions :: [(host:Stmt ::= Decorated host:Exprs  Decorated host:Expr)] with ++;
   postInsertions := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
-  local tmpNamePrefix :: String = "_tmp" ++ toString(genInt());
+  local tmpNamePrefix :: String = "_tmp" ++ toString(genIntT());
 
   local tmpArgs :: host:Exprs = foldExpr(mkTmpExprsRefs(a, tmpNamePrefix, 0));
   tmpArgs.env = top.env;
