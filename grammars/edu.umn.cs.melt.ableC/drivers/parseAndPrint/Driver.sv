@@ -13,7 +13,7 @@ IOVal<Integer> ::= args::[String] ioIn::IOToken
   theParser::(ParseResult<cst:Root>::=String String)
 {
   local fileName :: String = head(args);
-  local splitFileName :: Pair<String String> = splitFileNameAndExtensionT(fileName);
+  local splitFileName :: Pair<String String> = splitFileNameAndExtension(fileName);
   local baseFileName :: String = splitFileName.fst;
   local skipCpp :: Boolean = contains("--skip-cpp", args);
   local cppFileName :: String = if skipCpp then fileName else baseFileName ++ ".gen_cpp";
