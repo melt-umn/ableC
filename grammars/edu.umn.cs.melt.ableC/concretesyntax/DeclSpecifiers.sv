@@ -342,12 +342,14 @@ concrete productions top::FunctionSpecifier_c
 closed nonterminal StructOrUnionSpecifier_c with location, realTypeSpecifiers, givenQualifiers; 
 concrete productions top::StructOrUnionSpecifier_c
 | su::StructOrUnion_c id::Identifier_c TypeLCurly_t ss::StructDeclarationList_c '}'
+  operator=CPP_Attr_LowerPrec_t
     { top.realTypeSpecifiers =
         case su of
         | struct_c(_) -> [ast:structTypeExpr(top.givenQualifiers, ast:structDecl(ast:nilAttribute(), ast:justName(id.ast), ast:foldStructItem(ss.ast), location=top.location))]
         | union_c(_) -> [ast:unionTypeExpr(top.givenQualifiers, ast:unionDecl(ast:nilAttribute(), ast:justName(id.ast), ast:foldStructItem(ss.ast), location=top.location))]
         end; }
 | su::StructOrUnion_c TypeLCurly_t ss::StructDeclarationList_c '}'
+  operator=CPP_Attr_LowerPrec_t
     { top.realTypeSpecifiers =
         case su of
         | struct_c(_) -> [ast:structTypeExpr(top.givenQualifiers, ast:structDecl(ast:nilAttribute(), ast:nothingName(), ast:foldStructItem(ss.ast), location=top.location))]
