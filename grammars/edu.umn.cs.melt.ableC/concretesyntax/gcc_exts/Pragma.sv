@@ -7,7 +7,7 @@ ignore terminal PragmaMark /#pragma\ mark.*([\n\r]+)/ lexer classes {Comment};
 terminal Hash_t '#';
 terminal Pragma_t 'pragma';
 terminal RedefExtname_t 'redefine_extname';
-terminal GCC_t /GCC\([^\)]*\)([\n\r]+)/;
+terminal GCC_t /GCC .*([\n\r]+)/;
 terminal Pack_t /pack\([^\)]*\)([\n\r]+)/;
 terminal OMP_t /omp\ .*/;
 terminal OMPFor_t /omp\ .*[\r\n\ \t]+for\ *\(.*\)/; -- TODO: HACK
