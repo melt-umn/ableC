@@ -229,16 +229,19 @@ concrete productions top::SpecifierQualifierList_c
       top.specialSpecifiers = [];
       top.attributes = ast:nilAttribute(); }
 
-closed nonterminal TypeQualifierList_c with location, typeQualifiers, mutateTypeSpecifiers, specialSpecifiers;
+closed nonterminal TypeQualifierList_c with location, typeQualifiers, mutateTypeSpecifiers, specialSpecifiers, attributes;
 concrete productions top::TypeQualifierList_c
 | h::TypeQualifier_c
+  operator=CPP_Attr_LowerPrec_t
     { top.typeQualifiers = h.typeQualifiers;
       top.mutateTypeSpecifiers = h.mutateTypeSpecifiers;
-      top.specialSpecifiers = []; }
+      top.specialSpecifiers = [];
+      top.attributes = ast:nilAttribute(); }
 | h::TypeQualifier_c  t::TypeQualifierList_c
     { top.typeQualifiers = ast:qualifierCat(h.typeQualifiers, t.typeQualifiers);
       top.mutateTypeSpecifiers = h.mutateTypeSpecifiers ++ t.mutateTypeSpecifiers;
-      top.specialSpecifiers = t.specialSpecifiers; }
+      top.specialSpecifiers = t.specialSpecifiers;
+      top.attributes = t.attributes; }
 
 
 -- "Non-exported" symbols. These are only used directly in this file.
@@ -400,9 +403,9 @@ concrete productions top::StructDeclaratorList_c
 closed nonterminal StructDeclarator_c with location, ast<[ast:StructDeclarator]>, givenType; 
 concrete productions top::StructDeclarator_c
 | d::Declarator_c
-    { top.ast = [ast:structField(d.declaredIdent, d.ast, ast:nilAttribute())]; }
+    { top.ast = [ast:structField(d.declaredIdent, d.ast, d.attributes)]; }
 | d::Declarator_c ':' e::ConstantExpr_c
-    { top.ast = [ast:structBitfield(ast:justName(d.declaredIdent), d.ast, e.ast, ast:nilAttribute())]; }
+    { top.ast = [ast:structBitfield(ast:justName(d.declaredIdent), d.ast, e.ast, d.attributes)]; }
 | ':' e::ConstantExpr_c
     { top.ast = [ast:structBitfield(ast:nothingName(), top.givenType, e.ast, ast:nilAttribute())]; }
 
