@@ -363,6 +363,11 @@ Boolean ::= lval::Type  rval::Type
           end
         -- TODO: handle qualifiers when casting rhs 0 or void
   -- extensions
+  -- ignore type attributes that don't have a specialized representation (e.g. vector)
+    | attributedType(_, t1), attributedType(_, t2) -> typeAssignableTo(t1, t2)
+    | attributedType(_, t1), t2 -> typeAssignableTo(t1, t2)
+    | t1, attributedType(_, t2) -> typeAssignableTo(t1, t2)
+
     | vectorType(b1, s1), vectorType(b2, s2) ->
             compatibleTypes(b1, b2, true, true) && s1 == s2 -- TODO: no idea
 -- the left operand has type atomic, qualified, or unqualified _Bool, and the right is a pointer.
