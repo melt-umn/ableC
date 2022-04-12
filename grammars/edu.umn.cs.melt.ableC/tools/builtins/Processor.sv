@@ -165,9 +165,10 @@ concrete productions top::TypePrefix
 | 'U' { top.issigned := false;}
 | 'I' { }-- top.ignoreMe = true; } -- maybe ignore all of these? -- TODO: for now, allowing it!
 
-nonterminal TypeSpecifier with ignoreMe, specifier, givenSign, givenDomain;
+nonterminal TypeSpecifier with ignoreMe, specifier, size, givenSign, givenDomain;
 
 synthesized attribute specifier :: (a:Type ::= a:Qualifiers);
+synthesized attribute size :: Integer;  -- Size on X86_64 (which is all we care about for vector intrinsics, for now...) 
 autocopy attribute givenSign :: (a:BuiltinType ::= a:IntegerType);
 autocopy attribute givenDomain :: (a:BuiltinType ::= a:RealType);
 
@@ -178,34 +179,30 @@ top::TypeSpecifier ::=
 }
 
 concrete productions top::TypeSpecifier
-| 'v' {-void-} { top.specifier = a:builtinType(_, a:voidType()); }
-| 'b' {-bool-} { top.specifier = a:builtinType(_, a:boolType()); }
-| 'c' {-char-} { top.specifier = a:builtinType(_, top.givenSign(a:charType())); }
-| 's' {-short-} { top.specifier = a:builtinType(_, top.givenSign(a:shortType())); }
-| 'i' {-int-} { top.specifier = a:builtinType(_, top.givenSign(a:intType())); }
-| 'L' 'i' {-long-} { top.specifier = a:builtinType(_, top.givenSign(a:longType())); }
-| 'LL' 'i' {-long long-} { top.specifier = a:builtinType(_, top.givenSign(a:longlongType())); }
-| 'LLL' 'i' {-int128-} { top.specifier = a:builtinType(_, top.givenSign(a:int128Type())); }
+| 'v' {-void-} { top.specifier = a:builtinType(_, a:voidType()); top.size = 0; }
+| 'b' {-bool-} { top.specifier = a:builtinType(_, a:boolType()); top.size = 1; }
+| 'c' {-char-} { top.specifier = a:builtinType(_, top.givenSign(a:charType())); top.size = 1; }
+| 's' {-short-} { top.specifier = a:builtinType(_, top.givenSign(a:shortType())); top.size = 2; }
+| 'i' {-int-} { top.specifier = a:builtinType(_, top.givenSign(a:intType())); top.size = 4; }
+| 'L' 'i' {-long-} { top.specifier = a:builtinType(_, top.givenSign(a:longType())); top.size = 8; }
+| 'LL' 'i' {-long long-} { top.specifier = a:builtinType(_, top.givenSign(a:longlongType())); top.size = 8; }
+| 'LLL' 'i' {-int128-} { top.specifier = a:builtinType(_, top.givenSign(a:int128Type())); top.size = 16; }
 
-| 'f' {-float-} { top.specifier = a:builtinType(_, top.givenDomain(a:floatType())); }
-| 'd' {-double-} { top.specifier = a:builtinType(_, top.givenDomain(a:doubleType())); }
-| 'L' 'd' {-long double-} { top.specifier = a:builtinType(_, top.givenDomain(a:longdoubleType())); }
+| 'f' {-float-} { top.specifier = a:builtinType(_, top.givenDomain(a:floatType())); top.size = 4; }
+| 'd' {-double-} { top.specifier = a:builtinType(_, top.givenDomain(a:doubleType())); top.size = 8; }
+| 'L' 'd' {-long double-} { top.specifier = a:builtinType(_, top.givenDomain(a:longdoubleType())); top.size = 16; }
 
-| 'F' {-ObjC crap-} { top.ignoreMe := true; } -- Ignore anything with this spec
+| 'F' {-ObjC crap-} { top.ignoreMe := true;  } -- Ignore anything with this spec
 | 'P' {-FILE-} { top.ignoreMe := true; } -- dunno what to do with this?
-| 'z' {-size_t-} { top.specifier = a:builtinType(_, top.givenSign(a:intType())); } -- TODO: do better?
+| 'z' {-size_t-} { top.specifier = a:builtinType(_, top.givenSign(a:intType())); top.size = 8; } -- TODO: do better?
 | 'a' {-valist-} { top.specifier = a:builtinType(_, a:voidType()); } -- TODO
-| 'A' {-valist?pointer maybe?-} { top.specifier = a:pointerType(_, a:builtinType(a:nilQualifier(), a:voidType())); }-- TODO ALSO: underscore in wrong spot
+| 'A' {-valist?pointer maybe?-} { top.specifier = a:pointerType(_, a:builtinType(a:nilQualifier(), a:voidType())); top.size = 8; }-- TODO ALSO: underscore in wrong spot
 | 'X'  more::TypeSpecifier {-_Complex-} { more.givenSign = a:complexIntegerType;
                                           more.givenDomain = a:complexType;
-                                          top.specifier = more.specifier; }
-| 'V'  n::VectorNum  more::TypeSpecifier { top.specifier = createVectorType(_, more.specifier, n.lexeme); }
+                                          top.specifier = more.specifier;
+                                          top.size = more.size * 2; }
+| 'V'  n::VectorNum  more::TypeSpecifier { top.specifier = \ qs::a:Qualifiers -> a:vectorType(more.specifier(qs), top.size); top.size = toInteger(n.lexeme) * more.size; }
 
-function createVectorType
-a:Type ::= qs::a:Qualifiers more::(a:Type ::= a:Qualifiers) n::String
-{
-  return a:vectorType(more(qs), toInteger(n));
-}
 
 nonterminal TypeSuffix with ignoreMe, qualifiers, pointercount;
 
@@ -294,15 +291,15 @@ parser parseDef :: Builtins {
 }
 
 function main
-IOVal<Integer> ::= args::[String]  ioin::IO
+IOVal<Integer> ::= args::[String]  ioin::IOToken
 {
-  local file :: IOVal<String> = readFile(head(args), ioin);
+  local file :: IOVal<String> = readFileT(head(args), ioin);
 
   local parseresult :: ParseResult<Builtins> = parseDef(file.iovalue, head(args));
 
-  local onerror :: IOVal<Integer> = ioval(print(parseresult.parseErrors ++ "\n", file.io), -1);
+  local onerror :: IOVal<Integer> = ioval(printT(parseresult.parseErrors ++ "\n", file.io), -1);
   
-  local onsuccess :: IOVal<Integer> = ioval(print(
+  local onsuccess :: IOVal<Integer> = ioval(printT(
     "grammar edu:umn:cs:melt:ableC:abstractsyntax:builtins;\n" ++
     "--GENERATED FILE, DO NOT EDIT. see edu:umn:cs:melt:ableC:tools:builtins\n" ++
     "aspect function getInitialEnvDefs [Def] ::= {\n" ++
