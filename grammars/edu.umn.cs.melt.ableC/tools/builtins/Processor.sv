@@ -15,6 +15,9 @@ ignore terminal WhiteSpace /[\r\n\t\ ]+/;
 terminal LIBBUILTIN_NotProcessed /LIBBUILTIN.*/;
 
 terminal BUILTIN /(BUILTIN)|(ATOMIC_BUILTIN)/;
+terminal TARGET_BUILTIN 'TARGET_BUILTIN';
+terminal TARGET_HEADER_BUILTIN 'TARGET_HEADER_BUILTIN';
+terminal LANGBUILTIN 'LANGBUILTIN';
 terminal LParen '(';
 terminal RParen ')';
 terminal Comma ',';
@@ -25,8 +28,10 @@ terminal Quote '"';
 terminal Void 'v';
 terminal Bool 'b';
 terminal Char 'c';
+terminal WChar 'w';
 terminal Short 's';
 terminal Int 'i';
+terminal HalfFloat 'h'; -- AKA fp16
 terminal Floating 'f';
 terminal DoubleFloat 'd';
 terminal Size_t 'z';
@@ -45,7 +50,11 @@ terminal Dots '.';
 -- prefixes
 terminal Long 'L';
 terminal LongLong 'LL';
+terminal NSize 'N'; -- int if LP64, else long
+terminal OpenCLLong 'O'; -- long on opencl
 terminal LLLong 'LLL';
+terminal Int32_t 'Z';
+terminal Int64_t 'W';
 terminal Signed 'S';
 terminal Unsigned 'U';
 terminal ConstantRequired 'I'; -- ignore these?
@@ -56,8 +65,16 @@ terminal Reference '&'; -- ignore these
 terminal Const 'C';
 terminal Volatile 'D';
 
+-- languages
+terminal ALL_LANGUAGES 'ALL_LANGUAGES';
+terminal ALL_OCLC_LANGUAGES 'ALL_OCLC_LANGUAGES';
+terminal ALL_MS_LANGUAGES 'ALL_MS_LANGUAGES';
+terminal CXX_LANG 'CXX_LANG';
+terminal OCLC20_LANG 'OCLC20_LANG'; -- OpenCL C 2.0
+terminal OMP_LANG 'OMP_LANG';
+
 -- Extra annotations we ignore right now, so...
-terminal IgnoredStuff /[nrctFfipP:NPsSeju0-9]*/;
+terminal IgnoredStuff /[A-Za-z0-9:,.|]*/;
 
 -- Actual builtin translation stuff
 monoid attribute ignoredBuiltins :: [String];
@@ -87,6 +104,30 @@ top::Builtin ::= BUILTIN '(' id::Identifier ',' '"' t::Types dots::MaybeDots '"'
       a:protoFunctionType(
         tail(t.signature),
         dots.hasdots), a:nilQualifier());
+}
+concrete production targetBuiltinFunction
+top::Builtin ::= 'TARGET_BUILTIN' '(' id::Identifier ',' '"' types::Types
+  dots::MaybeDots '"' ',' '"' attrs::IgnoredStuff '"' ',' '"'
+  feature::IgnoredStuff '"' ')'
+{
+  forwards to builtinFunction(terminal(BUILTIN, "BUILTIN"), '(', id, ',', '"',
+    types, dots, '"', ',', '"', attrs, '"', ')');
+}
+concrete production targetHeaderBuiltinFunction
+top::Builtin ::= 'TARGET_HEADER_BUILTIN' '(' id::Identifier ',' '"'
+  types::Types dots::MaybeDots '"' ',' '"' attrs::IgnoredStuff '"' ',' '"'
+  header::IgnoredStuff '"' ',' lang::Languages ',' '"' feature::IgnoredStuff
+  '"' ')'
+{
+  forwards to builtinFunction(terminal(BUILTIN, "BUILTIN"), '(', id, ',', '"',
+    types, dots, '"', ',', '"', attrs, '"', ')');
+}
+concrete production langBuiltinFunction
+top::Builtin ::= 'LANGBUILTIN' '(' id::Identifier ',' '"' types::Types
+  dots::MaybeDots '"' ',' '"' attrs::IgnoredStuff '"' ',' lang::Languages ')'
+{
+  forwards to builtinFunction(terminal(BUILTIN, "BUILTIN"), '(', id, ',', '"',
+    types, dots, '"', ',', '"', attrs, '"', ')');
 }
 concrete production ignoredLIBBUILTIN
 top::Builtin ::= LIBBUILTIN_NotProcessed
@@ -182,15 +223,23 @@ concrete productions top::TypeSpecifier
 | 'v' {-void-} { top.specifier = a:builtinType(_, a:voidType()); top.size = 0; }
 | 'b' {-bool-} { top.specifier = a:builtinType(_, a:boolType()); top.size = 1; }
 | 'c' {-char-} { top.specifier = a:builtinType(_, top.givenSign(a:charType())); top.size = 1; }
+| 'w' {-wchar-} { top.specifier = a:builtinType(_, top.givenSign(a:intType())); top.size = 4; } -- TODO: is this right?
 | 's' {-short-} { top.specifier = a:builtinType(_, top.givenSign(a:shortType())); top.size = 2; }
 | 'i' {-int-} { top.specifier = a:builtinType(_, top.givenSign(a:intType())); top.size = 4; }
 | 'L' 'i' {-long-} { top.specifier = a:builtinType(_, top.givenSign(a:longType())); top.size = 8; }
+| 'O' 'i' {-long long-} { top.specifier = a:builtinType(_, top.givenSign(a:longlongType())); top.size = 8; }
 | 'LL' 'i' {-long long-} { top.specifier = a:builtinType(_, top.givenSign(a:longlongType())); top.size = 8; }
+| 'N' 'i' {-whatever this is-} { top.ignoreMe := true; } -- TODO
 | 'LLL' 'i' {-int128-} { top.specifier = a:builtinType(_, top.givenSign(a:int128Type())); top.size = 16; }
 
+| 'Z' 'i' {-int32-} { top.specifier = a:builtinType(_, top.givenSign(a:intType())); top.size = 4; }
+| 'W' 'i' {-int64-} { top.specifier = a:builtinType(_, top.givenSign(a:longlongType())); top.size = 8; }
+
+| 'h' {-half-float/fp16-} { top.ignoreMe := true; } -- TODO
 | 'f' {-float-} { top.specifier = a:builtinType(_, top.givenDomain(a:floatType())); top.size = 4; }
 | 'd' {-double-} { top.specifier = a:builtinType(_, top.givenDomain(a:doubleType())); top.size = 8; }
 | 'L' 'd' {-long double-} { top.specifier = a:builtinType(_, top.givenDomain(a:longdoubleType())); top.size = 16; }
+| 'LL' 'd' {-fp128-} { top.ignoreMe := true; } -- TODO
 
 | 'F' {-ObjC crap-} { top.ignoreMe := true;  } -- Ignore anything with this spec
 | 'P' {-FILE-} { top.ignoreMe := true; } -- dunno what to do with this?
@@ -203,6 +252,16 @@ concrete productions top::TypeSpecifier
                                           top.size = more.size * 2; }
 | 'V'  n::VectorNum  more::TypeSpecifier { top.specifier = \ qs::a:Qualifiers -> a:vectorType(more.specifier(qs), top.size); top.size = toInteger(n.lexeme) * more.size; }
 
+
+nonterminal Languages with ignoreMe;
+
+concrete productions top::Languages
+| 'ALL_LANGUAGES' {}
+| 'ALL_OCLC_LANGUAGES' {}
+| 'ALL_MS_LANGUAGES' {}
+| 'CXX_LANG' {}
+| 'OCLC20_LANG' {}
+| 'OMP_LANG' {}
 
 nonterminal TypeSuffix with ignoreMe, qualifiers, pointercount;
 
