@@ -19,20 +19,9 @@ lexer class AbleC
   prefix separator "::";
 
 {--
- - Fonts for legacy eclipse IDE plugin
- -}
-temp_imp_ide_font font_all color(160, 32, 240) bold;
-temp_imp_ide_font font_type color(34, 139, 34) bold;
-temp_imp_ide_font font_string color(139, 34, 82) italic;
-temp_imp_ide_font font_comments color(178, 34, 34) italic;
-temp_imp_ide_font font_special_symbol color(71, 71, 141);
-temp_imp_ide_font font_equal color(71, 71, 141) bold;
-
-
-{--
  - Comments and whitespace
  -}
-lexer class Comment extends {AbleC, lsp:Comment}, font = font_comments;
+lexer class Comment extends {AbleC, lsp:Comment};
 
 -- The C preprocessor strips these for us, but handle them here for completeness.
 ignore terminal LineComment_t
@@ -143,7 +132,7 @@ terminal HexFloatConstantFloat_t /0[xX](([a-fA-F0-9]+[.]?)|([a-fA-F0-9]*[.][a-fA
 terminal HexFloatConstantLongDouble_t /0[xX](([a-fA-F0-9]+[.]?)|([a-fA-F0-9]*[.][a-fA-F0-9]+))([Pp][-+]?[0-9]+)[Ll]/ lexer classes {NumericLiteral};
 
 
-lexer class StringLiteral extends {AbleC, lsp:String_}, font = font_string;
+lexer class StringLiteral extends {AbleC, lsp:String_};
 
 terminal StringConstant_t      /["]([^"\\]|[\\].)*["]/ lexer classes {StringLiteral};
 terminal StringConstantU8_t  /u8["]([^"\\]|[\\].)*["]/ lexer classes {StringLiteral};
@@ -169,12 +158,12 @@ terminal CharConstantUBig_t /U[']([^']|[\\].)[']/ lexer classes {StringLiteral};
  - Note that Reserved doesn't extend AbleC, other host languages/extensions using AbleC
  - as a DSL may define terminals in this lexer class.
  -}
-lexer class Keyword extends {AbleC, lsp:Keyword}, font = font_all;
+lexer class Keyword extends {AbleC, lsp:Keyword};
 lexer class Reserved;
 
 
 -- types
-lexer class Type extends {AbleC, lsp:Type}, font = font_type;
+lexer class Type extends {AbleC, lsp:Type};
 
 terminal Char_t     'char'     lexer classes {Type, Reserved};
 terminal Double_t   'double'   lexer classes {Type, Reserved};
@@ -257,7 +246,7 @@ disambiguate LCurly_t, TypeLCurly_t {
   pluck if allowStructEnumUnionDecl then TypeLCurly_t else LCurly_t;
 }
 
-lexer class Operator extends {AbleC, lsp:Operator}, font = font_special_symbol;
+lexer class Operator extends {AbleC, lsp:Operator};
 
 terminal Question_t    '?'    lexer classes {Operator};
 terminal Colon_t       ':'    lexer classes {Operator};
@@ -267,7 +256,7 @@ terminal Dot_t         '.'    lexer classes {Operator};
 terminal PtrDot_t      '->'   lexer classes {Operator};
 
 -- Assignment operators
-lexer class Assignment extends Operator, font = font_equal;
+lexer class Assignment extends Operator;
 
 terminal Assign_t       '='     lexer classes {Assignment};
 terminal RightAssign_t  '>>='   lexer classes {Assignment};
