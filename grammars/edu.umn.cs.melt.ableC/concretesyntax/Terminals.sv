@@ -21,7 +21,7 @@ lexer class AbleC
 {--
  - Comments and whitespace
  -}
-lexer class Comment extends AbleC;
+lexer class Comment extends {AbleC, lsp:Comment};
 
 -- The C preprocessor strips these for us, but handle them here for completeness.
 ignore terminal LineComment_t
@@ -57,7 +57,7 @@ terminal TypeName_t   /[A-Za-z_\$][A-Za-z_0-9\$]*/ lexer classes {Type, Identifi
 {--
  - Literals
  -}
-lexer class NumericLiteral extends AbleC;
+lexer class NumericLiteral extends {AbleC, lsp:Number};
 
 -- Begins with 1-9 or is just 0 alone
 terminal DecConstant_t /((0)|([1-9][0-9]*))/ lexer classes {NumericLiteral};
@@ -132,7 +132,7 @@ terminal HexFloatConstantFloat_t /0[xX](([a-fA-F0-9]+[.]?)|([a-fA-F0-9]*[.][a-fA
 terminal HexFloatConstantLongDouble_t /0[xX](([a-fA-F0-9]+[.]?)|([a-fA-F0-9]*[.][a-fA-F0-9]+))([Pp][-+]?[0-9]+)[Ll]/ lexer classes {NumericLiteral};
 
 
-lexer class StringLiteral extends {AbleC};
+lexer class StringLiteral extends {AbleC, lsp:String_};
 
 terminal StringConstant_t      /["]([^"\\]|[\\].)*["]/ lexer classes {StringLiteral};
 terminal StringConstantU8_t  /u8["]([^"\\]|[\\].)*["]/ lexer classes {StringLiteral};
@@ -158,12 +158,12 @@ terminal CharConstantUBig_t /U[']([^']|[\\].)[']/ lexer classes {StringLiteral};
  - Note that Reserved doesn't extend AbleC, other host languages/extensions using AbleC
  - as a DSL may define terminals in this lexer class.
  -}
-lexer class Keyword extends {AbleC};
+lexer class Keyword extends {AbleC, lsp:Keyword};
 lexer class Reserved;
 
 
 -- types
-lexer class Type extends {AbleC};
+lexer class Type extends {AbleC, lsp:Type};
 
 terminal Char_t     'char'     lexer classes {Type, Reserved};
 terminal Double_t   'double'   lexer classes {Type, Reserved};
@@ -184,19 +184,19 @@ terminal Struct_t 'struct' lexer classes {Keyword, Reserved};
 terminal Union_t  'union'  lexer classes {Keyword, Reserved};
 
 -- Qualifiers
-terminal Const_t    'const'    lexer classes {Keyword, Reserved};
-terminal Volatile_t 'volatile' lexer classes {Keyword, Reserved};
-terminal Restrict_t 'restrict' lexer classes {Keyword, Reserved}; -- c99
+terminal Const_t    'const'    lexer classes {Keyword, Reserved, lsp:Modification};
+terminal Volatile_t 'volatile' lexer classes {Keyword, Reserved, lsp:Modification};
+terminal Restrict_t 'restrict' lexer classes {Keyword, Reserved, lsp:Modification}; -- c99
 
 -- Function specifiers
-terminal Inline_t   'inline'   lexer classes {Keyword, Reserved}; -- c99
+terminal Inline_t   'inline'   lexer classes {Keyword, Reserved, lsp:Modification}; -- c99
 
 -- Storage class specifiers
-terminal Auto_t     'auto'     lexer classes {Keyword, Reserved};
-terminal Extern_t   'extern'   lexer classes {Keyword, Reserved};
-terminal Register_t 'register' lexer classes {Keyword, Reserved};
-terminal Static_t   'static'   lexer classes {Keyword, Reserved};
-terminal Typedef_t  'typedef'  lexer classes {Keyword, Reserved};
+terminal Auto_t     'auto'     lexer classes {Keyword, Reserved, lsp:Modification};
+terminal Extern_t   'extern'   lexer classes {Keyword, Reserved, lsp:Modification};
+terminal Register_t 'register' lexer classes {Keyword, Reserved, lsp:Modification};
+terminal Static_t   'static'   lexer classes {Keyword, Reserved, lsp:Modification};
+terminal Typedef_t  'typedef'  lexer classes {Keyword, Reserved, lsp:Modification};
 
 -- Statement keywords
 terminal Break_t    'break'    lexer classes {Keyword, Reserved};
@@ -246,7 +246,7 @@ disambiguate LCurly_t, TypeLCurly_t {
   pluck if allowStructEnumUnionDecl then TypeLCurly_t else LCurly_t;
 }
 
-lexer class Operator extends {AbleC};
+lexer class Operator extends {AbleC, lsp:Operator};
 
 terminal Question_t    '?'    lexer classes {Operator};
 terminal Colon_t       ':'    lexer classes {Operator};
