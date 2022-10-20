@@ -168,8 +168,8 @@ concrete productions top::TypePrefix
 nonterminal TypeSpecifier with ignoreMe, specifier, givenSign, givenDomain;
 
 synthesized attribute specifier :: (a:Type ::= a:Qualifiers);
-autocopy attribute givenSign :: (a:BuiltinType ::= a:IntegerType);
-autocopy attribute givenDomain :: (a:BuiltinType ::= a:RealType);
+inherited attribute givenSign :: (a:BuiltinType ::= a:IntegerType);
+inherited attribute givenDomain :: (a:BuiltinType ::= a:RealType);
 
 aspect default production
 top::TypeSpecifier ::=
