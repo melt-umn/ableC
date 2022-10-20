@@ -49,7 +49,11 @@ propagate givenQualifiers on
   DeclarationSpecifiers_c, 
   InitiallyUnqualifiedDeclarationSpecifiers_c,
   SpecifierQualifierList_c,
-  TypeSpecifierItem_c;
+  TypeSpecifierItem_c,
+  TypeSpecifier_c,
+  InitiallyUnqualifiedDeclarationList_c,
+  StructDeclaratorList_c,
+  StructDeclarator_c;
 
 {--
  - The __attribute__s that appear in the list.

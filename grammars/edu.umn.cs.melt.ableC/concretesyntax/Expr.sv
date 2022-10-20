@@ -531,19 +531,22 @@ concrete productions top::Designation_c
 closed nonterminal DesignatorList_c with location, ast<ast:Designator>, givenDesignator;
 concrete productions top::DesignatorList_c
 | h::DesignatorList_c  t::Designator_c
-    { top.ast = t.ast;
-      t.givenDesignator = h.ast; }
+    { top.ast = t.ast; }
 | d::Designator_c
     { top.ast = d.ast; }
 
 -- The previous designator to operate upon.
 inherited attribute givenDesignator :: ast:Designator;
 
+propagate givenDesignator on 
+  DesignatorList_c,
+  Designator_c,
+  ArrayDesignator_c;
+
 closed nonterminal Designator_c with location, ast<ast:Designator>, givenDesignator;
 concrete productions top::Designator_c
 | d::ArrayDesignator_c
-    { d.givenDesignator = top.givenDesignator; 
-      top.ast = d.ast; }
+    { top.ast = d.ast; }
 | '.' id::Identifier_c
     { top.ast = ast:fieldDesignator(top.givenDesignator, id.ast); }
 
