@@ -43,7 +43,14 @@ synthesized attribute specialSpecifiers :: [ast:SpecialSpecifier];
 {--
  - A list of the qualifiers attached to this declaration, somehow.
  -}
-autocopy attribute givenQualifiers :: ast:Qualifiers;
+inherited attribute givenQualifiers :: ast:Qualifiers;
+
+propagate givenQualifiers on 
+  DeclarationSpecifiers_c, 
+  InitiallyUnqualifiedDeclarationSpecifiers_c,
+  SpecifierQualifierList_c,
+  TypeSpecifierItem_c;
+
 {--
  - The __attribute__s that appear in the list.
  - This is a gcc extension, but we need this here.
@@ -126,7 +133,7 @@ concrete productions top::DeclarationSpecifiers_c
       top.typeQualifiers = t.typeQualifiers; 
       top.specialSpecifiers = h.specialSpecifiers ++ t.specialSpecifiers;
       top.mutateTypeSpecifiers = t.mutateTypeSpecifiers;
-      top.attributes = t.attributes; }
+      top.attributes = t.attributes;}
 | h::FunctionSpecifier_c
     { top.isTypedef = false;
       top.storageClass = [];

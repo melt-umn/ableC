@@ -18,7 +18,7 @@ synthesized attribute declaredParamIdents :: Maybe<[ast:Name]>;
 {--
  - The type being operated upon by a declarator.
  -}
-autocopy attribute givenType :: ast:TypeModifierExpr;
+inherited attribute givenType :: ast:TypeModifierExpr;
 {--
  - Plumbing, to give the attached statement to a function definition.
  -}

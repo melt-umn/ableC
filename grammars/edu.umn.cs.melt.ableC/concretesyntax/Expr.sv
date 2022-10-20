@@ -537,12 +537,13 @@ concrete productions top::DesignatorList_c
     { top.ast = d.ast; }
 
 -- The previous designator to operate upon.
-autocopy attribute givenDesignator :: ast:Designator;
+inherited attribute givenDesignator :: ast:Designator;
 
 closed nonterminal Designator_c with location, ast<ast:Designator>, givenDesignator;
 concrete productions top::Designator_c
 | d::ArrayDesignator_c
-    { top.ast = d.ast; }
+    { d.givenDesignator = top.givenDesignator; 
+      top.ast = d.ast; }
 | '.' id::Identifier_c
     { top.ast = ast:fieldDesignator(top.givenDesignator, id.ast); }
 
