@@ -267,7 +267,8 @@ propagate host, errors, defs, globalDecls, functionDecls, hasModifiedTypeExpr on
 
 abstract production consDeclarator
 top::Declarators ::= h::Declarator  t::Declarators
-{
+{  
+  propagate isTypedef;
   top.pps = h.pps ++ t.pps;
   top.hostDecls = h.hostDecl :: t.hostDecls;
   top.freeVariables :=
@@ -296,7 +297,7 @@ flowtype Declarator = decorate {env, baseType, typeModifierIn,
   controlStmtContext},
   hostDecl {decorate}, hasModifiedTypeExpr {decorate};
 
-autocopy attribute isTypedef :: Boolean;
+inherited attribute isTypedef :: Boolean;
 
 propagate host, errors, globalDecls, functionDecls, defs, freeVariables on Declarator;
 
