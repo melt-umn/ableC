@@ -20,6 +20,8 @@ top::MaybeInitializer ::=
 abstract production justInitializer
 top::MaybeInitializer ::= i::Initializer
 {
+  propagate env;
+  
   top.pp = ppConcat([ text(" = "), i.pp ]);
   top.typerep = i.typerep;
   i.initializerPos = "initializer";
@@ -40,6 +42,8 @@ flowtype Initializer = decorate {env, initializerPos, inObject, expectedType,
 abstract production exprInitializer
 top::Initializer ::= e::Expr
 {
+  propagate env;
+
   top.pp = e.pp;
   top.typerep = top.expectedType;
 
@@ -66,6 +70,8 @@ top::Initializer ::= e::Expr
 abstract production objectInitializer
 top::Initializer ::= l::InitList
 {
+  propagate env;
+
   top.pp = ppConcat([text("{"), ppImplode(text(", "), l.pps), text("}")]);
   top.typerep = l.typerep;
 
@@ -135,10 +141,12 @@ top::InitList ::=
 abstract production consInit
 top::InitList ::= h::Init  t::InitList
 {
+  propagate expectedType;
+
   top.pps = h.pp :: t.pps;
   top.freeVariables := h.freeVariables ++ removeDefsFromNames(h.defs, t.freeVariables);
-
-  propagate expectedType;
+  
+  h.env = top.env;
   t.env = addEnv(h.defs, h.env);
 }
 
@@ -159,6 +167,8 @@ flowtype Init = decorate {initIndex, env, expectedType, expectedTypes, tagEnvIn,
 abstract production positionalInit
 top::Init ::= i::Initializer
 {
+  propagate env;
+
   top.pp = i.pp;
   top.initIndexOut = 1 + top.initIndex;
   top.maxIndex := top.initIndex;
@@ -196,6 +206,7 @@ top::Init ::= d::Designator  i::Initializer
 
   d.expectedType = top.expectedType;
 
+  d.env = top.env;
   i.env = addEnv(d.defs, d.env);
   i.initializerPos = s"member ${show(80, d.pp)} of ${showType(top.expectedType)}";
   i.inObject = true;
@@ -223,6 +234,8 @@ top::Designator ::=
 abstract production fieldDesignator
 top::Designator ::= d::Designator  f::Name
 {
+  propagate env;
+
   top.pp = ppConcat([d.pp, text("."), f.pp]);
   top.maxIndex := -1;
 
@@ -316,6 +329,7 @@ top::Designator ::= d::Designator  e::Expr
     | _ -> []
     end;
 
+  d.env = top.env;
   e.env = addEnv(d.defs, d.env);
 
   top.typerep = d.typerep;
@@ -325,6 +339,8 @@ top::Designator ::= d::Designator  e::Expr
 abstract production arrayRangeDesignator
 top::Designator ::= d::Designator  l::Expr  u::Expr
 {
+  propagate env;
+
   top.pp = ppConcat([d.pp, text("["), l.pp, text("..."), u.pp, text("]")]);
   top.maxIndex := fromMaybe(-1, u.integerConstantValue);
 

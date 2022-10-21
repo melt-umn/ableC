@@ -20,6 +20,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 
   lhs.otherType = rhs.host:typerep;
   rhs.env = addEnv(lhs.defs, lhs.env);
+  lhs.env = top.env;
 
   local lType::host:Type = lhs.host:typerep;
   lType.otherType = rType;
@@ -68,6 +69,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   injectedQualifiers := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   rhs.env = addEnv(lhs.defs, lhs.env);
+  lhs.env = top.env;
 
   local lType::host:Type = lhs.host:typerep;
   lType.otherType = rType;
@@ -119,6 +121,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   injectedQualifiers := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   rhs.env = addEnv(lhs.defs, lhs.env);
+  lhs.env = top.env;
 
   local lType::host:Type = lhs.host:typerep;
   lType.otherType = rType;
@@ -170,6 +173,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   injectedQualifiers := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   rhs.env = addEnv(lhs.defs, lhs.env);
+  lhs.env = top.env;
   
   local lType::host:Type = lhs.host:typerep;
   lType.otherType = rType;
@@ -221,6 +225,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   injectedQualifiers := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   rhs.env = addEnv(lhs.defs, lhs.env);
+  lhs.env = top.env;
   
   local lType::host:Type = lhs.host:typerep;
   lType.otherType = rType;
@@ -272,6 +277,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   injectedQualifiers := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   rhs.env = addEnv(lhs.defs, lhs.env);
+  lhs.env = top.env;
   
   local lType::host:Type = lhs.host:typerep;
   lType.otherType = rType;
@@ -323,6 +329,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   injectedQualifiers := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   rhs.env = addEnv(lhs.defs, lhs.env);
+  lhs.env = top.env;
   
   local lType::host:Type = lhs.host:typerep;
   lType.otherType = rType;
@@ -374,6 +381,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   injectedQualifiers := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   rhs.env = addEnv(lhs.defs, lhs.env);
+  lhs.env = top.env;
   
   local lType::host:Type = lhs.host:typerep;
   lType.otherType = rType;
@@ -425,6 +433,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   injectedQualifiers := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   rhs.env = addEnv(lhs.defs, lhs.env);
+  lhs.env = top.env;
   
   local lType::host:Type = lhs.host:typerep;
   lType.otherType = rType;
@@ -477,6 +486,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   injectedQualifiers := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   rhs.env = addEnv(lhs.defs, lhs.env);
+  lhs.env = top.env;
   
   local lType::host:Type = lhs.host:typerep;
   lType.otherType = rType;
@@ -528,6 +538,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   injectedQualifiers := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   rhs.env = addEnv(lhs.defs, lhs.env);
+  lhs.env = top.env;
   
   local lType::host:Type = lhs.host:typerep;
   lType.otherType = rType;
@@ -580,6 +591,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   injectedQualifiers := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   rhs.env = addEnv(lhs.defs, lhs.env);
+  lhs.env = top.env;
   
   local lType::host:Type = lhs.host:typerep;
   lType.otherType = rType;
@@ -626,6 +638,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   injectedQualifiers := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   rhs.env = addEnv(lhs.defs, lhs.env);
+  lhs.env = top.env;
   
   local lType::host:Type = lhs.host:typerep;
   lType.otherType = rType;
@@ -672,6 +685,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   injectedQualifiers := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   rhs.env = addEnv(lhs.defs, lhs.env);
+  lhs.env = top.env;
   
   local lType::host:Type = lhs.host:typerep;
   lType.otherType = rType;
@@ -706,6 +720,8 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 abstract production orBitExpr
 top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 {
+  propagate env;
+
   top.pp = parens( ppConcat([lhs.pp, space(), text("|"), space(), rhs.pp]) );
   production attribute lerrors :: [Message] with ++;
   lerrors := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
@@ -762,6 +778,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   injectedQualifiers := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   rhs.env = addEnv(lhs.defs, lhs.env);
+  lhs.env = top.env;
   
   local lType::host:Type = lhs.host:typerep;
   lType.otherType = rType;
@@ -808,6 +825,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   injectedQualifiers := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   rhs.env = addEnv(lhs.defs, lhs.env);
+  lhs.env = top.env;
   
   local lType::host:Type = lhs.host:typerep;
   lType.otherType = rType;
@@ -854,6 +872,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   injectedQualifiers := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   rhs.env = addEnv(lhs.defs, lhs.env);
+  lhs.env = top.env;
 
   local lType::host:Type = lhs.host:typerep;
   lType.otherType = rType;
@@ -900,6 +919,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   injectedQualifiers := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   rhs.env = addEnv(lhs.defs, lhs.env);
+  lhs.env = top.env;
   
   local lType::host:Type = lhs.host:typerep;
   lType.otherType = rType;
@@ -954,6 +974,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   injectedQualifiers := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   rhs.env = addEnv(lhs.defs, lhs.env);
+  lhs.env = top.env;
   
   local lType::host:Type = lhs.host:typerep;
   lType.otherType = rType;
@@ -1008,6 +1029,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   injectedQualifiers := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   rhs.env = addEnv(lhs.defs, lhs.env);
+  lhs.env = top.env;
   
   local lType::host:Type = lhs.host:typerep;
   lType.otherType = rType;
@@ -1090,6 +1112,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   injectedQualifiers := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   rhs.env = addEnv(lhs.defs, lhs.env);
+  lhs.env = top.env;
   
   local lType::host:Type = lhs.host:typerep;
   lType.otherType = rType;
@@ -1172,6 +1195,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   injectedQualifiers := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   rhs.env = addEnv(lhs.defs, lhs.env);
+  lhs.env = top.env;
   
   local lType::host:Type = lhs.host:typerep;
   lType.otherType = rType;
@@ -1254,6 +1278,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   injectedQualifiers := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   rhs.env = addEnv(lhs.defs, lhs.env);
+  lhs.env = top.env;
   
   local lType::host:Type = lhs.host:typerep;
   lType.otherType = rType;
@@ -1336,6 +1361,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   injectedQualifiers := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   rhs.env = addEnv(lhs.defs, lhs.env);
+  lhs.env = top.env;
   
   local lType::host:Type = lhs.host:typerep;
   lType.otherType = rType;
@@ -1382,6 +1408,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   injectedQualifiers := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   rhs.env = addEnv(lhs.defs, lhs.env);
+  lhs.env = top.env;
   
   local lType::host:Type = lhs.host:typerep;
   lType.otherType = rType;
@@ -1428,6 +1455,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   injectedQualifiers := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   rhs.env = addEnv(lhs.defs, lhs.env);
+  lhs.env = top.env;
   
   local lType::host:Type = lhs.host:typerep;
   lType.otherType = rType;
@@ -1461,7 +1489,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 
 abstract production divExpr
 top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
-{
+{  
   top.pp = parens( ppConcat([lhs.pp, space(), text("/"), space(), rhs.pp]) );
   production attribute lerrors :: [Message] with ++;
   lerrors := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
@@ -1474,6 +1502,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   injectedQualifiers := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   rhs.env = addEnv(lhs.defs, lhs.env);
+  lhs.env = top.env;
   
   local lType::host:Type = lhs.host:typerep;
   lType.otherType = rType;
@@ -1520,6 +1549,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   injectedQualifiers := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   rhs.env = addEnv(lhs.defs, lhs.env);
+  lhs.env = top.env;
   
   local lType::host:Type = lhs.host:typerep;
   lType.otherType = rType;

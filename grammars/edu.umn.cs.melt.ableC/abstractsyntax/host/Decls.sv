@@ -27,6 +27,7 @@ top::GlobalDecls ::= h::Decl  t::GlobalDecls
 
   h.isTopLevel = true;
 
+  h.env = top.env;
   t.env = addEnv(h.defs, h.env);
 }
 
@@ -56,6 +57,7 @@ top::Decls ::= h::Decl  t::Decls
     h.freeVariables ++
     removeDefsFromNames(h.defs, t.freeVariables);
 
+  h.env = top.env;
   t.env = addEnv(h.defs, h.env);
 }
 
@@ -93,7 +95,7 @@ top::Decl ::=
 abstract production decls
 top::Decl ::= d::Decls
 {
-  propagate host, errors, globalDecls, functionDecls, defs, freeVariables;
+  propagate env, host, errors, globalDecls, functionDecls, defs, freeVariables;
   top.pp = terminate( line(), d.pps );
   top.unfoldedGlobalDecls = d.unfoldedGlobalDecls;
   top.unfoldedFunctionDecls = d.unfoldedFunctionDecls;
@@ -119,6 +121,8 @@ top::Decl ::= storage::StorageClasses  attrs::Attributes  ty::BaseTypeExpr  dcls
   -- host defined in Deferred.sv
 
   ty.givenRefId = nothing();
+  attrs.env = top.env;
+  ty.env = top.env;
   dcls.env = addEnv(ty.defs, ty.env);
   dcls.baseType = ty.typerep;
   dcls.typeModifierIn = ty.typeModifier;
@@ -130,7 +134,7 @@ top::Decl ::= storage::StorageClasses  attrs::Attributes  ty::BaseTypeExpr  dcls
 abstract production typeExprDecl
 top::Decl ::= attrs::Attributes ty::BaseTypeExpr
 {
-  propagate errors, globalDecls, functionDecls, defs, freeVariables;
+  propagate env, errors, globalDecls, functionDecls, defs, freeVariables;
   -- host defined in Deferred.sv
   top.pp = ppConcat( ppAttributes(attrs) :: [ty.pp, semi()] );
   ty.givenRefId = attrs.maybeRefId;
@@ -144,6 +148,8 @@ top::Decl ::= attrs::Attributes  ty::BaseTypeExpr  dcls::Declarators
   -- host defined in Deferred.sv
 
   ty.givenRefId = attrs.maybeRefId;
+  attrs.env = top.env;
+  ty.env = top.env;
   dcls.env = addEnv(ty.defs, ty.env);
   dcls.baseType = ty.typerep;
   dcls.typeModifierIn = ty.typeModifier;
@@ -155,7 +161,7 @@ top::Decl ::= attrs::Attributes  ty::BaseTypeExpr  dcls::Declarators
 abstract production functionDeclaration
 top::Decl ::= f::FunctionDecl
 {
-  propagate errors, globalDecls, functionDecls, defs, freeVariables;
+  propagate env, errors, globalDecls, functionDecls, defs, freeVariables;
   top.pp = f.pp;
   -- host defined in Deferred.sv
 }
@@ -207,7 +213,7 @@ top::Decl ::= d::Decorated Decl
 abstract production staticAssertDecl
 top::Decl ::= e::Expr  s::String
 {
-  propagate host, errors, globalDecls, functionDecls, defs, freeVariables;
+  propagate env, host, errors, globalDecls, functionDecls, defs, freeVariables;
   top.pp = ppConcat([text("_Static_assert("), e.pp, text(", "), text(s), text(");")]);
 }
 
@@ -226,7 +232,7 @@ top::Decl ::= s::String
 abstract production autoDecl
 top::Decl ::= n::Name  e::Expr
 {
-  propagate errors, globalDecls, functionDecls, defs, freeVariables;
+  propagate env, errors, globalDecls, functionDecls, defs, freeVariables;
   top.pp = pp"auto ${n.pp} = ${e.pp};";
   top.host =
     variableDecls(
@@ -268,6 +274,7 @@ top::Declarators ::= h::Declarator  t::Declarators
     h.freeVariables ++
     removeDefsFromNames(h.defs, t.freeVariables);
 
+  h.env = top.env;
   t.env = addEnv(h.defs, h.env);
 }
 abstract production nilDeclarator
@@ -337,6 +344,8 @@ top::Declarator ::= name::Name  ty::TypeModifierExpr  attrs::Attributes  initial
     else typerepWithAllExtnQuals;
   top.sourceLocation = name.location;
 
+  name.env = top.env;
+  ty.env = top.env;
   attrs.env = addEnv(ty.defs, ty.env);
   initializer.env = attrs.env;
 
@@ -444,6 +453,7 @@ top::FunctionDecl ::= storage::StorageClasses  fnquals::SpecialSpecifiers  bty::
           hostBody))
     end;
 
+  attrs.env = top.env;
   fnquals.env = top.env;
   fnquals.controlStmtContext = top.controlStmtContext;
 
@@ -513,6 +523,8 @@ top::FunctionDecl ::= storage::StorageClasses  fnquals::SpecialSpecifiers  bty::
       end,
       false, false, tm:add(body.labelDefs, tm:empty()));
 
+  name.env = top.env;
+  bty.env = top.env;
   mty.env = addEnv(implicitDefs, openScopeEnv(addEnv(funcDefs, top.env)));
   ds.env = addEnv(mty.defs ++ parameters.functionDefs, mty.env);
   body.env = addEnv(ds.defs ++ body.functionDefs, ds.env);
@@ -581,6 +593,7 @@ top::Parameters ::= h::ParameterDecl  t::Parameters
     removeDefsFromNames(h.defs, t.freeVariables);
   top.appendedParametersRes = consParameters(h, t.appendedParametersRes);
 
+  h.env = top.env;
   t.env = addEnv(h.defs ++ h.functionDefs, top.env);
   h.position = top.position;
   t.position = 1 + top.position;
@@ -673,6 +686,9 @@ top::ParameterDecl ::= storage::StorageClasses  bty::BaseTypeExpr  mty::TypeModi
 
   bty.givenRefId = nothing();
 
+  attrs.env = top.env;
+  name.env = top.env;
+  bty.env = top.env;
   mty.env = addEnv(bty.defs, bty.env);
   mty.baseType = bty.typerep;
   mty.typeModifierIn = bty.typeModifier;
@@ -753,6 +769,8 @@ top::StructDecl ::= attrs::Attributes  name::MaybeName  dcls::StructItemList
 
   top.defs := preDefs ++ dcls.defs ++ postDefs;
 
+  attrs.env = top.env;
+  name.env = top.env;
   dcls.env = openScopeEnv(addEnv(preDefs, top.env));
   dcls.inStruct = true;
   dcls.isLast = top.isLast;
@@ -810,6 +828,8 @@ top::UnionDecl ::= attrs::Attributes  name::MaybeName  dcls::StructItemList
 
   top.defs := preDefs ++ dcls.defs ++ postDefs;
 
+  attrs.env = top.env;
+  name.env = top.env;
   dcls.env = openScopeEnv(addEnv(preDefs, top.env));
   dcls.inStruct = false;
   dcls.isLast = top.isLast;
@@ -843,6 +863,7 @@ top::EnumDecl ::= name::MaybeName  dcls::EnumItemList
     end;
   top.defs := thisdcl ++ dcls.defs;
 
+  name.env = top.env;
   dcls.env = addEnv(thisdcl, top.env);
   dcls.containingEnum = extType(nilQualifier(), enumExtType(top));
   dcls.enumItemValueIn = 0;
@@ -885,6 +906,7 @@ top::StructItemList ::= h::StructItem  t::StructItemList
      | nilStructItem() -> true
      end);
 
+  h.env = top.env;
   t.env = addEnv(h.defs ++ h.localDefs, h.env);
   t.isLast = top.isLast;
 }
@@ -931,6 +953,7 @@ top::EnumItemList ::= h::EnumItem  t::EnumItemList
     removeDefsFromNames(h.defs, t.freeVariables);
   top.appendedEnumItemListRes = consEnumItem(h, t.appendedEnumItemListRes);
 
+  h.env = top.env;
   t.env = addEnv(h.defs, h.env);
 
   h.enumItemValueIn = top.enumItemValueIn;
@@ -971,6 +994,8 @@ top::StructItem ::= attrs::Attributes  ty::BaseTypeExpr  dcls::StructDeclarators
     then structItems(foldStructItem(dcls.hostStructItems))
     else structItem(attrs.host, ty.host, dcls.host);
 
+  attrs.env = top.env;
+  ty.env = top.env;
   ty.givenRefId = attrs.maybeRefId;
   dcls.env = addEnv(ty.defs, ty.env);
   dcls.baseType = ty.typerep;
@@ -981,14 +1006,14 @@ top::StructItem ::= attrs::Attributes  ty::BaseTypeExpr  dcls::StructDeclarators
 abstract production structItems
 top::StructItem ::= dcls::StructItemList
 {
-  propagate host;
+  propagate env, host;
   top.pp = terminate(line(), dcls.pps);
   dcls.isLast = top.isLast;
 }
 abstract production anonStructStructItem
 top::StructItem ::= d::StructDecl
 {
-  propagate host;
+  propagate env, host;
   top.pp = cat(d.pp, semi());
   top.fieldNames := [right(refIdExtType(structSEU(), map((.name), d.maybename), d.refId))];
 
@@ -999,7 +1024,7 @@ top::StructItem ::= d::StructDecl
 abstract production anonUnionStructItem
 top::StructItem ::= d::UnionDecl
 {
-  propagate host;
+  propagate env, host;
   top.pp = cat(d.pp, semi());
   top.fieldNames := [right(refIdExtType(unionSEU(), map((.name), d.maybename), d.refId))];
 
@@ -1045,6 +1070,7 @@ top::StructDeclarators ::= h::StructDeclarator  t::StructDeclarators
      | nilStructDeclarator() -> true
      end);
 
+  h.env = top.env;
   t.env = addEnv(h.localDefs, h.env);
   t.isLast = top.isLast;
 }
@@ -1067,7 +1093,7 @@ flowtype StructDeclarator = decorate {env, baseType, inStruct, isLast,
   hostStructItem {decorate}, hasModifiedTypeExpr {decorate}, hasConstField {decorate},
   fieldNames {decorate};
 
-propagate host, errors, globalDecls, functionDecls, defs, freeVariables on StructDeclarator;
+propagate env, host, errors, globalDecls, functionDecls, defs, freeVariables on StructDeclarator;
 
 abstract production structField
 top::StructDeclarator ::= name::Name  ty::TypeModifierExpr  attrs::Attributes
@@ -1176,11 +1202,11 @@ flowtype EnumItem = decorate {env, containingEnum, enumItemValueIn,
   controlStmtContext},
   name {}, enumItemValue {decorate};
 
-propagate host, errors, globalDecls, functionDecls, freeVariables on EnumItem;
+propagate env, host, errors, globalDecls, functionDecls, freeVariables on EnumItem;
 
 abstract production enumItem
 top::EnumItem ::= name::Name  e::MaybeExpr
-{
+{  
   top.pp = ppConcat([name.pp] ++ if e.isJust then [text(" = "), e.pp] else []);
   top.name = name.name;
   top.defs := valueDef(name.name, enumValueItem(top)) :: e.defs;

@@ -7,6 +7,7 @@ top::host:Expr ::= ty::host:TypeName  e::host:Expr
   production attribute lerrors :: [Message] with ++;
   lerrors := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
   
+  ty.env = top.env;
   e.env = addEnv(ty.defs, ty.env);
 
   local fwrd::host:Expr =
@@ -25,6 +26,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   lerrors := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
   
   rhs.env = addEnv(lhs.defs, lhs.env);
+  lhs.env = top.env;
   
   local rewriteProd::Maybe<BinaryProd> =
     case lhs.host:typerep.addressOfArraySubscriptProd of
@@ -71,6 +73,7 @@ top::host:Expr ::= f::host:Expr  a::host:Exprs
     end;
   
   a.env = addEnv(f.defs, f.env);
+  f.env = top.env;
   
   local host::host:Expr =
     inj:callExpr(
@@ -90,6 +93,8 @@ top::host:Expr ::= f::host:Expr  a::host:Exprs
 abstract production memberExpr
 top::host:Expr ::= lhs::host:Expr  deref::Boolean  rhs::host:Name
 {
+  propagate env;
+
   top.pp = parens(ppConcat([lhs.pp, text(if deref then "->" else "."), rhs.pp]));
   production attribute lerrors :: [Message] with ++;
   lerrors := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
@@ -116,6 +121,8 @@ top::host:Expr ::= lhs::host:Expr  deref::Boolean  rhs::host:Name
 abstract production compoundLiteralExpr
 top::host:Expr ::= ty::host:TypeName  init::host:InitList
 {
+  propagate env;
+
   top.pp = parens( ppConcat([parens(ty.pp), text("{"), ppImplode(text(", "), init.pps), text("}")]) );
   
   local t::host:Type = ty.host:typerep;

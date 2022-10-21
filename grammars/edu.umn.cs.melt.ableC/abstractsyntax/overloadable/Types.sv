@@ -268,7 +268,8 @@ top::host:Expr ::=
 
 aspect production host:transformedExpr
 top::host:Expr ::= original::host:Expr  resolved::host:Expr
-{
+{  
+  propagate env;
   top.callProd = orElse(original.callProd, resolved.callProd);
   top.addressOfProd = orElse(original.addressOfProd, resolved.addressOfProd);
   top.lEqProd = orElse(original.lEqProd, resolved.lEqProd);
@@ -316,7 +317,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 
 aspect production host:callExpr
 top::host:Expr ::= f::host:Expr  a::host:Exprs
-{
+{ 
   local t::host:Type = f.host:typerep;
   t.otherType = top.otherType;
   top.addressOfProd =
@@ -347,6 +348,7 @@ top::host:Expr ::= f::host:Expr  a::host:Exprs
 aspect production host:memberExpr
 top::host:Expr ::= lhs::host:Expr  deref::Boolean  rhs::host:Name
 {
+  propagate env;
   local t::host:Type = lhs.host:typerep;
   t.otherType = top.otherType;
   t.isDeref = deref;
@@ -398,6 +400,7 @@ top::host:Expr ::= lhs::host:Expr  deref::Boolean  rhs::host:Name
 aspect production host:parenExpr
 top::host:Expr ::= e::host:Expr
 {
+  propagate env;
   top.callProd = e.callProd;
   top.addressOfProd = e.addressOfProd;
   top.lEqProd = e.lEqProd;

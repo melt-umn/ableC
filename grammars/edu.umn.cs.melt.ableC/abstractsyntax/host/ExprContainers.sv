@@ -15,6 +15,7 @@ propagate host, errors, globalDecls, functionDecls, defs, freeVariables on Maybe
 abstract production justExpr
 top::MaybeExpr ::= e::Expr
 {
+  propagate env;
   top.pp = e.pp;
   top.isJust = true;
   top.justTheExpr = just(e);
@@ -85,6 +86,7 @@ top::Exprs ::= h::Expr  t::Exprs
   t.appendedExprs = top.appendedExprs;
 
   t.env = addEnv(h.defs, h.env);
+  h.env = top.env;
 }
 abstract production nilExpr
 top::Exprs ::=
@@ -113,6 +115,7 @@ top::Exprs ::=
 abstract production decExprs
 top::Exprs ::= e::Decorated Exprs
 {
+  propagate env;
   top.pps = e.pps;
   top.host = e.host;
   top.errors := e.errors;
@@ -129,6 +132,7 @@ top::Exprs ::= e::Decorated Exprs
 function appendExprs
 Exprs ::= e1::Exprs e2::Exprs
 {
+  propagate env;
   e1.appendedExprs = e2;
   return e1.appendedRes;
 }
@@ -138,7 +142,7 @@ nonterminal ExprOrTypeName with pp, host, errors, globalDecls, functionDecls,
 
 flowtype ExprOrTypeName = decorate {env, controlStmtContext};
 
-propagate host, errors, globalDecls, functionDecls, defs, freeVariables on ExprOrTypeName;
+propagate env, host, errors, globalDecls, functionDecls, defs, freeVariables on ExprOrTypeName;
 
 abstract production exprExpr
 top::ExprOrTypeName ::= e::Expr

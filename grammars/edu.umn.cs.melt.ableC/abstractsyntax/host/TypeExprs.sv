@@ -78,6 +78,7 @@ top::TypeName ::= bty::BaseTypeExpr  mty::TypeModifierExpr
   top.bty = bty;
   top.mty = mty;
   bty.givenRefId = nothing();
+  bty.env = top.env;
   mty.env = addEnv(bty.defs, bty.env);
   mty.baseType = bty.typerep;
   mty.typeModifierIn = bty.typeModifier;
@@ -148,7 +149,7 @@ top::BaseTypeExpr ::= msg::[Message]
 abstract production warnTypeExpr
 top::BaseTypeExpr ::= msg::[Message]  ty::BaseTypeExpr
 {
-  propagate host, errors, globalDecls, functionDecls, decls, defs, freeVariables;
+  propagate env, host, errors, globalDecls, functionDecls, decls, defs, freeVariables;
   top.pp = ty.pp;
   top.typerep = ty.typerep;
   top.errors <- msg;
@@ -225,7 +226,7 @@ top::BaseTypeExpr ::= bty::BaseTypeExpr  mty::TypeModifierExpr
   top.host = fromMaybe(bty.host, mty.modifiedBaseTypeExpr);
   top.typerep = mty.typerep;
   top.typeModifier = mty.host;
-
+  bty.env = top.env;
   mty.env = addEnv(bty.defs, bty.env);
   mty.baseType = bty.typerep;
   mty.typeModifierIn = bty.typeModifier;
@@ -236,7 +237,7 @@ top::BaseTypeExpr ::= bty::BaseTypeExpr  mty::TypeModifierExpr
 abstract production builtinTypeExpr
 top::BaseTypeExpr ::= q::Qualifiers  result::BuiltinType
 {
-  propagate host, errors, globalDecls, functionDecls, decls, defs, freeVariables;
+  propagate host, errors, globalDecls, functionDecls, decls, defs, freeVariables, env;
   top.pp = ppConcat([terminate(space(), q.pps), result.pp]);
   top.typerep = builtinType(q, result);
   top.typeModifier = baseTypeExpr();
@@ -254,7 +255,7 @@ top::BaseTypeExpr ::= q::Qualifiers  result::BuiltinType
 abstract production tagReferenceTypeExpr
 top::BaseTypeExpr ::= q::Qualifiers  kwd::StructOrEnumOrUnion  n::Name
 {
-  propagate host, errors, globalDecls, functionDecls, defs, freeVariables;
+  propagate env, host, errors, globalDecls, functionDecls, defs, freeVariables;
   top.pp = ppConcat([terminate(space(), q.pps), kwd.pp, space(), n.pp
     -- DEBUGGING
     --, text("/*" ++ refId ++ "*/")
@@ -345,7 +346,7 @@ top::BaseTypeExpr ::= q::Qualifiers  kwd::StructOrEnumOrUnion  refId::String
 abstract production structTypeExpr
 top::BaseTypeExpr ::= q::Qualifiers  def::StructDecl
 {
-  propagate host, errors, globalDecls, functionDecls, defs, freeVariables;
+  propagate env, host, errors, globalDecls, functionDecls, defs, freeVariables;
   top.pp = ppConcat([terminate(space(), q.pps), def.pp ]);
   top.typerep = extType(q, refIdExtType(structSEU(), map((.name), def.maybename), def.refId));
   top.typeModifier = baseTypeExpr();
@@ -360,7 +361,7 @@ top::BaseTypeExpr ::= q::Qualifiers  def::StructDecl
 abstract production unionTypeExpr
 top::BaseTypeExpr ::= q::Qualifiers  def::UnionDecl
 {
-  propagate host, errors, globalDecls, functionDecls, defs, freeVariables;
+  propagate env, host, errors, globalDecls, functionDecls, defs, freeVariables;
   top.pp = ppConcat([terminate(space(), q.pps), def.pp ]);
   top.typerep = extType(q, refIdExtType(unionSEU(), map((.name), def.maybename), def.refId));
   top.typeModifier = baseTypeExpr();
@@ -375,7 +376,7 @@ top::BaseTypeExpr ::= q::Qualifiers  def::UnionDecl
 abstract production enumTypeExpr
 top::BaseTypeExpr ::= q::Qualifiers  def::EnumDecl
 {
-  propagate host, errors, globalDecls, functionDecls, defs, freeVariables;
+  propagate env, host, errors, globalDecls, functionDecls, defs, freeVariables;
   top.pp = ppConcat([terminate(space(), q.pps), def.pp ]);
   top.typerep = extType(q, enumExtType(def));
   top.typeModifier = baseTypeExpr();
@@ -400,7 +401,7 @@ top::BaseTypeExpr ::= q::Qualifiers  sub::ExtType
 abstract production typedefTypeExpr
 top::BaseTypeExpr ::= q::Qualifiers  name::Name
 {
-  propagate host, errors, globalDecls, functionDecls, defs, decls, freeVariables;
+  propagate env, host, errors, globalDecls, functionDecls, defs, decls, freeVariables;
   top.pp = ppConcat([terminate(space(), q.pps), name.pp ]);
 
   top.typerep =
@@ -449,7 +450,7 @@ top::BaseTypeExpr ::= attrs::Attributes  bt::BaseTypeExpr
 abstract production atomicTypeExpr
 top::BaseTypeExpr ::= q::Qualifiers  wrapped::TypeName
 {
-  propagate host, errors, globalDecls, functionDecls, defs, decls, freeVariables;
+  propagate env, host, errors, globalDecls, functionDecls, defs, decls, freeVariables;
   top.typerep = atomicType(q, wrapped.typerep);
   top.pp = ppConcat([ terminate(space(), q.pps),
                      text("_Atomic"), parens(wrapped.pp)]);
@@ -470,7 +471,7 @@ top::BaseTypeExpr ::=
 abstract production typeofTypeExpr
 top::BaseTypeExpr ::= q::Qualifiers  e::ExprOrTypeName
 {
-  propagate host, errors, globalDecls, functionDecls, defs, decls, freeVariables;
+  propagate env, host, errors, globalDecls, functionDecls, defs, decls, freeVariables;
   top.typerep = noncanonicalType(typeofType(q, e.typerep));
   top.pp = ppConcat([text("__typeof__"), parens(e.pp)]);
   top.typeModifier = baseTypeExpr();
@@ -525,7 +526,7 @@ top::TypeModifierExpr ::=
 abstract production modifiedTypeExpr
 top::TypeModifierExpr ::= bty::BaseTypeExpr
 {
-  propagate errors, globalDecls, functionDecls, defs, decls, freeVariables;
+  propagate env, errors, globalDecls, functionDecls, defs, decls, freeVariables;
   top.lpp = parens(bty.pp);
   top.rpp = notext();
   top.host = bty.typeModifier; -- top.typeModifierIn discarded
@@ -565,7 +566,7 @@ top::TypeModifierExpr ::= ty::Decorated TypeModifierExpr
 abstract production pointerTypeExpr
 top::TypeModifierExpr ::= q::Qualifiers  target::TypeModifierExpr
 {
-  propagate host, errors, globalDecls, functionDecls, defs, decls, freeVariables;
+  propagate env, host, errors, globalDecls, functionDecls, defs, decls, freeVariables;
   top.lpp = ppConcat([ target.lpp, space(),
                      if target.isFunctionArrayTypeExpr then text("(*") else text("*"),
                      terminate(space(), q.pps) ]);
@@ -579,7 +580,7 @@ top::TypeModifierExpr ::= q::Qualifiers  target::TypeModifierExpr
 abstract production arrayTypeExprWithExpr
 top::TypeModifierExpr ::= element::TypeModifierExpr  indexQualifiers::Qualifiers  sizeModifier::ArraySizeModifier  size::Expr
 {
-  propagate host, errors, globalDecls, functionDecls, defs, decls, freeVariables;
+  propagate env, host, errors, globalDecls, functionDecls, defs, decls, freeVariables;
   top.lpp = element.lpp;
 
   top.rpp = cat(brackets(ppConcat([
@@ -603,7 +604,7 @@ top::TypeModifierExpr ::= element::TypeModifierExpr  indexQualifiers::Qualifiers
 abstract production arrayTypeExprWithoutExpr
 top::TypeModifierExpr ::= element::TypeModifierExpr  indexQualifiers::Qualifiers  sizeModifier::ArraySizeModifier
 {
-  propagate host, errors, globalDecls, functionDecls, defs, decls, freeVariables;
+  propagate env, host, errors, globalDecls, functionDecls, defs, decls, freeVariables;
   top.lpp = element.lpp;
 
   top.rpp = cat(brackets(
@@ -640,7 +641,8 @@ top::TypeModifierExpr ::= result::TypeModifierExpr  args::Parameters  variadic::
 
   top.typerep = functionType(result.typerep,
                              protoFunctionType(args.typereps, variadic), q);
-
+  result.env = top.env;
+  
   args.env = openScopeEnv(top.env);
   args.position = 0;
 
@@ -649,7 +651,7 @@ top::TypeModifierExpr ::= result::TypeModifierExpr  args::Parameters  variadic::
 abstract production functionTypeExprWithoutArgs
 top::TypeModifierExpr ::= result::TypeModifierExpr  ids::[Name]  q::Qualifiers --fnquals::[SpecialSpecifier]
 {
-  propagate host, errors, globalDecls, functionDecls, defs, decls, freeVariables;
+  propagate env, host, errors, globalDecls, functionDecls, defs, decls, freeVariables;
   top.lpp = result.lpp;
   top.rpp = cat( parens(ppImplode(text(", "), map((.pp), ids))), result.rpp );
 
@@ -664,7 +666,7 @@ top::TypeModifierExpr ::= result::TypeModifierExpr  ids::[Name]  q::Qualifiers -
 abstract production parenTypeExpr
 top::TypeModifierExpr ::= wrapped::TypeModifierExpr
 {
-  propagate host, errors, globalDecls, functionDecls, defs, decls, freeVariables;
+  propagate env, host, errors, globalDecls, functionDecls, defs, decls, freeVariables;
   --top.pp = parens( wrapped.pp );
   top.lpp = cat( wrapped.lpp, text("(") );
   top.rpp = cat( text(")"), wrapped.rpp );
@@ -692,6 +694,7 @@ top::TypeNames ::= h::TypeName t::TypeNames
   top.count = t.count + 1;
   top.appendedTypeNamesRes = consTypeName(h, t.appendedTypeNamesRes);
 
+  h.env = top.env;
   t.env = addEnv(h.defs, h.env);
 }
 

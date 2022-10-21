@@ -145,7 +145,7 @@ nonterminal SpecialSpecifier with pp, host, env, errors, globalDecls,
   functionDecls, defs, controlStmtContext;
 flowtype SpecialSpecifier = decorate {env, controlStmtContext};
 
-propagate host, errors, globalDecls, functionDecls, defs on SpecialSpecifier;
+propagate env, host, errors, globalDecls, functionDecls, defs on SpecialSpecifier;
 
 abstract production inlineQualifier
 top::SpecialSpecifier ::=
@@ -171,7 +171,7 @@ nonterminal SpecialSpecifiers with pps, host, env, errors,
   globalDecls, functionDecls, defs, controlStmtContext;
 flowtype SpecialSpecifiers = decorate {env, controlStmtContext};
 
-propagate host, errors, globalDecls, functionDecls, defs on SpecialSpecifiers;
+propagate env, host, errors, globalDecls, functionDecls, defs on SpecialSpecifiers;
 
 abstract production consSpecialSpecifier
 top::SpecialSpecifiers ::= h::SpecialSpecifier t::SpecialSpecifiers

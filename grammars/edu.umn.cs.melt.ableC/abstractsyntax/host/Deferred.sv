@@ -3,6 +3,8 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 abstract production deferredDecl
 top::Decl ::= refId::String d::Decl
 {
+  propagate env;
+  
   top.pp = ppConcat([pp"deferredDecl", space(), parens(text(refId)), space(), braces(nestlines(2, d.pp))]);
 
   production refIdExists::Boolean = !null(lookupRefId(refId, top.env));

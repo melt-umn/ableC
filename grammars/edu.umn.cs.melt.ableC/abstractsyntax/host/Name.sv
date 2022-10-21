@@ -92,7 +92,7 @@ flowtype MaybeName = decorate {env}, maybename {}, hasName {}, valueLocalLookup 
 abstract production justName
 top::MaybeName ::= n::Name
 {
-  propagate host;
+  propagate env, host;
   top.pp = n.pp;
   top.maybename = just(n);
   top.hasName = true;

@@ -10,6 +10,7 @@ top::Expr ::= lhs::Expr rhs::Expr
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = lhs.typerep.defaultLvalueConversion;
+  lhs.env = top.env;
   rhs.env = addEnv(lhs.defs, lhs.env);
   top.isLValue = false;
 }
@@ -24,6 +25,7 @@ top::Expr ::= lhs::Expr rhs::Expr
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = lhs.typerep.defaultLvalueConversion;
+  lhs.env = top.env;
   rhs.env = addEnv(lhs.defs, lhs.env);
   top.isLValue = false;
 }
@@ -38,6 +40,7 @@ top::Expr ::= lhs::Expr rhs::Expr
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = lhs.typerep.defaultLvalueConversion;
+  lhs.env = top.env;
   rhs.env = addEnv(lhs.defs, lhs.env);
   top.isLValue = false;
 }
@@ -52,6 +55,7 @@ top::Expr ::= lhs::Expr rhs::Expr
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = lhs.typerep.defaultLvalueConversion;
+  lhs.env = top.env;
   rhs.env = addEnv(lhs.defs, lhs.env);
   top.isLValue = false;
 }
@@ -66,6 +70,7 @@ top::Expr ::= lhs::Expr rhs::Expr
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = lhs.typerep.defaultLvalueConversion;
+  lhs.env = top.env;
   rhs.env = addEnv(lhs.defs, lhs.env);
   top.isLValue = false;
 }
@@ -80,6 +85,7 @@ top::Expr ::= lhs::Expr rhs::Expr
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = lhs.typerep.defaultLvalueConversion;
+  lhs.env = top.env;
   rhs.env = addEnv(lhs.defs, lhs.env);
   top.isLValue = false;
 }
@@ -94,6 +100,7 @@ top::Expr ::= lhs::Expr rhs::Expr
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = lhs.typerep.defaultLvalueConversion;
+  lhs.env = top.env;
   rhs.env = addEnv(lhs.defs, lhs.env);
   top.isLValue = false;
 }
@@ -108,6 +115,7 @@ top::Expr ::= lhs::Expr rhs::Expr
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = lhs.typerep.defaultLvalueConversion;
+  lhs.env = top.env;
   rhs.env = addEnv(lhs.defs, lhs.env);
   top.isLValue = false;
 }
@@ -122,6 +130,7 @@ top::Expr ::= lhs::Expr rhs::Expr
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = lhs.typerep.defaultLvalueConversion;
+  lhs.env = top.env;
   rhs.env = addEnv(lhs.defs, lhs.env);
   top.isLValue = false;
 }
@@ -136,6 +145,7 @@ top::Expr ::= lhs::Expr rhs::Expr
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = lhs.typerep.defaultLvalueConversion;
+  lhs.env = top.env;
   rhs.env = addEnv(lhs.defs, lhs.env);
   top.isLValue = false;
 }
@@ -150,6 +160,7 @@ top::Expr ::= lhs::Expr rhs::Expr
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = lhs.typerep.defaultLvalueConversion;
+  lhs.env = top.env;
   rhs.env = addEnv(lhs.defs, lhs.env);
   top.isLValue = false;
 }
@@ -188,6 +199,7 @@ top::Expr ::= lhs::Expr rhs::Expr
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = builtinType(nilQualifier(), signedType(intType()));
+  lhs.env = top.env;
   rhs.env = addEnv(lhs.defs, lhs.env);
   top.isLValue = false;
   top.integerConstantValue =
@@ -203,6 +215,7 @@ top::Expr ::= lhs::Expr rhs::Expr
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = builtinType(nilQualifier(), signedType(intType()));
+  lhs.env = top.env;
   rhs.env = addEnv(lhs.defs, lhs.env);
   top.isLValue = false;
   top.integerConstantValue =
@@ -218,6 +231,7 @@ top::Expr ::= lhs::Expr rhs::Expr
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = usualArithmeticConversionsOnTypes(lhs.typerep, rhs.typerep);
+  lhs.env = top.env;
   rhs.env = addEnv(lhs.defs, lhs.env);
   top.isLValue = false;
   top.integerConstantValue = fromBits(
@@ -235,6 +249,7 @@ top::Expr ::= lhs::Expr rhs::Expr
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = usualArithmeticConversionsOnTypes(lhs.typerep, rhs.typerep);
+  lhs.env = top.env;
   rhs.env = addEnv(lhs.defs, lhs.env);
   top.isLValue = false;
   top.integerConstantValue = fromBits(
@@ -252,6 +267,7 @@ top::Expr ::= lhs::Expr rhs::Expr
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = usualArithmeticConversionsOnTypes(lhs.typerep, rhs.typerep);
+  lhs.env = top.env;
   rhs.env = addEnv(lhs.defs, lhs.env);
   top.isLValue = false;
   top.integerConstantValue = fromBits(
@@ -269,6 +285,7 @@ top::Expr ::= lhs::Expr rhs::Expr
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = usualArithmeticConversionsOnTypes(lhs.typerep, rhs.typerep);
+  lhs.env = top.env;
   rhs.env = addEnv(lhs.defs, lhs.env);
   top.isLValue = false;
   top.integerConstantValue =
@@ -284,6 +301,7 @@ top::Expr ::= lhs::Expr rhs::Expr
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = usualArithmeticConversionsOnTypes(lhs.typerep, rhs.typerep);
+  lhs.env = top.env;
   rhs.env = addEnv(lhs.defs, lhs.env);
   top.isLValue = false;
   top.integerConstantValue =
@@ -299,6 +317,7 @@ top::Expr ::= lhs::Expr rhs::Expr
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = builtinType(nilQualifier(), signedType(intType()));
+  lhs.env = top.env;
   rhs.env = addEnv(lhs.defs, lhs.env);
   top.isLValue = false;
   top.integerConstantValue =
@@ -314,6 +333,7 @@ top::Expr ::= lhs::Expr rhs::Expr
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = builtinType(nilQualifier(), signedType(intType()));
+  lhs.env = top.env;
   rhs.env = addEnv(lhs.defs, lhs.env);
   top.isLValue = false;
   top.integerConstantValue =
@@ -329,6 +349,7 @@ top::Expr ::= lhs::Expr rhs::Expr
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = builtinType(nilQualifier(), signedType(intType()));
+  lhs.env = top.env;
   rhs.env = addEnv(lhs.defs, lhs.env);
   top.isLValue = false;
   top.integerConstantValue =
@@ -344,6 +365,7 @@ top::Expr ::= lhs::Expr rhs::Expr
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = builtinType(nilQualifier(), signedType(intType()));
+  lhs.env = top.env;
   rhs.env = addEnv(lhs.defs, lhs.env);
   top.isLValue = false;
   top.integerConstantValue =
@@ -359,6 +381,7 @@ top::Expr ::= lhs::Expr rhs::Expr
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = builtinType(nilQualifier(), signedType(intType()));
+  lhs.env = top.env;
   rhs.env = addEnv(lhs.defs, lhs.env);
   top.isLValue = false;
   top.integerConstantValue =
@@ -374,6 +397,7 @@ top::Expr ::= lhs::Expr rhs::Expr
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = builtinType(nilQualifier(), signedType(intType()));
+  lhs.env = top.env;
   rhs.env = addEnv(lhs.defs, lhs.env);
   top.isLValue = false;
   top.integerConstantValue =
@@ -389,6 +413,7 @@ top::Expr ::= lhs::Expr rhs::Expr
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = usualAdditiveConversionsOnTypes(lhs.typerep, rhs.typerep);
+  lhs.env = top.env;
   rhs.env = addEnv(lhs.defs, lhs.env);
   top.isLValue = false;
   top.integerConstantValue =
@@ -404,6 +429,7 @@ top::Expr ::= lhs::Expr rhs::Expr
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = usualSubtractiveConversionsOnTypes(lhs.typerep, rhs.typerep);
+  lhs.env = top.env;
   rhs.env = addEnv(lhs.defs, lhs.env);
   top.isLValue = false;
   top.integerConstantValue =
@@ -419,6 +445,7 @@ top::Expr ::= lhs::Expr rhs::Expr
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = usualArithmeticConversionsOnTypes(lhs.typerep, rhs.typerep);
+  lhs.env = top.env;
   rhs.env = addEnv(lhs.defs, lhs.env);
   top.isLValue = false;
   top.integerConstantValue =
@@ -434,6 +461,7 @@ top::Expr ::= lhs::Expr rhs::Expr
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = usualArithmeticConversionsOnTypes(lhs.typerep, rhs.typerep);
+  lhs.env = top.env;
   rhs.env = addEnv(lhs.defs, lhs.env);
   top.isLValue = false;
   top.integerConstantValue =
@@ -449,6 +477,7 @@ top::Expr ::= lhs::Expr rhs::Expr
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = usualArithmeticConversionsOnTypes(lhs.typerep, rhs.typerep);
+  lhs.env = top.env;
   rhs.env = addEnv(lhs.defs, lhs.env);
   top.isLValue = false;
   top.integerConstantValue =
@@ -464,6 +493,7 @@ top::Expr ::= lhs::Expr rhs::Expr
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = rhs.typerep;
+  lhs.env = top.env;
   rhs.env = addEnv(lhs.defs, lhs.env);
   top.isLValue = false;
 }
