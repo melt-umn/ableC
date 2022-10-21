@@ -446,10 +446,10 @@ nonterminal GenericAssocs with pps, host, errors, globalDecls, functionDecls,
 flowtype GenericAssocs = decorate {env, controlStmtContext},
   compatibleSelections {decorate, selectionType};
 
-autocopy attribute selectionType :: Type;
+inherited attribute selectionType :: Type;
 monoid attribute compatibleSelections :: [Decorated Expr];
 
-propagate env, host, errors, globalDecls, functionDecls, defs, freeVariables, compatibleSelections on GenericAssocs;
+propagate env, host, errors, globalDecls, functionDecls, defs, freeVariables, compatibleSelections, selectionType on GenericAssocs;
 
 abstract production consGenericAssoc
 top::GenericAssocs ::= h::GenericAssoc  t::GenericAssocs
@@ -468,7 +468,7 @@ nonterminal GenericAssoc with location, pp, host, globalDecls, functionDecls,
 flowtype GenericAssoc = decorate {env, controlStmtContext},
   compatibleSelections {decorate, selectionType};
 
-propagate env, host, errors, globalDecls, functionDecls, defs, freeVariables on GenericAssoc;
+propagate env, host, errors, globalDecls, functionDecls, defs, freeVariables, selectionType on GenericAssoc;
 
 abstract production genericAssoc
 top::GenericAssoc ::= ty::TypeName  fun::Expr
