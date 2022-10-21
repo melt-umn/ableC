@@ -45,8 +45,8 @@ flowtype Exprs = decorate {env, controlStmtContext},
 
 {-- Initially 1. -}
 inherited attribute argumentPosition :: Integer;
-autocopy attribute callExpr :: Decorated Expr;
-autocopy attribute callVariadic :: Boolean;
+inherited attribute callExpr :: Decorated Expr;
+inherited attribute callVariadic :: Boolean;
 synthesized attribute argumentErrors :: [Message];
 
 synthesized attribute count :: Integer;
@@ -59,6 +59,8 @@ propagate host, errors, globalDecls, functionDecls, defs on Exprs;
 abstract production consExpr
 top::Exprs ::= h::Expr  t::Exprs
 {
+  propagate callExpr, callVariadic;
+
   top.pps = h.pp :: t.pps;
   top.freeVariables := h.freeVariables ++ removeDefsFromNames(h.defs, t.freeVariables);
   top.typereps = h.typerep :: t.typereps;
