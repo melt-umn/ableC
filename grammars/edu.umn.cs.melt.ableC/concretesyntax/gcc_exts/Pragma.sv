@@ -7,6 +7,7 @@ ignore terminal PragmaMark /#pragma\ mark.*([\n\r]+)/ lexer classes {Comment};
 terminal Hash_t '#';
 terminal Pragma_t 'pragma';
 terminal RedefExtname_t 'redefine_extname';
+terminal GCC_t /GCC .*([\n\r]+)/;
 terminal Pack_t /pack\([^\)]*\)([\n\r]+)/;
 terminal OMP_t /omp\ .*/;
 terminal OMPFor_t /omp\ .*[\r\n\ \t]+for\ *\(.*\)/; -- TODO: HACK
@@ -23,6 +24,9 @@ concrete productions top::ExternalDeclaration_c
 | '#' 'pragma' 'redefine_extname' Identifier_c Identifier_c
     layout { Spaces_t }
     { top.ast = ast:warnDecl([wrn(top.location, "Ignored redefine_extname pragma")]); }
+| '#' 'pragma' gcc::GCC_t
+    layout { Spaces_t }
+    { top.ast = ast:txtDecl("#pragma " ++ gcc.lexeme); }
 
 concrete productions top::Stmt_c
 | '#' 'pragma' omp::OMP_t

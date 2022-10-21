@@ -75,28 +75,33 @@ concrete productions top::Declaration_c
     }
 
 
-closed nonterminal Declarator_c with location, declaredIdent, declaredParamIdents, ast<ast:TypeModifierExpr>, givenType;
+-- Attributes arrising from type qualifier lists in declarators always flow up to be attatched to the enclosing declaration, for now.
+closed nonterminal Declarator_c with location, declaredIdent, declaredParamIdents, ast<ast:TypeModifierExpr>, attributes, givenType;
 concrete productions top::Declarator_c
 | p::Pointer_c dd::DirectDeclarator_c
     { top.declaredIdent = dd.declaredIdent;
       top.declaredParamIdents = dd.declaredParamIdents;
       p.givenType = top.givenType;
       dd.givenType = p.ast;
-      top.ast = dd.ast;}
+      top.ast = dd.ast;
+      top.attributes = dd.attributes;
+    }
 | dd::DirectDeclarator_c
     { top.declaredIdent = dd.declaredIdent;
       top.declaredParamIdents = dd.declaredParamIdents;
       dd.givenType = top.givenType;
-      top.ast = dd.ast; }
+      top.ast = dd.ast;
+      top.attributes = dd.attributes; }
 
 
-closed nonterminal DirectDeclarator_c with location, declaredIdent, declaredParamIdents, ast<ast:TypeModifierExpr>, givenType;
+closed nonterminal DirectDeclarator_c with location, declaredIdent, declaredParamIdents, ast<ast:TypeModifierExpr>, attributes, givenType;
 concrete productions top::DirectDeclarator_c
 | '(' d::Declarator_c ')'
     { top.declaredIdent = d.declaredIdent;
       top.declaredParamIdents = d.declaredParamIdents;
       d.givenType = ast:parenTypeExpr(top.givenType);
       top.ast = d.ast;
+      top.attributes = d.attributes;
     }
 | dd::DirectDeclarator_c '(' idl::IdentifierList_c ')' q::OptTypeQualifierList_c
     {
@@ -105,11 +110,13 @@ concrete productions top::DirectDeclarator_c
         orElse(dd.declaredParamIdents, just(idl.declaredIdents));
       dd.givenType = ast:functionTypeExprWithoutArgs(top.givenType, idl.declaredIdents, q.typeQualifiers);
       top.ast = dd.ast;
+      top.attributes = ast:appendAttribute(dd.attributes, q.attributes);
     }
 | id::Identifier_c
     { top.declaredIdent = id.ast;
       top.declaredParamIdents = nothing();
       top.ast = top.givenType;
+      top.attributes = ast:nilAttribute();
     }
 | dd::DirectDeclarator_c mod::PostfixModifier_c
     { top.declaredIdent = dd.declaredIdent;
@@ -118,6 +125,7 @@ concrete productions top::DirectDeclarator_c
       mod.givenType = top.givenType;
       dd.givenType = mod.ast;
       top.ast = dd.ast;
+      top.attributes = dd.attributes;
     }
 
 
@@ -306,7 +314,13 @@ concrete productions top::InitialFunctionDefinition_c
         end;
 
       top.ast =
-        ast:functionDecl(ast:foldStorageClass(ds.storageClass), specialSpecifiers, bt, mt, d.declaredIdent, ds.attributes, ast:foldDecl(l.ast), top.givenStmt);
+        ast:functionDecl(
+          ast:foldStorageClass(ds.storageClass),
+          specialSpecifiers, bt, mt,
+          d.declaredIdent,
+          ast:appendAttribute(ds.attributes, d.attributes),
+          ast:foldDecl(l.ast),
+          top.givenStmt);
     }
     action {
       -- Function are annoying because we have to open a scope, then add the
@@ -341,7 +355,13 @@ concrete productions top::InitialFunctionDefinition_c
         end;
 
       top.ast =
-        ast:functionDecl(ast:nilStorageClass(), ast:nilSpecialSpecifier(), bt, mt, d.declaredIdent, ast:nilAttribute(), ast:foldDecl(l.ast), top.givenStmt);
+        ast:functionDecl(
+          ast:nilStorageClass(),
+          ast:nilSpecialSpecifier(), bt, mt,
+          d.declaredIdent,
+          d.attributes,
+          ast:foldDecl(l.ast),
+          top.givenStmt);
     }
     action {
       -- Unfortunate duplication. This production is necessary for K&R compatibility
@@ -448,7 +468,8 @@ concrete productions top::Pointer_c
     { t.givenType = ast:pointerTypeExpr(q.typeQualifiers, top.givenType);
       top.ast = t.ast; }
 
-
+-- TODO: Discarding attributes here.
+-- GCC currently ignores them anyway, so not gonna worry about it for now.
 closed nonterminal PostfixModifier_c with location, declaredParamIdents, ast<ast:TypeModifierExpr>, givenType;
 concrete productions top::PostfixModifier_c
 | '[' ']'
@@ -509,12 +530,15 @@ concrete productions top::PostfixModifier_c
 
 
 
-closed nonterminal OptTypeQualifierList_c with location, typeQualifiers;
+closed nonterminal OptTypeQualifierList_c with location, typeQualifiers, attributes;
 concrete productions top::OptTypeQualifierList_c
 |
-    { top.typeQualifiers = ast:nilQualifier(); }
+  operator=CPP_Attr_LowerPrec_t
+    { top.typeQualifiers = ast:nilQualifier();
+      top.attributes = ast:nilAttribute(); }
 | q::TypeQualifierList_c
-    { top.typeQualifiers = q.typeQualifiers; }
+    { top.typeQualifiers = q.typeQualifiers;
+      top.attributes = q.attributes; }
 
 
 
@@ -553,7 +577,7 @@ concrete productions top::ParameterDeclaration_c
       d.givenType = ast:baseTypeExpr();
       local bt :: ast:BaseTypeExpr =
         ast:figureOutTypeFromSpecifiers(ds.location, ds.typeQualifiers, ds.preTypeSpecifiers, ds.realTypeSpecifiers, ds.mutateTypeSpecifiers);
-      top.ast = ast:parameterDecl(ast:foldStorageClass(ds.storageClass), bt, d.ast, ast:justName(d.declaredIdent), ds.attributes);
+      top.ast = ast:parameterDecl(ast:foldStorageClass(ds.storageClass), bt, d.ast, ast:justName(d.declaredIdent), ast:appendAttribute(ds.attributes, d.attributes));
       }
 | ds::DeclarationSpecifiers_c d::AbstractDeclarator_c
     { top.declaredIdents = [];
@@ -596,12 +620,12 @@ concrete productions top::InitDeclarator_c
     operator=Cpp_Attribute_high_prec
     { top.declaredIdent = d.declaredIdent;
       d.givenType = ast:baseTypeExpr();
-      top.ast = [ast:declarator(d.declaredIdent, d.ast, ast:nilAttribute(), ast:nothingInitializer())];
+      top.ast = [ast:declarator(d.declaredIdent, d.ast, d.attributes, ast:nothingInitializer())];
     }
 | d::Declarator_c '=' i::Initializer_c
     { top.declaredIdent = d.declaredIdent;
       d.givenType = ast:baseTypeExpr();
-      top.ast = [ast:declarator(d.declaredIdent, d.ast, ast:nilAttribute(), ast:justInitializer(i.ast))];
+      top.ast = [ast:declarator(d.declaredIdent, d.ast, d.attributes, ast:justInitializer(i.ast))];
     }
 -- For Initializer_c see Expr.sv
 
