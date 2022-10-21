@@ -847,7 +847,7 @@ nonterminal EnumDecl with location, pp, host, maybename, errors, globalDecls,
   controlStmtContext;
 flowtype EnumDecl = decorate {env, givenRefId, controlStmtContext};
 
-propagate host, errors, globalDecls, functionDecls, freeVariables on EnumDecl;
+propagate inStruct, host, errors, globalDecls, functionDecls, freeVariables on EnumDecl;
 
 abstract production enumDecl
 top::EnumDecl ::= name::MaybeName  dcls::EnumItemList
@@ -875,7 +875,7 @@ top::EnumDecl ::= name::MaybeName  dcls::EnumItemList
     -- We can rely on the name being present if it's a redeclaration
 }
 
-autocopy attribute inStruct::Boolean;
+inherited attribute inStruct::Boolean;
 
 autocopy attribute appendedStructItemList :: StructItemList;
 synthesized attribute appendedStructItemListRes :: StructItemList;
@@ -888,7 +888,7 @@ flowtype StructItemList = decorate {env, inStruct, isLast,
   controlStmtContext},
   hasConstField {decorate}, fieldNames {decorate}, appendedStructItemListRes {appendedStructItemList};
 
-propagate host, errors, globalDecls, functionDecls, defs, localDefs, hasConstField, fieldNames on StructItemList;
+propagate inStruct, host, errors, globalDecls, functionDecls, defs, localDefs, hasConstField, fieldNames on StructItemList;
 
 abstract production consStructItem
 top::StructItemList ::= h::StructItem  t::StructItemList
@@ -982,7 +982,7 @@ nonterminal StructItem with pp, host, errors, globalDecls, functionDecls, defs,
 flowtype StructItem = decorate {env, inStruct, isLast, controlStmtContext},
   hasConstField {decorate}, fieldNames {decorate};
 
-propagate errors, globalDecls, functionDecls, defs, freeVariables, localDefs, hasConstField on StructItem;
+propagate inStruct, errors, globalDecls, functionDecls, defs, freeVariables, localDefs, hasConstField on StructItem;
 propagate fieldNames on StructItem excluding anonStructStructItem, anonUnionStructItem;
 
 abstract production structItem
@@ -1052,7 +1052,7 @@ flowtype StructDeclarators = decorate {env, baseType, inStruct,
   hostStructItems {decorate}, hasModifiedTypeExpr {decorate},
   hasConstField {decorate}, fieldNames {decorate};
 
-propagate host, hasModifiedTypeExpr, errors, globalDecls, functionDecls, defs, localDefs, hasConstField, fieldNames on StructDeclarators;
+propagate inStruct, host, hasModifiedTypeExpr, errors, globalDecls, functionDecls, defs, localDefs, hasConstField, fieldNames on StructDeclarators;
 
 abstract production consStructDeclarator
 top::StructDeclarators ::= h::StructDeclarator  t::StructDeclarators
