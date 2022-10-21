@@ -3,11 +3,11 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 nonterminal Qualifiers with mangledName, qualifiers, pps, host, typeToQualify, errors;
 flowtype Qualifiers = decorate {}, qualifiers {}, errors {typeToQualify};
 
-autocopy attribute typeToQualify :: Type;
+inherited attribute typeToQualify :: Type;
 
 synthesized attribute qualifiers :: [Qualifier];
 
-propagate errors on Qualifiers;
+propagate errors, typeToQualify on Qualifiers;
 
 abstract production consQualifier
 top::Qualifiers ::= h::Qualifier  t::Qualifiers
