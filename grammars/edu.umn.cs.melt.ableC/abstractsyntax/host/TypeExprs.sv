@@ -47,7 +47,7 @@ synthesized attribute typeModifier :: TypeModifierExpr;
 autocopy attribute typeModifierIn :: TypeModifierExpr;
 
 {-- Used to set the refId for a declaration via __attribute__ -}
-autocopy attribute givenRefId :: Maybe<String>;
+inherited attribute givenRefId :: Maybe<String>;
 
 {-- The declarations contained in this TypeExpr, corresponding to defs -}
 monoid attribute decls :: [Decl];
@@ -63,6 +63,8 @@ nonterminal TypeName with env, typerep, bty, mty, pp, host, errors, globalDecls,
   functionDecls, decls, defs, freeVariables, controlStmtContext;
 flowtype TypeName = decorate {env, controlStmtContext},
   bty {}, mty {};
+
+propagate givenRefId on BaseTypeExpr;
 
 abstract production typeName
 top::TypeName ::= bty::BaseTypeExpr  mty::TypeModifierExpr
@@ -675,7 +677,7 @@ top::TypeModifierExpr ::= wrapped::TypeModifierExpr
   top.typerep = noncanonicalType(parenType(wrapped.typerep));
 }
 
-autocopy attribute appendedTypeNames :: TypeNames;
+inherited attribute appendedTypeNames :: TypeNames;
 synthesized attribute appendedTypeNamesRes :: TypeNames;
 
 nonterminal TypeNames with pps, host, env, typereps, count, errors, globalDecls,
@@ -684,7 +686,7 @@ nonterminal TypeNames with pps, host, env, typereps, count, errors, globalDecls,
 flowtype TypeNames = decorate {env, controlStmtContext},
   count {}, appendedTypeNamesRes {appendedTypeNames};
 
-propagate host, errors, globalDecls, functionDecls, decls, defs, freeVariables on TypeNames;
+propagate host, errors, globalDecls, functionDecls, decls, defs, freeVariables, appendedTypeNames on TypeNames;
 
 abstract production consTypeName
 top::TypeNames ::= h::TypeName t::TypeNames
