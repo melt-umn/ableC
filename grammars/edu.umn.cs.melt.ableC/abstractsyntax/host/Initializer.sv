@@ -2,7 +2,7 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 
 inherited attribute initializerPos::String;
 inherited attribute expectedType::Type;
-autocopy attribute inObject::Boolean;
+inherited attribute inObject::Boolean;
 
 propagate host, errors, globalDecls, functionDecls, defs on MaybeInitializer, Initializer, InitList, Init, Designator;
 propagate freeVariables on MaybeInitializer, Initializer, Init, Designator;
@@ -117,7 +117,7 @@ top::Initializer ::= l::InitList
 threaded attribute initIndex, initIndexOut::Integer;
 monoid attribute maxIndex::Integer with -1, max;
 
-autocopy attribute tagEnvIn::Decorated Env;
+inherited attribute tagEnvIn::Decorated Env;
 
 nonterminal InitList with pps, initIndex, initIndexOut, maxIndex, host, typerep,
   errors, globalDecls, functionDecls, defs, env, expectedType, expectedTypes,
@@ -141,7 +141,7 @@ top::InitList ::=
 abstract production consInit
 top::InitList ::= h::Init  t::InitList
 {
-  propagate expectedType;
+  propagate expectedType, tagEnvIn;
 
   top.pps = h.pp :: t.pps;
   top.freeVariables := h.freeVariables ++ removeDefsFromNames(h.defs, t.freeVariables);
