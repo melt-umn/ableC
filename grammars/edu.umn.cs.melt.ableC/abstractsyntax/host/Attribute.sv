@@ -23,8 +23,8 @@ Attributes ::= l1::Attributes l2::Attributes
 
 propagate host on Attributes, Attribute, Attrib, AttribName;
 
-nonterminal Attributes with pps, host, env, returnType;
-flowtype Attributes = decorate {env, returnType};
+nonterminal Attributes with pps, host, env, controlStmtContext;
+flowtype Attributes = decorate {env, controlStmtContext};
 
 abstract production consAttribute
 top::Attributes ::= h::Attribute t::Attributes
@@ -33,14 +33,14 @@ top::Attributes ::= h::Attribute t::Attributes
 }
 
 abstract production nilAttribute
-top::Attributes ::= 
+top::Attributes ::=
 {
   top.pps = [];
 }
 
 {-- __attribute__ syntax representation -}
-nonterminal Attribute with pp, host, env, returnType;
-flowtype Attribute = decorate {env, returnType};
+nonterminal Attribute with pp, host, env, controlStmtContext;
+flowtype Attribute = decorate {env, controlStmtContext};
 
 abstract production gccAttribute
 top::Attribute ::= l::Attribs
@@ -54,8 +54,8 @@ top::Attribute ::= s::String
   top.pp = text("__asm__(" ++ s ++ ")");
 }
 
-nonterminal Attribs with pp, host, env, returnType;
-flowtype Attribs = decorate {env, returnType};
+nonterminal Attribs with pp, host, env, controlStmtContext;
+flowtype Attribs = decorate {env, controlStmtContext};
 
 abstract production consAttrib
 top::Attribs ::= h::Attrib t::Attribs
@@ -69,14 +69,14 @@ top::Attribs ::= h::Attrib t::Attribs
 }
 
 abstract production nilAttrib
-top::Attribs ::= 
+top::Attribs ::=
 {
   propagate host;
   top.pp = text("");
 }
 
-nonterminal Attrib with pp, host, env, returnType;
-flowtype Attrib = decorate {env, returnType};
+nonterminal Attrib with pp, host, env, controlStmtContext;
+flowtype Attrib = decorate {env, controlStmtContext};
 
 -- e.g. __attribute__(())
 abstract production emptyAttrib

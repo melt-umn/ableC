@@ -1,9 +1,7 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax:overloadable;
 
-imports core:monad;
-
 imports silver:langutil;
-imports silver:langutil:pp with implode as ppImplode, concat as ppConcat;
+imports silver:langutil:pp;
 
 imports edu:umn:cs:melt:ableC:abstractsyntax:env;
 imports edu:umn:cs:melt:ableC:abstractsyntax:construction;
@@ -35,6 +33,12 @@ attribute memberProd<(host:Expr ::= host:Expr host:Name Location)> occurs on hos
 attribute memberProd<(host:Expr ::= host:Expr Boolean host:Name Location)> occurs on host:ExtType;
 flowtype memberProd {decorate, isDeref} on host:Type;
 flowtype memberProd {decorate} on host:ExtType;
+
+synthesized attribute exprInitProd::Maybe<(host:Initializer ::= host:Expr Location)> occurs on host:Type, host:ExtType;
+flowtype exprInitProd {decorate} on host:Type, host:ExtType;
+
+synthesized attribute objectInitProd::Maybe<(host:Initializer ::= host:InitList Location)> occurs on host:Type, host:ExtType;
+flowtype objectInitProd {decorate} on host:Type, host:ExtType;
 
 synthesized attribute preIncProd::Maybe<UnaryProd> occurs on host:Type, host:ExtType;
 flowtype preIncProd {decorate} on host:Type, host:ExtType;
@@ -407,6 +411,8 @@ top::host:Type ::=
   top.callProd = nothing();
   top.callMemberProd = nothing();
   top.memberProd = nothing();
+  top.exprInitProd = nothing();
+  top.objectInitProd = nothing();
   top.preIncProd = nothing();
   top.preDecProd = nothing();
   top.postIncProd = nothing();
@@ -510,6 +516,8 @@ top::host:Type ::= q::host:Qualifiers  sub::host:ExtType
     | just(prod) -> just(prod(_, top.isDeref, _, _))
     | nothing() -> nothing()
     end;
+  top.exprInitProd = sub.exprInitProd;
+  top.objectInitProd = sub.objectInitProd;
   
   top.preIncProd = sub.preIncProd;
   top.preDecProd = sub.preDecProd;
@@ -604,6 +612,8 @@ top::host:ExtType ::=
   top.callProd = nothing();
   top.callMemberProd = nothing();
   top.memberProd = nothing();
+  top.exprInitProd = nothing();
+  top.objectInitProd = nothing();
   top.preIncProd = nothing();
   top.preDecProd = nothing();
   top.postIncProd = nothing();

@@ -27,8 +27,9 @@ top::Expr ::= ty::TypeName  e::MemberDesignator
   top.isSimple = true;
 }
 
-nonterminal MemberDesignator with pp, host, errors, globalDecls, functionDecls, defs, env, returnType, freeVariables;
-flowtype MemberDesignator = decorate {env, returnType};
+nonterminal MemberDesignator with pp, host, errors, globalDecls, functionDecls,
+  defs, env, freeVariables, controlStmtContext;
+flowtype MemberDesignator = decorate {env, controlStmtContext};
 
 propagate host, errors, globalDecls, functionDecls, defs, freeVariables on MemberDesignator;
 
@@ -63,7 +64,7 @@ top::Expr ::= e::Expr
 }
 
 abstract production vaArgPackExpr
-top::Expr ::= 
+top::Expr ::=
 {
   propagate host, errors, globalDecls, functionDecls, defs, freeVariables;
   top.pp = text("__builtin_va_arg_pack()");

@@ -5,7 +5,7 @@ top::host:Expr ::= ty::host:TypeName  e::host:Expr
 {
   top.pp = parens( ppConcat([parens(ty.pp), e.pp]) );
   production attribute lerrors :: [Message] with ++;
-  lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  lerrors := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
   
   e.env = addEnv(ty.defs, ty.env);
 
@@ -22,7 +22,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 {
   top.pp = parens( ppConcat([ lhs.pp, brackets( rhs.pp )]) );
   production attribute lerrors :: [Message] with ++;
-  lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  lerrors := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
   
   rhs.env = addEnv(lhs.defs, lhs.env);
   
@@ -92,7 +92,7 @@ top::host:Expr ::= lhs::host:Expr  deref::Boolean  rhs::host:Name
 {
   top.pp = parens(ppConcat([lhs.pp, text(if deref then "->" else "."), rhs.pp]));
   production attribute lerrors :: [Message] with ++;
-  lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  lerrors := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   local t::host:Type = lhs.host:typerep;
   t.isDeref = deref;
@@ -106,10 +106,45 @@ top::host:Expr ::= lhs::host:Expr  deref::Boolean  rhs::host:Name
     | just(prod) ->
        host:transformedExpr(
          host,
-         prod(lhs, rhs, top.location),
+         prod(host:decExpr(lhs, location=lhs.location), rhs, top.location),
          location=top.location)
     | nothing() -> host
     end;
   
   forwards to host:wrapWarnExpr(lerrors, fwrd, top.location);
+}
+abstract production compoundLiteralExpr
+top::host:Expr ::= ty::host:TypeName  init::host:InitList
+{
+  top.pp = parens( ppConcat([parens(ty.pp), text("{"), ppImplode(text(", "), init.pps), text("}")]) );
+  
+  local t::host:Type = ty.host:typerep;
+  local host::host:Expr =
+    host:compoundLiteralExpr(
+      host:decTypeName(ty),
+      init,
+      location=top.location);
+  local tmpName::host:Name = host:name("_res_" ++ toString(genInt()), location=top.location);
+  forwards to
+    case t.objectInitProd of
+    | just(prod) ->
+       host:transformedExpr(
+         host,
+         host:stmtExpr(
+           host:declStmt(
+             host:variableDecls(
+               host:nilStorageClass(), host:nilAttribute(),
+               ty.host:bty,
+               host:consDeclarator(
+                 host:declarator(
+                   tmpName,
+                   ty.host:mty,
+                   host:nilAttribute(),
+                   host:justInitializer(prod(init, top.location))),
+                 host:nilDeclarator()))),
+           host:declRefExpr(tmpName, location=top.location),
+           location=top.location),
+         location=top.location)
+    | nothing() -> host
+    end;
 }

@@ -65,6 +65,9 @@ Boolean ::= a::Type  b::Type  allowSubtypes::Boolean  dropOuterQual::Boolean
   -- otherwise
   | noncanonicalType(s1), _ -> compatibleTypes(s1.canonicalType, b, allowSubtypes, dropOuterQual)
   | _, noncanonicalType(s2) -> compatibleTypes(a, s2.canonicalType, allowSubtypes, dropOuterQual)
+  -- atomics
+  | atomicType(q1, t1), _ -> compatibleTypes((decorate t1 with {addedTypeQualifiers=q1.qualifiers;}).withTypeQualifiers, b, allowSubtypes, dropOuterQual)
+  | _, atomicType(q2, t2) -> compatibleTypes(a, (decorate t2 with {addedTypeQualifiers=q2.qualifiers;}).withTypeQualifiers, allowSubtypes, dropOuterQual)
   | _, _ -> false
   end;
 }
@@ -165,7 +168,7 @@ BuiltinType ::= a::BuiltinType  b::BuiltinType
   | complexType(rt), _ -> a
   | imaginaryType(rt), _ -> a
   -- Invariant: function always called with 'a' as one of these three contructors
-  --| _, _ -> error("floating conversion called with " ++ show(100, a.pp) ++ " and " ++ show(100, b.pp))
+  | _, _ -> error("floating conversion called with " ++ show(100, a.pp) ++ " and " ++ show(100, b.pp))
   end;
 }
 
@@ -206,6 +209,7 @@ BuiltinType ::= a::BuiltinType  b::BuiltinType
   | complexIntegerType(at), unsignedType(bt) -> complexIntegerType(maximumConversionRank(at, bt))
   | complexIntegerType(at), complexIntegerType(bt) -> complexIntegerType(maximumConversionRank(at, bt))
   -- No bools thanks to promotions, Invariant: always called with on of these three *only*
+  | _, _ -> error("integer conversion called with " ++ show(100, a.pp) ++ " and " ++ show(100, b.pp))
   end;
 }
 
@@ -323,11 +327,11 @@ Boolean ::= lval::Type  rval::Type
     | _ -> false
     end ||
 
-    case lval.defaultFunctionArrayLvalueConversion, rval.defaultFunctionArrayLvalueConversion of
+    case lval, rval of
 -- the left operand has an atomic, qualified, or unqualified version of a structure, enum, union or extension type compatible with the type
     | extType(_, _), _ -> compatibleTypes(lval.defaultFunctionArrayLvalueConversion, rval.defaultFunctionArrayLvalueConversion, true, true)
 -- the left operand has atomic, qualified, or unqualified pointer type, and (considering the type the left operand would have after lvalue conversion) both operands are pointers to qualified or unqualified versions of compatible types, and the type pointed to by the left has all the qualifiers of the type pointed to by the right;
-    | pointerType(q1, p1), pointerType(q2, p2) ->
+    | pointerType(q1, p1), _ when rval.defaultFunctionArrayLvalueConversion matches pointerType(q2, p2) ->
         (compatibleTypes(p1, p2, containsQualifier(constQualifier(location=bogusLoc()), p1), false) ||
           compatibleTypes(
             pointerType(nilQualifier(), builtinType(nilQualifier(), voidType())),
@@ -359,10 +363,15 @@ Boolean ::= lval::Type  rval::Type
           end
         -- TODO: handle qualifiers when casting rhs 0 or void
   -- extensions
+  -- ignore type attributes that don't have a specialized representation (e.g. vector)
+    | attributedType(_, t1), attributedType(_, t2) -> typeAssignableTo(t1, t2)
+    | attributedType(_, t1), t2 -> typeAssignableTo(t1, t2)
+    | t1, attributedType(_, t2) -> typeAssignableTo(t1, t2)
+
     | vectorType(b1, s1), vectorType(b2, s2) ->
             compatibleTypes(b1, b2, true, true) && s1 == s2 -- TODO: no idea
 -- the left operand has type atomic, qualified, or unqualified _Bool, and the right is a pointer.
-    | builtinType(_, boolType()), pointerType(_, _) -> true
+    | builtinType(_, boolType()), _ when rval.defaultFunctionArrayLvalueConversion matches pointerType(_, _) -> true
     | _, _ -> false
     end;
 }
@@ -376,4 +385,62 @@ Type ::= qs::[Qualifier] base::Type
       \q::Qualifier -> !containsBy(qualifierCompat, q, base.qualifiers),
       nubBy(qualifierCompat, qs));
   return base.withTypeQualifiers;
+}
+
+function repeatInfinite
+[a] ::= x::a
+{ return x :: repeatInfinite(x); }
+
+function objectMembers
+Maybe<[Type]> ::= env::Decorated Env t::Type
+{
+  return
+    case t of
+    | arrayType(e, _, _, constantArrayType(size)) -> just(repeat(e, size))
+    | arrayType(e, _, _, incompleteArrayType()) -> just(repeatInfinite(e))
+    | extType(_, sub) when sub.maybeRefId matches just(refId) ->
+      case lookupRefId(refId, env) of
+      | r :: _ ->
+        just(
+          map(
+            \ f::Either<String ExtType> ->
+              case f of
+              | left(fn) -> head(lookupValue(fn, r.tagEnv)).typerep
+              | right(e) -> extType(nilQualifier(), e)
+              end,
+            r.fieldNames))
+      | [] -> just([]) -- Don't know the members yet, but still not a scalar
+      end
+    | extType(_, _) -> just([]) -- May translate into an object type, so don't treat as scalar
+    | _ -> nothing()
+    end;
+}
+
+function remainingObjectMembers
+Maybe<[Type]> ::= env::Decorated Env expected::Type actual::Type
+{
+  return
+    if typeAssignableTo(expected, actual)
+    then just([])
+    else do {
+      ts1 :: [Type] <- objectMembers(env, expected);
+      if null(ts1) then nothing() else do {
+        ts2 :: [Type] <- remainingObjectMembers(env, head(ts1), actual);
+        return ts2 ++ tail(ts1);
+      };
+    };
+}
+
+function objectTagEnv
+Decorated Env ::= env::Decorated Env t::Type
+{
+  return
+    case t of
+    | extType(_, sub) when sub.maybeRefId matches just(refId) ->
+      case lookupRefId(refId, env) of
+      | r :: _ -> r.tagEnv
+      | [] -> emptyEnv()
+      end
+    | _ -> emptyEnv()
+    end;
 }

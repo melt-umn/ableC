@@ -1,199 +1,139 @@
-/* Copyright (C) 1992, 1995, 1996, 1999 Free Software Foundation, Inc.
-   This file is part of the GNU C Library.
+# 1 "ieee754.c"
+# 1 "<built-in>"
+# 1 "<command-line>"
+# 1 "/usr/include/stdc-predef.h" 1 3 4
+# 1 "<command-line>" 2
+# 1 "ieee754.c"
+# 22 "ieee754.c"
+# 1 "/usr/include/features.h" 1 3 4
+# 367 "/usr/include/features.h" 3 4
+# 1 "/usr/include/x86_64-linux-gnu/sys/cdefs.h" 1 3 4
+# 410 "/usr/include/x86_64-linux-gnu/sys/cdefs.h" 3 4
+# 1 "/usr/include/x86_64-linux-gnu/bits/wordsize.h" 1 3 4
+# 411 "/usr/include/x86_64-linux-gnu/sys/cdefs.h" 2 3 4
+# 368 "/usr/include/features.h" 2 3 4
+# 391 "/usr/include/features.h" 3 4
+# 1 "/usr/include/x86_64-linux-gnu/gnu/stubs.h" 1 3 4
+# 10 "/usr/include/x86_64-linux-gnu/gnu/stubs.h" 3 4
+# 1 "/usr/include/x86_64-linux-gnu/gnu/stubs-64.h" 1 3 4
+# 11 "/usr/include/x86_64-linux-gnu/gnu/stubs.h" 2 3 4
+# 392 "/usr/include/features.h" 2 3 4
+# 23 "ieee754.c" 2
 
-   The GNU C Library is free software; you can redistribute it and/or
-   modify it under the terms of the GNU Lesser General Public
-   License as published by the Free Software Foundation; either
-   version 2.1 of the License, or (at your option) any later version.
+# 1 "/usr/include/endian.h" 1 3 4
+# 36 "/usr/include/endian.h" 3 4
+# 1 "/usr/include/x86_64-linux-gnu/bits/endian.h" 1 3 4
+# 37 "/usr/include/endian.h" 2 3 4
+# 25 "ieee754.c" 2
 
-   The GNU C Library is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-   Lesser General Public License for more details.
 
-   You should have received a copy of the GNU Lesser General Public
-   License along with the GNU C Library; if not, write to the Free
-   Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307 USA.  */
-
-#ifndef _IEEE754_H
-
-#define _IEEE754_H 1
-#include <features.h>
-
-#include <endian.h>
-
-__BEGIN_DECLS
 
 union ieee754_float
   {
     float f;
 
-    /* This is the IEEE 754 single-precision format.  */
+
     struct
       {
-#if	__BYTE_ORDER == __BIG_ENDIAN
-	unsigned int negative:1;
-	unsigned int exponent:8;
-	unsigned int mantissa:23;
-#endif				/* Big endian.  */
-#if	__BYTE_ORDER == __LITTLE_ENDIAN
-	unsigned int mantissa:23;
-	unsigned int exponent:8;
-	unsigned int negative:1;
-#endif				/* Little endian.  */
+
+
+
+
+
+
+ unsigned int mantissa:23;
+ unsigned int exponent:8;
+ unsigned int negative:1;
+
       } ieee;
 
-    /* This format makes it easier to see if a NaN is a signalling NaN.  */
+
     struct
       {
-#if	__BYTE_ORDER == __BIG_ENDIAN
-	unsigned int negative:1;
-	unsigned int exponent:8;
-	unsigned int quiet_nan:1;
-	unsigned int mantissa:22;
-#endif				/* Big endian.  */
-#if	__BYTE_ORDER == __LITTLE_ENDIAN
-	unsigned int mantissa:22;
-	unsigned int quiet_nan:1;
-	unsigned int exponent:8;
-	unsigned int negative:1;
-#endif				/* Little endian.  */
+
+
+
+
+
+
+
+ unsigned int mantissa:22;
+ unsigned int quiet_nan:1;
+ unsigned int exponent:8;
+ unsigned int negative:1;
+
       } ieee_nan;
   };
 
-#define IEEE754_FLOAT_BIAS	0x7f /* Added to exponent.  */
+
 
 
 union ieee754_double
   {
     double d;
 
-    /* This is the IEEE 754 double-precision format.  */
+
     struct
       {
-#if	__BYTE_ORDER == __BIG_ENDIAN
-	unsigned int negative:1;
-	unsigned int exponent:11;
-	/* Together these comprise the mantissa.  */
-	unsigned int mantissa0:20;
-	unsigned int mantissa1:32;
-#endif				/* Big endian.  */
-#if	__BYTE_ORDER == __LITTLE_ENDIAN
-# if	__FLOAT_WORD_ORDER == __BIG_ENDIAN
-	unsigned int mantissa0:20;
-	unsigned int exponent:11;
-	unsigned int negative:1;
-	unsigned int mantissa1:32;
-# else
-	/* Together these comprise the mantissa.  */
-	unsigned int mantissa1:32;
-	unsigned int mantissa0:20;
-	unsigned int exponent:11;
-	unsigned int negative:1;
-# endif
-#endif				/* Little endian.  */
+# 90 "ieee754.c"
+ unsigned int mantissa1:32;
+ unsigned int mantissa0:20;
+ unsigned int exponent:11;
+ unsigned int negative:1;
+
+
       } ieee;
 
-    /* This format makes it easier to see if a NaN is a signalling NaN.  */
+
     struct
       {
-#if	__BYTE_ORDER == __BIG_ENDIAN
-	unsigned int negative:1;
-	unsigned int exponent:11;
-	unsigned int quiet_nan:1;
-	/* Together these comprise the mantissa.  */
-	unsigned int mantissa0:19;
-	unsigned int mantissa1:32;
-#else
-# if	__FLOAT_WORD_ORDER == __BIG_ENDIAN
-	unsigned int mantissa0:19;
-	unsigned int quiet_nan:1;
-	unsigned int exponent:11;
-	unsigned int negative:1;
-	unsigned int mantissa1:32;
-# else
-	/* Together these comprise the mantissa.  */
-	unsigned int mantissa1:32;
-	unsigned int mantissa0:19;
-	unsigned int quiet_nan:1;
-	unsigned int exponent:11;
-	unsigned int negative:1;
-# endif
-#endif
+# 117 "ieee754.c"
+ unsigned int mantissa1:32;
+ unsigned int mantissa0:19;
+ unsigned int quiet_nan:1;
+ unsigned int exponent:11;
+ unsigned int negative:1;
+
+
       } ieee_nan;
   };
 
-#define IEEE754_DOUBLE_BIAS	0x3ff /* Added to exponent.  */
+
 
 
 union ieee854_long_double
   {
     long double d;
 
-    /* This is the IEEE 854 double-extended-precision format.  */
+
     struct
       {
-#if	__BYTE_ORDER == __BIG_ENDIAN
-	unsigned int negative:1;
-	unsigned int exponent:15;
-	unsigned int empty:16;
-	unsigned int mantissa0:32;
-	unsigned int mantissa1:32;
-#endif
-#if	__BYTE_ORDER == __LITTLE_ENDIAN
-# if	__FLOAT_WORD_ORDER == __BIG_ENDIAN
-	unsigned int exponent:15;
-	unsigned int negative:1;
-	unsigned int empty:16;
-	unsigned int mantissa0:32;
-	unsigned int mantissa1:32;
-# else
-	unsigned int mantissa1:32;
-	unsigned int mantissa0:32;
-	unsigned int exponent:15;
-	unsigned int negative:1;
-	unsigned int empty:16;
-# endif
-#endif
+# 152 "ieee754.c"
+ unsigned int mantissa1:32;
+ unsigned int mantissa0:32;
+ unsigned int exponent:15;
+ unsigned int negative:1;
+ unsigned int empty:16;
+
+
       } ieee;
 
-    /* This is for NaNs in the IEEE 854 double-extended-precision format.  */
+
     struct
       {
-#if	__BYTE_ORDER == __BIG_ENDIAN
-	unsigned int negative:1;
-	unsigned int exponent:15;
-	unsigned int empty:16;
-	unsigned int one:1;
-	unsigned int quiet_nan:1;
-	unsigned int mantissa0:30;
-	unsigned int mantissa1:32;
-#endif
-#if	__BYTE_ORDER == __LITTLE_ENDIAN
-# if	__FLOAT_WORD_ORDER == __BIG_ENDIAN
-	unsigned int exponent:15;
-	unsigned int negative:1;
-	unsigned int empty:16;
-	unsigned int mantissa0:30;
-	unsigned int quiet_nan:1;
-	unsigned int one:1;
-	unsigned int mantissa1:32;
-# else
-	unsigned int mantissa1:32;
-	unsigned int mantissa0:30;
-	unsigned int quiet_nan:1;
-	unsigned int one:1;
-	unsigned int exponent:15;
-	unsigned int negative:1;
-	unsigned int empty:16;
-# endif
-#endif
+# 183 "ieee754.c"
+ unsigned int mantissa1:32;
+ unsigned int mantissa0:30;
+ unsigned int quiet_nan:1;
+ unsigned int one:1;
+ unsigned int exponent:15;
+ unsigned int negative:1;
+ unsigned int empty:16;
+
+
       } ieee_nan;
   };
 
-#define IEEE854_LONG_DOUBLE_BIAS 0x3fff
 
-__END_DECLS
 
-#endif /* ieee754.h */
+

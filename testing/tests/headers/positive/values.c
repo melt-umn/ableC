@@ -1,69 +1,55 @@
-/* Old compatibility names for <limits.h> and <float.h> constants.
-   Copyright (C) 1995, 1996, 1997 Free Software Foundation, Inc.
-   This file is part of the GNU C Library.
+# 1 "values.c"
+# 1 "<built-in>"
+# 1 "<command-line>"
+# 1 "/usr/include/stdc-predef.h" 1 3 4
+# 1 "<command-line>" 2
+# 1 "values.c"
+# 26 "values.c"
+# 1 "/usr/include/features.h" 1 3 4
+# 367 "/usr/include/features.h" 3 4
+# 1 "/usr/include/x86_64-linux-gnu/sys/cdefs.h" 1 3 4
+# 410 "/usr/include/x86_64-linux-gnu/sys/cdefs.h" 3 4
+# 1 "/usr/include/x86_64-linux-gnu/bits/wordsize.h" 1 3 4
+# 411 "/usr/include/x86_64-linux-gnu/sys/cdefs.h" 2 3 4
+# 368 "/usr/include/features.h" 2 3 4
+# 391 "/usr/include/features.h" 3 4
+# 1 "/usr/include/x86_64-linux-gnu/gnu/stubs.h" 1 3 4
+# 10 "/usr/include/x86_64-linux-gnu/gnu/stubs.h" 3 4
+# 1 "/usr/include/x86_64-linux-gnu/gnu/stubs-64.h" 1 3 4
+# 11 "/usr/include/x86_64-linux-gnu/gnu/stubs.h" 2 3 4
+# 392 "/usr/include/features.h" 2 3 4
+# 27 "values.c" 2
 
-   The GNU C Library is free software; you can redistribute it and/or
-   modify it under the terms of the GNU Lesser General Public
-   License as published by the Free Software Foundation; either
-   version 2.1 of the License, or (at your option) any later version.
-
-   The GNU C Library is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-   Lesser General Public License for more details.
-
-   You should have received a copy of the GNU Lesser General Public
-   License along with the GNU C Library; if not, write to the Free
-   Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307 USA.  */
-
-/* This interface is obsolete.  New programs should use
-   <limits.h> and/or <float.h> instead of <values.h>.  */
-
-#ifndef	_VALUES_H
-#define	_VALUES_H	1
-
-#include <features.h>
-
-#include <limits.h>
-
-#define _TYPEBITS(type)	(sizeof (type) * CHAR_BIT)
-
-#define CHARBITS	_TYPEBITS (char)
-#define SHORTBITS	_TYPEBITS (short int)
-#define INTBITS		_TYPEBITS (int)
-#define LONGBITS	_TYPEBITS (long int)
-#define PTRBITS		_TYPEBITS (char *)
-#define DOUBLEBITS	_TYPEBITS (double)
-#define FLOATBITS	_TYPEBITS (float)
-
-#define MINSHORT	SHRT_MIN
-#define	MININT		INT_MIN
-#define	MINLONG		LONG_MIN
-
-#define	MAXSHORT	SHRT_MAX
-#define	MAXINT		INT_MAX
-#define	MAXLONG		LONG_MAX
-
-#define HIBITS		MINSHORT
-#define HIBITL		MINLONG
+# 1 "/soft/gcc/4.9.2/ubuntuamd2010/lib/gcc/x86_64-linux-gnu/4.9.2/include-fixed/limits.h" 1 3 4
+# 34 "/soft/gcc/4.9.2/ubuntuamd2010/lib/gcc/x86_64-linux-gnu/4.9.2/include-fixed/limits.h" 3 4
+# 1 "/soft/gcc/4.9.2/ubuntuamd2010/lib/gcc/x86_64-linux-gnu/4.9.2/include-fixed/syslimits.h" 1 3 4
 
 
-#include <float.h>
-
-#define	MAXDOUBLE	DBL_MAX
-#define	MAXFLOAT	FLT_MAX
-#define	MINDOUBLE	DBL_MIN
-#define	MINFLOAT	FLT_MIN
-#define	DMINEXP		DBL_MIN_EXP
-#define	FMINEXP		FLT_MIN_EXP
-#define	DMAXEXP		DBL_MAX_EXP
-#define	FMAXEXP		FLT_MAX_EXP
 
 
-#ifdef __USE_MISC
-/* Some systems define this name instead of CHAR_BIT or CHARBITS.  */
-# define BITSPERBYTE	CHAR_BIT
-#endif
 
-#endif	/* values.h */
+
+# 1 "/soft/gcc/4.9.2/ubuntuamd2010/lib/gcc/x86_64-linux-gnu/4.9.2/include-fixed/limits.h" 1 3 4
+# 168 "/soft/gcc/4.9.2/ubuntuamd2010/lib/gcc/x86_64-linux-gnu/4.9.2/include-fixed/limits.h" 3 4
+# 1 "/usr/include/limits.h" 1 3 4
+# 143 "/usr/include/limits.h" 3 4
+# 1 "/usr/include/x86_64-linux-gnu/bits/posix1_lim.h" 1 3 4
+# 160 "/usr/include/x86_64-linux-gnu/bits/posix1_lim.h" 3 4
+# 1 "/usr/include/x86_64-linux-gnu/bits/local_lim.h" 1 3 4
+# 38 "/usr/include/x86_64-linux-gnu/bits/local_lim.h" 3 4
+# 1 "/usr/include/linux/limits.h" 1 3 4
+# 39 "/usr/include/x86_64-linux-gnu/bits/local_lim.h" 2 3 4
+# 161 "/usr/include/x86_64-linux-gnu/bits/posix1_lim.h" 2 3 4
+# 144 "/usr/include/limits.h" 2 3 4
+
+
+
+# 1 "/usr/include/x86_64-linux-gnu/bits/posix2_lim.h" 1 3 4
+# 148 "/usr/include/limits.h" 2 3 4
+# 169 "/soft/gcc/4.9.2/ubuntuamd2010/lib/gcc/x86_64-linux-gnu/4.9.2/include-fixed/limits.h" 2 3 4
+# 8 "/soft/gcc/4.9.2/ubuntuamd2010/lib/gcc/x86_64-linux-gnu/4.9.2/include-fixed/syslimits.h" 2 3 4
+# 35 "/soft/gcc/4.9.2/ubuntuamd2010/lib/gcc/x86_64-linux-gnu/4.9.2/include-fixed/limits.h" 2 3 4
+# 29 "values.c" 2
+# 52 "values.c"
+# 1 "/soft/gcc/4.9.2/ubuntuamd2010/lib/gcc/x86_64-linux-gnu/4.9.2/include/float.h" 1 3 4
+# 53 "values.c" 2

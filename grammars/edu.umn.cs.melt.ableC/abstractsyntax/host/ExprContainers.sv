@@ -1,8 +1,11 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 
-nonterminal MaybeExpr with pp, host, isJust, errors, globalDecls, functionDecls, defs, env, maybeTyperep, returnType, freeVariables, justTheExpr, isLValue, integerConstantValue;
+nonterminal MaybeExpr with pp, host, isJust, errors, globalDecls, functionDecls,
+  defs, env, maybeTyperep, freeVariables, justTheExpr, isLValue,
+  integerConstantValue, controlStmtContext;
 
-flowtype MaybeExpr = decorate {env, returnType}, isJust {}, justTheExpr {}, maybeTyperep {decorate}, integerConstantValue {decorate};
+flowtype MaybeExpr = decorate {env, controlStmtContext},
+  isJust {}, justTheExpr {}, maybeTyperep {decorate}, integerConstantValue {decorate};
 
 synthesized attribute maybeTyperep :: Maybe<Type>;
 synthesized attribute justTheExpr :: Maybe<Expr>;
@@ -27,14 +30,18 @@ top::MaybeExpr ::=
   top.justTheExpr = nothing();
   top.maybeTyperep = nothing();
   top.isLValue = false;
-  top.integerConstantValue = nothing();
+  implicit top.integerConstantValue = ;
 }
 
-nonterminal Exprs with pps, host, errors, globalDecls, functionDecls, defs, env, expectedTypes, argumentPosition, callExpr, argumentErrors, typereps, count, callVariadic, returnType, freeVariables, appendedExprs, appendedRes, isLValue;
+nonterminal Exprs with pps, host, errors, globalDecls, functionDecls, defs, env,
+  expectedTypes, argumentPosition, callExpr, argumentErrors, typereps, count,
+  callVariadic, freeVariables, appendedExprs, appendedRes, isLValue,
+  controlStmtContext;
 
-flowtype Exprs = decorate {env, returnType}, argumentErrors {decorate, expectedTypes, argumentPosition, callExpr, callVariadic}, count {}, appendedRes {appendedExprs};
+flowtype Exprs = decorate {env, controlStmtContext},
+  argumentErrors {decorate, expectedTypes, argumentPosition, callExpr, callVariadic},
+  count {}, appendedRes {appendedExprs};
 
-inherited attribute expectedTypes :: [Type];
 {-- Initially 1. -}
 inherited attribute argumentPosition :: Integer;
 autocopy attribute callExpr :: Decorated Expr;
@@ -57,21 +64,26 @@ top::Exprs ::= h::Expr  t::Exprs
   top.count = 1 + t.count;
   top.appendedRes = consExpr(h, t.appendedRes);
   top.isLValue = t.isLValue;
-  
+
   top.argumentErrors =
-    if null(top.expectedTypes) then
+   if null(top.expectedTypes) then
       if top.callVariadic then []
       else
         [err(top.callExpr.location, s"call expected ${toString(top.argumentPosition - 1)} arguments, got ${toString(top.argumentPosition + t.count)}")]
     else
-      if !typeAssignableTo(head(top.expectedTypes), h.typerep) then
+     (if !typeAssignableTo(head(top.expectedTypes).defaultFunctionArrayLvalueConversion, h.typerep) then
         [err(h.location, s"argument ${toString(top.argumentPosition)} expected type ${showType(head(top.expectedTypes))} (got ${showType(h.typerep)})")] ++ t.argumentErrors
       else
-        t.argumentErrors;
+        t.argumentErrors) ++
+      case head(top.expectedTypes), h.typerep of
+      | arrayType(_, _, staticArraySize(), constantArrayType(s1)), arrayType(_, _, _, constantArrayType(s2)) when s1 > s2 ->
+        [wrn(h.location, s"array argument is too small; contains ${toString(s2)} elements, callee requires at least ${toString(s1)}")]
+      | _, _ -> []
+      end;
   t.expectedTypes = tail(top.expectedTypes);
   t.argumentPosition = top.argumentPosition + 1;
   t.appendedExprs = top.appendedExprs;
-  
+
   t.env = addEnv(h.defs, h.env);
 }
 abstract production nilExpr
@@ -83,7 +95,7 @@ top::Exprs ::=
   top.count = 0;
   top.appendedRes = top.appendedExprs;
   top.isLValue = false;
-  
+
   top.argumentErrors =
     if null(top.expectedTypes) then []
     else
@@ -121,9 +133,10 @@ Exprs ::= e1::Exprs e2::Exprs
   return e1.appendedRes;
 }
 
-nonterminal ExprOrTypeName with pp, host, errors, globalDecls, functionDecls, defs, env, typerep, returnType, freeVariables, isLValue;
+nonterminal ExprOrTypeName with pp, host, errors, globalDecls, functionDecls,
+  defs, env, typerep, freeVariables, isLValue, controlStmtContext;
 
-flowtype ExprOrTypeName = decorate {env, returnType};
+flowtype ExprOrTypeName = decorate {env, controlStmtContext};
 
 propagate host, errors, globalDecls, functionDecls, defs, freeVariables on ExprOrTypeName;
 

@@ -1,7 +1,7 @@
-Negative test       - FAIL: NO ERROR    tests/kframework/negative/j004a.c
+Negative test       - PASS:             tests/kframework/negative/j004a.c
 Negative test       - FAIL: NO ERROR    tests/kframework/negative/j004b.c
 Negative test       - FAIL: NO ERROR    tests/kframework/negative/j004c.c
-Negative test       - FAIL: NO ERROR    tests/kframework/negative/j004d.c
+Negative test       - PASS:             tests/kframework/negative/j004d.c
 Negative test       - FAIL: NO ERROR    tests/kframework/negative/j004e.c
 Negative test       - FAIL: NO ERROR    tests/kframework/negative/j004f.c
 Negative test       - FAIL: NO ERROR    tests/kframework/negative/j004g.c
@@ -114,7 +114,7 @@ Negative test       - PASS:             tests/kframework/negative/j075d.c
 Negative test       - FAIL: NO ERROR    tests/kframework/negative/j075e.c
 Negative test       - FAIL: NO ERROR    tests/kframework/negative/j075f.c
 Negative test       - FAIL: NO ERROR    tests/kframework/negative/j076a.c
-Negative test       - FAIL: NO ERROR    tests/kframework/negative/j078a.c
+Negative test       - PASS:             tests/kframework/negative/j078a.c
 Negative test       - FAIL: NO ERROR    tests/kframework/negative/j079a.c
 Negative test       - FAIL: NO ERROR    tests/kframework/negative/j079b.c
 Negative test       - FAIL: NO ERROR    tests/kframework/negative/j079c.c
@@ -125,18 +125,18 @@ Negative test       - FAIL: NO ERROR    tests/kframework/negative/j079g.c
 Negative test       - PASS:             tests/kframework/negative/j079h.c
 Negative test       - FAIL: NO ERROR    tests/kframework/negative/j079i.c
 Negative test       - FAIL: NO ERROR    tests/kframework/negative/j079j.c
-Negative test       - FAIL: NO ERROR    tests/kframework/negative/j082a.c
+Negative test       - PASS:             tests/kframework/negative/j082a.c
 Negative test       - PASS:             tests/kframework/negative/j082b.c
 Negative test       - PASS:             tests/kframework/negative/j083a.c
 Negative test       - PASS:             tests/kframework/negative/j083b.c
-Negative test       - FAIL: NO ERROR    tests/kframework/negative/j084a.c
+Negative test       - PASS:             tests/kframework/negative/j084a.c
 Negative test       - PASS:             tests/kframework/negative/j086a.c
 Negative test       - FAIL: NO ERROR    tests/kframework/negative/j088a.c
 Negative test       - FAIL: NO ERROR    tests/kframework/negative/j089a.c
 Negative test       - FAIL: NO ERROR    tests/kframework/negative/j089b.c
 Negative test       - FAIL: NO ERROR    tests/kframework/negative/j090a.c
-Negative test       - FAIL: NO ERROR    tests/kframework/negative/j301a.c
-Negative test       - FAIL: NO ERROR    tests/kframework/negative/j302a.c
+Negative test       - PASS:             tests/kframework/negative/j301a.c
+Negative test       - PASS:             tests/kframework/negative/j302a.c
 Negative test       - FAIL: NO ERROR    tests/kframework/negative/j303a.c
 Negative test       - PASS:             tests/kframework/negative/j303b.c
 Negative test       - FAIL: NO ERROR    tests/kframework/negative/j304a.c
@@ -179,6 +179,7 @@ Negative test       - FAIL: NO ERROR    tests/kframework/negative/j503a.c
 Negative test       - FAIL: NO ERROR    tests/kframework/negative/j504a.c
 Negative test       - PASS:             tests/kframework/negative/j506a.c
 Negative test       - PASS:             tests/melt/negative/1.c
+Negative test       - PASS:             tests/melt/negative/bad_array_init.c
 Negative test       - PASS:             tests/melt/negative/expr_type_index_1.c
 Negative test       - PASS:             tests/melt/negative/expr_type_index_2.c
 Negative test       - PASS:             tests/melt/negative/lvalues_1.c
@@ -201,16 +202,15 @@ Negative test       - PASS:             tests/melt/negative/lvalues_6.c
 Negative test       - PASS:             tests/melt/negative/lvalues_7.c
 Negative test       - PASS:             tests/melt/negative/lvalues_8.c
 Negative test       - PASS:             tests/melt/negative/lvalues_9.c
+Negative test       - PASS:             tests/melt/negative/static-array-size.c
 Negative test       - PASS:             tests/melt/negative/stmt_scoping_1.c
 Negative test       - PASS:             tests/melt/negative/stmt_type_if_1.c
 Negative test       - PASS:             tests/melt/negative/stmt_type_switch_1.c
 
 Failures:
             NO ERROR
-                        tests/kframework/negative/j004a.c
                         tests/kframework/negative/j004b.c
                         tests/kframework/negative/j004c.c
-                        tests/kframework/negative/j004d.c
                         tests/kframework/negative/j004e.c
                         tests/kframework/negative/j004f.c
                         tests/kframework/negative/j004g.c
@@ -306,7 +306,6 @@ Failures:
                         tests/kframework/negative/j075e.c
                         tests/kframework/negative/j075f.c
                         tests/kframework/negative/j076a.c
-                        tests/kframework/negative/j078a.c
                         tests/kframework/negative/j079a.c
                         tests/kframework/negative/j079b.c
                         tests/kframework/negative/j079c.c
@@ -316,14 +315,10 @@ Failures:
                         tests/kframework/negative/j079g.c
                         tests/kframework/negative/j079i.c
                         tests/kframework/negative/j079j.c
-                        tests/kframework/negative/j082a.c
-                        tests/kframework/negative/j084a.c
                         tests/kframework/negative/j088a.c
                         tests/kframework/negative/j089a.c
                         tests/kframework/negative/j089b.c
                         tests/kframework/negative/j090a.c
-                        tests/kframework/negative/j301a.c
-                        tests/kframework/negative/j302a.c
                         tests/kframework/negative/j303a.c
                         tests/kframework/negative/j304a.c
                         tests/kframework/negative/j305a.c
@@ -360,10 +355,10 @@ Pass: 0
 Fail: 0
 
 Negative tests:
-Pass: 59
-Fail: 147
+Pass: 68
+Fail: 140
 
 Summary:
-Pass: 59
-Fail: 147
+Pass: 68
+Fail: 140
 

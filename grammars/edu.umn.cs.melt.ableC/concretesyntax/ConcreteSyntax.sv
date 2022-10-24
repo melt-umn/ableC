@@ -15,6 +15,9 @@ exports edu:umn:cs:melt:ableC:concretesyntax:gcc_exts;
 -- concrete syntax, no further semantic analysis is made.
 imports silver:langutil only ast, errors, err, wrn;
 
+-- Lexer classes for semantic token highlighting
+imports silver:langutil:lsp as lsp;
+
 -- errors it prefixed with ast, to avoid any name clashes.
 imports edu:umn:cs:melt:ableC:abstractsyntax:host as ast;
 

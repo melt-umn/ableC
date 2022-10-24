@@ -1,6 +1,6 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax:rewriting;
 
-imports core hiding all;
+imports silver:core hiding all;
 imports silver:rewrite;
 
 imports edu:umn:cs:melt:ableC:abstractsyntax:host;

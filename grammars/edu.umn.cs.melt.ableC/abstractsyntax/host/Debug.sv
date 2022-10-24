@@ -1,6 +1,6 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 
-import silver:util:raw:treemap as tm;
+imports silver:util:treemap as tm;
 
 {- ------------------------------------------------------------
    The helper functions below simplify the creation of ASTs.  They are
@@ -16,13 +16,14 @@ e::Expr ::= txt::String
 {
   propagate host, errors, globalDecls, functionDecls, defs, freeVariables;
   e.pp = text(txt);
-  e.typerep = errorType(); -- error("Need a type on txtExpr"); 
+  e.typerep = errorType(); -- error("Need a type on txtExpr");
   e.isLValue = false;
 }
 abstract production txtStmt
 s::Stmt ::= txt::String
 {
-  propagate host, errors, globalDecls, functionDecls, defs, functionDefs, freeVariables;
+  propagate host, errors, globalDecls, functionDecls, defs, functionDefs,
+    freeVariables, labelDefs;
   s.pp = text(txt);
 }
 
@@ -48,8 +49,7 @@ e::Expr ::=
   propagate errors, globalDecls, functionDecls, defs;
   e.pp =
     decorate comment("printEnv pp should be demanded through host pp", location=e.location)
-    with {env = e.env;
-          returnType = e.returnType;}.pp;
+    with {env = e.env; controlStmtContext=e.controlStmtContext;}.pp;
   forwards to comment( show(80,showEnv(e.env)), location=e.location );
 }
 
@@ -60,10 +60,10 @@ Document ::= e::Decorated Env
 {
   return ppConcat( [
     text(" Environment:"),
-    nestlines(5, 
+    nestlines(5,
       ppConcat([
-       text("Labels:"),line(),
-         nestlines(5, labelsD),
+--       text("Labels:"),line(),
+--         nestlines(5, labelsD),
        text("Values:"),line(),
          nestlines(5, valuesD),
        text("Tags:"),line(),
@@ -75,8 +75,8 @@ Document ::= e::Decorated Env
        ]) )
    ] );
 
-  local labelsD :: Document
-    = ppImplode(line(), map( showScope(_,showLabelItemBinding), map( tm:toList, e.labels )));
+--  local labelsD :: Document
+--    = ppImplode(line(), map( showScope(_,showLabelItemBinding), map( tm:toList, e.labels )));
   local valuesD :: Document
     = ppImplode(line(), map( showScope(_,showValueItemBinding), map( tm:toList, e.values )));
   local tagsD :: Document

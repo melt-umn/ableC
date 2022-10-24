@@ -34,40 +34,45 @@ lexer class Scoped
   disambiguate {
     local lookupResult::Maybe<TerminalId> =
       -- Look up the lexeme in the current context
-      case lookupBy(stringEq, lexeme, head(context)) of
+      case lookup(lexeme, head(context)) of
       | just(id) ->
-        if containsBy(terminalIdEq, id, shiftable)
+        if contains(id, shiftable)
         -- Only disambiguate to an extension terminal if that terminal is valid at this point.
         then just(id)
         else nothing()
       | nothing() -> nothing()
       end;
+    local shiftableGlobals::[TerminalId] = intersect(shiftable, Global);
     
     {- In order of preference:
      - * Looked-up terminal from context
-     - * Any valid, unambigous terminal from Global lexer class
+     -   * If the name has previously been defined as a TypeName_t and we have already seen a
+           specifier in the current specifier list, then return Identifier_t instead (needed to
+           handle C11 typedef re-declarations)
+     - * Any valid, unambigous terminal from the Global lexer class (if not in a system header file)
      -   * If there are more than one, check the globalPrerences parser attribute
-     -   * Otherwise, fail
+     -   * Otherwise, fail (this is a conflict between two extensions that must be resolved with
+           explict preferences/prefixes)
      - * Identifier_t, if valid
      - * TypeName_t, if valid
      - * Any (arbitrary) thing that is valid: if the parse succeeds there will
-     -   be a semantic error.
+     -   be a semantic error that is better than a syntax error.
      -}
     pluck
-      case lookupResult, intersectBy(terminalIdEq, shiftable, Global) of
-      | just(id), _ -> id
-      | nothing(), [id] -> id
-      | nothing(), [] ->
-        if containsBy(terminalIdEq, Identifier_t, shiftable)
+      case lookupResult of
+      | just(id) ->
+        if id == TypeName_t && seenTypeSpecifier && contains(Identifier_t, shiftable)
         then Identifier_t
-        else if containsBy(terminalIdEq, TypeName_t, shiftable)
-        then TypeName_t
-        else head(shiftable) -- Always has length >= 2
-      | nothing(), ids ->
-        case lookupBy(terminalSetEq, ids, globalPreferences) of
-        | just(id) -> id
-        | nothing() -> disambiguationFailure
+        else id
+      | nothing() when !inSystemHeader && !null(shiftableGlobals) ->
+        case shiftableGlobals of
+        | [id] -> id
+        | ids when lookupBy(terminalSetEq, ids, globalPreferences) matches just(id) -> id
+        | _ -> disambiguationFailure
         end
+      | _ when contains(Identifier_t, shiftable) -> Identifier_t
+      | _ when contains(TypeName_t, shiftable) -> TypeName_t
+      | _ -> head(shiftable) -- Always has length >= 2
       end;
   };
 

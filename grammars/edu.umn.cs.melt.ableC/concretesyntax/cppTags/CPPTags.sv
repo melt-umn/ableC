@@ -1,5 +1,5 @@
 grammar edu:umn:cs:melt:ableC:concretesyntax:cppTags;
-
+{-
 -- After the file name comes zero or more flags, which are `1', `2',
 -- `3', or `4'.  If there are multiple flags, spaces separate them.  Here
 -- is what the flags mean:
@@ -22,11 +22,15 @@ synthesized attribute tagIsSystem :: Boolean;
 --     This indicates that the following text should be treated as being
 --     wrapped in an implicit `extern "C"' block.
 synthesized attribute tagIsExternC :: Boolean;
+-}
 
 -- I give up!
+
 ignore terminal CPP_Location_Tag_t /\#\ [0-9]+\ \"[^\"]+\"[\ 0-9]*([\r]?[\n]?)/
   action {
-    filename = 
+    -- Note that these are run when the tag token is accepted by the parser,
+    -- NOT when the token is originally scanned.
+    filename =
       substring(
         indexOf("\"", lexeme) + 1, -- after "
         lastIndexOf("\"", lexeme), -- end before "
@@ -38,6 +42,30 @@ ignore terminal CPP_Location_Tag_t /\#\ [0-9]+\ \"[^\"]+\"[\ 0-9]*([\r]?[\n]?)/
         lexeme));
     column = 0;
   };
+
+
+parser attribute inSystemHeader::Boolean
+  action { inSystemHeader = false; };
+
+-- Annoying hack: semantic actions for layout terminals get executed after the
+-- disambiguation for the following real terminals.  This is an issue since we
+-- depend on the context from CPP tags for disambiguating identifiers.
+-- Workaround: define a second layout terminal that is ambiguous with this one,
+-- and set the context in a disambiguation function.
+ignore terminal CPP_Location_Tag2_t /\#\ [0-9]+\ \"[^\"]+\"[\ 0-9]*([\r]?[\n]?)/;
+disambiguate CPP_Location_Tag_t, CPP_Location_Tag2_t {
+  local flags::[Integer] =
+    map(\ f::String -> toInteger(f),
+      filter(isDigit,
+        explode(" ",
+          substring(
+            lastIndexOf("\"", lexeme), -- after "
+            length(lexeme),            -- rest of the token
+            lexeme))));
+  inSystemHeader = containsBy(\ a::Integer b::Integer -> a == b, 3, flags);
+  
+  pluck CPP_Location_Tag_t;
+}
 
 {-
 terminal Newline_t /\n/;

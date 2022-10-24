@@ -19,10 +19,12 @@ top::Expr ::= c::NumericConstant
 {
   propagate host, errors, globalDecls, functionDecls, defs, freeVariables;
   top.pp = c.pp;
-  top.typerep = builtinType(nilQualifier(), case c.constanttyperep of
+  top.typerep = builtinType(nilQualifier(),
+    case c.constanttyperep of
     | realType(rt) -> complexType(rt)
     | signedType(it) -> complexIntegerType(it)
     | unsignedType(it) -> complexIntegerType(it) -- probably not possible, but buggy!
+    | t -> error("Unexpected constanttyperep: " ++ show(80, t.pp))
     end);
   top.isLValue = false;
   top.isSimple = true;

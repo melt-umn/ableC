@@ -1,71 +1,71 @@
-/* Copyright (C) 1991, 92, 1996-1999, 2001, 2003 Free Software Foundation, Inc.
-   This file is part of the GNU C Library.
+# 1 "wordexp.c"
+# 1 "<built-in>"
+# 1 "<command-line>"
+# 1 "/usr/include/stdc-predef.h" 1 3 4
+# 1 "<command-line>" 2
+# 1 "wordexp.c"
+# 22 "wordexp.c"
+# 1 "/usr/include/features.h" 1 3 4
+# 367 "/usr/include/features.h" 3 4
+# 1 "/usr/include/x86_64-linux-gnu/sys/cdefs.h" 1 3 4
+# 410 "/usr/include/x86_64-linux-gnu/sys/cdefs.h" 3 4
+# 1 "/usr/include/x86_64-linux-gnu/bits/wordsize.h" 1 3 4
+# 411 "/usr/include/x86_64-linux-gnu/sys/cdefs.h" 2 3 4
+# 368 "/usr/include/features.h" 2 3 4
+# 391 "/usr/include/features.h" 3 4
+# 1 "/usr/include/x86_64-linux-gnu/gnu/stubs.h" 1 3 4
+# 10 "/usr/include/x86_64-linux-gnu/gnu/stubs.h" 3 4
+# 1 "/usr/include/x86_64-linux-gnu/gnu/stubs-64.h" 1 3 4
+# 11 "/usr/include/x86_64-linux-gnu/gnu/stubs.h" 2 3 4
+# 392 "/usr/include/features.h" 2 3 4
+# 23 "wordexp.c" 2
 
-   The GNU C Library is free software; you can redistribute it and/or
-   modify it under the terms of the GNU Lesser General Public
-   License as published by the Free Software Foundation; either
-   version 2.1 of the License, or (at your option) any later version.
+# 1 "/soft/gcc/4.9.2/ubuntuamd2010/lib/gcc/x86_64-linux-gnu/4.9.2/include/stddef.h" 1 3 4
+# 212 "/soft/gcc/4.9.2/ubuntuamd2010/lib/gcc/x86_64-linux-gnu/4.9.2/include/stddef.h" 3 4
+typedef long unsigned int size_t;
+# 25 "wordexp.c" 2
 
-   The GNU C Library is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-   Lesser General Public License for more details.
 
-   You should have received a copy of the GNU Lesser General Public
-   License along with the GNU C Library; if not, write to the Free
-   Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307 USA.  */
 
-#ifndef	_WORDEXP_H
-#define	_WORDEXP_H	1
 
-#include <features.h>
-#define __need_size_t
-#include <stddef.h>
-
-__BEGIN_DECLS
-
-/* Bits set in the FLAGS argument to `wordexp'.  */
 enum
   {
-    WRDE_DOOFFS = (1 << 0),	/* Insert PWORDEXP->we_offs NULLs.  */
-    WRDE_APPEND = (1 << 1),	/* Append to results of a previous call.  */
-    WRDE_NOCMD = (1 << 2),	/* Don't do command substitution.  */
-    WRDE_REUSE = (1 << 3),	/* Reuse storage in PWORDEXP.  */
-    WRDE_SHOWERR = (1 << 4),	/* Don't redirect stderr to /dev/null.  */
-    WRDE_UNDEF = (1 << 5),	/* Error for expanding undefined variables.  */
+    WRDE_DOOFFS = (1 << 0),
+    WRDE_APPEND = (1 << 1),
+    WRDE_NOCMD = (1 << 2),
+    WRDE_REUSE = (1 << 3),
+    WRDE_SHOWERR = (1 << 4),
+    WRDE_UNDEF = (1 << 5),
     __WRDE_FLAGS = (WRDE_DOOFFS | WRDE_APPEND | WRDE_NOCMD |
-		    WRDE_REUSE | WRDE_SHOWERR | WRDE_UNDEF)
+      WRDE_REUSE | WRDE_SHOWERR | WRDE_UNDEF)
   };
 
-/* Structure describing a word-expansion run.  */
+
 typedef struct
   {
-    size_t we_wordc;		/* Count of words matched.  */
-    char **we_wordv;		/* List of expanded words.  */
-    size_t we_offs;		/* Slots to reserve in `we_wordv'.  */
+    size_t we_wordc;
+    char **we_wordv;
+    size_t we_offs;
   } wordexp_t;
 
-/* Possible nonzero return values from `wordexp'.  */
+
 enum
   {
-#ifdef __USE_XOPEN
-    WRDE_NOSYS = -1,		/* Never used since we support `wordexp'.  */
-#endif
-    WRDE_NOSPACE = 1,		/* Ran out of memory.  */
-    WRDE_BADCHAR,		/* A metachar appears in the wrong place.  */
-    WRDE_BADVAL,		/* Undefined var reference with WRDE_UNDEF.  */
-    WRDE_CMDSUB,		/* Command substitution with WRDE_NOCMD.  */
-    WRDE_SYNTAX			/* Shell syntax error.  */
+
+
+
+    WRDE_NOSPACE = 1,
+    WRDE_BADCHAR,
+    WRDE_BADVAL,
+    WRDE_CMDSUB,
+    WRDE_SYNTAX
   };
 
-/* Do word expansion of WORDS into PWORDEXP.  */
+
 extern int wordexp (__const char *__restrict __words,
-		    wordexp_t *__restrict __pwordexp, int __flags);
+      wordexp_t *__restrict __pwordexp, int __flags);
 
-/* Free the storage allocated by a `wordexp' call.  */
-extern void wordfree (wordexp_t *__wordexp) __THROW;
 
-__END_DECLS
+extern void wordfree (wordexp_t *__wordexp) __attribute__ ((__nothrow__ , __leaf__));
 
-#endif /* wordexp.h  */
+

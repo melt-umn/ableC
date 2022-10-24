@@ -1,186 +1,178 @@
-/* Copyright (C) 1991,1992,1995-2001,2003,2004 Free Software Foundation, Inc.
-   This file is part of the GNU C Library.
+# 1 "pwd.c"
+# 1 "<built-in>"
+# 1 "<command-line>"
+# 1 "/usr/include/stdc-predef.h" 1 3 4
+# 1 "<command-line>" 2
+# 1 "pwd.c"
+# 26 "pwd.c"
+# 1 "/usr/include/features.h" 1 3 4
+# 367 "/usr/include/features.h" 3 4
+# 1 "/usr/include/x86_64-linux-gnu/sys/cdefs.h" 1 3 4
+# 410 "/usr/include/x86_64-linux-gnu/sys/cdefs.h" 3 4
+# 1 "/usr/include/x86_64-linux-gnu/bits/wordsize.h" 1 3 4
+# 411 "/usr/include/x86_64-linux-gnu/sys/cdefs.h" 2 3 4
+# 368 "/usr/include/features.h" 2 3 4
+# 391 "/usr/include/features.h" 3 4
+# 1 "/usr/include/x86_64-linux-gnu/gnu/stubs.h" 1 3 4
+# 10 "/usr/include/x86_64-linux-gnu/gnu/stubs.h" 3 4
+# 1 "/usr/include/x86_64-linux-gnu/gnu/stubs-64.h" 1 3 4
+# 11 "/usr/include/x86_64-linux-gnu/gnu/stubs.h" 2 3 4
+# 392 "/usr/include/features.h" 2 3 4
+# 27 "pwd.c" 2
 
-   The GNU C Library is free software; you can redistribute it and/or
-   modify it under the terms of the GNU Lesser General Public
-   License as published by the Free Software Foundation; either
-   version 2.1 of the License, or (at your option) any later version.
 
-   The GNU C Library is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-   Lesser General Public License for more details.
 
-   You should have received a copy of the GNU Lesser General Public
-   License along with the GNU C Library; if not, write to the Free
-   Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307 USA.  */
+# 1 "/usr/include/x86_64-linux-gnu/bits/types.h" 1 3 4
+# 27 "/usr/include/x86_64-linux-gnu/bits/types.h" 3 4
+# 1 "/usr/include/x86_64-linux-gnu/bits/wordsize.h" 1 3 4
+# 28 "/usr/include/x86_64-linux-gnu/bits/types.h" 2 3 4
 
-/*
- *	POSIX Standard: 9.2.2 User Database Access	<pwd.h>
- */
 
-#ifndef	_PWD_H
-#define	_PWD_H	1
+typedef unsigned char __u_char;
+typedef unsigned short int __u_short;
+typedef unsigned int __u_int;
+typedef unsigned long int __u_long;
 
-#include <features.h>
 
-__BEGIN_DECLS
+typedef signed char __int8_t;
+typedef unsigned char __uint8_t;
+typedef signed short int __int16_t;
+typedef unsigned short int __uint16_t;
+typedef signed int __int32_t;
+typedef unsigned int __uint32_t;
 
-#include <bits/types.h>
+typedef signed long int __int64_t;
+typedef unsigned long int __uint64_t;
 
-#define __need_size_t
-#include <stddef.h>
 
-#if defined __USE_XOPEN || defined __USE_XOPEN2K
-/* The Single Unix specification says that some more types are
-   available here.  */
-# ifndef __gid_t_defined
+
+
+
+
+
+typedef long int __quad_t;
+typedef unsigned long int __u_quad_t;
+# 121 "/usr/include/x86_64-linux-gnu/bits/types.h" 3 4
+# 1 "/usr/include/x86_64-linux-gnu/bits/typesizes.h" 1 3 4
+# 122 "/usr/include/x86_64-linux-gnu/bits/types.h" 2 3 4
+
+
+typedef unsigned long int __dev_t;
+typedef unsigned int __uid_t;
+typedef unsigned int __gid_t;
+typedef unsigned long int __ino_t;
+typedef unsigned long int __ino64_t;
+typedef unsigned int __mode_t;
+typedef unsigned long int __nlink_t;
+typedef long int __off_t;
+typedef long int __off64_t;
+typedef int __pid_t;
+typedef struct { int __val[2]; } __fsid_t;
+typedef long int __clock_t;
+typedef unsigned long int __rlim_t;
+typedef unsigned long int __rlim64_t;
+typedef unsigned int __id_t;
+typedef long int __time_t;
+typedef unsigned int __useconds_t;
+typedef long int __suseconds_t;
+
+typedef int __daddr_t;
+typedef int __key_t;
+
+
+typedef int __clockid_t;
+
+
+typedef void * __timer_t;
+
+
+typedef long int __blksize_t;
+
+
+
+
+typedef long int __blkcnt_t;
+typedef long int __blkcnt64_t;
+
+
+typedef unsigned long int __fsblkcnt_t;
+typedef unsigned long int __fsblkcnt64_t;
+
+
+typedef unsigned long int __fsfilcnt_t;
+typedef unsigned long int __fsfilcnt64_t;
+
+
+typedef long int __fsword_t;
+
+typedef long int __ssize_t;
+
+
+typedef long int __syscall_slong_t;
+
+typedef unsigned long int __syscall_ulong_t;
+
+
+
+typedef __off64_t __loff_t;
+typedef __quad_t *__qaddr_t;
+typedef char *__caddr_t;
+
+
+typedef long int __intptr_t;
+
+
+typedef unsigned int __socklen_t;
+# 31 "pwd.c" 2
+
+
+# 1 "/soft/gcc/4.9.2/ubuntuamd2010/lib/gcc/x86_64-linux-gnu/4.9.2/include/stddef.h" 1 3 4
+# 212 "/soft/gcc/4.9.2/ubuntuamd2010/lib/gcc/x86_64-linux-gnu/4.9.2/include/stddef.h" 3 4
+typedef long unsigned int size_t;
+# 34 "pwd.c" 2
+
+
+
+
+
 typedef __gid_t gid_t;
-#  define __gid_t_defined
-# endif
 
-# ifndef __uid_t_defined
+
+
+
 typedef __uid_t uid_t;
-#  define __uid_t_defined
-# endif
-#endif
 
-/* The passwd structure.  */
+
+
+
+
 struct passwd
 {
-  char *pw_name;		/* Username.  */
-  char *pw_passwd;		/* Password.  */
-  __uid_t pw_uid;		/* User ID.  */
-  __gid_t pw_gid;		/* Group ID.  */
-  char *pw_gecos;		/* Real name.  */
-  char *pw_dir;			/* Home directory.  */
-  char *pw_shell;		/* Shell program.  */
+  char *pw_name;
+  char *pw_passwd;
+  __uid_t pw_uid;
+  __gid_t pw_gid;
+  char *pw_gecos;
+  char *pw_dir;
+  char *pw_shell;
 };
-
-
-#if defined __USE_SVID || defined __USE_GNU
-# define __need_FILE
-# include <stdio.h>
-#endif
-
-
-#if defined __USE_SVID || defined __USE_MISC || defined __USE_XOPEN_EXTENDED
-/* Rewind the password-file stream.
-
-   This function is a possible cancellation point and therefore not
-   marked with __THROW.  */
-extern void setpwent (void);
-
-/* Close the password-file stream.
-
-   This function is a possible cancellation point and therefore not
-   marked with __THROW.  */
-extern void endpwent (void);
-
-/* Read an entry from the password-file stream, opening it if necessary.
-
-   This function is a possible cancellation point and therefore not
-   marked with __THROW.  */
-extern struct passwd *getpwent (void);
-#endif
-
-#ifdef	__USE_SVID
-/* Read an entry from STREAM.
-
-   This function is not part of POSIX and therefore no official
-   cancellation point.  But due to similarity with an POSIX interface
-   or due to the implementation it is a cancellation point and
-   therefore not marked with __THROW.  */
-extern struct passwd *fgetpwent (FILE *__stream);
-
-/* Write the given entry onto the given stream.
-
-   This function is not part of POSIX and therefore no official
-   cancellation point.  But due to similarity with an POSIX interface
-   or due to the implementation it is a cancellation point and
-   therefore not marked with __THROW.  */
-extern int putpwent (__const struct passwd *__restrict __p,
-		     FILE *__restrict __f);
-#endif
-
-/* Search for an entry with a matching user ID.
-
-   This function is a possible cancellation point and therefore not
-   marked with __THROW.  */
+# 111 "pwd.c"
 extern struct passwd *getpwuid (__uid_t __uid);
 
-/* Search for an entry with a matching username.
 
-   This function is a possible cancellation point and therefore not
-   marked with __THROW.  */
+
+
+
 extern struct passwd *getpwnam (__const char *__name);
-
-#if defined __USE_POSIX || defined __USE_MISC
-
-# ifdef __USE_MISC
-/* Reasonable value for the buffer sized used in the reentrant
-   functions below.  But better use `sysconf'.  */
-#  define NSS_BUFLEN_PASSWD	1024
-# endif
-
-/* Reentrant versions of some of the functions above.
-
-   PLEASE NOTE: the `getpwent_r' function is not (yet) standardized.
-   The interface may change in later versions of this library.  But
-   the interface is designed following the principals used for the
-   other reentrant functions so the chances are good this is what the
-   POSIX people would choose.  */
-
-# if defined __USE_SVID || defined __USE_MISC
-/* This function is not part of POSIX and therefore no official
-   cancellation point.  But due to similarity with an POSIX interface
-   or due to the implementation it is a cancellation point and
-   therefore not marked with __THROW.  */
-extern int getpwent_r (struct passwd *__restrict __resultbuf,
-		       char *__restrict __buffer, size_t __buflen,
-		       struct passwd **__restrict __result);
-# endif
-
+# 145 "pwd.c"
 extern int getpwuid_r (__uid_t __uid,
-		       struct passwd *__restrict __resultbuf,
-		       char *__restrict __buffer, size_t __buflen,
-		       struct passwd **__restrict __result);
+         struct passwd *__restrict __resultbuf,
+         char *__restrict __buffer, size_t __buflen,
+         struct passwd **__restrict __result);
 
 extern int getpwnam_r (__const char *__restrict __name,
-		       struct passwd *__restrict __resultbuf,
-		       char *__restrict __buffer, size_t __buflen,
-		       struct passwd **__restrict __result);
+         struct passwd *__restrict __resultbuf,
+         char *__restrict __buffer, size_t __buflen,
+         struct passwd **__restrict __result);
+# 184 "pwd.c"
 
-
-# ifdef	__USE_SVID
-/* Read an entry from STREAM.  This function is not standardized and
-   probably never will.
-
-   This function is not part of POSIX and therefore no official
-   cancellation point.  But due to similarity with an POSIX interface
-   or due to the implementation it is a cancellation point and
-   therefore not marked with __THROW.  */
-extern int fgetpwent_r (FILE *__restrict __stream,
-			struct passwd *__restrict __resultbuf,
-			char *__restrict __buffer, size_t __buflen,
-			struct passwd **__restrict __result);
-# endif
-
-#endif	/* POSIX or reentrant */
-
-#ifdef __USE_GNU
-/* Re-construct the password-file line for the given uid
-   in the given buffer.  This knows the format that the caller
-   will expect, but this need not be the format of the password file.
-
-   This function is not part of POSIX and therefore no official
-   cancellation point.  But due to similarity with an POSIX interface
-   or due to the implementation it is a cancellation point and
-   therefore not marked with __THROW.  */
-extern int getpw (__uid_t __uid, char *__buffer);
-#endif
-
-__END_DECLS
-
-#endif /* pwd.h  */

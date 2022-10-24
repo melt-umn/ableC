@@ -17,7 +17,7 @@ top::Root ::= d::GlobalDecls
   
 --  d.env = addEnv(builtinfunctions:initialEnv;
   d.env = addEnv(builtinfunctions:getInitialEnvDefs(), top.env);
-  d.returnType = nothing();
+  d.controlStmtContext = initialControlStmtContext;
 }
 
 synthesized attribute srcAst::Root;

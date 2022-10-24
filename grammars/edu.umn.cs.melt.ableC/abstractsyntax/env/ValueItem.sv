@@ -1,5 +1,7 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax:env;
 
+import silver:langutil;
+
 closed nonterminal ValueItem with typerep, sourceLocation, directRefHandler, directCallHandler, isItemValue, isItemType, integerConstantValue;
 
 synthesized attribute sourceLocation :: Location;
@@ -15,7 +17,7 @@ top::ValueItem ::=
   top.directCallHandler = ordinaryFunctionHandler;
   top.isItemValue = false;
   top.isItemType = false;
-  top.integerConstantValue = nothing();
+  implicit top.integerConstantValue = ;
 }
 
 -- TODO: we might consider splitting this into values and typedef names.
@@ -54,6 +56,8 @@ top::ValueItem ::= t::Type  handler::(Expr ::= Name Exprs Location)
   top.typerep = t;
   top.sourceLocation = loc("<builtin>", 1, 0, 1, 0, 0, 1);
   top.directCallHandler = handler;
+  top.directRefHandler = \ n::Name loc::Location ->
+    errorExpr([err(loc, s"use of built-in function ${n.name} as a value")], location=loc);
   top.isItemValue = true; -- TODO: Workaround to let us use ordinaryFunctionHandler here
 }
 
@@ -71,7 +75,7 @@ top::ValueItem ::= e::Decorated EnumItem
   top.typerep = e.typerep;
   top.sourceLocation = e.sourceLocation;
   top.isItemValue = true;
-  top.integerConstantValue = just(e.enumItemValue);
+  top.integerConstantValue = e.enumItemValue;
 }
 
 abstract production parameterValueItem

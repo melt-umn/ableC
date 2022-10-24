@@ -1,6 +1,6 @@
 Positive test       - PASS:             tests/headers/positive/_G_config.c
 Positive test       - PASS:             tests/headers/positive/a.out.c
-Positive test       - FAIL: ERROR       tests/headers/positive/aio.c
+Positive test       - PASS:             tests/headers/positive/aio.c
 Positive test       - PASS:             tests/headers/positive/aliases.c
 Positive test       - PASS:             tests/headers/positive/alloca.c
 Positive test       - PASS:             tests/headers/positive/ar.c
@@ -124,7 +124,7 @@ Positive test       - PASS:             tests/headers/positive/thread_db.c
 Positive test       - PASS:             tests/headers/positive/tic.c
 Positive test       - PASS:             tests/headers/positive/time.c
 Positive test       - PASS:             tests/headers/positive/ttyent.c
-Positive test       - FAIL: ERROR       tests/headers/positive/ucontext.c
+Positive test       - PASS:             tests/headers/positive/ucontext.c
 Positive test       - PASS:             tests/headers/positive/ulimit.c
 Positive test       - PASS:             tests/headers/positive/unctrl.c
 Positive test       - PASS:             tests/headers/positive/unistd.c
@@ -321,14 +321,17 @@ Positive test       - PASS:             tests/kframework/positive/j503a.c
 Positive test       - PASS:             tests/kframework/positive/j504a.c
 Positive test       - PASS:             tests/kframework/positive/j506a.c
 Positive test       - PASS:             tests/melt/positive/1.c
+Positive test       - PASS:             tests/melt/positive/anon-struct-attr.c
 Positive test       - PASS:             tests/melt/positive/asm-1.c
+Positive test       - PASS:             tests/melt/positive/empty_compound_init.c
 Positive test       - PASS:             tests/melt/positive/expr-stmt-types.c
+Positive test       - PASS:             tests/melt/positive/struct-init.c
+Positive test       - PASS:             tests/melt/positive/struct-init2.c
 Positive test       - PASS:             tests/melt/positive/struct-scoping.c
 Positive test       - PASS:             tests/melt/positive/typedef_1.c
 
 Failures:
             ERROR
-                        tests/headers/positive/aio.c
                         tests/headers/positive/emmintrin.c
                         tests/headers/positive/fcntl.c
                         tests/headers/positive/features.c
@@ -341,7 +344,6 @@ Failures:
                         tests/headers/positive/mmintrin.c
                         tests/headers/positive/regex.c
                         tests/headers/positive/resolv.c
-                        tests/headers/positive/ucontext.c
                         tests/headers/positive/x86intrin.c
                         tests/headers/positive/xmmintrin.c
                         tests/kframework/positive/j020b.c
@@ -349,14 +351,14 @@ Failures:
                         tests/kframework/positive/j079h.c
 
 Positive tests:
-Pass: 308
-Fail: 19
+Pass: 314
+Fail: 17
 
 Negative tests:
 Pass: 0
 Fail: 0
 
 Summary:
-Pass: 308
-Fail: 19
+Pass: 314
+Fail: 17
 

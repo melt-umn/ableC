@@ -4,7 +4,7 @@ import edu:umn:cs:melt:ableC:host;
 import edu:umn:cs:melt:ableC:drivers:parseAndPrint;
 
 function main
-IOVal<Integer> ::= args::[String] io_in::IO
+IOVal<Integer> ::= args::[String] io_in::IOToken
 {
   return driver(args, io_in, ablecParser);
 }
