@@ -43,9 +43,9 @@ nonterminal Decls with pps, host, errors, globalDecls, functionDecls, unfoldedGl
   controlStmtContext;
 flowtype Decls = decorate {env, isTopLevel, controlStmtContext};
 
-autocopy attribute isTopLevel :: Boolean;
+inherited attribute isTopLevel :: Boolean;
 
-propagate host, errors, defs, globalDecls, functionDecls on Decls;
+propagate host, errors, defs, globalDecls, functionDecls, isTopLevel on Decls;
 
 abstract production consDecl
 top::Decls ::= h::Decl  t::Decls
@@ -80,6 +80,8 @@ Decls ::= d1::Decls d2::Decls
 nonterminal Decl with pp, host, errors, globalDecls, functionDecls, unfoldedGlobalDecls,
   unfoldedFunctionDecls, defs, env, isTopLevel, freeVariables, controlStmtContext;
 flowtype Decl = decorate {env, isTopLevel, controlStmtContext};
+
+propagate isTopLevel on Decl excluding injectFunctionDeclsDecl, injectGlobalDeclsDecl;
 
 {-- Pass down from top-level declaration the list of attribute to each name-declaration -}
 inherited attribute givenStorageClasses :: StorageClasses;
@@ -263,7 +265,7 @@ flowtype Declarators = decorate {env, baseType, typeModifierIn,
   controlStmtContext},
   hostDecls {decorate}, hasModifiedTypeExpr {decorate};
 
-propagate host, errors, defs, globalDecls, functionDecls, hasModifiedTypeExpr, givenStorageClasses, givenAttributes on Declarators;
+propagate host, errors, defs, globalDecls, functionDecls, hasModifiedTypeExpr, givenStorageClasses, givenAttributes, isTopLevel on Declarators;
 
 abstract production consDeclarator
 top::Declarators ::= h::Declarator  t::Declarators
