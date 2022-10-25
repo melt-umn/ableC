@@ -83,7 +83,7 @@ flowtype Decl = decorate {env, isTopLevel, controlStmtContext};
 
 {-- Pass down from top-level declaration the list of attribute to each name-declaration -}
 inherited attribute givenStorageClasses :: StorageClasses;
-autocopy attribute givenAttributes :: Attributes;
+inherited attribute givenAttributes :: Attributes;
 
 aspect default production
 top::Decl ::=
