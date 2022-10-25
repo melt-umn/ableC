@@ -266,7 +266,7 @@ flowtype Declarators = decorate {env, baseType, typeModifierIn,
   hostDecls {decorate}, hasModifiedTypeExpr {decorate};
 
 propagate host, errors, defs, globalDecls, functionDecls, hasModifiedTypeExpr, givenStorageClasses, 
-  givenAttributes, isTopLevel, typeModifierIn on Declarators;
+  givenAttributes, isTopLevel, typeModifierIn, baseType on Declarators;
 
 abstract production consDeclarator
 top::Declarators ::= h::Declarator  t::Declarators
@@ -302,7 +302,7 @@ flowtype Declarator = decorate {env, baseType, typeModifierIn,
 
 inherited attribute isTypedef :: Boolean;
 
-propagate host, errors, globalDecls, functionDecls, defs, freeVariables, typeModifierIn on Declarator;
+propagate host, errors, globalDecls, functionDecls, defs, freeVariables, typeModifierIn, baseType on Declarator;
 
 abstract production declarator
 top::Declarator ::= name::Name  ty::TypeModifierExpr  attrs::Attributes  initializer::MaybeInitializer
@@ -1056,7 +1056,7 @@ flowtype StructDeclarators = decorate {env, baseType, inStruct,
   hasConstField {decorate}, fieldNames {decorate};
 
 propagate inStruct, host, hasModifiedTypeExpr, errors, globalDecls, functionDecls, defs, localDefs, 
-  hasConstField, fieldNames, givenAttributes, typeModifierIn on StructDeclarators;
+  hasConstField, fieldNames, givenAttributes, typeModifierIn, baseType on StructDeclarators;
 
 abstract production consStructDeclarator
 top::StructDeclarators ::= h::StructDeclarator  t::StructDeclarators
@@ -1098,7 +1098,7 @@ flowtype StructDeclarator = decorate {env, baseType, inStruct, isLast,
   hostStructItem {decorate}, hasModifiedTypeExpr {decorate}, hasConstField {decorate},
   fieldNames {decorate};
 
-propagate env, host, errors, globalDecls, functionDecls, defs, freeVariables, typeModifierIn on StructDeclarator;
+propagate env, host, errors, globalDecls, functionDecls, defs, freeVariables, typeModifierIn, baseType on StructDeclarator;
 
 abstract production structField
 top::StructDeclarator ::= name::Name  ty::TypeModifierExpr  attrs::Attributes

@@ -32,7 +32,7 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
  - directTypeExpr(ty.typerep) as many times as needed.
  -}
 
-autocopy attribute baseType :: Type;
+inherited attribute baseType :: Type;
 
 {-- The TypeExpr is upside down, so build pp from outside-in -}
 synthesized attribute lpp :: Document;
@@ -492,7 +492,7 @@ nonterminal TypeModifierExpr with env, typerep, lpp, rpp, host, modifiedBaseType
 flowtype TypeModifierExpr = decorate {env, baseType, typeModifierIn, controlStmtContext},
   modifiedBaseTypeExpr {decorate}, isFunctionArrayTypeExpr {};
 
-propagate typeModifierIn on TypeModifierExpr;
+propagate typeModifierIn, baseType on TypeModifierExpr;
 
 synthesized attribute modifiedBaseTypeExpr::Maybe<BaseTypeExpr>;
 synthesized attribute isFunctionArrayTypeExpr::Boolean;
