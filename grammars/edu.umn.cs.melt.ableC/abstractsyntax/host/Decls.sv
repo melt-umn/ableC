@@ -82,7 +82,7 @@ nonterminal Decl with pp, host, errors, globalDecls, functionDecls, unfoldedGlob
 flowtype Decl = decorate {env, isTopLevel, controlStmtContext};
 
 {-- Pass down from top-level declaration the list of attribute to each name-declaration -}
-autocopy attribute givenStorageClasses :: StorageClasses;
+inherited attribute givenStorageClasses :: StorageClasses;
 autocopy attribute givenAttributes :: Attributes;
 
 aspect default production
