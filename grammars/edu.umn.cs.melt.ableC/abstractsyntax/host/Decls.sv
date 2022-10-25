@@ -265,7 +265,8 @@ flowtype Declarators = decorate {env, baseType, typeModifierIn,
   controlStmtContext},
   hostDecls {decorate}, hasModifiedTypeExpr {decorate};
 
-propagate host, errors, defs, globalDecls, functionDecls, hasModifiedTypeExpr, givenStorageClasses, givenAttributes, isTopLevel on Declarators;
+propagate host, errors, defs, globalDecls, functionDecls, hasModifiedTypeExpr, givenStorageClasses, 
+  givenAttributes, isTopLevel, typeModifierIn on Declarators;
 
 abstract production consDeclarator
 top::Declarators ::= h::Declarator  t::Declarators
@@ -301,7 +302,7 @@ flowtype Declarator = decorate {env, baseType, typeModifierIn,
 
 inherited attribute isTypedef :: Boolean;
 
-propagate host, errors, globalDecls, functionDecls, defs, freeVariables on Declarator;
+propagate host, errors, globalDecls, functionDecls, defs, freeVariables, typeModifierIn on Declarator;
 
 abstract production declarator
 top::Declarator ::= name::Name  ty::TypeModifierExpr  attrs::Attributes  initializer::MaybeInitializer
@@ -1054,7 +1055,8 @@ flowtype StructDeclarators = decorate {env, baseType, inStruct,
   hostStructItems {decorate}, hasModifiedTypeExpr {decorate},
   hasConstField {decorate}, fieldNames {decorate};
 
-propagate inStruct, host, hasModifiedTypeExpr, errors, globalDecls, functionDecls, defs, localDefs, hasConstField, fieldNames, givenAttributes on StructDeclarators;
+propagate inStruct, host, hasModifiedTypeExpr, errors, globalDecls, functionDecls, defs, localDefs, 
+  hasConstField, fieldNames, givenAttributes, typeModifierIn on StructDeclarators;
 
 abstract production consStructDeclarator
 top::StructDeclarators ::= h::StructDeclarator  t::StructDeclarators
@@ -1096,7 +1098,7 @@ flowtype StructDeclarator = decorate {env, baseType, inStruct, isLast,
   hostStructItem {decorate}, hasModifiedTypeExpr {decorate}, hasConstField {decorate},
   fieldNames {decorate};
 
-propagate env, host, errors, globalDecls, functionDecls, defs, freeVariables on StructDeclarator;
+propagate env, host, errors, globalDecls, functionDecls, defs, freeVariables, typeModifierIn on StructDeclarator;
 
 abstract production structField
 top::StructDeclarator ::= name::Name  ty::TypeModifierExpr  attrs::Attributes

@@ -44,7 +44,7 @@ synthesized attribute typereps :: [Type];
 
 {-- Used to transform away typeModifierTypeExpr -}
 synthesized attribute typeModifier :: TypeModifierExpr;
-autocopy attribute typeModifierIn :: TypeModifierExpr;
+inherited attribute typeModifierIn :: TypeModifierExpr;
 
 {-- Used to set the refId for a declaration via __attribute__ -}
 inherited attribute givenRefId :: Maybe<String>;
@@ -491,6 +491,8 @@ nonterminal TypeModifierExpr with env, typerep, lpp, rpp, host, modifiedBaseType
   functionDecls, decls, defs, freeVariables, controlStmtContext;
 flowtype TypeModifierExpr = decorate {env, baseType, typeModifierIn, controlStmtContext},
   modifiedBaseTypeExpr {decorate}, isFunctionArrayTypeExpr {};
+
+propagate typeModifierIn on TypeModifierExpr;
 
 synthesized attribute modifiedBaseTypeExpr::Maybe<BaseTypeExpr>;
 synthesized attribute isFunctionArrayTypeExpr::Boolean;
