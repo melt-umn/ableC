@@ -877,7 +877,7 @@ top::EnumDecl ::= name::MaybeName  dcls::EnumItemList
 
 inherited attribute inStruct::Boolean;
 
-autocopy attribute appendedStructItemList :: StructItemList;
+inherited attribute appendedStructItemList :: StructItemList;
 synthesized attribute appendedStructItemListRes :: StructItemList;
 
 nonterminal StructItemList with pps, host, errors, globalDecls, functionDecls,
@@ -888,7 +888,7 @@ flowtype StructItemList = decorate {env, inStruct, isLast,
   controlStmtContext},
   hasConstField {decorate}, fieldNames {decorate}, appendedStructItemListRes {appendedStructItemList};
 
-propagate inStruct, host, errors, globalDecls, functionDecls, defs, localDefs, hasConstField, fieldNames on StructItemList;
+propagate inStruct, host, errors, globalDecls, functionDecls, defs, localDefs, hasConstField, fieldNames, appendedStructItemList on StructItemList;
 
 abstract production consStructItem
 top::StructItemList ::= h::StructItem  t::StructItemList
