@@ -927,7 +927,7 @@ StructItemList ::= s1::StructItemList s2::StructItemList
   return s1.appendedStructItemListRes;
 }
 
-autocopy attribute appendedEnumItemList :: EnumItemList;
+inherited attribute appendedEnumItemList :: EnumItemList;
 synthesized attribute appendedEnumItemListRes :: EnumItemList;
 
 -- These are restricted since they are used by the implicit integerConstantValue attribute
@@ -941,9 +941,9 @@ flowtype EnumItemList = decorate {env, containingEnum, enumItemValueIn,
   controlStmtContext},
   appendedEnumItemListRes {appendedEnumItemList};
 
-autocopy attribute containingEnum :: Type;
+inherited attribute containingEnum :: Type;
 
-propagate host, errors, globalDecls, functionDecls, defs on EnumItemList;
+propagate host, errors, globalDecls, functionDecls, defs, appendedEnumItemList, containingEnum on EnumItemList;
 
 abstract production consEnumItem
 top::EnumItemList ::= h::EnumItem  t::EnumItemList
@@ -1225,13 +1225,13 @@ top::EnumItem ::= name::Name  e::MaybeExpr
 monoid attribute isExtern::Boolean with false, ||;
 monoid attribute isStatic::Boolean with false, ||;
 
-autocopy attribute appendedStorageClasses :: StorageClasses;
+inherited attribute appendedStorageClasses :: StorageClasses;
 synthesized attribute appendedStorageClassesRes :: StorageClasses;
 
 nonterminal StorageClasses with pps, isExtern, isStatic, appendedStorageClasses, appendedStorageClassesRes;
 flowtype StorageClasses = decorate {}, isExtern {}, isStatic {}, appendedStorageClassesRes {appendedStorageClasses};
 
-propagate isExtern, isStatic on StorageClasses;
+propagate isExtern, isStatic, appendedStorageClasses on StorageClasses;
 
 abstract production consStorageClass
 top::StorageClasses ::= h::StorageClass  t::StorageClasses
