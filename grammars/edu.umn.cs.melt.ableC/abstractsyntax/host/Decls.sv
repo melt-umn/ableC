@@ -263,7 +263,7 @@ flowtype Declarators = decorate {env, baseType, typeModifierIn,
   controlStmtContext},
   hostDecls {decorate}, hasModifiedTypeExpr {decorate};
 
-propagate host, errors, defs, globalDecls, functionDecls, hasModifiedTypeExpr on Declarators;
+propagate host, errors, defs, globalDecls, functionDecls, hasModifiedTypeExpr, givenStorageClasses, givenAttributes on Declarators;
 
 abstract production consDeclarator
 top::Declarators ::= h::Declarator  t::Declarators
@@ -581,7 +581,7 @@ inherited attribute appendedParameters :: Parameters;
 synthesized attribute appendedParametersRes :: Parameters;
 
 propagate host, errors, globalDecls, functionDecls, decls, defs, functionDefs,
-  labelDefs on Parameters;
+  labelDefs, appendedParameters, givenAttributes on Parameters;
 
 abstract production consParameters
 top::Parameters ::= h::ParameterDecl  t::Parameters
@@ -1052,7 +1052,7 @@ flowtype StructDeclarators = decorate {env, baseType, inStruct,
   hostStructItems {decorate}, hasModifiedTypeExpr {decorate},
   hasConstField {decorate}, fieldNames {decorate};
 
-propagate inStruct, host, hasModifiedTypeExpr, errors, globalDecls, functionDecls, defs, localDefs, hasConstField, fieldNames on StructDeclarators;
+propagate inStruct, host, hasModifiedTypeExpr, errors, globalDecls, functionDecls, defs, localDefs, hasConstField, fieldNames, givenAttributes on StructDeclarators;
 
 abstract production consStructDeclarator
 top::StructDeclarators ::= h::StructDeclarator  t::StructDeclarators
