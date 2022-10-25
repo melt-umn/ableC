@@ -577,7 +577,7 @@ nonterminal Parameters with typereps, pps, count, host, errors, globalDecls,
 flowtype Parameters = decorate {env, controlStmtContext, position},
   appendedParametersRes {appendedParameters};
 
-autocopy attribute appendedParameters :: Parameters;
+inherited attribute appendedParameters :: Parameters;
 synthesized attribute appendedParametersRes :: Parameters;
 
 propagate host, errors, globalDecls, functionDecls, decls, defs, functionDefs,
