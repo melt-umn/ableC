@@ -3,7 +3,7 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax:injectable;
 abstract production preIncExpr
 top::host:Expr ::= e::host:Expr
 {
-  propagate env;
+  propagate env, host:controlStmtContext;
 
   top.pp = parens( cat( text("++"), e.pp ) );
   production attribute lerrors :: [Message] with ++;
@@ -29,7 +29,7 @@ top::host:Expr ::= e::host:Expr
 abstract production preDecExpr
 top::host:Expr ::= e::host:Expr
 {
-  propagate env;
+  propagate env, host:controlStmtContext;
 
   top.pp = parens( cat( text("--"), e.pp ) );
   production attribute lerrors :: [Message] with ++;
@@ -55,7 +55,7 @@ top::host:Expr ::= e::host:Expr
 abstract production postIncExpr
 top::host:Expr ::= e::host:Expr
 {
-  propagate env;
+  propagate env, host:controlStmtContext;
 
   top.pp = parens( cat( e.pp, text("++") ) );
   production attribute lerrors :: [Message] with ++;
@@ -81,7 +81,7 @@ top::host:Expr ::= e::host:Expr
 abstract production postDecExpr
 top::host:Expr ::= e::host:Expr
 {
-  propagate env;
+  propagate env, host:controlStmtContext;
 
   top.pp = parens( cat( e.pp, text("--") ) );
   production attribute lerrors :: [Message] with ++;
@@ -107,7 +107,7 @@ top::host:Expr ::= e::host:Expr
 abstract production addressOfExpr
 top::host:Expr ::= e::host:Expr
 {
-  propagate env;
+  propagate env, host:controlStmtContext;
 
   top.pp = parens( cat( text("&"), e.pp ) );
   production attribute lerrors :: [Message] with ++;
@@ -133,7 +133,7 @@ top::host:Expr ::= e::host:Expr
 abstract production dereferenceExpr
 top::host:Expr ::= e::host:Expr
 {
-  propagate env;
+  propagate env, host:controlStmtContext;
 
   top.pp = parens( cat(text("*"), e.pp) );
   production attribute lerrors :: [Message] with ++;
@@ -159,7 +159,7 @@ top::host:Expr ::= e::host:Expr
 abstract production positiveExpr
 top::host:Expr ::= e::host:Expr
 {
-  propagate env;
+  propagate env, host:controlStmtContext;
 
   top.pp = parens( cat( text("+"), e.pp ) );
   production attribute lerrors :: [Message] with ++;
@@ -185,7 +185,7 @@ top::host:Expr ::= e::host:Expr
 abstract production negativeExpr
 top::host:Expr ::= e::host:Expr
 {
-  propagate env;
+  propagate env, host:controlStmtContext;
 
   top.pp = parens( cat( text("-"), e.pp ) );
   production attribute lerrors :: [Message] with ++;
@@ -211,7 +211,7 @@ top::host:Expr ::= e::host:Expr
 abstract production bitNegateExpr
 top::host:Expr ::= e::host:Expr
 {
-  propagate env;
+  propagate env, host:controlStmtContext;
 
   top.pp = parens( cat( text("~"), e.pp ) );
   production attribute lerrors :: [Message] with ++;
@@ -237,7 +237,7 @@ top::host:Expr ::= e::host:Expr
 abstract production notExpr
 top::host:Expr ::= e::host:Expr
 {
-  propagate env;
+  propagate env, host:controlStmtContext;
 
   top.pp = parens( cat( text("!"), e.pp ) );
   production attribute lerrors :: [Message] with ++;
@@ -265,7 +265,7 @@ top::host:Expr ::= e::host:Expr
 abstract production realExpr
 top::host:Expr ::= e::host:Expr
 {
-  propagate env;
+  propagate env, host:controlStmtContext;
 
   top.pp = parens( cat( text("__real__"), e.pp ) );
   production attribute lerrors :: [Message] with ++;
@@ -292,7 +292,7 @@ top::host:Expr ::= e::host:Expr
 abstract production imagExpr
 top::host:Expr ::= e::host:Expr
 {
-  propagate env;
+  propagate env, host:controlStmtContext;
   
   top.pp = parens( cat( text("__imag__"), e.pp ) );
   production attribute lerrors :: [Message] with ++;

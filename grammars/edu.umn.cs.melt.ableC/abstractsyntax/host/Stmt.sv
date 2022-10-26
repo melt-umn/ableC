@@ -4,6 +4,9 @@ nonterminal Stmt with pp, host, errors, globalDecls, functionDecls, defs, env,
   functionDefs, freeVariables, controlStmtContext, labelDefs;
 flowtype Stmt = decorate {env, controlStmtContext};
 
+propagate controlStmtContext on Stmt excluding whileStmt, doStmt, forStmt, forDeclStmt, switchStmt,
+  injectGlobalDeclsStmt, whileStmt, doStmt, forStmt, forDeclStmt, switchStmt;
+
 abstract production nullStmt
 top::Stmt ::=
 {
@@ -172,7 +175,9 @@ top::Stmt ::= e::Expr  b::Stmt
 
   e.env = openScopeEnv(top.env);
   b.env = addEnv(e.defs, e.env);
-
+  
+  e.controlStmtContext = top.controlStmtContext;
+  
   top.errors <-
     if e.typerep.defaultFunctionArrayLvalueConversion.isScalarType then []
     else [err(e.location, "While condition must be scalar type, instead it is " ++ showType(e.typerep))];
@@ -203,6 +208,8 @@ top::Stmt ::= b::Stmt  e::Expr
 
   b.env = openScopeEnv(top.env);
   e.env = addEnv(globalDeclsDefs(b.globalDecls) ++ functionDeclsDefs(b.functionDecls), b.env);
+
+  e.controlStmtContext = top.controlStmtContext;
 
   top.errors <-
     if e.typerep.defaultFunctionArrayLvalueConversion.isScalarType then []
@@ -247,6 +254,10 @@ top::Stmt ::= i::MaybeExpr  c::MaybeExpr  s::MaybeExpr  b::Stmt
   s.env = addEnv(c.defs, c.env);
   b.env = addEnv(s.defs, s.env);
 
+  s.controlStmtContext = top.controlStmtContext;
+  i.controlStmtContext = top.controlStmtContext;
+  c.controlStmtContext = top.controlStmtContext;
+
   local cty :: Type = fromMaybe(errorType(), c.maybeTyperep);
   top.errors <-
     if cty.defaultFunctionArrayLvalueConversion.isScalarType then []
@@ -290,6 +301,10 @@ top::Stmt ::= i::Decl  c::MaybeExpr  s::MaybeExpr  b::Stmt
   s.env = addEnv(c.defs, c.env);
   b.env = addEnv(s.defs, s.env);
   i.isTopLevel = false;
+
+  s.controlStmtContext = top.controlStmtContext;
+  i.controlStmtContext = top.controlStmtContext;
+  c.controlStmtContext = top.controlStmtContext;
 
   local cty :: Type = fromMaybe(errorType(), c.maybeTyperep);
   top.errors <-
@@ -345,6 +360,8 @@ top::Stmt ::= e::Expr  b::Stmt
 
   e.env = openScopeEnv(top.env);
   b.env = addEnv(e.defs, e.env);
+
+  e.controlStmtContext = top.controlStmtContext;
 
   top.errors <-
     if e.typerep.defaultFunctionArrayLvalueConversion.isIntegerType then []

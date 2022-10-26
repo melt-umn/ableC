@@ -11,6 +11,8 @@ nonterminal MaybeInitializer with pp, host, typerep, errors, globalDecls,
   functionDecls, defs, env, expectedType, freeVariables, controlStmtContext;
 flowtype MaybeInitializer = decorate {env, expectedType, controlStmtContext};
 
+propagate controlStmtContext on MaybeInitializer;
+
 abstract production nothingInitializer
 top::MaybeInitializer ::=
 {
@@ -38,6 +40,8 @@ nonterminal Initializer with location, pp, host, typerep, errors, globalDecls,
 flowtype Initializer = decorate {env, initializerPos, inObject, expectedType,
   controlStmtContext},
   expectedTypesOut {decorate};
+
+propagate controlStmtContext on Initializer;
 
 abstract production exprInitializer
 top::Initializer ::= e::Expr
@@ -125,7 +129,7 @@ nonterminal InitList with pps, initIndex, initIndexOut, maxIndex, host, typerep,
 flowtype InitList = decorate {initIndex, env, expectedType, expectedTypes, tagEnvIn,
   controlStmtContext},
   maxIndex {decorate};
-propagate initIndex, initIndexOut, maxIndex, expectedTypes, nestedInits on InitList;
+propagate initIndex, initIndexOut, maxIndex, expectedTypes, nestedInits, controlStmtContext on InitList;
 
 aspect default production
 top::InitList ::=
@@ -163,6 +167,8 @@ nonterminal Init with pp, initIndex, initIndexOut, maxIndex, host, errors,
 flowtype Init = decorate {initIndex, env, expectedType, expectedTypes, tagEnvIn,
   controlStmtContext},
   maxIndex {decorate}, initIndexOut {decorate}, expectedTypesOut {decorate};
+
+propagate controlStmtContext on Init;
 
 abstract production positionalInit
 top::Init ::= i::Initializer
@@ -221,6 +227,8 @@ nonterminal Designator with pp, maxIndex, host, errors, globalDecls, functionDec
   defs, env, expectedType, expectedTypesOut, typerep, freeVariables, controlStmtContext;
 flowtype Designator = decorate {env, expectedType, controlStmtContext},
   maxIndex {decorate}, expectedTypesOut {decorate};
+
+propagate controlStmtContext on Designator;
 
 abstract production initialDesignator
 top::Designator ::=

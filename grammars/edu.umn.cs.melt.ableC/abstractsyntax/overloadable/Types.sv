@@ -270,6 +270,7 @@ aspect production host:transformedExpr
 top::host:Expr ::= original::host:Expr  resolved::host:Expr
 {  
   propagate env;
+  
   top.callProd = orElse(original.callProd, resolved.callProd);
   top.addressOfProd = orElse(original.addressOfProd, resolved.addressOfProd);
   top.lEqProd = orElse(original.lEqProd, resolved.lEqProd);

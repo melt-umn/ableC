@@ -10,7 +10,7 @@ flowtype MaybeExpr = decorate {env, controlStmtContext},
 synthesized attribute maybeTyperep :: Maybe<Type>;
 synthesized attribute justTheExpr :: Maybe<Expr>;
 
-propagate host, errors, globalDecls, functionDecls, defs, freeVariables on MaybeExpr;
+propagate host, errors, globalDecls, functionDecls, defs, freeVariables, controlStmtContext on MaybeExpr;
 
 abstract production justExpr
 top::MaybeExpr ::= e::Expr
@@ -54,7 +54,7 @@ synthesized attribute count :: Integer;
 inherited attribute appendedExprs :: Exprs;
 synthesized attribute appendedRes :: Exprs;
 
-propagate host, errors, globalDecls, functionDecls, defs on Exprs;
+propagate host, errors, globalDecls, functionDecls, defs, controlStmtContext on Exprs;
 
 abstract production consExpr
 top::Exprs ::= h::Expr  t::Exprs
@@ -144,7 +144,7 @@ nonterminal ExprOrTypeName with pp, host, errors, globalDecls, functionDecls,
 
 flowtype ExprOrTypeName = decorate {env, controlStmtContext};
 
-propagate env, host, errors, globalDecls, functionDecls, defs, freeVariables on ExprOrTypeName;
+propagate env, host, errors, globalDecls, functionDecls, defs, freeVariables, controlStmtContext on ExprOrTypeName;
 
 abstract production exprExpr
 top::ExprOrTypeName ::= e::Expr

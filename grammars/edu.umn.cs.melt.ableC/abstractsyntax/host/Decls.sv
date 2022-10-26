@@ -9,7 +9,7 @@ nonterminal GlobalDecls with pps, host, errors, env, freeVariables,
   controlStmtContext;
 flowtype GlobalDecls = decorate {env, controlStmtContext};
 
-propagate errors on GlobalDecls;
+propagate errors, controlStmtContext on GlobalDecls;
 
 {-- Mirrors Decls, used for lifting mechanism to insert new Decls at top level -}
 abstract production consGlobalDecl
@@ -45,7 +45,7 @@ flowtype Decls = decorate {env, isTopLevel, controlStmtContext};
 
 inherited attribute isTopLevel :: Boolean;
 
-propagate host, errors, defs, globalDecls, functionDecls, isTopLevel on Decls;
+propagate host, errors, defs, globalDecls, functionDecls, isTopLevel, controlStmtContext on Decls;
 
 abstract production consDecl
 top::Decls ::= h::Decl  t::Decls
@@ -81,7 +81,7 @@ nonterminal Decl with pp, host, errors, globalDecls, functionDecls, unfoldedGlob
   unfoldedFunctionDecls, defs, env, isTopLevel, freeVariables, controlStmtContext;
 flowtype Decl = decorate {env, isTopLevel, controlStmtContext};
 
-propagate isTopLevel on Decl excluding injectFunctionDeclsDecl, injectGlobalDeclsDecl;
+propagate isTopLevel, controlStmtContext on Decl excluding injectFunctionDeclsDecl, injectGlobalDeclsDecl;
 
 {-- Pass down from top-level declaration the list of attribute to each name-declaration -}
 inherited attribute givenStorageClasses :: StorageClasses;
@@ -266,7 +266,7 @@ flowtype Declarators = decorate {env, baseType, typeModifierIn,
   hostDecls {decorate}, hasModifiedTypeExpr {decorate};
 
 propagate host, errors, defs, globalDecls, functionDecls, hasModifiedTypeExpr, givenStorageClasses, 
-  givenAttributes, isTopLevel, typeModifierIn, baseType on Declarators;
+  givenAttributes, isTopLevel, typeModifierIn, baseType, controlStmtContext on Declarators;
 
 abstract production consDeclarator
 top::Declarators ::= h::Declarator  t::Declarators
@@ -302,7 +302,7 @@ flowtype Declarator = decorate {env, baseType, typeModifierIn,
 
 inherited attribute isTypedef :: Boolean;
 
-propagate host, errors, globalDecls, functionDecls, defs, freeVariables, typeModifierIn, baseType on Declarator;
+propagate host, errors, globalDecls, functionDecls, defs, freeVariables, typeModifierIn, baseType, controlStmtContext on Declarator;
 
 abstract production declarator
 top::Declarator ::= name::Name  ty::TypeModifierExpr  attrs::Attributes  initializer::MaybeInitializer
@@ -518,6 +518,11 @@ top::FunctionDecl ::= storage::StorageClasses  fnquals::SpecialSpecifiers  bty::
   retMty.baseType = bty.typerep;
   retMty.typeModifierIn = bty.typeModifier;
 
+  attrs.controlStmtContext = top.controlStmtContext;
+  ds.controlStmtContext = top.controlStmtContext;
+  mty.controlStmtContext = top.controlStmtContext;
+  bty.controlStmtContext = top.controlStmtContext;
+
   body.controlStmtContext = 
     controlStmtContext(
       case mty of
@@ -586,6 +591,8 @@ synthesized attribute appendedParametersRes :: Parameters;
 propagate host, errors, globalDecls, functionDecls, decls, defs, functionDefs,
   labelDefs, appendedParameters, givenAttributes on Parameters;
 
+propagate controlStmtContext on Parameters;
+
 abstract production consParameters
 top::Parameters ::= h::ParameterDecl  t::Parameters
 {
@@ -647,7 +654,7 @@ nonterminal ParameterDecl with paramname, typerep, pp, host, errors, globalDecls
 flowtype ParameterDecl = decorate {env, position, controlStmtContext},
   paramname {};
 
-propagate errors, globalDecls, functionDecls, decls, defs, freeVariables on ParameterDecl;
+propagate errors, globalDecls, functionDecls, decls, defs, freeVariables, controlStmtContext on ParameterDecl;
 
 abstract production parameterDecl
 top::ParameterDecl ::= storage::StorageClasses  bty::BaseTypeExpr  mty::TypeModifierExpr  name::MaybeName  attrs::Attributes
@@ -720,7 +727,8 @@ flowtype StructDecl = decorate {env, isLast, inAnonStructItem, givenRefId,
   pp {inAnonStructItem}, localDefs {decorate}, tagEnv {decorate},
   refId {decorate}, hasConstField {decorate}, fieldNames {decorate};
 
-propagate host, errors, globalDecls, functionDecls, localDefs, hasConstField, fieldNames, freeVariables on StructDecl;
+propagate host, errors, globalDecls, functionDecls, localDefs, hasConstField, fieldNames, 
+  freeVariables, controlStmtContext on StructDecl;
 
 abstract production structDecl
 top::StructDecl ::= attrs::Attributes  name::MaybeName  dcls::StructItemList
@@ -795,7 +803,7 @@ flowtype UnionDecl = decorate {env, isLast, inAnonStructItem, givenRefId,
   pp {inAnonStructItem}, localDefs {decorate}, tagEnv {decorate},
   refId {decorate}, hasConstField {decorate}, fieldNames {decorate};
 
-propagate host, errors, globalDecls, functionDecls, localDefs, hasConstField, freeVariables on UnionDecl;
+propagate host, errors, globalDecls, functionDecls, localDefs, hasConstField, freeVariables, controlStmtContext on UnionDecl;
 
 abstract production unionDecl
 top::UnionDecl ::= attrs::Attributes  name::MaybeName  dcls::StructItemList
@@ -850,7 +858,7 @@ nonterminal EnumDecl with location, pp, host, maybename, errors, globalDecls,
   controlStmtContext;
 flowtype EnumDecl = decorate {env, givenRefId, controlStmtContext};
 
-propagate inStruct, host, errors, globalDecls, functionDecls, freeVariables on EnumDecl;
+propagate inStruct, host, errors, globalDecls, functionDecls, freeVariables, controlStmtContext on EnumDecl;
 
 abstract production enumDecl
 top::EnumDecl ::= name::MaybeName  dcls::EnumItemList
@@ -891,7 +899,8 @@ flowtype StructItemList = decorate {env, inStruct, isLast,
   controlStmtContext},
   hasConstField {decorate}, fieldNames {decorate}, appendedStructItemListRes {appendedStructItemList};
 
-propagate inStruct, host, errors, globalDecls, functionDecls, defs, localDefs, hasConstField, fieldNames, appendedStructItemList on StructItemList;
+propagate inStruct, host, errors, globalDecls, functionDecls, defs, localDefs, hasConstField, 
+  fieldNames, appendedStructItemList, controlStmtContext on StructItemList;
 
 abstract production consStructItem
 top::StructItemList ::= h::StructItem  t::StructItemList
@@ -946,7 +955,8 @@ flowtype EnumItemList = decorate {env, containingEnum, enumItemValueIn,
 
 inherited attribute containingEnum :: Type;
 
-propagate host, errors, globalDecls, functionDecls, defs, appendedEnumItemList, containingEnum on EnumItemList;
+propagate host, errors, globalDecls, functionDecls, defs, appendedEnumItemList, 
+  containingEnum, controlStmtContext on EnumItemList;
 
 abstract production consEnumItem
 top::EnumItemList ::= h::EnumItem  t::EnumItemList
@@ -985,7 +995,8 @@ nonterminal StructItem with pp, host, errors, globalDecls, functionDecls, defs,
 flowtype StructItem = decorate {env, inStruct, isLast, controlStmtContext},
   hasConstField {decorate}, fieldNames {decorate};
 
-propagate inStruct, errors, globalDecls, functionDecls, defs, freeVariables, localDefs, hasConstField on StructItem;
+propagate inStruct, errors, globalDecls, functionDecls, defs, freeVariables, localDefs, 
+  hasConstField, controlStmtContext on StructItem;
 propagate fieldNames on StructItem excluding anonStructStructItem, anonUnionStructItem;
 
 abstract production structItem
@@ -1056,7 +1067,7 @@ flowtype StructDeclarators = decorate {env, baseType, inStruct,
   hasConstField {decorate}, fieldNames {decorate};
 
 propagate inStruct, host, hasModifiedTypeExpr, errors, globalDecls, functionDecls, defs, localDefs, 
-  hasConstField, fieldNames, givenAttributes, typeModifierIn, baseType on StructDeclarators;
+  hasConstField, fieldNames, givenAttributes, typeModifierIn, baseType, controlStmtContext on StructDeclarators;
 
 abstract production consStructDeclarator
 top::StructDeclarators ::= h::StructDeclarator  t::StructDeclarators
@@ -1098,7 +1109,8 @@ flowtype StructDeclarator = decorate {env, baseType, inStruct, isLast,
   hostStructItem {decorate}, hasModifiedTypeExpr {decorate}, hasConstField {decorate},
   fieldNames {decorate};
 
-propagate env, host, errors, globalDecls, functionDecls, defs, freeVariables, typeModifierIn, baseType on StructDeclarator;
+propagate env, host, errors, globalDecls, functionDecls, defs, freeVariables, typeModifierIn, 
+  baseType, controlStmtContext on StructDeclarator;
 
 abstract production structField
 top::StructDeclarator ::= name::Name  ty::TypeModifierExpr  attrs::Attributes
@@ -1207,7 +1219,7 @@ flowtype EnumItem = decorate {env, containingEnum, enumItemValueIn,
   controlStmtContext},
   name {}, enumItemValue {decorate};
 
-propagate env, host, errors, globalDecls, functionDecls, freeVariables on EnumItem;
+propagate env, host, errors, globalDecls, functionDecls, freeVariables, controlStmtContext on EnumItem;
 
 abstract production enumItem
 top::EnumItem ::= name::Name  e::MaybeExpr
@@ -1235,7 +1247,7 @@ synthesized attribute appendedStorageClassesRes :: StorageClasses;
 nonterminal StorageClasses with pps, isExtern, isStatic, appendedStorageClasses, appendedStorageClassesRes;
 flowtype StorageClasses = decorate {}, isExtern {}, isStatic {}, appendedStorageClassesRes {appendedStorageClasses};
 
-propagate isExtern, isStatic, appendedStorageClasses on StorageClasses;
+propagate isExtern, isStatic, appendedStorageClasses, controlStmtContext on StorageClasses;
 
 abstract production consStorageClass
 top::StorageClasses ::= h::StorageClass  t::StorageClasses

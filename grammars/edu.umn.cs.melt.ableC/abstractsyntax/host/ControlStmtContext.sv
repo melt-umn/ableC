@@ -7,7 +7,7 @@ synthesized attribute labels :: tm:Map<String LabelItem>;
 
 nonterminal ControlStmtContext with returnType, breakValid, continueValid, labels;
 
-autocopy attribute controlStmtContext :: ControlStmtContext;
+inherited attribute controlStmtContext :: ControlStmtContext;
 
 abstract production controlStmtContext
 top::ControlStmtContext ::= returnType::Maybe<Type> breakValid::Boolean

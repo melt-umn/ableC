@@ -11,10 +11,10 @@ fi
 ./build-test-artifact || exit 1
 
 ## Load up silver nailgun support (source it)
-#ADD BACK# . sv-nailgun
+. sv-nailgun
 
 # Start the nailgun server
-#ADD BACK# sv-serve ableC.jar
+sv-serve ableC.jar
 
 
 ## Directories containing neutral, positive, and negative subdirectories
@@ -32,5 +32,5 @@ python2.7 ./supertest.py "sv-call" $TESTDIRS $@
 
 
 # End the nailgun server
-#ADD BACK# sv-serve-stop
+sv-serve-stop
 
