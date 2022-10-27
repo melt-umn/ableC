@@ -24,7 +24,7 @@ top::Expr ::=
 abstract production errorExpr
 top::Expr ::= msg::[Message]
 {
-  propagate host, globalDecls, functionDecls, defs, freeVariables;
+  propagate host, globalDecls, functionDecls, defs, freeVariables, controlStmtContext;
   top.pp = ppConcat([ text("/*"), text(messagesToString(msg)), text("*/") ]);
   top.errors := msg;
   top.typerep = errorType();
@@ -56,6 +56,7 @@ Expr ::= msg::[Message] e::Expr l::Location
 abstract production decExpr
 top::Expr ::= e::Decorated Expr
 {
+  propagate env, controlStmtContext;
   top.pp = e.pp;
   top.host = e.host;
   top.errors := e.errors;
@@ -72,7 +73,7 @@ top::Expr ::= e::Decorated Expr
 abstract production qualifiedExpr
 top::Expr ::= q::Qualifiers e::Expr
 {
-  propagate errors, globalDecls, functionDecls, defs, freeVariables;
+  propagate env, errors, globalDecls, functionDecls, defs, freeVariables, controlStmtContext;
   top.host = e.host;
   top.typerep = addQualifiers(q.qualifiers, e.typerep);
   top.pp = pp"qualifiedExpr (${ppImplode(space(), q.pps)} (${e.pp}))";
@@ -83,6 +84,7 @@ top::Expr ::= q::Qualifiers e::Expr
 function wrapQualifiedExpr
 Expr ::= q::[Qualifier]  e::Expr  l::Location
 {
+  propagate env, controlStmtContext;
   return if null(q) then e else qualifiedExpr(foldQualifier(q), e, location=l);
 }
 -- Wraps the result of a forwarding transformation (e.g. overloading or injection)
@@ -91,6 +93,8 @@ Expr ::= q::[Qualifier]  e::Expr  l::Location
 abstract production transformedExpr
 top::Expr ::= original::Expr  resolved::Expr
 {
+  propagate controlStmtContext;
+  
   top.pp = original.pp;
   top.host = resolved.host;
   top.errors := resolved.errors;
@@ -105,6 +109,7 @@ top::Expr ::= original::Expr  resolved::Expr
 abstract production directRefExpr
 top::Expr ::= id::Name
 {
+  propagate env, controlStmtContext;
   -- Forwarding depends on env. We must be able to compute a pp without using env.
   top.pp = id.pp;
 
@@ -114,12 +119,13 @@ top::Expr ::= id::Name
 function ordinaryVariableHandler
 Expr ::= id::Name  l::Location
 {
+  propagate env, controlStmtContext;
   return declRefExpr(id, location=l);
 }
 abstract production declRefExpr
 top::Expr ::= id::Name
 { -- Reference to a value. (Either a Decl or a EnumItem)
-  propagate host, errors, globalDecls, functionDecls, defs;
+  propagate env, host, errors, globalDecls, functionDecls, defs, controlStmtContext;
   top.pp = parens( id.pp );
   top.typerep = id.valueItem.typerep;
   top.freeVariables := top.typerep.freeVariables ++ [id];
@@ -135,7 +141,7 @@ top::Expr ::= id::Name
 abstract production stringLiteral
 top::Expr ::= l::String
 {
-  propagate host, errors, globalDecls, functionDecls, defs, freeVariables;
+  propagate env, host, errors, globalDecls, functionDecls, defs, freeVariables, controlStmtContext;
   top.pp = text(l);
   top.typerep =
     arrayType(
@@ -146,7 +152,7 @@ top::Expr ::= l::String
 abstract production parenExpr
 top::Expr ::= e::Expr
 {
-  propagate host, errors, globalDecls, functionDecls, defs, freeVariables;
+  propagate host, errors, globalDecls, functionDecls, defs, freeVariables, controlStmtContext;
   top.pp = parens( e.pp );
   top.typerep = e.typerep;
   top.isLValue = e.isLValue;
@@ -156,7 +162,7 @@ top::Expr ::= e::Expr
 abstract production arraySubscriptExpr
 top::Expr ::= lhs::Expr  rhs::Expr
 {
-  propagate host, errors, globalDecls, functionDecls, defs;
+  propagate host, errors, globalDecls, functionDecls, defs, controlStmtContext;
   top.pp = parens( ppConcat([ lhs.pp, brackets( rhs.pp )]) );
   top.freeVariables := lhs.freeVariables ++ removeDefsFromNames(rhs.defs, rhs.freeVariables);
   top.isLValue = true;
@@ -183,12 +189,15 @@ top::Expr ::= lhs::Expr  rhs::Expr
                 | right(m) -> m
                 end;
 
+  lhs.env = top.env;
   rhs.env = addEnv(lhs.defs, lhs.env);
 }
 {- Calls where the function expression is just an identifier. -}
 abstract production directCallExpr
 top::Expr ::= f::Name  a::Exprs
 {
+  propagate env, controlStmtContext;
+
   -- Forwarding depends on env. We must be able to compute a pp without using env.
   top.pp = parens( ppConcat([ f.pp, parens( ppImplode( cat( comma(), space() ), a.pps ))]) );
 
@@ -199,6 +208,8 @@ top::Expr ::= f::Name  a::Exprs
 function ordinaryFunctionHandler
 Expr ::= f::Name  a::Exprs  l::Location
 {
+  propagate env, controlStmtContext;
+
   return ovrld:callExpr(declRefExpr(f, location=f.location), a, location=l);
 }
 
@@ -206,7 +217,7 @@ Expr ::= f::Name  a::Exprs  l::Location
 abstract production callExpr
 top::Expr ::= f::Expr  a::Exprs
 {
-  propagate host, errors, globalDecls, functionDecls, defs;
+  propagate host, errors, globalDecls, functionDecls, defs, controlStmtContext;
   top.pp = parens( ppConcat([ f.pp, parens( ppImplode( cat( comma(), space() ), a.pps ))]) );
   top.freeVariables := f.freeVariables ++ removeDefsFromNames(f.defs, a.freeVariables);
   top.isLValue = false; -- C++ style references would change this
@@ -243,12 +254,13 @@ top::Expr ::= f::Expr  a::Exprs
     | _ -> true -- suppress errors
     end;
 
+  f.env = top.env;
   a.env = addEnv(f.defs, f.env);
 }
 abstract production memberExpr
 top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
 {
-  propagate host, errors, globalDecls, functionDecls, defs, freeVariables;
+  propagate host, errors, globalDecls, functionDecls, defs, freeVariables, controlStmtContext;
   top.pp = parens(ppConcat([lhs.pp, text(if deref then "->" else "."), rhs.pp]));
 
   local isPointer::Boolean =
@@ -303,7 +315,7 @@ top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
 abstract production conditionalExpr
 top::Expr ::= cond::Expr  t::Expr  e::Expr
 {
-  propagate host, errors, globalDecls, functionDecls, defs;
+  propagate host, errors, globalDecls, functionDecls, defs, controlStmtContext;
   top.pp = parens( ppConcat([ cond.pp, space(), text("?"), space(), t.pp, space(), text(":"),  space(), e.pp]) );
   top.freeVariables :=
     cond.freeVariables ++
@@ -317,6 +329,7 @@ top::Expr ::= cond::Expr  t::Expr  e::Expr
     then t.integerConstantValue
     else e.integerConstantValue;
 
+  cond.env = top.env;
   t.env = addEnv(cond.defs, cond.env);
   e.env = addEnv(t.defs, t.env);
 
@@ -325,7 +338,7 @@ top::Expr ::= cond::Expr  t::Expr  e::Expr
 abstract production binaryConditionalExpr -- GCC extension.
 top::Expr ::= cond::Expr  e::Expr
 {
-  propagate host, errors, globalDecls, functionDecls, defs;
+  propagate env, host, errors, globalDecls, functionDecls, defs, controlStmtContext;
   top.pp = ppConcat([ cond.pp, space(), text("?:"), space(), e.pp]);
   top.freeVariables := cond.freeVariables ++ removeDefsFromNames(cond.defs, e.freeVariables);
 
@@ -341,12 +354,13 @@ top::Expr ::= cond::Expr  e::Expr
 abstract production explicitCastExpr
 top::Expr ::= ty::TypeName  e::Expr
 {
-  propagate host, errors, globalDecls, functionDecls, defs;
+  propagate host, errors, globalDecls, functionDecls, defs, controlStmtContext;
   top.pp = parens( ppConcat([parens(ty.pp), e.pp]) );
   top.freeVariables := ty.freeVariables ++ removeDefsFromNames(ty.defs, e.freeVariables);
   top.typerep = ty.typerep;
   top.integerConstantValue = e.integerConstantValue;
 
+  ty.env = top.env;
   e.env = addEnv(ty.defs, ty.env);
 
   -- TODO: type checking!!
@@ -354,7 +368,7 @@ top::Expr ::= ty::TypeName  e::Expr
 abstract production compoundLiteralExpr
 top::Expr ::= ty::TypeName  init::InitList
 {
-  propagate host, errors, globalDecls, functionDecls, defs;
+  propagate host, errors, globalDecls, functionDecls, defs, controlStmtContext;
   top.pp = parens( ppConcat([parens(ty.pp), text("{"), ppImplode(text(", "), init.pps), text("}")]) );
   top.freeVariables := ty.freeVariables ++ removeDefsFromNames(ty.defs, init.freeVariables);
   top.typerep = init.typerep;
@@ -383,6 +397,7 @@ top::Expr ::= ty::TypeName  init::InitList
     end;
 
   init.initIndex = 0;
+  ty.env = top.env;
   init.env = addEnv(ty.defs, ty.env);
   init.tagEnvIn =
     case refIdLookup of
@@ -395,7 +410,7 @@ top::Expr ::= ty::TypeName  init::InitList
 abstract production predefinedFuncExpr
 top::Expr ::=
 { -- Currently (C99) just __func__ in functions.
-  propagate host, errors, globalDecls, functionDecls, defs, freeVariables;
+  propagate env, host, errors, globalDecls, functionDecls, defs, freeVariables, controlStmtContext;
   top.pp = parens( text("__func__") );
   top.typerep = pointerType(nilQualifier(),
   builtinType(foldQualifier([constQualifier(location=builtinLoc("host"))]), signedType(charType()))); -- const char *
@@ -405,7 +420,7 @@ top::Expr ::=
 abstract production genericSelectionExpr
 top::Expr ::= e::Expr  gl::GenericAssocs  def::MaybeExpr
 {
-  propagate host, errors, globalDecls, functionDecls, defs, freeVariables;
+  propagate env, host, errors, globalDecls, functionDecls, defs, freeVariables, controlStmtContext;
   top.pp = ppConcat([text("_Generic"),
     parens(ppImplode(text(", "), e.pp :: gl.pps ++
       if def.isJust then
@@ -433,10 +448,11 @@ nonterminal GenericAssocs with pps, host, errors, globalDecls, functionDecls,
 flowtype GenericAssocs = decorate {env, controlStmtContext},
   compatibleSelections {decorate, selectionType};
 
-autocopy attribute selectionType :: Type;
+inherited attribute selectionType :: Type;
 monoid attribute compatibleSelections :: [Decorated Expr];
 
-propagate host, errors, globalDecls, functionDecls, defs, freeVariables, compatibleSelections on GenericAssocs;
+propagate env, host, errors, globalDecls, functionDecls, defs, freeVariables, compatibleSelections, 
+  selectionType, controlStmtContext on GenericAssocs;
 
 abstract production consGenericAssoc
 top::GenericAssocs ::= h::GenericAssoc  t::GenericAssocs
@@ -455,7 +471,7 @@ nonterminal GenericAssoc with location, pp, host, globalDecls, functionDecls,
 flowtype GenericAssoc = decorate {env, controlStmtContext},
   compatibleSelections {decorate, selectionType};
 
-propagate host, errors, globalDecls, functionDecls, defs, freeVariables on GenericAssoc;
+propagate env, host, errors, globalDecls, functionDecls, defs, freeVariables, selectionType on GenericAssoc;
 
 abstract production genericAssoc
 top::GenericAssoc ::= ty::TypeName  fun::Expr
@@ -463,6 +479,8 @@ top::GenericAssoc ::= ty::TypeName  fun::Expr
   top.pp = ppConcat([ty.pp, text(": "), fun.pp]);
   top.compatibleSelections :=
     if compatibleTypes(top.selectionType, ty.typerep, true, false) then [fun] else [];
+  fun.controlStmtContext = top.controlStmtContext;
+  ty.controlStmtContext = top.controlStmtContext;
 }
 
 -- GCC stmtExpr
@@ -483,6 +501,7 @@ top::Expr ::= body::Stmt result::Expr
   -- from expressions to the top-level function.
   body.env = addEnv(body.functionDefs, openScopeEnv(top.env));
   body.controlStmtContext = controlAddLabels(top.controlStmtContext, body.labelDefs);
+  result.controlStmtContext = top.controlStmtContext;
   result.env = addEnv(body.defs, body.env);
 }
 

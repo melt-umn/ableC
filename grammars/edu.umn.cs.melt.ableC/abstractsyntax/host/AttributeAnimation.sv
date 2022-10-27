@@ -76,7 +76,7 @@ top::Attrib ::= n::AttribName
 -- e.g. __attribute__((deprecated("don't use this duh")))
 aspect production appliedAttrib
 top::Attrib ::= n::AttribName  e::Exprs
-{
+{  
   top.isHostAttrib =
     case n of
       attribName(name("refId")) -> false
@@ -91,6 +91,7 @@ top::Attrib ::= n::AttribName  e::Exprs
 
   -- Needed since we are matching on Expr
   -- Not a big deal since these are pretty much just constants
+  n.env = top.env;
   e.env = emptyEnv();
   e.controlStmtContext = initialControlStmtContext;
 }

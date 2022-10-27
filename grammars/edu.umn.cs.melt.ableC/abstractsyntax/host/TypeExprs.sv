@@ -32,7 +32,7 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
  - directTypeExpr(ty.typerep) as many times as needed.
  -}
 
-autocopy attribute baseType :: Type;
+inherited attribute baseType :: Type;
 
 {-- The TypeExpr is upside down, so build pp from outside-in -}
 synthesized attribute lpp :: Document;
@@ -44,10 +44,10 @@ synthesized attribute typereps :: [Type];
 
 {-- Used to transform away typeModifierTypeExpr -}
 synthesized attribute typeModifier :: TypeModifierExpr;
-autocopy attribute typeModifierIn :: TypeModifierExpr;
+inherited attribute typeModifierIn :: TypeModifierExpr;
 
 {-- Used to set the refId for a declaration via __attribute__ -}
-autocopy attribute givenRefId :: Maybe<String>;
+inherited attribute givenRefId :: Maybe<String>;
 
 {-- The declarations contained in this TypeExpr, corresponding to defs -}
 monoid attribute decls :: [Decl];
@@ -64,10 +64,12 @@ nonterminal TypeName with env, typerep, bty, mty, pp, host, errors, globalDecls,
 flowtype TypeName = decorate {env, controlStmtContext},
   bty {}, mty {};
 
+propagate givenRefId on BaseTypeExpr;
+
 abstract production typeName
 top::TypeName ::= bty::BaseTypeExpr  mty::TypeModifierExpr
 {
-  propagate errors, functionDecls, decls, defs, freeVariables;
+  propagate errors, functionDecls, decls, defs, freeVariables, controlStmtContext;
   top.pp = ppConcat([bty.pp, mty.lpp, mty.rpp]);
   top.host =
     case mty.modifiedBaseTypeExpr of
@@ -78,6 +80,7 @@ top::TypeName ::= bty::BaseTypeExpr  mty::TypeModifierExpr
   top.bty = bty;
   top.mty = mty;
   bty.givenRefId = nothing();
+  bty.env = top.env;
   mty.env = addEnv(bty.defs, bty.env);
   mty.baseType = bty.typerep;
   mty.typeModifierIn = bty.typeModifier;
@@ -137,7 +140,7 @@ flowtype BaseTypeExpr = decorate {env, givenRefId, controlStmtContext},
 abstract production errorTypeExpr
 top::BaseTypeExpr ::= msg::[Message]
 {
-  propagate host, errors, globalDecls, functionDecls, decls, defs, freeVariables;
+  propagate host, errors, globalDecls, functionDecls, decls, defs, freeVariables, controlStmtContext;
   top.pp = pp"/*err*/";
   top.typerep = errorType();
   top.errors <- msg;
@@ -148,7 +151,7 @@ top::BaseTypeExpr ::= msg::[Message]
 abstract production warnTypeExpr
 top::BaseTypeExpr ::= msg::[Message]  ty::BaseTypeExpr
 {
-  propagate host, errors, globalDecls, functionDecls, decls, defs, freeVariables;
+  propagate env, host, errors, globalDecls, functionDecls, decls, defs, freeVariables, controlStmtContext;
   top.pp = ty.pp;
   top.typerep = ty.typerep;
   top.errors <- msg;
@@ -200,7 +203,7 @@ top::BaseTypeExpr ::= ty::Decorated BaseTypeExpr
 abstract production defsTypeExpr
 top::BaseTypeExpr ::= d::[Def]  bty::BaseTypeExpr
 {
-  propagate errors, globalDecls, functionDecls, defs, freeVariables;
+  propagate errors, globalDecls, functionDecls, defs, freeVariables, controlStmtContext;
   top.pp = ppConcat([pp"/* defsTypeExpr", showEnv(addEnv(d, emptyEnv())), pp"*/", bty.pp]);
   -- This production goes away when the transformation to host occurs, this is a special case where
   -- host is not simply propagated, because Def is a closed 'collection' nonterminal with special
@@ -220,12 +223,12 @@ top::BaseTypeExpr ::= d::[Def]  bty::BaseTypeExpr
 abstract production typeModifierTypeExpr
 top::BaseTypeExpr ::= bty::BaseTypeExpr  mty::TypeModifierExpr
 {
-  propagate errors, globalDecls, functionDecls, decls, defs, freeVariables;
+  propagate errors, globalDecls, functionDecls, decls, defs, freeVariables, controlStmtContext;
   top.pp = parens(ppConcat([bty.pp, mty.lpp, mty.rpp]));
   top.host = fromMaybe(bty.host, mty.modifiedBaseTypeExpr);
   top.typerep = mty.typerep;
   top.typeModifier = mty.host;
-
+  bty.env = top.env;
   mty.env = addEnv(bty.defs, bty.env);
   mty.baseType = bty.typerep;
   mty.typeModifierIn = bty.typeModifier;
@@ -236,7 +239,7 @@ top::BaseTypeExpr ::= bty::BaseTypeExpr  mty::TypeModifierExpr
 abstract production builtinTypeExpr
 top::BaseTypeExpr ::= q::Qualifiers  result::BuiltinType
 {
-  propagate host, errors, globalDecls, functionDecls, decls, defs, freeVariables;
+  propagate host, errors, globalDecls, functionDecls, decls, defs, freeVariables, env, controlStmtContext;
   top.pp = ppConcat([terminate(space(), q.pps), result.pp]);
   top.typerep = builtinType(q, result);
   top.typeModifier = baseTypeExpr();
@@ -254,7 +257,7 @@ top::BaseTypeExpr ::= q::Qualifiers  result::BuiltinType
 abstract production tagReferenceTypeExpr
 top::BaseTypeExpr ::= q::Qualifiers  kwd::StructOrEnumOrUnion  n::Name
 {
-  propagate host, errors, globalDecls, functionDecls, defs, freeVariables;
+  propagate env, host, errors, globalDecls, functionDecls, defs, freeVariables, controlStmtContext;
   top.pp = ppConcat([terminate(space(), q.pps), kwd.pp, space(), n.pp
     -- DEBUGGING
     --, text("/*" ++ refId ++ "*/")
@@ -332,7 +335,7 @@ top::BaseTypeExpr ::= q::Qualifiers  kwd::StructOrEnumOrUnion  n::Name
 abstract production anonTagReferenceTypeExpr
 top::BaseTypeExpr ::= q::Qualifiers  kwd::StructOrEnumOrUnion  refId::String
 {
-  propagate host, errors, globalDecls, functionDecls, defs, freeVariables;
+  propagate host, errors, globalDecls, functionDecls, defs, freeVariables, controlStmtContext;
   top.pp = ppConcat([terminate(space(), q.pps), kwd.pp, space(), text("anon_" ++ refId)]);
   top.typerep = extType(q, refIdExtType(kwd, nothing(), refId));
   top.typeModifier = baseTypeExpr();
@@ -345,7 +348,7 @@ top::BaseTypeExpr ::= q::Qualifiers  kwd::StructOrEnumOrUnion  refId::String
 abstract production structTypeExpr
 top::BaseTypeExpr ::= q::Qualifiers  def::StructDecl
 {
-  propagate host, errors, globalDecls, functionDecls, defs, freeVariables;
+  propagate env, host, errors, globalDecls, functionDecls, defs, freeVariables, controlStmtContext;
   top.pp = ppConcat([terminate(space(), q.pps), def.pp ]);
   top.typerep = extType(q, refIdExtType(structSEU(), map((.name), def.maybename), def.refId));
   top.typeModifier = baseTypeExpr();
@@ -360,7 +363,7 @@ top::BaseTypeExpr ::= q::Qualifiers  def::StructDecl
 abstract production unionTypeExpr
 top::BaseTypeExpr ::= q::Qualifiers  def::UnionDecl
 {
-  propagate host, errors, globalDecls, functionDecls, defs, freeVariables;
+  propagate env, host, errors, globalDecls, functionDecls, defs, freeVariables, controlStmtContext;
   top.pp = ppConcat([terminate(space(), q.pps), def.pp ]);
   top.typerep = extType(q, refIdExtType(unionSEU(), map((.name), def.maybename), def.refId));
   top.typeModifier = baseTypeExpr();
@@ -375,7 +378,7 @@ top::BaseTypeExpr ::= q::Qualifiers  def::UnionDecl
 abstract production enumTypeExpr
 top::BaseTypeExpr ::= q::Qualifiers  def::EnumDecl
 {
-  propagate host, errors, globalDecls, functionDecls, defs, freeVariables;
+  propagate env, host, errors, globalDecls, functionDecls, defs, freeVariables, controlStmtContext;
   top.pp = ppConcat([terminate(space(), q.pps), def.pp ]);
   top.typerep = extType(q, enumExtType(def));
   top.typeModifier = baseTypeExpr();
@@ -387,7 +390,7 @@ top::BaseTypeExpr ::= q::Qualifiers  def::EnumDecl
 abstract production extTypeExpr
 top::BaseTypeExpr ::= q::Qualifiers  sub::ExtType
 {
-  propagate errors, globalDecls, functionDecls, defs, decls, freeVariables;
+  propagate errors, globalDecls, functionDecls, defs, decls, freeVariables, controlStmtContext;
   top.pp = ppConcat([terminate(space(), q.pps), sub.lpp, sub.rpp]);
   top.typerep = extType(q, sub);
   top.host = sub.host.baseTypeExpr;
@@ -400,7 +403,7 @@ top::BaseTypeExpr ::= q::Qualifiers  sub::ExtType
 abstract production typedefTypeExpr
 top::BaseTypeExpr ::= q::Qualifiers  name::Name
 {
-  propagate host, errors, globalDecls, functionDecls, defs, decls, freeVariables;
+  propagate env, host, errors, globalDecls, functionDecls, defs, decls, freeVariables, controlStmtContext;
   top.pp = ppConcat([terminate(space(), q.pps), name.pp ]);
 
   top.typerep =
@@ -429,6 +432,8 @@ top::BaseTypeExpr ::= q::Qualifiers  name::Name
 abstract production attributedTypeExpr
 top::BaseTypeExpr ::= attrs::Attributes  bt::BaseTypeExpr
 {
+  propagate controlStmtContext;
+
   top.pp = cat(ppAttributes(attrs), bt.pp);
 
   local liftedName::Name =
@@ -449,7 +454,7 @@ top::BaseTypeExpr ::= attrs::Attributes  bt::BaseTypeExpr
 abstract production atomicTypeExpr
 top::BaseTypeExpr ::= q::Qualifiers  wrapped::TypeName
 {
-  propagate host, errors, globalDecls, functionDecls, defs, decls, freeVariables;
+  propagate env, host, errors, globalDecls, functionDecls, defs, decls, freeVariables, controlStmtContext;
   top.typerep = atomicType(q, wrapped.typerep);
   top.pp = ppConcat([ terminate(space(), q.pps),
                      text("_Atomic"), parens(wrapped.pp)]);
@@ -460,7 +465,7 @@ top::BaseTypeExpr ::= q::Qualifiers  wrapped::TypeName
 abstract production vaListTypeExpr
 top::BaseTypeExpr ::=
 {
-  propagate host, errors, globalDecls, functionDecls, defs, decls, freeVariables;
+  propagate host, errors, globalDecls, functionDecls, defs, decls, freeVariables, controlStmtContext;
   top.typerep = pointerType(nilQualifier(),
     builtinType(nilQualifier(), voidType())); -- TODO this should be a special type, not void
   top.pp = text("__builtin_va_list");
@@ -470,7 +475,7 @@ top::BaseTypeExpr ::=
 abstract production typeofTypeExpr
 top::BaseTypeExpr ::= q::Qualifiers  e::ExprOrTypeName
 {
-  propagate host, errors, globalDecls, functionDecls, defs, decls, freeVariables;
+  propagate env, host, errors, globalDecls, functionDecls, defs, decls, freeVariables, controlStmtContext;
   top.typerep = noncanonicalType(typeofType(q, e.typerep));
   top.pp = ppConcat([text("__typeof__"), parens(e.pp)]);
   top.typeModifier = baseTypeExpr();
@@ -488,6 +493,8 @@ nonterminal TypeModifierExpr with env, typerep, lpp, rpp, host, modifiedBaseType
   functionDecls, decls, defs, freeVariables, controlStmtContext;
 flowtype TypeModifierExpr = decorate {env, baseType, typeModifierIn, controlStmtContext},
   modifiedBaseTypeExpr {decorate}, isFunctionArrayTypeExpr {};
+
+propagate typeModifierIn, baseType, controlStmtContext on TypeModifierExpr;
 
 synthesized attribute modifiedBaseTypeExpr::Maybe<BaseTypeExpr>;
 synthesized attribute isFunctionArrayTypeExpr::Boolean;
@@ -525,7 +532,7 @@ top::TypeModifierExpr ::=
 abstract production modifiedTypeExpr
 top::TypeModifierExpr ::= bty::BaseTypeExpr
 {
-  propagate errors, globalDecls, functionDecls, defs, decls, freeVariables;
+  propagate env, errors, globalDecls, functionDecls, defs, decls, freeVariables;
   top.lpp = parens(bty.pp);
   top.rpp = notext();
   top.host = bty.typeModifier; -- top.typeModifierIn discarded
@@ -565,7 +572,7 @@ top::TypeModifierExpr ::= ty::Decorated TypeModifierExpr
 abstract production pointerTypeExpr
 top::TypeModifierExpr ::= q::Qualifiers  target::TypeModifierExpr
 {
-  propagate host, errors, globalDecls, functionDecls, defs, decls, freeVariables;
+  propagate env, host, errors, globalDecls, functionDecls, defs, decls, freeVariables;
   top.lpp = ppConcat([ target.lpp, space(),
                      if target.isFunctionArrayTypeExpr then text("(*") else text("*"),
                      terminate(space(), q.pps) ]);
@@ -579,7 +586,7 @@ top::TypeModifierExpr ::= q::Qualifiers  target::TypeModifierExpr
 abstract production arrayTypeExprWithExpr
 top::TypeModifierExpr ::= element::TypeModifierExpr  indexQualifiers::Qualifiers  sizeModifier::ArraySizeModifier  size::Expr
 {
-  propagate host, errors, globalDecls, functionDecls, defs, decls, freeVariables;
+  propagate env, host, errors, globalDecls, functionDecls, defs, decls, freeVariables;
   top.lpp = element.lpp;
 
   top.rpp = cat(brackets(ppConcat([
@@ -603,7 +610,7 @@ top::TypeModifierExpr ::= element::TypeModifierExpr  indexQualifiers::Qualifiers
 abstract production arrayTypeExprWithoutExpr
 top::TypeModifierExpr ::= element::TypeModifierExpr  indexQualifiers::Qualifiers  sizeModifier::ArraySizeModifier
 {
-  propagate host, errors, globalDecls, functionDecls, defs, decls, freeVariables;
+  propagate env, host, errors, globalDecls, functionDecls, defs, decls, freeVariables;
   top.lpp = element.lpp;
 
   top.rpp = cat(brackets(
@@ -640,7 +647,8 @@ top::TypeModifierExpr ::= result::TypeModifierExpr  args::Parameters  variadic::
 
   top.typerep = functionType(result.typerep,
                              protoFunctionType(args.typereps, variadic), q);
-
+  result.env = top.env;
+  
   args.env = openScopeEnv(top.env);
   args.position = 0;
 
@@ -649,7 +657,7 @@ top::TypeModifierExpr ::= result::TypeModifierExpr  args::Parameters  variadic::
 abstract production functionTypeExprWithoutArgs
 top::TypeModifierExpr ::= result::TypeModifierExpr  ids::[Name]  q::Qualifiers --fnquals::[SpecialSpecifier]
 {
-  propagate host, errors, globalDecls, functionDecls, defs, decls, freeVariables;
+  propagate env, host, errors, globalDecls, functionDecls, defs, decls, freeVariables;
   top.lpp = result.lpp;
   top.rpp = cat( parens(ppImplode(text(", "), map((.pp), ids))), result.rpp );
 
@@ -664,7 +672,7 @@ top::TypeModifierExpr ::= result::TypeModifierExpr  ids::[Name]  q::Qualifiers -
 abstract production parenTypeExpr
 top::TypeModifierExpr ::= wrapped::TypeModifierExpr
 {
-  propagate host, errors, globalDecls, functionDecls, defs, decls, freeVariables;
+  propagate env, host, errors, globalDecls, functionDecls, defs, decls, freeVariables;
   --top.pp = parens( wrapped.pp );
   top.lpp = cat( wrapped.lpp, text("(") );
   top.rpp = cat( text(")"), wrapped.rpp );
@@ -673,7 +681,7 @@ top::TypeModifierExpr ::= wrapped::TypeModifierExpr
   top.typerep = noncanonicalType(parenType(wrapped.typerep));
 }
 
-autocopy attribute appendedTypeNames :: TypeNames;
+inherited attribute appendedTypeNames :: TypeNames;
 synthesized attribute appendedTypeNamesRes :: TypeNames;
 
 nonterminal TypeNames with pps, host, env, typereps, count, errors, globalDecls,
@@ -682,7 +690,7 @@ nonterminal TypeNames with pps, host, env, typereps, count, errors, globalDecls,
 flowtype TypeNames = decorate {env, controlStmtContext},
   count {}, appendedTypeNamesRes {appendedTypeNames};
 
-propagate host, errors, globalDecls, functionDecls, decls, defs, freeVariables on TypeNames;
+propagate host, errors, globalDecls, functionDecls, decls, defs, freeVariables, appendedTypeNames, controlStmtContext on TypeNames;
 
 abstract production consTypeName
 top::TypeNames ::= h::TypeName t::TypeNames
@@ -692,6 +700,7 @@ top::TypeNames ::= h::TypeName t::TypeNames
   top.count = t.count + 1;
   top.appendedTypeNamesRes = consTypeName(h, t.appendedTypeNamesRes);
 
+  h.env = top.env;
   t.env = addEnv(h.defs, h.env);
 }
 

@@ -1,6 +1,7 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 
 propagate host on AsmStatement, AsmArgument, AsmClobbers, AsmOperands, AsmOperand;
+propagate env, controlStmtContext on AsmStatement, AsmArgument, AsmOperands, AsmOperand;
 
 nonterminal AsmStatement with location, pp, host, env, freeVariables,
   controlStmtContext;

@@ -18,7 +18,13 @@ synthesized attribute declaredParamIdents :: Maybe<[ast:Name]>;
 {--
  - The type being operated upon by a declarator.
  -}
-autocopy attribute givenType :: ast:TypeModifierExpr;
+inherited attribute givenType :: ast:TypeModifierExpr;
+
+propagate givenType on 
+  StructDeclaratorList_c, 
+  StructDeclarator_c, 
+  EnumSpecifier_c;
+
 {--
  - Plumbing, to give the attached statement to a function definition.
  -}
@@ -147,7 +153,7 @@ concrete productions top::DirectAbstractDeclarator_c
     }
 | mod::PostfixModifier_c
   {
-    mod.givenType = top.givenType;
+    propagate givenType;
     top.ast = mod.ast;
   }
 | dd::DirectAbstractDeclarator_c mod::PostfixModifier_c
