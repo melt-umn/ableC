@@ -140,10 +140,10 @@ terminal StringConstantL_t    /L["]([^"\\]|[\\].)*["]/ lexer classes {StringLite
 terminal StringConstantU_t    /u["]([^"\\]|[\\].)*["]/ lexer classes {StringLiteral};
 terminal StringConstantUBig_t /U["]([^"\\]|[\\].)*["]/ lexer classes {StringLiteral};
 
-terminal CharConstant_t      /[']([^']|[\\].)[']/ lexer classes {StringLiteral};
-terminal CharConstantL_t    /L[']([^']|[\\].)[']/ lexer classes {StringLiteral};
-terminal CharConstantU_t    /u[']([^']|[\\].)[']/ lexer classes {StringLiteral};
-terminal CharConstantUBig_t /U[']([^']|[\\].)[']/ lexer classes {StringLiteral};
+terminal CharConstant_t     /[']([^'\\]|[\\](['"?\\abfnrtv]|[0-7]+|x[0-9A-Fa-f]+|u[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f]|U[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f]))[']/ lexer classes {StringLiteral};
+terminal CharConstantL_t    /L[']([^'\\]|[\\](['"?\\abfnrtv]|[0-7]+|x[0-9A-Fa-f]+|u[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f]|U[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f]))[']/ lexer classes {StringLiteral};
+terminal CharConstantU_t    /u[']([^'\\]|[\\](['"?\\abfnrtv]|[0-7]+|x[0-9A-Fa-f]+|u[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f]|U[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f]))[']/ lexer classes {StringLiteral};
+terminal CharConstantUBig_t /U[']([^'\\]|[\\](['"?\\abfnrtv]|[0-7]+|x[0-9A-Fa-f]+|u[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f]|U[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f]))[']/ lexer classes {StringLiteral};
 
 
 {--
