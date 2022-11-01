@@ -70,8 +70,6 @@ Stmt ::= l::[Stmt]
 function foldParameterDecl
 Parameters ::= l::[ParameterDecl]
 {
-  propagate env;
-  
   return case l of
   -- A special case.  "type name(void)"  means no parameters.
   | [d] ->
