@@ -131,6 +131,8 @@ synthesized attribute appendedNamesRes :: Names;
 nonterminal Names with env, pps, names, count, appendedNames, appendedNamesRes;
 flowtype Names = decorate {env}, pps {}, names {}, count {}, appendedNamesRes {appendedNames};
 
+propagate env on Names;
+
 abstract production consName
 top::Names ::= h::Name t::Names
 {
