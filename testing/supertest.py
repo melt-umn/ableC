@@ -85,29 +85,21 @@ def runPositiveTest(testpath, results):
     results['positive'][1] = results['positive'][1] + 1
     results['fail']['ERROR'].append(testpath)
     if len(stdout_output) > 0:
-      stdoutFile = open( testpath + ".stdout", 'w' )
-      for l in stdout_output:
-        stdoutFile.write( l )
-      stdoutFile.close()
+      with open(testpath + ".stdout", 'w') as f:
+        f.write(stdout_output.decode('utf-8'))
     if len(stderr_output) > 0:
-      stderrFile = open( testpath + ".stderr", 'w' )
-      for l in stderr_output:
-        stderrFile.write( l )
-      stderrFile.close()
+      with open(testpath + ".stderr", 'w') as f:
+        f.write(stderr_output.decode('utf-8'))
 
   elif len(stderr_output) > 0:
     printTest("Positive test", False, "STDERR", testpath)
     results['positive'][1] = results['positive'][1] + 1
     results['fail']["STDERR"].append(testpath)
     if len(stdout_output) > 0:
-      stdoutFile = open( testpath + ".stdout", 'w' )
-      for l in stdout_output:
-        stdoutFile.write( l )
-      stdoutFile.close()
-    stderrFile = open( testpath + ".stderr", 'w' )
-    for l in stderr_output:
-      stderrFile.write( l )
-    stderrFile.close()
+      with open(testpath + ".stdout", 'w') as f:
+        f.write(stdout_output.decode('utf-8'))
+    with open(testpath + ".stderr", 'w') as f:
+      f.write(stderr_output.decode('utf-8'))
 
   else:
     printTest("Positive test", True, "", testpath)
