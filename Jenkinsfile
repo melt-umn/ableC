@@ -27,6 +27,7 @@ melt.trynode('ableC') {
     }
   }
 
+  /* Disabled for now, due to issues with getting nailgun to run.
   stage ("Test") {
     dir("testing/expected-results") {
       withEnv(newenv) {
@@ -34,6 +35,7 @@ melt.trynode('ableC') {
       }
     }
   }
+  */
 
   stage ("Integration") {
     // All known, stable extensions to build downstream
