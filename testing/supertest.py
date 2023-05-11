@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 
 # KW TODO: Replace the sequential computation with parallel
 # from multiprocessing import Pools
@@ -45,7 +45,7 @@ def printTest(test_type, passed, error, path):
 
   text += path
 
-  print text.expandtabs(20)
+  print(text.expandtabs(20))
 
 
 def runPositiveTest(testpath, results):
@@ -310,7 +310,7 @@ def printResults(results):
   text += 'Pass: ' + str(total_pass) + '\n' 
   text += 'Fail: ' + str(total_fail) + '\n' 
 
-  print text.expandtabs(12)
+  print(text.expandtabs(12))
   return total_fail
 
 def main():
@@ -355,7 +355,7 @@ def main():
   if len(sys.argv) > 1:
     JAR = sys.argv[1]
     if JAR.endswith("jar") and not os.path.isfile(JAR):
-      print JAR + " does not exist"
+      print(JAR, "does not exist")
       sys.exit(1)
     if len(sys.argv) > 2:
       DIRECTORIES = sys.argv[2:]
@@ -364,7 +364,7 @@ def main():
       JAR = subprocess.check_output("cygpath -w " + JAR, shell=True)
       JAR = string.strip(JAR.replace("\\","\\\\"))
   else:
-    print "Please supply commands to run compiler"
+    print("Please supply commands to run compiler")
     sys.exit(1)
 
   # it may not actually be a jar, in which case, just execute it directly.
@@ -423,7 +423,7 @@ def main():
 #        runCCode(test_c, results)
 
     else: # 'negative' not in test and 'positive' not in test
-      print "Supertest error, Unknown test:", test
+      print("Supertest error, Unknown test:", test)
 
   final_exit_code = printResults(results)
 
