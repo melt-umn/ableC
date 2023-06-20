@@ -309,6 +309,7 @@ concrete productions top::InitialFunctionDefinition_c
       local baseMT  :: ast:TypeModifierExpr = d.ast;
       baseMT.ast:baseType = ast:errorType();
       baseMT.ast:typeModifierIn = ast:baseTypeExpr();
+      baseMT.ast:env = ast:emptyEnv();
       baseMT.ast:controlStmtContext = ast:initialControlStmtContext;
       local mt :: ast:TypeModifierExpr =
         case l.isDeclListEmpty, baseMT of
@@ -350,6 +351,7 @@ concrete productions top::InitialFunctionDefinition_c
       local baseMT  :: ast:TypeModifierExpr = d.ast;
       baseMT.ast:baseType = ast:errorType();
       baseMT.ast:typeModifierIn = ast:baseTypeExpr();
+      baseMT.ast:env = ast:emptyEnv();
       baseMT.ast:controlStmtContext = ast:initialControlStmtContext;
       local mt :: ast:TypeModifierExpr =
         case l.isDeclListEmpty, baseMT of
