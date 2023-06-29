@@ -35,7 +35,7 @@ top::Expr ::= msg::[Message] e::Expr
 {
   top.pp = ppConcat([ text("/*"), text(messagesToString(msg)), text("*/"), e.pp ]);
   top.errors <- msg;
-  forwards to e;
+  forwards to @e;
 }
 -- only wrap in warnExpr if have messages
 function wrapWarnExpr

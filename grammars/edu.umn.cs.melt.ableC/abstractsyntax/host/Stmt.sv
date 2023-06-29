@@ -150,7 +150,7 @@ top::Stmt ::= c::Expr  t::Stmt
   top.pp = ppConcat([
     text("if"), space(), parens(c.pp), line(),
     braces(nestlines(2, t.pp)) ]);
-  forwards to ifStmt(c, t, nullStmt());
+  forwards to ifStmt(@c, @t, nullStmt());
 }
 
 abstract production whileStmt
