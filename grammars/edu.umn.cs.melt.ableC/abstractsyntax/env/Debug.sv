@@ -41,6 +41,10 @@ aspect production autoValueItem
 top::ValueItem ::= e::Decorated Expr
 { top.pp = text("autoValueItem"); }
 
+aspect production preDeclValueItem
+top::ValueItem ::= ty::Type  loc::Location
+{ top.pp = pp"preDeclValueItem"; }
+
 aspect production errorValueItem
 top::ValueItem ::=
 { top.pp = text("errorValueItem"); }
