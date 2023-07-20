@@ -36,6 +36,8 @@ melt.trynode('ableC') {
     }
   }
   */
+  
+  waitUntil { melt.isExecutorAvailable() }
 
   stage ("Integration") {
     // All known, stable extensions to build downstream
