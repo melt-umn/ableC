@@ -36,7 +36,9 @@ melt.trynode('ableC') {
     }
   }
   */
-  
+
+  // Avoid deadlock condition from all executors being filled with builds
+  // that are waiting for downstream builds to finish.
   waitUntil { melt.isExecutorAvailable() }
 
   stage ("Integration") {
