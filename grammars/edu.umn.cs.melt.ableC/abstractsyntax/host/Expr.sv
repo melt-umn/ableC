@@ -224,7 +224,7 @@ top::Expr ::= f::Expr  a::Exprs
 
   local subtype :: Either<Pair<Type FunctionType> [Message]> =
     case f.typerep.defaultFunctionArrayLvalueConversion of
-    | pointerType(_, functionType(rt, sub, _)) -> left(pair(rt, sub))
+    | pointerType(_, functionType(rt, sub, _)) -> left((rt, sub))
     | errorType() -> right([]) -- error already raised.
     | _ -> right([err(f.location, "call expression is not function type (got " ++ showType(f.typerep) ++ ")")])
     end;
@@ -241,15 +241,15 @@ top::Expr ::= f::Expr  a::Exprs
 
   a.expectedTypes =
     case subtype of
-    | left(pair(_, protoFunctionType(args, _))) -> args
+    | left(pair(fst=_, snd=protoFunctionType(args, _))) -> args
     | _ -> []
     end;
   a.argumentPosition = 1;
   a.callExpr = f;
   a.callVariadic =
     case subtype of
-    | left(pair(_, protoFunctionType(_, variadic))) -> variadic
-    | left(pair(_, noProtoFunctionType())) -> true
+    | left(pair(fst=_, snd=protoFunctionType(_, variadic))) -> variadic
+    | left(pair(fst=_, snd=noProtoFunctionType())) -> true
     | left(_) -> false
     | _ -> true -- suppress errors
     end;
@@ -273,11 +273,11 @@ top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
     case lhs.typerep.defaultFunctionArrayLvalueConversion.withoutAttributes of
     | pointerType(_, sub) ->
         case sub.withoutAttributes of
-        | extType(q, e) -> pair(q, fromMaybe("", e.maybeRefId))
-        | _ -> pair(nilQualifier(), "")
+        | extType(q, e) -> (q, fromMaybe("", e.maybeRefId))
+        | _ -> (nilQualifier(), "")
         end
-    | extType(q, e) -> pair(q, fromMaybe("", e.maybeRefId))
-    | _ -> pair(nilQualifier(), "")
+    | extType(q, e) -> (q, fromMaybe("", e.maybeRefId))
+    | _ -> (nilQualifier(), "")
     end;
 
   local refids :: [RefIdItem] =

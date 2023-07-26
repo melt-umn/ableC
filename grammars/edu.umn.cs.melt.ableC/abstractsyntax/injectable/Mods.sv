@@ -66,7 +66,7 @@ Pair<Expr Expr> ::= l::[LhsOrRhsRuntimeMod]  lhs::Decorated Expr  rhs::Decorated
         location=rhs.location
       );
 
-  return pair(modLhs, modRhs);
+  return (modLhs, modRhs);
 }
 
 nonterminal LhsOrRhsRuntimeMod with modLhs, modRhs, isLhs, lhsToModify, rhsToModify;
