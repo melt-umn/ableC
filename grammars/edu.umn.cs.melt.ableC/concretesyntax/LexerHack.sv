@@ -110,7 +110,7 @@ function closeScope
 function addIdentsToScope
 [[Pair<String TerminalId>]] ::= l::[ast:Name]  id::TerminalId  context::[[Pair<String TerminalId>]]
 {
-  return (map(pair(_, id), map((.ast:name), l)) ++ head(context)) :: tail(context);
+  return (map(pair(fst=_, snd=id), map((.ast:name), l)) ++ head(context)) :: tail(context);
 }
 
 function beginFunctionScope

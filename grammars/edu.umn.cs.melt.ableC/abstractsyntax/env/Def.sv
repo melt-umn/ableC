@@ -3,32 +3,32 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax:env;
 abstract production tagDef
 top::Def ::= s::String  l::TagItem
 {
-  top.tagContribs = [pair(s, l)];
+  top.tagContribs = [(s, l)];
 }
 
 abstract production valueDef
 top::Def ::= s::String  l::ValueItem
 {
-  top.valueContribs = [pair(s, l)];
+  top.valueContribs = [(s, l)];
 }
 
 abstract production refIdDef
 top::Def ::= s::String  l::RefIdItem
 {
-  top.refIdContribs = [pair(s, l)];
+  top.refIdContribs = [(s, l)];
 }
 
 abstract production deferredDeclDef
 top::Def ::= s::String  d::Decl
 {
-  top.deferredDeclContribs = [pair(s, d)];
+  top.deferredDeclContribs = [(s, d)];
 }
 
 
 abstract production miscDef
 top::Def ::= s::String  l::MiscItem
 {
-  top.miscContribs = [pair(s, l)];
+  top.miscContribs = [(s, l)];
 }
 
 abstract production globalDefsDef
