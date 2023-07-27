@@ -124,7 +124,6 @@ top::Stmt ::= c::Expr  t::Stmt  e::Stmt
 abstract production ifStmtNoElse
 top::Stmt ::= c::Expr  t::Stmt
 {
-  propagate env;
   top.pp = ppConcat([
     text("if"), space(), parens(c.pp), line(),
     braces(nestlines(2, t.pp)) ]);
