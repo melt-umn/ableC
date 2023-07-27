@@ -55,12 +55,12 @@ Expr ::= val::String l::Location
 }
 
 function mkErrorCheck
-Expr ::= msg::[Message] e::Expr
+Expr ::= msg::[Message] e::Decorated! Expr with {}
 {
   return
     if null(msg)
-    then e
+    then @e
     else if !containsErrors(msg, false)
-    then warnExpr(msg, e, location=e.location)
+    then warnExpr(msg, @e, location=e.location)
     else errorExpr(msg, location=e.location);
 } 
