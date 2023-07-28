@@ -1,6 +1,6 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax:env;
 
-import silver:util:raw:treemap as tm;
+import silver:util:treemap as tm;
 
 -- TODO: Move this to langutil:env?
 
@@ -20,7 +20,7 @@ type Contribs<a> = [Pair<String a>];
 function emptyScope
 Scopes<a> ::= 
 {
-  return [tm:empty(compareString)];
+  return [tm:empty()];
 }
 {-- Adds contributions to the innermost scope -}
 function addScope
@@ -34,6 +34,7 @@ Scopes<a> ::= d::Contribs<a>  s::Scopes<a>
 {
   return case d, s of
     | [], _ -> s
+    | _, [] -> error("No scopes in env!")
     | _, [_] -> addScope(d, s)
     | _, h :: t -> h :: addGlobalScope(d, t)
     end;
@@ -47,6 +48,7 @@ Scopes<a> ::= d::Contribs<a> s::Scopes<a>
 {
   return case d, s of
     | [], _ -> s
+    | _, [] -> error("No scopes in env!")
     | _, [_] -> addScope(d, s)
     | _, h :: m :: [] -> addScope(d, h :: m :: [])
     | _, h :: t -> h :: addFunctionScope(d, t)
@@ -56,7 +58,7 @@ Scopes<a> ::= d::Contribs<a> s::Scopes<a>
 function openScope
 Scopes<a> ::= s::Scopes<a>
 {
-  return tm:empty(compareString) :: s;
+  return tm:empty() :: s;
 }
 {-- Get the outermost scope -}
 function globalScope

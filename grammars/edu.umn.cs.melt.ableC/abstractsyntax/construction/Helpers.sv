@@ -28,7 +28,7 @@ BaseTypeExpr ::=  q::Qualifiers  pre_ts::[String]  real_ts::[BaseTypeExpr]  mod:
   else
     fromMaybe(
       errorTypeExpr([errFromOrigin(q, "Unable to interpret type specifiers: " ++ implode(" ", pre_ts))]),
-      interpretTypeSpecifiers(q, sortBy(stringLte, pre_ts)));
+      interpretTypeSpecifiers(q, sort(pre_ts)));
 }
 
 

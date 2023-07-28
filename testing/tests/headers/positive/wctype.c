@@ -1,319 +1,398 @@
-/* Copyright (C) 1996-2002,2005,2007-2009,2010 Free Software Foundation, Inc.
-   This file is part of the GNU C Library.
-
-   The GNU C Library is free software; you can redistribute it and/or
-   modify it under the terms of the GNU Lesser General Public
-   License as published by the Free Software Foundation; either
-   version 2.1 of the License, or (at your option) any later version.
-
-   The GNU C Library is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-   Lesser General Public License for more details.
-
-   You should have received a copy of the GNU Lesser General Public
-   License along with the GNU C Library; if not, write to the Free
-   Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307 USA.  */
-
-/*
- *	ISO C99 Standard: 7.25
- *	Wide character classification and mapping utilities  <wctype.h>
- */
-
-#ifndef _WCTYPE_H
-
-#include <features.h>
-#include <bits/types.h>
-
-#ifndef __need_iswxxx
-# define _WCTYPE_H	1
-
-/* Get wint_t from <wchar.h>.  */
-# define __need_wint_t
-# include <wchar.h>
-
-/* Constant expression of type `wint_t' whose value does not correspond
-   to any member of the extended character set.  */
-# ifndef WEOF
-#  define WEOF (0xffffffffu)
-# endif
-#endif
-#undef __need_iswxxx
+# 1 "wctype.c"
+# 1 "<built-in>"
+# 1 "<command-line>"
+# 1 "/usr/include/stdc-predef.h" 1 3 4
+# 1 "<command-line>" 2
+# 1 "wctype.c"
+# 26 "wctype.c"
+# 1 "/usr/include/features.h" 1 3 4
+# 367 "/usr/include/features.h" 3 4
+# 1 "/usr/include/x86_64-linux-gnu/sys/cdefs.h" 1 3 4
+# 410 "/usr/include/x86_64-linux-gnu/sys/cdefs.h" 3 4
+# 1 "/usr/include/x86_64-linux-gnu/bits/wordsize.h" 1 3 4
+# 411 "/usr/include/x86_64-linux-gnu/sys/cdefs.h" 2 3 4
+# 368 "/usr/include/features.h" 2 3 4
+# 391 "/usr/include/features.h" 3 4
+# 1 "/usr/include/x86_64-linux-gnu/gnu/stubs.h" 1 3 4
+# 10 "/usr/include/x86_64-linux-gnu/gnu/stubs.h" 3 4
+# 1 "/usr/include/x86_64-linux-gnu/gnu/stubs-64.h" 1 3 4
+# 11 "/usr/include/x86_64-linux-gnu/gnu/stubs.h" 2 3 4
+# 392 "/usr/include/features.h" 2 3 4
+# 27 "wctype.c" 2
+# 1 "/usr/include/x86_64-linux-gnu/bits/types.h" 1 3 4
+# 27 "/usr/include/x86_64-linux-gnu/bits/types.h" 3 4
+# 1 "/usr/include/x86_64-linux-gnu/bits/wordsize.h" 1 3 4
+# 28 "/usr/include/x86_64-linux-gnu/bits/types.h" 2 3 4
 
 
-/* The following part is also used in the <wcsmbs.h> header when compiled
-   in the Unix98 compatibility mode.  */
-#ifndef __iswxxx_defined
-# define __iswxxx_defined	1
+typedef unsigned char __u_char;
+typedef unsigned short int __u_short;
+typedef unsigned int __u_int;
+typedef unsigned long int __u_long;
 
-__BEGIN_NAMESPACE_C99
-/* Scalar type that can hold values which represent locale-specific
-   character classifications.  */
+
+typedef signed char __int8_t;
+typedef unsigned char __uint8_t;
+typedef signed short int __int16_t;
+typedef unsigned short int __uint16_t;
+typedef signed int __int32_t;
+typedef unsigned int __uint32_t;
+
+typedef signed long int __int64_t;
+typedef unsigned long int __uint64_t;
+
+
+
+
+
+
+
+typedef long int __quad_t;
+typedef unsigned long int __u_quad_t;
+# 121 "/usr/include/x86_64-linux-gnu/bits/types.h" 3 4
+# 1 "/usr/include/x86_64-linux-gnu/bits/typesizes.h" 1 3 4
+# 122 "/usr/include/x86_64-linux-gnu/bits/types.h" 2 3 4
+
+
+typedef unsigned long int __dev_t;
+typedef unsigned int __uid_t;
+typedef unsigned int __gid_t;
+typedef unsigned long int __ino_t;
+typedef unsigned long int __ino64_t;
+typedef unsigned int __mode_t;
+typedef unsigned long int __nlink_t;
+typedef long int __off_t;
+typedef long int __off64_t;
+typedef int __pid_t;
+typedef struct { int __val[2]; } __fsid_t;
+typedef long int __clock_t;
+typedef unsigned long int __rlim_t;
+typedef unsigned long int __rlim64_t;
+typedef unsigned int __id_t;
+typedef long int __time_t;
+typedef unsigned int __useconds_t;
+typedef long int __suseconds_t;
+
+typedef int __daddr_t;
+typedef int __key_t;
+
+
+typedef int __clockid_t;
+
+
+typedef void * __timer_t;
+
+
+typedef long int __blksize_t;
+
+
+
+
+typedef long int __blkcnt_t;
+typedef long int __blkcnt64_t;
+
+
+typedef unsigned long int __fsblkcnt_t;
+typedef unsigned long int __fsblkcnt64_t;
+
+
+typedef unsigned long int __fsfilcnt_t;
+typedef unsigned long int __fsfilcnt64_t;
+
+
+typedef long int __fsword_t;
+
+typedef long int __ssize_t;
+
+
+typedef long int __syscall_slong_t;
+
+typedef unsigned long int __syscall_ulong_t;
+
+
+
+typedef __off64_t __loff_t;
+typedef __quad_t *__qaddr_t;
+typedef char *__caddr_t;
+
+
+typedef long int __intptr_t;
+
+
+typedef unsigned int __socklen_t;
+# 28 "wctype.c" 2
+
+
+
+
+
+
+# 1 "/usr/include/wchar.h" 1 3 4
+# 51 "/usr/include/wchar.h" 3 4
+# 1 "/soft/gcc/4.9.2/ubuntuamd2010/lib/gcc/x86_64-linux-gnu/4.9.2/include/stddef.h" 1 3 4
+# 353 "/soft/gcc/4.9.2/ubuntuamd2010/lib/gcc/x86_64-linux-gnu/4.9.2/include/stddef.h" 3 4
+typedef unsigned int wint_t;
+# 52 "/usr/include/wchar.h" 2 3 4
+# 35 "wctype.c" 2
+# 50 "wctype.c"
+
+
+
 typedef unsigned long int wctype_t;
-__END_NAMESPACE_C99
 
-# ifndef _ISwbit
-/* The characteristics are stored always in network byte order (big
-   endian).  We define the bit value interpretations here dependent on the
-   machine's byte order.  */
 
-#  include <endian.h>
-#  if __BYTE_ORDER == __BIG_ENDIAN
-#   define _ISwbit(bit)	(1 << (bit))
-#  else /* __BYTE_ORDER == __LITTLE_ENDIAN */
-#   define _ISwbit(bit)	\
-	((bit) < 8 ? (int) ((1UL << (bit)) << 24)			      \
-	 : ((bit) < 16 ? (int) ((1UL << (bit)) << 8)			      \
-	    : ((bit) < 24 ? (int) ((1UL << (bit)) >> 8)			      \
-	       : (int) ((1UL << (bit)) >> 24))))
-#  endif
 
+
+
+
+
+# 1 "/usr/include/endian.h" 1 3 4
+# 36 "/usr/include/endian.h" 3 4
+# 1 "/usr/include/x86_64-linux-gnu/bits/endian.h" 1 3 4
+# 37 "/usr/include/endian.h" 2 3 4
+# 62 "wctype.c" 2
+# 72 "wctype.c"
 enum
 {
-  __ISwupper = 0,			/* UPPERCASE.  */
-  __ISwlower = 1,			/* lowercase.  */
-  __ISwalpha = 2,			/* Alphabetic.  */
-  __ISwdigit = 3,			/* Numeric.  */
-  __ISwxdigit = 4,			/* Hexadecimal numeric.  */
-  __ISwspace = 5,			/* Whitespace.  */
-  __ISwprint = 6,			/* Printing.  */
-  __ISwgraph = 7,			/* Graphical.  */
-  __ISwblank = 8,			/* Blank (usually SPC and TAB).  */
-  __ISwcntrl = 9,			/* Control character.  */
-  __ISwpunct = 10,			/* Punctuation.  */
-  __ISwalnum = 11,			/* Alphanumeric.  */
+  __ISwupper = 0,
+  __ISwlower = 1,
+  __ISwalpha = 2,
+  __ISwdigit = 3,
+  __ISwxdigit = 4,
+  __ISwspace = 5,
+  __ISwprint = 6,
+  __ISwgraph = 7,
+  __ISwblank = 8,
+  __ISwcntrl = 9,
+  __ISwpunct = 10,
+  __ISwalnum = 11,
 
-  _ISwupper = _ISwbit (__ISwupper),	/* UPPERCASE.  */
-  _ISwlower = _ISwbit (__ISwlower),	/* lowercase.  */
-  _ISwalpha = _ISwbit (__ISwalpha),	/* Alphabetic.  */
-  _ISwdigit = _ISwbit (__ISwdigit),	/* Numeric.  */
-  _ISwxdigit = _ISwbit (__ISwxdigit),	/* Hexadecimal numeric.  */
-  _ISwspace = _ISwbit (__ISwspace),	/* Whitespace.  */
-  _ISwprint = _ISwbit (__ISwprint),	/* Printing.  */
-  _ISwgraph = _ISwbit (__ISwgraph),	/* Graphical.  */
-  _ISwblank = _ISwbit (__ISwblank),	/* Blank (usually SPC and TAB).  */
-  _ISwcntrl = _ISwbit (__ISwcntrl),	/* Control character.  */
-  _ISwpunct = _ISwbit (__ISwpunct),	/* Punctuation.  */
-  _ISwalnum = _ISwbit (__ISwalnum)	/* Alphanumeric.  */
+  _ISwupper = ((__ISwupper) < 8 ? (int) ((1UL << (__ISwupper)) << 24) : ((__ISwupper) < 16 ? (int) ((1UL << (__ISwupper)) << 8) : ((__ISwupper) < 24 ? (int) ((1UL << (__ISwupper)) >> 8) : (int) ((1UL << (__ISwupper)) >> 24)))),
+  _ISwlower = ((__ISwlower) < 8 ? (int) ((1UL << (__ISwlower)) << 24) : ((__ISwlower) < 16 ? (int) ((1UL << (__ISwlower)) << 8) : ((__ISwlower) < 24 ? (int) ((1UL << (__ISwlower)) >> 8) : (int) ((1UL << (__ISwlower)) >> 24)))),
+  _ISwalpha = ((__ISwalpha) < 8 ? (int) ((1UL << (__ISwalpha)) << 24) : ((__ISwalpha) < 16 ? (int) ((1UL << (__ISwalpha)) << 8) : ((__ISwalpha) < 24 ? (int) ((1UL << (__ISwalpha)) >> 8) : (int) ((1UL << (__ISwalpha)) >> 24)))),
+  _ISwdigit = ((__ISwdigit) < 8 ? (int) ((1UL << (__ISwdigit)) << 24) : ((__ISwdigit) < 16 ? (int) ((1UL << (__ISwdigit)) << 8) : ((__ISwdigit) < 24 ? (int) ((1UL << (__ISwdigit)) >> 8) : (int) ((1UL << (__ISwdigit)) >> 24)))),
+  _ISwxdigit = ((__ISwxdigit) < 8 ? (int) ((1UL << (__ISwxdigit)) << 24) : ((__ISwxdigit) < 16 ? (int) ((1UL << (__ISwxdigit)) << 8) : ((__ISwxdigit) < 24 ? (int) ((1UL << (__ISwxdigit)) >> 8) : (int) ((1UL << (__ISwxdigit)) >> 24)))),
+  _ISwspace = ((__ISwspace) < 8 ? (int) ((1UL << (__ISwspace)) << 24) : ((__ISwspace) < 16 ? (int) ((1UL << (__ISwspace)) << 8) : ((__ISwspace) < 24 ? (int) ((1UL << (__ISwspace)) >> 8) : (int) ((1UL << (__ISwspace)) >> 24)))),
+  _ISwprint = ((__ISwprint) < 8 ? (int) ((1UL << (__ISwprint)) << 24) : ((__ISwprint) < 16 ? (int) ((1UL << (__ISwprint)) << 8) : ((__ISwprint) < 24 ? (int) ((1UL << (__ISwprint)) >> 8) : (int) ((1UL << (__ISwprint)) >> 24)))),
+  _ISwgraph = ((__ISwgraph) < 8 ? (int) ((1UL << (__ISwgraph)) << 24) : ((__ISwgraph) < 16 ? (int) ((1UL << (__ISwgraph)) << 8) : ((__ISwgraph) < 24 ? (int) ((1UL << (__ISwgraph)) >> 8) : (int) ((1UL << (__ISwgraph)) >> 24)))),
+  _ISwblank = ((__ISwblank) < 8 ? (int) ((1UL << (__ISwblank)) << 24) : ((__ISwblank) < 16 ? (int) ((1UL << (__ISwblank)) << 8) : ((__ISwblank) < 24 ? (int) ((1UL << (__ISwblank)) >> 8) : (int) ((1UL << (__ISwblank)) >> 24)))),
+  _ISwcntrl = ((__ISwcntrl) < 8 ? (int) ((1UL << (__ISwcntrl)) << 24) : ((__ISwcntrl) < 16 ? (int) ((1UL << (__ISwcntrl)) << 8) : ((__ISwcntrl) < 24 ? (int) ((1UL << (__ISwcntrl)) >> 8) : (int) ((1UL << (__ISwcntrl)) >> 24)))),
+  _ISwpunct = ((__ISwpunct) < 8 ? (int) ((1UL << (__ISwpunct)) << 24) : ((__ISwpunct) < 16 ? (int) ((1UL << (__ISwpunct)) << 8) : ((__ISwpunct) < 24 ? (int) ((1UL << (__ISwpunct)) >> 8) : (int) ((1UL << (__ISwpunct)) >> 24)))),
+  _ISwalnum = ((__ISwalnum) < 8 ? (int) ((1UL << (__ISwalnum)) << 24) : ((__ISwalnum) < 16 ? (int) ((1UL << (__ISwalnum)) << 8) : ((__ISwalnum) < 24 ? (int) ((1UL << (__ISwalnum)) >> 8) : (int) ((1UL << (__ISwalnum)) >> 24))))
 };
-# endif /* Not _ISwbit  */
 
 
-__BEGIN_DECLS
-
-__BEGIN_NAMESPACE_C99
-/*
- * Wide-character classification functions: 7.15.2.1.
- */
-
-/* Test for any wide character for which `iswalpha' or `iswdigit' is
-   true.  */
-extern int iswalnum (wint_t __wc) __THROW;
-
-/* Test for any wide character for which `iswupper' or 'iswlower' is
-   true, or any wide character that is one of a locale-specific set of
-   wide-characters for which none of `iswcntrl', `iswdigit',
-   `iswpunct', or `iswspace' is true.  */
-extern int iswalpha (wint_t __wc) __THROW;
-
-/* Test for any control wide character.  */
-extern int iswcntrl (wint_t __wc) __THROW;
-
-/* Test for any wide character that corresponds to a decimal-digit
-   character.  */
-extern int iswdigit (wint_t __wc) __THROW;
-
-/* Test for any wide character for which `iswprint' is true and
-   `iswspace' is false.  */
-extern int iswgraph (wint_t __wc) __THROW;
-
-/* Test for any wide character that corresponds to a lowercase letter
-   or is one of a locale-specific set of wide characters for which
-   none of `iswcntrl', `iswdigit', `iswpunct', or `iswspace' is true.  */
-extern int iswlower (wint_t __wc) __THROW;
-
-/* Test for any printing wide character.  */
-extern int iswprint (wint_t __wc) __THROW;
-
-/* Test for any printing wide character that is one of a
-   locale-specific et of wide characters for which neither `iswspace'
-   nor `iswalnum' is true.  */
-extern int iswpunct (wint_t __wc) __THROW;
-
-/* Test for any wide character that corresponds to a locale-specific
-   set of wide characters for which none of `iswalnum', `iswgraph', or
-   `iswpunct' is true.  */
-extern int iswspace (wint_t __wc) __THROW;
-
-/* Test for any wide character that corresponds to an uppercase letter
-   or is one of a locale-specific set of wide character for which none
-   of `iswcntrl', `iswdigit', `iswpunct', or `iswspace' is true.  */
-extern int iswupper (wint_t __wc) __THROW;
-
-/* Test for any wide character that corresponds to a hexadecimal-digit
-   character equivalent to that performed be the functions described
-   in the previous subclause.  */
-extern int iswxdigit (wint_t __wc) __THROW;
-
-/* Test for any wide character that corresponds to a standard blank
-   wide character or a locale-specific set of wide characters for
-   which `iswalnum' is false.  */
-# ifdef __USE_ISOC99
-extern int iswblank (wint_t __wc) __THROW;
-# endif
-
-/*
- * Extensible wide-character classification functions: 7.15.2.2.
- */
-
-/* Construct value that describes a class of wide characters identified
-   by the string argument PROPERTY.  */
-extern wctype_t wctype (__const char *__property) __THROW;
-
-/* Determine whether the wide-character WC has the property described by
-   DESC.  */
-extern int iswctype (wint_t __wc, wctype_t __desc) __THROW;
-__END_NAMESPACE_C99
 
 
-/*
- * Wide-character case-mapping functions: 7.15.3.1.
- */
 
-__BEGIN_NAMESPACE_C99
-/* Scalar type that can hold values which represent locale-specific
-   character mappings.  */
+
+
+
+
+
+
+
+extern int iswalnum (wint_t __wc) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+
+
+extern int iswalpha (wint_t __wc) __attribute__ ((__nothrow__ , __leaf__));
+
+
+extern int iswcntrl (wint_t __wc) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+extern int iswdigit (wint_t __wc) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+extern int iswgraph (wint_t __wc) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+
+extern int iswlower (wint_t __wc) __attribute__ ((__nothrow__ , __leaf__));
+
+
+extern int iswprint (wint_t __wc) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+
+extern int iswpunct (wint_t __wc) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+
+extern int iswspace (wint_t __wc) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+
+extern int iswupper (wint_t __wc) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+
+extern int iswxdigit (wint_t __wc) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+
+
+extern int iswblank (wint_t __wc) __attribute__ ((__nothrow__ , __leaf__));
+# 172 "wctype.c"
+extern wctype_t wctype (__const char *__property) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+extern int iswctype (wint_t __wc, wctype_t __desc) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+
+
+
+
+
+
+
 typedef __const __int32_t *wctrans_t;
-__END_NAMESPACE_C99
-#ifdef __USE_GNU
-__USING_NAMESPACE_C99(wctrans_t)
-#endif
-
-__BEGIN_NAMESPACE_C99
-/* Converts an uppercase letter to the corresponding lowercase letter.  */
-extern wint_t towlower (wint_t __wc) __THROW;
-
-/* Converts an lowercase letter to the corresponding uppercase letter.  */
-extern wint_t towupper (wint_t __wc) __THROW;
-__END_NAMESPACE_C99
-
-__END_DECLS
-
-#endif	/* need iswxxx.  */
 
 
-/* The remaining definitions and declarations must not appear in the
-   <wchar.h> header.  */
-#ifdef _WCTYPE_H
 
-/*
- * Extensible wide-character mapping functions: 7.15.3.2.
- */
 
-__BEGIN_DECLS
 
-__BEGIN_NAMESPACE_C99
-/* Construct value that describes a mapping between wide characters
-   identified by the string argument PROPERTY.  */
-extern wctrans_t wctrans (__const char *__property) __THROW;
 
-/* Map the wide character WC using the mapping described by DESC.  */
-extern wint_t towctrans (wint_t __wc, wctrans_t __desc) __THROW;
-__END_NAMESPACE_C99
 
-# ifdef __USE_XOPEN2K8
-/* Declare the interface to extended locale model.  */
-#  include <xlocale.h>
+extern wint_t towlower (wint_t __wc) __attribute__ ((__nothrow__ , __leaf__));
 
-/* Test for any wide character for which `iswalpha' or `iswdigit' is
-   true.  */
-extern int iswalnum_l (wint_t __wc, __locale_t __locale) __THROW;
 
-/* Test for any wide character for which `iswupper' or 'iswlower' is
-   true, or any wide character that is one of a locale-specific set of
-   wide-characters for which none of `iswcntrl', `iswdigit',
-   `iswpunct', or `iswspace' is true.  */
-extern int iswalpha_l (wint_t __wc, __locale_t __locale) __THROW;
+extern wint_t towupper (wint_t __wc) __attribute__ ((__nothrow__ , __leaf__));
 
-/* Test for any control wide character.  */
-extern int iswcntrl_l (wint_t __wc, __locale_t __locale) __THROW;
 
-/* Test for any wide character that corresponds to a decimal-digit
-   character.  */
-extern int iswdigit_l (wint_t __wc, __locale_t __locale) __THROW;
 
-/* Test for any wide character for which `iswprint' is true and
-   `iswspace' is false.  */
-extern int iswgraph_l (wint_t __wc, __locale_t __locale) __THROW;
+# 214 "wctype.c"
 
-/* Test for any wide character that corresponds to a lowercase letter
-   or is one of a locale-specific set of wide characters for which
-   none of `iswcntrl', `iswdigit', `iswpunct', or `iswspace' is true.  */
-extern int iswlower_l (wint_t __wc, __locale_t __locale) __THROW;
 
-/* Test for any printing wide character.  */
-extern int iswprint_l (wint_t __wc, __locale_t __locale) __THROW;
 
-/* Test for any printing wide character that is one of a
-   locale-specific et of wide characters for which neither `iswspace'
-   nor `iswalnum' is true.  */
-extern int iswpunct_l (wint_t __wc, __locale_t __locale) __THROW;
 
-/* Test for any wide character that corresponds to a locale-specific
-   set of wide characters for which none of `iswalnum', `iswgraph', or
-   `iswpunct' is true.  */
-extern int iswspace_l (wint_t __wc, __locale_t __locale) __THROW;
 
-/* Test for any wide character that corresponds to an uppercase letter
-   or is one of a locale-specific set of wide character for which none
-   of `iswcntrl', `iswdigit', `iswpunct', or `iswspace' is true.  */
-extern int iswupper_l (wint_t __wc, __locale_t __locale) __THROW;
+extern wctrans_t wctrans (__const char *__property) __attribute__ ((__nothrow__ , __leaf__));
 
-/* Test for any wide character that corresponds to a hexadecimal-digit
-   character equivalent to that performed be the functions described
-   in the previous subclause.  */
-extern int iswxdigit_l (wint_t __wc, __locale_t __locale) __THROW;
 
-/* Test for any wide character that corresponds to a standard blank
-   wide character or a locale-specific set of wide characters for
-   which `iswalnum' is false.  */
-extern int iswblank_l (wint_t __wc, __locale_t __locale) __THROW;
+extern wint_t towctrans (wint_t __wc, wctrans_t __desc) __attribute__ ((__nothrow__ , __leaf__));
 
-/* Construct value that describes a class of wide characters identified
-   by the string argument PROPERTY.  */
+
+
+
+# 1 "/usr/include/xlocale.h" 1 3 4
+# 27 "/usr/include/xlocale.h" 3 4
+typedef struct __locale_struct
+{
+
+  struct __locale_data *__locales[13];
+
+
+  const unsigned short int *__ctype_b;
+  const int *__ctype_tolower;
+  const int *__ctype_toupper;
+
+
+  const char *__names[13];
+} *__locale_t;
+
+
+typedef __locale_t locale_t;
+# 228 "wctype.c" 2
+
+
+
+extern int iswalnum_l (wint_t __wc, __locale_t __locale) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+
+
+extern int iswalpha_l (wint_t __wc, __locale_t __locale) __attribute__ ((__nothrow__ , __leaf__));
+
+
+extern int iswcntrl_l (wint_t __wc, __locale_t __locale) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+extern int iswdigit_l (wint_t __wc, __locale_t __locale) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+extern int iswgraph_l (wint_t __wc, __locale_t __locale) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+
+extern int iswlower_l (wint_t __wc, __locale_t __locale) __attribute__ ((__nothrow__ , __leaf__));
+
+
+extern int iswprint_l (wint_t __wc, __locale_t __locale) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+
+extern int iswpunct_l (wint_t __wc, __locale_t __locale) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+
+extern int iswspace_l (wint_t __wc, __locale_t __locale) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+
+extern int iswupper_l (wint_t __wc, __locale_t __locale) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+
+extern int iswxdigit_l (wint_t __wc, __locale_t __locale) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+
+extern int iswblank_l (wint_t __wc, __locale_t __locale) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
 extern wctype_t wctype_l (__const char *__property, __locale_t __locale)
-     __THROW;
+     __attribute__ ((__nothrow__ , __leaf__));
 
-/* Determine whether the wide-character WC has the property described by
-   DESC.  */
+
+
 extern int iswctype_l (wint_t __wc, wctype_t __desc, __locale_t __locale)
-     __THROW;
+     __attribute__ ((__nothrow__ , __leaf__));
 
 
-/*
- * Wide-character case-mapping functions.
- */
 
-/* Converts an uppercase letter to the corresponding lowercase letter.  */
-extern wint_t towlower_l (wint_t __wc, __locale_t __locale) __THROW;
 
-/* Converts an lowercase letter to the corresponding uppercase letter.  */
-extern wint_t towupper_l (wint_t __wc, __locale_t __locale) __THROW;
 
-/* Construct value that describes a mapping between wide characters
-   identified by the string argument PROPERTY.  */
+
+
+extern wint_t towlower_l (wint_t __wc, __locale_t __locale) __attribute__ ((__nothrow__ , __leaf__));
+
+
+extern wint_t towupper_l (wint_t __wc, __locale_t __locale) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
 extern wctrans_t wctrans_l (__const char *__property, __locale_t __locale)
-     __THROW;
+     __attribute__ ((__nothrow__ , __leaf__));
 
-/* Map the wide character WC using the mapping described by DESC.  */
+
 extern wint_t towctrans_l (wint_t __wc, wctrans_t __desc,
-			   __locale_t __locale) __THROW;
+      __locale_t __locale) __attribute__ ((__nothrow__ , __leaf__));
 
-# endif /* Use POSIX 2008.  */
 
-__END_DECLS
 
-#endif	/* __WCTYPE_H defined.  */
 
-#endif /* wctype.h  */

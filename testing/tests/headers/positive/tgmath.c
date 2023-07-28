@@ -1,456 +1,1061 @@
-/* Copyright (C) 1997, 1998, 1999, 2000, 2001, 2003, 2004, 2005, 2007
-   Free Software Foundation, Inc.
-   This file is part of the GNU C Library.
-
-   The GNU C Library is free software; you can redistribute it and/or
-   modify it under the terms of the GNU Lesser General Public
-   License as published by the Free Software Foundation; either
-   version 2.1 of the License, or (at your option) any later version.
-
-   The GNU C Library is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-   Lesser General Public License for more details.
-
-   You should have received a copy of the GNU Lesser General Public
-   License along with the GNU C Library; if not, write to the Free
-   Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307 USA.  */
-
-/*
- *	ISO C99 Standard: 7.22 Type-generic math	<tgmath.h>
- */
-
-#ifndef _TGMATH_H
-#define _TGMATH_H	1
-
-/* Include the needed headers.  */
-#include <math.h>
-#include <complex.h>
-
-
-/* Since `complex' is currently not really implemented in most C compilers
-   and if it is implemented, the implementations differ.  This makes it
-   quite difficult to write a generic implementation of this header.  We
-   do not try this for now and instead concentrate only on GNU CC.  Once
-   we have more information support for other compilers might follow.  */
-
-#if __GNUC_PREREQ (2, 7)
-
-# ifdef __NO_LONG_DOUBLE_MATH
-#  define __tgml(fct) fct
-# else
-#  define __tgml(fct) fct ## l
-# endif
-
-/* This is ugly but unless gcc gets appropriate builtins we have to do
-   something like this.  Don't ask how it works.  */
-
-/* 1 if 'type' is a floating type, 0 if 'type' is an integer type.
-   Allows for _Bool.  Expands to an integer constant expression.  */
-# if __GNUC_PREREQ (3, 1)
-#  define __floating_type(type) \
-  (__builtin_classify_type ((type) 0) == 8 \
-   || (__builtin_classify_type ((type) 0) == 9 \
-       && __builtin_classify_type (__real__ ((type) 0)) == 8))
-# else
-#  define __floating_type(type) (((type) 0.25) && ((type) 0.25 - 1))
-# endif
-
-/* The tgmath real type for T, where E is 0 if T is an integer type and
-   1 for a floating type.  */
-# define __tgmath_real_type_sub(T, E) \
-  __typeof__ (*(0 ? (__typeof__ (0 ? (double *) 0 : (void *) (E))) 0	      \
-		  : (__typeof__ (0 ? (T *) 0 : (void *) (!(E)))) 0))
-
-/* The tgmath real type of EXPR.  */
-# define __tgmath_real_type(expr) \
-  __tgmath_real_type_sub (__typeof__ ((__typeof__ (expr)) 0),		      \
-			  __floating_type (__typeof__ (expr)))
-
-
-/* We have two kinds of generic macros: to support functions which are
-   only defined on real valued parameters and those which are defined
-   for complex functions as well.  */
-# define __TGMATH_UNARY_REAL_ONLY(Val, Fct) \
-     (__extension__ ((sizeof (Val) == sizeof (double)			      \
-		      || __builtin_classify_type (Val) != 8)		      \
-		     ? (__tgmath_real_type (Val)) Fct (Val)		      \
-		     : (sizeof (Val) == sizeof (float))			      \
-		     ? (__tgmath_real_type (Val)) Fct##f (Val)		      \
-		     : (__tgmath_real_type (Val)) __tgml(Fct) (Val)))
-
-# define __TGMATH_UNARY_REAL_RET_ONLY(Val, RetType, Fct) \
-     (__extension__ ((sizeof (Val) == sizeof (double)			      \
-		      || __builtin_classify_type (Val) != 8)		      \
-		     ? (RetType) Fct (Val)				      \
-		     : (sizeof (Val) == sizeof (float))			      \
-		     ? (RetType) Fct##f (Val)				      \
-		     : (RetType) __tgml(Fct) (Val)))
-
-# define __TGMATH_BINARY_FIRST_REAL_ONLY(Val1, Val2, Fct) \
-     (__extension__ ((sizeof (Val1) == sizeof (double)			      \
-		      || __builtin_classify_type (Val1) != 8)		      \
-		     ? (__tgmath_real_type (Val1)) Fct (Val1, Val2)	      \
-		     : (sizeof (Val1) == sizeof (float))		      \
-		     ? (__tgmath_real_type (Val1)) Fct##f (Val1, Val2)	      \
-		     : (__tgmath_real_type (Val1)) __tgml(Fct) (Val1, Val2)))
-
-# define __TGMATH_BINARY_REAL_ONLY(Val1, Val2, Fct) \
-     (__extension__ (((sizeof (Val1) > sizeof (double)			      \
-		       || sizeof (Val2) > sizeof (double))		      \
-		      && __builtin_classify_type ((Val1) + (Val2)) == 8)      \
-		     ? (__typeof ((__tgmath_real_type (Val1)) 0		      \
-				   + (__tgmath_real_type (Val2)) 0))	      \
-		       __tgml(Fct) (Val1, Val2)				      \
-		     : (sizeof (Val1) == sizeof (double)		      \
-			|| sizeof (Val2) == sizeof (double)		      \
-			|| __builtin_classify_type (Val1) != 8		      \
-			|| __builtin_classify_type (Val2) != 8)		      \
-		     ? (__typeof ((__tgmath_real_type (Val1)) 0		      \
-				   + (__tgmath_real_type (Val2)) 0))	      \
-		       Fct (Val1, Val2)					      \
-		     : (__typeof ((__tgmath_real_type (Val1)) 0		      \
-				   + (__tgmath_real_type (Val2)) 0))	      \
-		       Fct##f (Val1, Val2)))
-
-# define __TGMATH_TERNARY_FIRST_SECOND_REAL_ONLY(Val1, Val2, Val3, Fct) \
-     (__extension__ (((sizeof (Val1) > sizeof (double)			      \
-		       || sizeof (Val2) > sizeof (double))		      \
-		      && __builtin_classify_type ((Val1) + (Val2)) == 8)      \
-		     ? (__typeof ((__tgmath_real_type (Val1)) 0		      \
-				   + (__tgmath_real_type (Val2)) 0))	      \
-		       __tgml(Fct) (Val1, Val2, Val3)			      \
-		     : (sizeof (Val1) == sizeof (double)		      \
-			|| sizeof (Val2) == sizeof (double)		      \
-			|| __builtin_classify_type (Val1) != 8		      \
-			|| __builtin_classify_type (Val2) != 8)		      \
-		     ? (__typeof ((__tgmath_real_type (Val1)) 0		      \
-				   + (__tgmath_real_type (Val2)) 0))	      \
-		       Fct (Val1, Val2, Val3)				      \
-		     : (__typeof ((__tgmath_real_type (Val1)) 0		      \
-				   + (__tgmath_real_type (Val2)) 0))	      \
-		       Fct##f (Val1, Val2, Val3)))
-
-# define __TGMATH_TERNARY_REAL_ONLY(Val1, Val2, Val3, Fct) \
-     (__extension__ (((sizeof (Val1) > sizeof (double)			      \
-		       || sizeof (Val2) > sizeof (double)		      \
-		       || sizeof (Val3) > sizeof (double))		      \
-		      && __builtin_classify_type ((Val1) + (Val2) + (Val3))   \
-			 == 8)						      \
-		     ? (__typeof ((__tgmath_real_type (Val1)) 0		      \
-				   + (__tgmath_real_type (Val2)) 0	      \
-				   + (__tgmath_real_type (Val3)) 0))	      \
-		       __tgml(Fct) (Val1, Val2, Val3)			      \
-		     : (sizeof (Val1) == sizeof (double)		      \
-			|| sizeof (Val2) == sizeof (double)		      \
-			|| sizeof (Val3) == sizeof (double)		      \
-			|| __builtin_classify_type (Val1) != 8		      \
-			|| __builtin_classify_type (Val2) != 8		      \
-			|| __builtin_classify_type (Val3) != 8)		      \
-		     ? (__typeof ((__tgmath_real_type (Val1)) 0		      \
-				   + (__tgmath_real_type (Val2)) 0	      \
-				   + (__tgmath_real_type (Val3)) 0))	      \
-		       Fct (Val1, Val2, Val3)				      \
-		     : (__typeof ((__tgmath_real_type (Val1)) 0		      \
-				   + (__tgmath_real_type (Val2)) 0	      \
-				   + (__tgmath_real_type (Val3)) 0))	      \
-		       Fct##f (Val1, Val2, Val3)))
-
-/* XXX This definition has to be changed as soon as the compiler understands
-   the imaginary keyword.  */
-# define __TGMATH_UNARY_REAL_IMAG(Val, Fct, Cfct) \
-     (__extension__ ((sizeof (__real__ (Val)) == sizeof (double)	      \
-		      || __builtin_classify_type (__real__ (Val)) != 8)	      \
-		     ? ((sizeof (__real__ (Val)) == sizeof (Val))	      \
-			? (__tgmath_real_type (Val)) Fct (Val)		      \
-			: (__tgmath_real_type (Val)) Cfct (Val))	      \
-		     : (sizeof (__real__ (Val)) == sizeof (float))	      \
-		     ? ((sizeof (__real__ (Val)) == sizeof (Val))	      \
-			? (__tgmath_real_type (Val)) Fct##f (Val)	      \
-			: (__tgmath_real_type (Val)) Cfct##f (Val))	      \
-		     : ((sizeof (__real__ (Val)) == sizeof (Val))	      \
-			? (__tgmath_real_type (Val)) __tgml(Fct) (Val)	      \
-			: (__tgmath_real_type (Val)) __tgml(Cfct) (Val))))
-
-# define __TGMATH_UNARY_IMAG(Val, Cfct) \
-     (__extension__ ((sizeof (__real__ (Val)) == sizeof (double)	      \
-		      || __builtin_classify_type (__real__ (Val)) != 8)	      \
-		     ? (__typeof__ ((__tgmath_real_type (Val)) 0	      \
-				    + _Complex_I)) Cfct (Val)		      \
-		     : (sizeof (__real__ (Val)) == sizeof (float))	      \
-		     ? (__typeof__ ((__tgmath_real_type (Val)) 0	      \
-				    + _Complex_I)) Cfct##f (Val)	      \
-		     : (__typeof__ ((__tgmath_real_type (Val)) 0	      \
-				    + _Complex_I)) __tgml(Cfct) (Val)))
-
-/* XXX This definition has to be changed as soon as the compiler understands
-   the imaginary keyword.  */
-# define __TGMATH_UNARY_REAL_IMAG_RET_REAL(Val, Fct, Cfct) \
-     (__extension__ ((sizeof (__real__ (Val)) == sizeof (double)	      \
-		      || __builtin_classify_type (__real__ (Val)) != 8)	      \
-		     ? ((sizeof (__real__ (Val)) == sizeof (Val))	      \
-			? (__typeof__ (__real__ (__tgmath_real_type (Val)) 0))\
-			  Fct (Val)					      \
-			: (__typeof__ (__real__ (__tgmath_real_type (Val)) 0))\
-			  Cfct (Val))					      \
-		     : (sizeof (__real__ (Val)) == sizeof (float))	      \
-		     ? ((sizeof (__real__ (Val)) == sizeof (Val))	      \
-			? (__typeof__ (__real__ (__tgmath_real_type (Val)) 0))\
-			  Fct##f (Val)					      \
-			: (__typeof__ (__real__ (__tgmath_real_type (Val)) 0))\
-			  Cfct##f (Val))				      \
-		     : ((sizeof (__real__ (Val)) == sizeof (Val))	      \
-			? (__typeof__ (__real__ (__tgmath_real_type (Val)) 0))\
-			  __tgml(Fct) (Val)				      \
-			: (__typeof__ (__real__ (__tgmath_real_type (Val)) 0))\
-			  __tgml(Cfct) (Val))))
-
-/* XXX This definition has to be changed as soon as the compiler understands
-   the imaginary keyword.  */
-# define __TGMATH_BINARY_REAL_IMAG(Val1, Val2, Fct, Cfct) \
-     (__extension__ (((sizeof (__real__ (Val1)) > sizeof (double)	      \
-		       || sizeof (__real__ (Val2)) > sizeof (double))	      \
-		      && __builtin_classify_type (__real__ (Val1)	      \
-						  + __real__ (Val2)) == 8)    \
-		     ? ((sizeof (__real__ (Val1)) == sizeof (Val1)	      \
-			 && sizeof (__real__ (Val2)) == sizeof (Val2))	      \
-			? (__typeof ((__tgmath_real_type (Val1)) 0	      \
-				   + (__tgmath_real_type (Val2)) 0))	      \
-			  __tgml(Fct) (Val1, Val2)			      \
-			: (__typeof ((__tgmath_real_type (Val1)) 0	      \
-				   + (__tgmath_real_type (Val2)) 0))	      \
-			  __tgml(Cfct) (Val1, Val2))			      \
-		     : (sizeof (__real__ (Val1)) == sizeof (double)	      \
-			|| sizeof (__real__ (Val2)) == sizeof (double)	      \
-			|| __builtin_classify_type (__real__ (Val1)) != 8     \
-			|| __builtin_classify_type (__real__ (Val2)) != 8)    \
-		     ? ((sizeof (__real__ (Val1)) == sizeof (Val1)	      \
-			 && sizeof (__real__ (Val2)) == sizeof (Val2))	      \
-			? (__typeof ((__tgmath_real_type (Val1)) 0	      \
-				   + (__tgmath_real_type (Val2)) 0))	      \
-			  Fct (Val1, Val2)				      \
-			: (__typeof ((__tgmath_real_type (Val1)) 0	      \
-				   + (__tgmath_real_type (Val2)) 0))	      \
-			  Cfct (Val1, Val2))				      \
-		     : ((sizeof (__real__ (Val1)) == sizeof (Val1)	      \
-			 && sizeof (__real__ (Val2)) == sizeof (Val2))	      \
-			? (__typeof ((__tgmath_real_type (Val1)) 0	      \
-				   + (__tgmath_real_type (Val2)) 0))	      \
-			  Fct##f (Val1, Val2)				      \
-			: (__typeof ((__tgmath_real_type (Val1)) 0	      \
-				   + (__tgmath_real_type (Val2)) 0))	      \
-			  Cfct##f (Val1, Val2))))
-#else
-# error "Unsupported compiler; you cannot use <tgmath.h>"
-#endif
-
-
-/* Unary functions defined for real and complex values.  */
-
-
-/* Trigonometric functions.  */
-
-/* Arc cosine of X.  */
-#define acos(Val) __TGMATH_UNARY_REAL_IMAG (Val, acos, cacos)
-/* Arc sine of X.  */
-#define asin(Val) __TGMATH_UNARY_REAL_IMAG (Val, asin, casin)
-/* Arc tangent of X.  */
-#define atan(Val) __TGMATH_UNARY_REAL_IMAG (Val, atan, catan)
-/* Arc tangent of Y/X.  */
-#define atan2(Val1, Val2) __TGMATH_BINARY_REAL_ONLY (Val1, Val2, atan2)
-
-/* Cosine of X.  */
-#define cos(Val) __TGMATH_UNARY_REAL_IMAG (Val, cos, ccos)
-/* Sine of X.  */
-#define sin(Val) __TGMATH_UNARY_REAL_IMAG (Val, sin, csin)
-/* Tangent of X.  */
-#define tan(Val) __TGMATH_UNARY_REAL_IMAG (Val, tan, ctan)
-
-
-/* Hyperbolic functions.  */
-
-/* Hyperbolic arc cosine of X.  */
-#define acosh(Val) __TGMATH_UNARY_REAL_IMAG (Val, acosh, cacosh)
-/* Hyperbolic arc sine of X.  */
-#define asinh(Val) __TGMATH_UNARY_REAL_IMAG (Val, asinh, casinh)
-/* Hyperbolic arc tangent of X.  */
-#define atanh(Val) __TGMATH_UNARY_REAL_IMAG (Val, atanh, catanh)
-
-/* Hyperbolic cosine of X.  */
-#define cosh(Val) __TGMATH_UNARY_REAL_IMAG (Val, cosh, ccosh)
-/* Hyperbolic sine of X.  */
-#define sinh(Val) __TGMATH_UNARY_REAL_IMAG (Val, sinh, csinh)
-/* Hyperbolic tangent of X.  */
-#define tanh(Val) __TGMATH_UNARY_REAL_IMAG (Val, tanh, ctanh)
-
-
-/* Exponential and logarithmic functions.  */
-
-/* Exponential function of X.  */
-#define exp(Val) __TGMATH_UNARY_REAL_IMAG (Val, exp, cexp)
-
-/* Break VALUE into a normalized fraction and an integral power of 2.  */
-#define frexp(Val1, Val2) __TGMATH_BINARY_FIRST_REAL_ONLY (Val1, Val2, frexp)
-
-/* X times (two to the EXP power).  */
-#define ldexp(Val1, Val2) __TGMATH_BINARY_FIRST_REAL_ONLY (Val1, Val2, ldexp)
-
-/* Natural logarithm of X.  */
-#define log(Val) __TGMATH_UNARY_REAL_IMAG (Val, log, clog)
-
-/* Base-ten logarithm of X.  */
-#ifdef __USE_GNU
-# define log10(Val) __TGMATH_UNARY_REAL_IMAG (Val, log10, __clog10)
-#else
-# define log10(Val) __TGMATH_UNARY_REAL_ONLY (Val, log10)
-#endif
-
-/* Return exp(X) - 1.  */
-#define expm1(Val) __TGMATH_UNARY_REAL_ONLY (Val, expm1)
-
-/* Return log(1 + X).  */
-#define log1p(Val) __TGMATH_UNARY_REAL_ONLY (Val, log1p)
-
-/* Return the base 2 signed integral exponent of X.  */
-#define logb(Val) __TGMATH_UNARY_REAL_ONLY (Val, logb)
-
-/* Compute base-2 exponential of X.  */
-#define exp2(Val) __TGMATH_UNARY_REAL_ONLY (Val, exp2)
-
-/* Compute base-2 logarithm of X.  */
-#define log2(Val) __TGMATH_UNARY_REAL_ONLY (Val, log2)
-
-
-/* Power functions.  */
-
-/* Return X to the Y power.  */
-#define pow(Val1, Val2) __TGMATH_BINARY_REAL_IMAG (Val1, Val2, pow, cpow)
-
-/* Return the square root of X.  */
-#define sqrt(Val) __TGMATH_UNARY_REAL_IMAG (Val, sqrt, csqrt)
-
-/* Return `sqrt(X*X + Y*Y)'.  */
-#define hypot(Val1, Val2) __TGMATH_BINARY_REAL_ONLY (Val1, Val2, hypot)
-
-/* Return the cube root of X.  */
-#define cbrt(Val) __TGMATH_UNARY_REAL_ONLY (Val, cbrt)
-
-
-/* Nearest integer, absolute value, and remainder functions.  */
-
-/* Smallest integral value not less than X.  */
-#define ceil(Val) __TGMATH_UNARY_REAL_ONLY (Val, ceil)
-
-/* Absolute value of X.  */
-#define fabs(Val) __TGMATH_UNARY_REAL_IMAG_RET_REAL (Val, fabs, cabs)
-
-/* Largest integer not greater than X.  */
-#define floor(Val) __TGMATH_UNARY_REAL_ONLY (Val, floor)
-
-/* Floating-point modulo remainder of X/Y.  */
-#define fmod(Val1, Val2) __TGMATH_BINARY_REAL_ONLY (Val1, Val2, fmod)
-
-/* Round X to integral valuein floating-point format using current
-   rounding direction, but do not raise inexact exception.  */
-#define nearbyint(Val) __TGMATH_UNARY_REAL_ONLY (Val, nearbyint)
-
-/* Round X to nearest integral value, rounding halfway cases away from
-   zero.  */
-#define round(Val) __TGMATH_UNARY_REAL_ONLY (Val, round)
-
-/* Round X to the integral value in floating-point format nearest but
-   not larger in magnitude.  */
-#define trunc(Val) __TGMATH_UNARY_REAL_ONLY (Val, trunc)
-
-/* Compute remainder of X and Y and put in *QUO a value with sign of x/y
-   and magnitude congruent `mod 2^n' to the magnitude of the integral
-   quotient x/y, with n >= 3.  */
-#define remquo(Val1, Val2, Val3) \
-     __TGMATH_TERNARY_FIRST_SECOND_REAL_ONLY (Val1, Val2, Val3, remquo)
-
-/* Round X to nearest integral value according to current rounding
-   direction.  */
-#define lrint(Val) __TGMATH_UNARY_REAL_RET_ONLY (Val, long int, lrint)
-#define llrint(Val) __TGMATH_UNARY_REAL_RET_ONLY (Val, long long int, llrint)
-
-/* Round X to nearest integral value, rounding halfway cases away from
-   zero.  */
-#define lround(Val) __TGMATH_UNARY_REAL_RET_ONLY (Val, long int, lround)
-#define llround(Val) __TGMATH_UNARY_REAL_RET_ONLY (Val, long long int, llround)
-
-
-/* Return X with its signed changed to Y's.  */
-#define copysign(Val1, Val2) __TGMATH_BINARY_REAL_ONLY (Val1, Val2, copysign)
-
-/* Error and gamma functions.  */
-#define erf(Val) __TGMATH_UNARY_REAL_ONLY (Val, erf)
-#define erfc(Val) __TGMATH_UNARY_REAL_ONLY (Val, erfc)
-#define tgamma(Val) __TGMATH_UNARY_REAL_ONLY (Val, tgamma)
-#define lgamma(Val) __TGMATH_UNARY_REAL_ONLY (Val, lgamma)
-
-
-/* Return the integer nearest X in the direction of the
-   prevailing rounding mode.  */
-#define rint(Val) __TGMATH_UNARY_REAL_ONLY (Val, rint)
-
-/* Return X + epsilon if X < Y, X - epsilon if X > Y.  */
-#define nextafter(Val1, Val2) __TGMATH_BINARY_REAL_ONLY (Val1, Val2, nextafter)
-#define nexttoward(Val1, Val2) \
-     __TGMATH_BINARY_FIRST_REAL_ONLY (Val1, Val2, nexttoward)
-
-/* Return the remainder of integer divison X / Y with infinite precision.  */
-#define remainder(Val1, Val2) __TGMATH_BINARY_REAL_ONLY (Val1, Val2, remainder)
-
-/* Return X times (2 to the Nth power).  */
-#if defined __USE_MISC || defined __USE_XOPEN_EXTENDED
-# define scalb(Val1, Val2) __TGMATH_BINARY_REAL_ONLY (Val1, Val2, scalb)
-#endif
-
-/* Return X times (2 to the Nth power).  */
-#define scalbn(Val1, Val2) __TGMATH_BINARY_FIRST_REAL_ONLY (Val1, Val2, scalbn)
-
-/* Return X times (2 to the Nth power).  */
-#define scalbln(Val1, Val2) \
-     __TGMATH_BINARY_FIRST_REAL_ONLY (Val1, Val2, scalbln)
-
-/* Return the binary exponent of X, which must be nonzero.  */
-#define ilogb(Val) __TGMATH_UNARY_REAL_RET_ONLY (Val, int, ilogb)
-
-
-/* Return positive difference between X and Y.  */
-#define fdim(Val1, Val2) __TGMATH_BINARY_REAL_ONLY (Val1, Val2, fdim)
-
-/* Return maximum numeric value from X and Y.  */
-#define fmax(Val1, Val2) __TGMATH_BINARY_REAL_ONLY (Val1, Val2, fmax)
-
-/* Return minimum numeric value from X and Y.  */
-#define fmin(Val1, Val2) __TGMATH_BINARY_REAL_ONLY (Val1, Val2, fmin)
-
-
-/* Multiply-add function computed as a ternary operation.  */
-#define fma(Val1, Val2, Val3) \
-     __TGMATH_TERNARY_REAL_ONLY (Val1, Val2, Val3, fma)
-
-
-/* Absolute value, conjugates, and projection.  */
-
-/* Argument value of Z.  */
-#define carg(Val) __TGMATH_UNARY_REAL_IMAG_RET_REAL (Val, carg, carg)
-
-/* Complex conjugate of Z.  */
-#define conj(Val) __TGMATH_UNARY_IMAG (Val, conj)
-
-/* Projection of Z onto the Riemann sphere.  */
-#define cproj(Val) __TGMATH_UNARY_IMAG (Val, cproj)
-
-
-/* Decomposing complex values.  */
-
-/* Imaginary part of Z.  */
-#define cimag(Val) __TGMATH_UNARY_REAL_IMAG_RET_REAL (Val, cimag, cimag)
-
-/* Real part of Z.  */
-#define creal(Val) __TGMATH_UNARY_REAL_IMAG_RET_REAL (Val, creal, creal)
-
-#endif /* tgmath.h */
+# 1 "tgmath.c"
+# 1 "<built-in>"
+# 1 "<command-line>"
+# 1 "/usr/include/stdc-predef.h" 1 3 4
+# 1 "<command-line>" 2
+# 1 "tgmath.c"
+# 28 "tgmath.c"
+# 1 "/usr/include/math.h" 1 3 4
+# 26 "/usr/include/math.h" 3 4
+# 1 "/usr/include/features.h" 1 3 4
+# 367 "/usr/include/features.h" 3 4
+# 1 "/usr/include/x86_64-linux-gnu/sys/cdefs.h" 1 3 4
+# 410 "/usr/include/x86_64-linux-gnu/sys/cdefs.h" 3 4
+# 1 "/usr/include/x86_64-linux-gnu/bits/wordsize.h" 1 3 4
+# 411 "/usr/include/x86_64-linux-gnu/sys/cdefs.h" 2 3 4
+# 368 "/usr/include/features.h" 2 3 4
+# 391 "/usr/include/features.h" 3 4
+# 1 "/usr/include/x86_64-linux-gnu/gnu/stubs.h" 1 3 4
+# 10 "/usr/include/x86_64-linux-gnu/gnu/stubs.h" 3 4
+# 1 "/usr/include/x86_64-linux-gnu/gnu/stubs-64.h" 1 3 4
+# 11 "/usr/include/x86_64-linux-gnu/gnu/stubs.h" 2 3 4
+# 392 "/usr/include/features.h" 2 3 4
+# 27 "/usr/include/math.h" 2 3 4
+
+
+
+
+# 1 "/usr/include/x86_64-linux-gnu/bits/math-vector.h" 1 3 4
+# 25 "/usr/include/x86_64-linux-gnu/bits/math-vector.h" 3 4
+# 1 "/usr/include/x86_64-linux-gnu/bits/libm-simd-decl-stubs.h" 1 3 4
+# 26 "/usr/include/x86_64-linux-gnu/bits/math-vector.h" 2 3 4
+# 32 "/usr/include/math.h" 2 3 4
+
+
+
+# 1 "/usr/include/x86_64-linux-gnu/bits/huge_val.h" 1 3 4
+# 36 "/usr/include/math.h" 2 3 4
+
+# 1 "/usr/include/x86_64-linux-gnu/bits/huge_valf.h" 1 3 4
+# 38 "/usr/include/math.h" 2 3 4
+# 1 "/usr/include/x86_64-linux-gnu/bits/huge_vall.h" 1 3 4
+# 39 "/usr/include/math.h" 2 3 4
+
+
+# 1 "/usr/include/x86_64-linux-gnu/bits/inf.h" 1 3 4
+# 42 "/usr/include/math.h" 2 3 4
+
+
+# 1 "/usr/include/x86_64-linux-gnu/bits/nan.h" 1 3 4
+# 45 "/usr/include/math.h" 2 3 4
+
+
+
+# 1 "/usr/include/x86_64-linux-gnu/bits/mathdef.h" 1 3 4
+# 28 "/usr/include/x86_64-linux-gnu/bits/mathdef.h" 3 4
+typedef float float_t;
+typedef double double_t;
+# 49 "/usr/include/math.h" 2 3 4
+# 83 "/usr/include/math.h" 3 4
+# 1 "/usr/include/x86_64-linux-gnu/bits/mathcalls.h" 1 3 4
+# 52 "/usr/include/x86_64-linux-gnu/bits/mathcalls.h" 3 4
+
+
+extern double acos (double __x) __attribute__ ((__nothrow__ , __leaf__)); extern double __acos (double __x) __attribute__ ((__nothrow__ , __leaf__));
+
+extern double asin (double __x) __attribute__ ((__nothrow__ , __leaf__)); extern double __asin (double __x) __attribute__ ((__nothrow__ , __leaf__));
+
+extern double atan (double __x) __attribute__ ((__nothrow__ , __leaf__)); extern double __atan (double __x) __attribute__ ((__nothrow__ , __leaf__));
+
+extern double atan2 (double __y, double __x) __attribute__ ((__nothrow__ , __leaf__)); extern double __atan2 (double __y, double __x) __attribute__ ((__nothrow__ , __leaf__));
+
+
+ extern double cos (double __x) __attribute__ ((__nothrow__ , __leaf__)); extern double __cos (double __x) __attribute__ ((__nothrow__ , __leaf__));
+
+ extern double sin (double __x) __attribute__ ((__nothrow__ , __leaf__)); extern double __sin (double __x) __attribute__ ((__nothrow__ , __leaf__));
+
+extern double tan (double __x) __attribute__ ((__nothrow__ , __leaf__)); extern double __tan (double __x) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+
+extern double cosh (double __x) __attribute__ ((__nothrow__ , __leaf__)); extern double __cosh (double __x) __attribute__ ((__nothrow__ , __leaf__));
+
+extern double sinh (double __x) __attribute__ ((__nothrow__ , __leaf__)); extern double __sinh (double __x) __attribute__ ((__nothrow__ , __leaf__));
+
+extern double tanh (double __x) __attribute__ ((__nothrow__ , __leaf__)); extern double __tanh (double __x) __attribute__ ((__nothrow__ , __leaf__));
+
+# 86 "/usr/include/x86_64-linux-gnu/bits/mathcalls.h" 3 4
+
+
+extern double acosh (double __x) __attribute__ ((__nothrow__ , __leaf__)); extern double __acosh (double __x) __attribute__ ((__nothrow__ , __leaf__));
+
+extern double asinh (double __x) __attribute__ ((__nothrow__ , __leaf__)); extern double __asinh (double __x) __attribute__ ((__nothrow__ , __leaf__));
+
+extern double atanh (double __x) __attribute__ ((__nothrow__ , __leaf__)); extern double __atanh (double __x) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+
+
+
+
+ extern double exp (double __x) __attribute__ ((__nothrow__ , __leaf__)); extern double __exp (double __x) __attribute__ ((__nothrow__ , __leaf__));
+
+
+extern double frexp (double __x, int *__exponent) __attribute__ ((__nothrow__ , __leaf__)); extern double __frexp (double __x, int *__exponent) __attribute__ ((__nothrow__ , __leaf__));
+
+
+extern double ldexp (double __x, int __exponent) __attribute__ ((__nothrow__ , __leaf__)); extern double __ldexp (double __x, int __exponent) __attribute__ ((__nothrow__ , __leaf__));
+
+
+ extern double log (double __x) __attribute__ ((__nothrow__ , __leaf__)); extern double __log (double __x) __attribute__ ((__nothrow__ , __leaf__));
+
+
+extern double log10 (double __x) __attribute__ ((__nothrow__ , __leaf__)); extern double __log10 (double __x) __attribute__ ((__nothrow__ , __leaf__));
+
+
+extern double modf (double __x, double *__iptr) __attribute__ ((__nothrow__ , __leaf__)); extern double __modf (double __x, double *__iptr) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (2)));
+
+# 126 "/usr/include/x86_64-linux-gnu/bits/mathcalls.h" 3 4
+
+
+extern double expm1 (double __x) __attribute__ ((__nothrow__ , __leaf__)); extern double __expm1 (double __x) __attribute__ ((__nothrow__ , __leaf__));
+
+
+extern double log1p (double __x) __attribute__ ((__nothrow__ , __leaf__)); extern double __log1p (double __x) __attribute__ ((__nothrow__ , __leaf__));
+
+
+extern double logb (double __x) __attribute__ ((__nothrow__ , __leaf__)); extern double __logb (double __x) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+
+
+
+extern double exp2 (double __x) __attribute__ ((__nothrow__ , __leaf__)); extern double __exp2 (double __x) __attribute__ ((__nothrow__ , __leaf__));
+
+
+extern double log2 (double __x) __attribute__ ((__nothrow__ , __leaf__)); extern double __log2 (double __x) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+
+
+
+
+
+ extern double pow (double __x, double __y) __attribute__ ((__nothrow__ , __leaf__)); extern double __pow (double __x, double __y) __attribute__ ((__nothrow__ , __leaf__));
+
+
+extern double sqrt (double __x) __attribute__ ((__nothrow__ , __leaf__)); extern double __sqrt (double __x) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+
+
+extern double hypot (double __x, double __y) __attribute__ ((__nothrow__ , __leaf__)); extern double __hypot (double __x, double __y) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+
+
+
+extern double cbrt (double __x) __attribute__ ((__nothrow__ , __leaf__)); extern double __cbrt (double __x) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+
+
+
+
+
+extern double ceil (double __x) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__)); extern double __ceil (double __x) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__));
+
+
+extern double fabs (double __x) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__)); extern double __fabs (double __x) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__));
+
+
+extern double floor (double __x) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__)); extern double __floor (double __x) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__));
+
+
+extern double fmod (double __x, double __y) __attribute__ ((__nothrow__ , __leaf__)); extern double __fmod (double __x, double __y) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+
+extern int __isinf (double __value) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__));
+
+
+extern int __finite (double __value) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__));
+
+# 219 "/usr/include/x86_64-linux-gnu/bits/mathcalls.h" 3 4
+
+
+extern double copysign (double __x, double __y) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__)); extern double __copysign (double __x, double __y) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__));
+
+
+
+
+
+
+extern double nan (const char *__tagb) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__)); extern double __nan (const char *__tagb) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__));
+
+
+
+
+
+extern int __isnan (double __value) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__));
+# 257 "/usr/include/x86_64-linux-gnu/bits/mathcalls.h" 3 4
+
+
+extern double erf (double) __attribute__ ((__nothrow__ , __leaf__)); extern double __erf (double) __attribute__ ((__nothrow__ , __leaf__));
+extern double erfc (double) __attribute__ ((__nothrow__ , __leaf__)); extern double __erfc (double) __attribute__ ((__nothrow__ , __leaf__));
+extern double lgamma (double) __attribute__ ((__nothrow__ , __leaf__)); extern double __lgamma (double) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+
+
+
+extern double tgamma (double) __attribute__ ((__nothrow__ , __leaf__)); extern double __tgamma (double) __attribute__ ((__nothrow__ , __leaf__));
+
+# 286 "/usr/include/x86_64-linux-gnu/bits/mathcalls.h" 3 4
+
+
+
+extern double rint (double __x) __attribute__ ((__nothrow__ , __leaf__)); extern double __rint (double __x) __attribute__ ((__nothrow__ , __leaf__));
+
+
+extern double nextafter (double __x, double __y) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__)); extern double __nextafter (double __x, double __y) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__));
+
+extern double nexttoward (double __x, long double __y) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__)); extern double __nexttoward (double __x, long double __y) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__));
+
+
+
+extern double remainder (double __x, double __y) __attribute__ ((__nothrow__ , __leaf__)); extern double __remainder (double __x, double __y) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+extern double scalbn (double __x, int __n) __attribute__ ((__nothrow__ , __leaf__)); extern double __scalbn (double __x, int __n) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+extern int ilogb (double __x) __attribute__ ((__nothrow__ , __leaf__)); extern int __ilogb (double __x) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+
+extern double scalbln (double __x, long int __n) __attribute__ ((__nothrow__ , __leaf__)); extern double __scalbln (double __x, long int __n) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+extern double nearbyint (double __x) __attribute__ ((__nothrow__ , __leaf__)); extern double __nearbyint (double __x) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+extern double round (double __x) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__)); extern double __round (double __x) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__));
+
+
+
+extern double trunc (double __x) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__)); extern double __trunc (double __x) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__));
+
+
+
+
+extern double remquo (double __x, double __y, int *__quo) __attribute__ ((__nothrow__ , __leaf__)); extern double __remquo (double __x, double __y, int *__quo) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+
+
+
+extern long int lrint (double __x) __attribute__ ((__nothrow__ , __leaf__)); extern long int __lrint (double __x) __attribute__ ((__nothrow__ , __leaf__));
+__extension__
+extern long long int llrint (double __x) __attribute__ ((__nothrow__ , __leaf__)); extern long long int __llrint (double __x) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+extern long int lround (double __x) __attribute__ ((__nothrow__ , __leaf__)); extern long int __lround (double __x) __attribute__ ((__nothrow__ , __leaf__));
+__extension__
+extern long long int llround (double __x) __attribute__ ((__nothrow__ , __leaf__)); extern long long int __llround (double __x) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+extern double fdim (double __x, double __y) __attribute__ ((__nothrow__ , __leaf__)); extern double __fdim (double __x, double __y) __attribute__ ((__nothrow__ , __leaf__));
+
+
+extern double fmax (double __x, double __y) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__)); extern double __fmax (double __x, double __y) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__));
+
+
+extern double fmin (double __x, double __y) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__)); extern double __fmin (double __x, double __y) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__));
+
+
+
+extern int __fpclassify (double __value) __attribute__ ((__nothrow__ , __leaf__))
+     __attribute__ ((__const__));
+
+
+extern int __signbit (double __value) __attribute__ ((__nothrow__ , __leaf__))
+     __attribute__ ((__const__));
+
+
+
+extern double fma (double __x, double __y, double __z) __attribute__ ((__nothrow__ , __leaf__)); extern double __fma (double __x, double __y, double __z) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+
+# 84 "/usr/include/math.h" 2 3 4
+# 104 "/usr/include/math.h" 3 4
+# 1 "/usr/include/x86_64-linux-gnu/bits/mathcalls.h" 1 3 4
+# 52 "/usr/include/x86_64-linux-gnu/bits/mathcalls.h" 3 4
+
+
+extern float acosf (float __x) __attribute__ ((__nothrow__ , __leaf__)); extern float __acosf (float __x) __attribute__ ((__nothrow__ , __leaf__));
+
+extern float asinf (float __x) __attribute__ ((__nothrow__ , __leaf__)); extern float __asinf (float __x) __attribute__ ((__nothrow__ , __leaf__));
+
+extern float atanf (float __x) __attribute__ ((__nothrow__ , __leaf__)); extern float __atanf (float __x) __attribute__ ((__nothrow__ , __leaf__));
+
+extern float atan2f (float __y, float __x) __attribute__ ((__nothrow__ , __leaf__)); extern float __atan2f (float __y, float __x) __attribute__ ((__nothrow__ , __leaf__));
+
+
+ extern float cosf (float __x) __attribute__ ((__nothrow__ , __leaf__)); extern float __cosf (float __x) __attribute__ ((__nothrow__ , __leaf__));
+
+ extern float sinf (float __x) __attribute__ ((__nothrow__ , __leaf__)); extern float __sinf (float __x) __attribute__ ((__nothrow__ , __leaf__));
+
+extern float tanf (float __x) __attribute__ ((__nothrow__ , __leaf__)); extern float __tanf (float __x) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+
+extern float coshf (float __x) __attribute__ ((__nothrow__ , __leaf__)); extern float __coshf (float __x) __attribute__ ((__nothrow__ , __leaf__));
+
+extern float sinhf (float __x) __attribute__ ((__nothrow__ , __leaf__)); extern float __sinhf (float __x) __attribute__ ((__nothrow__ , __leaf__));
+
+extern float tanhf (float __x) __attribute__ ((__nothrow__ , __leaf__)); extern float __tanhf (float __x) __attribute__ ((__nothrow__ , __leaf__));
+
+# 86 "/usr/include/x86_64-linux-gnu/bits/mathcalls.h" 3 4
+
+
+extern float acoshf (float __x) __attribute__ ((__nothrow__ , __leaf__)); extern float __acoshf (float __x) __attribute__ ((__nothrow__ , __leaf__));
+
+extern float asinhf (float __x) __attribute__ ((__nothrow__ , __leaf__)); extern float __asinhf (float __x) __attribute__ ((__nothrow__ , __leaf__));
+
+extern float atanhf (float __x) __attribute__ ((__nothrow__ , __leaf__)); extern float __atanhf (float __x) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+
+
+
+
+ extern float expf (float __x) __attribute__ ((__nothrow__ , __leaf__)); extern float __expf (float __x) __attribute__ ((__nothrow__ , __leaf__));
+
+
+extern float frexpf (float __x, int *__exponent) __attribute__ ((__nothrow__ , __leaf__)); extern float __frexpf (float __x, int *__exponent) __attribute__ ((__nothrow__ , __leaf__));
+
+
+extern float ldexpf (float __x, int __exponent) __attribute__ ((__nothrow__ , __leaf__)); extern float __ldexpf (float __x, int __exponent) __attribute__ ((__nothrow__ , __leaf__));
+
+
+ extern float logf (float __x) __attribute__ ((__nothrow__ , __leaf__)); extern float __logf (float __x) __attribute__ ((__nothrow__ , __leaf__));
+
+
+extern float log10f (float __x) __attribute__ ((__nothrow__ , __leaf__)); extern float __log10f (float __x) __attribute__ ((__nothrow__ , __leaf__));
+
+
+extern float modff (float __x, float *__iptr) __attribute__ ((__nothrow__ , __leaf__)); extern float __modff (float __x, float *__iptr) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (2)));
+
+# 126 "/usr/include/x86_64-linux-gnu/bits/mathcalls.h" 3 4
+
+
+extern float expm1f (float __x) __attribute__ ((__nothrow__ , __leaf__)); extern float __expm1f (float __x) __attribute__ ((__nothrow__ , __leaf__));
+
+
+extern float log1pf (float __x) __attribute__ ((__nothrow__ , __leaf__)); extern float __log1pf (float __x) __attribute__ ((__nothrow__ , __leaf__));
+
+
+extern float logbf (float __x) __attribute__ ((__nothrow__ , __leaf__)); extern float __logbf (float __x) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+
+
+
+extern float exp2f (float __x) __attribute__ ((__nothrow__ , __leaf__)); extern float __exp2f (float __x) __attribute__ ((__nothrow__ , __leaf__));
+
+
+extern float log2f (float __x) __attribute__ ((__nothrow__ , __leaf__)); extern float __log2f (float __x) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+
+
+
+
+
+ extern float powf (float __x, float __y) __attribute__ ((__nothrow__ , __leaf__)); extern float __powf (float __x, float __y) __attribute__ ((__nothrow__ , __leaf__));
+
+
+extern float sqrtf (float __x) __attribute__ ((__nothrow__ , __leaf__)); extern float __sqrtf (float __x) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+
+
+extern float hypotf (float __x, float __y) __attribute__ ((__nothrow__ , __leaf__)); extern float __hypotf (float __x, float __y) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+
+
+
+extern float cbrtf (float __x) __attribute__ ((__nothrow__ , __leaf__)); extern float __cbrtf (float __x) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+
+
+
+
+
+extern float ceilf (float __x) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__)); extern float __ceilf (float __x) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__));
+
+
+extern float fabsf (float __x) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__)); extern float __fabsf (float __x) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__));
+
+
+extern float floorf (float __x) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__)); extern float __floorf (float __x) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__));
+
+
+extern float fmodf (float __x, float __y) __attribute__ ((__nothrow__ , __leaf__)); extern float __fmodf (float __x, float __y) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+
+extern int __isinff (float __value) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__));
+
+
+extern int __finitef (float __value) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__));
+
+# 219 "/usr/include/x86_64-linux-gnu/bits/mathcalls.h" 3 4
+
+
+extern float copysignf (float __x, float __y) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__)); extern float __copysignf (float __x, float __y) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__));
+
+
+
+
+
+
+extern float nanf (const char *__tagb) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__)); extern float __nanf (const char *__tagb) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__));
+
+
+
+
+
+extern int __isnanf (float __value) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__));
+# 257 "/usr/include/x86_64-linux-gnu/bits/mathcalls.h" 3 4
+
+
+extern float erff (float) __attribute__ ((__nothrow__ , __leaf__)); extern float __erff (float) __attribute__ ((__nothrow__ , __leaf__));
+extern float erfcf (float) __attribute__ ((__nothrow__ , __leaf__)); extern float __erfcf (float) __attribute__ ((__nothrow__ , __leaf__));
+extern float lgammaf (float) __attribute__ ((__nothrow__ , __leaf__)); extern float __lgammaf (float) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+
+
+
+extern float tgammaf (float) __attribute__ ((__nothrow__ , __leaf__)); extern float __tgammaf (float) __attribute__ ((__nothrow__ , __leaf__));
+
+# 286 "/usr/include/x86_64-linux-gnu/bits/mathcalls.h" 3 4
+
+
+
+extern float rintf (float __x) __attribute__ ((__nothrow__ , __leaf__)); extern float __rintf (float __x) __attribute__ ((__nothrow__ , __leaf__));
+
+
+extern float nextafterf (float __x, float __y) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__)); extern float __nextafterf (float __x, float __y) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__));
+
+extern float nexttowardf (float __x, long double __y) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__)); extern float __nexttowardf (float __x, long double __y) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__));
+
+
+
+extern float remainderf (float __x, float __y) __attribute__ ((__nothrow__ , __leaf__)); extern float __remainderf (float __x, float __y) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+extern float scalbnf (float __x, int __n) __attribute__ ((__nothrow__ , __leaf__)); extern float __scalbnf (float __x, int __n) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+extern int ilogbf (float __x) __attribute__ ((__nothrow__ , __leaf__)); extern int __ilogbf (float __x) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+
+extern float scalblnf (float __x, long int __n) __attribute__ ((__nothrow__ , __leaf__)); extern float __scalblnf (float __x, long int __n) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+extern float nearbyintf (float __x) __attribute__ ((__nothrow__ , __leaf__)); extern float __nearbyintf (float __x) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+extern float roundf (float __x) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__)); extern float __roundf (float __x) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__));
+
+
+
+extern float truncf (float __x) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__)); extern float __truncf (float __x) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__));
+
+
+
+
+extern float remquof (float __x, float __y, int *__quo) __attribute__ ((__nothrow__ , __leaf__)); extern float __remquof (float __x, float __y, int *__quo) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+
+
+
+extern long int lrintf (float __x) __attribute__ ((__nothrow__ , __leaf__)); extern long int __lrintf (float __x) __attribute__ ((__nothrow__ , __leaf__));
+__extension__
+extern long long int llrintf (float __x) __attribute__ ((__nothrow__ , __leaf__)); extern long long int __llrintf (float __x) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+extern long int lroundf (float __x) __attribute__ ((__nothrow__ , __leaf__)); extern long int __lroundf (float __x) __attribute__ ((__nothrow__ , __leaf__));
+__extension__
+extern long long int llroundf (float __x) __attribute__ ((__nothrow__ , __leaf__)); extern long long int __llroundf (float __x) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+extern float fdimf (float __x, float __y) __attribute__ ((__nothrow__ , __leaf__)); extern float __fdimf (float __x, float __y) __attribute__ ((__nothrow__ , __leaf__));
+
+
+extern float fmaxf (float __x, float __y) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__)); extern float __fmaxf (float __x, float __y) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__));
+
+
+extern float fminf (float __x, float __y) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__)); extern float __fminf (float __x, float __y) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__));
+
+
+
+extern int __fpclassifyf (float __value) __attribute__ ((__nothrow__ , __leaf__))
+     __attribute__ ((__const__));
+
+
+extern int __signbitf (float __value) __attribute__ ((__nothrow__ , __leaf__))
+     __attribute__ ((__const__));
+
+
+
+extern float fmaf (float __x, float __y, float __z) __attribute__ ((__nothrow__ , __leaf__)); extern float __fmaf (float __x, float __y, float __z) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+
+# 105 "/usr/include/math.h" 2 3 4
+# 151 "/usr/include/math.h" 3 4
+# 1 "/usr/include/x86_64-linux-gnu/bits/mathcalls.h" 1 3 4
+# 52 "/usr/include/x86_64-linux-gnu/bits/mathcalls.h" 3 4
+
+
+extern long double acosl (long double __x) __attribute__ ((__nothrow__ , __leaf__)); extern long double __acosl (long double __x) __attribute__ ((__nothrow__ , __leaf__));
+
+extern long double asinl (long double __x) __attribute__ ((__nothrow__ , __leaf__)); extern long double __asinl (long double __x) __attribute__ ((__nothrow__ , __leaf__));
+
+extern long double atanl (long double __x) __attribute__ ((__nothrow__ , __leaf__)); extern long double __atanl (long double __x) __attribute__ ((__nothrow__ , __leaf__));
+
+extern long double atan2l (long double __y, long double __x) __attribute__ ((__nothrow__ , __leaf__)); extern long double __atan2l (long double __y, long double __x) __attribute__ ((__nothrow__ , __leaf__));
+
+
+ extern long double cosl (long double __x) __attribute__ ((__nothrow__ , __leaf__)); extern long double __cosl (long double __x) __attribute__ ((__nothrow__ , __leaf__));
+
+ extern long double sinl (long double __x) __attribute__ ((__nothrow__ , __leaf__)); extern long double __sinl (long double __x) __attribute__ ((__nothrow__ , __leaf__));
+
+extern long double tanl (long double __x) __attribute__ ((__nothrow__ , __leaf__)); extern long double __tanl (long double __x) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+
+extern long double coshl (long double __x) __attribute__ ((__nothrow__ , __leaf__)); extern long double __coshl (long double __x) __attribute__ ((__nothrow__ , __leaf__));
+
+extern long double sinhl (long double __x) __attribute__ ((__nothrow__ , __leaf__)); extern long double __sinhl (long double __x) __attribute__ ((__nothrow__ , __leaf__));
+
+extern long double tanhl (long double __x) __attribute__ ((__nothrow__ , __leaf__)); extern long double __tanhl (long double __x) __attribute__ ((__nothrow__ , __leaf__));
+
+# 86 "/usr/include/x86_64-linux-gnu/bits/mathcalls.h" 3 4
+
+
+extern long double acoshl (long double __x) __attribute__ ((__nothrow__ , __leaf__)); extern long double __acoshl (long double __x) __attribute__ ((__nothrow__ , __leaf__));
+
+extern long double asinhl (long double __x) __attribute__ ((__nothrow__ , __leaf__)); extern long double __asinhl (long double __x) __attribute__ ((__nothrow__ , __leaf__));
+
+extern long double atanhl (long double __x) __attribute__ ((__nothrow__ , __leaf__)); extern long double __atanhl (long double __x) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+
+
+
+
+ extern long double expl (long double __x) __attribute__ ((__nothrow__ , __leaf__)); extern long double __expl (long double __x) __attribute__ ((__nothrow__ , __leaf__));
+
+
+extern long double frexpl (long double __x, int *__exponent) __attribute__ ((__nothrow__ , __leaf__)); extern long double __frexpl (long double __x, int *__exponent) __attribute__ ((__nothrow__ , __leaf__));
+
+
+extern long double ldexpl (long double __x, int __exponent) __attribute__ ((__nothrow__ , __leaf__)); extern long double __ldexpl (long double __x, int __exponent) __attribute__ ((__nothrow__ , __leaf__));
+
+
+ extern long double logl (long double __x) __attribute__ ((__nothrow__ , __leaf__)); extern long double __logl (long double __x) __attribute__ ((__nothrow__ , __leaf__));
+
+
+extern long double log10l (long double __x) __attribute__ ((__nothrow__ , __leaf__)); extern long double __log10l (long double __x) __attribute__ ((__nothrow__ , __leaf__));
+
+
+extern long double modfl (long double __x, long double *__iptr) __attribute__ ((__nothrow__ , __leaf__)); extern long double __modfl (long double __x, long double *__iptr) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__nonnull__ (2)));
+
+# 126 "/usr/include/x86_64-linux-gnu/bits/mathcalls.h" 3 4
+
+
+extern long double expm1l (long double __x) __attribute__ ((__nothrow__ , __leaf__)); extern long double __expm1l (long double __x) __attribute__ ((__nothrow__ , __leaf__));
+
+
+extern long double log1pl (long double __x) __attribute__ ((__nothrow__ , __leaf__)); extern long double __log1pl (long double __x) __attribute__ ((__nothrow__ , __leaf__));
+
+
+extern long double logbl (long double __x) __attribute__ ((__nothrow__ , __leaf__)); extern long double __logbl (long double __x) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+
+
+
+extern long double exp2l (long double __x) __attribute__ ((__nothrow__ , __leaf__)); extern long double __exp2l (long double __x) __attribute__ ((__nothrow__ , __leaf__));
+
+
+extern long double log2l (long double __x) __attribute__ ((__nothrow__ , __leaf__)); extern long double __log2l (long double __x) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+
+
+
+
+
+ extern long double powl (long double __x, long double __y) __attribute__ ((__nothrow__ , __leaf__)); extern long double __powl (long double __x, long double __y) __attribute__ ((__nothrow__ , __leaf__));
+
+
+extern long double sqrtl (long double __x) __attribute__ ((__nothrow__ , __leaf__)); extern long double __sqrtl (long double __x) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+
+
+extern long double hypotl (long double __x, long double __y) __attribute__ ((__nothrow__ , __leaf__)); extern long double __hypotl (long double __x, long double __y) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+
+
+
+extern long double cbrtl (long double __x) __attribute__ ((__nothrow__ , __leaf__)); extern long double __cbrtl (long double __x) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+
+
+
+
+
+extern long double ceill (long double __x) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__)); extern long double __ceill (long double __x) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__));
+
+
+extern long double fabsl (long double __x) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__)); extern long double __fabsl (long double __x) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__));
+
+
+extern long double floorl (long double __x) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__)); extern long double __floorl (long double __x) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__));
+
+
+extern long double fmodl (long double __x, long double __y) __attribute__ ((__nothrow__ , __leaf__)); extern long double __fmodl (long double __x, long double __y) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+
+extern int __isinfl (long double __value) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__));
+
+
+extern int __finitel (long double __value) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__));
+
+# 219 "/usr/include/x86_64-linux-gnu/bits/mathcalls.h" 3 4
+
+
+extern long double copysignl (long double __x, long double __y) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__)); extern long double __copysignl (long double __x, long double __y) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__));
+
+
+
+
+
+
+extern long double nanl (const char *__tagb) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__)); extern long double __nanl (const char *__tagb) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__));
+
+
+
+
+
+extern int __isnanl (long double __value) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__));
+# 257 "/usr/include/x86_64-linux-gnu/bits/mathcalls.h" 3 4
+
+
+extern long double erfl (long double) __attribute__ ((__nothrow__ , __leaf__)); extern long double __erfl (long double) __attribute__ ((__nothrow__ , __leaf__));
+extern long double erfcl (long double) __attribute__ ((__nothrow__ , __leaf__)); extern long double __erfcl (long double) __attribute__ ((__nothrow__ , __leaf__));
+extern long double lgammal (long double) __attribute__ ((__nothrow__ , __leaf__)); extern long double __lgammal (long double) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+
+
+
+extern long double tgammal (long double) __attribute__ ((__nothrow__ , __leaf__)); extern long double __tgammal (long double) __attribute__ ((__nothrow__ , __leaf__));
+
+# 286 "/usr/include/x86_64-linux-gnu/bits/mathcalls.h" 3 4
+
+
+
+extern long double rintl (long double __x) __attribute__ ((__nothrow__ , __leaf__)); extern long double __rintl (long double __x) __attribute__ ((__nothrow__ , __leaf__));
+
+
+extern long double nextafterl (long double __x, long double __y) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__)); extern long double __nextafterl (long double __x, long double __y) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__));
+
+extern long double nexttowardl (long double __x, long double __y) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__)); extern long double __nexttowardl (long double __x, long double __y) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__));
+
+
+
+extern long double remainderl (long double __x, long double __y) __attribute__ ((__nothrow__ , __leaf__)); extern long double __remainderl (long double __x, long double __y) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+extern long double scalbnl (long double __x, int __n) __attribute__ ((__nothrow__ , __leaf__)); extern long double __scalbnl (long double __x, int __n) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+extern int ilogbl (long double __x) __attribute__ ((__nothrow__ , __leaf__)); extern int __ilogbl (long double __x) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+
+extern long double scalblnl (long double __x, long int __n) __attribute__ ((__nothrow__ , __leaf__)); extern long double __scalblnl (long double __x, long int __n) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+extern long double nearbyintl (long double __x) __attribute__ ((__nothrow__ , __leaf__)); extern long double __nearbyintl (long double __x) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+extern long double roundl (long double __x) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__)); extern long double __roundl (long double __x) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__));
+
+
+
+extern long double truncl (long double __x) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__)); extern long double __truncl (long double __x) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__));
+
+
+
+
+extern long double remquol (long double __x, long double __y, int *__quo) __attribute__ ((__nothrow__ , __leaf__)); extern long double __remquol (long double __x, long double __y, int *__quo) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+
+
+
+extern long int lrintl (long double __x) __attribute__ ((__nothrow__ , __leaf__)); extern long int __lrintl (long double __x) __attribute__ ((__nothrow__ , __leaf__));
+__extension__
+extern long long int llrintl (long double __x) __attribute__ ((__nothrow__ , __leaf__)); extern long long int __llrintl (long double __x) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+extern long int lroundl (long double __x) __attribute__ ((__nothrow__ , __leaf__)); extern long int __lroundl (long double __x) __attribute__ ((__nothrow__ , __leaf__));
+__extension__
+extern long long int llroundl (long double __x) __attribute__ ((__nothrow__ , __leaf__)); extern long long int __llroundl (long double __x) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+extern long double fdiml (long double __x, long double __y) __attribute__ ((__nothrow__ , __leaf__)); extern long double __fdiml (long double __x, long double __y) __attribute__ ((__nothrow__ , __leaf__));
+
+
+extern long double fmaxl (long double __x, long double __y) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__)); extern long double __fmaxl (long double __x, long double __y) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__));
+
+
+extern long double fminl (long double __x, long double __y) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__)); extern long double __fminl (long double __x, long double __y) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__));
+
+
+
+extern int __fpclassifyl (long double __value) __attribute__ ((__nothrow__ , __leaf__))
+     __attribute__ ((__const__));
+
+
+extern int __signbitl (long double __value) __attribute__ ((__nothrow__ , __leaf__))
+     __attribute__ ((__const__));
+
+
+
+extern long double fmal (long double __x, long double __y, long double __z) __attribute__ ((__nothrow__ , __leaf__)); extern long double __fmal (long double __x, long double __y, long double __z) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+
+# 152 "/usr/include/math.h" 2 3 4
+# 209 "/usr/include/math.h" 3 4
+enum
+  {
+    FP_NAN =
+
+      0,
+    FP_INFINITE =
+
+      1,
+    FP_ZERO =
+
+      2,
+    FP_SUBNORMAL =
+
+      3,
+    FP_NORMAL =
+
+      4
+  };
+# 534 "/usr/include/math.h" 3 4
+
+# 29 "tgmath.c" 2
+# 1 "/usr/include/complex.h" 1 3 4
+# 28 "/usr/include/complex.h" 3 4
+# 1 "/usr/include/x86_64-linux-gnu/bits/mathdef.h" 1 3 4
+# 29 "/usr/include/complex.h" 2 3 4
+
+
+# 73 "/usr/include/complex.h" 3 4
+# 1 "/usr/include/x86_64-linux-gnu/bits/cmathcalls.h" 1 3 4
+# 53 "/usr/include/x86_64-linux-gnu/bits/cmathcalls.h" 3 4
+extern double _Complex cacos (double _Complex __z) __attribute__ ((__nothrow__ , __leaf__)); extern double _Complex __cacos (double _Complex __z) __attribute__ ((__nothrow__ , __leaf__));
+
+extern double _Complex casin (double _Complex __z) __attribute__ ((__nothrow__ , __leaf__)); extern double _Complex __casin (double _Complex __z) __attribute__ ((__nothrow__ , __leaf__));
+
+extern double _Complex catan (double _Complex __z) __attribute__ ((__nothrow__ , __leaf__)); extern double _Complex __catan (double _Complex __z) __attribute__ ((__nothrow__ , __leaf__));
+
+
+extern double _Complex ccos (double _Complex __z) __attribute__ ((__nothrow__ , __leaf__)); extern double _Complex __ccos (double _Complex __z) __attribute__ ((__nothrow__ , __leaf__));
+
+extern double _Complex csin (double _Complex __z) __attribute__ ((__nothrow__ , __leaf__)); extern double _Complex __csin (double _Complex __z) __attribute__ ((__nothrow__ , __leaf__));
+
+extern double _Complex ctan (double _Complex __z) __attribute__ ((__nothrow__ , __leaf__)); extern double _Complex __ctan (double _Complex __z) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+
+
+extern double _Complex cacosh (double _Complex __z) __attribute__ ((__nothrow__ , __leaf__)); extern double _Complex __cacosh (double _Complex __z) __attribute__ ((__nothrow__ , __leaf__));
+
+extern double _Complex casinh (double _Complex __z) __attribute__ ((__nothrow__ , __leaf__)); extern double _Complex __casinh (double _Complex __z) __attribute__ ((__nothrow__ , __leaf__));
+
+extern double _Complex catanh (double _Complex __z) __attribute__ ((__nothrow__ , __leaf__)); extern double _Complex __catanh (double _Complex __z) __attribute__ ((__nothrow__ , __leaf__));
+
+
+extern double _Complex ccosh (double _Complex __z) __attribute__ ((__nothrow__ , __leaf__)); extern double _Complex __ccosh (double _Complex __z) __attribute__ ((__nothrow__ , __leaf__));
+
+extern double _Complex csinh (double _Complex __z) __attribute__ ((__nothrow__ , __leaf__)); extern double _Complex __csinh (double _Complex __z) __attribute__ ((__nothrow__ , __leaf__));
+
+extern double _Complex ctanh (double _Complex __z) __attribute__ ((__nothrow__ , __leaf__)); extern double _Complex __ctanh (double _Complex __z) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+
+
+extern double _Complex cexp (double _Complex __z) __attribute__ ((__nothrow__ , __leaf__)); extern double _Complex __cexp (double _Complex __z) __attribute__ ((__nothrow__ , __leaf__));
+
+
+extern double _Complex clog (double _Complex __z) __attribute__ ((__nothrow__ , __leaf__)); extern double _Complex __clog (double _Complex __z) __attribute__ ((__nothrow__ , __leaf__));
+# 101 "/usr/include/x86_64-linux-gnu/bits/cmathcalls.h" 3 4
+extern double _Complex cpow (double _Complex __x, double _Complex __y) __attribute__ ((__nothrow__ , __leaf__)); extern double _Complex __cpow (double _Complex __x, double _Complex __y) __attribute__ ((__nothrow__ , __leaf__));
+
+
+extern double _Complex csqrt (double _Complex __z) __attribute__ ((__nothrow__ , __leaf__)); extern double _Complex __csqrt (double _Complex __z) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+
+
+extern double cabs (double _Complex __z) __attribute__ ((__nothrow__ , __leaf__)); extern double __cabs (double _Complex __z) __attribute__ ((__nothrow__ , __leaf__));
+
+
+extern double carg (double _Complex __z) __attribute__ ((__nothrow__ , __leaf__)); extern double __carg (double _Complex __z) __attribute__ ((__nothrow__ , __leaf__));
+
+
+extern double _Complex conj (double _Complex __z) __attribute__ ((__nothrow__ , __leaf__)); extern double _Complex __conj (double _Complex __z) __attribute__ ((__nothrow__ , __leaf__));
+
+
+extern double _Complex cproj (double _Complex __z) __attribute__ ((__nothrow__ , __leaf__)); extern double _Complex __cproj (double _Complex __z) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+
+
+extern double cimag (double _Complex __z) __attribute__ ((__nothrow__ , __leaf__)); extern double __cimag (double _Complex __z) __attribute__ ((__nothrow__ , __leaf__));
+
+
+extern double creal (double _Complex __z) __attribute__ ((__nothrow__ , __leaf__)); extern double __creal (double _Complex __z) __attribute__ ((__nothrow__ , __leaf__));
+# 74 "/usr/include/complex.h" 2 3 4
+# 83 "/usr/include/complex.h" 3 4
+# 1 "/usr/include/x86_64-linux-gnu/bits/cmathcalls.h" 1 3 4
+# 53 "/usr/include/x86_64-linux-gnu/bits/cmathcalls.h" 3 4
+extern float _Complex cacosf (float _Complex __z) __attribute__ ((__nothrow__ , __leaf__)); extern float _Complex __cacosf (float _Complex __z) __attribute__ ((__nothrow__ , __leaf__));
+
+extern float _Complex casinf (float _Complex __z) __attribute__ ((__nothrow__ , __leaf__)); extern float _Complex __casinf (float _Complex __z) __attribute__ ((__nothrow__ , __leaf__));
+
+extern float _Complex catanf (float _Complex __z) __attribute__ ((__nothrow__ , __leaf__)); extern float _Complex __catanf (float _Complex __z) __attribute__ ((__nothrow__ , __leaf__));
+
+
+extern float _Complex ccosf (float _Complex __z) __attribute__ ((__nothrow__ , __leaf__)); extern float _Complex __ccosf (float _Complex __z) __attribute__ ((__nothrow__ , __leaf__));
+
+extern float _Complex csinf (float _Complex __z) __attribute__ ((__nothrow__ , __leaf__)); extern float _Complex __csinf (float _Complex __z) __attribute__ ((__nothrow__ , __leaf__));
+
+extern float _Complex ctanf (float _Complex __z) __attribute__ ((__nothrow__ , __leaf__)); extern float _Complex __ctanf (float _Complex __z) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+
+
+extern float _Complex cacoshf (float _Complex __z) __attribute__ ((__nothrow__ , __leaf__)); extern float _Complex __cacoshf (float _Complex __z) __attribute__ ((__nothrow__ , __leaf__));
+
+extern float _Complex casinhf (float _Complex __z) __attribute__ ((__nothrow__ , __leaf__)); extern float _Complex __casinhf (float _Complex __z) __attribute__ ((__nothrow__ , __leaf__));
+
+extern float _Complex catanhf (float _Complex __z) __attribute__ ((__nothrow__ , __leaf__)); extern float _Complex __catanhf (float _Complex __z) __attribute__ ((__nothrow__ , __leaf__));
+
+
+extern float _Complex ccoshf (float _Complex __z) __attribute__ ((__nothrow__ , __leaf__)); extern float _Complex __ccoshf (float _Complex __z) __attribute__ ((__nothrow__ , __leaf__));
+
+extern float _Complex csinhf (float _Complex __z) __attribute__ ((__nothrow__ , __leaf__)); extern float _Complex __csinhf (float _Complex __z) __attribute__ ((__nothrow__ , __leaf__));
+
+extern float _Complex ctanhf (float _Complex __z) __attribute__ ((__nothrow__ , __leaf__)); extern float _Complex __ctanhf (float _Complex __z) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+
+
+extern float _Complex cexpf (float _Complex __z) __attribute__ ((__nothrow__ , __leaf__)); extern float _Complex __cexpf (float _Complex __z) __attribute__ ((__nothrow__ , __leaf__));
+
+
+extern float _Complex clogf (float _Complex __z) __attribute__ ((__nothrow__ , __leaf__)); extern float _Complex __clogf (float _Complex __z) __attribute__ ((__nothrow__ , __leaf__));
+# 101 "/usr/include/x86_64-linux-gnu/bits/cmathcalls.h" 3 4
+extern float _Complex cpowf (float _Complex __x, float _Complex __y) __attribute__ ((__nothrow__ , __leaf__)); extern float _Complex __cpowf (float _Complex __x, float _Complex __y) __attribute__ ((__nothrow__ , __leaf__));
+
+
+extern float _Complex csqrtf (float _Complex __z) __attribute__ ((__nothrow__ , __leaf__)); extern float _Complex __csqrtf (float _Complex __z) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+
+
+extern float cabsf (float _Complex __z) __attribute__ ((__nothrow__ , __leaf__)); extern float __cabsf (float _Complex __z) __attribute__ ((__nothrow__ , __leaf__));
+
+
+extern float cargf (float _Complex __z) __attribute__ ((__nothrow__ , __leaf__)); extern float __cargf (float _Complex __z) __attribute__ ((__nothrow__ , __leaf__));
+
+
+extern float _Complex conjf (float _Complex __z) __attribute__ ((__nothrow__ , __leaf__)); extern float _Complex __conjf (float _Complex __z) __attribute__ ((__nothrow__ , __leaf__));
+
+
+extern float _Complex cprojf (float _Complex __z) __attribute__ ((__nothrow__ , __leaf__)); extern float _Complex __cprojf (float _Complex __z) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+
+
+extern float cimagf (float _Complex __z) __attribute__ ((__nothrow__ , __leaf__)); extern float __cimagf (float _Complex __z) __attribute__ ((__nothrow__ , __leaf__));
+
+
+extern float crealf (float _Complex __z) __attribute__ ((__nothrow__ , __leaf__)); extern float __crealf (float _Complex __z) __attribute__ ((__nothrow__ , __leaf__));
+# 84 "/usr/include/complex.h" 2 3 4
+# 102 "/usr/include/complex.h" 3 4
+# 1 "/usr/include/x86_64-linux-gnu/bits/cmathcalls.h" 1 3 4
+# 53 "/usr/include/x86_64-linux-gnu/bits/cmathcalls.h" 3 4
+extern long double _Complex cacosl (long double _Complex __z) __attribute__ ((__nothrow__ , __leaf__)); extern long double _Complex __cacosl (long double _Complex __z) __attribute__ ((__nothrow__ , __leaf__));
+
+extern long double _Complex casinl (long double _Complex __z) __attribute__ ((__nothrow__ , __leaf__)); extern long double _Complex __casinl (long double _Complex __z) __attribute__ ((__nothrow__ , __leaf__));
+
+extern long double _Complex catanl (long double _Complex __z) __attribute__ ((__nothrow__ , __leaf__)); extern long double _Complex __catanl (long double _Complex __z) __attribute__ ((__nothrow__ , __leaf__));
+
+
+extern long double _Complex ccosl (long double _Complex __z) __attribute__ ((__nothrow__ , __leaf__)); extern long double _Complex __ccosl (long double _Complex __z) __attribute__ ((__nothrow__ , __leaf__));
+
+extern long double _Complex csinl (long double _Complex __z) __attribute__ ((__nothrow__ , __leaf__)); extern long double _Complex __csinl (long double _Complex __z) __attribute__ ((__nothrow__ , __leaf__));
+
+extern long double _Complex ctanl (long double _Complex __z) __attribute__ ((__nothrow__ , __leaf__)); extern long double _Complex __ctanl (long double _Complex __z) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+
+
+extern long double _Complex cacoshl (long double _Complex __z) __attribute__ ((__nothrow__ , __leaf__)); extern long double _Complex __cacoshl (long double _Complex __z) __attribute__ ((__nothrow__ , __leaf__));
+
+extern long double _Complex casinhl (long double _Complex __z) __attribute__ ((__nothrow__ , __leaf__)); extern long double _Complex __casinhl (long double _Complex __z) __attribute__ ((__nothrow__ , __leaf__));
+
+extern long double _Complex catanhl (long double _Complex __z) __attribute__ ((__nothrow__ , __leaf__)); extern long double _Complex __catanhl (long double _Complex __z) __attribute__ ((__nothrow__ , __leaf__));
+
+
+extern long double _Complex ccoshl (long double _Complex __z) __attribute__ ((__nothrow__ , __leaf__)); extern long double _Complex __ccoshl (long double _Complex __z) __attribute__ ((__nothrow__ , __leaf__));
+
+extern long double _Complex csinhl (long double _Complex __z) __attribute__ ((__nothrow__ , __leaf__)); extern long double _Complex __csinhl (long double _Complex __z) __attribute__ ((__nothrow__ , __leaf__));
+
+extern long double _Complex ctanhl (long double _Complex __z) __attribute__ ((__nothrow__ , __leaf__)); extern long double _Complex __ctanhl (long double _Complex __z) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+
+
+extern long double _Complex cexpl (long double _Complex __z) __attribute__ ((__nothrow__ , __leaf__)); extern long double _Complex __cexpl (long double _Complex __z) __attribute__ ((__nothrow__ , __leaf__));
+
+
+extern long double _Complex clogl (long double _Complex __z) __attribute__ ((__nothrow__ , __leaf__)); extern long double _Complex __clogl (long double _Complex __z) __attribute__ ((__nothrow__ , __leaf__));
+# 101 "/usr/include/x86_64-linux-gnu/bits/cmathcalls.h" 3 4
+extern long double _Complex cpowl (long double _Complex __x, long double _Complex __y) __attribute__ ((__nothrow__ , __leaf__)); extern long double _Complex __cpowl (long double _Complex __x, long double _Complex __y) __attribute__ ((__nothrow__ , __leaf__));
+
+
+extern long double _Complex csqrtl (long double _Complex __z) __attribute__ ((__nothrow__ , __leaf__)); extern long double _Complex __csqrtl (long double _Complex __z) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+
+
+extern long double cabsl (long double _Complex __z) __attribute__ ((__nothrow__ , __leaf__)); extern long double __cabsl (long double _Complex __z) __attribute__ ((__nothrow__ , __leaf__));
+
+
+extern long double cargl (long double _Complex __z) __attribute__ ((__nothrow__ , __leaf__)); extern long double __cargl (long double _Complex __z) __attribute__ ((__nothrow__ , __leaf__));
+
+
+extern long double _Complex conjl (long double _Complex __z) __attribute__ ((__nothrow__ , __leaf__)); extern long double _Complex __conjl (long double _Complex __z) __attribute__ ((__nothrow__ , __leaf__));
+
+
+extern long double _Complex cprojl (long double _Complex __z) __attribute__ ((__nothrow__ , __leaf__)); extern long double _Complex __cprojl (long double _Complex __z) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+
+
+extern long double cimagl (long double _Complex __z) __attribute__ ((__nothrow__ , __leaf__)); extern long double __cimagl (long double _Complex __z) __attribute__ ((__nothrow__ , __leaf__));
+
+
+extern long double creall (long double _Complex __z) __attribute__ ((__nothrow__ , __leaf__)); extern long double __creall (long double _Complex __z) __attribute__ ((__nothrow__ , __leaf__));
+# 103 "/usr/include/complex.h" 2 3 4
+
+
+
+
+
+
+
+
+# 30 "tgmath.c" 2

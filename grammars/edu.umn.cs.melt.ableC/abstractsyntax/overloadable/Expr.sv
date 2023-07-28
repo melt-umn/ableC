@@ -3,10 +3,13 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax:overloadable;
 abstract production explicitCastExpr
 top::host:Expr ::= ty::host:TypeName  e::host:Expr
 {
+  propagate host:controlStmtContext;
+  
   top.pp = parens( ppConcat([parens(ty.pp), e.pp]) );
   production attribute lerrors :: [Message] with ++;
-  lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  lerrors := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
   
+  ty.env = top.env;
   e.env = addEnv(ty.defs, ty.env);
 
   local fwrd::host:Expr =
@@ -19,11 +22,14 @@ top::host:Expr ::= ty::host:TypeName  e::host:Expr
 abstract production arraySubscriptExpr
 top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 {
+  propagate host:controlStmtContext;
+
   top.pp = parens( ppConcat([ lhs.pp, brackets( rhs.pp )]) );
   production attribute lerrors :: [Message] with ++;
-  lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  lerrors := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
   
   rhs.env = addEnv(lhs.defs, lhs.env);
+  lhs.env = top.env;
   
   local rewriteProd::Maybe<BinaryProd> =
     case lhs.host:typerep.addressOfArraySubscriptProd of
@@ -54,6 +60,8 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 abstract production callExpr
 top::host:Expr ::= f::host:Expr  a::host:Exprs
 {
+  propagate host:controlStmtContext;
+
   top.pp = parens( ppConcat([ f.pp, parens( ppImplode( cat( comma(), space() ), a.pps ))]) );
   
   local rewriteProd::Maybe<(host:Expr ::= host:Exprs)> =
@@ -66,6 +74,7 @@ top::host:Expr ::= f::host:Expr  a::host:Exprs
     end;
   
   a.env = addEnv(f.defs, f.env);
+  f.env = top.env;
   
   local host::host:Expr =
     inj:callExpr(
@@ -83,9 +92,11 @@ top::host:Expr ::= f::host:Expr  a::host:Exprs
 abstract production memberExpr
 top::host:Expr ::= lhs::host:Expr  deref::Boolean  rhs::host:Name
 {
+  propagate env, host:controlStmtContext;
+
   top.pp = parens(ppConcat([lhs.pp, text(if deref then "->" else "."), rhs.pp]));
   production attribute lerrors :: [Message] with ++;
-  lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  lerrors := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   local t::host:Type = lhs.host:typerep;
   t.isDeref = deref;
@@ -98,9 +109,41 @@ top::host:Expr ::= lhs::host:Expr  deref::Boolean  rhs::host:Name
     | just(prod) ->
        host:transformedExpr(
          host,
-         prod(lhs, rhs))
+         prod(host:decExpr(lhs), rhs))
     | nothing() -> host
     end;
   
   forwards to host:wrapWarnExpr(lerrors, fwrd);
+}
+abstract production compoundLiteralExpr
+top::host:Expr ::= ty::host:TypeName  init::host:InitList
+{
+  propagate env, host:controlStmtContext;
+
+  top.pp = parens( ppConcat([parens(ty.pp), text("{"), ppImplode(text(", "), init.pps), text("}")]) );
+  
+  local t::host:Type = ty.host:typerep;
+  local host::host:Expr =
+    host:compoundLiteralExpr(host:decTypeName(ty), init);
+  local tmpName::host:Name = host:name("_res_" ++ toString(genInt()));
+  forwards to
+    case t.objectInitProd of
+    | just(prod) ->
+       host:transformedExpr(
+         host,
+         host:stmtExpr(
+           host:declStmt(
+             host:variableDecls(
+               host:nilStorageClass(), host:nilAttribute(),
+               ty.host:bty,
+               host:consDeclarator(
+                 host:declarator(
+                   tmpName,
+                   ty.host:mty,
+                   host:nilAttribute(),
+                   host:justInitializer(prod(init))),
+                 host:nilDeclarator()))),
+           host:declRefExpr(tmpName)))
+    | nothing() -> host
+    end;
 }

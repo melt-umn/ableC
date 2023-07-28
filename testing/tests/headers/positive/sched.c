@@ -1,128 +1,233 @@
-/* Definitions for POSIX 1003.1b-1993 (aka POSIX.4) scheduling interface.
-   Copyright (C) 1996,1997,1999,2001-2004,2007,2010
-   Free Software Foundation, Inc.
-   This file is part of the GNU C Library.
+# 1 "sched.c"
+# 1 "<built-in>"
+# 1 "<command-line>"
+# 1 "/usr/include/stdc-predef.h" 1 3 4
+# 1 "<command-line>" 2
+# 1 "sched.c"
+# 24 "sched.c"
+# 1 "/usr/include/features.h" 1 3 4
+# 367 "/usr/include/features.h" 3 4
+# 1 "/usr/include/x86_64-linux-gnu/sys/cdefs.h" 1 3 4
+# 410 "/usr/include/x86_64-linux-gnu/sys/cdefs.h" 3 4
+# 1 "/usr/include/x86_64-linux-gnu/bits/wordsize.h" 1 3 4
+# 411 "/usr/include/x86_64-linux-gnu/sys/cdefs.h" 2 3 4
+# 368 "/usr/include/features.h" 2 3 4
+# 391 "/usr/include/features.h" 3 4
+# 1 "/usr/include/x86_64-linux-gnu/gnu/stubs.h" 1 3 4
+# 10 "/usr/include/x86_64-linux-gnu/gnu/stubs.h" 3 4
+# 1 "/usr/include/x86_64-linux-gnu/gnu/stubs-64.h" 1 3 4
+# 11 "/usr/include/x86_64-linux-gnu/gnu/stubs.h" 2 3 4
+# 392 "/usr/include/features.h" 2 3 4
+# 25 "sched.c" 2
 
-   The GNU C Library is free software; you can redistribute it and/or
-   modify it under the terms of the GNU Lesser General Public
-   License as published by the Free Software Foundation; either
-   version 2.1 of the License, or (at your option) any later version.
 
-   The GNU C Library is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-   Lesser General Public License for more details.
+# 1 "/usr/include/x86_64-linux-gnu/bits/types.h" 1 3 4
+# 27 "/usr/include/x86_64-linux-gnu/bits/types.h" 3 4
+# 1 "/usr/include/x86_64-linux-gnu/bits/wordsize.h" 1 3 4
+# 28 "/usr/include/x86_64-linux-gnu/bits/types.h" 2 3 4
 
-   You should have received a copy of the GNU Lesser General Public
-   License along with the GNU C Library; if not, write to the Free
-   Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307 USA.  */
 
-#ifndef	_SCHED_H
-#define	_SCHED_H	1
+typedef unsigned char __u_char;
+typedef unsigned short int __u_short;
+typedef unsigned int __u_int;
+typedef unsigned long int __u_long;
 
-#include <features.h>
 
-/* Get type definitions.  */
-#include <bits/types.h>
+typedef signed char __int8_t;
+typedef unsigned char __uint8_t;
+typedef signed short int __int16_t;
+typedef unsigned short int __uint16_t;
+typedef signed int __int32_t;
+typedef unsigned int __uint32_t;
 
-#define __need_size_t
-#include <stddef.h>
+typedef signed long int __int64_t;
+typedef unsigned long int __uint64_t;
 
-#define __need_time_t
-#define __need_timespec
-#include <time.h>
 
-#ifndef __pid_t_defined
+
+
+
+
+
+typedef long int __quad_t;
+typedef unsigned long int __u_quad_t;
+# 121 "/usr/include/x86_64-linux-gnu/bits/types.h" 3 4
+# 1 "/usr/include/x86_64-linux-gnu/bits/typesizes.h" 1 3 4
+# 122 "/usr/include/x86_64-linux-gnu/bits/types.h" 2 3 4
+
+
+typedef unsigned long int __dev_t;
+typedef unsigned int __uid_t;
+typedef unsigned int __gid_t;
+typedef unsigned long int __ino_t;
+typedef unsigned long int __ino64_t;
+typedef unsigned int __mode_t;
+typedef unsigned long int __nlink_t;
+typedef long int __off_t;
+typedef long int __off64_t;
+typedef int __pid_t;
+typedef struct { int __val[2]; } __fsid_t;
+typedef long int __clock_t;
+typedef unsigned long int __rlim_t;
+typedef unsigned long int __rlim64_t;
+typedef unsigned int __id_t;
+typedef long int __time_t;
+typedef unsigned int __useconds_t;
+typedef long int __suseconds_t;
+
+typedef int __daddr_t;
+typedef int __key_t;
+
+
+typedef int __clockid_t;
+
+
+typedef void * __timer_t;
+
+
+typedef long int __blksize_t;
+
+
+
+
+typedef long int __blkcnt_t;
+typedef long int __blkcnt64_t;
+
+
+typedef unsigned long int __fsblkcnt_t;
+typedef unsigned long int __fsblkcnt64_t;
+
+
+typedef unsigned long int __fsfilcnt_t;
+typedef unsigned long int __fsfilcnt64_t;
+
+
+typedef long int __fsword_t;
+
+typedef long int __ssize_t;
+
+
+typedef long int __syscall_slong_t;
+
+typedef unsigned long int __syscall_ulong_t;
+
+
+
+typedef __off64_t __loff_t;
+typedef __quad_t *__qaddr_t;
+typedef char *__caddr_t;
+
+
+typedef long int __intptr_t;
+
+
+typedef unsigned int __socklen_t;
+# 28 "sched.c" 2
+
+
+# 1 "/soft/gcc/4.9.2/ubuntuamd2010/lib/gcc/x86_64-linux-gnu/4.9.2/include/stddef.h" 1 3 4
+# 212 "/soft/gcc/4.9.2/ubuntuamd2010/lib/gcc/x86_64-linux-gnu/4.9.2/include/stddef.h" 3 4
+typedef long unsigned int size_t;
+# 31 "sched.c" 2
+
+
+
+# 1 "/usr/include/time.h" 1 3 4
+# 73 "/usr/include/time.h" 3 4
+
+
+typedef __time_t time_t;
+
+
+
+# 120 "/usr/include/time.h" 3 4
+struct timespec
+  {
+    __time_t tv_sec;
+    __syscall_slong_t tv_nsec;
+  };
+# 35 "sched.c" 2
+
+
 typedef __pid_t pid_t;
-# define __pid_t_defined
-#endif
 
 
-/* Get system specific constant and data structure definitions.  */
-#include <bits/sched.h>
-/* Define the real names for the elements of `struct sched_param'.  */
-#define sched_priority	__sched_priority
 
 
-__BEGIN_DECLS
 
-/* Set scheduling parameters for a process.  */
+# 1 "/usr/include/x86_64-linux-gnu/bits/sched.h" 1 3 4
+# 72 "/usr/include/x86_64-linux-gnu/bits/sched.h" 3 4
+struct sched_param
+  {
+    int __sched_priority;
+  };
+
+
+# 95 "/usr/include/x86_64-linux-gnu/bits/sched.h" 3 4
+
+
+
+
+
+
+
+
+struct __sched_param
+  {
+    int __sched_priority;
+  };
+# 118 "/usr/include/x86_64-linux-gnu/bits/sched.h" 3 4
+typedef unsigned long int __cpu_mask;
+
+
+
+
+
+
+typedef struct
+{
+  __cpu_mask __bits[1024 / (8 * sizeof (__cpu_mask))];
+} cpu_set_t;
+# 201 "/usr/include/x86_64-linux-gnu/bits/sched.h" 3 4
+
+
+extern int __sched_cpucount (size_t __setsize, const cpu_set_t *__setp)
+  __attribute__ ((__nothrow__ , __leaf__));
+extern cpu_set_t *__sched_cpualloc (size_t __count) __attribute__ ((__nothrow__ , __leaf__)) ;
+extern void __sched_cpufree (cpu_set_t *__set) __attribute__ ((__nothrow__ , __leaf__));
+
+
+# 44 "sched.c" 2
+
+
+
+
+
+
+
 extern int sched_setparam (__pid_t __pid, __const struct sched_param *__param)
-     __THROW;
+     __attribute__ ((__nothrow__ , __leaf__));
 
-/* Retrieve scheduling parameters for a particular process.  */
-extern int sched_getparam (__pid_t __pid, struct sched_param *__param) __THROW;
 
-/* Set scheduling algorithm and/or parameters for a process.  */
+extern int sched_getparam (__pid_t __pid, struct sched_param *__param) __attribute__ ((__nothrow__ , __leaf__));
+
+
 extern int sched_setscheduler (__pid_t __pid, int __policy,
-			       __const struct sched_param *__param) __THROW;
-
-/* Retrieve scheduling algorithm for a particular purpose.  */
-extern int sched_getscheduler (__pid_t __pid) __THROW;
-
-/* Yield the processor.  */
-extern int sched_yield (void) __THROW;
-
-/* Get maximum priority value for a scheduler.  */
-extern int sched_get_priority_max (int __algorithm) __THROW;
-
-/* Get minimum priority value for a scheduler.  */
-extern int sched_get_priority_min (int __algorithm) __THROW;
-
-/* Get the SCHED_RR interval for the named process.  */
-extern int sched_rr_get_interval (__pid_t __pid, struct timespec *__t) __THROW;
+          __const struct sched_param *__param) __attribute__ ((__nothrow__ , __leaf__));
 
 
-#ifdef __USE_GNU
-/* Access macros for `cpu_set'.  */
-# define CPU_SETSIZE __CPU_SETSIZE
-# define CPU_SET(cpu, cpusetp)	 __CPU_SET_S (cpu, sizeof (cpu_set_t), cpusetp)
-# define CPU_CLR(cpu, cpusetp)	 __CPU_CLR_S (cpu, sizeof (cpu_set_t), cpusetp)
-# define CPU_ISSET(cpu, cpusetp) __CPU_ISSET_S (cpu, sizeof (cpu_set_t), \
-						cpusetp)
-# define CPU_ZERO(cpusetp)	 __CPU_ZERO_S (sizeof (cpu_set_t), cpusetp)
-# define CPU_COUNT(cpusetp)	 __CPU_COUNT_S (sizeof (cpu_set_t), cpusetp)
-
-# define CPU_SET_S(cpu, setsize, cpusetp)   __CPU_SET_S (cpu, setsize, cpusetp)
-# define CPU_CLR_S(cpu, setsize, cpusetp)   __CPU_CLR_S (cpu, setsize, cpusetp)
-# define CPU_ISSET_S(cpu, setsize, cpusetp) __CPU_ISSET_S (cpu, setsize, \
-							   cpusetp)
-# define CPU_ZERO_S(setsize, cpusetp)	    __CPU_ZERO_S (setsize, cpusetp)
-# define CPU_COUNT_S(setsize, cpusetp)	    __CPU_COUNT_S (setsize, cpusetp)
-
-# define CPU_EQUAL(cpusetp1, cpusetp2) \
-  __CPU_EQUAL_S (sizeof (cpu_set_t), cpusetp1, cpusetp2)
-# define CPU_EQUAL_S(setsize, cpusetp1, cpusetp2) \
-  __CPU_EQUAL_S (setsize, cpusetp1, cpusetp2)
-
-# define CPU_AND(destset, srcset1, srcset2) \
-  __CPU_OP_S (sizeof (cpu_set_t), destset, srcset1, srcset2, &)
-# define CPU_OR(destset, srcset1, srcset2) \
-  __CPU_OP_S (sizeof (cpu_set_t), destset, srcset1, srcset2, |)
-# define CPU_XOR(destset, srcset1, srcset2) \
-  __CPU_OP_S (sizeof (cpu_set_t), destset, srcset1, srcset2, ^)
-# define CPU_AND_S(setsize, destset, srcset1, srcset2) \
-  __CPU_OP_S (setsize, destset, srcset1, srcset2, &)
-# define CPU_OR_S(setsize, destset, srcset1, srcset2) \
-  __CPU_OP_S (setsize, destset, srcset1, srcset2, |)
-# define CPU_XOR_S(setsize, destset, srcset1, srcset2) \
-  __CPU_OP_S (setsize, destset, srcset1, srcset2, ^)
-
-# define CPU_ALLOC_SIZE(count) __CPU_ALLOC_SIZE (count)
-# define CPU_ALLOC(count) __CPU_ALLOC (count)
-# define CPU_FREE(cpuset) __CPU_FREE (cpuset)
+extern int sched_getscheduler (__pid_t __pid) __attribute__ ((__nothrow__ , __leaf__));
 
 
-/* Set the CPU affinity for a task */
-extern int sched_setaffinity (__pid_t __pid, size_t __cpusetsize,
-			      __const cpu_set_t *__cpuset) __THROW;
+extern int sched_yield (void) __attribute__ ((__nothrow__ , __leaf__));
 
-/* Get the CPU affinity for a task */
-extern int sched_getaffinity (__pid_t __pid, size_t __cpusetsize,
-			      cpu_set_t *__cpuset) __THROW;
-#endif
 
-__END_DECLS
+extern int sched_get_priority_max (int __algorithm) __attribute__ ((__nothrow__ , __leaf__));
 
-#endif /* sched.h */
+
+extern int sched_get_priority_min (int __algorithm) __attribute__ ((__nothrow__ , __leaf__));
+
+
+extern int sched_rr_get_interval (__pid_t __pid, struct timespec *__t) __attribute__ ((__nothrow__ , __leaf__));
+# 126 "sched.c"
+

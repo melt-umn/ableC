@@ -3,23 +3,26 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax:overloadable;
 abstract production eqExpr
 top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 {
+  propagate host:controlStmtContext;
+  
   top.pp = parens( ppConcat([lhs.pp, space(), text("="), space(), rhs.pp]) );
   production attribute lerrors :: [Message] with ++;
   {- TODO: Seed flow types properly on lerrors, runtimeMods, and injectedQualifiers. 
     These equations exist only to seed dependencies on env and returnType so
     extensions can freely compute these synthesized attributes based on them
     while still passing the modular well-definedness analysis. -}
-  lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  lerrors := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   production attribute runtimeMods::[inj:LhsOrRhsRuntimeMod] with ++;
-  runtimeMods := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  runtimeMods := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
   local modLhsRhs :: Pair<host:Expr host:Expr> = inj:applyLhsRhsMods(runtimeMods, lhs, rhs);
 
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
-  injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  injectedQualifiers := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   lhs.otherType = rhs.host:typerep;
   rhs.env = addEnv(lhs.defs, lhs.env);
+  lhs.env = top.env;
 
   local lType::host:Type = lhs.host:typerep;
   lType.otherType = rType;
@@ -36,7 +39,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
       host:decExpr(lhs),
       host:decExpr(rhs));
   local fwrd::host:Expr =
-    case orElse(lhs.lEqProd, orElse(mapMaybe(\ p::BinaryProd -> p(lhs, _), rType.rEqProd), rewriteProd)) of
+    case orElse(lhs.lEqProd, orElse(map(\ p::BinaryProd -> p(lhs, _), rType.rEqProd), rewriteProd)) of
     | just(prod) ->
       host:transformedExpr(
         host, 
@@ -53,18 +56,21 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 abstract production mulEqExpr
 top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 {
+  propagate host:controlStmtContext;
+
   top.pp = parens( ppConcat([lhs.pp, space(), text("*="), space(), rhs.pp]) );
   production attribute lerrors :: [Message] with ++;
-  lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  lerrors := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   production attribute runtimeMods::[inj:LhsOrRhsRuntimeMod] with ++;
-  runtimeMods := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  runtimeMods := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
   local modLhsRhs :: Pair<host:Expr host:Expr> = inj:applyLhsRhsMods(runtimeMods, lhs, rhs);
 
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
-  injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  injectedQualifiers := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   rhs.env = addEnv(lhs.defs, lhs.env);
+  lhs.env = top.env;
 
   local lType::host:Type = lhs.host:typerep;
   lType.otherType = rType;
@@ -100,18 +106,21 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 abstract production divEqExpr
 top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 {
+  propagate host:controlStmtContext;
+
   top.pp = parens( ppConcat([lhs.pp, space(), text("/="), space(), rhs.pp]) );
   production attribute lerrors :: [Message] with ++;
-  lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  lerrors := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   production attribute runtimeMods::[inj:LhsOrRhsRuntimeMod] with ++;
-  runtimeMods := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  runtimeMods := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
   local modLhsRhs :: Pair<host:Expr host:Expr> = inj:applyLhsRhsMods(runtimeMods, lhs, rhs);
 
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
-  injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  injectedQualifiers := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   rhs.env = addEnv(lhs.defs, lhs.env);
+  lhs.env = top.env;
 
   local lType::host:Type = lhs.host:typerep;
   lType.otherType = rType;
@@ -147,18 +156,21 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 abstract production modEqExpr
 top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 {
+  propagate host:controlStmtContext;
+
   top.pp = parens( ppConcat([lhs.pp, space(), text("%="), space(), rhs.pp]) );
   production attribute lerrors :: [Message] with ++;
-  lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  lerrors := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   production attribute runtimeMods::[inj:LhsOrRhsRuntimeMod] with ++;
-  runtimeMods := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  runtimeMods := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
   local modLhsRhs :: Pair<host:Expr host:Expr> = inj:applyLhsRhsMods(runtimeMods, lhs, rhs);
 
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
-  injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  injectedQualifiers := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   rhs.env = addEnv(lhs.defs, lhs.env);
+  lhs.env = top.env;
   
   local lType::host:Type = lhs.host:typerep;
   lType.otherType = rType;
@@ -194,18 +206,21 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 abstract production addEqExpr
 top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 {
+  propagate host:controlStmtContext;
+
   top.pp = parens( ppConcat([lhs.pp, space(), text("+="), space(), rhs.pp]) );
   production attribute lerrors :: [Message] with ++;
-  lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  lerrors := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   production attribute runtimeMods::[inj:LhsOrRhsRuntimeMod] with ++;
-  runtimeMods := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  runtimeMods := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
   local modLhsRhs :: Pair<host:Expr host:Expr> = inj:applyLhsRhsMods(runtimeMods, lhs, rhs);
 
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
-  injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  injectedQualifiers := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   rhs.env = addEnv(lhs.defs, lhs.env);
+  lhs.env = top.env;
   
   local lType::host:Type = lhs.host:typerep;
   lType.otherType = rType;
@@ -241,18 +256,21 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 abstract production subEqExpr
 top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 {
+  propagate host:controlStmtContext;
+
   top.pp = parens( ppConcat([lhs.pp, space(), text("-="), space(), rhs.pp]) );
   production attribute lerrors :: [Message] with ++;
-  lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  lerrors := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   production attribute runtimeMods::[inj:LhsOrRhsRuntimeMod] with ++;
-  runtimeMods := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  runtimeMods := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
   local modLhsRhs :: Pair<host:Expr host:Expr> = inj:applyLhsRhsMods(runtimeMods, lhs, rhs);
 
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
-  injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  injectedQualifiers := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   rhs.env = addEnv(lhs.defs, lhs.env);
+  lhs.env = top.env;
   
   local lType::host:Type = lhs.host:typerep;
   lType.otherType = rType;
@@ -288,18 +306,21 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 abstract production lshEqExpr
 top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 {
+  propagate host:controlStmtContext;
+
   top.pp = parens( ppConcat([lhs.pp, space(), text("<<="), space(), rhs.pp]) );
   production attribute lerrors :: [Message] with ++;
-  lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  lerrors := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   production attribute runtimeMods::[inj:LhsOrRhsRuntimeMod] with ++;
-  runtimeMods := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  runtimeMods := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
   local modLhsRhs :: Pair<host:Expr host:Expr> = inj:applyLhsRhsMods(runtimeMods, lhs, rhs);
 
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
-  injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  injectedQualifiers := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   rhs.env = addEnv(lhs.defs, lhs.env);
+  lhs.env = top.env;
   
   local lType::host:Type = lhs.host:typerep;
   lType.otherType = rType;
@@ -335,18 +356,21 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 abstract production rshEqExpr
 top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 {
+  propagate host:controlStmtContext;
+
   top.pp = parens( ppConcat([lhs.pp, space(), text(">>="), space(), rhs.pp]) );
   production attribute lerrors :: [Message] with ++;
-  lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  lerrors := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   production attribute runtimeMods::[inj:LhsOrRhsRuntimeMod] with ++;
-  runtimeMods := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  runtimeMods := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
   local modLhsRhs :: Pair<host:Expr host:Expr> = inj:applyLhsRhsMods(runtimeMods, lhs, rhs);
 
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
-  injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  injectedQualifiers := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   rhs.env = addEnv(lhs.defs, lhs.env);
+  lhs.env = top.env;
   
   local lType::host:Type = lhs.host:typerep;
   lType.otherType = rType;
@@ -382,18 +406,21 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 abstract production andEqExpr
 top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 {
+  propagate host:controlStmtContext;
+
   top.pp = parens( ppConcat([lhs.pp, space(), text("&="), space(), rhs.pp]) );
   production attribute lerrors :: [Message] with ++;
-  lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  lerrors := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   production attribute runtimeMods::[inj:LhsOrRhsRuntimeMod] with ++;
-  runtimeMods := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  runtimeMods := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
   local modLhsRhs :: Pair<host:Expr host:Expr> = inj:applyLhsRhsMods(runtimeMods, lhs, rhs);
 
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
-  injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  injectedQualifiers := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   rhs.env = addEnv(lhs.defs, lhs.env);
+  lhs.env = top.env;
   
   local lType::host:Type = lhs.host:typerep;
   lType.otherType = rType;
@@ -430,18 +457,21 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 abstract production xorEqExpr
 top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 {
+  propagate host:controlStmtContext;
+
   top.pp = parens( ppConcat([lhs.pp, space(), text("^="), space(), rhs.pp]) );
   production attribute lerrors :: [Message] with ++;
-  lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  lerrors := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   production attribute runtimeMods::[inj:LhsOrRhsRuntimeMod] with ++;
-  runtimeMods := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  runtimeMods := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
   local modLhsRhs :: Pair<host:Expr host:Expr> = inj:applyLhsRhsMods(runtimeMods, lhs, rhs);
 
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
-  injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  injectedQualifiers := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   rhs.env = addEnv(lhs.defs, lhs.env);
+  lhs.env = top.env;
   
   local lType::host:Type = lhs.host:typerep;
   lType.otherType = rType;
@@ -477,18 +507,21 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 abstract production orEqExpr
 top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 {
+  propagate host:controlStmtContext;
+
   top.pp = parens( ppConcat([lhs.pp, space(), text("|="), space(), rhs.pp]) );
   production attribute lerrors :: [Message] with ++;
-  lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  lerrors := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   production attribute runtimeMods::[inj:LhsOrRhsRuntimeMod] with ++;
-  runtimeMods := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  runtimeMods := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
   local modLhsRhs :: Pair<host:Expr host:Expr> = inj:applyLhsRhsMods(runtimeMods, lhs, rhs);
 
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
-  injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  injectedQualifiers := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   rhs.env = addEnv(lhs.defs, lhs.env);
+  lhs.env = top.env;
   
   local lType::host:Type = lhs.host:typerep;
   lType.otherType = rType;
@@ -525,18 +558,21 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 abstract production andExpr
 top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 {
+  propagate host:controlStmtContext;
+
   top.pp = parens( ppConcat([lhs.pp, space(), text("&&"), space(), rhs.pp]) );
   production attribute lerrors :: [Message] with ++;
-  lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  lerrors := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   production attribute runtimeMods::[inj:LhsOrRhsRuntimeMod] with ++;
-  runtimeMods := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  runtimeMods := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
   local modLhsRhs :: Pair<host:Expr host:Expr> = inj:applyLhsRhsMods(runtimeMods, lhs, rhs);
 
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
-  injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  injectedQualifiers := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   rhs.env = addEnv(lhs.defs, lhs.env);
+  lhs.env = top.env;
   
   local lType::host:Type = lhs.host:typerep;
   lType.otherType = rType;
@@ -567,18 +603,21 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 abstract production orExpr
 top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 {
+  propagate host:controlStmtContext;
+
   top.pp = parens( ppConcat([lhs.pp, space(), text("||"), space(), rhs.pp]) );
   production attribute lerrors :: [Message] with ++;
-  lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  lerrors := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   production attribute runtimeMods::[inj:LhsOrRhsRuntimeMod] with ++;
-  runtimeMods := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  runtimeMods := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
   local modLhsRhs :: Pair<host:Expr host:Expr> = inj:applyLhsRhsMods(runtimeMods, lhs, rhs);
 
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
-  injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  injectedQualifiers := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   rhs.env = addEnv(lhs.defs, lhs.env);
+  lhs.env = top.env;
   
   local lType::host:Type = lhs.host:typerep;
   lType.otherType = rType;
@@ -609,18 +648,21 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 abstract production andBitExpr
 top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 {
+  propagate host:controlStmtContext;
+
   top.pp = parens( ppConcat([lhs.pp, space(), text("&"), space(), rhs.pp]) );
   production attribute lerrors :: [Message] with ++;
-  lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  lerrors := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   production attribute runtimeMods::[inj:LhsOrRhsRuntimeMod] with ++;
-  runtimeMods := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  runtimeMods := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
   local modLhsRhs :: Pair<host:Expr host:Expr> = inj:applyLhsRhsMods(runtimeMods, lhs, rhs);
 
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
-  injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  injectedQualifiers := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   rhs.env = addEnv(lhs.defs, lhs.env);
+  lhs.env = top.env;
   
   local lType::host:Type = lhs.host:typerep;
   lType.otherType = rType;
@@ -651,16 +693,18 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 abstract production orBitExpr
 top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 {
+  propagate env, host:controlStmtContext;
+
   top.pp = parens( ppConcat([lhs.pp, space(), text("|"), space(), rhs.pp]) );
   production attribute lerrors :: [Message] with ++;
-  lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  lerrors := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   production attribute runtimeMods::[inj:LhsOrRhsRuntimeMod] with ++;
-  runtimeMods := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  runtimeMods := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
   local modLhsRhs :: Pair<host:Expr host:Expr> = inj:applyLhsRhsMods(runtimeMods, lhs, rhs);
 
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
-  injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  injectedQualifiers := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
   
   local lType::host:Type = lhs.host:typerep;
   lType.otherType = rType;
@@ -691,18 +735,21 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 abstract production xorExpr
 top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 {
+  propagate host:controlStmtContext;
+
   top.pp = parens( ppConcat([lhs.pp, space(), text("^"), space(), rhs.pp]) );
   production attribute lerrors :: [Message] with ++;
-  lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  lerrors := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   production attribute runtimeMods::[inj:LhsOrRhsRuntimeMod] with ++;
-  runtimeMods := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  runtimeMods := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
   local modLhsRhs :: Pair<host:Expr host:Expr> = inj:applyLhsRhsMods(runtimeMods, lhs, rhs);
 
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
-  injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  injectedQualifiers := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   rhs.env = addEnv(lhs.defs, lhs.env);
+  lhs.env = top.env;
   
   local lType::host:Type = lhs.host:typerep;
   lType.otherType = rType;
@@ -733,18 +780,21 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 abstract production lshExpr
 top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 {
+  propagate host:controlStmtContext;
+
   top.pp = parens( ppConcat([lhs.pp, space(), text("<<"), space(), rhs.pp]) );
   production attribute lerrors :: [Message] with ++;
-  lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  lerrors := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   production attribute runtimeMods::[inj:LhsOrRhsRuntimeMod] with ++;
-  runtimeMods := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  runtimeMods := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
   local modLhsRhs :: Pair<host:Expr host:Expr> = inj:applyLhsRhsMods(runtimeMods, lhs, rhs);
 
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
-  injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  injectedQualifiers := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   rhs.env = addEnv(lhs.defs, lhs.env);
+  lhs.env = top.env;
   
   local lType::host:Type = lhs.host:typerep;
   lType.otherType = rType;
@@ -775,18 +825,21 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 abstract production rshExpr
 top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 {
+  propagate host:controlStmtContext;
+
   top.pp = parens( ppConcat([lhs.pp, space(), text(">>"), space(), rhs.pp]) );
   production attribute lerrors :: [Message] with ++;
-  lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  lerrors := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   production attribute runtimeMods::[inj:LhsOrRhsRuntimeMod] with ++;
-  runtimeMods := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  runtimeMods := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
   local modLhsRhs :: Pair<host:Expr host:Expr> = inj:applyLhsRhsMods(runtimeMods, lhs, rhs);
 
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
-  injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  injectedQualifiers := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   rhs.env = addEnv(lhs.defs, lhs.env);
+  lhs.env = top.env;
 
   local lType::host:Type = lhs.host:typerep;
   lType.otherType = rType;
@@ -817,18 +870,21 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 abstract production equalsExpr
 top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 {
+  propagate host:controlStmtContext;
+
   top.pp = parens( ppConcat([lhs.pp, space(), text("=="), space(), rhs.pp]) );
   production attribute lerrors :: [Message] with ++;
-  lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  lerrors := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   production attribute runtimeMods::[inj:LhsOrRhsRuntimeMod] with ++;
-  runtimeMods := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  runtimeMods := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
   local modLhsRhs :: Pair<host:Expr host:Expr> = inj:applyLhsRhsMods(runtimeMods, lhs, rhs);
 
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
-  injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  injectedQualifiers := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   rhs.env = addEnv(lhs.defs, lhs.env);
+  lhs.env = top.env;
   
   local lType::host:Type = lhs.host:typerep;
   lType.otherType = rType;
@@ -867,18 +923,21 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 abstract production notEqualsExpr
 top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 {
+  propagate host:controlStmtContext;
+
   top.pp = parens( ppConcat([lhs.pp, space(), text("!="), space(), rhs.pp]) );
   production attribute lerrors :: [Message] with ++;
-  lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  lerrors := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   production attribute runtimeMods::[inj:LhsOrRhsRuntimeMod] with ++;
-  runtimeMods := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  runtimeMods := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
   local modLhsRhs :: Pair<host:Expr host:Expr> = inj:applyLhsRhsMods(runtimeMods, lhs, rhs);
 
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
-  injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  injectedQualifiers := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   rhs.env = addEnv(lhs.defs, lhs.env);
+  lhs.env = top.env;
   
   local lType::host:Type = lhs.host:typerep;
   lType.otherType = rType;
@@ -917,18 +976,21 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 abstract production ltExpr
 top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 {
+  propagate host:controlStmtContext;
+
   top.pp = parens( ppConcat([lhs.pp, space(), text("<"), space(), rhs.pp]) );
   production attribute lerrors :: [Message] with ++;
-  lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  lerrors := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   production attribute runtimeMods::[inj:LhsOrRhsRuntimeMod] with ++;
-  runtimeMods := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  runtimeMods := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
   local modLhsRhs :: Pair<host:Expr host:Expr> = inj:applyLhsRhsMods(runtimeMods, lhs, rhs);
 
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
-  injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  injectedQualifiers := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   rhs.env = addEnv(lhs.defs, lhs.env);
+  lhs.env = top.env;
   
   local lType::host:Type = lhs.host:typerep;
   lType.otherType = rType;
@@ -993,18 +1055,21 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 abstract production gtExpr
 top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 {
+  propagate host:controlStmtContext;
+
   top.pp = parens( ppConcat([lhs.pp, space(), text(">"), space(), rhs.pp]) );
   production attribute lerrors :: [Message] with ++;
-  lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  lerrors := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   production attribute runtimeMods::[inj:LhsOrRhsRuntimeMod] with ++;
-  runtimeMods := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  runtimeMods := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
   local modLhsRhs :: Pair<host:Expr host:Expr> = inj:applyLhsRhsMods(runtimeMods, lhs, rhs);
 
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
-  injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  injectedQualifiers := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   rhs.env = addEnv(lhs.defs, lhs.env);
+  lhs.env = top.env;
   
   local lType::host:Type = lhs.host:typerep;
   lType.otherType = rType;
@@ -1069,18 +1134,21 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 abstract production lteExpr
 top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 {
+  propagate host:controlStmtContext;
+
   top.pp = parens( ppConcat([lhs.pp, space(), text("<="), space(), rhs.pp]) );
   production attribute lerrors :: [Message] with ++;
-  lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  lerrors := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   production attribute runtimeMods::[inj:LhsOrRhsRuntimeMod] with ++;
-  runtimeMods := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  runtimeMods := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
   local modLhsRhs :: Pair<host:Expr host:Expr> = inj:applyLhsRhsMods(runtimeMods, lhs, rhs);
 
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
-  injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  injectedQualifiers := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   rhs.env = addEnv(lhs.defs, lhs.env);
+  lhs.env = top.env;
   
   local lType::host:Type = lhs.host:typerep;
   lType.otherType = rType;
@@ -1145,18 +1213,21 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 abstract production gteExpr
 top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 {
+  propagate host:controlStmtContext;
+
   top.pp = parens( ppConcat([lhs.pp, space(), text(">="), space(), rhs.pp]) );
   production attribute lerrors :: [Message] with ++;
-  lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  lerrors := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   production attribute runtimeMods::[inj:LhsOrRhsRuntimeMod] with ++;
-  runtimeMods := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  runtimeMods := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
   local modLhsRhs :: Pair<host:Expr host:Expr> = inj:applyLhsRhsMods(runtimeMods, lhs, rhs);
 
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
-  injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  injectedQualifiers := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   rhs.env = addEnv(lhs.defs, lhs.env);
+  lhs.env = top.env;
   
   local lType::host:Type = lhs.host:typerep;
   lType.otherType = rType;
@@ -1221,18 +1292,21 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 abstract production addExpr
 top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 {
+  propagate host:controlStmtContext;
+
   top.pp = parens( ppConcat([lhs.pp, space(), text("+"), space(), rhs.pp]) );
   production attribute lerrors :: [Message] with ++;
-  lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  lerrors := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   production attribute runtimeMods::[inj:LhsOrRhsRuntimeMod] with ++;
-  runtimeMods := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  runtimeMods := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
   local modLhsRhs :: Pair<host:Expr host:Expr> = inj:applyLhsRhsMods(runtimeMods, lhs, rhs);
 
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
-  injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  injectedQualifiers := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   rhs.env = addEnv(lhs.defs, lhs.env);
+  lhs.env = top.env;
   
   local lType::host:Type = lhs.host:typerep;
   lType.otherType = rType;
@@ -1263,18 +1337,21 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 abstract production subExpr
 top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 {
+  propagate host:controlStmtContext;
+
   top.pp = parens( ppConcat([lhs.pp, space(), text("-"), space(), rhs.pp]) );
   production attribute lerrors :: [Message] with ++;
-  lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  lerrors := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   production attribute runtimeMods::[inj:LhsOrRhsRuntimeMod] with ++;
-  runtimeMods := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  runtimeMods := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
   local modLhsRhs :: Pair<host:Expr host:Expr> = inj:applyLhsRhsMods(runtimeMods, lhs, rhs);
 
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
-  injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  injectedQualifiers := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   rhs.env = addEnv(lhs.defs, lhs.env);
+  lhs.env = top.env;
   
   local lType::host:Type = lhs.host:typerep;
   lType.otherType = rType;
@@ -1305,18 +1382,21 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 abstract production mulExpr
 top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 {
+  propagate host:controlStmtContext;
+
   top.pp = parens( ppConcat([lhs.pp, space(), text("*"), space(), rhs.pp]) );
   production attribute lerrors :: [Message] with ++;
-  lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  lerrors := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   production attribute runtimeMods::[inj:LhsOrRhsRuntimeMod] with ++;
-  runtimeMods := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  runtimeMods := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
   local modLhsRhs :: Pair<host:Expr host:Expr> = inj:applyLhsRhsMods(runtimeMods, lhs, rhs);
 
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
-  injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  injectedQualifiers := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   rhs.env = addEnv(lhs.defs, lhs.env);
+  lhs.env = top.env;
   
   local lType::host:Type = lhs.host:typerep;
   lType.otherType = rType;
@@ -1346,19 +1426,22 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 
 abstract production divExpr
 top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
-{
+{  
+  propagate host:controlStmtContext;
+  
   top.pp = parens( ppConcat([lhs.pp, space(), text("/"), space(), rhs.pp]) );
   production attribute lerrors :: [Message] with ++;
-  lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  lerrors := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   production attribute runtimeMods::[inj:LhsOrRhsRuntimeMod] with ++;
-  runtimeMods := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  runtimeMods := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
   local modLhsRhs :: Pair<host:Expr host:Expr> = inj:applyLhsRhsMods(runtimeMods, lhs, rhs);
 
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
-  injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  injectedQualifiers := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   rhs.env = addEnv(lhs.defs, lhs.env);
+  lhs.env = top.env;
   
   local lType::host:Type = lhs.host:typerep;
   lType.otherType = rType;
@@ -1389,18 +1472,21 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 abstract production modExpr
 top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 {
+  propagate host:controlStmtContext;
+
   top.pp = parens( ppConcat([lhs.pp, space(), text("%"), space(), rhs.pp]) );
   production attribute lerrors :: [Message] with ++;
-  lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  lerrors := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   production attribute runtimeMods::[inj:LhsOrRhsRuntimeMod] with ++;
-  runtimeMods := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  runtimeMods := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
   local modLhsRhs :: Pair<host:Expr host:Expr> = inj:applyLhsRhsMods(runtimeMods, lhs, rhs);
 
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
-  injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  injectedQualifiers := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   rhs.env = addEnv(lhs.defs, lhs.env);
+  lhs.env = top.env;
   
   local lType::host:Type = lhs.host:typerep;
   lType.otherType = rType;

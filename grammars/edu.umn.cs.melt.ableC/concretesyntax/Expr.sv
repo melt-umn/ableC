@@ -36,11 +36,11 @@ concrete productions top::ConstantExpr_c
 closed tracked nonterminal Initializer_c with ast<ast:Initializer>; 
 concrete productions top::Initializer_c
 | e::AssignExpr_c
-    { top.ast = ast:exprInitializer(e.ast); }
+    { top.ast = ovrld:exprInitializer(e.ast); }
 | '{' il::InitializerList_c '}'
-    { top.ast = ast:objectInitializer(ast:foldInit(il.ast)); }
+    { top.ast = ovrld:objectInitializer(ast:foldInit(il.ast)); }
 | '{' il::InitializerList_c ',' '}' 
-    { top.ast = ast:objectInitializer(ast:foldInit(il.ast)); }
+    { top.ast = ovrld:objectInitializer(ast:foldInit(il.ast)); }
 
 
 -- "Non-exported" nonterminals
@@ -455,9 +455,9 @@ concrete productions top::PostfixExpr_c
     { top.ast = op.ast;
       op.expr = e.ast; }
 | '(' ty::TypeName_c ')' '{' il::InitializerList_c '}'
-    { top.ast = ast:compoundLiteralExpr(ty.ast, ast:foldInit(il.ast)); }
+    { top.ast = ovrld:compoundLiteralExpr(ty.ast, ast:foldInit(il.ast)); }
 | '(' ty::TypeName_c ')' '{' il::InitializerList_c ',' '}'
-    { top.ast = ast:compoundLiteralExpr(ty.ast, ast:foldInit(il.ast)); }
+    { top.ast = ovrld:compoundLiteralExpr(ty.ast, ast:foldInit(il.ast)); }
 
 closed tracked nonterminal PostfixOp_c with ast<ast:Expr>, expr;
 concrete productions top::PostfixOp_c
@@ -525,13 +525,17 @@ concrete productions top::Designation_c
 closed tracked nonterminal DesignatorList_c with ast<ast:Designator>, givenDesignator;
 concrete productions top::DesignatorList_c
 | h::DesignatorList_c  t::Designator_c
-    { top.ast = t.ast;
-      t.givenDesignator = h.ast; }
+    { top.ast = t.ast; }
 | d::Designator_c
     { top.ast = d.ast; }
 
 -- The previous designator to operate upon.
-autocopy attribute givenDesignator :: ast:Designator;
+inherited attribute givenDesignator :: ast:Designator;
+
+propagate givenDesignator on 
+  DesignatorList_c,
+  Designator_c,
+  ArrayDesignator_c;
 
 closed tracked nonterminal Designator_c with ast<ast:Designator>, givenDesignator;
 concrete productions top::Designator_c

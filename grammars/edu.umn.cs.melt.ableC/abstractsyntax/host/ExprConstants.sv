@@ -7,7 +7,7 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 abstract production realConstant
 top::Expr ::= c::NumericConstant
 {
-  propagate host, errors, globalDecls, functionDecls, defs, freeVariables;
+  propagate env, host, errors, globalDecls, functionDecls, defs, freeVariables;
   top.pp = c.pp;
   top.typerep = builtinType(nilQualifier(), c.constanttyperep);
   top.isLValue = false;
@@ -17,12 +17,14 @@ top::Expr ::= c::NumericConstant
 abstract production imaginaryConstant
 top::Expr ::= c::NumericConstant
 {
-  propagate host, errors, globalDecls, functionDecls, defs, freeVariables;
+  propagate env, host, errors, globalDecls, functionDecls, defs, freeVariables;
   top.pp = c.pp;
-  top.typerep = builtinType(nilQualifier(), case c.constanttyperep of
+  top.typerep = builtinType(nilQualifier(),
+    case c.constanttyperep of
     | realType(rt) -> complexType(rt)
     | signedType(it) -> complexIntegerType(it)
     | unsignedType(it) -> complexIntegerType(it) -- probably not possible, but buggy!
+    | t -> error("Unexpected constanttyperep: " ++ show(80, t.pp))
     end);
   top.isLValue = false;
   top.isSimple = true;
@@ -58,7 +60,14 @@ top::NumericConstant ::= num::String  unsigned::Boolean  suffix::IntSuffix
   top.pp = text(num);
   top.mangledName = substitute(".", "_", num);
   top.constanttyperep = if unsigned then unsignedType(suffix.constinttyperep) else signedType(suffix.constinttyperep);
-  top.integerConstantValue = nothing(); -- TODO
+  top.integerConstantValue =
+    just(
+      foldr(\ n1::Integer n2::Integer -> n1 + 16 * n2, 0,
+        flatMap(\ c::Integer ->
+          if 48 <= c && c <= 57 then [c - 48] else
+          if 65 <= c && c <= 70 then [c - 65] else
+          if 97 <= c && c <= 102 then [c - 97] else [],
+          stringToChars(num))));
 }
 abstract production octIntegerConstant
 top::NumericConstant ::= num::String  unsigned::Boolean  suffix::IntSuffix
@@ -66,7 +75,12 @@ top::NumericConstant ::= num::String  unsigned::Boolean  suffix::IntSuffix
   top.pp = text(num);
   top.mangledName = substitute(".", "_", num);
   top.constanttyperep = if unsigned then unsignedType(suffix.constinttyperep) else signedType(suffix.constinttyperep);
-  top.integerConstantValue = nothing(); -- TODO
+  top.integerConstantValue =
+    just(
+      foldr(\ n1::Integer n2::Integer -> n1 + 8 * n2, 0,
+        flatMap(\ c::Integer ->
+          if 48 <= c && c <= 55 then [c - 48] else [],
+          stringToChars(num))));
 }
 
 abstract production floatConstant

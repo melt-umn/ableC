@@ -56,7 +56,7 @@ This will build the extension, and test it.
 
 ## Where to go next
 
-You can look at the [ableC tutorials](https://github.com/melt-umn/tutorials) for information about how to develop your own extensions.
+You can look at the [ableC tutorials](https://github.com/melt-umn/ableC-tutorials) for information about how to develop your own extensions.
 
 Alternatively, we have developed several to experiment with::
 

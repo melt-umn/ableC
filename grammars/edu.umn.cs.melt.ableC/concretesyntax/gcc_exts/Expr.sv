@@ -36,6 +36,10 @@ concrete productions top::UnaryOp_c
 | '__extension__'
     { top.ast = top.expr; } -- Discard and ignore these annotations
 
+concrete productions top::PostfixExpr_c
+| '(' ty::TypeName_c ')' '{' '}'
+    { top.ast = ovrld:compoundLiteralExpr(ty.ast, ast:nilInit()); }
+
 concrete productions top::PrimaryExpr_c
 | '(' '{' bis::BlockItemList_c '}' ')'
     { --local attribute rev:: [ast:Stmt] = reverse( bis.ast );

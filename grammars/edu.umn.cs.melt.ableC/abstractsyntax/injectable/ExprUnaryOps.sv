@@ -3,19 +3,21 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax:injectable;
 abstract production preIncExpr
 top::host:Expr ::= e::host:Expr
 {
+  propagate env, host:controlStmtContext;
+
   top.pp = parens( cat( text("++"), e.pp ) );
   production attribute lerrors :: [Message] with ++;
   {- TODO: Seed flow types properly on lerrors, runtimeMods, and injectedQualifiers. 
     These equations exist only to seed dependencies on env and returnType so
     extensions can freely compute these synthesized attributes based on them
     while still passing the modular well-definedness analysis. -}
-  lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  lerrors := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   production attribute runtimeMods::[RuntimeMod] with ++;
-  runtimeMods := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  runtimeMods := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
-  injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  injectedQualifiers := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   forwards to
     host:wrapWarnExpr(lerrors,
@@ -25,19 +27,21 @@ top::host:Expr ::= e::host:Expr
 abstract production preDecExpr
 top::host:Expr ::= e::host:Expr
 {
+  propagate env, host:controlStmtContext;
+
   top.pp = parens( cat( text("--"), e.pp ) );
   production attribute lerrors :: [Message] with ++;
   {- TODO: Seed flow types properly on lerrors, runtimeMods, and injectedQualifiers. 
     These equations exist only to seed dependencies on env and returnType so
     extensions can freely compute these synthesized attributes based on them
     while still passing the modular well-definedness analysis. -}
-  lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  lerrors := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   production attribute runtimeMods::[RuntimeMod] with ++;
-  runtimeMods := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  runtimeMods := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
-  injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  injectedQualifiers := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   forwards to
     host:wrapWarnExpr(lerrors,
@@ -47,19 +51,21 @@ top::host:Expr ::= e::host:Expr
 abstract production postIncExpr
 top::host:Expr ::= e::host:Expr
 {
+  propagate env, host:controlStmtContext;
+
   top.pp = parens( cat( e.pp, text("++") ) );
   production attribute lerrors :: [Message] with ++;
   {- TODO: Seed flow types properly on lerrors, runtimeMods, and injectedQualifiers. 
     These equations exist only to seed dependencies on env and returnType so
     extensions can freely compute these synthesized attributes based on them
     while still passing the modular well-definedness analysis. -}
-  lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  lerrors := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   production attribute runtimeMods::[RuntimeMod] with ++;
-  runtimeMods := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  runtimeMods := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
-  injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  injectedQualifiers := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   forwards to
     host:wrapWarnExpr(lerrors,
@@ -69,19 +75,21 @@ top::host:Expr ::= e::host:Expr
 abstract production postDecExpr
 top::host:Expr ::= e::host:Expr
 {
+  propagate env, host:controlStmtContext;
+
   top.pp = parens( cat( e.pp, text("--") ) );
   production attribute lerrors :: [Message] with ++;
   {- TODO: Seed flow types properly on lerrors, runtimeMods, and injectedQualifiers. 
     These equations exist only to seed dependencies on env and returnType so
     extensions can freely compute these synthesized attributes based on them
     while still passing the modular well-definedness analysis. -}
-  lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  lerrors := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   production attribute runtimeMods::[RuntimeMod] with ++;
-  runtimeMods := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  runtimeMods := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
-  injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  injectedQualifiers := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   forwards to
     host:wrapWarnExpr(lerrors,
@@ -91,19 +99,21 @@ top::host:Expr ::= e::host:Expr
 abstract production addressOfExpr
 top::host:Expr ::= e::host:Expr
 {
+  propagate env, host:controlStmtContext;
+
   top.pp = parens( cat( text("&"), e.pp ) );
   production attribute lerrors :: [Message] with ++;
   {- TODO: Seed flow types properly on lerrors, runtimeMods, and injectedQualifiers. 
     These equations exist only to seed dependencies on env and returnType so
     extensions can freely compute these synthesized attributes based on them
     while still passing the modular well-definedness analysis. -}
-  lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  lerrors := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   production attribute runtimeMods::[RuntimeMod] with ++;
-  runtimeMods := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  runtimeMods := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
-  injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  injectedQualifiers := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   forwards to
     host:wrapWarnExpr(lerrors,
@@ -113,19 +123,21 @@ top::host:Expr ::= e::host:Expr
 abstract production dereferenceExpr
 top::host:Expr ::= e::host:Expr
 {
+  propagate env, host:controlStmtContext;
+
   top.pp = parens( cat(text("*"), e.pp) );
   production attribute lerrors :: [Message] with ++;
   {- TODO: Seed flow types properly on lerrors, runtimeMods, and injectedQualifiers. 
     These equations exist only to seed dependencies on env and returnType so
     extensions can freely compute these synthesized attributes based on them
     while still passing the modular well-definedness analysis. -}
-  lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  lerrors := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   production attribute runtimeMods::[RuntimeMod] with ++;
-  runtimeMods := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  runtimeMods := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
-  injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  injectedQualifiers := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   forwards to
     host:wrapWarnExpr(lerrors,
@@ -135,19 +147,21 @@ top::host:Expr ::= e::host:Expr
 abstract production positiveExpr
 top::host:Expr ::= e::host:Expr
 {
+  propagate env, host:controlStmtContext;
+
   top.pp = parens( cat( text("+"), e.pp ) );
   production attribute lerrors :: [Message] with ++;
   {- TODO: Seed flow types properly on lerrors, runtimeMods, and injectedQualifiers. 
     These equations exist only to seed dependencies on env and returnType so
     extensions can freely compute these synthesized attributes based on them
     while still passing the modular well-definedness analysis. -}
-  lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  lerrors := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   production attribute runtimeMods::[RuntimeMod] with ++;
-  runtimeMods := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  runtimeMods := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
-  injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  injectedQualifiers := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   forwards to
     host:wrapWarnExpr(lerrors,
@@ -157,19 +171,21 @@ top::host:Expr ::= e::host:Expr
 abstract production negativeExpr
 top::host:Expr ::= e::host:Expr
 {
+  propagate env, host:controlStmtContext;
+
   top.pp = parens( cat( text("-"), e.pp ) );
   production attribute lerrors :: [Message] with ++;
   {- TODO: Seed flow types properly on lerrors, runtimeMods, and injectedQualifiers. 
     These equations exist only to seed dependencies on env and returnType so
     extensions can freely compute these synthesized attributes based on them
     while still passing the modular well-definedness analysis. -}
-  lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  lerrors := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   production attribute runtimeMods::[RuntimeMod] with ++;
-  runtimeMods := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  runtimeMods := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
-  injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  injectedQualifiers := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   forwards to
     host:wrapWarnExpr(lerrors,
@@ -179,19 +195,21 @@ top::host:Expr ::= e::host:Expr
 abstract production bitNegateExpr
 top::host:Expr ::= e::host:Expr
 {
+  propagate env, host:controlStmtContext;
+
   top.pp = parens( cat( text("~"), e.pp ) );
   production attribute lerrors :: [Message] with ++;
   {- TODO: Seed flow types properly on lerrors, runtimeMods, and injectedQualifiers. 
     These equations exist only to seed dependencies on env and returnType so
     extensions can freely compute these synthesized attributes based on them
     while still passing the modular well-definedness analysis. -}
-  lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  lerrors := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   production attribute runtimeMods::[RuntimeMod] with ++;
-  runtimeMods := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  runtimeMods := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
-  injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  injectedQualifiers := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   forwards to
     host:wrapWarnExpr(lerrors,
@@ -201,19 +219,21 @@ top::host:Expr ::= e::host:Expr
 abstract production notExpr
 top::host:Expr ::= e::host:Expr
 {
+  propagate env, host:controlStmtContext;
+
   top.pp = parens( cat( text("!"), e.pp ) );
   production attribute lerrors :: [Message] with ++;
   {- TODO: Seed flow types properly on lerrors, runtimeMods, and injectedQualifiers. 
     These equations exist only to seed dependencies on env and returnType so
     extensions can freely compute these synthesized attributes based on them
     while still passing the modular well-definedness analysis. -}
-  lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  lerrors := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   production attribute runtimeMods::[RuntimeMod] with ++;
-  runtimeMods := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  runtimeMods := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
-  injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  injectedQualifiers := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   forwards to
     host:wrapWarnExpr(lerrors,
@@ -225,19 +245,21 @@ top::host:Expr ::= e::host:Expr
 abstract production realExpr
 top::host:Expr ::= e::host:Expr
 {
+  propagate env, host:controlStmtContext;
+
   top.pp = parens( cat( text("__real__"), e.pp ) );
   production attribute lerrors :: [Message] with ++;
   {- TODO: Seed flow types properly on lerrors, runtimeMods, and injectedQualifiers. 
     These equations exist only to seed dependencies on env and returnType so
     extensions can freely compute these synthesized attributes based on them
     while still passing the modular well-definedness analysis. -}
-  lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  lerrors := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   production attribute runtimeMods::[RuntimeMod] with ++;
-  runtimeMods := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  runtimeMods := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
-  injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  injectedQualifiers := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   forwards to
     host:wrapWarnExpr(lerrors,
@@ -248,19 +270,21 @@ top::host:Expr ::= e::host:Expr
 abstract production imagExpr
 top::host:Expr ::= e::host:Expr
 {
+  propagate env, host:controlStmtContext;
+  
   top.pp = parens( cat( text("__imag__"), e.pp ) );
   production attribute lerrors :: [Message] with ++;
   {- TODO: Seed flow types properly on lerrors, runtimeMods, and injectedQualifiers. 
     These equations exist only to seed dependencies on env and returnType so
     extensions can freely compute these synthesized attributes based on them
     while still passing the modular well-definedness analysis. -}
-  lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  lerrors := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   production attribute runtimeMods::[RuntimeMod] with ++;
-  runtimeMods := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  runtimeMods := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
-  injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  injectedQualifiers := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   forwards to
     host:wrapWarnExpr(lerrors,
@@ -277,10 +301,10 @@ top::host:Expr ::= e::host:ExprOrTypeName
     These equations exist only to seed dependencies on env and returnType so
     extensions can freely compute these synthesized attributes based on them
     while still passing the modular well-definedness analysis. -}
-  lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  lerrors := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
-  injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  injectedQualifiers := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   forwards to
     host:wrapWarnExpr(lerrors,
@@ -297,10 +321,10 @@ top::host:Expr ::= e::host:ExprOrTypeName
     These equations exist only to seed dependencies on env and returnType so
     extensions can freely compute these synthesized attributes based on them
     while still passing the modular well-definedness analysis. -}
-  lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  lerrors := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   production attribute injectedQualifiers :: [host:Qualifier] with ++;
-  injectedQualifiers := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  injectedQualifiers := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   forwards to
     host:wrapWarnExpr(lerrors,

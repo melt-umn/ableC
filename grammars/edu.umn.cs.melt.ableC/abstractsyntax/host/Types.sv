@@ -58,7 +58,7 @@ top::Type ::=
   top.withoutAttributes = top;
   top.withoutTypeQualifiers = top;
   top.withTypeQualifiers = top;
-  
+
   top.isIntegerType = false;
   top.isScalarType = false;
   top.isArithmeticType = false;
@@ -141,8 +141,8 @@ abstract production pointerType
 top::Type ::= q::Qualifiers  target::Type
 {
   propagate host, canonicalType, errors, freeVariables;
-  
-  local wrapTarget::Boolean = 
+
+  local wrapTarget::Boolean =
     case target of
       noncanonicalType(parenType(_)) -> false
     | noncanonicalType(typedefType(_, _, _)) -> false
@@ -175,7 +175,7 @@ top::Type ::= q::Qualifiers  target::Type
     | _ -> pointerType(q, target)
     end;
   top.qualifiers = q.qualifiers;
-  
+
   top.isScalarType = true;
   q.typeToQualify = top;
 }
@@ -206,7 +206,7 @@ top::Type ::= element::Type  indexQualifiers::Qualifiers  sizeModifier::ArraySiz
 {
   propagate host, canonicalType, errors, freeVariables;
   top.lpp = element.lpp;
-  
+
   top.rpp = cat(brackets(ppConcat([
     terminate(space(), indexQualifiers.pps ++ sizeModifier.pps),
     sub.pp
@@ -236,10 +236,14 @@ top::Type ::= element::Type  indexQualifiers::Qualifiers  sizeModifier::ArraySiz
   top.integerPromotions = top;
   top.defaultArgumentPromotions = top;
   top.defaultLvalueConversion = top;
-  top.defaultFunctionArrayLvalueConversion = 
+  top.defaultFunctionArrayLvalueConversion =
     noncanonicalType(decayedType(top,
       pointerType(indexQualifiers, element)));
   top.withoutExtensionQualifiers = arrayType(element.withoutExtensionQualifiers, filterExtensionQualifiers(indexQualifiers), sizeModifier, sub);
+  -- Added qualfiers go on the element type!
+  top.withTypeQualifiers = arrayType(element.withTypeQualifiers, indexQualifiers, sizeModifier, sub);
+  element.addedTypeQualifiers = top.addedTypeQualifiers;
+
   top.mergeQualifiers = \t2::Type ->
     case t2 of
       arrayType(element2, q2, _, _) ->
@@ -273,7 +277,8 @@ top::ArrayType ::= size::Decorated Expr
 {
   top.host =
     variableArrayType(
-      decorate size.host with {env = size.env; returnType = size.returnType;});
+      decorate size.host with {env = size.env; 
+    controlStmtContext = size.controlStmtContext;});
   top.pp = size.pp;
   top.freeVariables := size.freeVariables;
 }
@@ -414,7 +419,7 @@ top::Type ::= q::Qualifiers  sub::ExtType
     | _ -> top
     end;
   top.qualifiers = q.qualifiers;
-  
+
   top.isIntegerType = sub.isIntegerType;
   top.isArithmeticType = sub.isArithmeticType;
   top.isScalarType = sub.isScalarType;
@@ -450,7 +455,7 @@ top::ExtType ::=
   top.defaultLvalueConversion = extType(top.givenQualifiers, top);
   top.defaultFunctionArrayLvalueConversion = extType(top.givenQualifiers, top);
   top.freeVariables := [];
-  
+
   top.isIntegerType = false;
   top.isArithmeticType = false;
   top.isScalarType = false;
@@ -488,7 +493,7 @@ top::ExtType ::= ref::Decorated EnumDecl
         -- TODO: This code is slightly broken, since our representation of
         -- enum types lacks a method of uniquely identifying each type.
         -- For now, we just check that the tags are the same.
-        -- This isn't quite correct (due to name shadowing), but is close enough for now. 
+        -- This isn't quite correct (due to name shadowing), but is close enough for now.
         -- Properly fixing this would require giving enums refIds.
         case ref.maybename, otherRef.maybename of
         -- Check that tag names are equal
@@ -499,7 +504,7 @@ top::ExtType ::= ref::Decorated EnumDecl
         end
       | _ -> false
       end;
-    
+
   top.isIntegerType = true;
   top.isArithmeticType = true;
 }
@@ -512,15 +517,19 @@ top::ExtType ::= ref::Decorated EnumDecl
  - This production, despite its signature, only represents structs and unions, not enums.
  -}
 abstract production refIdExtType
-top::ExtType ::= kwd::StructOrEnumOrUnion  n::String  refId::String
+top::ExtType ::= kwd::StructOrEnumOrUnion  mn::Maybe<String>  refId::String
 {
   propagate canonicalType;
   top.host = extType(top.givenQualifiers, top);
   top.baseTypeExpr =
-    tagReferenceTypeExpr(top.givenQualifiers, kwd, name(n));
-  top.pp = ppConcat([kwd.pp, space(), text(n)]);
+    case mn of
+    | just(n) -> tagReferenceTypeExpr(top.givenQualifiers, kwd, name(n))
+    | nothing() -> anonTagReferenceTypeExpr(top.givenQualifiers, kwd, refId)
+    end;
+  production tagName::String = fromMaybe(s"<anon ${refId}>", mn);
+  top.pp = ppConcat([kwd.pp, space(), text(tagName)]);
   top.mangledName =
-    s"${kwd.mangledName}_${if n == "<anon>" then "anon" else n}_${substitute(":", "_", refId)}";
+    s"${kwd.mangledName}_${fromMaybe("anon", mn)}_${substitute(":", "_", refId)}";
   top.isEqualTo =
     \ other::ExtType ->
       case other of
@@ -570,11 +579,16 @@ top::Type ::= q::Qualifiers  bt::Type
     end;
   top.qualifiers = q.qualifiers;
   q.typeToQualify = top;
+
+  top.isIntegerType = bt.isIntegerType;
+  top.isScalarType = bt.isScalarType;
+  top.isArithmeticType = bt.isArithmeticType;
+  top.isCompleteType = bt.isCompleteType;
 }
 
 {-------------------------------------------------------------------------------
  - GCC __attribute__ types.
- - This represents attributes attatched to types that aren't handled specially (e.g. vector).  
+ - This represents attributes attatched to types that aren't handled specially (e.g. vector).
  - We assume all attributed types are type-equivalent.
  - TODO: Make sure we animate attributes with actual custom types instead of attributedType in all
  - cases where this isn't true.
@@ -608,16 +622,16 @@ top::Type ::= attrs::Attributes  bt::Type
   top.isArithmeticType = bt.isArithmeticType;
   top.isCompleteType = bt.isCompleteType;
   top.maybeRefId := bt.maybeRefId;
-  
+
   -- Whatever...
   attrs.env = emptyEnv();
-  attrs.returnType = nothing();
+  attrs.controlStmtContext = initialControlStmtContext;
 }
 
 {-------------------------------------------------------------------------------
  - GCC Vector (MMX/SSE/etc) types.
  - TODO: This is very broken, __attribute__ can't occur at the outermost level, should involve
- - attributedType somehow?  
+ - attributedType somehow?
  -}
 abstract production vectorType
 top::Type ::= bt::Type  bytes::Integer
@@ -681,7 +695,7 @@ top::Type ::= sub::NoncanonicalType
   --top.defaultArgumentPromotions = ;
   --top.defaultLvalueConversion = ;
   --top.defaultFunctionArrayLvalueConversion = ;
-  
+
   forwards to sub.canonicalType;
 }
 
@@ -706,7 +720,7 @@ top::NoncanonicalType ::= resolved::Type
   top.canonicalType = resolved;
 }
 
-{-- Parens. 
+{-- Parens.
  - No qualifiers, as it's not even syntactically possible. This exists for no
  - reason but to mirror the type exactly as the programmer wrote it.
  - e.g. 'const ((footypedef))' if that's their preferred thing.
@@ -742,7 +756,7 @@ top::NoncanonicalType ::= wrapped::Type
  - e.g. 'char foo[2];' when we write 'foo[1]' and consult
  - the type of the 'foo' subexpression, we would then perform
  - default conversions, getting 'char *' which isn't the ideal
- - type to report if there's an error. 
+ - type to report if there's an error.
  -
  - This exists to provide us a way to preserve
  - the original type, while still decaying in the conversion.
@@ -769,7 +783,7 @@ top::NoncanonicalType ::= original::Type  pointer::Type
  - Invariant: any qualifiers on this typedef (i.e. 'q')
  - have already been injected into 'resolved'.
  -
- - They are only preserved here for essentially pp purposes. 
+ - They are only preserved here for essentially pp purposes.
  - e.g. given: typedef volatile struct foo { } Foo;
  -    'const Foo' will have 'const' in q, and 'resolved' will have const and volatile. -}
 abstract production typedefType
@@ -815,7 +829,7 @@ Qualifiers ::= q::Qualifiers
   return foldQualifier(filter((.qualIsHost), q.qualifiers));
 }
 
-{- 
+{-
 NON_CANONICAL_UNLESS_DEPENDENT_TYPE(TypeOfExpr, Type)
 NON_CANONICAL_UNLESS_DEPENDENT_TYPE(TypeOf, Type)
 

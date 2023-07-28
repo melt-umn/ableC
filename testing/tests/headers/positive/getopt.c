@@ -1,193 +1,278 @@
-/* Declarations for getopt.
-   Copyright (C) 1989-1994,1996-1999,2001,2003,2004,2009,2010
-   Free Software Foundation, Inc.
-   This file is part of the GNU C Library.
+# 1 "getopt.c"
+# 1 "<built-in>"
+# 1 "<command-line>"
+# 1 "/usr/include/stdc-predef.h" 1 3 4
+# 1 "<command-line>" 2
+# 1 "getopt.c"
+# 35 "getopt.c"
+# 1 "/usr/include/ctype.h" 1 3 4
+# 25 "/usr/include/ctype.h" 3 4
+# 1 "/usr/include/features.h" 1 3 4
+# 367 "/usr/include/features.h" 3 4
+# 1 "/usr/include/x86_64-linux-gnu/sys/cdefs.h" 1 3 4
+# 410 "/usr/include/x86_64-linux-gnu/sys/cdefs.h" 3 4
+# 1 "/usr/include/x86_64-linux-gnu/bits/wordsize.h" 1 3 4
+# 411 "/usr/include/x86_64-linux-gnu/sys/cdefs.h" 2 3 4
+# 368 "/usr/include/features.h" 2 3 4
+# 391 "/usr/include/features.h" 3 4
+# 1 "/usr/include/x86_64-linux-gnu/gnu/stubs.h" 1 3 4
+# 10 "/usr/include/x86_64-linux-gnu/gnu/stubs.h" 3 4
+# 1 "/usr/include/x86_64-linux-gnu/gnu/stubs-64.h" 1 3 4
+# 11 "/usr/include/x86_64-linux-gnu/gnu/stubs.h" 2 3 4
+# 392 "/usr/include/features.h" 2 3 4
+# 26 "/usr/include/ctype.h" 2 3 4
+# 1 "/usr/include/x86_64-linux-gnu/bits/types.h" 1 3 4
+# 27 "/usr/include/x86_64-linux-gnu/bits/types.h" 3 4
+# 1 "/usr/include/x86_64-linux-gnu/bits/wordsize.h" 1 3 4
+# 28 "/usr/include/x86_64-linux-gnu/bits/types.h" 2 3 4
 
-   The GNU C Library is free software; you can redistribute it and/or
-   modify it under the terms of the GNU Lesser General Public
-   License as published by the Free Software Foundation; either
-   version 2.1 of the License, or (at your option) any later version.
 
-   The GNU C Library is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-   Lesser General Public License for more details.
+typedef unsigned char __u_char;
+typedef unsigned short int __u_short;
+typedef unsigned int __u_int;
+typedef unsigned long int __u_long;
 
-   You should have received a copy of the GNU Lesser General Public
-   License along with the GNU C Library; if not, write to the Free
-   Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307 USA.  */
 
-#ifndef _GETOPT_H
+typedef signed char __int8_t;
+typedef unsigned char __uint8_t;
+typedef signed short int __int16_t;
+typedef unsigned short int __uint16_t;
+typedef signed int __int32_t;
+typedef unsigned int __uint32_t;
 
-#ifndef __need_getopt
-# define _GETOPT_H 1
-#endif
+typedef signed long int __int64_t;
+typedef unsigned long int __uint64_t;
 
-/* If __GNU_LIBRARY__ is not already defined, either we are being used
-   standalone, or this is the first header included in the source file.
-   If we are being used with glibc, we need to include <features.h>, but
-   that does not exist if we are standalone.  So: if __GNU_LIBRARY__ is
-   not defined, include <ctype.h>, which will pull in <features.h> for us
-   if it's from glibc.  (Why ctype.h?  It's guaranteed to exist and it
-   doesn't flood the namespace with stuff the way some other headers do.)  */
-#if !defined __GNU_LIBRARY__
-# include <ctype.h>
-#endif
 
-#ifndef __THROW
-# ifndef __GNUC_PREREQ
-#  define __GNUC_PREREQ(maj, min) (0)
-# endif
-# if defined __cplusplus && __GNUC_PREREQ (2,8)
-#  define __THROW	throw ()
-# else
-#  define __THROW
-# endif
-#endif
 
-#ifdef	__cplusplus
-extern "C" {
-#endif
 
-/* For communication from `getopt' to the caller.
-   When `getopt' finds an option that takes an argument,
-   the argument value is returned here.
-   Also, when `ordering' is RETURN_IN_ORDER,
-   each non-option ARGV-element is returned here.  */
 
+
+
+typedef long int __quad_t;
+typedef unsigned long int __u_quad_t;
+# 121 "/usr/include/x86_64-linux-gnu/bits/types.h" 3 4
+# 1 "/usr/include/x86_64-linux-gnu/bits/typesizes.h" 1 3 4
+# 122 "/usr/include/x86_64-linux-gnu/bits/types.h" 2 3 4
+
+
+typedef unsigned long int __dev_t;
+typedef unsigned int __uid_t;
+typedef unsigned int __gid_t;
+typedef unsigned long int __ino_t;
+typedef unsigned long int __ino64_t;
+typedef unsigned int __mode_t;
+typedef unsigned long int __nlink_t;
+typedef long int __off_t;
+typedef long int __off64_t;
+typedef int __pid_t;
+typedef struct { int __val[2]; } __fsid_t;
+typedef long int __clock_t;
+typedef unsigned long int __rlim_t;
+typedef unsigned long int __rlim64_t;
+typedef unsigned int __id_t;
+typedef long int __time_t;
+typedef unsigned int __useconds_t;
+typedef long int __suseconds_t;
+
+typedef int __daddr_t;
+typedef int __key_t;
+
+
+typedef int __clockid_t;
+
+
+typedef void * __timer_t;
+
+
+typedef long int __blksize_t;
+
+
+
+
+typedef long int __blkcnt_t;
+typedef long int __blkcnt64_t;
+
+
+typedef unsigned long int __fsblkcnt_t;
+typedef unsigned long int __fsblkcnt64_t;
+
+
+typedef unsigned long int __fsfilcnt_t;
+typedef unsigned long int __fsfilcnt64_t;
+
+
+typedef long int __fsword_t;
+
+typedef long int __ssize_t;
+
+
+typedef long int __syscall_slong_t;
+
+typedef unsigned long int __syscall_ulong_t;
+
+
+
+typedef __off64_t __loff_t;
+typedef __quad_t *__qaddr_t;
+typedef char *__caddr_t;
+
+
+typedef long int __intptr_t;
+
+
+typedef unsigned int __socklen_t;
+# 27 "/usr/include/ctype.h" 2 3 4
+
+
+# 39 "/usr/include/ctype.h" 3 4
+# 1 "/usr/include/endian.h" 1 3 4
+# 36 "/usr/include/endian.h" 3 4
+# 1 "/usr/include/x86_64-linux-gnu/bits/endian.h" 1 3 4
+# 37 "/usr/include/endian.h" 2 3 4
+# 40 "/usr/include/ctype.h" 2 3 4
+
+
+
+
+
+
+enum
+{
+  _ISupper = ((0) < 8 ? ((1 << (0)) << 8) : ((1 << (0)) >> 8)),
+  _ISlower = ((1) < 8 ? ((1 << (1)) << 8) : ((1 << (1)) >> 8)),
+  _ISalpha = ((2) < 8 ? ((1 << (2)) << 8) : ((1 << (2)) >> 8)),
+  _ISdigit = ((3) < 8 ? ((1 << (3)) << 8) : ((1 << (3)) >> 8)),
+  _ISxdigit = ((4) < 8 ? ((1 << (4)) << 8) : ((1 << (4)) >> 8)),
+  _ISspace = ((5) < 8 ? ((1 << (5)) << 8) : ((1 << (5)) >> 8)),
+  _ISprint = ((6) < 8 ? ((1 << (6)) << 8) : ((1 << (6)) >> 8)),
+  _ISgraph = ((7) < 8 ? ((1 << (7)) << 8) : ((1 << (7)) >> 8)),
+  _ISblank = ((8) < 8 ? ((1 << (8)) << 8) : ((1 << (8)) >> 8)),
+  _IScntrl = ((9) < 8 ? ((1 << (9)) << 8) : ((1 << (9)) >> 8)),
+  _ISpunct = ((10) < 8 ? ((1 << (10)) << 8) : ((1 << (10)) >> 8)),
+  _ISalnum = ((11) < 8 ? ((1 << (11)) << 8) : ((1 << (11)) >> 8))
+};
+# 79 "/usr/include/ctype.h" 3 4
+extern const unsigned short int **__ctype_b_loc (void)
+     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__));
+extern const __int32_t **__ctype_tolower_loc (void)
+     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__));
+extern const __int32_t **__ctype_toupper_loc (void)
+     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__));
+# 104 "/usr/include/ctype.h" 3 4
+
+
+
+
+
+
+extern int isalnum (int) __attribute__ ((__nothrow__ , __leaf__));
+extern int isalpha (int) __attribute__ ((__nothrow__ , __leaf__));
+extern int iscntrl (int) __attribute__ ((__nothrow__ , __leaf__));
+extern int isdigit (int) __attribute__ ((__nothrow__ , __leaf__));
+extern int islower (int) __attribute__ ((__nothrow__ , __leaf__));
+extern int isgraph (int) __attribute__ ((__nothrow__ , __leaf__));
+extern int isprint (int) __attribute__ ((__nothrow__ , __leaf__));
+extern int ispunct (int) __attribute__ ((__nothrow__ , __leaf__));
+extern int isspace (int) __attribute__ ((__nothrow__ , __leaf__));
+extern int isupper (int) __attribute__ ((__nothrow__ , __leaf__));
+extern int isxdigit (int) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+extern int tolower (int __c) __attribute__ ((__nothrow__ , __leaf__));
+
+
+extern int toupper (int __c) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+
+
+
+
+
+extern int isblank (int) __attribute__ ((__nothrow__ , __leaf__));
+
+
+# 257 "/usr/include/ctype.h" 3 4
+# 1 "/usr/include/xlocale.h" 1 3 4
+# 27 "/usr/include/xlocale.h" 3 4
+typedef struct __locale_struct
+{
+
+  struct __locale_data *__locales[13];
+
+
+  const unsigned short int *__ctype_b;
+  const int *__ctype_tolower;
+  const int *__ctype_toupper;
+
+
+  const char *__names[13];
+} *__locale_t;
+
+
+typedef __locale_t locale_t;
+# 258 "/usr/include/ctype.h" 2 3 4
+# 271 "/usr/include/ctype.h" 3 4
+extern int isalnum_l (int, __locale_t) __attribute__ ((__nothrow__ , __leaf__));
+extern int isalpha_l (int, __locale_t) __attribute__ ((__nothrow__ , __leaf__));
+extern int iscntrl_l (int, __locale_t) __attribute__ ((__nothrow__ , __leaf__));
+extern int isdigit_l (int, __locale_t) __attribute__ ((__nothrow__ , __leaf__));
+extern int islower_l (int, __locale_t) __attribute__ ((__nothrow__ , __leaf__));
+extern int isgraph_l (int, __locale_t) __attribute__ ((__nothrow__ , __leaf__));
+extern int isprint_l (int, __locale_t) __attribute__ ((__nothrow__ , __leaf__));
+extern int ispunct_l (int, __locale_t) __attribute__ ((__nothrow__ , __leaf__));
+extern int isspace_l (int, __locale_t) __attribute__ ((__nothrow__ , __leaf__));
+extern int isupper_l (int, __locale_t) __attribute__ ((__nothrow__ , __leaf__));
+extern int isxdigit_l (int, __locale_t) __attribute__ ((__nothrow__ , __leaf__));
+
+extern int isblank_l (int, __locale_t) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+extern int __tolower_l (int __c, __locale_t __l) __attribute__ ((__nothrow__ , __leaf__));
+extern int tolower_l (int __c, __locale_t __l) __attribute__ ((__nothrow__ , __leaf__));
+
+
+extern int __toupper_l (int __c, __locale_t __l) __attribute__ ((__nothrow__ , __leaf__));
+extern int toupper_l (int __c, __locale_t __l) __attribute__ ((__nothrow__ , __leaf__));
+# 347 "/usr/include/ctype.h" 3 4
+
+# 36 "getopt.c" 2
+# 59 "getopt.c"
 extern char *optarg;
-
-/* Index in ARGV of the next element to be scanned.
-   This is used for communication to and from the caller
-   and for communication between successive calls to `getopt'.
-
-   On entry to `getopt', zero means this is the first call; initialize.
-
-   When `getopt' returns -1, this is the index of the first of the
-   non-option elements that the caller should itself scan.
-
-   Otherwise, `optind' communicates from one call to the next
-   how much of ARGV has been scanned so far.  */
-
+# 73 "getopt.c"
 extern int optind;
 
-/* Callers store zero here to inhibit the error message `getopt' prints
-   for unrecognized options.  */
+
+
 
 extern int opterr;
 
-/* Set to an option character which was unrecognized.  */
+
 
 extern int optopt;
-
-#ifndef __need_getopt
-/* Describe the long-named options requested by the application.
-   The LONG_OPTIONS argument to getopt_long or getopt_long_only is a vector
-   of `struct option' terminated by an element containing a name which is
-   zero.
-
-   The field `has_arg' is:
-   no_argument		(or 0) if the option does not take an argument,
-   required_argument	(or 1) if the option requires an argument,
-   optional_argument 	(or 2) if the option takes an optional argument.
-
-   If the field `flag' is not NULL, it points to a variable that is set
-   to the value given in the field `val' when the option is found, but
-   left unchanged if the option is not found.
-
-   To have a long-named option do something other than set an `int' to
-   a compiled-in constant, such as set a value from `optarg', set the
-   option's `flag' field to zero and its `val' field to a nonzero
-   value (the equivalent single-letter option character, if there is
-   one).  For long options that have a zero `flag' field, `getopt'
-   returns the contents of the `val' field.  */
-
+# 106 "getopt.c"
 struct option
 {
   const char *name;
-  /* has_arg can't be an enum because some compilers complain about
-     type mismatches in all the code that assumes it is an int.  */
+
+
   int has_arg;
   int *flag;
   int val;
 };
-
-/* Names for the values of the `has_arg' field of `struct option'.  */
-
-# define no_argument		0
-# define required_argument	1
-# define optional_argument	2
-#endif	/* need getopt */
-
-
-/* Get definitions and prototypes for functions to process the
-   arguments in ARGV (ARGC of them, minus the program name) for
-   options given in OPTS.
-
-   Return the option character from OPTS just read.  Return -1 when
-   there are no more options.  For unrecognized options, or options
-   missing arguments, `optopt' is set to the option letter, and '?' is
-   returned.
-
-   The OPTS string is a list of characters which are recognized option
-   letters, optionally followed by colons, specifying that that letter
-   takes an argument, to be placed in `optarg'.
-
-   If a letter in OPTS is followed by two colons, its argument is
-   optional.  This behavior is specific to the GNU `getopt'.
-
-   The argument `--' causes premature termination of argument
-   scanning, explicitly telling `getopt' that there are no more
-   options.
-
-   If OPTS begins with `--', then non-option arguments are treated as
-   arguments to the option '\0'.  This behavior is specific to the GNU
-   `getopt'.  */
-
-#ifdef __GNU_LIBRARY__
-/* Many other libraries have conflicting prototypes for getopt, with
-   differences in the consts, in stdlib.h.  To avoid compilation
-   errors, only prototype getopt for the GNU C library.  */
+# 152 "getopt.c"
 extern int getopt (int ___argc, char *const *___argv, const char *__shortopts)
-       __THROW;
-
-# if defined __need_getopt && defined __USE_POSIX2 \
-  && !defined __USE_POSIX_IMPLICITLY && !defined __USE_GNU
-/* The GNU getopt has more functionality than the standard version.  The
-   additional functionality can be disable at runtime.  This redirection
-   helps to also do this at runtime.  */
-#  ifdef __REDIRECT
-  extern int __REDIRECT_NTH (getopt, (int ___argc, char *const *___argv,
-				      const char *__shortopts),
-			     __posix_getopt);
-#  else
-extern int __posix_getopt (int ___argc, char *const *___argv,
-			   const char *__shortopts) __THROW;
-#   define getopt __posix_getopt
-#  endif
-# endif
-#else /* not __GNU_LIBRARY__ */
-extern int getopt ();
-#endif /* __GNU_LIBRARY__ */
-
-#ifndef __need_getopt
+       __attribute__ ((__nothrow__ , __leaf__));
+# 175 "getopt.c"
 extern int getopt_long (int ___argc, char *const *___argv,
-			const char *__shortopts,
-		        const struct option *__longopts, int *__longind)
-       __THROW;
+   const char *__shortopts,
+          const struct option *__longopts, int *__longind)
+       __attribute__ ((__nothrow__ , __leaf__));
 extern int getopt_long_only (int ___argc, char *const *___argv,
-			     const char *__shortopts,
-		             const struct option *__longopts, int *__longind)
-       __THROW;
-
-#endif
-
-#ifdef	__cplusplus
-}
-#endif
-
-/* Make sure we later can get all the definitions and declarations.  */
-#undef __need_getopt
-
-#endif /* getopt.h */
+        const char *__shortopts,
+               const struct option *__longopts, int *__longind)
+       __attribute__ ((__nothrow__ , __leaf__));

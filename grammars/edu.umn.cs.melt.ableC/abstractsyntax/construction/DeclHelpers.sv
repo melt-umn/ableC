@@ -1,6 +1,9 @@
 import edu:umn:cs:melt:ableC:abstractsyntax:env;
 import silver:langutil:pp;
 
+-- TODO: Most of these are essentially obsolete with the use of silver-ableC,
+-- we should remove them at some point.
+
 -- Decl --
 
 -- int n ;

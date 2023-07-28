@@ -3,9 +3,11 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax:overloadable;
 abstract production preIncExpr
 top::host:Expr ::= e::host:Expr
 {
+  propagate env, host:controlStmtContext;
+
   top.pp = parens( cat( text("++"), e.pp ) );
   production attribute lerrors :: [Message] with ++;
-  lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  lerrors := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   local host::host:Expr =
     inj:preIncExpr(host:decExpr(e));
@@ -23,9 +25,10 @@ top::host:Expr ::= e::host:Expr
 abstract production preDecExpr
 top::host:Expr ::= e::host:Expr
 {
+  propagate env, host:controlStmtContext; 
   top.pp = parens( cat( text("--"), e.pp ) );
   production attribute lerrors :: [Message] with ++;
-  lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  lerrors := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   local host::host:Expr =
     inj:preDecExpr(host:decExpr(e));
@@ -43,9 +46,11 @@ top::host:Expr ::= e::host:Expr
 abstract production postIncExpr
 top::host:Expr ::= e::host:Expr
 {
+  propagate env, host:controlStmtContext;
+
   top.pp = parens( cat( e.pp, text("++") ) );
   production attribute lerrors :: [Message] with ++;
-  lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  lerrors := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   local host::host:Expr =
     inj:postIncExpr(host:decExpr(e));
@@ -63,9 +68,11 @@ top::host:Expr ::= e::host:Expr
 abstract production postDecExpr
 top::host:Expr ::= e::host:Expr
 {
+  propagate env, host:controlStmtContext;
+
   top.pp = parens( cat( e.pp, text("--") ) );
   production attribute lerrors :: [Message] with ++;
-  lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  lerrors := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   local host::host:Expr =
     inj:postDecExpr(host:decExpr(e));
@@ -83,9 +90,11 @@ top::host:Expr ::= e::host:Expr
 abstract production addressOfExpr
 top::host:Expr ::= e::host:Expr
 {
+  propagate env, host:controlStmtContext;
+
   top.pp = parens( cat( text("&"), e.pp ) );
   production attribute lerrors :: [Message] with ++;
-  lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  lerrors := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   local host::host:Expr =
     inj:addressOfExpr(host:decExpr(e));
@@ -100,9 +109,11 @@ top::host:Expr ::= e::host:Expr
 abstract production dereferenceExpr
 top::host:Expr ::= e::host:Expr
 {
+  propagate env, host:controlStmtContext;
+
   top.pp = parens(cat(text("*"), e.pp));
   production attribute lerrors :: [Message] with ++;
-  lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  lerrors := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   local host::host:Expr =
     inj:dereferenceExpr(host:decExpr(e));
@@ -120,9 +131,11 @@ top::host:Expr ::= e::host:Expr
 abstract production positiveExpr
 top::host:Expr ::= e::host:Expr
 {
+  propagate env, host:controlStmtContext;
+  
   top.pp = parens( cat( text("+"), e.pp ) );
   production attribute lerrors :: [Message] with ++;
-  lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  lerrors := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   local host::host:Expr =
     inj:positiveExpr(host:decExpr(e));
@@ -140,9 +153,11 @@ top::host:Expr ::= e::host:Expr
 abstract production negativeExpr
 top::host:Expr ::= e::host:Expr
 {
+  propagate env, host:controlStmtContext;
+
   top.pp = parens( cat( text("-"), e.pp ) );
   production attribute lerrors :: [Message] with ++;
-  lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  lerrors := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   local host::host:Expr =
     inj:negativeExpr(host:decExpr(e));
@@ -160,9 +175,11 @@ top::host:Expr ::= e::host:Expr
 abstract production bitNegateExpr
 top::host:Expr ::= e::host:Expr
 {
+  propagate env, host:controlStmtContext;
+
   top.pp = parens( cat( text("~"), e.pp ) );
   production attribute lerrors :: [Message] with ++;
-  lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  lerrors := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   local host::host:Expr =
     inj:bitNegateExpr(host:decExpr(e));
@@ -180,9 +197,11 @@ top::host:Expr ::= e::host:Expr
 abstract production notExpr
 top::host:Expr ::= e::host:Expr
 {
+  propagate env, host:controlStmtContext;
+  
   top.pp = parens( cat( text("!"), e.pp ) );
   production attribute lerrors :: [Message] with ++;
-  lerrors := case top.env, top.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
+  lerrors := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
   local host::host:Expr =
     inj:notExpr(host:decExpr(e));

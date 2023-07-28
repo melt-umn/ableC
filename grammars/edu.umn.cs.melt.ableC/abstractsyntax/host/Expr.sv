@@ -2,26 +2,29 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 
 import edu:umn:cs:melt:ableC:abstractsyntax:overloadable as ovrld;
 
-tracked nonterminal Expr with pp, host, globalDecls, functionDecls, errors, defs, env, returnType, freeVariables, typerep, isLValue, isSimple, integerConstantValue;
+tracked nonterminal Expr with pp, host, globalDecls, functionDecls, errors,
+  defs, env, freeVariables, typerep, isLValue, isSimple, integerConstantValue,
+  controlStmtContext;
 
-flowtype Expr = decorate {env, returnType}, isLValue {decorate}, isSimple {decorate}, integerConstantValue {decorate};
+flowtype Expr = decorate {env, controlStmtContext},
+  isLValue {decorate}, isSimple {decorate}, integerConstantValue {decorate};
 
 synthesized attribute isLValue::Boolean;
 synthesized attribute isSimple::Boolean; -- true if expression can be duplicated without encurring any addtional work (is a name, constant, field access, etc.)
-synthesized attribute integerConstantValue::Maybe<Integer>;
+implicit synthesized attribute integerConstantValue::Maybe<Integer>;
 
 aspect default production
 top::Expr ::=
 {
   top.isLValue = false;
   top.isSimple = false;
-  top.integerConstantValue = nothing();
+  implicit top.integerConstantValue = ;
 }
 
 abstract production errorExpr
 top::Expr ::= msg::[Message]
 {
-  propagate host, globalDecls, functionDecls, defs, freeVariables;
+  propagate host, globalDecls, functionDecls, defs, freeVariables, controlStmtContext;
   top.pp = ppConcat([ text("/*"), text(messagesToString(msg)), text("*/") ]);
   top.errors := msg;
   top.typerep = errorType();
@@ -30,7 +33,6 @@ top::Expr ::= msg::[Message]
 abstract production warnExpr
 top::Expr ::= msg::[Message] e::Expr
 {
-  propagate host;
   top.pp = ppConcat([ text("/*"), text(messagesToString(msg)), text("*/"), e.pp ]);
   top.errors <- msg;
   forwards to e;
@@ -54,6 +56,7 @@ Expr ::= msg::[Message] e::Expr
 abstract production decExpr
 top::Expr ::= e::Decorated Expr
 {
+  propagate env, controlStmtContext;
   top.pp = e.pp;
   top.host = e.host;
   top.errors := e.errors;
@@ -70,7 +73,7 @@ top::Expr ::= e::Decorated Expr
 abstract production qualifiedExpr
 top::Expr ::= q::Qualifiers e::Expr
 {
-  propagate errors, globalDecls, functionDecls, defs, freeVariables;
+  propagate env, errors, globalDecls, functionDecls, defs, freeVariables, controlStmtContext;
   top.host = e.host;
   top.typerep = addQualifiers(q.qualifiers, e.typerep);
   top.pp = pp"qualifiedExpr (${ppImplode(space(), q.pps)} (${e.pp}))";
@@ -85,10 +88,12 @@ Expr ::= q::[Qualifier]  e::Expr
 }
 -- Wraps the result of a forwarding transformation (e.g. overloading or injection)
 -- to allow for "syntactic" analyses on the original host Expr.  Otherwise this
--- is semantically equivalent to resolved. 
+-- is semantically equivalent to resolved.
 abstract production transformedExpr
 top::Expr ::= original::Expr  resolved::Expr
 {
+  propagate controlStmtContext;
+  
   top.pp = original.pp;
   top.host = resolved.host;
   top.errors := resolved.errors;
@@ -103,6 +108,7 @@ top::Expr ::= original::Expr  resolved::Expr
 abstract production directRefExpr
 top::Expr ::= id::Name
 {
+  propagate env, controlStmtContext;
   -- Forwarding depends on env. We must be able to compute a pp without using env.
   top.pp = id.pp;
 
@@ -117,13 +123,14 @@ Expr ::= id::Name
 abstract production declRefExpr
 top::Expr ::= id::Name
 { -- Reference to a value. (Either a Decl or a EnumItem)
-  propagate host, errors, globalDecls, functionDecls, defs;
+  propagate env, host, errors, globalDecls, functionDecls, defs, controlStmtContext;
   top.pp = parens( id.pp );
   top.typerep = id.valueItem.typerep;
   top.freeVariables := top.typerep.freeVariables ++ [id];
   top.isLValue = true;
   top.isSimple = true;
-  
+  top.integerConstantValue = id.valueItem.integerConstantValue;
+
   top.errors <- id.valueLookupCheck;
   top.errors <-
     if id.valueItem.isItemValue then []
@@ -132,29 +139,32 @@ top::Expr ::= id::Name
 abstract production stringLiteral
 top::Expr ::= l::String
 {
-  propagate host, errors, globalDecls, functionDecls, defs, freeVariables;
+  propagate env, host, errors, globalDecls, functionDecls, defs, freeVariables, controlStmtContext;
   top.pp = text(l);
-  top.typerep = pointerType(nilQualifier(),
-    builtinType(foldQualifier([]), signedType(charType())));
+  top.typerep =
+    arrayType(
+      builtinType(foldQualifier([]), signedType(charType())),
+      nilQualifier(), normalArraySize(), incompleteArrayType());
   top.isSimple = true;
 }
 abstract production parenExpr
 top::Expr ::= e::Expr
 {
-  propagate host, errors, globalDecls, functionDecls, defs, freeVariables;
+  propagate host, errors, globalDecls, functionDecls, defs, freeVariables, controlStmtContext;
   top.pp = parens( e.pp );
   top.typerep = e.typerep;
   top.isLValue = e.isLValue;
   top.isSimple = e.isSimple;
+  top.integerConstantValue = e.integerConstantValue;
 }
 abstract production arraySubscriptExpr
 top::Expr ::= lhs::Expr  rhs::Expr
 {
-  propagate host, errors, globalDecls, functionDecls, defs;
+  propagate host, errors, globalDecls, functionDecls, defs, controlStmtContext;
   top.pp = parens( ppConcat([ lhs.pp, brackets( rhs.pp )]) );
   top.freeVariables := lhs.freeVariables ++ removeDefsFromNames(rhs.defs, rhs.freeVariables);
   top.isLValue = true;
-  
+
   local subtype :: Either<Type [Message]> =
     case lhs.typerep.defaultFunctionArrayLvalueConversion, rhs.typerep.defaultFunctionArrayLvalueConversion of
     | pointerType(_, sub), otherty ->
@@ -176,13 +186,16 @@ top::Expr ::= lhs::Expr  rhs::Expr
                 | left(_) -> []
                 | right(m) -> m
                 end;
-  
+
+  lhs.env = top.env;
   rhs.env = addEnv(lhs.defs, lhs.env);
 }
 {- Calls where the function expression is just an identifier. -}
 abstract production directCallExpr
 top::Expr ::= f::Name  a::Exprs
 {
+  propagate env, controlStmtContext;
+
   -- Forwarding depends on env. We must be able to compute a pp without using env.
   top.pp = parens( ppConcat([ f.pp, parens( ppImplode( cat( comma(), space() ), a.pps ))]) );
 
@@ -200,11 +213,11 @@ Expr ::= f::Name  a::Exprs
 abstract production callExpr
 top::Expr ::= f::Expr  a::Exprs
 {
-  propagate host, errors, globalDecls, functionDecls, defs;
+  propagate host, errors, globalDecls, functionDecls, defs, controlStmtContext;
   top.pp = parens( ppConcat([ f.pp, parens( ppImplode( cat( comma(), space() ), a.pps ))]) );
   top.freeVariables := f.freeVariables ++ removeDefsFromNames(f.defs, a.freeVariables);
   top.isLValue = false; -- C++ style references would change this
-  
+
   local subtype :: Either<Pair<Type FunctionType> [Message]> =
     case f.typerep.defaultFunctionArrayLvalueConversion of
     | pointerType(_, functionType(rt, sub, _)) -> left(pair(rt, sub))
@@ -221,7 +234,7 @@ top::Expr ::= f::Expr  a::Exprs
      | left(_) -> a.argumentErrors
      | right(r) -> r
     end;
-  
+
   a.expectedTypes =
     case subtype of
     | left(pair(_, protoFunctionType(args, _))) -> args
@@ -236,23 +249,24 @@ top::Expr ::= f::Expr  a::Exprs
     | left(_) -> false
     | _ -> true -- suppress errors
     end;
-  
+
+  f.env = top.env;
   a.env = addEnv(f.defs, f.env);
 }
 abstract production memberExpr
 top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
 {
-  propagate host, errors, globalDecls, functionDecls, defs, freeVariables;
+  propagate host, errors, globalDecls, functionDecls, defs, freeVariables, controlStmtContext;
   top.pp = parens(ppConcat([lhs.pp, text(if deref then "->" else "."), rhs.pp]));
-  
+
   local isPointer::Boolean =
-    case lhs.typerep.withoutAttributes of
+    case lhs.typerep.defaultFunctionArrayLvalueConversion.withoutAttributes of
     | pointerType(_, sub) -> true
     | _ -> false
     end;
-  
+
   local quals_refid :: Pair<Qualifiers String> =
-    case lhs.typerep.withoutAttributes of
+    case lhs.typerep.defaultFunctionArrayLvalueConversion.withoutAttributes of
     | pointerType(_, sub) ->
         case sub.withoutAttributes of
         | extType(q, e) -> pair(q, fromMaybe("", e.maybeRefId))
@@ -261,29 +275,29 @@ top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
     | extType(q, e) -> pair(q, fromMaybe("", e.maybeRefId))
     | _ -> pair(nilQualifier(), "")
     end;
-  
+
   local refids :: [RefIdItem] =
     lookupRefId(quals_refid.snd, addEnv(lhs.defs, lhs.env));
-  
+
   local valueitems :: [ValueItem] =
     lookupValue(rhs.name, head(refids).tagEnv);
-  
+
   top.isLValue = true;
-  
+
   top.typerep =
-    if null(refids) then 
+    if null(refids) then
       errorType()
     else if null(valueitems) then
       errorType()
     else addQualifiers(quals_refid.fst.qualifiers, head(valueitems).typerep);
   top.errors <-
-    case isPointer, lhs.typerep of
+    case isPointer, lhs.typerep.defaultFunctionArrayLvalueConversion of
     | _, errorType() -> []
     | true, pointerType(_, errorType()) -> []
     | _, _ ->
-      if null(refids) then 
+      if null(refids) then
         [errFromOrigin(lhs, "expression does not have defined fields (got " ++ showType(lhs.typerep) ++ ")")]
-      else if isPointer != deref then 
+      else if isPointer != deref then
         if deref
         then [errFromOrigin(lhs, "expression does not have pointer to struct or union type (got " ++ showType(lhs.typerep) ++ ")")]
         else [errFromOrigin(lhs, "expression does not have struct or union type (got " ++ showType(lhs.typerep) ++ ", did you mean to use -> ?)")]
@@ -297,59 +311,102 @@ top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
 abstract production conditionalExpr
 top::Expr ::= cond::Expr  t::Expr  e::Expr
 {
-  propagate host, errors, globalDecls, functionDecls, defs;
+  propagate host, errors, globalDecls, functionDecls, defs, controlStmtContext;
   top.pp = parens( ppConcat([ cond.pp, space(), text("?"), space(), t.pp, space(), text(":"),  space(), e.pp]) );
   top.freeVariables :=
     cond.freeVariables ++
     removeDefsFromNames(cond.defs, t.freeVariables) ++
     removeDefsFromNames(cond.defs ++ t.defs, e.freeVariables);
-  
+
   top.typerep = t.typerep; -- TODO: this is wrong, but it's an approximation for now
-  
+
+  top.integerConstantValue =
+    if cond.integerConstantValue != 0
+    then t.integerConstantValue
+    else e.integerConstantValue;
+
+  cond.env = top.env;
   t.env = addEnv(cond.defs, cond.env);
   e.env = addEnv(t.defs, t.env);
-  
+
   -- TODO: type checking!!
 }
 abstract production binaryConditionalExpr -- GCC extension.
 top::Expr ::= cond::Expr  e::Expr
 {
-  propagate host, errors, globalDecls, functionDecls, defs;
+  propagate env, host, errors, globalDecls, functionDecls, defs, controlStmtContext;
   top.pp = ppConcat([ cond.pp, space(), text("?:"), space(), e.pp]);
   top.freeVariables := cond.freeVariables ++ removeDefsFromNames(cond.defs, e.freeVariables);
-  
+
   top.typerep = e.typerep; -- TODO: not even sure what this should be
-  
+
+  top.integerConstantValue =
+    if cond.integerConstantValue != 0
+    then cond.integerConstantValue
+    else e.integerConstantValue;
+
   -- TODO: type checking!!
 }
 abstract production explicitCastExpr
 top::Expr ::= ty::TypeName  e::Expr
 {
-  propagate host, errors, globalDecls, functionDecls, defs;
+  propagate host, errors, globalDecls, functionDecls, defs, controlStmtContext;
   top.pp = parens( ppConcat([parens(ty.pp), e.pp]) );
   top.freeVariables := ty.freeVariables ++ removeDefsFromNames(ty.defs, e.freeVariables);
   top.typerep = ty.typerep;
-  
+  top.integerConstantValue = e.integerConstantValue;
+
+  ty.env = top.env;
   e.env = addEnv(ty.defs, ty.env);
-  
+
   -- TODO: type checking!!
 }
 abstract production compoundLiteralExpr
 top::Expr ::= ty::TypeName  init::InitList
 {
-  propagate host, errors, globalDecls, functionDecls, defs;
+  propagate host, errors, globalDecls, functionDecls, defs, controlStmtContext;
   top.pp = parens( ppConcat([parens(ty.pp), text("{"), ppImplode(text(", "), init.pps), text("}")]) );
   top.freeVariables := ty.freeVariables ++ removeDefsFromNames(ty.defs, init.freeVariables);
-  top.typerep = ty.typerep; -- TODO: actually may involve learning from the initializer e.g. the length of the array.
+  top.typerep = init.typerep;
 
+  local refId::Maybe<String> =
+    case ty.typerep of
+    | extType( _, e) -> e.maybeRefId
+    | _ -> nothing()
+    end;
+
+  local refIdLookup::[RefIdItem] =
+    case refId of
+    | just(rid) -> lookupRefId(rid, init.env)
+    | nothing() -> []
+    end;
+
+  top.errors <-
+    case ty.typerep, refId, refIdLookup of
+    | errorType(), _, _ -> []
+    -- Check that expected type for this initializer is some sort of object type or a scalar with a single init
+    | arrayType(_, _, _, _), _, _ -> []
+    | t, nothing(), _ when init.maxIndex < 0 -> [errFromOrigin(top, s"Empty scalar initializer for type ${showType(t)}.")]
+    -- Check that this type has a definition
+    | t, just(_), [] -> [errFromOrigin(top, s"${showType(t)} does not have a definition.")]
+    | _, _, _ -> []
+    end;
+
+  init.initIndex = 0;
+  ty.env = top.env;
   init.env = addEnv(ty.defs, ty.env);
-  
-  -- TODO: type checking!!
+  init.tagEnvIn =
+    case refIdLookup of
+    | item :: _ -> item.tagEnv
+    | [] -> emptyEnv()
+    end;
+  init.expectedType = ty.typerep;
+  init.expectedTypes = fromMaybe([ty.typerep], objectMembers(top.env, ty.typerep));
 }
 abstract production predefinedFuncExpr
-top::Expr ::= 
+top::Expr ::=
 { -- Currently (C99) just __func__ in functions.
-  propagate host, errors, globalDecls, functionDecls, defs, freeVariables;
+  propagate env, host, errors, globalDecls, functionDecls, defs, freeVariables, controlStmtContext;
   top.pp = parens( text("__func__") );
   top.typerep = pointerType(nilQualifier(),
   builtinType(foldQualifier([constQualifier()]), signedType(charType()))); -- const char *
@@ -359,7 +416,7 @@ top::Expr ::=
 abstract production genericSelectionExpr
 top::Expr ::= e::Expr  gl::GenericAssocs  def::MaybeExpr
 {
-  propagate host, errors, globalDecls, functionDecls, defs, freeVariables;
+  propagate env, host, errors, globalDecls, functionDecls, defs, freeVariables, controlStmtContext;
   top.pp = ppConcat([text("_Generic"),
     parens(ppImplode(text(", "), e.pp :: gl.pps ++
       if def.isJust then
@@ -367,7 +424,7 @@ top::Expr ::= e::Expr  gl::GenericAssocs  def::MaybeExpr
       else
         []
       ))]);
-  top.typerep = 
+  top.typerep =
     if null(gl.compatibleSelections) then
       case def of
       | justExpr(e) -> e.typerep
@@ -375,19 +432,23 @@ top::Expr ::= e::Expr  gl::GenericAssocs  def::MaybeExpr
       end
     else
       head(gl.compatibleSelections).typerep;
-  
+
   gl.selectionType = e.typerep;
-  
+
   -- TODO: type checking!!
 }
 
-nonterminal GenericAssocs with pps, host, errors, globalDecls, functionDecls, defs, env, selectionType, compatibleSelections, returnType, freeVariables;
-flowtype GenericAssocs = decorate {env, returnType}, compatibleSelections {decorate, selectionType};
+nonterminal GenericAssocs with pps, host, errors, globalDecls, functionDecls,
+  defs, env, selectionType, compatibleSelections, freeVariables,
+  controlStmtContext;
+flowtype GenericAssocs = decorate {env, controlStmtContext},
+  compatibleSelections {decorate, selectionType};
 
-autocopy attribute selectionType :: Type;
-monoid attribute compatibleSelections :: [Decorated Expr] with [], ++;
+inherited attribute selectionType :: Type;
+monoid attribute compatibleSelections :: [Decorated Expr];
 
-propagate host, errors, globalDecls, functionDecls, defs, freeVariables, compatibleSelections on GenericAssocs;
+propagate env, host, errors, globalDecls, functionDecls, defs, freeVariables, compatibleSelections, 
+  selectionType, controlStmtContext on GenericAssocs;
 
 abstract production consGenericAssoc
 top::GenericAssocs ::= h::GenericAssoc  t::GenericAssocs
@@ -400,10 +461,13 @@ top::GenericAssocs ::=
   top.pps = [];
 }
 
-nonterminal GenericAssoc with pp, host, globalDecls, functionDecls, errors, defs, env, selectionType, compatibleSelections, returnType, freeVariables;
-flowtype GenericAssoc = decorate {env, returnType}, compatibleSelections {decorate, selectionType};
+nonterminal GenericAssoc with pp, host, globalDecls, functionDecls,
+  errors, defs, env, selectionType, compatibleSelections, freeVariables, 
+  controlStmtContext;
+flowtype GenericAssoc = decorate {env, controlStmtContext},
+  compatibleSelections {decorate, selectionType};
 
-propagate host, errors, globalDecls, functionDecls, defs, freeVariables on GenericAssoc;
+propagate env, host, errors, globalDecls, functionDecls, defs, freeVariables, selectionType on GenericAssoc;
 
 abstract production genericAssoc
 top::GenericAssoc ::= ty::TypeName  fun::Expr
@@ -411,6 +475,8 @@ top::GenericAssoc ::= ty::TypeName  fun::Expr
   top.pp = ppConcat([ty.pp, text(": "), fun.pp]);
   top.compatibleSelections :=
     if compatibleTypes(top.selectionType, ty.typerep, true, false) then [fun] else [];
+  fun.controlStmtContext = top.controlStmtContext;
+  ty.controlStmtContext = top.controlStmtContext;
 }
 
 -- GCC stmtExpr
@@ -419,17 +485,19 @@ top::Expr ::= body::Stmt result::Expr
 {
   propagate host, errors, globalDecls, functionDecls;
   top.pp = ppConcat([text("({"), nestlines(2, ppConcat([body.pp, line(), result.pp, text("; })")]))]);
-  
+
   -- defs are *not* propagated up. This is beginning of a scope.
-  top.defs := globalDeclsDefs(body.globalDecls) ++ globalDeclsDefs(result.globalDecls) 
-           ++ functionDeclsDefs(body.functionDecls) ++ functionDeclsDefs(result.functionDecls); 
-  
+  top.defs := globalDeclsDefs(body.globalDecls) ++ globalDeclsDefs(result.globalDecls)
+           ++ functionDeclsDefs(body.functionDecls) ++ functionDeclsDefs(result.functionDecls);
+
   top.freeVariables := body.freeVariables ++ removeDefsFromNames(body.defs, result.freeVariables);
   top.typerep = result.typerep;
-  
+
   -- Add body.functionDefs to env here, since labels don't bubble up
   -- from expressions to the top-level function.
   body.env = addEnv(body.functionDefs, openScopeEnv(top.env));
+  body.controlStmtContext = controlAddLabels(top.controlStmtContext, body.labelDefs);
+  result.controlStmtContext = top.controlStmtContext;
   result.env = addEnv(body.defs, body.env);
 }
 
@@ -461,9 +529,9 @@ def UnaryExprOrTypeTraitExpr : DStmt<Expr>;  sizeof and alignof  -- need some so
 def ArraySubscriptExpr : DStmt<Expr>;
 def CallExpr : DStmt<Expr>;
 def MemberExpr : DStmt<Expr>;                both -> and .
-def CastExpr : DStmt<Expr, 1>;               
+def CastExpr : DStmt<Expr, 1>;
 def BinaryOperator : DStmt<Expr>;            all ops and comparisons
-def CompoundAssignOperator : DStmt<BinaryOperator>;     assign-ops. 
+def CompoundAssignOperator : DStmt<BinaryOperator>;     assign-ops.
 def AbstractConditionalOperator : DStmt<Expr, 1>;
 def ConditionalOperator : DStmt<AbstractConditionalOperator>;        normal ?:
 def BinaryConditionalOperator : DStmt<AbstractConditionalOperator>;  GNU missing-middle ?:

@@ -28,7 +28,7 @@ fi
 # tests/headers tests/gcc/compile tests/gcc/default tests/gcc/link tests/gcc/run tests/kframework/ tests/melt/
 
 ## Run supertest.py with compiled jar file
-python ./supertest.py "sv-call" $TESTDIRS $@
+python3 ./supertest.py "sv-call" $TESTDIRS $@
 
 
 # End the nailgun server

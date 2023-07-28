@@ -1,346 +1,1472 @@
-/****************************************************************************
- * Copyright (c) 1998-2007,2009 Free Software Foundation, Inc.              *
- *                                                                          *
- * Permission is hereby granted, free of charge, to any person obtaining a  *
- * copy of this software and associated documentation files (the            *
- * "Software"), to deal in the Software without restriction, including      *
- * without limitation the rights to use, copy, modify, merge, publish,      *
- * distribute, distribute with modifications, sublicense, and/or sell       *
- * copies of the Software, and to permit persons to whom the Software is    *
- * furnished to do so, subject to the following conditions:                 *
- *                                                                          *
- * The above copyright notice and this permission notice shall be included  *
- * in all copies or substantial portions of the Software.                   *
- *                                                                          *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS  *
- * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF               *
- * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.   *
- * IN NO EVENT SHALL THE ABOVE COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,   *
- * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR    *
- * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR    *
- * THE USE OR OTHER DEALINGS IN THE SOFTWARE.                               *
- *                                                                          *
- * Except as contained in this notice, the name(s) of the above copyright   *
- * holders shall not be used in advertising or otherwise to promote the     *
- * sale, use or other dealings in this Software without prior written       *
- * authorization.                                                           *
- ****************************************************************************/
+# 1 "tic.c"
+# 1 "<built-in>"
+# 1 "<command-line>"
+# 1 "/usr/include/stdc-predef.h" 1 3 4
+# 1 "<command-line>" 2
+# 1 "tic.c"
+# 48 "tic.c"
+# 1 "/usr/include/curses.h" 1 3 4
+# 60 "/usr/include/curses.h" 3 4
+# 1 "/usr/include/ncurses_dll.h" 1 3 4
+# 61 "/usr/include/curses.h" 2 3 4
 
-/****************************************************************************
- *  Author: Zeyd M. Ben-Halim <zmbenhal@netcom.com> 1992,1995               *
- *     and: Eric S. Raymond <esr@snark.thyrsus.com>                         *
- *     and: Thomas E. Dickey 1996 on                                        *
- ****************************************************************************/
 
-/*
- * $Id: tic.h,v 1.65 2009/08/08 17:52:46 tom Exp $
- *	tic.h - Global variables and structures for the terminfo
- *			compiler.
- */
+# 1 "/soft/gcc/4.9.2/ubuntuamd2010/lib/gcc/x86_64-linux-gnu/4.9.2/include/stdint.h" 1 3 4
+# 9 "/soft/gcc/4.9.2/ubuntuamd2010/lib/gcc/x86_64-linux-gnu/4.9.2/include/stdint.h" 3 4
+# 1 "/usr/include/stdint.h" 1 3 4
+# 25 "/usr/include/stdint.h" 3 4
+# 1 "/usr/include/features.h" 1 3 4
+# 367 "/usr/include/features.h" 3 4
+# 1 "/usr/include/x86_64-linux-gnu/sys/cdefs.h" 1 3 4
+# 410 "/usr/include/x86_64-linux-gnu/sys/cdefs.h" 3 4
+# 1 "/usr/include/x86_64-linux-gnu/bits/wordsize.h" 1 3 4
+# 411 "/usr/include/x86_64-linux-gnu/sys/cdefs.h" 2 3 4
+# 368 "/usr/include/features.h" 2 3 4
+# 391 "/usr/include/features.h" 3 4
+# 1 "/usr/include/x86_64-linux-gnu/gnu/stubs.h" 1 3 4
+# 10 "/usr/include/x86_64-linux-gnu/gnu/stubs.h" 3 4
+# 1 "/usr/include/x86_64-linux-gnu/gnu/stubs-64.h" 1 3 4
+# 11 "/usr/include/x86_64-linux-gnu/gnu/stubs.h" 2 3 4
+# 392 "/usr/include/features.h" 2 3 4
+# 26 "/usr/include/stdint.h" 2 3 4
+# 1 "/usr/include/x86_64-linux-gnu/bits/wchar.h" 1 3 4
+# 27 "/usr/include/stdint.h" 2 3 4
+# 1 "/usr/include/x86_64-linux-gnu/bits/wordsize.h" 1 3 4
+# 28 "/usr/include/stdint.h" 2 3 4
+# 36 "/usr/include/stdint.h" 3 4
+typedef signed char int8_t;
+typedef short int int16_t;
+typedef int int32_t;
 
-#ifndef __TIC_H
-#define __TIC_H
+typedef long int int64_t;
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
-#include <curses.h>	/* for the _tracef() prototype, ERR/OK, bool defs */
 
-/*
-** The format of compiled terminfo files is as follows:
-**
-**		Header (12 bytes), containing information given below
-**		Names Section, containing the names of the terminal
-**		Boolean Section, containing the values of all of the
-**				boolean capabilities
-**				A null byte may be inserted here to make
-**				sure that the Number Section begins on an
-**				even word boundary.
-**		Number Section, containing the values of all of the numeric
-**				capabilities, each as a short integer
-**		String Section, containing short integer offsets into the
-**				String Table, one per string capability
-**		String Table, containing the actual characters of the string
-**				capabilities.
-**
-**	NOTE that all short integers in the file are stored using VAX/PDP-style
-**	byte-order, i.e., least-significant byte first.
-**
-**	There is no structure definition here because it would only confuse
-**	matters.  Terminfo format is a raw byte layout, not a structure
-**	dump.  If you happen to be on a little-endian machine with 16-bit
-**	shorts that requires no padding between short members in a struct,
-**	then there is a natural C structure that captures the header, but
-**	not very helpfully.
-*/
 
-#define MAGIC		0432	/* first two bytes of a compiled entry */
 
-#undef  BYTE
-#define BYTE(p,n)	(unsigned char)((p)[n])
 
-#define IS_NEG1(p)	((BYTE(p,0) == 0377) && (BYTE(p,1) == 0377))
-#define IS_NEG2(p)	((BYTE(p,0) == 0376) && (BYTE(p,1) == 0377))
-#define LOW_MSB(p)	(BYTE(p,0) + 256*BYTE(p,1))
 
-#define IS_TIC_MAGIC(p)	(LOW_MSB(p) == MAGIC)
+typedef unsigned char uint8_t;
+typedef unsigned short int uint16_t;
 
-/*
- * The "maximum" here is misleading; XSI guarantees minimum values, which a
- * given implementation may exceed.
- */
-#define MAX_NAME_SIZE	512	/* maximum legal name field size (XSI:127) */
-#define MAX_ENTRY_SIZE	4096	/* maximum legal entry size */
+typedef unsigned int uint32_t;
 
-/*
- * The maximum size of individual name or alias is guaranteed in XSI to be at
- * least 14, since that corresponds to the older filename lengths.  Newer
- * systems allow longer aliases, though not many terminal descriptions are
- * written to use them.  The MAX_ALIAS symbol is used for warnings.
- */
-#if HAVE_LONG_FILE_NAMES
-#define MAX_ALIAS	32	/* smaller than POSIX minimum for PATH_MAX */
-#else
-#define MAX_ALIAS	14	/* SVr3 filename length */
-#endif
 
-/* location of user's personal info directory */
-#define PRIVATE_INFO	"%s/.terminfo"	/* plug getenv("HOME") into %s */
 
-/*
- * Some traces are designed to be used via tic's verbose option (and similar in
- * infocmp and toe) rather than the 'trace()' function.  So we use the bits
- * above the normal trace() parameter as a debug-level.
- */
+typedef unsigned long int uint64_t;
+# 65 "/usr/include/stdint.h" 3 4
+typedef signed char int_least8_t;
+typedef short int int_least16_t;
+typedef int int_least32_t;
 
-#define MAX_DEBUG_LEVEL 15
-#define DEBUG_LEVEL(n)	((n) << TRACE_SHIFT)
+typedef long int int_least64_t;
 
-#define set_trace_level(n) \
-	_nc_tracing &= DEBUG_LEVEL(MAX_DEBUG_LEVEL), \
-	_nc_tracing |= DEBUG_LEVEL(n)
 
-#ifdef TRACE
-#define DEBUG(n, a)	if (_nc_tracing >= DEBUG_LEVEL(n)) _tracef a
-#else
-#define DEBUG(n, a)	/*nothing*/
-#endif
 
-extern NCURSES_EXPORT_VAR(unsigned) _nc_tracing;
-extern NCURSES_EXPORT(void) _nc_tracef (char *, ...) GCC_PRINTFLIKE(1,2);
-extern NCURSES_EXPORT(const char *) _nc_visbuf (const char *);
-extern NCURSES_EXPORT(const char *) _nc_visbuf2 (int, const char *);
 
-/*
- * These are the types of tokens returned by the scanner.  The first
- * three are also used in the hash table of capability names.  The scanner
- * returns one of these values after loading the specifics into the global
- * structure curr_token.
- */
 
-#define BOOLEAN 0		/* Boolean capability */
-#define NUMBER 1		/* Numeric capability */
-#define STRING 2		/* String-valued capability */
-#define CANCEL 3		/* Capability to be cancelled in following tc's */
-#define NAMES  4		/* The names for a terminal type */
-#define UNDEF  5		/* Undefined */
 
-#define NO_PUSHBACK	-1	/* used in pushtype to indicate no pushback */
+typedef unsigned char uint_least8_t;
+typedef unsigned short int uint_least16_t;
+typedef unsigned int uint_least32_t;
 
-	/*
-	 *	The global structure in which the specific parts of a
-	 *	scanned token are returned.
-	 *
-	 */
+typedef unsigned long int uint_least64_t;
+# 90 "/usr/include/stdint.h" 3 4
+typedef signed char int_fast8_t;
 
-struct token
+typedef long int int_fast16_t;
+typedef long int int_fast32_t;
+typedef long int int_fast64_t;
+# 103 "/usr/include/stdint.h" 3 4
+typedef unsigned char uint_fast8_t;
+
+typedef unsigned long int uint_fast16_t;
+typedef unsigned long int uint_fast32_t;
+typedef unsigned long int uint_fast64_t;
+# 119 "/usr/include/stdint.h" 3 4
+typedef long int intptr_t;
+
+
+typedef unsigned long int uintptr_t;
+# 134 "/usr/include/stdint.h" 3 4
+typedef long int intmax_t;
+typedef unsigned long int uintmax_t;
+# 10 "/soft/gcc/4.9.2/ubuntuamd2010/lib/gcc/x86_64-linux-gnu/4.9.2/include/stdint.h" 2 3 4
+# 64 "/usr/include/curses.h" 2 3 4
+# 164 "/usr/include/curses.h" 3 4
+typedef unsigned long chtype;
+typedef unsigned long mmask_t;
+
+
+
+
+
+# 1 "/usr/include/stdio.h" 1 3 4
+# 29 "/usr/include/stdio.h" 3 4
+
+
+
+
+# 1 "/soft/gcc/4.9.2/ubuntuamd2010/lib/gcc/x86_64-linux-gnu/4.9.2/include/stddef.h" 1 3 4
+# 212 "/soft/gcc/4.9.2/ubuntuamd2010/lib/gcc/x86_64-linux-gnu/4.9.2/include/stddef.h" 3 4
+typedef long unsigned int size_t;
+# 34 "/usr/include/stdio.h" 2 3 4
+
+# 1 "/usr/include/x86_64-linux-gnu/bits/types.h" 1 3 4
+# 27 "/usr/include/x86_64-linux-gnu/bits/types.h" 3 4
+# 1 "/usr/include/x86_64-linux-gnu/bits/wordsize.h" 1 3 4
+# 28 "/usr/include/x86_64-linux-gnu/bits/types.h" 2 3 4
+
+
+typedef unsigned char __u_char;
+typedef unsigned short int __u_short;
+typedef unsigned int __u_int;
+typedef unsigned long int __u_long;
+
+
+typedef signed char __int8_t;
+typedef unsigned char __uint8_t;
+typedef signed short int __int16_t;
+typedef unsigned short int __uint16_t;
+typedef signed int __int32_t;
+typedef unsigned int __uint32_t;
+
+typedef signed long int __int64_t;
+typedef unsigned long int __uint64_t;
+
+
+
+
+
+
+
+typedef long int __quad_t;
+typedef unsigned long int __u_quad_t;
+# 121 "/usr/include/x86_64-linux-gnu/bits/types.h" 3 4
+# 1 "/usr/include/x86_64-linux-gnu/bits/typesizes.h" 1 3 4
+# 122 "/usr/include/x86_64-linux-gnu/bits/types.h" 2 3 4
+
+
+typedef unsigned long int __dev_t;
+typedef unsigned int __uid_t;
+typedef unsigned int __gid_t;
+typedef unsigned long int __ino_t;
+typedef unsigned long int __ino64_t;
+typedef unsigned int __mode_t;
+typedef unsigned long int __nlink_t;
+typedef long int __off_t;
+typedef long int __off64_t;
+typedef int __pid_t;
+typedef struct { int __val[2]; } __fsid_t;
+typedef long int __clock_t;
+typedef unsigned long int __rlim_t;
+typedef unsigned long int __rlim64_t;
+typedef unsigned int __id_t;
+typedef long int __time_t;
+typedef unsigned int __useconds_t;
+typedef long int __suseconds_t;
+
+typedef int __daddr_t;
+typedef int __key_t;
+
+
+typedef int __clockid_t;
+
+
+typedef void * __timer_t;
+
+
+typedef long int __blksize_t;
+
+
+
+
+typedef long int __blkcnt_t;
+typedef long int __blkcnt64_t;
+
+
+typedef unsigned long int __fsblkcnt_t;
+typedef unsigned long int __fsblkcnt64_t;
+
+
+typedef unsigned long int __fsfilcnt_t;
+typedef unsigned long int __fsfilcnt64_t;
+
+
+typedef long int __fsword_t;
+
+typedef long int __ssize_t;
+
+
+typedef long int __syscall_slong_t;
+
+typedef unsigned long int __syscall_ulong_t;
+
+
+
+typedef __off64_t __loff_t;
+typedef __quad_t *__qaddr_t;
+typedef char *__caddr_t;
+
+
+typedef long int __intptr_t;
+
+
+typedef unsigned int __socklen_t;
+# 36 "/usr/include/stdio.h" 2 3 4
+# 44 "/usr/include/stdio.h" 3 4
+struct _IO_FILE;
+
+
+
+typedef struct _IO_FILE FILE;
+
+
+
+
+
+# 64 "/usr/include/stdio.h" 3 4
+typedef struct _IO_FILE __FILE;
+# 74 "/usr/include/stdio.h" 3 4
+# 1 "/usr/include/libio.h" 1 3 4
+# 31 "/usr/include/libio.h" 3 4
+# 1 "/usr/include/_G_config.h" 1 3 4
+# 15 "/usr/include/_G_config.h" 3 4
+# 1 "/soft/gcc/4.9.2/ubuntuamd2010/lib/gcc/x86_64-linux-gnu/4.9.2/include/stddef.h" 1 3 4
+# 16 "/usr/include/_G_config.h" 2 3 4
+
+
+
+
+# 1 "/usr/include/wchar.h" 1 3 4
+# 82 "/usr/include/wchar.h" 3 4
+typedef struct
 {
-	char	*tk_name;		/* name of capability */
-	int	tk_valnumber;	/* value of capability (if a number) */
-	char	*tk_valstring;	/* value of capability (if a string) */
+  int __count;
+  union
+  {
+
+    unsigned int __wch;
+
+
+
+    char __wchb[4];
+  } __value;
+} __mbstate_t;
+# 21 "/usr/include/_G_config.h" 2 3 4
+typedef struct
+{
+  __off_t __pos;
+  __mbstate_t __state;
+} _G_fpos_t;
+typedef struct
+{
+  __off64_t __pos;
+  __mbstate_t __state;
+} _G_fpos64_t;
+# 32 "/usr/include/libio.h" 2 3 4
+# 49 "/usr/include/libio.h" 3 4
+# 1 "/soft/gcc/4.9.2/ubuntuamd2010/lib/gcc/x86_64-linux-gnu/4.9.2/include/stdarg.h" 1 3 4
+# 40 "/soft/gcc/4.9.2/ubuntuamd2010/lib/gcc/x86_64-linux-gnu/4.9.2/include/stdarg.h" 3 4
+typedef __builtin_va_list __gnuc_va_list;
+# 50 "/usr/include/libio.h" 2 3 4
+# 144 "/usr/include/libio.h" 3 4
+struct _IO_jump_t; struct _IO_FILE;
+
+
+
+
+
+typedef void _IO_lock_t;
+
+
+
+
+
+struct _IO_marker {
+  struct _IO_marker *_next;
+  struct _IO_FILE *_sbuf;
+
+
+
+  int _pos;
+# 173 "/usr/include/libio.h" 3 4
 };
 
-extern NCURSES_EXPORT_VAR(struct token)	_nc_curr_token;
 
-	/*
-	 * Offsets to string capabilities, with the corresponding functionkey
-	 * codes.
-	 */
+enum __codecvt_result
+{
+  __codecvt_ok,
+  __codecvt_partial,
+  __codecvt_error,
+  __codecvt_noconv
+};
+# 241 "/usr/include/libio.h" 3 4
+struct _IO_FILE {
+  int _flags;
+
+
+
+
+  char* _IO_read_ptr;
+  char* _IO_read_end;
+  char* _IO_read_base;
+  char* _IO_write_base;
+  char* _IO_write_ptr;
+  char* _IO_write_end;
+  char* _IO_buf_base;
+  char* _IO_buf_end;
+
+  char *_IO_save_base;
+  char *_IO_backup_base;
+  char *_IO_save_end;
+
+  struct _IO_marker *_markers;
+
+  struct _IO_FILE *_chain;
+
+  int _fileno;
+
+
+
+  int _flags2;
+
+  __off_t _old_offset;
+
+
+
+  unsigned short _cur_column;
+  signed char _vtable_offset;
+  char _shortbuf[1];
+
+
+
+  _IO_lock_t *_lock;
+# 289 "/usr/include/libio.h" 3 4
+  __off64_t _offset;
+
+
+
+
+
+
+
+  void *__pad1;
+  void *__pad2;
+  void *__pad3;
+  void *__pad4;
+
+  size_t __pad5;
+  int _mode;
+
+  char _unused2[15 * sizeof (int) - 4 * sizeof (void *) - sizeof (size_t)];
+
+};
+
+
+typedef struct _IO_FILE _IO_FILE;
+
+
+struct _IO_FILE_plus;
+
+extern struct _IO_FILE_plus _IO_2_1_stdin_;
+extern struct _IO_FILE_plus _IO_2_1_stdout_;
+extern struct _IO_FILE_plus _IO_2_1_stderr_;
+# 333 "/usr/include/libio.h" 3 4
+typedef __ssize_t __io_read_fn (void *__cookie, char *__buf, size_t __nbytes);
+
+
+
+
+
+
+
+typedef __ssize_t __io_write_fn (void *__cookie, const char *__buf,
+     size_t __n);
+
+
+
+
+
+
+
+typedef int __io_seek_fn (void *__cookie, __off64_t *__pos, int __w);
+
+
+typedef int __io_close_fn (void *__cookie);
+# 385 "/usr/include/libio.h" 3 4
+extern int __underflow (_IO_FILE *);
+extern int __uflow (_IO_FILE *);
+extern int __overflow (_IO_FILE *, int);
+# 429 "/usr/include/libio.h" 3 4
+extern int _IO_getc (_IO_FILE *__fp);
+extern int _IO_putc (int __c, _IO_FILE *__fp);
+extern int _IO_feof (_IO_FILE *__fp) __attribute__ ((__nothrow__ , __leaf__));
+extern int _IO_ferror (_IO_FILE *__fp) __attribute__ ((__nothrow__ , __leaf__));
+
+extern int _IO_peekc_locked (_IO_FILE *__fp);
+
+
+
+
+
+extern void _IO_flockfile (_IO_FILE *) __attribute__ ((__nothrow__ , __leaf__));
+extern void _IO_funlockfile (_IO_FILE *) __attribute__ ((__nothrow__ , __leaf__));
+extern int _IO_ftrylockfile (_IO_FILE *) __attribute__ ((__nothrow__ , __leaf__));
+# 459 "/usr/include/libio.h" 3 4
+extern int _IO_vfscanf (_IO_FILE * __restrict, const char * __restrict,
+   __gnuc_va_list, int *__restrict);
+extern int _IO_vfprintf (_IO_FILE *__restrict, const char *__restrict,
+    __gnuc_va_list);
+extern __ssize_t _IO_padn (_IO_FILE *, int, __ssize_t);
+extern size_t _IO_sgetn (_IO_FILE *, void *, size_t);
+
+extern __off64_t _IO_seekoff (_IO_FILE *, __off64_t, int, int);
+extern __off64_t _IO_seekpos (_IO_FILE *, __off64_t, int);
+
+extern void _IO_free_backup_area (_IO_FILE *) __attribute__ ((__nothrow__ , __leaf__));
+# 75 "/usr/include/stdio.h" 2 3 4
+
+
+
+
+typedef __gnuc_va_list va_list;
+# 90 "/usr/include/stdio.h" 3 4
+typedef __off_t off_t;
+# 102 "/usr/include/stdio.h" 3 4
+typedef __ssize_t ssize_t;
+
+
+
+
+
+
+
+typedef _G_fpos_t fpos_t;
+
+
+
+
+# 164 "/usr/include/stdio.h" 3 4
+# 1 "/usr/include/x86_64-linux-gnu/bits/stdio_lim.h" 1 3 4
+# 165 "/usr/include/stdio.h" 2 3 4
+
+
+
+extern struct _IO_FILE *stdin;
+extern struct _IO_FILE *stdout;
+extern struct _IO_FILE *stderr;
+
+
+
+
+
+
+
+extern int remove (const char *__filename) __attribute__ ((__nothrow__ , __leaf__));
+
+extern int rename (const char *__old, const char *__new) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+
+extern int renameat (int __oldfd, const char *__old, int __newfd,
+       const char *__new) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+
+
+
+
+
+extern FILE *tmpfile (void) ;
+# 209 "/usr/include/stdio.h" 3 4
+extern char *tmpnam (char *__s) __attribute__ ((__nothrow__ , __leaf__)) ;
+
+# 232 "/usr/include/stdio.h" 3 4
+
+
+
+
+
+extern int fclose (FILE *__stream);
+
+
+
+
+extern int fflush (FILE *__stream);
+
+# 266 "/usr/include/stdio.h" 3 4
+
+
+
+
+
+
+extern FILE *fopen (const char *__restrict __filename,
+      const char *__restrict __modes) ;
+
+
+
+
+extern FILE *freopen (const char *__restrict __filename,
+        const char *__restrict __modes,
+        FILE *__restrict __stream) ;
+# 295 "/usr/include/stdio.h" 3 4
+
+# 306 "/usr/include/stdio.h" 3 4
+extern FILE *fdopen (int __fd, const char *__modes) __attribute__ ((__nothrow__ , __leaf__)) ;
+# 319 "/usr/include/stdio.h" 3 4
+extern FILE *fmemopen (void *__s, size_t __len, const char *__modes)
+  __attribute__ ((__nothrow__ , __leaf__)) ;
+
+
+
+
+extern FILE *open_memstream (char **__bufloc, size_t *__sizeloc) __attribute__ ((__nothrow__ , __leaf__)) ;
+
+
+
+
+
+
+extern void setbuf (FILE *__restrict __stream, char *__restrict __buf) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+extern int setvbuf (FILE *__restrict __stream, char *__restrict __buf,
+      int __modes, size_t __n) __attribute__ ((__nothrow__ , __leaf__));
+
+# 351 "/usr/include/stdio.h" 3 4
+
+
+
+
+
+extern int fprintf (FILE *__restrict __stream,
+      const char *__restrict __format, ...);
+
+
+
+
+extern int printf (const char *__restrict __format, ...);
+
+extern int sprintf (char *__restrict __s,
+      const char *__restrict __format, ...) __attribute__ ((__nothrow__));
+
+
+
+
+
+extern int vfprintf (FILE *__restrict __s, const char *__restrict __format,
+       __gnuc_va_list __arg);
+
+
+
+
+extern int vprintf (const char *__restrict __format, __gnuc_va_list __arg);
+
+extern int vsprintf (char *__restrict __s, const char *__restrict __format,
+       __gnuc_va_list __arg) __attribute__ ((__nothrow__));
+
+
+
+
+
+extern int snprintf (char *__restrict __s, size_t __maxlen,
+       const char *__restrict __format, ...)
+     __attribute__ ((__nothrow__)) __attribute__ ((__format__ (__printf__, 3, 4)));
+
+extern int vsnprintf (char *__restrict __s, size_t __maxlen,
+        const char *__restrict __format, __gnuc_va_list __arg)
+     __attribute__ ((__nothrow__)) __attribute__ ((__format__ (__printf__, 3, 0)));
+
+# 412 "/usr/include/stdio.h" 3 4
+extern int vdprintf (int __fd, const char *__restrict __fmt,
+       __gnuc_va_list __arg)
+     __attribute__ ((__format__ (__printf__, 2, 0)));
+extern int dprintf (int __fd, const char *__restrict __fmt, ...)
+     __attribute__ ((__format__ (__printf__, 2, 3)));
+
+
+
+
+
+
+
+
+extern int fscanf (FILE *__restrict __stream,
+     const char *__restrict __format, ...) ;
+
+
+
+
+extern int scanf (const char *__restrict __format, ...) ;
+
+extern int sscanf (const char *__restrict __s,
+     const char *__restrict __format, ...) __attribute__ ((__nothrow__ , __leaf__));
+# 443 "/usr/include/stdio.h" 3 4
+extern int fscanf (FILE *__restrict __stream, const char *__restrict __format, ...) __asm__ ("" "__isoc99_fscanf")
+
+                               ;
+extern int scanf (const char *__restrict __format, ...) __asm__ ("" "__isoc99_scanf")
+                              ;
+extern int sscanf (const char *__restrict __s, const char *__restrict __format, ...) __asm__ ("" "__isoc99_sscanf") __attribute__ ((__nothrow__ , __leaf__))
+
+                      ;
+# 463 "/usr/include/stdio.h" 3 4
+
+
+
+
+
+
+
+
+extern int vfscanf (FILE *__restrict __s, const char *__restrict __format,
+      __gnuc_va_list __arg)
+     __attribute__ ((__format__ (__scanf__, 2, 0))) ;
+
+
+
+
+
+extern int vscanf (const char *__restrict __format, __gnuc_va_list __arg)
+     __attribute__ ((__format__ (__scanf__, 1, 0))) ;
+
+
+extern int vsscanf (const char *__restrict __s,
+      const char *__restrict __format, __gnuc_va_list __arg)
+     __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__format__ (__scanf__, 2, 0)));
+# 494 "/usr/include/stdio.h" 3 4
+extern int vfscanf (FILE *__restrict __s, const char *__restrict __format, __gnuc_va_list __arg) __asm__ ("" "__isoc99_vfscanf")
+
+
+
+     __attribute__ ((__format__ (__scanf__, 2, 0))) ;
+extern int vscanf (const char *__restrict __format, __gnuc_va_list __arg) __asm__ ("" "__isoc99_vscanf")
+
+     __attribute__ ((__format__ (__scanf__, 1, 0))) ;
+extern int vsscanf (const char *__restrict __s, const char *__restrict __format, __gnuc_va_list __arg) __asm__ ("" "__isoc99_vsscanf") __attribute__ ((__nothrow__ , __leaf__))
+
+
+
+     __attribute__ ((__format__ (__scanf__, 2, 0)));
+# 522 "/usr/include/stdio.h" 3 4
+
+
+
+
+
+
+
+
+
+extern int fgetc (FILE *__stream);
+extern int getc (FILE *__stream);
+
+
+
+
+
+extern int getchar (void);
+
+# 550 "/usr/include/stdio.h" 3 4
+extern int getc_unlocked (FILE *__stream);
+extern int getchar_unlocked (void);
+# 565 "/usr/include/stdio.h" 3 4
+
+
+
+
+
+
+
+
+extern int fputc (int __c, FILE *__stream);
+extern int putc (int __c, FILE *__stream);
+
+
+
+
+
+extern int putchar (int __c);
+
+# 602 "/usr/include/stdio.h" 3 4
+extern int putc_unlocked (int __c, FILE *__stream);
+extern int putchar_unlocked (int __c);
+# 617 "/usr/include/stdio.h" 3 4
+
+
+
+
+
+extern char *fgets (char *__restrict __s, int __n, FILE *__restrict __stream)
+     ;
+# 640 "/usr/include/stdio.h" 3 4
+
+# 665 "/usr/include/stdio.h" 3 4
+extern __ssize_t __getdelim (char **__restrict __lineptr,
+          size_t *__restrict __n, int __delimiter,
+          FILE *__restrict __stream) ;
+extern __ssize_t getdelim (char **__restrict __lineptr,
+        size_t *__restrict __n, int __delimiter,
+        FILE *__restrict __stream) ;
+
+
+
+
+
+
+
+extern __ssize_t getline (char **__restrict __lineptr,
+       size_t *__restrict __n,
+       FILE *__restrict __stream) ;
+
+
+
+
+
+
+
+
+extern int fputs (const char *__restrict __s, FILE *__restrict __stream);
+
+
+
+
+
+extern int puts (const char *__s);
+
+
+
+
+
+
+extern int ungetc (int __c, FILE *__stream);
+
+
+
+
+
+
+extern size_t fread (void *__restrict __ptr, size_t __size,
+       size_t __n, FILE *__restrict __stream) ;
+
+
+
+
+extern size_t fwrite (const void *__restrict __ptr, size_t __size,
+        size_t __n, FILE *__restrict __s);
+
+# 744 "/usr/include/stdio.h" 3 4
+
+
+
+
+
+extern int fseek (FILE *__stream, long int __off, int __whence);
+
+
+
+
+extern long int ftell (FILE *__stream) ;
+
+
+
+
+extern void rewind (FILE *__stream);
+
+# 773 "/usr/include/stdio.h" 3 4
+extern int fseeko (FILE *__stream, __off_t __off, int __whence);
+
+
+
+
+extern __off_t ftello (FILE *__stream) ;
+# 792 "/usr/include/stdio.h" 3 4
+
+
+
+
+
+
+extern int fgetpos (FILE *__restrict __stream, fpos_t *__restrict __pos);
+
+
+
+
+extern int fsetpos (FILE *__stream, const fpos_t *__pos);
+# 815 "/usr/include/stdio.h" 3 4
+
+# 824 "/usr/include/stdio.h" 3 4
+
+
+extern void clearerr (FILE *__stream) __attribute__ ((__nothrow__ , __leaf__));
+
+extern int feof (FILE *__stream) __attribute__ ((__nothrow__ , __leaf__)) ;
+
+extern int ferror (FILE *__stream) __attribute__ ((__nothrow__ , __leaf__)) ;
+
+# 841 "/usr/include/stdio.h" 3 4
+
+
+
+
+
+extern void perror (const char *__s);
+
+
+
+
+
+
+# 1 "/usr/include/x86_64-linux-gnu/bits/sys_errlist.h" 1 3 4
+# 854 "/usr/include/stdio.h" 2 3 4
+
+
+
+
+extern int fileno (FILE *__stream) __attribute__ ((__nothrow__ , __leaf__)) ;
+# 872 "/usr/include/stdio.h" 3 4
+extern FILE *popen (const char *__command, const char *__modes) ;
+
+
+
+
+
+extern int pclose (FILE *__stream);
+
+
+
+
+
+extern char *ctermid (char *__s) __attribute__ ((__nothrow__ , __leaf__));
+# 912 "/usr/include/stdio.h" 3 4
+extern void flockfile (FILE *__stream) __attribute__ ((__nothrow__ , __leaf__));
+
+
+
+extern int ftrylockfile (FILE *__stream) __attribute__ ((__nothrow__ , __leaf__)) ;
+
+
+extern void funlockfile (FILE *__stream) __attribute__ ((__nothrow__ , __leaf__));
+# 942 "/usr/include/stdio.h" 3 4
+
+# 172 "/usr/include/curses.h" 2 3 4
+# 188 "/usr/include/curses.h" 3 4
+# 1 "/soft/gcc/4.9.2/ubuntuamd2010/lib/gcc/x86_64-linux-gnu/4.9.2/include/stdarg.h" 1 3 4
+# 189 "/usr/include/curses.h" 2 3 4
+# 211 "/usr/include/curses.h" 3 4
+typedef unsigned char NCURSES_BOOL;
+# 221 "/usr/include/curses.h" 3 4
+# 1 "/soft/gcc/4.9.2/ubuntuamd2010/lib/gcc/x86_64-linux-gnu/4.9.2/include/stdbool.h" 1 3 4
+# 222 "/usr/include/curses.h" 2 3 4
+# 281 "/usr/include/curses.h" 3 4
+extern chtype acs_map[];
+# 371 "/usr/include/curses.h" 3 4
+typedef struct screen SCREEN;
+typedef struct _win_st WINDOW;
+
+typedef chtype attr_t;
+# 419 "/usr/include/curses.h" 3 4
+struct ldat;
+
+struct _win_st
+{
+ short _cury, _curx;
+
+
+ short _maxy, _maxx;
+ short _begy, _begx;
+
+ short _flags;
+
+
+ attr_t _attrs;
+ chtype _bkgd;
+
+
+ _Bool _notimeout;
+ _Bool _clear;
+ _Bool _leaveok;
+ _Bool _scroll;
+ _Bool _idlok;
+ _Bool _idcok;
+ _Bool _immed;
+ _Bool _sync;
+ _Bool _use_keypad;
+ int _delay;
+
+ struct ldat *_line;
+
+
+ short _regtop;
+ short _regbottom;
+
+
+ int _parx;
+ int _pary;
+ WINDOW *_parent;
+
+
+ struct pdat
+ {
+     short _pad_y, _pad_x;
+     short _pad_top, _pad_left;
+     short _pad_bottom, _pad_right;
+ } _pad;
+
+ short _yoffset;
+
+
+
+
+
+
+
+};
+# 573 "/usr/include/curses.h" 3 4
+typedef int (*NCURSES_OUTC)(int);
+# 582 "/usr/include/curses.h" 3 4
+extern int addch (const chtype);
+extern int addchnstr (const chtype *, int);
+extern int addchstr (const chtype *);
+extern int addnstr (const char *, int);
+extern int addstr (const char *);
+extern int attroff (int);
+extern int attron (int);
+extern int attrset (int);
+extern int attr_get (attr_t *, short *, void *);
+extern int attr_off (attr_t, void *);
+extern int attr_on (attr_t, void *);
+extern int attr_set (attr_t, short, void *);
+extern int baudrate (void);
+extern int beep (void);
+extern int bkgd (chtype);
+extern void bkgdset (chtype);
+extern int border (chtype,chtype,chtype,chtype,chtype,chtype,chtype,chtype);
+extern int box (WINDOW *, chtype, chtype);
+extern _Bool can_change_color (void);
+extern int cbreak (void);
+extern int chgat (int, attr_t, short, const void *);
+extern int clear (void);
+extern int clearok (WINDOW *,_Bool);
+extern int clrtobot (void);
+extern int clrtoeol (void);
+extern int color_content (short,short*,short*,short*);
+extern int color_set (short,void*);
+extern int COLOR_PAIR (int);
+extern int copywin (const WINDOW*,WINDOW*,int,int,int,int,int,int,int);
+extern int curs_set (int);
+extern int def_prog_mode (void);
+extern int def_shell_mode (void);
+extern int delay_output (int);
+extern int delch (void);
+extern void delscreen (SCREEN *);
+extern int delwin (WINDOW *);
+extern int deleteln (void);
+extern WINDOW * derwin (WINDOW *,int,int,int,int);
+extern int doupdate (void);
+extern WINDOW * dupwin (WINDOW *);
+extern int echo (void);
+extern int echochar (const chtype);
+extern int erase (void);
+extern int endwin (void);
+extern char erasechar (void);
+extern void filter (void);
+extern int flash (void);
+extern int flushinp (void);
+extern chtype getbkgd (WINDOW *);
+extern int getch (void);
+extern int getnstr (char *, int);
+extern int getstr (char *);
+extern WINDOW * getwin (FILE *);
+extern int halfdelay (int);
+extern _Bool has_colors (void);
+extern _Bool has_ic (void);
+extern _Bool has_il (void);
+extern int hline (chtype, int);
+extern void idcok (WINDOW *, _Bool);
+extern int idlok (WINDOW *, _Bool);
+extern void immedok (WINDOW *, _Bool);
+extern chtype inch (void);
+extern int inchnstr (chtype *, int);
+extern int inchstr (chtype *);
+extern WINDOW * initscr (void);
+extern int init_color (short,short,short,short);
+extern int init_pair (short,short,short);
+extern int innstr (char *, int);
+extern int insch (chtype);
+extern int insdelln (int);
+extern int insertln (void);
+extern int insnstr (const char *, int);
+extern int insstr (const char *);
+extern int instr (char *);
+extern int intrflush (WINDOW *,_Bool);
+extern _Bool isendwin (void);
+extern _Bool is_linetouched (WINDOW *,int);
+extern _Bool is_wintouched (WINDOW *);
+extern const char * keyname (int);
+extern int keypad (WINDOW *,_Bool);
+extern char killchar (void);
+extern int leaveok (WINDOW *,_Bool);
+extern char * longname (void);
+extern int meta (WINDOW *,_Bool);
+extern int move (int, int);
+extern int mvaddch (int, int, const chtype);
+extern int mvaddchnstr (int, int, const chtype *, int);
+extern int mvaddchstr (int, int, const chtype *);
+extern int mvaddnstr (int, int, const char *, int);
+extern int mvaddstr (int, int, const char *);
+extern int mvchgat (int, int, int, attr_t, short, const void *);
+extern int mvcur (int,int,int,int);
+extern int mvdelch (int, int);
+extern int mvderwin (WINDOW *, int, int);
+extern int mvgetch (int, int);
+extern int mvgetnstr (int, int, char *, int);
+extern int mvgetstr (int, int, char *);
+extern int mvhline (int, int, chtype, int);
+extern chtype mvinch (int, int);
+extern int mvinchnstr (int, int, chtype *, int);
+extern int mvinchstr (int, int, chtype *);
+extern int mvinnstr (int, int, char *, int);
+extern int mvinsch (int, int, chtype);
+extern int mvinsnstr (int, int, const char *, int);
+extern int mvinsstr (int, int, const char *);
+extern int mvinstr (int, int, char *);
+extern int mvprintw (int,int, const char *,...)
+  ;
+extern int mvscanw (int,int, const char *,...)
+  ;
+extern int mvvline (int, int, chtype, int);
+extern int mvwaddch (WINDOW *, int, int, const chtype);
+extern int mvwaddchnstr (WINDOW *, int, int, const chtype *, int);
+extern int mvwaddchstr (WINDOW *, int, int, const chtype *);
+extern int mvwaddnstr (WINDOW *, int, int, const char *, int);
+extern int mvwaddstr (WINDOW *, int, int, const char *);
+extern int mvwchgat (WINDOW *, int, int, int, attr_t, short, const void *);
+extern int mvwdelch (WINDOW *, int, int);
+extern int mvwgetch (WINDOW *, int, int);
+extern int mvwgetnstr (WINDOW *, int, int, char *, int);
+extern int mvwgetstr (WINDOW *, int, int, char *);
+extern int mvwhline (WINDOW *, int, int, chtype, int);
+extern int mvwin (WINDOW *,int,int);
+extern chtype mvwinch (WINDOW *, int, int);
+extern int mvwinchnstr (WINDOW *, int, int, chtype *, int);
+extern int mvwinchstr (WINDOW *, int, int, chtype *);
+extern int mvwinnstr (WINDOW *, int, int, char *, int);
+extern int mvwinsch (WINDOW *, int, int, chtype);
+extern int mvwinsnstr (WINDOW *, int, int, const char *, int);
+extern int mvwinsstr (WINDOW *, int, int, const char *);
+extern int mvwinstr (WINDOW *, int, int, char *);
+extern int mvwprintw (WINDOW*,int,int, const char *,...)
+  ;
+extern int mvwscanw (WINDOW *,int,int, const char *,...)
+  ;
+extern int mvwvline (WINDOW *,int, int, chtype, int);
+extern int napms (int);
+extern WINDOW * newpad (int,int);
+extern SCREEN * newterm (const char *,FILE *,FILE *);
+extern WINDOW * newwin (int,int,int,int);
+extern int nl (void);
+extern int nocbreak (void);
+extern int nodelay (WINDOW *,_Bool);
+extern int noecho (void);
+extern int nonl (void);
+extern void noqiflush (void);
+extern int noraw (void);
+extern int notimeout (WINDOW *,_Bool);
+extern int overlay (const WINDOW*,WINDOW *);
+extern int overwrite (const WINDOW*,WINDOW *);
+extern int pair_content (short,short*,short*);
+extern int PAIR_NUMBER (int);
+extern int pechochar (WINDOW *, const chtype);
+extern int pnoutrefresh (WINDOW*,int,int,int,int,int,int);
+extern int prefresh (WINDOW *,int,int,int,int,int,int);
+extern int printw (const char *,...)
+  ;
+extern int putwin (WINDOW *, FILE *);
+extern void qiflush (void);
+extern int raw (void);
+extern int redrawwin (WINDOW *);
+extern int refresh (void);
+extern int resetty (void);
+extern int reset_prog_mode (void);
+extern int reset_shell_mode (void);
+extern int ripoffline (int, int (*)(WINDOW *, int));
+extern int savetty (void);
+extern int scanw (const char *,...)
+  ;
+extern int scr_dump (const char *);
+extern int scr_init (const char *);
+extern int scrl (int);
+extern int scroll (WINDOW *);
+extern int scrollok (WINDOW *,_Bool);
+extern int scr_restore (const char *);
+extern int scr_set (const char *);
+extern int setscrreg (int,int);
+extern SCREEN * set_term (SCREEN *);
+extern int slk_attroff (const chtype);
+extern int slk_attr_off (const attr_t, void *);
+extern int slk_attron (const chtype);
+extern int slk_attr_on (attr_t,void*);
+extern int slk_attrset (const chtype);
+extern attr_t slk_attr (void);
+extern int slk_attr_set (const attr_t,short,void*);
+extern int slk_clear (void);
+extern int slk_color (short);
+extern int slk_init (int);
+extern char * slk_label (int);
+extern int slk_noutrefresh (void);
+extern int slk_refresh (void);
+extern int slk_restore (void);
+extern int slk_set (int,const char *,int);
+extern int slk_touch (void);
+extern int standout (void);
+extern int standend (void);
+extern int start_color (void);
+extern WINDOW * subpad (WINDOW *, int, int, int, int);
+extern WINDOW * subwin (WINDOW *, int, int, int, int);
+extern int syncok (WINDOW *, _Bool);
+extern chtype termattrs (void);
+extern char * termname (void);
+extern void timeout (int);
+extern int touchline (WINDOW *, int, int);
+extern int touchwin (WINDOW *);
+extern int typeahead (int);
+extern int ungetch (int);
+extern int untouchwin (WINDOW *);
+extern void use_env (_Bool);
+extern void use_tioctl (_Bool);
+extern int vidattr (chtype);
+extern int vidputs (chtype, NCURSES_OUTC);
+extern int vline (chtype, int);
+extern int vwprintw (WINDOW *, const char *,va_list);
+extern int vw_printw (WINDOW *, const char *,va_list);
+extern int vwscanw (WINDOW *, const char *,va_list);
+extern int vw_scanw (WINDOW *, const char *,va_list);
+extern int waddch (WINDOW *, const chtype);
+extern int waddchnstr (WINDOW *,const chtype *,int);
+extern int waddchstr (WINDOW *,const chtype *);
+extern int waddnstr (WINDOW *,const char *,int);
+extern int waddstr (WINDOW *,const char *);
+extern int wattron (WINDOW *, int);
+extern int wattroff (WINDOW *, int);
+extern int wattrset (WINDOW *, int);
+extern int wattr_get (WINDOW *, attr_t *, short *, void *);
+extern int wattr_on (WINDOW *, attr_t, void *);
+extern int wattr_off (WINDOW *, attr_t, void *);
+extern int wattr_set (WINDOW *, attr_t, short, void *);
+extern int wbkgd (WINDOW *, chtype);
+extern void wbkgdset (WINDOW *,chtype);
+extern int wborder (WINDOW *,chtype,chtype,chtype,chtype,chtype,chtype,chtype,chtype);
+extern int wchgat (WINDOW *, int, attr_t, short, const void *);
+extern int wclear (WINDOW *);
+extern int wclrtobot (WINDOW *);
+extern int wclrtoeol (WINDOW *);
+extern int wcolor_set (WINDOW*,short,void*);
+extern void wcursyncup (WINDOW *);
+extern int wdelch (WINDOW *);
+extern int wdeleteln (WINDOW *);
+extern int wechochar (WINDOW *, const chtype);
+extern int werase (WINDOW *);
+extern int wgetch (WINDOW *);
+extern int wgetnstr (WINDOW *,char *,int);
+extern int wgetstr (WINDOW *, char *);
+extern int whline (WINDOW *, chtype, int);
+extern chtype winch (WINDOW *);
+extern int winchnstr (WINDOW *, chtype *, int);
+extern int winchstr (WINDOW *, chtype *);
+extern int winnstr (WINDOW *, char *, int);
+extern int winsch (WINDOW *, chtype);
+extern int winsdelln (WINDOW *,int);
+extern int winsertln (WINDOW *);
+extern int winsnstr (WINDOW *, const char *,int);
+extern int winsstr (WINDOW *, const char *);
+extern int winstr (WINDOW *, char *);
+extern int wmove (WINDOW *,int,int);
+extern int wnoutrefresh (WINDOW *);
+extern int wprintw (WINDOW *, const char *,...)
+  ;
+extern int wredrawln (WINDOW *,int,int);
+extern int wrefresh (WINDOW *);
+extern int wscanw (WINDOW *, const char *,...)
+  ;
+extern int wscrl (WINDOW *,int);
+extern int wsetscrreg (WINDOW *,int,int);
+extern int wstandout (WINDOW *);
+extern int wstandend (WINDOW *);
+extern void wsyncdown (WINDOW *);
+extern void wsyncup (WINDOW *);
+extern void wtimeout (WINDOW *,int);
+extern int wtouchln (WINDOW *,int,int,int);
+extern int wvline (WINDOW *,chtype,int);
+
+
+
+
+extern int tigetflag (const char *);
+extern int tigetnum (const char *);
+extern char * tigetstr (const char *);
+extern int putp (const char *);
+
+
+extern char * tparm (const char *, ...);
+
+
+
+
+
+extern char * tiparm (const char *, ...);
+
+
+
+
+extern int getattrs (const WINDOW *);
+extern int getcurx (const WINDOW *);
+extern int getcury (const WINDOW *);
+extern int getbegx (const WINDOW *);
+extern int getbegy (const WINDOW *);
+extern int getmaxx (const WINDOW *);
+extern int getmaxy (const WINDOW *);
+extern int getparx (const WINDOW *);
+extern int getpary (const WINDOW *);
+# 899 "/usr/include/curses.h" 3 4
+typedef int (*NCURSES_WINDOW_CB)(WINDOW *, void *);
+typedef int (*NCURSES_SCREEN_CB)(SCREEN *, void *);
+extern _Bool is_term_resized (int, int);
+extern char * keybound (int, int);
+extern const char * curses_version (void);
+extern int assume_default_colors (int, int);
+extern int define_key (const char *, int);
+extern int get_escdelay (void);
+extern int key_defined (const char *);
+extern int keyok (int, _Bool);
+extern int resize_term (int, int);
+extern int resizeterm (int, int);
+extern int set_escdelay (int);
+extern int set_tabsize (int);
+extern int use_default_colors (void);
+extern int use_extended_names (_Bool);
+extern int use_legacy_coding (int);
+extern int use_screen (SCREEN *, NCURSES_SCREEN_CB, void *);
+extern int use_window (WINDOW *, NCURSES_WINDOW_CB, void *);
+extern int wresize (WINDOW *, int, int);
+extern void nofilter(void);
+
+
+
+
+
+extern WINDOW * wgetparent (const WINDOW *);
+extern _Bool is_cleared (const WINDOW *);
+extern _Bool is_idcok (const WINDOW *);
+extern _Bool is_idlok (const WINDOW *);
+extern _Bool is_immedok (const WINDOW *);
+extern _Bool is_keypad (const WINDOW *);
+extern _Bool is_leaveok (const WINDOW *);
+extern _Bool is_nodelay (const WINDOW *);
+extern _Bool is_notimeout (const WINDOW *);
+extern _Bool is_pad (const WINDOW *);
+extern _Bool is_scrollok (const WINDOW *);
+extern _Bool is_subwin (const WINDOW *);
+extern _Bool is_syncok (const WINDOW *);
+extern int wgetdelay (const WINDOW *);
+extern int wgetscrreg (const WINDOW *, int *, int *);
+# 1400 "/usr/include/curses.h" 3 4
+extern WINDOW * curscr;
+extern WINDOW * newscr;
+extern WINDOW * stdscr;
+extern char ttytype[];
+extern int COLORS;
+extern int COLOR_PAIRS;
+extern int COLS;
+extern int ESCDELAY;
+extern int LINES;
+extern int TABSIZE;
+# 1613 "/usr/include/curses.h" 3 4
+typedef struct
+{
+    short id;
+    int x, y, z;
+    mmask_t bstate;
+}
+MEVENT;
+
+extern _Bool has_mouse(void);
+extern int getmouse (MEVENT *);
+extern int ungetmouse (MEVENT *);
+extern mmask_t mousemask (mmask_t, mmask_t *);
+extern _Bool wenclose (const WINDOW *, int, int);
+extern int mouseinterval (int);
+extern _Bool wmouse_trafo (const WINDOW*, int*, int*, _Bool);
+extern _Bool mouse_trafo (int*, int*, _Bool);
+# 1644 "/usr/include/curses.h" 3 4
+extern int mcprint (char *, int);
+extern int has_key (int);
+# 1654 "/usr/include/curses.h" 3 4
+extern void _tracef (const char *, ...) ;
+extern char * _traceattr (attr_t);
+extern char * _traceattr2 (int, chtype);
+extern char * _tracechar (int);
+extern char * _tracechtype (chtype);
+extern char * _tracechtype2 (int, chtype);
+# 1669 "/usr/include/curses.h" 3 4
+extern void trace (const unsigned int);
+# 1700 "/usr/include/curses.h" 3 4
+# 1 "/usr/include/unctrl.h" 1 3 4
+# 54 "/usr/include/unctrl.h" 3 4
+# 1 "/usr/include/curses.h" 1 3 4
+# 55 "/usr/include/unctrl.h" 2 3 4
+
+
+ const char * unctrl (chtype);
+# 1701 "/usr/include/curses.h" 2 3 4
+# 49 "tic.c" 2
+# 130 "tic.c"
+extern unsigned _nc_tracing;
+extern void _nc_tracef (char *, ...) ;
+extern const char * _nc_visbuf (const char *);
+extern const char * _nc_visbuf2 (int, const char *);
+# 157 "tic.c"
+struct token
+{
+ char *tk_name;
+ int tk_valnumber;
+ char *tk_valstring;
+};
+
+extern struct token _nc_curr_token;
+
+
+
+
+
 struct tinfo_fkeys {
-	unsigned offset;
-	chtype code;
-	};
+ unsigned offset;
+ chtype code;
+ };
+# 182 "tic.c"
+extern const struct tinfo_fkeys _nc_tinfo_fkeys[];
 
-#if	BROKEN_LINKER
 
-#define	_nc_tinfo_fkeys	_nc_tinfo_fkeysf()
-extern NCURSES_EXPORT(const struct tinfo_fkeys *) _nc_tinfo_fkeysf (void);
-
-#else
-
-extern NCURSES_EXPORT_VAR(const struct tinfo_fkeys) _nc_tinfo_fkeys[];
-
-#endif
 
 typedef short HashValue;
 
-	/*
-	 * The file comp_captab.c contains an array of these structures, one
-	 * per possible capability.  These are indexed by a hash table array of
-	 * pointers to the same structures for use by the parser.
-	 */
+
+
+
+
+
 
 struct name_table_entry
 {
-	const char *nte_name;	/* name to hash on */
-	int	nte_type;	/* BOOLEAN, NUMBER or STRING */
-	HashValue nte_index;	/* index of associated variable in its array */
-	HashValue nte_link;	/* index in table of next hash, or -1 */
+ const char *nte_name;
+ int nte_type;
+ HashValue nte_index;
+ HashValue nte_link;
 };
 
-	/*
-	 * Use this structure to hide differences between terminfo and termcap
-	 * tables.
-	 */
+
+
+
+
 typedef struct {
-	unsigned table_size;
-	const HashValue *table_data;
-	HashValue (*hash_of)(const char *);
-	int (*compare_names)(const char *, const char *);
+ unsigned table_size;
+ const HashValue *table_data;
+ HashValue (*hash_of)(const char *);
+ int (*compare_names)(const char *, const char *);
 } HashData;
 
 struct alias
 {
-	const char	*from;
-	const char	*to;
-	const char	*source;
+ const char *from;
+ const char *to;
+ const char *source;
 };
 
-extern NCURSES_EXPORT(const struct name_table_entry *) _nc_get_table (bool);
-extern NCURSES_EXPORT(const HashData *) _nc_get_hash_info (bool);
-extern NCURSES_EXPORT(const HashValue *) _nc_get_hash_table (bool);
-extern NCURSES_EXPORT(const struct alias *) _nc_get_alias_table (bool);
+extern const struct name_table_entry * _nc_get_table (_Bool);
+extern const HashData * _nc_get_hash_info (_Bool);
+extern const HashValue * _nc_get_hash_table (_Bool);
+extern const struct alias * _nc_get_alias_table (_Bool);
+# 252 "tic.c"
+extern unsigned _nc_pathlast (const char *);
+extern _Bool _nc_is_abs_path (const char *);
+extern _Bool _nc_is_dir_path (const char *);
+extern _Bool _nc_is_file_path (const char *);
+extern char * _nc_basename (char *);
+extern char * _nc_rootname (char *);
 
-#define NOTFOUND	((struct name_table_entry *) 0)
 
-/* out-of-band values for representing absent capabilities */
-#define ABSENT_BOOLEAN		((signed char)-1)	/* 255 */
-#define ABSENT_NUMERIC		(-1)
-#define ABSENT_STRING		(char *)0
+extern struct name_table_entry const * _nc_find_entry
+ (const char *, const HashValue *);
+extern struct name_table_entry const * _nc_find_type_entry
+ (const char *, int, _Bool);
 
-/* out-of-band values for representing cancels */
-#define CANCELLED_BOOLEAN	((signed char)-2)	/* 254 */
-#define CANCELLED_NUMERIC	(-2)
-#define CANCELLED_STRING	(char *)(-1)
 
-#define VALID_BOOLEAN(s) ((unsigned char)(s) <= 1) /* reject "-1" */
-#define VALID_NUMERIC(s) ((s) >= 0)
-#define VALID_STRING(s)  ((s) != CANCELLED_STRING && (s) != ABSENT_STRING)
+extern int _nc_get_token (_Bool);
+extern void _nc_panic_mode (char);
+extern void _nc_push_token (int);
+extern void _nc_reset_input (FILE *, char *);
+extern int _nc_curr_col;
+extern int _nc_curr_line;
+extern int _nc_syntax;
+extern long _nc_comment_end;
+extern long _nc_comment_start;
+extern long _nc_curr_file_pos;
+extern long _nc_start_line;
 
-/* termcap entries longer than this may break old binaries */
-#define MAX_TERMCAP_LENGTH	1023
 
-/* this is a documented limitation of terminfo */
-#define MAX_TERMINFO_LENGTH	4096
 
-#ifndef TERMINFO
-#define TERMINFO "/usr/share/terminfo"
-#endif
 
-/* access.c */
-extern NCURSES_EXPORT(unsigned) _nc_pathlast (const char *);
-extern NCURSES_EXPORT(bool) _nc_is_abs_path (const char *);
-extern NCURSES_EXPORT(bool) _nc_is_dir_path (const char *);
-extern NCURSES_EXPORT(bool) _nc_is_file_path (const char *);
-extern NCURSES_EXPORT(char *) _nc_basename (char *);
-extern NCURSES_EXPORT(char *) _nc_rootname (char *);
+extern const char * _nc_get_source (void);
+extern void _nc_err_abort (const char *const,...) ;
+extern void _nc_get_type (char *name);
+extern void _nc_set_source (const char *const);
+extern void _nc_set_type (const char *const);
+extern void _nc_syserr_abort (const char *const,...) ;
+extern void _nc_warning (const char *const,...) ;
+extern _Bool _nc_suppress_warnings;
 
-/* comp_hash.c: name lookup */
-extern NCURSES_EXPORT(struct name_table_entry const *) _nc_find_entry
-	(const char *, const HashValue *);
-extern NCURSES_EXPORT(struct name_table_entry const *) _nc_find_type_entry
-	(const char *, int, bool);
 
-/* comp_scan.c: lexical analysis */
-extern NCURSES_EXPORT(int)  _nc_get_token (bool);
-extern NCURSES_EXPORT(void) _nc_panic_mode (char);
-extern NCURSES_EXPORT(void) _nc_push_token (int);
-extern NCURSES_EXPORT(void) _nc_reset_input (FILE *, char *);
-extern NCURSES_EXPORT_VAR(int) _nc_curr_col;
-extern NCURSES_EXPORT_VAR(int) _nc_curr_line;
-extern NCURSES_EXPORT_VAR(int) _nc_syntax;
-extern NCURSES_EXPORT_VAR(long) _nc_comment_end;
-extern NCURSES_EXPORT_VAR(long) _nc_comment_start;
-extern NCURSES_EXPORT_VAR(long) _nc_curr_file_pos;
-extern NCURSES_EXPORT_VAR(long) _nc_start_line;
-#define SYN_TERMINFO	0
-#define SYN_TERMCAP	1
+extern char * _nc_tic_expand (const char *, _Bool, int);
 
-/* comp_error.c: warning & abort messages */
-extern NCURSES_EXPORT(const char *) _nc_get_source (void);
-extern NCURSES_EXPORT(void) _nc_err_abort (const char *const,...) GCC_PRINTFLIKE(1,2) GCC_NORETURN;
-extern NCURSES_EXPORT(void) _nc_get_type (char *name);
-extern NCURSES_EXPORT(void) _nc_set_source (const char *const);
-extern NCURSES_EXPORT(void) _nc_set_type (const char *const);
-extern NCURSES_EXPORT(void) _nc_syserr_abort (const char *const,...) GCC_PRINTFLIKE(1,2) GCC_NORETURN;
-extern NCURSES_EXPORT(void) _nc_warning (const char *const,...) GCC_PRINTFLIKE(1,2);
-extern NCURSES_EXPORT_VAR(bool) _nc_suppress_warnings;
 
-/* comp_expand.c: expand string into readable form */
-extern NCURSES_EXPORT(char *) _nc_tic_expand (const char *, bool, int);
+extern int _nc_trans_string (char *, char *);
 
-/* comp_scan.c: decode string from readable form */
-extern NCURSES_EXPORT(int) _nc_trans_string (char *, char *);
 
-/* captoinfo.c: capability conversion */
-extern NCURSES_EXPORT(char *) _nc_captoinfo (const char *, const char *, int const);
-extern NCURSES_EXPORT(char *) _nc_infotocap (const char *, const char *, int const);
+extern char * _nc_captoinfo (const char *, const char *, int const);
+extern char * _nc_infotocap (const char *, const char *, int const);
 
-/* home_terminfo.c */
-extern NCURSES_EXPORT(char *) _nc_home_terminfo (void);
 
-/* lib_tparm.c */
-#define NUM_PARM 9
+extern char * _nc_home_terminfo (void);
 
-extern NCURSES_EXPORT_VAR(int) _nc_tparm_err;
 
-extern NCURSES_EXPORT(int) _nc_tparm_analyze(const char *, char **, int *);
 
-/* lib_tputs.c */
-extern NCURSES_EXPORT_VAR(int) _nc_nulls_sent;		/* Add one for every null sent */
 
-/* comp_main.c: compiler main */
+extern int _nc_tparm_err;
+
+extern int _nc_tparm_analyze(const char *, char **, int *);
+
+
+extern int _nc_nulls_sent;
+
+
 extern const char * _nc_progname;
 
-/* db_iterator.c */
+
 typedef enum {
     dbdTIC = 0,
-#if USE_DATABASE
-    dbdEnvOnce,
-    dbdHome,
-    dbdEnvList,
-    dbdCfgList,
-    dbdCfgOnce,
-#endif
-#if USE_TERMCAP
-    dbdEnvOnce2,
-    dbdEnvList2,
-    dbdCfgList2,
-#endif
+# 331 "tic.c"
     dbdLAST
 } DBDIRS;
 
-extern NCURSES_EXPORT(const char *) _nc_next_db(DBDIRS *, int *);
-extern NCURSES_EXPORT(const char *) _nc_tic_dir (const char *);
-extern NCURSES_EXPORT(void) _nc_first_db(DBDIRS *, int *);
-extern NCURSES_EXPORT(void) _nc_last_db(void);
+extern const char * _nc_next_db(DBDIRS *, int *);
+extern const char * _nc_tic_dir (const char *);
+extern void _nc_first_db(DBDIRS *, int *);
+extern void _nc_last_db(void);
 
-/* write_entry.c */
-extern NCURSES_EXPORT(int) _nc_tic_written (void);
 
-#ifdef __cplusplus
-}
-#endif
-
-#endif /* __TIC_H */
+extern int _nc_tic_written (void);

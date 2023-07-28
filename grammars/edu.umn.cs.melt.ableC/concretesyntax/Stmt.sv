@@ -92,7 +92,7 @@ closed tracked nonterminal IterationStmt_c with ast<ast:Stmt>;
 concrete productions top::IterationStmt_c
 | 'while' '(' cond::Expr_c ')' body::Stmt_c
     { top.ast = ast:whileStmt(cond.ast, body.ast); }
-| 'do' body::Stmt_c 'while' '(' cond::Expr_c ')'
+| 'do' body::Stmt_c 'while' '(' cond::Expr_c ')' ';'
     { top.ast = ast:doStmt(body.ast, cond.ast); }
 -- Slightly odd syntactic construction: ExprStmt is "Expr;" or ";"
 | 'for' '(' init::ExprStmt_c cond::ExprStmt_c iter::Expr_c ')' body::Stmt_c

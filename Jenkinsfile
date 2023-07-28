@@ -9,6 +9,12 @@ melt.trynode('ableC') {
   def ABLEC_GEN = "${ABLEC_BASE}/generated"
   def SILVER_BASE = silver.resolveSilver()
   def newenv = silver.getSilverEnv(SILVER_BASE)
+  def SILVER_HOST_GEN = []
+  if (params.SILVER_GEN != 'no') {
+    echo "Using existing Silver generated files: ${params.SILVER_GEN}"
+    SILVER_HOST_GEN << "${params.SILVER_GEN}"
+  }
+  newenv << "SILVER_HOST_GEN=${SILVER_HOST_GEN.join(':')}"
 
   stage ("Build") {
 
@@ -21,6 +27,7 @@ melt.trynode('ableC') {
     }
   }
 
+  /* Disabled for now, due to issues with getting nailgun to run.
   stage ("Test") {
     dir("testing/expected-results") {
       withEnv(newenv) {
@@ -28,6 +35,11 @@ melt.trynode('ableC') {
       }
     }
   }
+  */
+
+  // Avoid deadlock condition from all executors being filled with builds
+  // that are waiting for downstream builds to finish.
+  waitUntil { melt.isExecutorAvailable() }
 
   stage ("Integration") {
     // All known, stable extensions to build downstream

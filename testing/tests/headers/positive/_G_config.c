@@ -1,24 +1,156 @@
-/* This file is needed by libio to define various configuration parameters.
-   These are always the same in the GNU C library.  */
+# 1 "_G_config.c"
+# 1 "<built-in>"
+# 1 "<command-line>"
+# 1 "/usr/include/stdc-predef.h" 1 3 4
+# 1 "<command-line>" 2
+# 1 "_G_config.c"
+# 9 "_G_config.c"
+# 1 "/usr/include/x86_64-linux-gnu/bits/types.h" 1 3 4
+# 26 "/usr/include/x86_64-linux-gnu/bits/types.h" 3 4
+# 1 "/usr/include/features.h" 1 3 4
+# 367 "/usr/include/features.h" 3 4
+# 1 "/usr/include/x86_64-linux-gnu/sys/cdefs.h" 1 3 4
+# 410 "/usr/include/x86_64-linux-gnu/sys/cdefs.h" 3 4
+# 1 "/usr/include/x86_64-linux-gnu/bits/wordsize.h" 1 3 4
+# 411 "/usr/include/x86_64-linux-gnu/sys/cdefs.h" 2 3 4
+# 368 "/usr/include/features.h" 2 3 4
+# 391 "/usr/include/features.h" 3 4
+# 1 "/usr/include/x86_64-linux-gnu/gnu/stubs.h" 1 3 4
+# 10 "/usr/include/x86_64-linux-gnu/gnu/stubs.h" 3 4
+# 1 "/usr/include/x86_64-linux-gnu/gnu/stubs-64.h" 1 3 4
+# 11 "/usr/include/x86_64-linux-gnu/gnu/stubs.h" 2 3 4
+# 392 "/usr/include/features.h" 2 3 4
+# 27 "/usr/include/x86_64-linux-gnu/bits/types.h" 2 3 4
+# 1 "/usr/include/x86_64-linux-gnu/bits/wordsize.h" 1 3 4
+# 28 "/usr/include/x86_64-linux-gnu/bits/types.h" 2 3 4
 
-#ifndef _G_config_h
-#define _G_config_h 1
 
-/* Define types for libio in terms of the standard internal type names.  */
+typedef unsigned char __u_char;
+typedef unsigned short int __u_short;
+typedef unsigned int __u_int;
+typedef unsigned long int __u_long;
 
-#include <bits/types.h>
-#define __need_size_t
-#if defined _LIBC || defined _GLIBCPP_USE_WCHAR_T
-# define __need_wchar_t
-#endif
-#define __need_NULL
-#include <stddef.h>
-#define __need_mbstate_t
-#if defined _LIBC || defined _GLIBCPP_USE_WCHAR_T
-# define __need_wint_t
-#endif
-#include <wchar.h>
-#define _G_size_t	size_t
+
+typedef signed char __int8_t;
+typedef unsigned char __uint8_t;
+typedef signed short int __int16_t;
+typedef unsigned short int __uint16_t;
+typedef signed int __int32_t;
+typedef unsigned int __uint32_t;
+
+typedef signed long int __int64_t;
+typedef unsigned long int __uint64_t;
+
+
+
+
+
+
+
+typedef long int __quad_t;
+typedef unsigned long int __u_quad_t;
+# 121 "/usr/include/x86_64-linux-gnu/bits/types.h" 3 4
+# 1 "/usr/include/x86_64-linux-gnu/bits/typesizes.h" 1 3 4
+# 122 "/usr/include/x86_64-linux-gnu/bits/types.h" 2 3 4
+
+
+typedef unsigned long int __dev_t;
+typedef unsigned int __uid_t;
+typedef unsigned int __gid_t;
+typedef unsigned long int __ino_t;
+typedef unsigned long int __ino64_t;
+typedef unsigned int __mode_t;
+typedef unsigned long int __nlink_t;
+typedef long int __off_t;
+typedef long int __off64_t;
+typedef int __pid_t;
+typedef struct { int __val[2]; } __fsid_t;
+typedef long int __clock_t;
+typedef unsigned long int __rlim_t;
+typedef unsigned long int __rlim64_t;
+typedef unsigned int __id_t;
+typedef long int __time_t;
+typedef unsigned int __useconds_t;
+typedef long int __suseconds_t;
+
+typedef int __daddr_t;
+typedef int __key_t;
+
+
+typedef int __clockid_t;
+
+
+typedef void * __timer_t;
+
+
+typedef long int __blksize_t;
+
+
+
+
+typedef long int __blkcnt_t;
+typedef long int __blkcnt64_t;
+
+
+typedef unsigned long int __fsblkcnt_t;
+typedef unsigned long int __fsblkcnt64_t;
+
+
+typedef unsigned long int __fsfilcnt_t;
+typedef unsigned long int __fsfilcnt64_t;
+
+
+typedef long int __fsword_t;
+
+typedef long int __ssize_t;
+
+
+typedef long int __syscall_slong_t;
+
+typedef unsigned long int __syscall_ulong_t;
+
+
+
+typedef __off64_t __loff_t;
+typedef __quad_t *__qaddr_t;
+typedef char *__caddr_t;
+
+
+typedef long int __intptr_t;
+
+
+typedef unsigned int __socklen_t;
+# 10 "_G_config.c" 2
+
+
+
+
+
+# 1 "/soft/gcc/4.9.2/ubuntuamd2010/lib/gcc/x86_64-linux-gnu/4.9.2/include/stddef.h" 1 3 4
+# 212 "/soft/gcc/4.9.2/ubuntuamd2010/lib/gcc/x86_64-linux-gnu/4.9.2/include/stddef.h" 3 4
+typedef long unsigned int size_t;
+# 16 "_G_config.c" 2
+
+
+
+
+# 1 "/usr/include/wchar.h" 1 3 4
+# 82 "/usr/include/wchar.h" 3 4
+typedef struct
+{
+  int __count;
+  union
+  {
+
+    unsigned int __wch;
+
+
+
+    char __wchb[4];
+  } __value;
+} __mbstate_t;
+# 21 "_G_config.c" 2
+
 typedef struct
 {
   __off_t __pos;
@@ -29,73 +161,8 @@ typedef struct
   __off64_t __pos;
   __mbstate_t __state;
 } _G_fpos64_t;
-#define _G_ssize_t	__ssize_t
-#define _G_off_t	__off_t
-#define _G_off64_t	__off64_t
-#define	_G_pid_t	__pid_t
-#define	_G_uid_t	__uid_t
-#define _G_wchar_t	wchar_t
-#define _G_wint_t	wint_t
-#define _G_stat64	stat64
-#if defined _LIBC || defined _GLIBCPP_USE_WCHAR_T
-# include <gconv.h>
-typedef union
-{
-  struct __gconv_info __cd;
-  struct
-  {
-    struct __gconv_info __cd;
-    struct __gconv_step_data __data;
-  } __combined;
-} _G_iconv_t;
-#endif
-
+# 53 "_G_config.c"
 typedef int _G_int16_t __attribute__ ((__mode__ (__HI__)));
 typedef int _G_int32_t __attribute__ ((__mode__ (__SI__)));
 typedef unsigned int _G_uint16_t __attribute__ ((__mode__ (__HI__)));
 typedef unsigned int _G_uint32_t __attribute__ ((__mode__ (__SI__)));
-
-#define _G_HAVE_BOOL 1
-
-
-/* These library features are always available in the GNU C library.  */
-#define _G_HAVE_ATEXIT 1
-#define _G_HAVE_SYS_CDEFS 1
-#define _G_HAVE_SYS_WAIT 1
-#define _G_NEED_STDARG_H 1
-#define _G_va_list __gnuc_va_list
-
-#define _G_HAVE_PRINTF_FP 1
-#define _G_HAVE_MMAP 1
-#define _G_HAVE_MREMAP 1
-#define _G_HAVE_LONG_DOUBLE_IO 1
-#define _G_HAVE_IO_FILE_OPEN 1
-#define _G_HAVE_IO_GETLINE_INFO 1
-
-#define _G_IO_IO_FILE_VERSION 0x20001
-
-#define _G_OPEN64	__open64
-#define _G_LSEEK64	__lseek64
-#define _G_MMAP64	__mmap64
-#define _G_FSTAT64(fd,buf) __fxstat64 (_STAT_VER, fd, buf)
-
-/* This is defined by <bits/stat.h> if `st_blksize' exists.  */
-#define _G_HAVE_ST_BLKSIZE defined (_STATBUF_ST_BLKSIZE)
-
-#define _G_BUFSIZ 8192
-
-/* These are the vtbl details for ELF.  */
-#define _G_NAMES_HAVE_UNDERSCORE 0
-#define _G_VTABLE_LABEL_HAS_LENGTH 1
-#define _G_USING_THUNKS	1
-#define _G_VTABLE_LABEL_PREFIX "__vt_"
-#define _G_VTABLE_LABEL_PREFIX_ID __vt_
-
-
-#if defined __cplusplus || defined __STDC__
-# define _G_ARGS(ARGLIST) ARGLIST
-#else
-# define _G_ARGS(ARGLIST) ()
-#endif
-
-#endif	/* _G_config.h */

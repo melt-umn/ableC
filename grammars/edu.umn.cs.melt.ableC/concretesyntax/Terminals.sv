@@ -19,20 +19,9 @@ lexer class AbleC
   prefix separator "::";
 
 {--
- - Fonts for legacy eclipse IDE plugin
- -}
-temp_imp_ide_font font_all color(160, 32, 240) bold;
-temp_imp_ide_font font_type color(34, 139, 34) bold;
-temp_imp_ide_font font_string color(139, 34, 82) italic;
-temp_imp_ide_font font_comments color(178, 34, 34) italic;
-temp_imp_ide_font font_special_symbol color(71, 71, 141);
-temp_imp_ide_font font_equal color(71, 71, 141) bold;
-
-
-{--
  - Comments and whitespace
  -}
-lexer class Comment extends AbleC, font = font_comments;
+lexer class Comment extends {AbleC, lsp:Comment};
 
 -- The C preprocessor strips these for us, but handle them here for completeness.
 ignore terminal LineComment_t
@@ -68,7 +57,7 @@ terminal TypeName_t   /[A-Za-z_\$][A-Za-z_0-9\$]*/ lexer classes {Type, Identifi
 {--
  - Literals
  -}
-lexer class NumericLiteral extends AbleC;
+lexer class NumericLiteral extends {AbleC, lsp:Number};
 
 -- Begins with 1-9 or is just 0 alone
 terminal DecConstant_t /((0)|([1-9][0-9]*))/ lexer classes {NumericLiteral};
@@ -143,7 +132,7 @@ terminal HexFloatConstantFloat_t /0[xX](([a-fA-F0-9]+[.]?)|([a-fA-F0-9]*[.][a-fA
 terminal HexFloatConstantLongDouble_t /0[xX](([a-fA-F0-9]+[.]?)|([a-fA-F0-9]*[.][a-fA-F0-9]+))([Pp][-+]?[0-9]+)[Ll]/ lexer classes {NumericLiteral};
 
 
-lexer class StringLiteral extends AbleC, font = font_string;
+lexer class StringLiteral extends {AbleC, lsp:String_};
 
 terminal StringConstant_t      /["]([^"\\]|[\\].)*["]/ lexer classes {StringLiteral};
 terminal StringConstantU8_t  /u8["]([^"\\]|[\\].)*["]/ lexer classes {StringLiteral};
@@ -151,10 +140,10 @@ terminal StringConstantL_t    /L["]([^"\\]|[\\].)*["]/ lexer classes {StringLite
 terminal StringConstantU_t    /u["]([^"\\]|[\\].)*["]/ lexer classes {StringLiteral};
 terminal StringConstantUBig_t /U["]([^"\\]|[\\].)*["]/ lexer classes {StringLiteral};
 
-terminal CharConstant_t      /[']([^']|[\\].)[']/ lexer classes {StringLiteral};
-terminal CharConstantL_t    /L[']([^']|[\\].)[']/ lexer classes {StringLiteral};
-terminal CharConstantU_t    /u[']([^']|[\\].)[']/ lexer classes {StringLiteral};
-terminal CharConstantUBig_t /U[']([^']|[\\].)[']/ lexer classes {StringLiteral};
+terminal CharConstant_t     /[']([^'\\]|[\\](['"?\\abfnrtv]|[0-7]+|x[0-9A-Fa-f]+|u[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f]|U[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f]))[']/ lexer classes {StringLiteral};
+terminal CharConstantL_t    /L[']([^'\\]|[\\](['"?\\abfnrtv]|[0-7]+|x[0-9A-Fa-f]+|u[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f]|U[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f]))[']/ lexer classes {StringLiteral};
+terminal CharConstantU_t    /u[']([^'\\]|[\\](['"?\\abfnrtv]|[0-7]+|x[0-9A-Fa-f]+|u[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f]|U[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f]))[']/ lexer classes {StringLiteral};
+terminal CharConstantUBig_t /U[']([^'\\]|[\\](['"?\\abfnrtv]|[0-7]+|x[0-9A-Fa-f]+|u[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f]|U[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f]))[']/ lexer classes {StringLiteral};
 
 
 {--
@@ -169,12 +158,12 @@ terminal CharConstantUBig_t /U[']([^']|[\\].)[']/ lexer classes {StringLiteral};
  - Note that Reserved doesn't extend AbleC, other host languages/extensions using AbleC
  - as a DSL may define terminals in this lexer class.
  -}
-lexer class Keyword extends AbleC, font = font_all;
+lexer class Keyword extends {AbleC, lsp:Keyword};
 lexer class Reserved;
 
 
 -- types
-lexer class Type extends AbleC, font = font_type;
+lexer class Type extends {AbleC, lsp:Type};
 
 terminal Char_t     'char'     lexer classes {Type, Reserved};
 terminal Double_t   'double'   lexer classes {Type, Reserved};
@@ -195,19 +184,19 @@ terminal Struct_t 'struct' lexer classes {Keyword, Reserved};
 terminal Union_t  'union'  lexer classes {Keyword, Reserved};
 
 -- Qualifiers
-terminal Const_t    'const'    lexer classes {Keyword, Reserved};
-terminal Volatile_t 'volatile' lexer classes {Keyword, Reserved};
-terminal Restrict_t 'restrict' lexer classes {Keyword, Reserved}; -- c99
+terminal Const_t    'const'    lexer classes {Keyword, Reserved, lsp:Modification};
+terminal Volatile_t 'volatile' lexer classes {Keyword, Reserved, lsp:Modification};
+terminal Restrict_t 'restrict' lexer classes {Keyword, Reserved, lsp:Modification}; -- c99
 
 -- Function specifiers
-terminal Inline_t   'inline'   lexer classes {Keyword, Reserved}; -- c99
+terminal Inline_t   'inline'   lexer classes {Keyword, Reserved, lsp:Modification}; -- c99
 
 -- Storage class specifiers
-terminal Auto_t     'auto'     lexer classes {Keyword, Reserved};
-terminal Extern_t   'extern'   lexer classes {Keyword, Reserved};
-terminal Register_t 'register' lexer classes {Keyword, Reserved};
-terminal Static_t   'static'   lexer classes {Keyword, Reserved};
-terminal Typedef_t  'typedef'  lexer classes {Keyword, Reserved};
+terminal Auto_t     'auto'     lexer classes {Keyword, Reserved, lsp:Modification};
+terminal Extern_t   'extern'   lexer classes {Keyword, Reserved, lsp:Modification};
+terminal Register_t 'register' lexer classes {Keyword, Reserved, lsp:Modification};
+terminal Static_t   'static'   lexer classes {Keyword, Reserved, lsp:Modification};
+terminal Typedef_t  'typedef'  lexer classes {Keyword, Reserved, lsp:Modification};
 
 -- Statement keywords
 terminal Break_t    'break'    lexer classes {Keyword, Reserved};
@@ -257,7 +246,7 @@ disambiguate LCurly_t, TypeLCurly_t {
   pluck if allowStructEnumUnionDecl then TypeLCurly_t else LCurly_t;
 }
 
-lexer class Operator extends AbleC, font = font_special_symbol;
+lexer class Operator extends {AbleC, lsp:Operator};
 
 terminal Question_t    '?'    lexer classes {Operator};
 terminal Colon_t       ':'    lexer classes {Operator};
@@ -267,7 +256,7 @@ terminal Dot_t         '.'    lexer classes {Operator};
 terminal PtrDot_t      '->'   lexer classes {Operator};
 
 -- Assignment operators
-lexer class Assignment extends Operator, font = font_equal;
+lexer class Assignment extends Operator;
 
 terminal Assign_t       '='     lexer classes {Assignment};
 terminal RightAssign_t  '>>='   lexer classes {Assignment};
