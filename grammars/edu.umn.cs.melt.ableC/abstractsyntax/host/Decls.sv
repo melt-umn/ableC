@@ -230,6 +230,7 @@ top::Decl ::= s::String
 }
 
 -- Useful for extensions
+-- Note that we assume expressions will lift any declarations needed for the host type expression.
 abstract production autoDecl
 top::Decl ::= n::Name  e::Expr
 {
@@ -251,6 +252,30 @@ top::Decl ::= n::Name  e::Expr
   top.errors <- n.valueRedeclarationCheckNoCompatible;
   top.defs <- [valueDef(n.name, autoValueItem(e))];
 }
+
+-- Any declarations needed by the type must have already been lifted!
+abstract production preDecl
+top::Decl ::= ty::Type  n::Name
+{
+  propagate env, errors, globalDecls, functionDecls, defs, freeVariables;
+  top.pp = pp"predecl ${ty.lpp} ${n.pp}${ty.rpp};";
+  top.host =
+    variableDecls(
+      nilStorageClass(),
+      nilAttribute(),
+      ty.host.baseTypeExpr,
+      consDeclarator(
+        declarator(
+          n,
+          ty.host.typeModifierExpr,
+          nilAttribute(),
+          nothingInitializer()),
+        nilDeclarator()));
+
+  top.errors <- n.valueRedeclarationCheckNoCompatible;
+  top.defs <- [valueDef(n.name, preDeclValueItem(ty))];
+}
+
 
 monoid attribute hasModifiedTypeExpr::Boolean with false, ||;
 synthesized attribute hostDecls::[Decl];

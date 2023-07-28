@@ -85,6 +85,13 @@ top::ValueItem ::= e::Decorated Expr
   top.isItemValue = true;
 }
 
+abstract production preDeclValueItem
+top::ValueItem ::= ty::Type
+{
+  top.typerep = ty;
+  top.isItemValue = true;
+}
+
 abstract production errorValueItem
 top::ValueItem ::=
 {

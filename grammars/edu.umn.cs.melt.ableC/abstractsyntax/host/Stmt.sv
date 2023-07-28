@@ -85,28 +85,6 @@ top::Stmt ::= d::Decl
   d.isTopLevel = false;
 }
 
--- Most common use case, makes things easier for extensions
--- TODO: Remove this, duplicate of DeclHelpers.sv
-abstract production basicVarDeclStmt
-top::Stmt ::= t::Type n::Name init::Expr
-{
-  propagate env;
-
-  forwards to
-    declStmt(
-      variableDecls(
-        nilStorageClass(), nilAttribute(),
-        directTypeExpr(t),
-        consDeclarator(
-          declarator(
-            n,
-            baseTypeExpr(),
-            nilAttribute(),
-            justInitializer(exprInitializer(init))),
-          nilDeclarator())));
-
-}
-
 abstract production exprStmt
 top::Stmt ::= d::Expr
 {
@@ -146,11 +124,10 @@ top::Stmt ::= c::Expr  t::Stmt  e::Stmt
 abstract production ifStmtNoElse
 top::Stmt ::= c::Expr  t::Stmt
 {
-  propagate env;
   top.pp = ppConcat([
     text("if"), space(), parens(c.pp), line(),
     braces(nestlines(2, t.pp)) ]);
-  forwards to ifStmt(c, t, nullStmt());
+  forwards to ifStmt(@c, @t, nullStmt());
 }
 
 abstract production whileStmt
