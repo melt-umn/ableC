@@ -41,7 +41,7 @@ ControlStmtContext ::= cur::ControlStmtContext labs::[(String, LabelItem)]
                           tm:add(labs, cur.labels));
 }
 
-nonterminal LabelItem;
+tracked nonterminal LabelItem;
 monoid attribute labelDefs :: [(String, LabelItem)];
 
 -- Note that we unfortunately can't include a reference to the labeled statement here, since these

@@ -777,7 +777,7 @@ top::StructDecl ::= attrs::Attributes  name::MaybeName  dcls::StructItemList
   local maybeAttribRefIdName::Maybe<String> = orElse(attrs.maybeRefId, top.givenRefId);
   -- Derive the default refId from the location - this needs to be fixed since
   -- we don't have a tag name available for the lookup.
-  local loc::Location = fromMaybe(error("Struct decl doesn't have an origin?"), getParsedOriginLocation(top));
+  local loc::Location = fromMaybe(error("Anon struct decl doesn't have an origin?"), getParsedOriginLocation(top));
   name.anonTagRefId =
     flatMap(\ s::String -> if isAlpha(s) || isDigit(s) then s else "_", explode("", loc.filename)) ++
     "_" ++ toString(loc.line) ++ "_" ++ toString(loc.column);
@@ -832,7 +832,7 @@ top::UnionDecl ::= attrs::Attributes  name::MaybeName  dcls::StructItemList
     text("}")]);
 
   local maybeAttribRefIdName::Maybe<String> = orElse(attrs.maybeRefId, top.givenRefId);
-  local loc::Location = fromMaybe(error("Union decl doesn't have an origin?"), getParsedOriginLocation(top));
+  local loc::Location = fromMaybe(error("Anon union decl doesn't have an origin?"), getParsedOriginLocation(top));
   name.anonTagRefId =
     flatMap(\ s::String -> if isAlpha(s) || isDigit(s) then s else "_", explode("", loc.filename)) ++
     "_" ++ toString(loc.line) ++ "_" ++ toString(loc.column);

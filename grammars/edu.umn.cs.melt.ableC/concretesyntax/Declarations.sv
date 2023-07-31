@@ -525,7 +525,7 @@ concrete productions top::PostfixModifier_c
 
 
 
-closed nonterminal OptTypeQualifierList_c with location, typeQualifiers, attributes;
+closed tracked nonterminal OptTypeQualifierList_c with typeQualifiers, attributes;
 concrete productions top::OptTypeQualifierList_c
 |
   operator=CPP_Attr_LowerPrec_t
