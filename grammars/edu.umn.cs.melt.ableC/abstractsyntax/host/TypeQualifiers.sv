@@ -141,7 +141,7 @@ top::Qualifier ::=
  - e.g. Function specifiers (inline, _Noreturn)
  -      Alignment specifiers (_Alignas)
  -}
-nonterminal SpecialSpecifier with pp, host, env, errors, globalDecls,
+tracked nonterminal SpecialSpecifier with pp, host, env, errors, globalDecls,
   functionDecls, defs, controlStmtContext;
 flowtype SpecialSpecifier = decorate {env, controlStmtContext};
 
@@ -167,7 +167,7 @@ top::SpecialSpecifier ::= e::Expr
   top.pp = ppConcat([text("_Alignas"), parens(e.pp)]);
 }
 
-nonterminal SpecialSpecifiers with pps, host, env, errors,
+tracked nonterminal SpecialSpecifiers with pps, host, env, errors,
   globalDecls, functionDecls, defs, controlStmtContext;
 flowtype SpecialSpecifiers = decorate {env, controlStmtContext};
 

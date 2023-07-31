@@ -541,7 +541,7 @@ top::ExtType ::= kwd::StructOrEnumOrUnion  mn::Maybe<String>  refId::String
   top.maybeRefId := just(refId);
 }
 
-nonterminal StructOrEnumOrUnion with pp, mangledName; -- Silver enums would be nice.
+data nonterminal StructOrEnumOrUnion with pp, mangledName; -- Silver enums would be nice.
 abstract production structSEU
 top::StructOrEnumOrUnion ::= { top.pp = text("struct"); top.mangledName = "struct"; }
 abstract production unionSEU

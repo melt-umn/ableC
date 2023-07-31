@@ -86,7 +86,7 @@ inherited attribute anonTagRefId::String;
 synthesized attribute maybename :: Maybe<Name>;
 synthesized attribute hasName :: Boolean;
 
-nonterminal MaybeName with maybename, pp, host, env, valueLocalLookup, tagLocalLookup, tagHasForwardDcl, anonTagRefId, tagRefId, hasName, valueRedeclarationCheckNoCompatible, valueRedeclarationCheck, valueMergeRedeclExtnQualifiers;
+tracked nonterminal MaybeName with maybename, pp, host, env, valueLocalLookup, tagLocalLookup, tagHasForwardDcl, anonTagRefId, tagRefId, hasName, valueRedeclarationCheckNoCompatible, valueRedeclarationCheck, valueMergeRedeclExtnQualifiers;
 flowtype MaybeName = decorate {env}, maybename {}, hasName {}, valueLocalLookup {env}, tagLocalLookup {env}, tagHasForwardDcl {env}, tagRefId {anonTagRefId, env}, valueRedeclarationCheckNoCompatible {decorate}, valueRedeclarationCheck {decorate}, valueMergeRedeclExtnQualifiers {decorate};
 
 abstract production justName
@@ -128,7 +128,7 @@ synthesized attribute names :: [String];
 inherited attribute appendedNames :: Names;
 synthesized attribute appendedNamesRes :: Names;
 
-nonterminal Names with env, pps, names, count, appendedNames, appendedNamesRes;
+tracked nonterminal Names with env, pps, names, count, appendedNames, appendedNamesRes;
 flowtype Names = decorate {env}, pps {}, names {}, count {}, appendedNamesRes {appendedNames};
 
 propagate env on Names;

@@ -3,7 +3,7 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 propagate host on AsmStatement, AsmArgument, AsmClobbers, AsmOperands, AsmOperand;
 propagate env, controlStmtContext on AsmStatement, AsmArgument, AsmOperands, AsmOperand;
 
-nonterminal AsmStatement with pp, host, env, controlStmtContext, freeVariables;
+tracked nonterminal AsmStatement with pp, host, env, controlStmtContext, freeVariables;
 flowtype AsmStatement = decorate {env, controlStmtContext};
 
 abstract production asmStatement
@@ -20,7 +20,7 @@ a::AsmStatement ::= tq::Qualifier arg::AsmArgument
   a.freeVariables := arg.freeVariables;
 }
 
-nonterminal AsmArgument with pp, host, env, controlStmtContext, freeVariables;
+tracked nonterminal AsmArgument with pp, host, env, controlStmtContext, freeVariables;
 flowtype AsmArgument = decorate {env, controlStmtContext};
 
 abstract production asmArgument
@@ -39,7 +39,7 @@ top::AsmArgument ::= s::String asmOps1::AsmOperands asmOps2::AsmOperands asmC::A
 
 synthesized attribute exists::Boolean;
 
-nonterminal AsmClobbers with pp, exists, host;
+tracked nonterminal AsmClobbers with pp, exists, host;
 flowtype AsmClobbers = decorate {}, exists {};
 
 abstract production noneAsmClobbers
@@ -61,7 +61,7 @@ top::AsmClobbers ::= asmC::AsmClobbers s::String
   top.pp = ppConcat( [asmC.pp, text(", "), text(s) ] );
 }
 
-nonterminal AsmOperands with pp, exists, host, env, controlStmtContext, freeVariables;
+tracked nonterminal AsmOperands with pp, exists, host, env, controlStmtContext, freeVariables;
 flowtype AsmOperands = decorate {env, controlStmtContext}, exists {};
 
 abstract production noneAsmOps
@@ -86,7 +86,7 @@ top::AsmOperands ::= asmOps::AsmOperands asmOp::AsmOperand
   top.freeVariables := asmOp.freeVariables ++ asmOps.freeVariables;
 }
 
-nonterminal AsmOperand with pp, host, env, controlStmtContext, freeVariables;
+tracked nonterminal AsmOperand with pp, host, env, controlStmtContext, freeVariables;
 flowtype AsmOperand = decorate {env, controlStmtContext};
 
 abstract production asmOperand

@@ -131,7 +131,7 @@ top::TypeName ::= ty::Decorated TypeName
 {--
  - Corresponds to types obtainable from a TypeSpecifiers.
  -}
-nonterminal BaseTypeExpr with env, typerep, pp, host, errors, globalDecls,
+tracked nonterminal BaseTypeExpr with env, typerep, pp, host, errors, globalDecls,
   functionDecls, typeModifier, decls, defs, givenRefId, freeVariables,
   controlStmtContext;
 flowtype BaseTypeExpr = decorate {env, givenRefId, controlStmtContext},

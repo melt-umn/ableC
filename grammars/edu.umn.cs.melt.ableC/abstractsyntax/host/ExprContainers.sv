@@ -1,6 +1,6 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 
-nonterminal MaybeExpr with pp, host, isJust, errors, globalDecls, functionDecls,
+tracked nonterminal MaybeExpr with pp, host, isJust, errors, globalDecls, functionDecls,
   defs, env, maybeTyperep, freeVariables, justTheExpr, isLValue,
   integerConstantValue, controlStmtContext;
 
@@ -34,7 +34,7 @@ top::MaybeExpr ::=
   implicit top.integerConstantValue = ;
 }
 
-nonterminal Exprs with pps, host, errors, globalDecls, functionDecls, defs, env,
+tracked nonterminal Exprs with pps, host, errors, globalDecls, functionDecls, defs, env,
   expectedTypes, argumentPosition, callExpr, argumentErrors, typereps, count,
   callVariadic, freeVariables, appendedExprs, appendedRes, isLValue,
   controlStmtContext;
@@ -139,7 +139,7 @@ Exprs ::= e1::Exprs e2::Exprs
   return e1.appendedRes;
 }
 
-nonterminal ExprOrTypeName with pp, host, errors, globalDecls, functionDecls,
+tracked nonterminal ExprOrTypeName with pp, host, errors, globalDecls, functionDecls,
   defs, env, typerep, freeVariables, isLValue, controlStmtContext;
 
 flowtype ExprOrTypeName = decorate {env, controlStmtContext};

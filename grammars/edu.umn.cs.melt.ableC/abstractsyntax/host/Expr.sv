@@ -438,7 +438,7 @@ top::Expr ::= e::Expr  gl::GenericAssocs  def::MaybeExpr
   -- TODO: type checking!!
 }
 
-nonterminal GenericAssocs with pps, host, errors, globalDecls, functionDecls,
+tracked nonterminal GenericAssocs with pps, host, errors, globalDecls, functionDecls,
   defs, env, selectionType, compatibleSelections, freeVariables,
   controlStmtContext;
 flowtype GenericAssocs = decorate {env, controlStmtContext},
@@ -461,7 +461,7 @@ top::GenericAssocs ::=
   top.pps = [];
 }
 
-nonterminal GenericAssoc with pp, host, globalDecls, functionDecls,
+tracked nonterminal GenericAssoc with pp, host, globalDecls, functionDecls,
   errors, defs, env, selectionType, compatibleSelections, freeVariables, 
   controlStmtContext;
 flowtype GenericAssoc = decorate {env, controlStmtContext},

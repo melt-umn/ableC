@@ -28,7 +28,7 @@ synthesized attribute finalPP::Document;
 -- functions that given an error return false if the error should be dropped
 synthesized attribute srcErrorFilters::[(Boolean ::= Message)] with ++;
 synthesized attribute hostErrorFilters::[(Boolean ::= Message)] with ++;
-nonterminal Compilation with srcAst, hostAst, srcPP, hostPP, finalPP, errors, env, srcErrorFilters, hostErrorFilters;
+tracked nonterminal Compilation with srcAst, hostAst, srcPP, hostPP, finalPP, errors, env, srcErrorFilters, hostErrorFilters;
 flowtype Compilation = decorate {env}, srcAst {}, hostAst {env}, srcPP {}, hostPP {env}, finalPP {env};
 
 abstract production compilation
@@ -69,7 +69,7 @@ top::Compilation ::= srcAst::Root
 
    I'm not sure this would help much, but something to ponder.
 
-nonterminal TranslationUnits with pp, errors;
+tracked nonterminal TranslationUnits with pp, errors;
 
 abstract production consTranslationUnit
 top::TranslationUnits ::= ts::TranslationUnit rest::TranslationUnits 
@@ -81,7 +81,7 @@ top::TranslationUnits ::=
 {
 }
 
-nonterminal TranslationUnit with pp, errors;
+tracked nonterminal TranslationUnit with pp, errors;
 
 abstract production translationUnit
 top::TranslationUnit ::= d::Decl

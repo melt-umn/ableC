@@ -7,7 +7,7 @@ inherited attribute inObject::Boolean;
 propagate host, errors, globalDecls, functionDecls, defs on MaybeInitializer, Initializer, InitList, Init, Designator;
 propagate freeVariables on MaybeInitializer, Initializer, Init, Designator;
 
-nonterminal MaybeInitializer with pp, host, typerep, errors, globalDecls,
+tracked nonterminal MaybeInitializer with pp, host, typerep, errors, globalDecls,
   functionDecls, defs, env, expectedType, freeVariables, controlStmtContext;
 flowtype MaybeInitializer = decorate {env, expectedType, controlStmtContext};
 
@@ -123,7 +123,7 @@ monoid attribute maxIndex::Integer with -1, max;
 
 inherited attribute tagEnvIn::Decorated Env;
 
-nonterminal InitList with pps, initIndex, initIndexOut, maxIndex, host, typerep,
+tracked nonterminal InitList with pps, initIndex, initIndexOut, maxIndex, host, typerep,
   errors, globalDecls, functionDecls, defs, env, expectedType, expectedTypes,
   nestedInits, tagEnvIn, freeVariables, controlStmtContext;
 flowtype InitList = decorate {initIndex, env, expectedType, expectedTypes, tagEnvIn,
@@ -161,7 +161,7 @@ top::InitList ::=
   top.freeVariables := [];
 }
 
-nonterminal Init with pp, initIndex, initIndexOut, maxIndex, host, errors,
+tracked nonterminal Init with pp, initIndex, initIndexOut, maxIndex, host, errors,
   globalDecls, functionDecls, defs, env, expectedType, expectedTypes, expectedTypesOut,
   nestedInits, nestedInitsOut, tagEnvIn, freeVariables, controlStmtContext;
 flowtype Init = decorate {initIndex, env, expectedType, expectedTypes, tagEnvIn,
@@ -223,7 +223,7 @@ top::Init ::= d::Designator  i::Initializer
  - Tree access pattern for designators.
  - e.g.  "[1].d[0] = e" gives "array(0, field(d, array(1, initial)))"
  -}
-nonterminal Designator with pp, maxIndex, host, errors, globalDecls, functionDecls,
+tracked nonterminal Designator with pp, maxIndex, host, errors, globalDecls, functionDecls,
   defs, env, expectedType, expectedTypesOut, typerep, freeVariables, controlStmtContext;
 flowtype Designator = decorate {env, expectedType, controlStmtContext},
   maxIndex {decorate}, expectedTypesOut {decorate};

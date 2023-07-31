@@ -37,7 +37,7 @@ top::GlobalDecls ::=
   top.pps = [];
 }
 
-nonterminal Decls with pps, host, errors, globalDecls, functionDecls, unfoldedGlobalDecls,
+tracked nonterminal Decls with pps, host, errors, globalDecls, functionDecls, unfoldedGlobalDecls,
   unfoldedFunctionDecls, defs, env, isTopLevel, freeVariables,
   controlStmtContext;
 flowtype Decls = decorate {env, isTopLevel, controlStmtContext};
@@ -76,7 +76,7 @@ Decls ::= d1::Decls d2::Decls
 }
 
 
-nonterminal Decl with pp, host, errors, globalDecls, functionDecls, unfoldedGlobalDecls,
+tracked nonterminal Decl with pp, host, errors, globalDecls, functionDecls, unfoldedGlobalDecls,
   unfoldedFunctionDecls, defs, env, isTopLevel, freeVariables, controlStmtContext;
 flowtype Decl = decorate {env, isTopLevel, controlStmtContext};
 
@@ -599,7 +599,7 @@ top::FunctionDecl ::= msg::[Message]
 synthesized attribute len::Integer;
 inherited attribute position::Integer;
 
-nonterminal Parameters with typereps, pps, count, host, errors, globalDecls,
+tracked nonterminal Parameters with typereps, pps, count, host, errors, globalDecls,
   functionDecls, decls, defs, functionDefs, env, position, freeVariables,
   appendedParameters, appendedParametersRes, controlStmtContext, labelDefs;
 flowtype Parameters = decorate {env, controlStmtContext, position},
@@ -668,7 +668,7 @@ Parameters ::= p1::Parameters p2::Parameters
 -- TODO: move these, later
 synthesized attribute paramname :: Maybe<Name>;
 
-nonterminal ParameterDecl with paramname, typerep, pp, host, errors, globalDecls,
+tracked nonterminal ParameterDecl with paramname, typerep, pp, host, errors, globalDecls,
   functionDecls, decls, defs, functionDefs, env, position,
   freeVariables, controlStmtContext, labelDefs;
 flowtype ParameterDecl = decorate {env, position, controlStmtContext},
@@ -808,7 +808,7 @@ top::StructDecl ::= attrs::Attributes  name::MaybeName  dcls::StructItemList
     else [errFromOrigin(top, "Redeclaration of struct " ++ name.maybename.fromJust.name)];
 }
 
-nonterminal UnionDecl with pp, host, maybename, errors, globalDecls,
+tracked nonterminal UnionDecl with pp, host, maybename, errors, globalDecls,
   functionDecls, defs, env, localDefs, tagEnv, isLast, inAnonStructItem,
   givenRefId, refId, hasConstField, fieldNames, freeVariables,
   controlStmtContext;
@@ -868,7 +868,7 @@ top::UnionDecl ::= attrs::Attributes  name::MaybeName  dcls::StructItemList
     else [errFromOrigin(top, "Redeclaration of union " ++ name.maybename.fromJust.name)];
 }
 
-nonterminal EnumDecl with pp, host, maybename, errors, globalDecls,
+tracked nonterminal EnumDecl with pp, host, maybename, errors, globalDecls,
   functionDecls, defs, env, givenRefId, freeVariables,
   controlStmtContext;
 flowtype EnumDecl = decorate {env, givenRefId, controlStmtContext};
@@ -906,7 +906,7 @@ inherited attribute inStruct::Boolean;
 inherited attribute appendedStructItemList :: StructItemList;
 synthesized attribute appendedStructItemListRes :: StructItemList;
 
-nonterminal StructItemList with pps, host, errors, globalDecls, functionDecls,
+tracked nonterminal StructItemList with pps, host, errors, globalDecls, functionDecls,
   defs, env, localDefs, hasConstField, fieldNames, inStruct, isLast,
   freeVariables, appendedStructItemList, appendedStructItemListRes,
   controlStmtContext;
@@ -961,7 +961,7 @@ synthesized attribute appendedEnumItemListRes :: EnumItemList;
 restricted inherited attribute enumItemValueIn::Integer;
 restricted synthesized attribute enumItemValue::Integer;
 
-nonterminal EnumItemList with pps, host, errors, globalDecls, functionDecls, defs,
+tracked nonterminal EnumItemList with pps, host, errors, globalDecls, functionDecls, defs,
   env, containingEnum, freeVariables, appendedEnumItemList,
   appendedEnumItemListRes, enumItemValueIn, controlStmtContext;
 flowtype EnumItemList = decorate {env, containingEnum, enumItemValueIn,
@@ -1004,7 +1004,7 @@ EnumItemList ::= e1::EnumItemList e2::EnumItemList
   return e1.appendedEnumItemListRes;
 }
 
-nonterminal StructItem with pp, host, errors, globalDecls, functionDecls, defs,
+tracked nonterminal StructItem with pp, host, errors, globalDecls, functionDecls, defs,
   env, localDefs, hasConstField, fieldNames, inStruct, isLast, freeVariables,
   controlStmtContext;
 flowtype StructItem = decorate {env, inStruct, isLast, controlStmtContext},
@@ -1220,7 +1220,7 @@ top::StructDeclarator ::= msg::[Message]
   top.typerep = errorType(); -- TODO fix this? add locaiton maybe?
 }
 
-nonterminal EnumItem with pp, name, host, errors, globalDecls, functionDecls,
+tracked nonterminal EnumItem with pp, name, host, errors, globalDecls, functionDecls,
   defs, env, containingEnum, enumItemValue, enumItemValueIn, typerep,
   freeVariables, controlStmtContext;
 flowtype EnumItem = decorate {env, containingEnum, enumItemValueIn, 
