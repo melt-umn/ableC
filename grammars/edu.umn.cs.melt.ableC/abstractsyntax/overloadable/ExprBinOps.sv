@@ -79,7 +79,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   
   local rewriteProd::Maybe<BinaryProd> =
     if lhs.addressOfProd.isJust || lType.lMulProd.isJust || rType.rMulProd.isJust
-    then just(mkEqRewriteExpr(mulExpr(_, _), _, _))
+    then just(mkEqRewriteExpr(mulExpr, _, _))
     else nothing();
   
   local host::host:Expr =
@@ -129,7 +129,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   
   local rewriteProd::Maybe<BinaryProd> =
     if lhs.addressOfProd.isJust || lType.lDivProd.isJust || rType.rDivProd.isJust
-    then just(mkEqRewriteExpr(divExpr(_, _), _, _))
+    then just(mkEqRewriteExpr(divExpr, _, _))
     else nothing();
   
   local host::host:Expr =
@@ -179,7 +179,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   
   local rewriteProd::Maybe<BinaryProd> =
     if lhs.addressOfProd.isJust || lType.lModProd.isJust || rType.rModProd.isJust
-    then just(mkEqRewriteExpr(modExpr(_, _), _, _))
+    then just(mkEqRewriteExpr(modExpr, _, _))
     else nothing();
   
   local host::host:Expr =
@@ -229,7 +229,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   
   local rewriteProd::Maybe<BinaryProd> =
     if lhs.addressOfProd.isJust || lType.lAddProd.isJust || rType.rAddProd.isJust
-    then just(mkEqRewriteExpr(addExpr(_, _), _, _))
+    then just(mkEqRewriteExpr(addExpr, _, _))
     else nothing();
   
   local host::host:Expr =
@@ -279,7 +279,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   
   local rewriteProd::Maybe<BinaryProd> =
     if lhs.addressOfProd.isJust || lType.lSubProd.isJust || rType.rSubProd.isJust
-    then just(mkEqRewriteExpr(subExpr(_, _), _, _))
+    then just(mkEqRewriteExpr(subExpr, _, _))
     else nothing();
   
   local host::host:Expr =
@@ -329,7 +329,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   
   local rewriteProd::Maybe<BinaryProd> =
     if lhs.addressOfProd.isJust || lType.lLshBitProd.isJust || rType.rLshBitProd.isJust
-    then just(mkEqRewriteExpr(lshExpr(_, _), _, _))
+    then just(mkEqRewriteExpr(lshExpr, _, _))
     else nothing();
   
   local host::host:Expr =
@@ -379,7 +379,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   
   local rewriteProd::Maybe<BinaryProd> =
     if lhs.addressOfProd.isJust || lType.lRshBitProd.isJust || rType.rRshBitProd.isJust
-    then just(mkEqRewriteExpr(rshExpr(_, _), _, _))
+    then just(mkEqRewriteExpr(rshExpr, _, _))
     else nothing();
   
   local host::host:Expr =
@@ -429,7 +429,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   
   local rewriteProd::Maybe<BinaryProd> =
     if lhs.addressOfProd.isJust || lType.lAndProd.isJust || rType.rAndProd.isJust
-    then just(mkEqRewriteExpr(andExpr(_, _), _, _))
+    then just(mkEqRewriteExpr(andExpr, _, _))
     else nothing();
   
   local host::host:Expr =
@@ -480,7 +480,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   
   local rewriteProd::Maybe<BinaryProd> =
     if lhs.addressOfProd.isJust || lType.lAndProd.isJust || rType.rAndProd.isJust
-    then just(mkEqRewriteExpr(xorExpr(_, _), _, _))
+    then just(mkEqRewriteExpr(xorExpr, _, _))
     else nothing();
   
   local host::host:Expr =
@@ -530,7 +530,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   
   local rewriteProd::Maybe<BinaryProd> =
     if lhs.addressOfProd.isJust || lType.lOrProd.isJust || rType.rOrProd.isJust
-    then just(mkEqRewriteExpr(orExpr(_, _), _, _))
+    then just(mkEqRewriteExpr(orExpr, _, _))
     else nothing();
   
   local host::host:Expr =
