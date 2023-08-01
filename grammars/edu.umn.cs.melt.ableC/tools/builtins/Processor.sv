@@ -93,7 +93,7 @@ top::Builtin ::= BUILTIN '(' id::Identifier ',' '"' t::Types dots::MaybeDots '"'
 {
   top.ignoredBuiltins := 
     if t.ignoreMe || indexOf("t", x.lexeme) != -1 || indexOf("u", x.lexeme) != -1 then
-      ["-- Ignored " ++ id.lexeme ++ " on line " ++ toString(getParsedOriginLocationOrFallback(id).line)]
+      ["-- Ignored " ++ id.lexeme ++ " on line " ++ toString(id.location.line)]
       --[]
     else ["d <- [valueDef(\"" ++ id.lexeme ++ "\", builtinFunctionValueItem( {- " ++ debugprint ++ " -}\n    " ++ reflect(new(sig)).translation ++ ",\n    ordinaryFunctionHandler))];" ];
   
