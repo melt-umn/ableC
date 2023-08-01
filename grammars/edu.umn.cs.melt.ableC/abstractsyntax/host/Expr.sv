@@ -403,6 +403,21 @@ top::Expr ::= ty::TypeName  init::InitList
   init.expectedType = ty.typerep;
   init.expectedTypes = fromMaybe([ty.typerep], objectMembers(top.env, ty.typerep));
 }
+-- C11 forbids empty initializer braces, but it is an error to include a scalar if one is
+-- initializing an empty struct (gcc extension.)
+-- This is provided as a convinience that just does the right thing to initialize any type.
+-- TODO: We can get rid of this and just use empty initializers if we adopt C23.
+abstract production defaultInitExpr
+top::Expr ::= t::Type
+{
+  top.pp = pp"<defaultInit>";
+  forwards to compoundLiteralExpr(
+    typeName(directTypeExpr(t), baseTypeExpr()),
+    case objectMembers(top.env, t) of
+    | just([]) -> nilInit()
+    | _ -> consInit(positionalInit(exprInitializer(mkIntConst(0))), nilInit())
+    end);
+}
 abstract production predefinedFuncExpr
 top::Expr ::=
 { -- Currently (C99) just __func__ in functions.
