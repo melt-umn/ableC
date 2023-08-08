@@ -1,19 +1,8 @@
-Positive test       - FAIL: ERROR       tests/kframework/neutral/j009h.c
-Positive test       - PASS:             tests/melt/neutral/typedef-c11-redeclaration.c
+- ERROR       tests/kframework/neutral/j009h.c
+- NO ERROR    tests/melt/neutral/typedef-c11-redeclaration.c
 
-Failures:
-            ERROR
-                        tests/kframework/neutral/j009h.c
-
-Positive tests:
-Pass: 1
-Fail: 1
-
-Negative tests:
-Pass: 0
-Fail: 0
 
 Summary:
-Pass: 1
-Fail: 1
+  1 errored
+  1 did not error
 
