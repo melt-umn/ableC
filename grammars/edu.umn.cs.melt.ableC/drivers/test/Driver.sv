@@ -60,8 +60,8 @@ IO<Integer> ::= theParser::(ParseResult<cst:Root>::=String String)  args::[Strin
     println(s"""
 
 Summary:
-  ${toString(numSuccess)} errored
-  ${toString(length(testFiles) - numSuccess)} did not error
+  ${toString(length(testFiles) - numSuccess)} errored
+  ${toString(numSuccess)} did not error
 """);
     return 0;
   };
