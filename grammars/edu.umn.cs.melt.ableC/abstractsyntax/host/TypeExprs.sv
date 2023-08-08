@@ -268,12 +268,14 @@ top::BaseTypeExpr ::= q::Qualifiers  kwd::StructOrEnumOrUnion  n::Name
 
   local tags :: [TagItem] = lookupTag(n.name, top.env);
 
+  production refId :: String = fromMaybe(n.tagRefId, top.givenRefId);
+
   top.typerep =
     case kwd, tags of
     -- It's an enum and we see the declaration.
     | enumSEU(), enumTagItem(d) :: _ -> extType(q, enumExtType(d))
     -- We don't see the declaration, so we're adding it.
-    | _, [] -> extType(q, refIdExtType(kwd, just(n.name), fromMaybe(n.tagRefId, top.givenRefId)))
+    | _, [] -> extType(q, refIdExtType(kwd, just(n.name), refId))
     -- It's a struct/union and the tag type agrees.
     | structSEU(), refIdTagItem(structSEU(), rid) :: _ -> extType(q, refIdExtType(kwd, just(n.name), rid))
     | unionSEU(), refIdTagItem(unionSEU(), rid) :: _ -> extType(q, refIdExtType(kwd, just(n.name), rid))
@@ -303,7 +305,16 @@ top::BaseTypeExpr ::= q::Qualifiers  kwd::StructOrEnumOrUnion  n::Name
     then
       -- TODO: Ugly way of forward-declaring a tag without overriding an existing definition
       [typedefDecls(
-         nilAttribute(),
+         consAttribute(
+           gccAttribute(
+             consAttrib(
+               appliedAttrib(
+                 attribName(name("refId", location=builtinLoc("host"))),
+                 consExpr(
+                   stringLiteral(s"\"${refId}\"", location=builtinLoc("host")),
+                   nilExpr())),
+               nilAttrib())),
+           nilAttribute()),
          top,
          consDeclarator(
            declarator(
@@ -319,7 +330,7 @@ top::BaseTypeExpr ::= q::Qualifiers  kwd::StructOrEnumOrUnion  n::Name
     -- It's an enum and we see the declaration.
     | enumSEU(), enumTagItem(d) :: _ -> []
     -- We don't see the declaration, so we're adding it.
-    | _, [] -> [tagDef(n.name, refIdTagItem(kwd, fromMaybe(n.tagRefId, top.givenRefId)))]
+    | _, [] -> [tagDef(n.name, refIdTagItem(kwd, refId))]
     -- It's a struct/union and the tag type agrees.
     | structSEU(), refIdTagItem(structSEU(), rid) :: _ -> []
     | unionSEU(), refIdTagItem(unionSEU(), rid) :: _ -> []
@@ -355,6 +366,7 @@ top::BaseTypeExpr ::= q::Qualifiers  def::StructDecl
   -- Avoid re-decorating and re-generating refIds
   top.decls := [typeExprDecl(nilAttribute(), decTypeExpr(top))];
   q.typeToQualify = top.typerep;
+  def.localEnv = emptyEnv();
   def.isLast = true;
   def.inAnonStructItem = false;
 }
@@ -370,6 +382,7 @@ top::BaseTypeExpr ::= q::Qualifiers  def::UnionDecl
   -- Avoid re-decorating and re-generating refIds
   top.decls := [typeExprDecl(nilAttribute(), decTypeExpr(top))];
   q.typeToQualify = top.typerep;
+  def.localEnv = emptyEnv();
   def.isLast = true;
   def.inAnonStructItem = false;
 }

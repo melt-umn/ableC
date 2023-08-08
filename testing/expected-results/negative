@@ -233,6 +233,7 @@
 - ERROR       tests/kframework/negative/j506a.c
 - ERROR       tests/melt/negative/1.c
 - ERROR       tests/melt/negative/bad_array_init.c
+- ERROR       tests/melt/negative/duplicate_anon_struct_field.c
 - ERROR       tests/melt/negative/expr_type_index_1.c
 - ERROR       tests/melt/negative/expr_type_index_2.c
 - ERROR       tests/melt/negative/lvalues_10.c
@@ -262,6 +263,6 @@
 
 
 Summary:
-  115 errored
+  116 errored
   146 did not error
 

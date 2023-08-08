@@ -719,15 +719,15 @@ monoid attribute hasConstField::Boolean with false, ||;
 monoid attribute fieldNames::[Either<String ExtType>];
 
 nonterminal StructDecl with location, pp, host, maybename, errors, globalDecls,
-  functionDecls, defs, env, localDefs, tagEnv, isLast, inAnonStructItem,
+  functionDecls, defs, env, localDefs, localEnv, tagEnv, isLast, inAnonStructItem,
   givenRefId, refId, hasConstField, fieldNames, freeVariables,
   controlStmtContext;
-flowtype StructDecl = decorate {env, isLast, inAnonStructItem, givenRefId,
+flowtype StructDecl = decorate {env, localEnv, isLast, inAnonStructItem, givenRefId,
   controlStmtContext},
   pp {inAnonStructItem}, localDefs {decorate}, tagEnv {decorate},
   refId {decorate}, hasConstField {decorate}, fieldNames {decorate};
 
-propagate host, errors, globalDecls, functionDecls, localDefs, hasConstField, fieldNames, 
+propagate host, errors, globalDecls, functionDecls, localDefs, localEnv, hasConstField, fieldNames, 
   freeVariables, controlStmtContext on StructDecl;
 
 abstract production structDecl
@@ -783,7 +783,7 @@ top::StructDecl ::= attrs::Attributes  name::MaybeName  dcls::StructItemList
 
   attrs.env = top.env;
   name.env = top.env;
-  dcls.env = openScopeEnv(addEnv(preDefs, top.env));
+  dcls.env = addEnv(preDefs, top.env);
   dcls.inStruct = true;
   dcls.isLast = top.isLast;
 
@@ -795,15 +795,15 @@ top::StructDecl ::= attrs::Attributes  name::MaybeName  dcls::StructItemList
 }
 
 nonterminal UnionDecl with location, pp, host, maybename, errors, globalDecls,
-  functionDecls, defs, env, localDefs, tagEnv, isLast, inAnonStructItem,
+  functionDecls, defs, env, localDefs, localEnv, tagEnv, isLast, inAnonStructItem,
   givenRefId, refId, hasConstField, fieldNames, freeVariables,
   controlStmtContext;
-flowtype UnionDecl = decorate {env, isLast, inAnonStructItem, givenRefId,
+flowtype UnionDecl = decorate {env, localEnv, isLast, inAnonStructItem, givenRefId,
   controlStmtContext},
   pp {inAnonStructItem}, localDefs {decorate}, tagEnv {decorate},
   refId {decorate}, hasConstField {decorate}, fieldNames {decorate};
 
-propagate host, errors, globalDecls, functionDecls, localDefs, hasConstField, freeVariables, controlStmtContext on UnionDecl;
+propagate host, errors, globalDecls, functionDecls, localDefs, localEnv, hasConstField, freeVariables, controlStmtContext on UnionDecl;
 
 abstract production unionDecl
 top::UnionDecl ::= attrs::Attributes  name::MaybeName  dcls::StructItemList
@@ -842,7 +842,7 @@ top::UnionDecl ::= attrs::Attributes  name::MaybeName  dcls::StructItemList
 
   attrs.env = top.env;
   name.env = top.env;
-  dcls.env = openScopeEnv(addEnv(preDefs, top.env));
+  dcls.env = addEnv(preDefs, top.env);
   dcls.inStruct = false;
   dcls.isLast = top.isLast;
 
@@ -892,11 +892,10 @@ inherited attribute appendedStructItemList :: StructItemList;
 synthesized attribute appendedStructItemListRes :: StructItemList;
 
 nonterminal StructItemList with pps, host, errors, globalDecls, functionDecls,
-  defs, env, localDefs, hasConstField, fieldNames, inStruct, isLast,
+  defs, env, localDefs, localEnv, hasConstField, fieldNames, inStruct, isLast,
   freeVariables, appendedStructItemList, appendedStructItemListRes,
   controlStmtContext;
-flowtype StructItemList = decorate {env, inStruct, isLast,
-  controlStmtContext},
+flowtype StructItemList = decorate {env, localEnv, inStruct, isLast, controlStmtContext},
   hasConstField {decorate}, fieldNames {decorate}, appendedStructItemListRes {appendedStructItemList};
 
 propagate inStruct, host, errors, globalDecls, functionDecls, defs, localDefs, hasConstField, 
@@ -920,7 +919,9 @@ top::StructItemList ::= h::StructItem  t::StructItemList
      end);
 
   h.env = top.env;
-  t.env = addEnv(h.defs ++ h.localDefs, h.env);
+  t.env = addEnv(h.defs, h.env);
+  h.localEnv = top.localEnv;
+  t.localEnv = addEnv(h.localDefs, h.localEnv);
   t.isLast = top.isLast;
 }
 
@@ -949,8 +950,7 @@ restricted synthesized attribute enumItemValue::Integer;
 nonterminal EnumItemList with pps, host, errors, globalDecls, functionDecls, defs,
   env, containingEnum, freeVariables, appendedEnumItemList,
   appendedEnumItemListRes, enumItemValueIn, controlStmtContext;
-flowtype EnumItemList = decorate {env, containingEnum, enumItemValueIn,
-  controlStmtContext},
+flowtype EnumItemList = decorate {env, containingEnum, enumItemValueIn, controlStmtContext},
   appendedEnumItemListRes {appendedEnumItemList};
 
 inherited attribute containingEnum :: Type;
@@ -990,12 +990,12 @@ EnumItemList ::= e1::EnumItemList e2::EnumItemList
 }
 
 nonterminal StructItem with pp, host, errors, globalDecls, functionDecls, defs,
-  env, localDefs, hasConstField, fieldNames, inStruct, isLast, freeVariables,
+  env, localDefs, localEnv, hasConstField, fieldNames, inStruct, isLast, freeVariables,
   controlStmtContext;
-flowtype StructItem = decorate {env, inStruct, isLast, controlStmtContext},
+flowtype StructItem = decorate {env, localEnv, inStruct, isLast, controlStmtContext},
   hasConstField {decorate}, fieldNames {decorate};
 
-propagate inStruct, errors, globalDecls, functionDecls, defs, freeVariables, localDefs, 
+propagate inStruct, errors, globalDecls, functionDecls, defs, freeVariables, localDefs, localEnv,
   hasConstField, controlStmtContext on StructItem;
 propagate fieldNames on StructItem excluding anonStructStructItem, anonUnionStructItem;
 
@@ -1059,9 +1059,9 @@ synthesized attribute hostStructItems::[StructItem];
 
 nonterminal StructDeclarators with pps, host, hostStructItems, hasModifiedTypeExpr,
   errors, globalDecls, functionDecls, defs, localDefs, hasConstField, fieldNames,
-  env, baseType, inStruct, isLast, typeModifierIn, givenAttributes,
+  env, localEnv, baseType, inStruct, isLast, typeModifierIn, givenAttributes,
   freeVariables, controlStmtContext;
-flowtype StructDeclarators = decorate {env, baseType, inStruct,
+flowtype StructDeclarators = decorate {env, localEnv, baseType, inStruct,
   isLast, typeModifierIn, givenAttributes, controlStmtContext},
   hostStructItems {decorate}, hasModifiedTypeExpr {decorate},
   hasConstField {decorate}, fieldNames {decorate};
@@ -1087,7 +1087,9 @@ top::StructDeclarators ::= h::StructDeclarator  t::StructDeclarators
      end);
 
   h.env = top.env;
-  t.env = addEnv(h.localDefs, h.env);
+  t.env = addEnv(h.defs, h.env);
+  h.localEnv = top.localEnv;
+  t.localEnv = addEnv(h.localDefs, h.localEnv);
   t.isLast = top.isLast;
 }
 abstract production nilStructDeclarator
@@ -1102,14 +1104,14 @@ synthesized attribute hostStructItem::StructItem;
 
 nonterminal StructDeclarator with pps, host, hostStructItem, hasModifiedTypeExpr,
   errors, globalDecls, functionDecls, defs, localDefs, hasConstField, fieldNames,
-  env, typerep, sourceLocation, baseType, inStruct, isLast, typeModifierIn,
+  env, localEnv, typerep, sourceLocation, baseType, inStruct, isLast, typeModifierIn,
   givenAttributes, freeVariables, controlStmtContext;
-flowtype StructDeclarator = decorate {env, baseType, inStruct, isLast,
+flowtype StructDeclarator = decorate {env, localEnv, baseType, inStruct, isLast,
   typeModifierIn, givenAttributes, controlStmtContext},
   hostStructItem {decorate}, hasModifiedTypeExpr {decorate}, hasConstField {decorate},
   fieldNames {decorate};
 
-propagate env, host, errors, globalDecls, functionDecls, defs, freeVariables, typeModifierIn, 
+propagate host, errors, globalDecls, functionDecls, defs, freeVariables, typeModifierIn, 
   baseType, controlStmtContext on StructDeclarator;
 
 abstract production structField
@@ -1145,6 +1147,10 @@ top::StructDeclarator ::= name::Name  ty::TypeModifierExpr  attrs::Attributes
     if !top.typerep.isCompleteType(top.env)
     then [err(top.sourceLocation, s"field ${name.name} has incomplete type")]
     else [];
+
+  name.env = top.localEnv;
+  ty.env = top.env;
+  attrs.env = top.env;
 
   local allAttrs :: Attributes = appendAttribute(top.givenAttributes, attrs);
   allAttrs.env = top.env;
@@ -1192,6 +1198,11 @@ top::StructDeclarator ::= name::MaybeName  ty::TypeModifierExpr  e::Expr  attrs:
     if !top.typerep.isCompleteType(top.env)
     then [err(top.sourceLocation, s"field ${errName} has incomplete type")]
     else [];
+
+  name.env = top.localEnv;
+  ty.env = top.env;
+  e.env = top.env;
+  attrs.env = top.env;
 
   local allAttrs :: Attributes = appendAttribute(top.givenAttributes, attrs);
   allAttrs.env = top.env;
