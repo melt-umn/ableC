@@ -1,3 +1,440 @@
+- NO ERROR    tests/gcc/assemble/positive/pr25706-1.c
+- NO ERROR    tests/gcc/assemble/positive/pr47958-1.c
+- NO ERROR    tests/gcc/assemble/positive/pr54436.c
+- NO ERROR    tests/gcc/assemble/positive/pr56195.c
+- NO ERROR    tests/gcc/compile/positive/20000111-1.c
+- NO ERROR    tests/gcc/compile/positive/20020115-1.c
+- NO ERROR    tests/gcc/compile/positive/20090902-1.c
+- NO ERROR    tests/gcc/compile/positive/980816-1.c
+- NO ERROR    tests/gcc/compile/positive/array-1.c
+- NO ERROR    tests/gcc/compile/positive/attr-alloc_size-2.c
+- NO ERROR    tests/gcc/compile/positive/attr-weak-1.c
+- NO ERROR    tests/gcc/compile/positive/bconstp-1.c
+- NO ERROR    tests/gcc/compile/positive/bconstp-2.c
+- ERROR       tests/gcc/compile/positive/bconstp-3.c
+- NO ERROR    tests/gcc/compile/positive/builtin-strstr.c
+- NO ERROR    tests/gcc/compile/positive/conv-1.c
+- NO ERROR    tests/gcc/compile/positive/decl-6.c
+- NO ERROR    tests/gcc/compile/positive/fail_always_inline.c
+- NO ERROR    tests/gcc/compile/positive/h8300-ice2.c
+- NO ERROR    tests/gcc/compile/positive/loop-1.c
+- NO ERROR    tests/gcc/compile/positive/macro-1.c
+- NO ERROR    tests/gcc/compile/positive/matrix-3.c
+- NO ERROR    tests/gcc/compile/positive/matrix-4.c
+- ERROR       tests/gcc/compile/positive/pack-test-1.c
+- ERROR       tests/gcc/compile/positive/pack-test-2.c
+- NO ERROR    tests/gcc/compile/positive/pack-test-3.c
+- NO ERROR    tests/gcc/compile/positive/pr14092-1.c
+- NO ERROR    tests/gcc/compile/positive/pr15443-1.c
+- NO ERROR    tests/gcc/compile/positive/pr15443-2.c
+- NO ERROR    tests/gcc/compile/positive/pr17036-1.c
+- NO ERROR    tests/gcc/compile/positive/pr19462-1.c
+- NO ERROR    tests/gcc/compile/positive/pr20314-1.c
+- NO ERROR    tests/gcc/compile/positive/pr20314-2.c
+- NO ERROR    tests/gcc/compile/positive/pr21085.c
+- NO ERROR    tests/gcc/compile/positive/pr23424-1.c
+- ERROR       tests/gcc/compile/positive/pr24626-1.c
+- ERROR       tests/gcc/compile/positive/pr24626-2.c
+- ERROR       tests/gcc/compile/positive/pr24626-3.c
+- NO ERROR    tests/gcc/compile/positive/pr25481.c
+- NO ERROR    tests/gcc/compile/positive/pr26672.c
+- NO ERROR    tests/gcc/compile/positive/pr26869.c
+- NO ERROR    tests/gcc/compile/positive/pr26998.c
+- NO ERROR    tests/gcc/compile/positive/pr27409.c
+- NO ERROR    tests/gcc/compile/positive/pr27773.c
+- NO ERROR    tests/gcc/compile/positive/pr28268.c
+- ERROR       tests/gcc/compile/positive/pr28814.c
+- NO ERROR    tests/gcc/compile/positive/pr29119.c
+- NO ERROR    tests/gcc/compile/positive/pr29446.c
+- NO ERROR    tests/gcc/compile/positive/pr29584.c
+- NO ERROR    tests/gcc/compile/positive/pr30313.c
+- NO ERROR    tests/gcc/compile/positive/pr30762-2.c
+- ERROR       tests/gcc/compile/positive/pr31254.c
+- ERROR       tests/gcc/compile/positive/pr31529-2.c
+- NO ERROR    tests/gcc/compile/positive/pr32041.c
+- NO ERROR    tests/gcc/compile/positive/pr33655.c
+- NO ERROR    tests/gcc/compile/positive/pr33691.c
+- NO ERROR    tests/gcc/compile/positive/pr33692.c
+- NO ERROR    tests/gcc/compile/positive/pr33693.c
+- NO ERROR    tests/gcc/compile/positive/pr33695.c
+- NO ERROR    tests/gcc/compile/positive/pr33696.c
+- NO ERROR    tests/gcc/compile/positive/pr33697.c
+- NO ERROR    tests/gcc/compile/positive/pr33724.c
+- NO ERROR    tests/gcc/compile/positive/pr33726.c
+- NO ERROR    tests/gcc/compile/positive/pr34668-2.c
+- NO ERROR    tests/gcc/compile/positive/pr35227.c
+- NO ERROR    tests/gcc/compile/positive/pr35842.c
+- NO ERROR    tests/gcc/compile/positive/pr38957.c
+- NO ERROR    tests/gcc/compile/positive/pr39712.c
+- NO ERROR    tests/gcc/compile/positive/pr43557-2.c
+- NO ERROR    tests/gcc/compile/positive/pr43781.c
+- NO ERROR    tests/gcc/compile/positive/pr44695.c
+- ERROR       tests/gcc/compile/positive/pr44807.c
+- NO ERROR    tests/gcc/compile/positive/pr45461.c
+- ERROR       tests/gcc/compile/positive/pr45732.c
+- NO ERROR    tests/gcc/compile/positive/pr45860.c
+- NO ERROR    tests/gcc/compile/positive/pr45869.c
+- ERROR       tests/gcc/compile/positive/pr46068.c
+- ERROR       tests/gcc/compile/positive/pr46216.c
+- NO ERROR    tests/gcc/compile/positive/pr46723.c
+- NO ERROR    tests/gcc/compile/positive/pr47281.c
+- NO ERROR    tests/gcc/compile/positive/pr47370.c
+- ERROR       tests/gcc/compile/positive/pr47411.c
+- NO ERROR    tests/gcc/compile/positive/pr47677.c
+- NO ERROR    tests/gcc/compile/positive/pr47725.c
+- NO ERROR    tests/gcc/compile/positive/pr47743.c
+- NO ERROR    tests/gcc/compile/positive/pr47744-3.c
+- NO ERROR    tests/gcc/compile/positive/pr47890.c
+- ERROR       tests/gcc/compile/positive/pr48098.c
+- NO ERROR    tests/gcc/compile/positive/pr48493.c
+- NO ERROR    tests/gcc/compile/positive/pr48694-1.c
+- NO ERROR    tests/gcc/compile/positive/pr48694-2.c
+- NO ERROR    tests/gcc/compile/positive/pr48731.c
+- NO ERROR    tests/gcc/compile/positive/pr48822.c
+- NO ERROR    tests/gcc/compile/positive/pr49603.c
+- NO ERROR    tests/gcc/compile/positive/pr50092.c
+- NO ERROR    tests/gcc/compile/positive/pr50333.c
+- NO ERROR    tests/gcc/compile/positive/pr50723.c
+- NO ERROR    tests/gcc/compile/positive/pr50838.c
+- NO ERROR    tests/gcc/compile/positive/pr50890.c
+- NO ERROR    tests/gcc/compile/positive/pr50902.c
+- NO ERROR    tests/gcc/compile/positive/pr51042.c
+- NO ERROR    tests/gcc/compile/positive/pr51070.c
+- ERROR       tests/gcc/compile/positive/pr51071.c
+- NO ERROR    tests/gcc/compile/positive/pr51245.c
+- ERROR       tests/gcc/compile/positive/pr51692.c
+- ERROR       tests/gcc/compile/positive/pr51760.c
+- NO ERROR    tests/gcc/compile/positive/pr51801.c
+- ERROR       tests/gcc/compile/positive/pr51949.c
+- NO ERROR    tests/gcc/compile/positive/pr52170.c
+- NO ERROR    tests/gcc/compile/positive/pr52298.c
+- NO ERROR    tests/gcc/compile/positive/pr52355.c
+- NO ERROR    tests/gcc/compile/positive/pr52493.c
+- ERROR       tests/gcc/compile/positive/pr52549.c
+- NO ERROR    tests/gcc/compile/positive/pr52756.c
+- NO ERROR    tests/gcc/compile/positive/pr52881.c
+- ERROR       tests/gcc/compile/positive/pr52912.c
+- NO ERROR    tests/gcc/compile/positive/pr52913.c
+- ERROR       tests/gcc/compile/positive/pr53144.c
+- ERROR       tests/gcc/compile/positive/pr53168.c
+- ERROR       tests/gcc/compile/positive/pr53390.c
+- NO ERROR    tests/gcc/compile/positive/pr53408.c
+- ERROR       tests/gcc/compile/positive/pr53589.c
+- ERROR       tests/gcc/compile/positive/pr53790.c
+- NO ERROR    tests/gcc/compile/positive/pr54098.c
+- NO ERROR    tests/gcc/compile/positive/pr54109.c
+- ERROR       tests/gcc/compile/positive/pr54127.c
+- NO ERROR    tests/gcc/compile/positive/pr54327.c
+- NO ERROR    tests/gcc/compile/positive/pr54409.c
+- NO ERROR    tests/gcc/compile/positive/pr54458.c
+- NO ERROR    tests/gcc/compile/positive/pr54520.c
+- NO ERROR    tests/gcc/compile/positive/pr55011.c
+- NO ERROR    tests/gcc/compile/positive/pr55107.c
+- ERROR       tests/gcc/compile/positive/pr55111.c
+- NO ERROR    tests/gcc/compile/positive/pr55124.c
+- NO ERROR    tests/gcc/compile/positive/pr55238.c
+- NO ERROR    tests/gcc/compile/positive/pr55270.c
+- NO ERROR    tests/gcc/compile/positive/pr55684.c
+- NO ERROR    tests/gcc/compile/positive/pr55687.c
+- NO ERROR    tests/gcc/compile/positive/pr55862.c
+- NO ERROR    tests/gcc/compile/positive/pr55888.c
+- ERROR       tests/gcc/compile/positive/pr55890-1.c
+- ERROR       tests/gcc/compile/positive/pr55890-2.c
+- NO ERROR    tests/gcc/compile/positive/pr55890-3.c
+- NO ERROR    tests/gcc/compile/positive/pr56150.c
+- NO ERROR    tests/gcc/compile/positive/pr56167.c
+- NO ERROR    tests/gcc/compile/positive/pr56349.c
+- NO ERROR    tests/gcc/compile/positive/pr56366.c
+- NO ERROR    tests/gcc/compile/positive/pr56384.c
+- NO ERROR    tests/gcc/compile/positive/pr56478.c
+- NO ERROR    tests/gcc/compile/positive/pr57214.c
+- NO ERROR    tests/gcc/compile/positive/pr57330.c
+- NO ERROR    tests/gcc/compile/positive/pr8835-1.c
+- NO ERROR    tests/gcc/compile/positive/pragma-darwin-2.c
+- ERROR       tests/gcc/compile/positive/pragma-pack-4.c
+- ERROR       tests/gcc/compile/positive/pragma-pack-5.c
+- NO ERROR    tests/gcc/compile/positive/redecl-17.c
+- NO ERROR    tests/gcc/compile/positive/struct-by-value-2.c
+- NO ERROR    tests/gcc/compile/positive/tree-loop-1.c
+- NO ERROR    tests/gcc/compile/positive/union-1.c
+- NO ERROR    tests/gcc/compile/positive/va-arg-1.c
+- NO ERROR    tests/gcc/compile/positive/Wattributes-3.c
+- NO ERROR    tests/gcc/default/positive/20010405-1.c
+- NO ERROR    tests/gcc/default/positive/20021006-1.c
+- NO ERROR    tests/gcc/default/positive/20040409-1.c
+- NO ERROR    tests/gcc/default/positive/20050307-1.c
+- NO ERROR    tests/gcc/default/positive/20110719-1.c
+- ERROR       tests/gcc/default/positive/attr-hotcold-1.c
+- NO ERROR    tests/gcc/default/positive/attr-weakref-1a.c
+- NO ERROR    tests/gcc/default/positive/attr-weakref-1b.c
+- ERROR       tests/gcc/default/positive/builtin-apply1.c
+- NO ERROR    tests/gcc/default/positive/c90-array-quals-2.c
+- NO ERROR    tests/gcc/default/positive/c90-array-quals.c
+- NO ERROR    tests/gcc/default/positive/decl-global-ext.c
+- NO ERROR    tests/gcc/default/positive/dll-10a.c
+- NO ERROR    tests/gcc/default/positive/dll-11a.c
+- NO ERROR    tests/gcc/default/positive/dll-12a.c
+- NO ERROR    tests/gcc/default/positive/dll-6a.c
+- NO ERROR    tests/gcc/default/positive/dll-7a.c
+- NO ERROR    tests/gcc/default/positive/dll-9a.c
+- NO ERROR    tests/gcc/default/positive/fnptr-by-value-1_main.c
+- NO ERROR    tests/gcc/default/positive/fnptr-by-value-1_x.c
+- NO ERROR    tests/gcc/default/positive/fnptr-by-value-1_y.c
+- NO ERROR    tests/gcc/default/positive/generate-random.c
+- NO ERROR    tests/gcc/default/positive/generate-random_r.c
+- NO ERROR    tests/gcc/default/positive/ipa-pta-12.c
+- NO ERROR    tests/gcc/default/positive/local1.c
+- NO ERROR    tests/gcc/default/positive/pr17322.c
+- NO ERROR    tests/gcc/default/positive/pr17933-1.c
+- NO ERROR    tests/gcc/default/positive/pr24750-1.c
+- NO ERROR    tests/gcc/default/positive/pr24912-1.c
+- ERROR       tests/gcc/default/positive/pr26004.c
+- NO ERROR    tests/gcc/default/positive/pr34457-2.c
+- NO ERROR    tests/gcc/default/positive/pr43879_2.c
+- NO ERROR    tests/gcc/default/positive/pr47426-2.c
+- ERROR       tests/gcc/default/positive/pr53272-2.c
+- ERROR       tests/gcc/default/positive/pragma-re-3.c
+- NO ERROR    tests/gcc/default/positive/scalar-by-value-1_main.c
+- NO ERROR    tests/gcc/default/positive/scalar-by-value-1_x.c
+- NO ERROR    tests/gcc/default/positive/scalar-by-value-1_y.c
+- NO ERROR    tests/gcc/default/positive/scalar-by-value-2_main.c
+- NO ERROR    tests/gcc/default/positive/scalar-by-value-2_x.c
+- NO ERROR    tests/gcc/default/positive/scalar-by-value-2_y.c
+- NO ERROR    tests/gcc/default/positive/scalar-by-value-3_main.c
+- NO ERROR    tests/gcc/default/positive/scalar-by-value-3_x.c
+- NO ERROR    tests/gcc/default/positive/scalar-by-value-3_y.c
+- NO ERROR    tests/gcc/default/positive/scalar-by-value-4_main.c
+- NO ERROR    tests/gcc/default/positive/scalar-by-value-4_x.c
+- NO ERROR    tests/gcc/default/positive/scalar-by-value-4_y.c
+- NO ERROR    tests/gcc/default/positive/scalar-by-value-5_x.c
+- NO ERROR    tests/gcc/default/positive/scalar-by-value-5_y.c
+- NO ERROR    tests/gcc/default/positive/scalar-by-value-6_x.c
+- NO ERROR    tests/gcc/default/positive/scalar-by-value-6_y.c
+- NO ERROR    tests/gcc/default/positive/scalar-return-1_main.c
+- NO ERROR    tests/gcc/default/positive/scalar-return-1_x.c
+- NO ERROR    tests/gcc/default/positive/scalar-return-1_y.c
+- NO ERROR    tests/gcc/default/positive/scalar-return-2_main.c
+- NO ERROR    tests/gcc/default/positive/scalar-return-2_x.c
+- NO ERROR    tests/gcc/default/positive/scalar-return-2_y.c
+- NO ERROR    tests/gcc/default/positive/scalar-return-3_main.c
+- NO ERROR    tests/gcc/default/positive/scalar-return-3_x.c
+- NO ERROR    tests/gcc/default/positive/scalar-return-3_y.c
+- NO ERROR    tests/gcc/default/positive/scalar-return-4_main.c
+- NO ERROR    tests/gcc/default/positive/scalar-return-4_x.c
+- NO ERROR    tests/gcc/default/positive/scalar-return-4_y.c
+- NO ERROR    tests/gcc/default/positive/sdata-1_main.c
+- NO ERROR    tests/gcc/default/positive/sdata-1_x.c
+- NO ERROR    tests/gcc/default/positive/sdata-1_y.c
+- NO ERROR    tests/gcc/default/positive/struct-align-1_main.c
+- NO ERROR    tests/gcc/default/positive/struct-align-2_main.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-10_main.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-10_x.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-10_y.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-11_main.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-11_y.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-12_main.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-12_y.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-13_main.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-13_y.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-14_main.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-14_y.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-15_y.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-16a_main.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-16a_y.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-16_y.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-17a_main.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-17a_y.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-17_y.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-18a_main.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-18a_y.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-18_y.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-19_main.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-19_x.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-19_y.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-1_main.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-1_x.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-1_y.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-20_main.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-20_x.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-20_y.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-21_main.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-21_x.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-21_y.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-22_main.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-22_x.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-22_y.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-2_main.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-2_x.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-2_y.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-3_main.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-3_x.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-3_y.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-4_main.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-4_x.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-4_y.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-5a_main.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-5a_y.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-5b_main.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-5b_y.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-6a_main.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-6a_y.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-6b_main.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-6b_y.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-7a_main.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-7a_y.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-7b_main.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-7b_y.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-8_main.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-8_x.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-8_y.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-9_main.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-9_x.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-9_y.c
+- NO ERROR    tests/gcc/default/positive/struct-return-10_main.c
+- NO ERROR    tests/gcc/default/positive/struct-return-10_x.c
+- NO ERROR    tests/gcc/default/positive/struct-return-10_y.c
+- NO ERROR    tests/gcc/default/positive/struct-return-19_main.c
+- NO ERROR    tests/gcc/default/positive/struct-return-19_x.c
+- NO ERROR    tests/gcc/default/positive/struct-return-19_y.c
+- NO ERROR    tests/gcc/default/positive/struct-return-20_main.c
+- NO ERROR    tests/gcc/default/positive/struct-return-20_x.c
+- NO ERROR    tests/gcc/default/positive/struct-return-20_y.c
+- NO ERROR    tests/gcc/default/positive/struct-return-21_main.c
+- NO ERROR    tests/gcc/default/positive/struct-return-21_x.c
+- NO ERROR    tests/gcc/default/positive/struct-return-21_y.c
+- NO ERROR    tests/gcc/default/positive/struct-return-2_main.c
+- NO ERROR    tests/gcc/default/positive/struct-return-2_x.c
+- NO ERROR    tests/gcc/default/positive/struct-return-2_y.c
+- NO ERROR    tests/gcc/default/positive/struct-return-3_main.c
+- NO ERROR    tests/gcc/default/positive/struct-return-3_x.c
+- NO ERROR    tests/gcc/default/positive/struct-return-3_y.c
+- NO ERROR    tests/gcc/default/positive/typedef-redecl.c
+- NO ERROR    tests/gcc/default/positive/union-by-value-1_main.c
+- NO ERROR    tests/gcc/default/positive/union-by-value-1_x.c
+- NO ERROR    tests/gcc/default/positive/union-by-value-1_y.c
+- NO ERROR    tests/gcc/default/positive/union-return-1_main.c
+- NO ERROR    tests/gcc/default/positive/union-return-1_x.c
+- NO ERROR    tests/gcc/default/positive/union-return-1_y.c
+- NO ERROR    tests/gcc/default/positive/vector-1_main.c
+- NO ERROR    tests/gcc/default/positive/vector-2_main.c
+- NO ERROR    tests/gcc/default/positive/volatile1.c
+- NO ERROR    tests/gcc/link/positive/builtin-ctype-1.c
+- NO ERROR    tests/gcc/link/positive/builtin-ctype-2.c
+- NO ERROR    tests/gcc/link/positive/builtin-isinf_sign-1.c
+- NO ERROR    tests/gcc/link/positive/builtin-math-1.c
+- ERROR       tests/gcc/link/positive/builtin-math-3.c
+- ERROR       tests/gcc/link/positive/builtin-math-4.c
+- NO ERROR    tests/gcc/link/positive/builtin-math-6.c
+- NO ERROR    tests/gcc/link/positive/builtin-math-8.c
+- ERROR       tests/gcc/link/positive/builtin-rounding-1.c
+- NO ERROR    tests/gcc/link/positive/builtin-sin-mpfr-1.c
+- NO ERROR    tests/gcc/link/positive/builtin-wctype-1.c
+- NO ERROR    tests/gcc/link/positive/complete-port.c
+- NO ERROR    tests/gcc/link/positive/pr15347.c
+- NO ERROR    tests/gcc/link/positive/pr15785-1.c
+- NO ERROR    tests/gcc/link/positive/pr26983.c
+- NO ERROR    tests/gcc/link/positive/pr30951.c
+- ERROR       tests/gcc/link/positive/pr33848.c
+- NO ERROR    tests/gcc/link/positive/switch-8.c
+- NO ERROR    tests/gcc/link/positive/unordered-2.c
+- NO ERROR    tests/gcc/run/positive/20000906-1.c
+- NO ERROR    tests/gcc/run/positive/20020607-1.c
+- NO ERROR    tests/gcc/run/positive/20030323-1.c
+- NO ERROR    tests/gcc/run/positive/20040305-2.c
+- NO ERROR    tests/gcc/run/positive/20041219-1.c
+- NO ERROR    tests/gcc/run/positive/20110718-1.c
+- ERROR       tests/gcc/run/positive/atomic-flag.c
+- ERROR       tests/gcc/run/positive/builtin-apply3.c
+- NO ERROR    tests/gcc/run/positive/builtins-64.c
+- NO ERROR    tests/gcc/run/positive/fp-compare.c
+- NO ERROR    tests/gcc/run/positive/loop-2.c
+- NO ERROR    tests/gcc/run/positive/nrv1.c
+- NO ERROR    tests/gcc/run/positive/postincr-1.c
+- NO ERROR    tests/gcc/run/positive/pr25654.c
+- NO ERROR    tests/gcc/run/positive/pr25718-1.c
+- NO ERROR    tests/gcc/run/positive/pr26258.c
+- NO ERROR    tests/gcc/run/positive/pr26763-1.c
+- NO ERROR    tests/gcc/run/positive/pr26763-2.c
+- NO ERROR    tests/gcc/run/positive/pr26898-2.c
+- NO ERROR    tests/gcc/run/positive/pr27116-2.c
+- NO ERROR    tests/gcc/run/positive/pr27116.c
+- NO ERROR    tests/gcc/run/positive/pr27184.c
+- NO ERROR    tests/gcc/run/positive/pr27302.c
+- NO ERROR    tests/gcc/run/positive/pr27603.c
+- NO ERROR    tests/gcc/run/positive/pr28045.c
+- NO ERROR    tests/gcc/run/positive/pr30364-1.c
+- NO ERROR    tests/gcc/run/positive/pr30364-2.c
+- ERROR       tests/gcc/run/positive/pr30375.c
+- NO ERROR    tests/gcc/run/positive/pr30665-1.c
+- NO ERROR    tests/gcc/run/positive/pr30665-2.c
+- NO ERROR    tests/gcc/run/positive/pr31115.c
+- ERROR       tests/gcc/run/positive/pr33560.c
+- NO ERROR    tests/gcc/run/positive/pr33563.c
+- NO ERROR    tests/gcc/run/positive/pr33870.c
+- NO ERROR    tests/gcc/run/positive/pr34174-1.c
+- NO ERROR    tests/gcc/run/positive/pr35634.c
+- NO ERROR    tests/gcc/run/positive/pr36373-10.c
+- NO ERROR    tests/gcc/run/positive/pr36373-3.c
+- NO ERROR    tests/gcc/run/positive/pr36373-4.c
+- NO ERROR    tests/gcc/run/positive/pr36373-7.c
+- NO ERROR    tests/gcc/run/positive/pr36373-9.c
+- NO ERROR    tests/gcc/run/positive/pr37731-1.c
+- NO ERROR    tests/gcc/run/positive/pr37731-2.c
+- NO ERROR    tests/gcc/run/positive/pr38405.c
+- NO ERROR    tests/gcc/run/positive/pr38615.c
+- NO ERROR    tests/gcc/run/positive/pr43360.c
+- NO ERROR    tests/gcc/run/positive/pr44913.c
+- NO ERROR    tests/gcc/run/positive/pr45967-2.c
+- NO ERROR    tests/gcc/run/positive/pr45967-3.c
+- NO ERROR    tests/gcc/run/positive/pr45967.c
+- NO ERROR    tests/gcc/run/positive/pr46398.c
+- NO ERROR    tests/gcc/run/positive/pr47364-1.c
+- NO ERROR    tests/gcc/run/positive/pr47365.c
+- NO ERROR    tests/gcc/run/positive/pr47621.c
+- NO ERROR    tests/gcc/run/positive/pr48124-2.c
+- NO ERROR    tests/gcc/run/positive/pr48124-3.c
+- NO ERROR    tests/gcc/run/positive/pr48542.c
+- NO ERROR    tests/gcc/run/positive/pr48702.c
+- NO ERROR    tests/gcc/run/positive/pr49079.c
+- NO ERROR    tests/gcc/run/positive/pr49651.c
+- NO ERROR    tests/gcc/run/positive/pr50067-1.c
+- NO ERROR    tests/gcc/run/positive/pr50067-2.c
+- NO ERROR    tests/gcc/run/positive/pr50067-4.c
+- NO ERROR    tests/gcc/run/positive/pr50067-5.c
+- NO ERROR    tests/gcc/run/positive/pr52244.c
+- NO ERROR    tests/gcc/run/positive/pr52406.c
+- ERROR       tests/gcc/run/positive/pr52419.c
+- NO ERROR    tests/gcc/run/positive/pr52530.c
+- NO ERROR    tests/gcc/run/positive/pr52693.c
+- NO ERROR    tests/gcc/run/positive/pr52943.c
+- NO ERROR    tests/gcc/run/positive/pr53366-1.c
+- NO ERROR    tests/gcc/run/positive/pr53366-2.c
+- NO ERROR    tests/gcc/run/positive/pr53501.c
+- NO ERROR    tests/gcc/run/positive/pr53663-1.c
+- NO ERROR    tests/gcc/run/positive/pr53663-2.c
+- NO ERROR    tests/gcc/run/positive/pr53663-3.c
+- ERROR       tests/gcc/run/positive/pr53908.c
+- NO ERROR    tests/gcc/run/positive/pr54027.c
+- NO ERROR    tests/gcc/run/positive/pr54132.c
+- NO ERROR    tests/gcc/run/positive/pr55253.c
+- NO ERROR    tests/gcc/run/positive/pr55305.c
+- NO ERROR    tests/gcc/run/positive/pr55481.c
+- NO ERROR    tests/gcc/run/positive/pr55555.c
+- NO ERROR    tests/gcc/run/positive/pr55882.c
+- NO ERROR    tests/gcc/run/positive/pr56407.c
+- NO ERROR    tests/gcc/run/positive/pr56488.c
+- ERROR       tests/gcc/run/positive/pr56661.c
+- NO ERROR    tests/gcc/run/positive/pr57303.c
+- NO ERROR    tests/gcc/run/positive/pr8081.c
+- NO ERROR    tests/gcc/run/positive/reassoc-1.c
+- NO ERROR    tests/gcc/run/positive/restrict-1.c
+- NO ERROR    tests/gcc/run/positive/struct-ret-libc.c
+- NO ERROR    tests/gcc/run/positive/titype-1.c
+- NO ERROR    tests/gcc/run/positive/unaligned-1.c
+- NO ERROR    tests/gcc/run/positive/union-2.c
+- NO ERROR    tests/gcc/run/positive/vec-cvt-1.c
+- ERROR       tests/gcc/run/positive/vector-shift2.c
+- ERROR       tests/gcc/run/positive/vector-shuffle1.c
 - NO ERROR    tests/headers/positive/aio.c
 - NO ERROR    tests/headers/positive/aliases.c
 - NO ERROR    tests/headers/positive/alloca.c
@@ -332,6 +769,6 @@
 
 
 Summary:
-  17 errored
-  314 did not error
+  67 errored
+  701 did not error
 

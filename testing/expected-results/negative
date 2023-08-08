@@ -1,3 +1,56 @@
+- ERROR       tests/gcc/compile/negative/20000901-1.c
+- ERROR       tests/gcc/compile/negative/20001228-1.c
+- ERROR       tests/gcc/compile/negative/20010425-1.c
+- NO ERROR    tests/gcc/compile/negative/20010524-1.c
+- ERROR       tests/gcc/compile/negative/20011025-1.c
+- ERROR       tests/gcc/compile/negative/20020130-1.c
+- ERROR       tests/gcc/compile/negative/20020207-1.c
+- ERROR       tests/gcc/compile/negative/20020213-1.c
+- ERROR       tests/gcc/compile/negative/20020220-1.c
+- ERROR       tests/gcc/compile/negative/20030818-1.c
+- ERROR       tests/gcc/compile/negative/20040203-1.c
+- ERROR       tests/gcc/compile/negative/20040203-2.c
+- ERROR       tests/gcc/compile/negative/20040629-1.c
+- ERROR       tests/gcc/compile/negative/20041207.c
+- ERROR       tests/gcc/compile/negative/920616-2.c
+- ERROR       tests/gcc/compile/negative/920721-2.c
+- NO ERROR    tests/gcc/compile/negative/920824-1.c
+- ERROR       tests/gcc/compile/negative/921102-1.c
+- NO ERROR    tests/gcc/compile/negative/921116-1.c
+- ERROR       tests/gcc/compile/negative/930301-1.c
+- ERROR       tests/gcc/compile/negative/930622-1.c
+- ERROR       tests/gcc/compile/negative/930622-2.c
+- ERROR       tests/gcc/compile/negative/930714-1.c
+- ERROR       tests/gcc/compile/negative/931203-1.c
+- ERROR       tests/gcc/compile/negative/940112-1.c
+- ERROR       tests/gcc/compile/negative/940227-1.c
+- ERROR       tests/gcc/compile/negative/950825-1.c
+- ERROR       tests/gcc/compile/negative/950921-1.c
+- ERROR       tests/gcc/compile/negative/951123-1.c
+- ERROR       tests/gcc/compile/negative/971104-1.c
+- ERROR       tests/gcc/compile/negative/990416-1.c
+- ERROR       tests/gcc/compile/negative/const-ll-1.c
+- ERROR       tests/gcc/compile/negative/incomplete-1.c
+- ERROR       tests/gcc/compile/negative/incomplete-3.c
+- ERROR       tests/gcc/compile/negative/incomplete-4.c
+- ERROR       tests/gcc/compile/negative/init-1.c
+- NO ERROR    tests/gcc/compile/negative/init-2.c
+- ERROR       tests/gcc/compile/negative/init-3.c
+- ERROR       tests/gcc/compile/negative/init-4.c
+- ERROR       tests/gcc/compile/negative/init-5.c
+- ERROR       tests/gcc/compile/negative/label-lineno-1.c
+- NO ERROR    tests/gcc/compile/negative/pr23576.c
+- ERROR       tests/gcc/compile/negative/pr35444-1.c
+- ERROR       tests/gcc/compile/negative/pr35444-2.c
+- ERROR       tests/gcc/compile/negative/pr35447-1.c
+- ERROR       tests/gcc/compile/negative/pr40033-1.c
+- ERROR       tests/gcc/compile/negative/pr44517.c
+- ERROR       tests/gcc/compile/negative/pr52290.c
+- ERROR       tests/gcc/compile/negative/redecl-1.c
+- ERROR       tests/gcc/compile/negative/scope.c
+- ERROR       tests/gcc/compile/negative/undeclared-2.c
+- ERROR       tests/gcc/compile/negative/va-arg-1.c
+- NO ERROR    tests/gcc/compile/negative/voidparam-1.c
 - ERROR       tests/kframework/negative/j004a.c
 - NO ERROR    tests/kframework/negative/j004b.c
 - NO ERROR    tests/kframework/negative/j004c.c
@@ -180,6 +233,7 @@
 - ERROR       tests/kframework/negative/j506a.c
 - ERROR       tests/melt/negative/1.c
 - ERROR       tests/melt/negative/bad_array_init.c
+- NO ERROR    tests/melt/negative/duplicate_anon_struct_field.c
 - ERROR       tests/melt/negative/expr_type_index_1.c
 - ERROR       tests/melt/negative/expr_type_index_2.c
 - ERROR       tests/melt/negative/lvalues_10.c
@@ -209,6 +263,6 @@
 
 
 Summary:
-  68 errored
-  140 did not error
+  115 errored
+  147 did not error
 
