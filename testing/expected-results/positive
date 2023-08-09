@@ -1,364 +1,774 @@
-Positive test       - PASS:             tests/headers/positive/_G_config.c
-Positive test       - PASS:             tests/headers/positive/a.out.c
-Positive test       - PASS:             tests/headers/positive/aio.c
-Positive test       - PASS:             tests/headers/positive/aliases.c
-Positive test       - PASS:             tests/headers/positive/alloca.c
-Positive test       - PASS:             tests/headers/positive/ar.c
-Positive test       - PASS:             tests/headers/positive/argp.c
-Positive test       - PASS:             tests/headers/positive/argz.c
-Positive test       - PASS:             tests/headers/positive/assert.c
-Positive test       - PASS:             tests/headers/positive/byteswap.c
-Positive test       - PASS:             tests/headers/positive/complex.c
-Positive test       - PASS:             tests/headers/positive/cpio.c
-Positive test       - PASS:             tests/headers/positive/cpuid.c
-Positive test       - PASS:             tests/headers/positive/crypt.c
-Positive test       - PASS:             tests/headers/positive/ctype.c
-Positive test       - PASS:             tests/headers/positive/dirent.c
-Positive test       - PASS:             tests/headers/positive/dlfcn.c
-Positive test       - PASS:             tests/headers/positive/elf.c
-Positive test       - FAIL: ERROR       tests/headers/positive/emmintrin.c
-Positive test       - PASS:             tests/headers/positive/endian.c
-Positive test       - PASS:             tests/headers/positive/envz.c
-Positive test       - PASS:             tests/headers/positive/err.c
-Positive test       - PASS:             tests/headers/positive/errno.c
-Positive test       - PASS:             tests/headers/positive/error.c
-Positive test       - PASS:             tests/headers/positive/eti.c
-Positive test       - PASS:             tests/headers/positive/execinfo.c
-Positive test       - FAIL: ERROR       tests/headers/positive/fcntl.c
-Positive test       - FAIL: ERROR       tests/headers/positive/features.c
-Positive test       - PASS:             tests/headers/positive/fenv.c
-Positive test       - PASS:             tests/headers/positive/float.c
-Positive test       - PASS:             tests/headers/positive/fmtmsg.c
-Positive test       - PASS:             tests/headers/positive/fnmatch.c
-Positive test       - PASS:             tests/headers/positive/form.c
-Positive test       - PASS:             tests/headers/positive/fstab.c
-Positive test       - FAIL: ERROR       tests/headers/positive/fts.c
-Positive test       - PASS:             tests/headers/positive/ftw.c
-Positive test       - PASS:             tests/headers/positive/gconv.c
-Positive test       - PASS:             tests/headers/positive/getopt.c
-Positive test       - PASS:             tests/headers/positive/gettext-po.c
-Positive test       - PASS:             tests/headers/positive/glob.c
-Positive test       - PASS:             tests/headers/positive/gmp-x86_64.c
-Positive test       - FAIL: ERROR       tests/headers/positive/gmp.c
-Positive test       - PASS:             tests/headers/positive/gnu-versions.c
-Positive test       - PASS:             tests/headers/positive/grp.c
-Positive test       - PASS:             tests/headers/positive/gshadow.c
-Positive test       - PASS:             tests/headers/positive/iconv.c
-Positive test       - PASS:             tests/headers/positive/ieee754.c
-Positive test       - PASS:             tests/headers/positive/ifaddrs.c
-Positive test       - FAIL: ERROR       tests/headers/positive/immintrin.c
-Positive test       - PASS:             tests/headers/positive/inttypes.c
-Positive test       - PASS:             tests/headers/positive/iso646.c
-Positive test       - PASS:             tests/headers/positive/langinfo.c
-Positive test       - PASS:             tests/headers/positive/lastlog.c
-Positive test       - PASS:             tests/headers/positive/libgen.c
-Positive test       - PASS:             tests/headers/positive/libintl.c
-Positive test       - FAIL: ERROR       tests/headers/positive/libio.c
-Positive test       - PASS:             tests/headers/positive/libutil.c
-Positive test       - PASS:             tests/headers/positive/limits.c
-Positive test       - FAIL: ERROR       tests/headers/positive/link.c
-Positive test       - PASS:             tests/headers/positive/locale.c
-Positive test       - PASS:             tests/headers/positive/malloc.c
-Positive test       - FAIL: ERROR       tests/headers/positive/math.c
-Positive test       - PASS:             tests/headers/positive/mcheck.c
-Positive test       - PASS:             tests/headers/positive/memory.c
-Positive test       - PASS:             tests/headers/positive/menu.c
-Positive test       - PASS:             tests/headers/positive/mm3dnow.c
-Positive test       - PASS:             tests/headers/positive/mm_malloc.c
-Positive test       - FAIL: ERROR       tests/headers/positive/mmintrin.c
-Positive test       - PASS:             tests/headers/positive/mntent.c
-Positive test       - PASS:             tests/headers/positive/monetary.c
-Positive test       - PASS:             tests/headers/positive/mqueue.c
-Positive test       - PASS:             tests/headers/positive/nc_tparm.c
-Positive test       - PASS:             tests/headers/positive/ncurses.c
-Positive test       - PASS:             tests/headers/positive/ncurses_dll.c
-Positive test       - PASS:             tests/headers/positive/netdb.c
-Positive test       - PASS:             tests/headers/positive/nl_types.c
-Positive test       - PASS:             tests/headers/positive/nlist.c
-Positive test       - PASS:             tests/headers/positive/nss.c
-Positive test       - PASS:             tests/headers/positive/obstack.c
-Positive test       - PASS:             tests/headers/positive/omp.c
-Positive test       - PASS:             tests/headers/positive/panel.c
-Positive test       - PASS:             tests/headers/positive/paths.c
-Positive test       - PASS:             tests/headers/positive/poll.c
-Positive test       - PASS:             tests/headers/positive/printf.c
-Positive test       - PASS:             tests/headers/positive/pthread.c
-Positive test       - PASS:             tests/headers/positive/pty.c
-Positive test       - PASS:             tests/headers/positive/pwd.c
-Positive test       - PASS:             tests/headers/positive/re_comp.c
-Positive test       - FAIL: ERROR       tests/headers/positive/regex.c
-Positive test       - FAIL: ERROR       tests/headers/positive/resolv.c
-Positive test       - PASS:             tests/headers/positive/sched.c
-Positive test       - PASS:             tests/headers/positive/search.c
-Positive test       - PASS:             tests/headers/positive/semaphore.c
-Positive test       - PASS:             tests/headers/positive/setjmp.c
-Positive test       - PASS:             tests/headers/positive/sgtty.c
-Positive test       - PASS:             tests/headers/positive/shadow.c
-Positive test       - PASS:             tests/headers/positive/signal.c
-Positive test       - PASS:             tests/headers/positive/spawn.c
-Positive test       - PASS:             tests/headers/positive/stab.c
-Positive test       - PASS:             tests/headers/positive/stdarg.c
-Positive test       - PASS:             tests/headers/positive/stdbool.c
-Positive test       - PASS:             tests/headers/positive/stddef.c
-Positive test       - PASS:             tests/headers/positive/stdfix.c
-Positive test       - PASS:             tests/headers/positive/stdint-gcc.c
-Positive test       - PASS:             tests/headers/positive/stdint.c
-Positive test       - PASS:             tests/headers/positive/stdio.c
-Positive test       - PASS:             tests/headers/positive/stdio_ext.c
-Positive test       - PASS:             tests/headers/positive/stdlib.c
-Positive test       - PASS:             tests/headers/positive/string.c
-Positive test       - PASS:             tests/headers/positive/strings.c
-Positive test       - PASS:             tests/headers/positive/stropts.c
-Positive test       - PASS:             tests/headers/positive/sudo_plugin.c
-Positive test       - PASS:             tests/headers/positive/syscall.c
-Positive test       - PASS:             tests/headers/positive/sysexits.c
-Positive test       - PASS:             tests/headers/positive/syslog.c
-Positive test       - PASS:             tests/headers/positive/tar.c
-Positive test       - PASS:             tests/headers/positive/term.c
-Positive test       - PASS:             tests/headers/positive/term_entry.c
-Positive test       - PASS:             tests/headers/positive/termcap.c
-Positive test       - PASS:             tests/headers/positive/termio.c
-Positive test       - PASS:             tests/headers/positive/termios.c
-Positive test       - PASS:             tests/headers/positive/tgmath.c
-Positive test       - PASS:             tests/headers/positive/thread_db.c
-Positive test       - PASS:             tests/headers/positive/tic.c
-Positive test       - PASS:             tests/headers/positive/time.c
-Positive test       - PASS:             tests/headers/positive/ttyent.c
-Positive test       - PASS:             tests/headers/positive/ucontext.c
-Positive test       - PASS:             tests/headers/positive/ulimit.c
-Positive test       - PASS:             tests/headers/positive/unctrl.c
-Positive test       - PASS:             tests/headers/positive/unistd.c
-Positive test       - PASS:             tests/headers/positive/ustat.c
-Positive test       - PASS:             tests/headers/positive/utime.c
-Positive test       - PASS:             tests/headers/positive/utmp.c
-Positive test       - PASS:             tests/headers/positive/utmpx.c
-Positive test       - PASS:             tests/headers/positive/values.c
-Positive test       - PASS:             tests/headers/positive/vis.c
-Positive test       - PASS:             tests/headers/positive/wait.c
-Positive test       - PASS:             tests/headers/positive/wchar.c
-Positive test       - PASS:             tests/headers/positive/wctype.c
-Positive test       - PASS:             tests/headers/positive/wordexp.c
-Positive test       - FAIL: ERROR       tests/headers/positive/x86intrin.c
-Positive test       - PASS:             tests/headers/positive/xlocale.c
-Positive test       - FAIL: ERROR       tests/headers/positive/xmmintrin.c
-Positive test       - PASS:             tests/kframework/positive/j004a.c
-Positive test       - PASS:             tests/kframework/positive/j004b.c
-Positive test       - PASS:             tests/kframework/positive/j004c.c
-Positive test       - PASS:             tests/kframework/positive/j004d.c
-Positive test       - PASS:             tests/kframework/positive/j004e.c
-Positive test       - PASS:             tests/kframework/positive/j004f.c
-Positive test       - PASS:             tests/kframework/positive/j004g.c
-Positive test       - PASS:             tests/kframework/positive/j004h.c
-Positive test       - PASS:             tests/kframework/positive/j008a.c
-Positive test       - PASS:             tests/kframework/positive/j008b.c
-Positive test       - PASS:             tests/kframework/positive/j008c.c
-Positive test       - PASS:             tests/kframework/positive/j008d.c
-Positive test       - PASS:             tests/kframework/positive/j008e.c
-Positive test       - PASS:             tests/kframework/positive/j008f.c
-Positive test       - PASS:             tests/kframework/positive/j009a.c
-Positive test       - PASS:             tests/kframework/positive/j009b.c
-Positive test       - PASS:             tests/kframework/positive/j009c.c
-Positive test       - PASS:             tests/kframework/positive/j009d.c
-Positive test       - PASS:             tests/kframework/positive/j009e.c
-Positive test       - PASS:             tests/kframework/positive/j009f.c
-Positive test       - PASS:             tests/kframework/positive/j009g.c
-Positive test       - PASS:             tests/kframework/positive/j009i.c
-Positive test       - PASS:             tests/kframework/positive/j010a.c
-Positive test       - PASS:             tests/kframework/positive/j010b.c
-Positive test       - PASS:             tests/kframework/positive/j010c.c
-Positive test       - PASS:             tests/kframework/positive/j015.c
-Positive test       - PASS:             tests/kframework/positive/j015b.c
-Positive test       - PASS:             tests/kframework/positive/j015c.c
-Positive test       - PASS:             tests/kframework/positive/j017a.c
-Positive test       - PASS:             tests/kframework/positive/j017b.c
-Positive test       - PASS:             tests/kframework/positive/j017c.c
-Positive test       - PASS:             tests/kframework/positive/j019a.c
-Positive test       - PASS:             tests/kframework/positive/j019b.c
-Positive test       - PASS:             tests/kframework/positive/j020a.c
-Positive test       - FAIL: ERROR       tests/kframework/positive/j020b.c
-Positive test       - PASS:             tests/kframework/positive/j021a.c
-Positive test       - PASS:             tests/kframework/positive/j021b.c
-Positive test       - PASS:             tests/kframework/positive/j021c.c
-Positive test       - PASS:             tests/kframework/positive/j021d.c
-Positive test       - PASS:             tests/kframework/positive/j021e.c
-Positive test       - PASS:             tests/kframework/positive/j021f.c
-Positive test       - PASS:             tests/kframework/positive/j022a.c
-Positive test       - PASS:             tests/kframework/positive/j026a.c
-Positive test       - PASS:             tests/kframework/positive/j027a.c
-Positive test       - PASS:             tests/kframework/positive/j027b.c
-Positive test       - PASS:             tests/kframework/positive/j032a.c
-Positive test       - PASS:             tests/kframework/positive/j032b.c
-Positive test       - PASS:             tests/kframework/positive/j033a.c
-Positive test       - FAIL: ERROR       tests/kframework/positive/j033b.c
-Positive test       - PASS:             tests/kframework/positive/j033c.c
-Positive test       - PASS:             tests/kframework/positive/j036a.c
-Positive test       - PASS:             tests/kframework/positive/j036b.c
-Positive test       - PASS:             tests/kframework/positive/j036c.c
-Positive test       - PASS:             tests/kframework/positive/j037a.c
-Positive test       - PASS:             tests/kframework/positive/j037b.c
-Positive test       - PASS:             tests/kframework/positive/j038a.c
-Positive test       - PASS:             tests/kframework/positive/j038b.c
-Positive test       - PASS:             tests/kframework/positive/j038c.c
-Positive test       - PASS:             tests/kframework/positive/j040a.c
-Positive test       - PASS:             tests/kframework/positive/j040b.c
-Positive test       - PASS:             tests/kframework/positive/j040c.c
-Positive test       - PASS:             tests/kframework/positive/j041a.c
-Positive test       - PASS:             tests/kframework/positive/j043a.c
-Positive test       - PASS:             tests/kframework/positive/j044a.c
-Positive test       - PASS:             tests/kframework/positive/j046a.c
-Positive test       - PASS:             tests/kframework/positive/j046b.c
-Positive test       - PASS:             tests/kframework/positive/j046c.c
-Positive test       - PASS:             tests/kframework/positive/j047a.c
-Positive test       - PASS:             tests/kframework/positive/j047b.c
-Positive test       - PASS:             tests/kframework/positive/j047c.c
-Positive test       - PASS:             tests/kframework/positive/j048a.c
-Positive test       - PASS:             tests/kframework/positive/j048b.c
-Positive test       - PASS:             tests/kframework/positive/j049a.c
-Positive test       - PASS:             tests/kframework/positive/j049b.c
-Positive test       - PASS:             tests/kframework/positive/j049c.c
-Positive test       - PASS:             tests/kframework/positive/j052a.c
-Positive test       - PASS:             tests/kframework/positive/j052b.c
-Positive test       - PASS:             tests/kframework/positive/j053a.c
-Positive test       - PASS:             tests/kframework/positive/j055a.c
-Positive test       - PASS:             tests/kframework/positive/j055b.c
-Positive test       - PASS:             tests/kframework/positive/j055c.c
-Positive test       - PASS:             tests/kframework/positive/j055d.c
-Positive test       - PASS:             tests/kframework/positive/j055e.c
-Positive test       - PASS:             tests/kframework/positive/j056a.c
-Positive test       - PASS:             tests/kframework/positive/j058a.c
-Positive test       - PASS:             tests/kframework/positive/j058b.c
-Positive test       - PASS:             tests/kframework/positive/j058c.c
-Positive test       - PASS:             tests/kframework/positive/j058d.c
-Positive test       - PASS:             tests/kframework/positive/j058e.c
-Positive test       - PASS:             tests/kframework/positive/j060a.c
-Positive test       - PASS:             tests/kframework/positive/j060b.c
-Positive test       - PASS:             tests/kframework/positive/j061a.c
-Positive test       - PASS:             tests/kframework/positive/j061b.c
-Positive test       - PASS:             tests/kframework/positive/j062a.c
-Positive test       - PASS:             tests/kframework/positive/j062b.c
-Positive test       - PASS:             tests/kframework/positive/j064a.c
-Positive test       - PASS:             tests/kframework/positive/j064b.c
-Positive test       - PASS:             tests/kframework/positive/j065a.c
-Positive test       - PASS:             tests/kframework/positive/j065b.c
-Positive test       - PASS:             tests/kframework/positive/j067a.c
-Positive test       - PASS:             tests/kframework/positive/j067b.c
-Positive test       - PASS:             tests/kframework/positive/j067c.c
-Positive test       - PASS:             tests/kframework/positive/j067d.c
-Positive test       - PASS:             tests/kframework/positive/j068a.c
-Positive test       - PASS:             tests/kframework/positive/j070a.c
-Positive test       - PASS:             tests/kframework/positive/j071a.c
-Positive test       - PASS:             tests/kframework/positive/j072a.c
-Positive test       - PASS:             tests/kframework/positive/j073a.c
-Positive test       - PASS:             tests/kframework/positive/j075a.c
-Positive test       - PASS:             tests/kframework/positive/j075b.c
-Positive test       - PASS:             tests/kframework/positive/j075c.c
-Positive test       - PASS:             tests/kframework/positive/j075d.c
-Positive test       - PASS:             tests/kframework/positive/j075e.c
-Positive test       - PASS:             tests/kframework/positive/j075f.c
-Positive test       - PASS:             tests/kframework/positive/j076a.c
-Positive test       - PASS:             tests/kframework/positive/j078a.c
-Positive test       - PASS:             tests/kframework/positive/j079a.c
-Positive test       - PASS:             tests/kframework/positive/j079b.c
-Positive test       - PASS:             tests/kframework/positive/j079c.c
-Positive test       - PASS:             tests/kframework/positive/j079d.c
-Positive test       - PASS:             tests/kframework/positive/j079e.c
-Positive test       - PASS:             tests/kframework/positive/j079f.c
-Positive test       - PASS:             tests/kframework/positive/j079g.c
-Positive test       - FAIL: ERROR       tests/kframework/positive/j079h.c
-Positive test       - PASS:             tests/kframework/positive/j079i.c
-Positive test       - PASS:             tests/kframework/positive/j079j.c
-Positive test       - PASS:             tests/kframework/positive/j082a.c
-Positive test       - PASS:             tests/kframework/positive/j082b.c
-Positive test       - PASS:             tests/kframework/positive/j083a.c
-Positive test       - PASS:             tests/kframework/positive/j083b.c
-Positive test       - PASS:             tests/kframework/positive/j084a.c
-Positive test       - PASS:             tests/kframework/positive/j086a.c
-Positive test       - PASS:             tests/kframework/positive/j088a.c
-Positive test       - PASS:             tests/kframework/positive/j089a.c
-Positive test       - PASS:             tests/kframework/positive/j089b.c
-Positive test       - PASS:             tests/kframework/positive/j090a.c
-Positive test       - PASS:             tests/kframework/positive/j301a.c
-Positive test       - PASS:             tests/kframework/positive/j302a.c
-Positive test       - PASS:             tests/kframework/positive/j303a.c
-Positive test       - PASS:             tests/kframework/positive/j303b.c
-Positive test       - PASS:             tests/kframework/positive/j304a.c
-Positive test       - PASS:             tests/kframework/positive/j305a.c
-Positive test       - PASS:             tests/kframework/positive/j306a.c
-Positive test       - PASS:             tests/kframework/positive/j307a.c
-Positive test       - PASS:             tests/kframework/positive/j307b.c
-Positive test       - PASS:             tests/kframework/positive/j307c.c
-Positive test       - PASS:             tests/kframework/positive/j308a.c
-Positive test       - PASS:             tests/kframework/positive/j309a.c
-Positive test       - PASS:             tests/kframework/positive/j310a.c
-Positive test       - PASS:             tests/kframework/positive/j310b.c
-Positive test       - PASS:             tests/kframework/positive/j310c.c
-Positive test       - PASS:             tests/kframework/positive/j311a.c
-Positive test       - PASS:             tests/kframework/positive/j315a.c
-Positive test       - PASS:             tests/kframework/positive/j315b.c
-Positive test       - PASS:             tests/kframework/positive/j316a.c
-Positive test       - PASS:             tests/kframework/positive/j319a.c
-Positive test       - PASS:             tests/kframework/positive/j319b.c
-Positive test       - PASS:             tests/kframework/positive/j320a.c
-Positive test       - PASS:             tests/kframework/positive/j320b.c
-Positive test       - PASS:             tests/kframework/positive/j321a.c
-Positive test       - PASS:             tests/kframework/positive/j321b.c
-Positive test       - PASS:             tests/kframework/positive/j322a.c
-Positive test       - PASS:             tests/kframework/positive/j322b.c
-Positive test       - PASS:             tests/kframework/positive/j323a.c
-Positive test       - PASS:             tests/kframework/positive/j324a.c
-Positive test       - PASS:             tests/kframework/positive/j332a.c
-Positive test       - PASS:             tests/kframework/positive/j332b.c
-Positive test       - PASS:             tests/kframework/positive/j409a.c
-Positive test       - PASS:             tests/kframework/positive/j409b.c
-Positive test       - PASS:             tests/kframework/positive/j500a.c
-Positive test       - PASS:             tests/kframework/positive/j501a.c
-Positive test       - PASS:             tests/kframework/positive/j501b.c
-Positive test       - PASS:             tests/kframework/positive/j501c.c
-Positive test       - PASS:             tests/kframework/positive/j501d.c
-Positive test       - PASS:             tests/kframework/positive/j502a.c
-Positive test       - PASS:             tests/kframework/positive/j502b.c
-Positive test       - PASS:             tests/kframework/positive/j503a.c
-Positive test       - PASS:             tests/kframework/positive/j504a.c
-Positive test       - PASS:             tests/kframework/positive/j506a.c
-Positive test       - PASS:             tests/melt/positive/1.c
-Positive test       - PASS:             tests/melt/positive/anon-struct-attr.c
-Positive test       - PASS:             tests/melt/positive/asm-1.c
-Positive test       - PASS:             tests/melt/positive/empty_compound_init.c
-Positive test       - PASS:             tests/melt/positive/expr-stmt-types.c
-Positive test       - PASS:             tests/melt/positive/struct-init.c
-Positive test       - PASS:             tests/melt/positive/struct-init2.c
-Positive test       - PASS:             tests/melt/positive/struct-scoping.c
-Positive test       - PASS:             tests/melt/positive/typedef_1.c
+- NO ERROR    tests/gcc/assemble/positive/pr25706-1.c
+- NO ERROR    tests/gcc/assemble/positive/pr47958-1.c
+- NO ERROR    tests/gcc/assemble/positive/pr54436.c
+- NO ERROR    tests/gcc/assemble/positive/pr56195.c
+- NO ERROR    tests/gcc/compile/positive/20000111-1.c
+- NO ERROR    tests/gcc/compile/positive/20020115-1.c
+- NO ERROR    tests/gcc/compile/positive/20090902-1.c
+- NO ERROR    tests/gcc/compile/positive/980816-1.c
+- NO ERROR    tests/gcc/compile/positive/Wattributes-3.c
+- NO ERROR    tests/gcc/compile/positive/array-1.c
+- NO ERROR    tests/gcc/compile/positive/attr-alloc_size-2.c
+- NO ERROR    tests/gcc/compile/positive/attr-weak-1.c
+- NO ERROR    tests/gcc/compile/positive/bconstp-1.c
+- NO ERROR    tests/gcc/compile/positive/bconstp-2.c
+- ERROR       tests/gcc/compile/positive/bconstp-3.c
+- NO ERROR    tests/gcc/compile/positive/builtin-strstr.c
+- NO ERROR    tests/gcc/compile/positive/conv-1.c
+- NO ERROR    tests/gcc/compile/positive/decl-6.c
+- NO ERROR    tests/gcc/compile/positive/fail_always_inline.c
+- NO ERROR    tests/gcc/compile/positive/h8300-ice2.c
+- NO ERROR    tests/gcc/compile/positive/loop-1.c
+- NO ERROR    tests/gcc/compile/positive/macro-1.c
+- NO ERROR    tests/gcc/compile/positive/matrix-3.c
+- NO ERROR    tests/gcc/compile/positive/matrix-4.c
+- ERROR       tests/gcc/compile/positive/pack-test-1.c
+- ERROR       tests/gcc/compile/positive/pack-test-2.c
+- NO ERROR    tests/gcc/compile/positive/pack-test-3.c
+- NO ERROR    tests/gcc/compile/positive/pr14092-1.c
+- NO ERROR    tests/gcc/compile/positive/pr15443-1.c
+- NO ERROR    tests/gcc/compile/positive/pr15443-2.c
+- NO ERROR    tests/gcc/compile/positive/pr17036-1.c
+- NO ERROR    tests/gcc/compile/positive/pr19462-1.c
+- NO ERROR    tests/gcc/compile/positive/pr20314-1.c
+- NO ERROR    tests/gcc/compile/positive/pr20314-2.c
+- NO ERROR    tests/gcc/compile/positive/pr21085.c
+- NO ERROR    tests/gcc/compile/positive/pr23424-1.c
+- ERROR       tests/gcc/compile/positive/pr24626-1.c
+- ERROR       tests/gcc/compile/positive/pr24626-2.c
+- ERROR       tests/gcc/compile/positive/pr24626-3.c
+- NO ERROR    tests/gcc/compile/positive/pr25481.c
+- NO ERROR    tests/gcc/compile/positive/pr26672.c
+- NO ERROR    tests/gcc/compile/positive/pr26869.c
+- NO ERROR    tests/gcc/compile/positive/pr26998.c
+- NO ERROR    tests/gcc/compile/positive/pr27409.c
+- NO ERROR    tests/gcc/compile/positive/pr27773.c
+- NO ERROR    tests/gcc/compile/positive/pr28268.c
+- ERROR       tests/gcc/compile/positive/pr28814.c
+- NO ERROR    tests/gcc/compile/positive/pr29119.c
+- NO ERROR    tests/gcc/compile/positive/pr29446.c
+- NO ERROR    tests/gcc/compile/positive/pr29584.c
+- NO ERROR    tests/gcc/compile/positive/pr30313.c
+- NO ERROR    tests/gcc/compile/positive/pr30762-2.c
+- ERROR       tests/gcc/compile/positive/pr31254.c
+- ERROR       tests/gcc/compile/positive/pr31529-2.c
+- NO ERROR    tests/gcc/compile/positive/pr32041.c
+- NO ERROR    tests/gcc/compile/positive/pr33655.c
+- NO ERROR    tests/gcc/compile/positive/pr33691.c
+- NO ERROR    tests/gcc/compile/positive/pr33692.c
+- NO ERROR    tests/gcc/compile/positive/pr33693.c
+- NO ERROR    tests/gcc/compile/positive/pr33695.c
+- NO ERROR    tests/gcc/compile/positive/pr33696.c
+- NO ERROR    tests/gcc/compile/positive/pr33697.c
+- NO ERROR    tests/gcc/compile/positive/pr33724.c
+- NO ERROR    tests/gcc/compile/positive/pr33726.c
+- NO ERROR    tests/gcc/compile/positive/pr34668-2.c
+- NO ERROR    tests/gcc/compile/positive/pr35227.c
+- NO ERROR    tests/gcc/compile/positive/pr35842.c
+- NO ERROR    tests/gcc/compile/positive/pr38957.c
+- NO ERROR    tests/gcc/compile/positive/pr39712.c
+- NO ERROR    tests/gcc/compile/positive/pr43557-2.c
+- NO ERROR    tests/gcc/compile/positive/pr43781.c
+- NO ERROR    tests/gcc/compile/positive/pr44695.c
+- ERROR       tests/gcc/compile/positive/pr44807.c
+- NO ERROR    tests/gcc/compile/positive/pr45461.c
+- ERROR       tests/gcc/compile/positive/pr45732.c
+- NO ERROR    tests/gcc/compile/positive/pr45860.c
+- NO ERROR    tests/gcc/compile/positive/pr45869.c
+- ERROR       tests/gcc/compile/positive/pr46068.c
+- ERROR       tests/gcc/compile/positive/pr46216.c
+- NO ERROR    tests/gcc/compile/positive/pr46723.c
+- NO ERROR    tests/gcc/compile/positive/pr47281.c
+- NO ERROR    tests/gcc/compile/positive/pr47370.c
+- ERROR       tests/gcc/compile/positive/pr47411.c
+- NO ERROR    tests/gcc/compile/positive/pr47677.c
+- NO ERROR    tests/gcc/compile/positive/pr47725.c
+- NO ERROR    tests/gcc/compile/positive/pr47743.c
+- NO ERROR    tests/gcc/compile/positive/pr47744-3.c
+- NO ERROR    tests/gcc/compile/positive/pr47890.c
+- ERROR       tests/gcc/compile/positive/pr48098.c
+- NO ERROR    tests/gcc/compile/positive/pr48493.c
+- NO ERROR    tests/gcc/compile/positive/pr48694-1.c
+- NO ERROR    tests/gcc/compile/positive/pr48694-2.c
+- NO ERROR    tests/gcc/compile/positive/pr48731.c
+- NO ERROR    tests/gcc/compile/positive/pr48822.c
+- NO ERROR    tests/gcc/compile/positive/pr49603.c
+- NO ERROR    tests/gcc/compile/positive/pr50092.c
+- NO ERROR    tests/gcc/compile/positive/pr50333.c
+- NO ERROR    tests/gcc/compile/positive/pr50723.c
+- NO ERROR    tests/gcc/compile/positive/pr50838.c
+- NO ERROR    tests/gcc/compile/positive/pr50890.c
+- NO ERROR    tests/gcc/compile/positive/pr50902.c
+- NO ERROR    tests/gcc/compile/positive/pr51042.c
+- NO ERROR    tests/gcc/compile/positive/pr51070.c
+- ERROR       tests/gcc/compile/positive/pr51071.c
+- NO ERROR    tests/gcc/compile/positive/pr51245.c
+- ERROR       tests/gcc/compile/positive/pr51692.c
+- ERROR       tests/gcc/compile/positive/pr51760.c
+- NO ERROR    tests/gcc/compile/positive/pr51801.c
+- ERROR       tests/gcc/compile/positive/pr51949.c
+- NO ERROR    tests/gcc/compile/positive/pr52170.c
+- NO ERROR    tests/gcc/compile/positive/pr52298.c
+- NO ERROR    tests/gcc/compile/positive/pr52355.c
+- NO ERROR    tests/gcc/compile/positive/pr52493.c
+- ERROR       tests/gcc/compile/positive/pr52549.c
+- NO ERROR    tests/gcc/compile/positive/pr52756.c
+- NO ERROR    tests/gcc/compile/positive/pr52881.c
+- ERROR       tests/gcc/compile/positive/pr52912.c
+- NO ERROR    tests/gcc/compile/positive/pr52913.c
+- ERROR       tests/gcc/compile/positive/pr53144.c
+- ERROR       tests/gcc/compile/positive/pr53168.c
+- ERROR       tests/gcc/compile/positive/pr53390.c
+- NO ERROR    tests/gcc/compile/positive/pr53408.c
+- ERROR       tests/gcc/compile/positive/pr53589.c
+- ERROR       tests/gcc/compile/positive/pr53790.c
+- NO ERROR    tests/gcc/compile/positive/pr54098.c
+- NO ERROR    tests/gcc/compile/positive/pr54109.c
+- ERROR       tests/gcc/compile/positive/pr54127.c
+- NO ERROR    tests/gcc/compile/positive/pr54327.c
+- NO ERROR    tests/gcc/compile/positive/pr54409.c
+- NO ERROR    tests/gcc/compile/positive/pr54458.c
+- NO ERROR    tests/gcc/compile/positive/pr54520.c
+- NO ERROR    tests/gcc/compile/positive/pr55011.c
+- NO ERROR    tests/gcc/compile/positive/pr55107.c
+- ERROR       tests/gcc/compile/positive/pr55111.c
+- NO ERROR    tests/gcc/compile/positive/pr55124.c
+- NO ERROR    tests/gcc/compile/positive/pr55238.c
+- NO ERROR    tests/gcc/compile/positive/pr55270.c
+- NO ERROR    tests/gcc/compile/positive/pr55684.c
+- NO ERROR    tests/gcc/compile/positive/pr55687.c
+- NO ERROR    tests/gcc/compile/positive/pr55862.c
+- NO ERROR    tests/gcc/compile/positive/pr55888.c
+- ERROR       tests/gcc/compile/positive/pr55890-1.c
+- ERROR       tests/gcc/compile/positive/pr55890-2.c
+- NO ERROR    tests/gcc/compile/positive/pr55890-3.c
+- NO ERROR    tests/gcc/compile/positive/pr56150.c
+- NO ERROR    tests/gcc/compile/positive/pr56167.c
+- NO ERROR    tests/gcc/compile/positive/pr56349.c
+- NO ERROR    tests/gcc/compile/positive/pr56366.c
+- NO ERROR    tests/gcc/compile/positive/pr56384.c
+- NO ERROR    tests/gcc/compile/positive/pr56478.c
+- NO ERROR    tests/gcc/compile/positive/pr57214.c
+- NO ERROR    tests/gcc/compile/positive/pr57330.c
+- NO ERROR    tests/gcc/compile/positive/pr8835-1.c
+- NO ERROR    tests/gcc/compile/positive/pragma-darwin-2.c
+- ERROR       tests/gcc/compile/positive/pragma-pack-4.c
+- ERROR       tests/gcc/compile/positive/pragma-pack-5.c
+- NO ERROR    tests/gcc/compile/positive/redecl-17.c
+- NO ERROR    tests/gcc/compile/positive/struct-by-value-2.c
+- NO ERROR    tests/gcc/compile/positive/tree-loop-1.c
+- NO ERROR    tests/gcc/compile/positive/union-1.c
+- NO ERROR    tests/gcc/compile/positive/va-arg-1.c
+- NO ERROR    tests/gcc/default/positive/20010405-1.c
+- NO ERROR    tests/gcc/default/positive/20021006-1.c
+- NO ERROR    tests/gcc/default/positive/20040409-1.c
+- NO ERROR    tests/gcc/default/positive/20050307-1.c
+- NO ERROR    tests/gcc/default/positive/20110719-1.c
+- ERROR       tests/gcc/default/positive/attr-hotcold-1.c
+- NO ERROR    tests/gcc/default/positive/attr-weakref-1a.c
+- NO ERROR    tests/gcc/default/positive/attr-weakref-1b.c
+- ERROR       tests/gcc/default/positive/builtin-apply1.c
+- NO ERROR    tests/gcc/default/positive/c90-array-quals-2.c
+- NO ERROR    tests/gcc/default/positive/c90-array-quals.c
+- NO ERROR    tests/gcc/default/positive/decl-global-ext.c
+- NO ERROR    tests/gcc/default/positive/dll-10a.c
+- NO ERROR    tests/gcc/default/positive/dll-11a.c
+- NO ERROR    tests/gcc/default/positive/dll-12a.c
+- NO ERROR    tests/gcc/default/positive/dll-6a.c
+- NO ERROR    tests/gcc/default/positive/dll-7a.c
+- NO ERROR    tests/gcc/default/positive/dll-9a.c
+- NO ERROR    tests/gcc/default/positive/fnptr-by-value-1_main.c
+- NO ERROR    tests/gcc/default/positive/fnptr-by-value-1_x.c
+- NO ERROR    tests/gcc/default/positive/fnptr-by-value-1_y.c
+- NO ERROR    tests/gcc/default/positive/generate-random.c
+- NO ERROR    tests/gcc/default/positive/generate-random_r.c
+- NO ERROR    tests/gcc/default/positive/ipa-pta-12.c
+- NO ERROR    tests/gcc/default/positive/local1.c
+- NO ERROR    tests/gcc/default/positive/pr17322.c
+- NO ERROR    tests/gcc/default/positive/pr17933-1.c
+- NO ERROR    tests/gcc/default/positive/pr24750-1.c
+- NO ERROR    tests/gcc/default/positive/pr24912-1.c
+- ERROR       tests/gcc/default/positive/pr26004.c
+- NO ERROR    tests/gcc/default/positive/pr34457-2.c
+- NO ERROR    tests/gcc/default/positive/pr43879_2.c
+- NO ERROR    tests/gcc/default/positive/pr47426-2.c
+- ERROR       tests/gcc/default/positive/pr53272-2.c
+- ERROR       tests/gcc/default/positive/pragma-re-3.c
+- NO ERROR    tests/gcc/default/positive/scalar-by-value-1_main.c
+- NO ERROR    tests/gcc/default/positive/scalar-by-value-1_x.c
+- NO ERROR    tests/gcc/default/positive/scalar-by-value-1_y.c
+- NO ERROR    tests/gcc/default/positive/scalar-by-value-2_main.c
+- NO ERROR    tests/gcc/default/positive/scalar-by-value-2_x.c
+- NO ERROR    tests/gcc/default/positive/scalar-by-value-2_y.c
+- NO ERROR    tests/gcc/default/positive/scalar-by-value-3_main.c
+- NO ERROR    tests/gcc/default/positive/scalar-by-value-3_x.c
+- NO ERROR    tests/gcc/default/positive/scalar-by-value-3_y.c
+- NO ERROR    tests/gcc/default/positive/scalar-by-value-4_main.c
+- NO ERROR    tests/gcc/default/positive/scalar-by-value-4_x.c
+- NO ERROR    tests/gcc/default/positive/scalar-by-value-4_y.c
+- NO ERROR    tests/gcc/default/positive/scalar-by-value-5_x.c
+- NO ERROR    tests/gcc/default/positive/scalar-by-value-5_y.c
+- NO ERROR    tests/gcc/default/positive/scalar-by-value-6_x.c
+- NO ERROR    tests/gcc/default/positive/scalar-by-value-6_y.c
+- NO ERROR    tests/gcc/default/positive/scalar-return-1_main.c
+- NO ERROR    tests/gcc/default/positive/scalar-return-1_x.c
+- NO ERROR    tests/gcc/default/positive/scalar-return-1_y.c
+- NO ERROR    tests/gcc/default/positive/scalar-return-2_main.c
+- NO ERROR    tests/gcc/default/positive/scalar-return-2_x.c
+- NO ERROR    tests/gcc/default/positive/scalar-return-2_y.c
+- NO ERROR    tests/gcc/default/positive/scalar-return-3_main.c
+- NO ERROR    tests/gcc/default/positive/scalar-return-3_x.c
+- NO ERROR    tests/gcc/default/positive/scalar-return-3_y.c
+- NO ERROR    tests/gcc/default/positive/scalar-return-4_main.c
+- NO ERROR    tests/gcc/default/positive/scalar-return-4_x.c
+- NO ERROR    tests/gcc/default/positive/scalar-return-4_y.c
+- NO ERROR    tests/gcc/default/positive/sdata-1_main.c
+- NO ERROR    tests/gcc/default/positive/sdata-1_x.c
+- NO ERROR    tests/gcc/default/positive/sdata-1_y.c
+- NO ERROR    tests/gcc/default/positive/struct-align-1_main.c
+- NO ERROR    tests/gcc/default/positive/struct-align-2_main.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-10_main.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-10_x.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-10_y.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-11_main.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-11_y.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-12_main.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-12_y.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-13_main.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-13_y.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-14_main.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-14_y.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-15_y.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-16_y.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-16a_main.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-16a_y.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-17_y.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-17a_main.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-17a_y.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-18_y.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-18a_main.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-18a_y.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-19_main.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-19_x.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-19_y.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-1_main.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-1_x.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-1_y.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-20_main.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-20_x.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-20_y.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-21_main.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-21_x.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-21_y.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-22_main.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-22_x.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-22_y.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-2_main.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-2_x.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-2_y.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-3_main.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-3_x.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-3_y.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-4_main.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-4_x.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-4_y.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-5a_main.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-5a_y.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-5b_main.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-5b_y.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-6a_main.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-6a_y.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-6b_main.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-6b_y.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-7a_main.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-7a_y.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-7b_main.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-7b_y.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-8_main.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-8_x.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-8_y.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-9_main.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-9_x.c
+- NO ERROR    tests/gcc/default/positive/struct-by-value-9_y.c
+- NO ERROR    tests/gcc/default/positive/struct-return-10_main.c
+- NO ERROR    tests/gcc/default/positive/struct-return-10_x.c
+- NO ERROR    tests/gcc/default/positive/struct-return-10_y.c
+- NO ERROR    tests/gcc/default/positive/struct-return-19_main.c
+- NO ERROR    tests/gcc/default/positive/struct-return-19_x.c
+- NO ERROR    tests/gcc/default/positive/struct-return-19_y.c
+- NO ERROR    tests/gcc/default/positive/struct-return-20_main.c
+- NO ERROR    tests/gcc/default/positive/struct-return-20_x.c
+- NO ERROR    tests/gcc/default/positive/struct-return-20_y.c
+- NO ERROR    tests/gcc/default/positive/struct-return-21_main.c
+- NO ERROR    tests/gcc/default/positive/struct-return-21_x.c
+- NO ERROR    tests/gcc/default/positive/struct-return-21_y.c
+- NO ERROR    tests/gcc/default/positive/struct-return-2_main.c
+- NO ERROR    tests/gcc/default/positive/struct-return-2_x.c
+- NO ERROR    tests/gcc/default/positive/struct-return-2_y.c
+- NO ERROR    tests/gcc/default/positive/struct-return-3_main.c
+- NO ERROR    tests/gcc/default/positive/struct-return-3_x.c
+- NO ERROR    tests/gcc/default/positive/struct-return-3_y.c
+- NO ERROR    tests/gcc/default/positive/typedef-redecl.c
+- NO ERROR    tests/gcc/default/positive/union-by-value-1_main.c
+- NO ERROR    tests/gcc/default/positive/union-by-value-1_x.c
+- NO ERROR    tests/gcc/default/positive/union-by-value-1_y.c
+- NO ERROR    tests/gcc/default/positive/union-return-1_main.c
+- NO ERROR    tests/gcc/default/positive/union-return-1_x.c
+- NO ERROR    tests/gcc/default/positive/union-return-1_y.c
+- NO ERROR    tests/gcc/default/positive/vector-1_main.c
+- NO ERROR    tests/gcc/default/positive/vector-2_main.c
+- NO ERROR    tests/gcc/default/positive/volatile1.c
+- NO ERROR    tests/gcc/link/positive/builtin-ctype-1.c
+- NO ERROR    tests/gcc/link/positive/builtin-ctype-2.c
+- NO ERROR    tests/gcc/link/positive/builtin-isinf_sign-1.c
+- NO ERROR    tests/gcc/link/positive/builtin-math-1.c
+- ERROR       tests/gcc/link/positive/builtin-math-3.c
+- ERROR       tests/gcc/link/positive/builtin-math-4.c
+- NO ERROR    tests/gcc/link/positive/builtin-math-6.c
+- NO ERROR    tests/gcc/link/positive/builtin-math-8.c
+- ERROR       tests/gcc/link/positive/builtin-rounding-1.c
+- NO ERROR    tests/gcc/link/positive/builtin-sin-mpfr-1.c
+- NO ERROR    tests/gcc/link/positive/builtin-wctype-1.c
+- NO ERROR    tests/gcc/link/positive/complete-port.c
+- NO ERROR    tests/gcc/link/positive/pr15347.c
+- NO ERROR    tests/gcc/link/positive/pr15785-1.c
+- NO ERROR    tests/gcc/link/positive/pr26983.c
+- NO ERROR    tests/gcc/link/positive/pr30951.c
+- ERROR       tests/gcc/link/positive/pr33848.c
+- NO ERROR    tests/gcc/link/positive/switch-8.c
+- NO ERROR    tests/gcc/link/positive/unordered-2.c
+- NO ERROR    tests/gcc/run/positive/20000906-1.c
+- NO ERROR    tests/gcc/run/positive/20020607-1.c
+- NO ERROR    tests/gcc/run/positive/20030323-1.c
+- NO ERROR    tests/gcc/run/positive/20040305-2.c
+- NO ERROR    tests/gcc/run/positive/20041219-1.c
+- NO ERROR    tests/gcc/run/positive/20110718-1.c
+- ERROR       tests/gcc/run/positive/atomic-flag.c
+- ERROR       tests/gcc/run/positive/builtin-apply3.c
+- NO ERROR    tests/gcc/run/positive/builtins-64.c
+- NO ERROR    tests/gcc/run/positive/fp-compare.c
+- NO ERROR    tests/gcc/run/positive/loop-2.c
+- NO ERROR    tests/gcc/run/positive/nrv1.c
+- NO ERROR    tests/gcc/run/positive/postincr-1.c
+- NO ERROR    tests/gcc/run/positive/pr25654.c
+- NO ERROR    tests/gcc/run/positive/pr25718-1.c
+- NO ERROR    tests/gcc/run/positive/pr26258.c
+- NO ERROR    tests/gcc/run/positive/pr26763-1.c
+- NO ERROR    tests/gcc/run/positive/pr26763-2.c
+- NO ERROR    tests/gcc/run/positive/pr26898-2.c
+- NO ERROR    tests/gcc/run/positive/pr27116-2.c
+- NO ERROR    tests/gcc/run/positive/pr27116.c
+- NO ERROR    tests/gcc/run/positive/pr27184.c
+- NO ERROR    tests/gcc/run/positive/pr27302.c
+- NO ERROR    tests/gcc/run/positive/pr27603.c
+- NO ERROR    tests/gcc/run/positive/pr28045.c
+- NO ERROR    tests/gcc/run/positive/pr30364-1.c
+- NO ERROR    tests/gcc/run/positive/pr30364-2.c
+- ERROR       tests/gcc/run/positive/pr30375.c
+- NO ERROR    tests/gcc/run/positive/pr30665-1.c
+- NO ERROR    tests/gcc/run/positive/pr30665-2.c
+- NO ERROR    tests/gcc/run/positive/pr31115.c
+- ERROR       tests/gcc/run/positive/pr33560.c
+- NO ERROR    tests/gcc/run/positive/pr33563.c
+- NO ERROR    tests/gcc/run/positive/pr33870.c
+- NO ERROR    tests/gcc/run/positive/pr34174-1.c
+- NO ERROR    tests/gcc/run/positive/pr35634.c
+- NO ERROR    tests/gcc/run/positive/pr36373-10.c
+- NO ERROR    tests/gcc/run/positive/pr36373-3.c
+- NO ERROR    tests/gcc/run/positive/pr36373-4.c
+- NO ERROR    tests/gcc/run/positive/pr36373-7.c
+- NO ERROR    tests/gcc/run/positive/pr36373-9.c
+- NO ERROR    tests/gcc/run/positive/pr37731-1.c
+- NO ERROR    tests/gcc/run/positive/pr37731-2.c
+- NO ERROR    tests/gcc/run/positive/pr38405.c
+- NO ERROR    tests/gcc/run/positive/pr38615.c
+- NO ERROR    tests/gcc/run/positive/pr43360.c
+- NO ERROR    tests/gcc/run/positive/pr44913.c
+- NO ERROR    tests/gcc/run/positive/pr45967-2.c
+- NO ERROR    tests/gcc/run/positive/pr45967-3.c
+- NO ERROR    tests/gcc/run/positive/pr45967.c
+- NO ERROR    tests/gcc/run/positive/pr46398.c
+- NO ERROR    tests/gcc/run/positive/pr47364-1.c
+- NO ERROR    tests/gcc/run/positive/pr47365.c
+- NO ERROR    tests/gcc/run/positive/pr47621.c
+- NO ERROR    tests/gcc/run/positive/pr48124-2.c
+- NO ERROR    tests/gcc/run/positive/pr48124-3.c
+- NO ERROR    tests/gcc/run/positive/pr48542.c
+- NO ERROR    tests/gcc/run/positive/pr48702.c
+- NO ERROR    tests/gcc/run/positive/pr49079.c
+- NO ERROR    tests/gcc/run/positive/pr49651.c
+- NO ERROR    tests/gcc/run/positive/pr50067-1.c
+- NO ERROR    tests/gcc/run/positive/pr50067-2.c
+- NO ERROR    tests/gcc/run/positive/pr50067-4.c
+- NO ERROR    tests/gcc/run/positive/pr50067-5.c
+- NO ERROR    tests/gcc/run/positive/pr52244.c
+- NO ERROR    tests/gcc/run/positive/pr52406.c
+- ERROR       tests/gcc/run/positive/pr52419.c
+- NO ERROR    tests/gcc/run/positive/pr52530.c
+- NO ERROR    tests/gcc/run/positive/pr52693.c
+- NO ERROR    tests/gcc/run/positive/pr52943.c
+- NO ERROR    tests/gcc/run/positive/pr53366-1.c
+- NO ERROR    tests/gcc/run/positive/pr53366-2.c
+- NO ERROR    tests/gcc/run/positive/pr53501.c
+- NO ERROR    tests/gcc/run/positive/pr53663-1.c
+- NO ERROR    tests/gcc/run/positive/pr53663-2.c
+- NO ERROR    tests/gcc/run/positive/pr53663-3.c
+- ERROR       tests/gcc/run/positive/pr53908.c
+- NO ERROR    tests/gcc/run/positive/pr54027.c
+- NO ERROR    tests/gcc/run/positive/pr54132.c
+- NO ERROR    tests/gcc/run/positive/pr55253.c
+- NO ERROR    tests/gcc/run/positive/pr55305.c
+- NO ERROR    tests/gcc/run/positive/pr55481.c
+- NO ERROR    tests/gcc/run/positive/pr55555.c
+- NO ERROR    tests/gcc/run/positive/pr55882.c
+- NO ERROR    tests/gcc/run/positive/pr56407.c
+- NO ERROR    tests/gcc/run/positive/pr56488.c
+- ERROR       tests/gcc/run/positive/pr56661.c
+- NO ERROR    tests/gcc/run/positive/pr57303.c
+- NO ERROR    tests/gcc/run/positive/pr8081.c
+- NO ERROR    tests/gcc/run/positive/reassoc-1.c
+- NO ERROR    tests/gcc/run/positive/restrict-1.c
+- NO ERROR    tests/gcc/run/positive/struct-ret-libc.c
+- NO ERROR    tests/gcc/run/positive/titype-1.c
+- NO ERROR    tests/gcc/run/positive/unaligned-1.c
+- NO ERROR    tests/gcc/run/positive/union-2.c
+- NO ERROR    tests/gcc/run/positive/vec-cvt-1.c
+- ERROR       tests/gcc/run/positive/vector-shift2.c
+- ERROR       tests/gcc/run/positive/vector-shuffle1.c
+- NO ERROR    tests/headers/positive/_G_config.c
+- NO ERROR    tests/headers/positive/a.out.c
+- NO ERROR    tests/headers/positive/aio.c
+- NO ERROR    tests/headers/positive/aliases.c
+- NO ERROR    tests/headers/positive/alloca.c
+- NO ERROR    tests/headers/positive/ar.c
+- NO ERROR    tests/headers/positive/argp.c
+- NO ERROR    tests/headers/positive/argz.c
+- NO ERROR    tests/headers/positive/assert.c
+- NO ERROR    tests/headers/positive/byteswap.c
+- NO ERROR    tests/headers/positive/complex.c
+- NO ERROR    tests/headers/positive/cpio.c
+- NO ERROR    tests/headers/positive/cpuid.c
+- NO ERROR    tests/headers/positive/crypt.c
+- NO ERROR    tests/headers/positive/ctype.c
+- NO ERROR    tests/headers/positive/dirent.c
+- NO ERROR    tests/headers/positive/dlfcn.c
+- NO ERROR    tests/headers/positive/elf.c
+- ERROR       tests/headers/positive/emmintrin.c
+- NO ERROR    tests/headers/positive/endian.c
+- NO ERROR    tests/headers/positive/envz.c
+- NO ERROR    tests/headers/positive/err.c
+- NO ERROR    tests/headers/positive/errno.c
+- NO ERROR    tests/headers/positive/error.c
+- NO ERROR    tests/headers/positive/eti.c
+- NO ERROR    tests/headers/positive/execinfo.c
+- ERROR       tests/headers/positive/fcntl.c
+- ERROR       tests/headers/positive/features.c
+- NO ERROR    tests/headers/positive/fenv.c
+- NO ERROR    tests/headers/positive/float.c
+- NO ERROR    tests/headers/positive/fmtmsg.c
+- NO ERROR    tests/headers/positive/fnmatch.c
+- NO ERROR    tests/headers/positive/form.c
+- NO ERROR    tests/headers/positive/fstab.c
+- ERROR       tests/headers/positive/fts.c
+- NO ERROR    tests/headers/positive/ftw.c
+- NO ERROR    tests/headers/positive/gconv.c
+- NO ERROR    tests/headers/positive/getopt.c
+- NO ERROR    tests/headers/positive/gettext-po.c
+- NO ERROR    tests/headers/positive/glob.c
+- NO ERROR    tests/headers/positive/gmp-x86_64.c
+- ERROR       tests/headers/positive/gmp.c
+- NO ERROR    tests/headers/positive/gnu-versions.c
+- NO ERROR    tests/headers/positive/grp.c
+- NO ERROR    tests/headers/positive/gshadow.c
+- NO ERROR    tests/headers/positive/iconv.c
+- NO ERROR    tests/headers/positive/ieee754.c
+- NO ERROR    tests/headers/positive/ifaddrs.c
+- ERROR       tests/headers/positive/immintrin.c
+- NO ERROR    tests/headers/positive/inttypes.c
+- NO ERROR    tests/headers/positive/iso646.c
+- NO ERROR    tests/headers/positive/langinfo.c
+- NO ERROR    tests/headers/positive/lastlog.c
+- NO ERROR    tests/headers/positive/libgen.c
+- NO ERROR    tests/headers/positive/libintl.c
+- ERROR       tests/headers/positive/libio.c
+- NO ERROR    tests/headers/positive/libutil.c
+- NO ERROR    tests/headers/positive/limits.c
+- ERROR       tests/headers/positive/link.c
+- NO ERROR    tests/headers/positive/locale.c
+- NO ERROR    tests/headers/positive/malloc.c
+- ERROR       tests/headers/positive/math.c
+- NO ERROR    tests/headers/positive/mcheck.c
+- NO ERROR    tests/headers/positive/memory.c
+- NO ERROR    tests/headers/positive/menu.c
+- NO ERROR    tests/headers/positive/mm3dnow.c
+- NO ERROR    tests/headers/positive/mm_malloc.c
+- ERROR       tests/headers/positive/mmintrin.c
+- NO ERROR    tests/headers/positive/mntent.c
+- NO ERROR    tests/headers/positive/monetary.c
+- NO ERROR    tests/headers/positive/mqueue.c
+- NO ERROR    tests/headers/positive/nc_tparm.c
+- NO ERROR    tests/headers/positive/ncurses.c
+- NO ERROR    tests/headers/positive/ncurses_dll.c
+- NO ERROR    tests/headers/positive/netdb.c
+- NO ERROR    tests/headers/positive/nl_types.c
+- NO ERROR    tests/headers/positive/nlist.c
+- NO ERROR    tests/headers/positive/nss.c
+- NO ERROR    tests/headers/positive/obstack.c
+- NO ERROR    tests/headers/positive/omp.c
+- NO ERROR    tests/headers/positive/panel.c
+- NO ERROR    tests/headers/positive/paths.c
+- NO ERROR    tests/headers/positive/poll.c
+- NO ERROR    tests/headers/positive/printf.c
+- NO ERROR    tests/headers/positive/pthread.c
+- NO ERROR    tests/headers/positive/pty.c
+- NO ERROR    tests/headers/positive/pwd.c
+- NO ERROR    tests/headers/positive/re_comp.c
+- ERROR       tests/headers/positive/regex.c
+- ERROR       tests/headers/positive/resolv.c
+- NO ERROR    tests/headers/positive/sched.c
+- NO ERROR    tests/headers/positive/search.c
+- NO ERROR    tests/headers/positive/semaphore.c
+- NO ERROR    tests/headers/positive/setjmp.c
+- NO ERROR    tests/headers/positive/sgtty.c
+- NO ERROR    tests/headers/positive/shadow.c
+- NO ERROR    tests/headers/positive/signal.c
+- NO ERROR    tests/headers/positive/spawn.c
+- NO ERROR    tests/headers/positive/stab.c
+- NO ERROR    tests/headers/positive/stdarg.c
+- NO ERROR    tests/headers/positive/stdbool.c
+- NO ERROR    tests/headers/positive/stddef.c
+- NO ERROR    tests/headers/positive/stdfix.c
+- NO ERROR    tests/headers/positive/stdint-gcc.c
+- NO ERROR    tests/headers/positive/stdint.c
+- NO ERROR    tests/headers/positive/stdio.c
+- NO ERROR    tests/headers/positive/stdio_ext.c
+- NO ERROR    tests/headers/positive/stdlib.c
+- NO ERROR    tests/headers/positive/string.c
+- NO ERROR    tests/headers/positive/strings.c
+- NO ERROR    tests/headers/positive/stropts.c
+- NO ERROR    tests/headers/positive/sudo_plugin.c
+- NO ERROR    tests/headers/positive/syscall.c
+- NO ERROR    tests/headers/positive/sysexits.c
+- NO ERROR    tests/headers/positive/syslog.c
+- NO ERROR    tests/headers/positive/tar.c
+- NO ERROR    tests/headers/positive/term.c
+- NO ERROR    tests/headers/positive/term_entry.c
+- NO ERROR    tests/headers/positive/termcap.c
+- NO ERROR    tests/headers/positive/termio.c
+- NO ERROR    tests/headers/positive/termios.c
+- NO ERROR    tests/headers/positive/tgmath.c
+- NO ERROR    tests/headers/positive/thread_db.c
+- NO ERROR    tests/headers/positive/tic.c
+- NO ERROR    tests/headers/positive/time.c
+- NO ERROR    tests/headers/positive/ttyent.c
+- NO ERROR    tests/headers/positive/ucontext.c
+- NO ERROR    tests/headers/positive/ulimit.c
+- NO ERROR    tests/headers/positive/unctrl.c
+- NO ERROR    tests/headers/positive/unistd.c
+- NO ERROR    tests/headers/positive/ustat.c
+- NO ERROR    tests/headers/positive/utime.c
+- NO ERROR    tests/headers/positive/utmp.c
+- NO ERROR    tests/headers/positive/utmpx.c
+- NO ERROR    tests/headers/positive/values.c
+- NO ERROR    tests/headers/positive/vis.c
+- NO ERROR    tests/headers/positive/wait.c
+- NO ERROR    tests/headers/positive/wchar.c
+- NO ERROR    tests/headers/positive/wctype.c
+- NO ERROR    tests/headers/positive/wordexp.c
+- ERROR       tests/headers/positive/x86intrin.c
+- NO ERROR    tests/headers/positive/xlocale.c
+- ERROR       tests/headers/positive/xmmintrin.c
+- NO ERROR    tests/kframework/positive/j004a.c
+- NO ERROR    tests/kframework/positive/j004b.c
+- NO ERROR    tests/kframework/positive/j004c.c
+- NO ERROR    tests/kframework/positive/j004d.c
+- NO ERROR    tests/kframework/positive/j004e.c
+- NO ERROR    tests/kframework/positive/j004f.c
+- NO ERROR    tests/kframework/positive/j004g.c
+- NO ERROR    tests/kframework/positive/j004h.c
+- NO ERROR    tests/kframework/positive/j008a.c
+- NO ERROR    tests/kframework/positive/j008b.c
+- NO ERROR    tests/kframework/positive/j008c.c
+- NO ERROR    tests/kframework/positive/j008d.c
+- NO ERROR    tests/kframework/positive/j008e.c
+- NO ERROR    tests/kframework/positive/j008f.c
+- NO ERROR    tests/kframework/positive/j009a.c
+- NO ERROR    tests/kframework/positive/j009b.c
+- NO ERROR    tests/kframework/positive/j009c.c
+- NO ERROR    tests/kframework/positive/j009d.c
+- NO ERROR    tests/kframework/positive/j009e.c
+- NO ERROR    tests/kframework/positive/j009f.c
+- NO ERROR    tests/kframework/positive/j009g.c
+- NO ERROR    tests/kframework/positive/j009i.c
+- NO ERROR    tests/kframework/positive/j010a.c
+- NO ERROR    tests/kframework/positive/j010b.c
+- NO ERROR    tests/kframework/positive/j010c.c
+- NO ERROR    tests/kframework/positive/j015.c
+- NO ERROR    tests/kframework/positive/j015b.c
+- NO ERROR    tests/kframework/positive/j015c.c
+- NO ERROR    tests/kframework/positive/j017a.c
+- NO ERROR    tests/kframework/positive/j017b.c
+- NO ERROR    tests/kframework/positive/j017c.c
+- NO ERROR    tests/kframework/positive/j019a.c
+- NO ERROR    tests/kframework/positive/j019b.c
+- NO ERROR    tests/kframework/positive/j020a.c
+- ERROR       tests/kframework/positive/j020b.c
+- NO ERROR    tests/kframework/positive/j021a.c
+- NO ERROR    tests/kframework/positive/j021b.c
+- NO ERROR    tests/kframework/positive/j021c.c
+- NO ERROR    tests/kframework/positive/j021d.c
+- NO ERROR    tests/kframework/positive/j021e.c
+- NO ERROR    tests/kframework/positive/j021f.c
+- NO ERROR    tests/kframework/positive/j022a.c
+- NO ERROR    tests/kframework/positive/j026a.c
+- NO ERROR    tests/kframework/positive/j027a.c
+- NO ERROR    tests/kframework/positive/j027b.c
+- NO ERROR    tests/kframework/positive/j032a.c
+- NO ERROR    tests/kframework/positive/j032b.c
+- NO ERROR    tests/kframework/positive/j033a.c
+- ERROR       tests/kframework/positive/j033b.c
+- NO ERROR    tests/kframework/positive/j033c.c
+- NO ERROR    tests/kframework/positive/j036a.c
+- NO ERROR    tests/kframework/positive/j036b.c
+- NO ERROR    tests/kframework/positive/j036c.c
+- NO ERROR    tests/kframework/positive/j037a.c
+- NO ERROR    tests/kframework/positive/j037b.c
+- NO ERROR    tests/kframework/positive/j038a.c
+- NO ERROR    tests/kframework/positive/j038b.c
+- NO ERROR    tests/kframework/positive/j038c.c
+- NO ERROR    tests/kframework/positive/j040a.c
+- NO ERROR    tests/kframework/positive/j040b.c
+- NO ERROR    tests/kframework/positive/j040c.c
+- NO ERROR    tests/kframework/positive/j041a.c
+- NO ERROR    tests/kframework/positive/j043a.c
+- NO ERROR    tests/kframework/positive/j044a.c
+- NO ERROR    tests/kframework/positive/j046a.c
+- NO ERROR    tests/kframework/positive/j046b.c
+- NO ERROR    tests/kframework/positive/j046c.c
+- NO ERROR    tests/kframework/positive/j047a.c
+- NO ERROR    tests/kframework/positive/j047b.c
+- NO ERROR    tests/kframework/positive/j047c.c
+- NO ERROR    tests/kframework/positive/j048a.c
+- NO ERROR    tests/kframework/positive/j048b.c
+- NO ERROR    tests/kframework/positive/j049a.c
+- NO ERROR    tests/kframework/positive/j049b.c
+- NO ERROR    tests/kframework/positive/j049c.c
+- NO ERROR    tests/kframework/positive/j052a.c
+- NO ERROR    tests/kframework/positive/j052b.c
+- NO ERROR    tests/kframework/positive/j053a.c
+- NO ERROR    tests/kframework/positive/j055a.c
+- NO ERROR    tests/kframework/positive/j055b.c
+- NO ERROR    tests/kframework/positive/j055c.c
+- NO ERROR    tests/kframework/positive/j055d.c
+- NO ERROR    tests/kframework/positive/j055e.c
+- NO ERROR    tests/kframework/positive/j056a.c
+- NO ERROR    tests/kframework/positive/j058a.c
+- NO ERROR    tests/kframework/positive/j058b.c
+- NO ERROR    tests/kframework/positive/j058c.c
+- NO ERROR    tests/kframework/positive/j058d.c
+- NO ERROR    tests/kframework/positive/j058e.c
+- NO ERROR    tests/kframework/positive/j060a.c
+- NO ERROR    tests/kframework/positive/j060b.c
+- NO ERROR    tests/kframework/positive/j061a.c
+- NO ERROR    tests/kframework/positive/j061b.c
+- NO ERROR    tests/kframework/positive/j062a.c
+- NO ERROR    tests/kframework/positive/j062b.c
+- NO ERROR    tests/kframework/positive/j064a.c
+- NO ERROR    tests/kframework/positive/j064b.c
+- NO ERROR    tests/kframework/positive/j065a.c
+- NO ERROR    tests/kframework/positive/j065b.c
+- NO ERROR    tests/kframework/positive/j067a.c
+- NO ERROR    tests/kframework/positive/j067b.c
+- NO ERROR    tests/kframework/positive/j067c.c
+- NO ERROR    tests/kframework/positive/j067d.c
+- NO ERROR    tests/kframework/positive/j068a.c
+- NO ERROR    tests/kframework/positive/j070a.c
+- NO ERROR    tests/kframework/positive/j071a.c
+- NO ERROR    tests/kframework/positive/j072a.c
+- NO ERROR    tests/kframework/positive/j073a.c
+- NO ERROR    tests/kframework/positive/j075a.c
+- NO ERROR    tests/kframework/positive/j075b.c
+- NO ERROR    tests/kframework/positive/j075c.c
+- NO ERROR    tests/kframework/positive/j075d.c
+- NO ERROR    tests/kframework/positive/j075e.c
+- NO ERROR    tests/kframework/positive/j075f.c
+- NO ERROR    tests/kframework/positive/j076a.c
+- NO ERROR    tests/kframework/positive/j078a.c
+- NO ERROR    tests/kframework/positive/j079a.c
+- NO ERROR    tests/kframework/positive/j079b.c
+- NO ERROR    tests/kframework/positive/j079c.c
+- NO ERROR    tests/kframework/positive/j079d.c
+- NO ERROR    tests/kframework/positive/j079e.c
+- NO ERROR    tests/kframework/positive/j079f.c
+- NO ERROR    tests/kframework/positive/j079g.c
+- ERROR       tests/kframework/positive/j079h.c
+- NO ERROR    tests/kframework/positive/j079i.c
+- NO ERROR    tests/kframework/positive/j079j.c
+- NO ERROR    tests/kframework/positive/j082a.c
+- NO ERROR    tests/kframework/positive/j082b.c
+- NO ERROR    tests/kframework/positive/j083a.c
+- NO ERROR    tests/kframework/positive/j083b.c
+- NO ERROR    tests/kframework/positive/j084a.c
+- NO ERROR    tests/kframework/positive/j086a.c
+- NO ERROR    tests/kframework/positive/j088a.c
+- NO ERROR    tests/kframework/positive/j089a.c
+- NO ERROR    tests/kframework/positive/j089b.c
+- NO ERROR    tests/kframework/positive/j090a.c
+- NO ERROR    tests/kframework/positive/j301a.c
+- NO ERROR    tests/kframework/positive/j302a.c
+- NO ERROR    tests/kframework/positive/j303a.c
+- NO ERROR    tests/kframework/positive/j303b.c
+- NO ERROR    tests/kframework/positive/j304a.c
+- NO ERROR    tests/kframework/positive/j305a.c
+- NO ERROR    tests/kframework/positive/j306a.c
+- NO ERROR    tests/kframework/positive/j307a.c
+- NO ERROR    tests/kframework/positive/j307b.c
+- NO ERROR    tests/kframework/positive/j307c.c
+- NO ERROR    tests/kframework/positive/j308a.c
+- NO ERROR    tests/kframework/positive/j309a.c
+- NO ERROR    tests/kframework/positive/j310a.c
+- NO ERROR    tests/kframework/positive/j310b.c
+- NO ERROR    tests/kframework/positive/j310c.c
+- NO ERROR    tests/kframework/positive/j311a.c
+- NO ERROR    tests/kframework/positive/j315a.c
+- NO ERROR    tests/kframework/positive/j315b.c
+- NO ERROR    tests/kframework/positive/j316a.c
+- NO ERROR    tests/kframework/positive/j319a.c
+- NO ERROR    tests/kframework/positive/j319b.c
+- NO ERROR    tests/kframework/positive/j320a.c
+- NO ERROR    tests/kframework/positive/j320b.c
+- NO ERROR    tests/kframework/positive/j321a.c
+- NO ERROR    tests/kframework/positive/j321b.c
+- NO ERROR    tests/kframework/positive/j322a.c
+- NO ERROR    tests/kframework/positive/j322b.c
+- NO ERROR    tests/kframework/positive/j323a.c
+- NO ERROR    tests/kframework/positive/j324a.c
+- NO ERROR    tests/kframework/positive/j332a.c
+- NO ERROR    tests/kframework/positive/j332b.c
+- NO ERROR    tests/kframework/positive/j409a.c
+- NO ERROR    tests/kframework/positive/j409b.c
+- NO ERROR    tests/kframework/positive/j500a.c
+- NO ERROR    tests/kframework/positive/j501a.c
+- NO ERROR    tests/kframework/positive/j501b.c
+- NO ERROR    tests/kframework/positive/j501c.c
+- NO ERROR    tests/kframework/positive/j501d.c
+- NO ERROR    tests/kframework/positive/j502a.c
+- NO ERROR    tests/kframework/positive/j502b.c
+- NO ERROR    tests/kframework/positive/j503a.c
+- NO ERROR    tests/kframework/positive/j504a.c
+- NO ERROR    tests/kframework/positive/j506a.c
+- NO ERROR    tests/melt/positive/1.c
+- NO ERROR    tests/melt/positive/anon-struct-attr.c
+- NO ERROR    tests/melt/positive/asm-1.c
+- NO ERROR    tests/melt/positive/empty_compound_init.c
+- NO ERROR    tests/melt/positive/expr-stmt-types.c
+- NO ERROR    tests/melt/positive/struct-init.c
+- NO ERROR    tests/melt/positive/struct-init2.c
+- NO ERROR    tests/melt/positive/struct-scoping.c
+- NO ERROR    tests/melt/positive/typedef_1.c
 
-Failures:
-            ERROR
-                        tests/headers/positive/emmintrin.c
-                        tests/headers/positive/fcntl.c
-                        tests/headers/positive/features.c
-                        tests/headers/positive/fts.c
-                        tests/headers/positive/gmp.c
-                        tests/headers/positive/immintrin.c
-                        tests/headers/positive/libio.c
-                        tests/headers/positive/link.c
-                        tests/headers/positive/math.c
-                        tests/headers/positive/mmintrin.c
-                        tests/headers/positive/regex.c
-                        tests/headers/positive/resolv.c
-                        tests/headers/positive/x86intrin.c
-                        tests/headers/positive/xmmintrin.c
-                        tests/kframework/positive/j020b.c
-                        tests/kframework/positive/j033b.c
-                        tests/kframework/positive/j079h.c
-
-Positive tests:
-Pass: 314
-Fail: 17
-
-Negative tests:
-Pass: 0
-Fail: 0
 
 Summary:
-Pass: 314
-Fail: 17
+  67 errored
+  701 did not error
 

@@ -1,19 +1,13 @@
-Positive test       - FAIL: ERROR       tests/kframework/neutral/j009h.c
-Positive test       - PASS:             tests/melt/neutral/typedef-c11-redeclaration.c
+- NO ERROR    tests/gcc/compile/neutral/attr-nest.c
+- NO ERROR    tests/gcc/compile/neutral/pr37645.c
+- NO ERROR    tests/gcc/compile/neutral/pr50287.c
+- NO ERROR    tests/gcc/default/neutral/fail_always_inline2.c
+- ERROR       tests/gcc/default/neutral/funcdef-attr-1.c
+- ERROR       tests/kframework/neutral/j009h.c
+- NO ERROR    tests/melt/neutral/typedef-c11-redeclaration.c
 
-Failures:
-            ERROR
-                        tests/kframework/neutral/j009h.c
-
-Positive tests:
-Pass: 1
-Fail: 1
-
-Negative tests:
-Pass: 0
-Fail: 0
 
 Summary:
-Pass: 1
-Fail: 1
+  2 errored
+  5 did not error
 

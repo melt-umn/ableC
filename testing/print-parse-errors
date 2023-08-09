@@ -1,11 +1,11 @@
 #!/bin/bash
 
 
-FILES=`find . -name "*.stdout"`
+FILES=`find . -name "*.errs"`
 
 for file in $FILES; do
-  # remove the trailing .error from the file name
-  cfile=${file/.stdout/}
+  # remove the trailing .err from the file name
+  cfile=${file/.errs/.c}
   # get the number of the real character index from a parse error message
   realcharacterindex=`cat $file | grep "index:" | awk '{ print $7 }' | cut -d\) -f1`
   # well, maybe there wasn't a parse error message?
