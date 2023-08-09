@@ -77,8 +77,8 @@
 - NO ERROR    tests/kframework/negative/j010a.c
 - NO ERROR    tests/kframework/negative/j010b.c
 - NO ERROR    tests/kframework/negative/j010c.c
-- ERROR       tests/kframework/negative/j015b.c
 - NO ERROR    tests/kframework/negative/j015.c
+- ERROR       tests/kframework/negative/j015b.c
 - ERROR       tests/kframework/negative/j015c.c
 - NO ERROR    tests/kframework/negative/j017a.c
 - NO ERROR    tests/kframework/negative/j017b.c
@@ -235,6 +235,7 @@
 - ERROR       tests/melt/negative/bad_array_init.c
 - ERROR       tests/melt/negative/expr_type_index_1.c
 - ERROR       tests/melt/negative/expr_type_index_2.c
+- ERROR       tests/melt/negative/lvalues_1.c
 - ERROR       tests/melt/negative/lvalues_10.c
 - ERROR       tests/melt/negative/lvalues_11.c
 - ERROR       tests/melt/negative/lvalues_12.c
@@ -245,9 +246,8 @@
 - ERROR       tests/melt/negative/lvalues_17.c
 - ERROR       tests/melt/negative/lvalues_18.c
 - ERROR       tests/melt/negative/lvalues_19.c
-- ERROR       tests/melt/negative/lvalues_1.c
-- ERROR       tests/melt/negative/lvalues_20.c
 - ERROR       tests/melt/negative/lvalues_2.c
+- ERROR       tests/melt/negative/lvalues_20.c
 - ERROR       tests/melt/negative/lvalues_3.c
 - ERROR       tests/melt/negative/lvalues_4.c
 - ERROR       tests/melt/negative/lvalues_5.c
