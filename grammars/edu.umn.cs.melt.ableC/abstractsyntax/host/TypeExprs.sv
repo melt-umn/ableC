@@ -305,17 +305,9 @@ top::BaseTypeExpr ::= q::Qualifiers  kwd::StructOrEnumOrUnion  n::Name
     then
       -- TODO: Ugly way of forward-declaring a tag without overriding an existing definition
       [typedefDecls(
-         consAttribute(
-           gccAttribute(
-             consAttrib(
-               appliedAttrib(
-                 attribName(name("refId", location=builtinLoc("host"))),
-                 consExpr(
-                   stringLiteral(s"\"${refId}\"", location=builtinLoc("host")),
-                   nilExpr())),
-               nilAttrib())),
-           nilAttribute()),
-         top,
+         nilAttribute(),
+         -- Avoid re-decorating and re-generating refIds
+         decTypeExpr(top),
          consDeclarator(
            declarator(
              name("_unused_" ++ toString(genInt()), location=builtinLoc("host")),
