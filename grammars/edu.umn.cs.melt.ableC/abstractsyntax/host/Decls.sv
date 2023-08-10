@@ -450,12 +450,7 @@ top::FunctionDecl ::= storage::StorageClasses  fnquals::SpecialSpecifiers  bty::
     case mty.modifiedBaseTypeExpr of
     | just(mbty) ->
       decls(
-        foldDecl(
-          -- decorate needed here because of flowtype for decls
-          decorate bty.host with {
-            env = bty.env; givenRefId = bty.givenRefId;
-            controlStmtContext = bty.controlStmtContext;
-          }.decls ++
+        foldDecl(bty.hostDecls ++
           [functionDeclaration(
              functionDecl(
                storage,
@@ -696,11 +691,7 @@ top::ParameterDecl ::= storage::StorageClasses  bty::BaseTypeExpr  mty::TypeModi
         \ d::Decl ->
           decorate d with {env = top.env; isTopLevel = true;
             controlStmtContext = top.controlStmtContext;},
-        -- decorate needed here because of flowtype for decls
-        decorate bty.host with {
-          env = bty.env; givenRefId = bty.givenRefId;
-          controlStmtContext = top.controlStmtContext;
-        }.decls)
+        bty.hostDecls)
     | nothing() -> []
     end;
   top.functionDefs :=

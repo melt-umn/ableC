@@ -3,6 +3,8 @@
 set -eu
 shopt -s extglob globstar
 
+export LANG=C  # Disable localization to force deterministic glob ordering
+
 echo "Testing positive..."
 java -Xss8M -jar ableC.jar tests/**/positive/!(*.pp_out).c | tee expected-results/positive.out
 
