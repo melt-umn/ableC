@@ -60,8 +60,6 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 abstract production callExpr
 top::host:Expr ::= f::host:Expr  a::host:Exprs
 {
-  propagate host:controlStmtContext;
-
   top.pp = parens( ppConcat([ f.pp, parens( ppImplode( cat( comma(), space() ), a.pps ))]) );
   
   local rewriteProd::Maybe<(host:Expr ::= host:Exprs)> =
@@ -73,20 +71,11 @@ top::host:Expr ::= f::host:Expr  a::host:Exprs
     | nothing() -> nothing()
     end;
   
-  a.env = addEnv(f.defs, f.env);
-  f.env = top.env;
-  
-  local host::host:Expr =
-    inj:callExpr(
-      host:decExpr(f),
-      host:decExprs(a));
+  forward host = inj:callExpr(@f, @a);
   forwards to
     case orElse(f.callProd, rewriteProd) of
-    | just(prod) ->
-       host:transformedExpr(
-         host,
-         prod(host:decExprs(a)))
-    | nothing() -> host
+    | just(prod) -> host:transformedExpr(@host, prod(host:decExprs(a)))
+    | nothing() -> @host
     end;
 }
 abstract production memberExpr
