@@ -238,7 +238,7 @@ top::Stmt ::= i::MaybeExpr  c::MaybeExpr  s::MaybeExpr  b::Stmt
   local cty :: Type = fromMaybe(errorType(), c.maybeTyperep);
   top.errors <-
     if cty.defaultFunctionArrayLvalueConversion.isScalarType then []
-    else [err(loc("TODOfor1",-1,-1,-1,-1,-1,-1), "For condition must be scalar type, instead it is " ++ showType(cty))]; -- TODO: location
+    else [errFromOrigin(c, "For condition must be scalar type, instead it is " ++ showType(cty))];
 
   b.controlStmtContext = controlEnterLoop(top.controlStmtContext);
 }
@@ -286,7 +286,7 @@ top::Stmt ::= i::Decl  c::MaybeExpr  s::MaybeExpr  b::Stmt
   local cty :: Type = fromMaybe(errorType(), c.maybeTyperep);
   top.errors <-
     if cty.defaultFunctionArrayLvalueConversion.isScalarType then []
-    else [err(loc("TODOfor2",-1,-1,-1,-1,-1,-1), "For condition must be scalar type, instead it is " ++ showType(cty))]; -- TODO: location
+    else [errFromOrigin(c, "For condition must be scalar type, instead it is " ++ showType(cty))];
 
   b.controlStmtContext = controlEnterLoop(top.controlStmtContext);
 }
@@ -369,8 +369,7 @@ top::Stmt ::=
   propagate env, host;
   top.pp = cat( text("continue"), semi() );
   top.errors := if top.controlStmtContext.continueValid then []
-                else [err(loc("TODOcontinue",-1,-1,-1,-1,-1,-1), -- TODO: Location
-                  "continue statement is in an invalid location")];
+                else [errFromOrigin(top, "continue statement is in an invalid location")];
   top.globalDecls := [];
   top.functionDecls := [];
   top.defs := [];
@@ -385,8 +384,7 @@ top::Stmt ::=
   propagate env, host;
   top.pp = ppConcat([ text("break"), semi()  ]);
   top.errors := if top.controlStmtContext.breakValid then []
-                else [err(loc("TODObreak",-1,-1,-1,-1,-1,-1), -- TODO: Location
-                  "break statement is in an invalid location")];
+                else [errFromOrigin(top, "break statement is in an invalid location")];
   top.globalDecls := [];
   top.functionDecls := [];
   top.defs := [];
