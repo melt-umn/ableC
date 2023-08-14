@@ -67,7 +67,7 @@ top::Initializer ::= e::Expr
       | _ -> [errFromOrigin(e, "invalid array initializer")]
       end
     | _ when typeAssignableTo(top.expectedType, e.typerep) -> []
-    | _ -> [wrnFromOrigin(e, s"Incompatible types in ${top.initializerPos}, expected ${showType(top.expectedType)} but found ${showType(e.typerep)}")]
+    | _ -> [errFromOrigin(e, s"Incompatible types in ${top.initializerPos}, expected ${showType(top.expectedType)} but found ${showType(e.typerep)}")]
     end;
 }
 
