@@ -6,7 +6,7 @@ imports edu:umn:cs:melt:ableC:abstractsyntax:env;
 imports edu:umn:cs:melt:ableC:abstractsyntax:construction;
 import edu:umn:cs:melt:ableC:abstractsyntax:host;
 
-nonterminal LhsOrRhsRuntimeMods with modLhs, modRhs, lhsToModify, rhsToModify;
+tracked nonterminal LhsOrRhsRuntimeMods with modLhs, modRhs, lhsToModify, rhsToModify;
 synthesized attribute modLhs :: Expr;
 synthesized attribute modRhs :: Expr;
 
@@ -67,7 +67,7 @@ Pair<Expr Expr> ::= l::[LhsOrRhsRuntimeMod]  lhs::Decorated Expr  rhs::Decorated
   return (modLhs, modRhs);
 }
 
-nonterminal LhsOrRhsRuntimeMod with modLhs, modRhs, isLhs, lhsToModify, rhsToModify;
+tracked nonterminal LhsOrRhsRuntimeMod with modLhs, modRhs, isLhs, lhsToModify, rhsToModify;
 synthesized attribute isLhs :: Boolean;
 
 abstract production lhsRuntimeMod
@@ -90,7 +90,7 @@ top::LhsOrRhsRuntimeMod ::= rm::RuntimeMod
   rm.exprToModify = top.rhsToModify;
 }
 
-nonterminal RuntimeMods with modExpr, exprToModify;
+tracked nonterminal RuntimeMods with modExpr, exprToModify;
 synthesized attribute modExpr :: Expr;
 inherited attribute exprToModify :: Expr;
 
@@ -124,7 +124,7 @@ Expr ::= l::[RuntimeMod] e::Decorated Expr
   return modExpr;
 }
 
-nonterminal RuntimeMod with modExpr, exprToModify;
+tracked nonterminal RuntimeMod with modExpr, exprToModify;
 
 -- insert arbitrary boolean expressions and error message to print on exit if failed
 abstract production runtimeCheck
