@@ -210,8 +210,8 @@ nonterminal TypeSpecifier with ignoreMe, specifier, size, givenSign, givenDomain
 
 synthesized attribute specifier :: (a:Type ::= a:Qualifiers);
 synthesized attribute size :: Integer;  -- Size on X86_64 (which is all we care about for vector intrinsics, for now...) 
-autocopy attribute givenSign :: (a:BuiltinType ::= a:IntegerType);
-autocopy attribute givenDomain :: (a:BuiltinType ::= a:RealType);
+inherited attribute givenSign :: (a:BuiltinType ::= a:IntegerType);
+inherited attribute givenDomain :: (a:BuiltinType ::= a:RealType);
 
 aspect default production
 top::TypeSpecifier ::=

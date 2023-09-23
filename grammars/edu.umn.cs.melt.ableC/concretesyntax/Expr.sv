@@ -531,13 +531,17 @@ concrete productions top::Designation_c
 closed nonterminal DesignatorList_c with location, ast<ast:Designator>, givenDesignator;
 concrete productions top::DesignatorList_c
 | h::DesignatorList_c  t::Designator_c
-    { top.ast = t.ast;
-      t.givenDesignator = h.ast; }
+    { top.ast = t.ast; }
 | d::Designator_c
     { top.ast = d.ast; }
 
 -- The previous designator to operate upon.
-autocopy attribute givenDesignator :: ast:Designator;
+inherited attribute givenDesignator :: ast:Designator;
+
+propagate givenDesignator on 
+  DesignatorList_c,
+  Designator_c,
+  ArrayDesignator_c;
 
 closed nonterminal Designator_c with location, ast<ast:Designator>, givenDesignator;
 concrete productions top::Designator_c

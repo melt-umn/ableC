@@ -5,6 +5,8 @@ imports edu:umn:cs:melt:ableC:abstractsyntax:host as host;
 abstract production arraySubscriptExpr
 top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 {
+  propagate env, host:controlStmtContext;
+  
   top.pp = parens( ppConcat([ lhs.pp, brackets( rhs.pp )]) );
   production attribute lerrors :: [Message] with ++;
   lerrors := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
@@ -27,6 +29,8 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
 abstract production memberExpr
 top::host:Expr ::= lhs::host:Expr  deref::Boolean  rhs::host:Name
 {
+  propagate env, host:controlStmtContext;
+  
   top.pp = parens(ppConcat([lhs.pp, text(if deref then "->" else "."), rhs.pp]));
   production attribute lerrors :: [Message] with ++;
   lerrors := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
@@ -58,6 +62,8 @@ top::host:Expr ::= lhs::host:Expr  deref::Boolean  rhs::host:Name
 abstract production explicitCastExpr
 top::host:Expr ::= ty::host:TypeName  e::host:Expr
 {
+  propagate env, host:controlStmtContext;
+  
   top.pp = parens( ppConcat([parens(ty.pp), e.pp]) );
   production attribute lerrors :: [Message] with ++;
   lerrors := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
@@ -79,6 +85,8 @@ top::host:Expr ::= ty::host:TypeName  e::host:Expr
 abstract production callExpr
 top::host:Expr ::= f::host:Expr  a::host:Exprs
 {
+  propagate env, host:controlStmtContext;
+  
   top.pp = parens( ppConcat([ f.pp, parens( ppImplode( cat( comma(), space() ), a.pps ))]) );
 
   production attribute lerrors :: [Message] with ++;

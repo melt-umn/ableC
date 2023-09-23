@@ -28,12 +28,17 @@ melt.trynode('ableC') {
   }
 
   stage ("Test") {
-    dir("testing/expected-results") {
+    dir("testing") {
       withEnv(newenv) {
+        sh "./build-test-artifact"
         sh "./runTests"
       }
     }
   }
+
+  // Avoid deadlock condition from all executors being filled with builds
+  // that are waiting for downstream builds to finish.
+  waitUntil { melt.isExecutorAvailable() }
 
   stage ("Integration") {
     // All known, stable extensions to build downstream

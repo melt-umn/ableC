@@ -1,0 +1,9 @@
+#!/bin/bash
+
+set -eu
+
+cd expected-results/
+
+cp positive.out positive
+cp negative.out negative
+cp neutral.out neutral

@@ -9,12 +9,16 @@ import edu:umn:cs:melt:ableC:abstractsyntax:host;
 nonterminal LhsOrRhsRuntimeMods with modLhs, modRhs, lhsToModify, rhsToModify;
 synthesized attribute modLhs :: Expr;
 synthesized attribute modRhs :: Expr;
-autocopy attribute lhsToModify :: Expr;
-autocopy attribute rhsToModify :: Expr;
+
+inherited attribute lhsToModify :: Expr;
+inherited attribute rhsToModify :: Expr;
 
 abstract production consLhsOrRhsRuntimeMod
 top::LhsOrRhsRuntimeMods ::= h::LhsOrRhsRuntimeMod  t::LhsOrRhsRuntimeMods
 {
+  t.lhsToModify = top.lhsToModify;
+  t.rhsToModify = top.rhsToModify;
+
   h.lhsToModify = t.modLhs;
   h.rhsToModify = t.modRhs;
 
@@ -90,11 +94,12 @@ top::LhsOrRhsRuntimeMod ::= rm::RuntimeMod
 
 nonterminal RuntimeMods with modExpr, exprToModify;
 synthesized attribute modExpr :: Expr;
-autocopy attribute exprToModify :: Expr;
+inherited attribute exprToModify :: Expr;
 
 abstract production consRuntimeMod
 top::RuntimeMods ::= h::RuntimeMod  t::RuntimeMods
 {
+  t.exprToModify = top.exprToModify;
   h.exprToModify = t.modExpr;
   top.modExpr = h.modExpr;
 }

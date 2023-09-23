@@ -92,7 +92,7 @@ flowtype MaybeName = decorate {env}, maybename {}, hasName {}, valueLocalLookup 
 abstract production justName
 top::MaybeName ::= n::Name
 {
-  propagate host;
+  propagate env, host;
   top.pp = n.pp;
   top.maybename = just(n);
   top.hasName = true;
@@ -125,11 +125,13 @@ top::MaybeName ::=
 
 synthesized attribute names :: [String];
 
-autocopy attribute appendedNames :: Names;
+inherited attribute appendedNames :: Names;
 synthesized attribute appendedNamesRes :: Names;
 
 nonterminal Names with env, pps, names, count, appendedNames, appendedNamesRes;
 flowtype Names = decorate {env}, pps {}, names {}, count {}, appendedNamesRes {appendedNames};
+
+propagate env on Names;
 
 abstract production consName
 top::Names ::= h::Name t::Names
@@ -137,6 +139,7 @@ top::Names ::= h::Name t::Names
   top.pps = h.pp :: t.pps;
   top.names = h.name :: t.names;
   top.count = 1 + t.count;
+  t.appendedNames = top.appendedNames;
   top.appendedNamesRes = consName(h, t.appendedNamesRes);
 }
 

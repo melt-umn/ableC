@@ -7,7 +7,7 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 abstract production realConstant
 top::Expr ::= c::NumericConstant
 {
-  propagate host, errors, globalDecls, functionDecls, defs, freeVariables;
+  propagate env, host, errors, globalDecls, functionDecls, defs, freeVariables;
   top.pp = c.pp;
   top.typerep = builtinType(nilQualifier(), c.constanttyperep);
   top.isLValue = false;
@@ -17,7 +17,7 @@ top::Expr ::= c::NumericConstant
 abstract production imaginaryConstant
 top::Expr ::= c::NumericConstant
 {
-  propagate host, errors, globalDecls, functionDecls, defs, freeVariables;
+  propagate env, host, errors, globalDecls, functionDecls, defs, freeVariables;
   top.pp = c.pp;
   top.typerep = builtinType(nilQualifier(),
     case c.constanttyperep of

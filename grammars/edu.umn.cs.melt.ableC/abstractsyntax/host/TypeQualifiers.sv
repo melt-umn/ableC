@@ -3,11 +3,11 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 nonterminal Qualifiers with mangledName, qualifiers, pps, host, typeToQualify, errors;
 flowtype Qualifiers = decorate {}, qualifiers {}, errors {typeToQualify};
 
-autocopy attribute typeToQualify :: Type;
+inherited attribute typeToQualify :: Type;
 
 synthesized attribute qualifiers :: [Qualifier];
 
-propagate errors on Qualifiers;
+propagate errors, typeToQualify, controlStmtContext on Qualifiers;
 
 abstract production consQualifier
 top::Qualifiers ::= h::Qualifier  t::Qualifiers
@@ -145,7 +145,7 @@ nonterminal SpecialSpecifier with pp, host, env, errors, globalDecls,
   functionDecls, defs, controlStmtContext;
 flowtype SpecialSpecifier = decorate {env, controlStmtContext};
 
-propagate host, errors, globalDecls, functionDecls, defs on SpecialSpecifier;
+propagate env, host, errors, globalDecls, functionDecls, defs, controlStmtContext on SpecialSpecifier;
 
 abstract production inlineQualifier
 top::SpecialSpecifier ::=
@@ -171,7 +171,7 @@ nonterminal SpecialSpecifiers with pps, host, env, errors,
   globalDecls, functionDecls, defs, controlStmtContext;
 flowtype SpecialSpecifiers = decorate {env, controlStmtContext};
 
-propagate host, errors, globalDecls, functionDecls, defs on SpecialSpecifiers;
+propagate env, host, errors, globalDecls, functionDecls, defs, controlStmtContext on SpecialSpecifiers;
 
 abstract production consSpecialSpecifier
 top::SpecialSpecifiers ::= h::SpecialSpecifier t::SpecialSpecifiers

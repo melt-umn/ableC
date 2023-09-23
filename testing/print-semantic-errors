@@ -1,11 +1,11 @@
 #!/bin/bash
 
 
-FILES=`find . -name "*.stdout"`
+FILES=`find . -name "*.errs"`
 
 if [ "$1" == "" ]; then
   # strip off the file, line, column, and just print what errors appeared, somewhere
-  cat $FILES | cut -d: -f4- | sort | uniq
+  grep -v "Error at line\|CPP call\|^ " $FILES | cut -d: -f5- | sort | uniq
 else
   grep "$1" $FILES
 fi

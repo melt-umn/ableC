@@ -29,6 +29,7 @@ flowtype Attributes = decorate {env, controlStmtContext};
 abstract production consAttribute
 top::Attributes ::= h::Attribute t::Attributes
 {
+  propagate env, controlStmtContext;
   top.pps = h.pp :: t.pps;
 }
 
@@ -45,6 +46,7 @@ flowtype Attribute = decorate {env, controlStmtContext};
 abstract production gccAttribute
 top::Attribute ::= l::Attribs
 {
+  propagate env, controlStmtContext;
   top.pp = ppConcat([text("__attribute__(("), l.pp, text("))")]);
 }
 
@@ -60,6 +62,8 @@ flowtype Attribs = decorate {env, controlStmtContext};
 abstract production consAttrib
 top::Attribs ::= h::Attrib t::Attribs
 {
+  propagate env, controlStmtContext;
+
   top.host = if h.isHostAttrib then consAttrib(h.host, t.host) else t.host;
   top.pp =
     case t of
@@ -88,6 +92,7 @@ top::Attrib ::=
 abstract production wordAttrib
 top::Attrib ::= n::AttribName
 {
+  propagate env;
   top.pp = n.pp;
 }
 -- e.g. __attribute__((deprecated("don't use this duh")))
@@ -101,6 +106,7 @@ top::Attrib ::= n::AttribName  e::Exprs
 abstract production idAppliedAttrib
 top::Attrib ::= n::AttribName  id::Name  e::Exprs
 {
+  propagate env, controlStmtContext;
   top.pp = ppConcat([n.pp, parens(ppImplode(text(", "), id.pp :: e.pps))]);
   top.isHostAttrib = true;
 }
@@ -111,6 +117,6 @@ flowtype AttribName = decorate {env};
 abstract production attribName
 top::AttribName ::= n::Name
 {
+  propagate env;
   top.pp = n.pp;
 }
-

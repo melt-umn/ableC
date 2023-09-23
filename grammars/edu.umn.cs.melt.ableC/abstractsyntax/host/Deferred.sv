@@ -3,6 +3,8 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 abstract production deferredDecl
 top::Decl ::= refId::String d::Decl
 {
+  propagate env;
+  
   top.pp = ppConcat([pp"deferredDecl", space(), parens(text(refId)), space(), braces(nestlines(2, d.pp))]);
 
   production refIdExists::Boolean = !null(lookupRefId(refId, top.env));
@@ -60,14 +62,7 @@ top::Decl ::= storage::StorageClasses  attrs::Attributes  ty::BaseTypeExpr  dcls
 {
   local host::Decl =
     if dcls.hasModifiedTypeExpr
-    then
-      decls(
-        foldDecl(
-          -- decorate needed here because of flowtype for decls
-          decorate ty.host with {
-            env = ty.env; givenRefId = ty.givenRefId;
-            controlStmtContext = ty.controlStmtContext;
-          }.decls ++ dcls.hostDecls))
+    then decls(foldDecl(ty.hostDecls ++ dcls.hostDecls))
     else variableDecls(storage, attrs.host, ty.host, dcls.host);
   local deferredDecls::[Decorated Decl] =
     defsDeferredDecls(addEnv(dcls.defs, dcls.env), top.isTopLevel,
@@ -104,14 +99,7 @@ top::Decl ::= attrs::Attributes  ty::BaseTypeExpr  dcls::Declarators
 {
   local host::Decl =
     if dcls.hasModifiedTypeExpr
-    then
-      decls(
-        foldDecl(
-          -- decorate needed here because of flowtype for decls
-          decorate ty.host with {
-            env = ty.env; givenRefId = ty.givenRefId;
-            controlStmtContext = ty.controlStmtContext;
-          }.decls ++ dcls.hostDecls))
+    then decls(foldDecl(ty.hostDecls ++ dcls.hostDecls))
     else typedefDecls(attrs.host, ty.host, dcls.host);
   local deferredDecls::[Decorated Decl] =
     defsDeferredDecls(addEnv(dcls.defs, dcls.env), top.isTopLevel,

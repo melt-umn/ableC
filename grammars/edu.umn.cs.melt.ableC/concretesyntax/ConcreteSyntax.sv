@@ -21,5 +21,8 @@ imports silver:langutil:lsp as lsp;
 -- errors it prefixed with ast, to avoid any name clashes.
 imports edu:umn:cs:melt:ableC:abstractsyntax:host as ast;
 
+-- Needs to be supplied when decorating some terms during AST construction.
+imports edu:umn:cs:melt:ableC:abstractsyntax:env as ast;
+
 -- easier construction of ast nodes
 imports edu:umn:cs:melt:ableC:abstractsyntax:construction as ast;

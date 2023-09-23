@@ -50,9 +50,15 @@ monoid attribute localDefs :: [Def];
 {--
  - The environment, on which all lookups are performed.
  -}
-autocopy attribute env :: Decorated Env;
+inherited attribute env :: Decorated Env;
+
 {--
- - The local environment for a struct or enum. Could be a different type, I suppose. TODO
+ - The local field environment for a struct or union. Could be a different type, I suppose. TODO
+ -}
+inherited attribute localEnv :: Decorated Env;
+
+{--
+ - The local environment found when looking up a struct or union.
  -}
 synthesized attribute tagEnv :: Decorated Env;
 

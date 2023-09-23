@@ -147,6 +147,7 @@ top::Expr ::= decls::Decls lifted::Expr
   decls.controlStmtContext = initialControlStmtContext;
 
   lifted.env = addEnv([globalDefsDef(decls.defs)], top.env);
+  lifted.controlStmtContext = top.controlStmtContext;
 
   top.isLValue = lifted.isLValue;
 }
@@ -178,6 +179,7 @@ top::Stmt ::= decls::Decls lifted::Stmt
   decls.controlStmtContext = initialControlStmtContext;
 
   lifted.env = addEnv([globalDefsDef(decls.defs)], top.env);
+  lifted.controlStmtContext = top.controlStmtContext;
 }
 
 -- Same as injectGlobalDeclsExpr, but on BaseTypeExpr
@@ -210,6 +212,7 @@ top::BaseTypeExpr ::= decls::Decls lifted::BaseTypeExpr
   decls.controlStmtContext = initialControlStmtContext;
 
   lifted.env = addEnv([globalDefsDef(decls.defs)], top.env);
+  lifted.controlStmtContext = top.controlStmtContext;
 }
 
 -- Just lift a list of Decls
