@@ -168,7 +168,7 @@ top::BaseTypeExpr ::= msg::[Message]  ty::BaseTypeExpr
 }
 
 {-- Constructs a TypeExpr by translating a Type back to a TypeExpr
- - This is NOT a host production, since Type should not occur in the host tree.
+ - This is NOT a host production, since Type should not typically occur in the host tree.
  - Instead we transform the parameter type into a TypeExpr and return that.
  - Note that directTypeExpr(te.typerep) is not necessarily equivalent to te, since TypeExprs can
  - contain extra information relevant only to the declaration, not to the meaning of the type.

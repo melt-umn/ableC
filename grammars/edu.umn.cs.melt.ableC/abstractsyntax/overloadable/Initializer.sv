@@ -3,12 +3,13 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax:overloadable;
 abstract production exprInitializer
 top::host:Initializer ::= e::host:Expr
 {
+  propagate env, host:controlStmtContext;
   top.pp = e.pp;
   
   forwards to
     case top.host:expectedType.exprInitProd of
-    | just(prod) -> prod(e, top.location)
-    | nothing() -> host:exprInitializer(e, location=top.location)
+    | just(prod) -> prod(host:decExpr(e, location=top.location), top.location)
+    | nothing() -> host:exprInitializer(@e, location=top.location)
     end;
 }
 

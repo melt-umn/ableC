@@ -94,6 +94,14 @@ top::ValueItem ::= e::Decorated Expr
   top.isItemValue = true;
 }
 
+abstract production preDeclValueItem
+top::ValueItem ::= ty::Type  loc::Location
+{
+  top.typerep = ty;
+  top.sourceLocation = loc;
+  top.isItemValue = true;
+}
+
 abstract production errorValueItem
 top::ValueItem ::=
 {
