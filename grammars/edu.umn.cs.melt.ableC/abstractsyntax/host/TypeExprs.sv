@@ -92,11 +92,7 @@ top::TypeName ::= bty::BaseTypeExpr  mty::TypeModifierExpr
         \ d::Decl ->
           decorate d with {env = top.env; isTopLevel = true;
                           controlStmtContext = top.controlStmtContext;},
-        -- decorate needed here because of flowtype for decls
-        decorate bty.host with {
-          env = bty.env; givenRefId = bty.givenRefId;
-          controlStmtContext = bty.controlStmtContext;
-        }.decls)
+        bty.hostDecls)
     | nothing() -> []
     end ++ bty.globalDecls ++ mty.globalDecls;
 }
@@ -132,10 +128,23 @@ top::TypeName ::= ty::Decorated TypeName
  - Corresponds to types obtainable from a TypeSpecifiers.
  -}
 nonterminal BaseTypeExpr with env, typerep, pp, host, errors, globalDecls,
-  functionDecls, typeModifier, decls, defs, givenRefId, freeVariables,
+  functionDecls, typeModifier, decls, hostDecls, defs, givenRefId, freeVariables,
   controlStmtContext;
 flowtype BaseTypeExpr = decorate {env, givenRefId, controlStmtContext},
   typeModifier {decorate};
+
+aspect default production
+top::BaseTypeExpr ::=
+{
+  top.hostDecls = decorate top.host with {
+    -- TODO: We are decorating a host tree with the pre-host env here.
+    -- Shouldn't matter too much in practice, since we just want decls
+    -- and there shouldn't be any forwarding after .host
+    env = top.env;
+    givenRefId = nothing();
+    controlStmtContext = top.controlStmtContext;
+  }.decls;
+}
 
 abstract production errorTypeExpr
 top::BaseTypeExpr ::= msg::[Message]
@@ -212,6 +221,7 @@ top::BaseTypeExpr ::= d::[Def]  bty::BaseTypeExpr
   top.typerep = bty.typerep;
   top.typeModifier = bty.typeModifier;
   top.decls := defsDecl(d) :: bty.decls;
+  top.hostDecls = bty.hostDecls;
   top.defs <- d;
 
   bty.env = addEnv(d, top.env);
@@ -268,12 +278,14 @@ top::BaseTypeExpr ::= q::Qualifiers  kwd::StructOrEnumOrUnion  n::Name
 
   local tags :: [TagItem] = lookupTag(n.name, top.env);
 
+  production refId :: String = fromMaybe(n.tagRefId, top.givenRefId);
+
   top.typerep =
     case kwd, tags of
     -- It's an enum and we see the declaration.
     | enumSEU(), enumTagItem(d) :: _ -> extType(q, enumExtType(d))
     -- We don't see the declaration, so we're adding it.
-    | _, [] -> extType(q, refIdExtType(kwd, just(n.name), fromMaybe(n.tagRefId, top.givenRefId)))
+    | _, [] -> extType(q, refIdExtType(kwd, just(n.name), refId))
     -- It's a struct/union and the tag type agrees.
     | structSEU(), refIdTagItem(structSEU(), rid) :: _ -> extType(q, refIdExtType(kwd, just(n.name), rid))
     | unionSEU(), refIdTagItem(unionSEU(), rid) :: _ -> extType(q, refIdExtType(kwd, just(n.name), rid))
@@ -304,7 +316,7 @@ top::BaseTypeExpr ::= q::Qualifiers  kwd::StructOrEnumOrUnion  n::Name
       -- TODO: Ugly way of forward-declaring a tag without overriding an existing definition
       [typedefDecls(
          nilAttribute(),
-         top,
+         withRefId(refId, top),
          consDeclarator(
            declarator(
              name("_unused_" ++ toString(genInt())),
@@ -319,7 +331,7 @@ top::BaseTypeExpr ::= q::Qualifiers  kwd::StructOrEnumOrUnion  n::Name
     -- It's an enum and we see the declaration.
     | enumSEU(), enumTagItem(d) :: _ -> []
     -- We don't see the declaration, so we're adding it.
-    | _, [] -> [tagDef(n.name, refIdTagItem(kwd, fromMaybe(n.tagRefId, top.givenRefId)))]
+    | _, [] -> [tagDef(n.name, refIdTagItem(kwd, refId))]
     -- It's a struct/union and the tag type agrees.
     | structSEU(), refIdTagItem(structSEU(), rid) :: _ -> []
     | unionSEU(), refIdTagItem(unionSEU(), rid) :: _ -> []
@@ -328,6 +340,15 @@ top::BaseTypeExpr ::= q::Qualifiers  kwd::StructOrEnumOrUnion  n::Name
     end;
 
   q.typeToQualify = top.typerep;
+}
+
+-- Workaround to set the default refId in decls for tagReferenceTypeExpr.
+-- We can't do this via __attribute__((refId(...))) since this might appear in the host tree.
+abstract production withRefId
+top::BaseTypeExpr ::= refId::String  ty::BaseTypeExpr
+{
+  forward.givenRefId = just(refId);
+  forwards to ty;
 }
 
 {-- References to anon tag types by refId.  Can't appear in code, but can be generated
@@ -354,7 +375,9 @@ top::BaseTypeExpr ::= q::Qualifiers  def::StructDecl
   top.typeModifier = baseTypeExpr();
   -- Avoid re-decorating and re-generating refIds
   top.decls := [typeExprDecl(nilAttribute(), decTypeExpr(top))];
+  top.hostDecls = [typeExprDecl(nilAttribute(), top.host)];
   q.typeToQualify = top.typerep;
+  def.localEnv = emptyEnv();
   def.isLast = true;
   def.inAnonStructItem = false;
 }
@@ -369,7 +392,9 @@ top::BaseTypeExpr ::= q::Qualifiers  def::UnionDecl
   top.typeModifier = baseTypeExpr();
   -- Avoid re-decorating and re-generating refIds
   top.decls := [typeExprDecl(nilAttribute(), decTypeExpr(top))];
+  top.hostDecls = [typeExprDecl(nilAttribute(), top.host)];
   q.typeToQualify = top.typerep;
+  def.localEnv = emptyEnv();
   def.isLast = true;
   def.inAnonStructItem = false;
 }

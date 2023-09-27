@@ -1,36 +1,23 @@
 #!/bin/bash
 
-# be in the right directory
-if [[ -d testing ]]; then
-  cd testing
-elif [[ -d grammars ]]; then
-  cd grammars/edu.umn.cs.melt.ableC/testing || exit 1
-fi
+set -eu
+shopt -s extglob globstar
 
-## Supply jar file to script
-./build-test-artifact || exit 1
+export LANG=C  # Disable localization to force deterministic glob ordering
 
-## Load up silver nailgun support (source it)
-. sv-nailgun
+echo "Testing positive..."
+java -Xss8M -jar ableC.jar tests/**/positive/!(*.pp_out).c | tee expected-results/positive.out
 
-# Start the nailgun server
-sv-serve ableC.jar
+echo "Testing negative..."
+java -Xss8M -jar ableC.jar tests/**/negative/!(*.pp_out).c  | tee expected-results/negative.out
 
+echo "Testing neutral..."
+java -Xss8M -jar ableC.jar tests/**/neutral/!(*.pp_out).c | tee expected-results/neutral.out
 
-## Directories containing neutral, positive, and negative subdirectories
-## which each contain files to be tested (delimited by spaces)
-if [[ -z "$TESTDIRS" ]]; then
-  TESTDIRS="tests/headers tests/gcc/assemble tests/gcc/compile tests/gcc/default tests/gcc/link tests/gcc/run tests/kframework/ tests/melt/"
-fi
+cd expected-results
 
-#  TESTDIRS="tests/headers tests/gcc/assemble tests/gcc/compile tests/gcc/default tests/gcc/link tests/gcc/run tests/kframework/ tests/melt/"
+set -ve
 
-# tests/headers tests/gcc/compile tests/gcc/default tests/gcc/link tests/gcc/run tests/kframework/ tests/melt/
-
-## Run supertest.py with compiled jar file
-python3 ./supertest.py "sv-call" $TESTDIRS $@
-
-
-# End the nailgun server
-sv-serve-stop
-
+diff positive positive.out
+diff negative negative.out
+diff neutral neutral.out
