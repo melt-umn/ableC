@@ -415,6 +415,11 @@ top::Expr ::= t::Type
     typeName(directTypeExpr(t), baseTypeExpr()),
     case objectMembers(top.env, t) of
     | just([]) -> nilInit()
+    | just(mt :: _) when !typeAssignableTo(mt, builtinType(nilQualifier(), signedType(intType()))) ->
+        consInit(
+          positionalInit(exprInitializer(
+            explicitCastExpr(typeName(directTypeExpr(mt), baseTypeExpr()), defaultInitExpr(mt.host)))),
+          nilInit())
     | _ -> consInit(positionalInit(exprInitializer(mkIntConst(0))), nilInit())
     end);
 }
