@@ -5,8 +5,7 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 -- Declaration is rooted in External, but also in stmts. Either a variableDecl or a typedefDecl.
 -- ParameterDecl should probably be something special, distinct from variableDecl.
 
-nonterminal GlobalDecls with pps, host, errors, env, freeVariables,
-  controlStmtContext;
+tracked nonterminal GlobalDecls with pps, host, errors, env, freeVariables, controlStmtContext;
 flowtype GlobalDecls = decorate {env, controlStmtContext};
 
 propagate errors, controlStmtContext on GlobalDecls;
@@ -38,7 +37,7 @@ top::GlobalDecls ::=
   top.pps = [];
 }
 
-nonterminal Decls with pps, host, errors, globalDecls, functionDecls, unfoldedGlobalDecls,
+tracked nonterminal Decls with pps, host, errors, globalDecls, functionDecls, unfoldedGlobalDecls,
   unfoldedFunctionDecls, defs, env, isTopLevel, freeVariables,
   controlStmtContext;
 flowtype Decls = decorate {env, isTopLevel, controlStmtContext};
@@ -77,7 +76,7 @@ Decls ::= d1::Decls d2::Decls
 }
 
 
-nonterminal Decl with pp, host, errors, globalDecls, functionDecls, unfoldedGlobalDecls,
+tracked nonterminal Decl with pp, host, errors, globalDecls, functionDecls, unfoldedGlobalDecls,
   unfoldedFunctionDecls, defs, env, isTopLevel, freeVariables, controlStmtContext;
 flowtype Decl = decorate {env, isTopLevel, controlStmtContext};
 
@@ -247,7 +246,7 @@ top::Decl ::= n::Name  e::Expr
           n,
           e.typerep.host.typeModifierExpr,
           nilAttribute(),
-          justInitializer(exprInitializer(e.host, location=e.location))),
+          justInitializer(exprInitializer(e.host))),
         nilDeclarator()));
 
   top.errors <- n.valueRedeclarationCheckNoCompatible;
@@ -274,14 +273,14 @@ top::Decl ::= ty::Type  n::Name
         nilDeclarator()));
 
   top.errors <- n.valueRedeclarationCheckNoCompatible;
-  top.defs <- [valueDef(n.name, preDeclValueItem(ty, n.location))];
+  top.defs <- [valueDef(n.name, preDeclValueItem(ty))];
 }
 
 
 monoid attribute hasModifiedTypeExpr::Boolean with false, ||;
 synthesized attribute hostDecls::[Decl];
 
-nonterminal Declarators with pps, host, hostDecls, hasModifiedTypeExpr, errors,
+tracked nonterminal Declarators with pps, host, hostDecls, hasModifiedTypeExpr, errors,
   globalDecls, functionDecls, defs, env, baseType, typeModifierIn, isTopLevel,
   isTypedef, givenStorageClasses, givenAttributes, freeVariables,
   controlStmtContext;
@@ -316,9 +315,9 @@ top::Declarators ::=
 
 synthesized attribute hostDecl::Decl;
 
-nonterminal Declarator with pps, host, hostDecl, hasModifiedTypeExpr, errors,
+tracked nonterminal Declarator with pps, host, hostDecl, hasModifiedTypeExpr, errors,
   globalDecls, functionDecls, defs, env, baseType, typeModifierIn, typerep,
-  sourceLocation, isTopLevel, isTypedef, givenStorageClasses, givenAttributes,
+  isTopLevel, isTypedef, givenStorageClasses, givenAttributes,
   freeVariables, controlStmtContext;
 flowtype Declarator = decorate {env, baseType, typeModifierIn,
   givenStorageClasses, givenAttributes, isTopLevel, isTypedef,
@@ -371,7 +370,6 @@ top::Declarator ::= name::Name  ty::TypeModifierExpr  attrs::Attributes  initial
     if top.isTypedef
     then noncanonicalType(typedefType(nilQualifier(), name.name, typerepWithAllExtnQuals))
     else typerepWithAllExtnQuals;
-  top.sourceLocation = name.location;
 
   name.env = top.env;
   ty.env = top.env;
@@ -389,14 +387,14 @@ top::Declarator ::= name::Name  ty::TypeModifierExpr  attrs::Attributes  initial
     then
       case initializer of
       | justInitializer(_) ->
-        [err(top.sourceLocation, s"variable ${name.name} has initializer but incomplete type ${showType(top.typerep)}")]
+        [errFromOrigin(top, s"variable ${name.name} has initializer but incomplete type ${showType(top.typerep)}")]
       | nothingInitializer() -> []
       end ++
       -- TODO: This check should be included for non-extern top-level declarations. However, we
       -- somehow need to check if a struct actually does have a declaration later on in the file,
       -- which would complicate the environment.
       if !top.isTopLevel --!(top.isTopLevel && top.givenStorageClasses.isExtern)
-      then [err(top.sourceLocation, s"storage size of ${name.name} (type ${showType(top.typerep)}) isn't known")]
+      then [errFromOrigin(top, s"storage size of ${name.name} (type ${showType(top.typerep)}) isn't known")]
       else []
     else [];
 
@@ -419,14 +417,13 @@ top::Declarator ::= msg::[Message]
   top.hostDecl = warnDecl(msg);
   top.hasModifiedTypeExpr := false;
   top.errors <- msg;
-  top.typerep = errorType();
-  top.sourceLocation = loc("nowhere", -1, -1, -1, -1, -1, -1); -- TODO fix this? add locaiton maybe?
+  top.typerep = errorType(); -- TODO fix this? add locaiton maybe?
 }
 
-nonterminal FunctionDecl with pp, host<Decl>, errors, globalDecls, defs, env,
-  typerep, name, sourceLocation, freeVariables, controlStmtContext;
+tracked nonterminal FunctionDecl with pp, host<Decl>, errors, globalDecls, defs, env,
+  typerep, name, freeVariables, controlStmtContext;
 flowtype FunctionDecl = decorate {env, controlStmtContext},
-  name {}, sourceLocation {};
+  name {};
 
 propagate errors, globalDecls on FunctionDecl;
 
@@ -498,7 +495,7 @@ top::FunctionDecl ::= storage::StorageClasses  fnquals::SpecialSpecifiers  bty::
       pointerType(
         nilQualifier(),
         builtinType(
-          consQualifier(constQualifier(location=builtinLoc("host")), nilQualifier()),
+          consQualifier(constQualifier(), nilQualifier()),
           signedType(charType()))));
   implicitDefs <-
     [globalDefsDef( -- These should be seen as "global" for the purpose of computing free variables
@@ -518,7 +515,6 @@ top::FunctionDecl ::= storage::StorageClasses  fnquals::SpecialSpecifiers  bty::
   -- accumulate extension qualifiers on redeclaration
   top.typerep = name.valueMergeRedeclExtnQualifiers(mty.typerep);
   top.name = name.name;
-  top.sourceLocation = name.location;
 
   bty.givenRefId = nothing();
 
@@ -566,7 +562,7 @@ top::FunctionDecl ::= storage::StorageClasses  fnquals::SpecialSpecifiers  bty::
   top.errors <-
     if name.name == "main" &&
       !compatibleTypes(bty.typerep, builtinType(nilQualifier(), signedType(intType())), false, false)
-    then [wrn(name.location, "Main function should return 'int' not " ++ showType(bty.typerep))]
+    then [wrnFromOrigin(name, "Main function should return 'int' not " ++ showType(bty.typerep))]
     else []; -- TODO: check the rest of the signature.
 }
 
@@ -592,14 +588,13 @@ top::FunctionDecl ::= msg::[Message]
   top.defs := [];
   top.freeVariables := [];
   top.typerep = errorType();
-  top.name = "badFunctionDecl";
-  top.sourceLocation = loc("nowhere", -1, -1, -1, -1, -1, -1); -- TODO fix this? add locaiton maybe?
+  top.name = "badFunctionDecl"; -- TODO fix this? add locaiton maybe?
 }
 
 synthesized attribute len::Integer;
 inherited attribute position::Integer;
 
-nonterminal Parameters with typereps, pps, count, host, errors, globalDecls,
+tracked nonterminal Parameters with typereps, pps, count, host, errors, globalDecls,
   functionDecls, decls, defs, functionDefs, env, position, freeVariables,
   appendedParameters, appendedParametersRes, controlStmtContext, labelDefs;
 flowtype Parameters = decorate {env, controlStmtContext, position},
@@ -668,8 +663,8 @@ Parameters ::= p1::Parameters p2::Parameters
 -- TODO: move these, later
 synthesized attribute paramname :: Maybe<Name>;
 
-nonterminal ParameterDecl with paramname, typerep, pp, host, errors, globalDecls,
-  functionDecls, decls, defs, functionDefs, env, position, sourceLocation,
+tracked nonterminal ParameterDecl with paramname, typerep, pp, host, errors, globalDecls,
+  functionDecls, decls, defs, functionDefs, env, position,
   freeVariables, controlStmtContext, labelDefs;
 flowtype ParameterDecl = decorate {env, position, controlStmtContext},
   paramname {};
@@ -688,11 +683,6 @@ top::ParameterDecl ::= storage::StorageClasses  bty::BaseTypeExpr  mty::TypeModi
     end;
   top.paramname = name.maybename;
   top.typerep = mty.typerep;
-  top.sourceLocation =
-    case name.maybename of
-    | just(n) -> n.location
-    | nothing() -> loc("??",-1,-1,-1,-1,-1,-1) -- TODO: bug? probably okay, since only used to lookup names from env
-    end;
   top.globalDecls <-
     case mty.modifiedBaseTypeExpr of
     | just(_) ->
@@ -734,7 +724,7 @@ synthesized attribute refId :: String; -- TODO move this later?
 monoid attribute hasConstField::Boolean with false, ||;
 monoid attribute fieldNames::[Either<String ExtType>];
 
-nonterminal StructDecl with location, pp, host, maybename, errors, globalDecls,
+tracked nonterminal StructDecl with pp, host, maybename, errors, globalDecls,
   functionDecls, defs, env, localDefs, localEnv, tagEnv, isLast, inAnonStructItem,
   givenRefId, refId, hasConstField, fieldNames, freeVariables,
   controlStmtContext;
@@ -778,11 +768,10 @@ top::StructDecl ::= attrs::Attributes  name::MaybeName  dcls::StructItemList
   local maybeAttribRefIdName::Maybe<String> = orElse(attrs.maybeRefId, top.givenRefId);
   -- Derive the default refId from the location - this needs to be fixed since
   -- we don't have a tag name available for the lookup.
-  -- Somewhat brittle with generated locations, but by convention extensions
-  -- shouldn't be forwarding to anon structs anyway.
+  local loc::Location = fromMaybe(error("Anon struct decl doesn't have an origin?"), getParsedOriginLocation(top));
   name.anonTagRefId =
-    flatMap(\ s::String -> if isAlpha(s) || isDigit(s) then s else "_", explode("", top.location.filename)) ++
-    "_" ++ toString(top.location.line) ++ "_" ++ toString(top.location.column);
+    flatMap(\ s::String -> if isAlpha(s) || isDigit(s) then s else "_", explode("", loc.filename)) ++
+    "_" ++ toString(loc.line) ++ "_" ++ toString(loc.column);
   top.refId = fromMaybe(name.tagRefId, maybeAttribRefIdName);
 
   top.tagEnv = addEnv(dcls.localDefs, emptyEnv());
@@ -807,10 +796,10 @@ top::StructDecl ::= attrs::Attributes  name::MaybeName  dcls::StructItemList
   -- Redeclaration error if there IS a forward declaration AND an existing refid declaration.
   top.errors <-
     if !name.tagHasForwardDcl || null(lookupRefId(top.refId, top.env)) then []
-    else [err(top.location, "Redeclaration of struct " ++ name.maybename.fromJust.name)];
+    else [errFromOrigin(top, "Redeclaration of struct " ++ name.maybename.fromJust.name)];
 }
 
-nonterminal UnionDecl with location, pp, host, maybename, errors, globalDecls,
+tracked nonterminal UnionDecl with pp, host, maybename, errors, globalDecls,
   functionDecls, defs, env, localDefs, localEnv, tagEnv, isLast, inAnonStructItem,
   givenRefId, refId, hasConstField, fieldNames, freeVariables,
   controlStmtContext;
@@ -834,9 +823,10 @@ top::UnionDecl ::= attrs::Attributes  name::MaybeName  dcls::StructItemList
     text("}")]);
 
   local maybeAttribRefIdName::Maybe<String> = orElse(attrs.maybeRefId, top.givenRefId);
+  local loc::Location = fromMaybe(error("Anon union decl doesn't have an origin?"), getParsedOriginLocation(top));
   name.anonTagRefId =
-    flatMap(\ s::String -> if isAlpha(s) || isDigit(s) then s else "_", explode("", top.location.filename)) ++
-    "_" ++ toString(top.location.line) ++ "_" ++ toString(top.location.column);
+    flatMap(\ s::String -> if isAlpha(s) || isDigit(s) then s else "_", explode("", loc.filename)) ++
+    "_" ++ toString(loc.line) ++ "_" ++ toString(loc.column);
   top.refId = fromMaybe(name.tagRefId, maybeAttribRefIdName);
 
   top.tagEnv = addEnv(dcls.localDefs, emptyEnv());
@@ -866,10 +856,10 @@ top::UnionDecl ::= attrs::Attributes  name::MaybeName  dcls::StructItemList
   -- Redeclaration error if there IS a forward declaration AND an existing refid declaration.
   top.errors <-
     if !name.tagHasForwardDcl || null(lookupRefId(top.refId, top.env)) then []
-    else [err(top.location, "Redeclaration of union " ++ name.maybename.fromJust.name)];
+    else [errFromOrigin(top, "Redeclaration of union " ++ name.maybename.fromJust.name)];
 }
 
-nonterminal EnumDecl with location, pp, host, maybename, errors, globalDecls,
+tracked nonterminal EnumDecl with pp, host, maybename, errors, globalDecls,
   functionDecls, defs, env, givenRefId, freeVariables,
   controlStmtContext;
 flowtype EnumDecl = decorate {env, givenRefId, controlStmtContext};
@@ -898,7 +888,7 @@ top::EnumDecl ::= name::MaybeName  dcls::EnumItemList
 
   top.errors <-
     if null(name.tagLocalLookup) then []
-    else [err(top.location, "Redeclaration of enum " ++ name.maybename.fromJust.name)];
+    else [errFromOrigin(top, "Redeclaration of enum " ++ name.maybename.fromJust.name)];
     -- We can rely on the name being present if it's a redeclaration
 }
 
@@ -907,7 +897,7 @@ inherited attribute inStruct::Boolean;
 inherited attribute appendedStructItemList :: StructItemList;
 synthesized attribute appendedStructItemListRes :: StructItemList;
 
-nonterminal StructItemList with pps, host, errors, globalDecls, functionDecls,
+tracked nonterminal StructItemList with pps, host, errors, globalDecls, functionDecls,
   defs, env, localDefs, localEnv, hasConstField, fieldNames, inStruct, isLast,
   freeVariables, appendedStructItemList, appendedStructItemListRes,
   controlStmtContext;
@@ -963,7 +953,7 @@ synthesized attribute appendedEnumItemListRes :: EnumItemList;
 restricted inherited attribute enumItemValueIn::Integer;
 restricted synthesized attribute enumItemValue::Integer;
 
-nonterminal EnumItemList with pps, host, errors, globalDecls, functionDecls, defs,
+tracked nonterminal EnumItemList with pps, host, errors, globalDecls, functionDecls, defs,
   env, containingEnum, freeVariables, appendedEnumItemList,
   appendedEnumItemListRes, enumItemValueIn, controlStmtContext;
 flowtype EnumItemList = decorate {env, containingEnum, enumItemValueIn, controlStmtContext},
@@ -1005,7 +995,7 @@ EnumItemList ::= e1::EnumItemList e2::EnumItemList
   return e1.appendedEnumItemListRes;
 }
 
-nonterminal StructItem with pp, host, errors, globalDecls, functionDecls, defs,
+tracked nonterminal StructItem with pp, host, errors, globalDecls, functionDecls, defs,
   env, localDefs, localEnv, hasConstField, fieldNames, inStruct, isLast, freeVariables,
   controlStmtContext;
 flowtype StructItem = decorate {env, localEnv, inStruct, isLast, controlStmtContext},
@@ -1073,7 +1063,7 @@ top::StructItem ::= msg::[Message]
 
 synthesized attribute hostStructItems::[StructItem];
 
-nonterminal StructDeclarators with pps, host, hostStructItems, hasModifiedTypeExpr,
+tracked nonterminal StructDeclarators with pps, host, hostStructItems, hasModifiedTypeExpr,
   errors, globalDecls, functionDecls, defs, localDefs, hasConstField, fieldNames,
   env, localEnv, baseType, inStruct, isLast, typeModifierIn, givenAttributes,
   freeVariables, controlStmtContext;
@@ -1118,9 +1108,9 @@ top::StructDeclarators ::=
 
 synthesized attribute hostStructItem::StructItem;
 
-nonterminal StructDeclarator with pps, host, hostStructItem, hasModifiedTypeExpr,
+tracked nonterminal StructDeclarator with pps, host, hostStructItem, hasModifiedTypeExpr,
   errors, globalDecls, functionDecls, defs, localDefs, hasConstField, fieldNames,
-  env, localEnv, typerep, sourceLocation, baseType, inStruct, isLast, typeModifierIn,
+  env, localEnv, typerep, baseType, inStruct, isLast, typeModifierIn,
   givenAttributes, freeVariables, controlStmtContext;
 flowtype StructDeclarator = decorate {env, localEnv, baseType, inStruct, isLast,
   typeModifierIn, givenAttributes, controlStmtContext},
@@ -1143,25 +1133,24 @@ top::StructDeclarator ::= name::Name  ty::TypeModifierExpr  attrs::Attributes
   top.hasModifiedTypeExpr := ty.modifiedBaseTypeExpr.isJust;
 
   top.localDefs := [valueDef(name.name, fieldValueItem(top))];
-  top.hasConstField := containsQualifier(constQualifier(location=bogusLoc()), ty.typerep);
+  top.hasConstField := containsQualifier(constQualifier(), ty.typerep);
   top.fieldNames := [left(name.name)];
   top.typerep = animateAttributeOnType(allAttrs, ty.typerep);
-  top.sourceLocation = name.location;
 
   top.errors <- name.valueRedeclarationCheckNoCompatible;
   top.errors <-
     case ty.typerep of
     | arrayType(_, _, _, incompleteArrayType()) ->
       if !top.inStruct
-      then [err(top.sourceLocation, s"flexible array member ${name.name} only permitted in structs")]
+      then [errFromOrigin(top, s"flexible array member ${name.name} only permitted in structs")]
       else if !top.isLast
-      then [err(top.sourceLocation, s"flexible array member ${name.name} not at end of struct")]
+      then [errFromOrigin(top, s"flexible array member ${name.name} not at end of struct")]
       else []
     | _ -> []
     end;
   top.errors <-
     if !top.typerep.isCompleteType(top.env)
-    then [err(top.sourceLocation, s"field ${name.name} has incomplete type")]
+    then [errFromOrigin(top, s"field ${name.name} has incomplete type")]
     else [];
 
   name.env = top.localEnv;
@@ -1190,18 +1179,13 @@ top::StructDeclarator ::= name::MaybeName  ty::TypeModifierExpr  e::Expr  attrs:
     | _ -> []
     end;
   top.localDefs := thisdcl;
-  top.hasConstField := containsQualifier(constQualifier(location=bogusLoc()), ty.typerep);
+  top.hasConstField := containsQualifier(constQualifier(), ty.typerep);
   top.fieldNames :=
     case name.maybename of
     | just(n) -> [left(n.name)]
     | _ -> []
     end;
   top.typerep = animateAttributeOnType(allAttrs, ty.typerep);
-  top.sourceLocation =
-    case name.maybename of
-    | just(n) -> n.location
-    | nothing() -> loc("??",-1,-1,-1,-1,-1,-1) -- TODO: bug
-    end;
 
   top.errors <- name.valueRedeclarationCheckNoCompatible;
 
@@ -1212,7 +1196,7 @@ top::StructDeclarator ::= name::MaybeName  ty::TypeModifierExpr  e::Expr  attrs:
     end;
   top.errors <-
     if !top.typerep.isCompleteType(top.env)
-    then [err(top.sourceLocation, s"field ${errName} has incomplete type")]
+    then [errFromOrigin(top, s"field ${errName} has incomplete type")]
     else [];
 
   name.env = top.localEnv;
@@ -1235,13 +1219,12 @@ top::StructDeclarator ::= msg::[Message]
   top.localDefs := [];
   top.fieldNames := [];
   top.hasConstField := false;
-  top.typerep = errorType();
-  top.sourceLocation = loc("nowhere", -1, -1, -1, -1, -1, -1); -- TODO fix this? add locaiton maybe?
+  top.typerep = errorType(); -- TODO fix this? add locaiton maybe?
 }
 
-nonterminal EnumItem with pp, name, host, errors, globalDecls, functionDecls,
+tracked nonterminal EnumItem with pp, name, host, errors, globalDecls, functionDecls,
   defs, env, containingEnum, enumItemValue, enumItemValueIn, typerep,
-  sourceLocation, freeVariables, controlStmtContext;
+  freeVariables, controlStmtContext;
 flowtype EnumItem = decorate {env, containingEnum, enumItemValueIn, 
   controlStmtContext},
   name {}, enumItemValue {decorate};
@@ -1256,12 +1239,11 @@ top::EnumItem ::= name::Name  e::MaybeExpr
   top.defs := valueDef(name.name, enumValueItem(top)) :: e.defs;
   top.enumItemValue = fromMaybe(top.enumItemValueIn, e.integerConstantValue);
   top.typerep = top.containingEnum;
-  top.sourceLocation = name.location;
 
   top.errors <- name.valueRedeclarationCheckNoCompatible;
   top.errors <-
     if e.isJust && !e.integerConstantValue.isJust
-    then [err(name.location, s"Enum item value must be an integer constant expression (got ${show(80, e.pp)})")]
+    then [errFromOrigin(name, s"Enum item value must be an integer constant expression (got ${show(80, e.pp)})")]
     else [];
 }
 
@@ -1271,7 +1253,7 @@ monoid attribute isStatic::Boolean with false, ||;
 inherited attribute appendedStorageClasses :: StorageClasses;
 synthesized attribute appendedStorageClassesRes :: StorageClasses;
 
-nonterminal StorageClasses with pps, isExtern, isStatic, appendedStorageClasses, appendedStorageClassesRes;
+tracked nonterminal StorageClasses with pps, isExtern, isStatic, appendedStorageClasses, appendedStorageClassesRes;
 flowtype StorageClasses = decorate {}, isExtern {}, isStatic {}, appendedStorageClassesRes {appendedStorageClasses};
 
 propagate isExtern, isStatic, appendedStorageClasses, controlStmtContext on StorageClasses;
@@ -1297,7 +1279,7 @@ StorageClasses ::= s1::StorageClasses s2::StorageClasses
   return s1.appendedStorageClassesRes;
 }
 
-nonterminal StorageClass with pp, isExtern, isStatic;
+tracked nonterminal StorageClass with pp, isExtern, isStatic;
 flowtype StorageClass = decorate {}, isExtern {}, isStatic {};
 
 propagate isExtern, isStatic on StorageClass;

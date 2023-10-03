@@ -21,7 +21,7 @@ restricted synthesized attribute valueItem :: Decorated ValueItem;
 restricted synthesized attribute tagItem :: Decorated TagItem;
 restricted synthesized attribute labelItem :: Decorated LabelItem;
 
-nonterminal Name with location, name, compareTo, isEqual, pp, host, env, valueLocalLookup, labelRedeclarationCheck, valueLookupCheck, tagLookupCheck, labelLookupCheck, valueItem, tagItem, labelItem, tagLocalLookup, tagHasForwardDcl, tagRefId, valueRedeclarationCheck, valueRedeclarationCheckNoCompatible, valueMergeRedeclExtnQualifiers, controlStmtContext;
+tracked nonterminal Name with name, compareTo, isEqual, pp, host, env, valueLocalLookup, labelRedeclarationCheck, valueLookupCheck, tagLookupCheck, labelLookupCheck, valueItem, tagItem, labelItem, tagLocalLookup, tagHasForwardDcl, tagRefId, valueRedeclarationCheck, valueRedeclarationCheckNoCompatible, valueMergeRedeclExtnQualifiers, controlStmtContext;
 flowtype Name = decorate {env}, name {}, valueLocalLookup {env}, labelRedeclarationCheck {controlStmtContext}, valueLookupCheck {env}, tagLookupCheck {env}, labelLookupCheck {controlStmtContext}, valueItem {env}, tagItem {env}, labelItem {controlStmtContext}, tagLocalLookup {env}, tagHasForwardDcl {env}, tagRefId {env}, valueRedeclarationCheck {decorate}, valueRedeclarationCheckNoCompatible {decorate}, valueMergeRedeclExtnQualifiers {decorate};
 
 abstract production name
@@ -49,9 +49,9 @@ top::Name ::= n::String
   local labdcls :: [LabelItem] = lookupLabel(n, top.controlStmtContext);
   top.labelRedeclarationCheck =
     case labdcls of
-    | [] -> [err(top.location, "INTERNAL compiler error: expected to find label in function scope, was missing.")] -- TODO?
+    | [] -> [errFromOrigin(top, "INTERNAL compiler error: expected to find label in function scope, was missing.")] -- TODO?
     | [_] -> [] -- We found ourselves. Labels are in function scope, so a-okay!
-    | _ :: _ :: _ -> [err(top.location, "Redeclaration of " ++ n)]
+    | _ :: _ :: _ -> [errFromOrigin(top, "Redeclaration of " ++ n)]
     end;
   
   local values :: [ValueItem] = lookupValue(n, top.env);
@@ -59,17 +59,17 @@ top::Name ::= n::String
   local labels :: [LabelItem] = lookupLabel(n, top.controlStmtContext);
   top.valueLookupCheck =
     case values of
-    | [] -> [err(top.location, "Undeclared value " ++ n)]
+    | [] -> [errFromOrigin(top, "Undeclared value " ++ n)]
     | _ :: _ -> []
     end;
   top.labelLookupCheck =
     case labels of
-    | [] -> [err(top.location, "Undeclared label " ++ n)]
+    | [] -> [errFromOrigin(top, "Undeclared label " ++ n)]
     | _ :: _ -> []
     end;
   top.tagLookupCheck =
     case tags of
-    | [] -> [err(top.location, "Undeclared tag " ++ n)]
+    | [] -> [errFromOrigin(top, "Undeclared tag " ++ n)]
     | _ :: _ -> []
     end;
   
@@ -86,7 +86,7 @@ inherited attribute anonTagRefId::String;
 synthesized attribute maybename :: Maybe<Name>;
 synthesized attribute hasName :: Boolean;
 
-nonterminal MaybeName with maybename, pp, host, env, valueLocalLookup, tagLocalLookup, tagHasForwardDcl, anonTagRefId, tagRefId, hasName, valueRedeclarationCheckNoCompatible, valueRedeclarationCheck, valueMergeRedeclExtnQualifiers;
+tracked nonterminal MaybeName with maybename, pp, host, env, valueLocalLookup, tagLocalLookup, tagHasForwardDcl, anonTagRefId, tagRefId, hasName, valueRedeclarationCheckNoCompatible, valueRedeclarationCheck, valueMergeRedeclExtnQualifiers;
 flowtype MaybeName = decorate {env}, maybename {}, hasName {}, valueLocalLookup {env}, tagLocalLookup {env}, tagHasForwardDcl {env}, tagRefId {anonTagRefId, env}, valueRedeclarationCheckNoCompatible {decorate}, valueRedeclarationCheck {decorate}, valueMergeRedeclExtnQualifiers {decorate};
 
 abstract production justName
@@ -128,7 +128,7 @@ synthesized attribute names :: [String];
 inherited attribute appendedNames :: Names;
 synthesized attribute appendedNamesRes :: Names;
 
-nonterminal Names with env, pps, names, count, appendedNames, appendedNamesRes;
+tracked nonterminal Names with env, pps, names, count, appendedNames, appendedNamesRes;
 flowtype Names = decorate {env}, pps {}, names {}, count {}, appendedNamesRes {appendedNames};
 
 propagate env on Names;
@@ -176,9 +176,9 @@ function doValueRedeclarationCheck
         let originalPP :: String = show(100, cat(v.typerep.lpp, v.typerep.rpp)),
             herePP :: String = show(100, cat(t.lpp, t.rpp))
          in
-            [err(n.location, 
+            [errFromOrigin(n, 
               "Redeclaration of " ++ n.name ++ " with incompatible types. Original (from " ++
-              v.sourceLocation.unparse ++ ") " ++ originalPP ++
+              getParsedOriginLocationOrFallback(v).unparse ++ ") " ++ originalPP ++
               " but here it is " ++ herePP)]
         end
   end;
@@ -190,9 +190,9 @@ function doValueRedeclarationCheckNoCompatible
   return case n.valueLocalLookup of
   | [] -> []
   | v :: _ -> 
-      [err(n.location, 
+      [errFromOrigin(n, 
         "Redeclaration of " ++ n.name ++ ". Original (from " ++
-        v.sourceLocation.unparse ++ ")")]
+        getParsedOriginLocationOrFallback(v).unparse ++ ")")]
   end;
 }
 
@@ -216,7 +216,7 @@ Type ::= t::Type  n::Decorated Name
 --        let originalPP :: String = show(100, cat(v.typerep.lpp, v.typerep.rpp)),
 --            herePP :: String = show(100, cat(t.lpp, t.rpp))
 --         in
---            [err(n.location, 
+--            [errFromOrigin(n, 
 --              "Redeclaration of " ++ n.name ++ " with incompatible types. Original (from line " ++
 --              toString(v.sourceLocation.line) ++ ") " ++ originalPP ++ 
 --              " but here it is " ++ herePP)]

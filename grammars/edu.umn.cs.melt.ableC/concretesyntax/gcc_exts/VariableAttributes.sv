@@ -7,7 +7,7 @@ terminal CPP_Attribute_t '__attribute__' lexer classes {Keyword, Reserved}, prec
 terminal CPP_UUAttribute_t '__attribute' lexer classes {Keyword, Reserved}, precedence=10;
 terminal CPP_Attr_LowerPrec_t '' precedence=5;
 
-closed nonterminal Attributes_c with location, ast<ast:Attributes>;
+closed tracked nonterminal Attributes_c with ast<ast:Attributes>;
 concrete productions top::Attributes_c
 | h::Attribute_c
     operator=CPP_Attr_LowerPrec_t -- shift/reduce on Attr? shift! gobble up the whole list.
@@ -15,21 +15,21 @@ concrete productions top::Attributes_c
 | h::Attribute_c t::Attributes_c
     { top.ast = ast:consAttribute(h.ast, t.ast); }
 
-closed nonterminal Attribute_c with location, ast<ast:Attribute>;
+closed tracked nonterminal Attribute_c with ast<ast:Attribute>;
 concrete productions top::Attribute_c
 | '__attribute__' '(' '(' a::AttributeList_c ')' ')'
     { top.ast = ast:gccAttribute(foldr(ast:consAttrib, ast:nilAttrib(), a.ast)); }
 | '__attribute' '(' '(' a::AttributeList_c ')' ')'
     { top.ast = ast:gccAttribute(foldr(ast:consAttrib, ast:nilAttrib(), a.ast)); }
 
-closed nonterminal AttributeList_c with location, ast<[ast:Attrib]>;
+closed tracked nonterminal AttributeList_c with ast<[ast:Attrib]>;
 concrete productions top::AttributeList_c
 | h::Attrib_c
     { top.ast = [h.ast]; }
 | h::AttributeList_c ',' t::Attrib_c
     { top.ast = h.ast ++ [t.ast]; }
 
-closed nonterminal Attrib_c with location, ast<ast:Attrib>;
+closed tracked nonterminal Attrib_c with ast<ast:Attrib>;
 concrete productions top::Attrib_c
 | 
     { top.ast = ast:emptyAttrib(); }
@@ -55,7 +55,7 @@ concrete productions top::Attrib_c
 
 terminal AttributeNameUnfetterdByKeywords_t /[A-Za-z_\$][A-Za-z_0-9\$]*/;
 
-closed nonterminal AttribName_c with location, ast<ast:AttribName>;
+closed tracked nonterminal AttribName_c with ast<ast:AttribName>;
 concrete productions top::AttribName_c
 -- GCC Specifies the following syntax, or rather it allows the keywords from the
 -- following syntax, but thanks to context-aware scanning we can do better, easier.
@@ -68,7 +68,7 @@ concrete productions top::AttribName_c
 --| StorageClassSpecifier_c
 --    {}
 | t::AttributeNameUnfetterdByKeywords_t
-    { top.ast = ast:attribName(ast:name(t.lexeme, location=t.location)); }
+    { top.ast = ast:attribName(ast:name(t.lexeme)); }
 
 
 

@@ -9,7 +9,7 @@ top::Expr ::= e::Expr
 
   top.errors <- 
     if !e.isLValue
-    then [err(e.location, "lvalue required as unary operand for ++")]
+    then [errFromOrigin(e, "lvalue required as unary operand for ++")]
     else [];
 }
 abstract production preDecExpr
@@ -21,7 +21,7 @@ top::Expr ::= e::Expr
 
   top.errors <- 
     if !e.isLValue
-    then [err(e.location, "lvalue required as unary operand for --")]
+    then [errFromOrigin(e, "lvalue required as unary operand for --")]
     else [];
 }
 abstract production postIncExpr
@@ -33,7 +33,7 @@ top::Expr ::= e::Expr
 
   top.errors <- 
     if !e.isLValue
-    then [err(e.location, "lvalue required as unary operand for ++")]
+    then [errFromOrigin(e, "lvalue required as unary operand for ++")]
     else [];
 }
 abstract production postDecExpr
@@ -45,7 +45,7 @@ top::Expr ::= e::Expr
 
   top.errors <- 
     if !e.isLValue
-    then [err(e.location, "lvalue required as unary operand for --")]
+    then [errFromOrigin(e, "lvalue required as unary operand for --")]
     else [];
 }
 abstract production addressOfExpr
@@ -57,7 +57,7 @@ top::Expr ::= e::Expr
 
   top.errors <- 
     if !e.isLValue
-    then [err(e.location, "lvalue required as unary operand for &")]
+    then [errFromOrigin(e, "lvalue required as unary operand for &")]
     else [];
 }
 abstract production dereferenceExpr
@@ -77,7 +77,7 @@ top::Expr ::= e::Expr
     case e.typerep.defaultFunctionArrayLvalueConversion of
     | pointerType(_, _) -> []
     | errorType() -> []
-    | _ -> [err(top.location, "invalid type argument of unary ‘*’ (have ‘" ++
+    | _ -> [errFromOrigin(top, "invalid type argument of unary ‘*’ (have ‘" ++
                                showType(e.typerep) ++ "’)")]
     end;
 }

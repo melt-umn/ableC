@@ -40,19 +40,19 @@ concrete productions top::FunctionSpecifier_c
 
 concrete productions top::TypeQualifier_c
 | '__const'
-    { top.typeQualifiers = ast:foldQualifier([ast:constQualifier(location=top.location)]);
+    { top.typeQualifiers = ast:foldQualifier([ast:constQualifier()]);
       top.mutateTypeSpecifiers = []; }
 | '__restrict'
-    { top.typeQualifiers = ast:foldQualifier([ast:uuRestrictQualifier(location=top.location)]);
+    { top.typeQualifiers = ast:foldQualifier([ast:uuRestrictQualifier()]);
       top.mutateTypeSpecifiers = []; }
 | '__restrict__'
-    { top.typeQualifiers = ast:foldQualifier([ast:restrictQualifier(location=top.location)]);
+    { top.typeQualifiers = ast:foldQualifier([ast:restrictQualifier()]);
       top.mutateTypeSpecifiers = []; }
 | '__volatile__'
-    { top.typeQualifiers = ast:foldQualifier([ast:volatileQualifier(location=top.location)]);
+    { top.typeQualifiers = ast:foldQualifier([ast:volatileQualifier()]);
       top.mutateTypeSpecifiers = []; }
 | '__volatile'
-    { top.typeQualifiers = ast:foldQualifier([ast:volatileQualifier(location=top.location)]);
+    { top.typeQualifiers = ast:foldQualifier([ast:volatileQualifier()]);
       top.mutateTypeSpecifiers = []; }
 
 concrete productions top::TypeSpecifier_c
@@ -75,7 +75,7 @@ concrete productions top::TypeSpecifier_c
     { top.realTypeSpecifiers = [];
       top.preTypeSpecifiers = ["__int128"]; }
 
-closed nonterminal TypeofStarter_c with location;
+closed tracked nonterminal TypeofStarter_c;
 concrete productions top::TypeofStarter_c
 | 'typeof' {}
 | '__typeof__' {}
@@ -87,7 +87,7 @@ concrete productions top::StructDeclaration_c
 
 -- We need a separate nonterminal for this because we're *requiring* the initial DeclSpecs, to avoid ambiguity.
 -- We also don't allow old-style DeclarationLists.
-closed nonterminal NestedFunctionDefinition_c with location, ast<ast:FunctionDecl>;
+closed tracked nonterminal NestedFunctionDefinition_c with ast<ast:FunctionDecl>;
 concrete productions top::NestedFunctionDefinition_c
 | d::InitialNestedFunctionDefinition_c  s::CompoundStatement_c 
     { top.ast = d.ast;
@@ -96,7 +96,7 @@ concrete productions top::NestedFunctionDefinition_c
     action {
       context = closeScope(context); -- Opened by InitialNestedFunctionDefinition.
     }
-closed nonterminal InitialNestedFunctionDefinition_c with location, ast<ast:FunctionDecl>, givenStmt;
+closed tracked nonterminal InitialNestedFunctionDefinition_c with ast<ast:FunctionDecl>, givenStmt;
 concrete productions top::InitialNestedFunctionDefinition_c
 | ds::DeclarationSpecifiers_c  d::Declarator_c
     {
@@ -104,7 +104,7 @@ concrete productions top::InitialNestedFunctionDefinition_c
       d.givenType = ast:baseTypeExpr();
 
       local bt :: ast:BaseTypeExpr =
-        ast:figureOutTypeFromSpecifiers(ds.location, ds.typeQualifiers, ds.preTypeSpecifiers, ds.realTypeSpecifiers, ds.mutateTypeSpecifiers);
+        ast:figureOutTypeFromSpecifiers( ds.typeQualifiers, ds.preTypeSpecifiers, ds.realTypeSpecifiers, ds.mutateTypeSpecifiers);
 
       local specialSpecifiers :: ast:SpecialSpecifiers =
         foldr(ast:consSpecialSpecifier, ast:nilSpecialSpecifier(), ds.specialSpecifiers);
@@ -240,81 +240,81 @@ concrete productions top::StructOrUnionSpecifier_c
   operator=CPP_Attr_LowerPrec_t
     { top.realTypeSpecifiers =
         case su of
-        | struct_c(_) -> [ast:structTypeExpr(top.givenQualifiers, ast:structDecl(ast:nilAttribute(), ast:justName(id.ast), ast:foldStructItem([]), location=top.location))]
-        | union_c(_) -> [ast:unionTypeExpr(top.givenQualifiers, ast:unionDecl(ast:nilAttribute(), ast:justName(id.ast), ast:foldStructItem([]), location=top.location))]
+        | struct_c(_) -> [ast:structTypeExpr(top.givenQualifiers, ast:structDecl(ast:nilAttribute(), ast:justName(id.ast), ast:foldStructItem([])))]
+        | union_c(_) -> [ast:unionTypeExpr(top.givenQualifiers, ast:unionDecl(ast:nilAttribute(), ast:justName(id.ast), ast:foldStructItem([])))]
         end; }
 | su::StructOrUnion_c TypeLCurly_t '}'
   operator=CPP_Attr_LowerPrec_t
     { top.realTypeSpecifiers =
         case su of
-        | struct_c(_) -> [ast:structTypeExpr(top.givenQualifiers, ast:structDecl(ast:nilAttribute(), ast:nothingName(), ast:foldStructItem([]), location=top.location))]
-        | union_c(_) -> [ast:unionTypeExpr(top.givenQualifiers, ast:unionDecl(ast:nilAttribute(), ast:nothingName(), ast:foldStructItem([]), location=top.location))]
+        | struct_c(_) -> [ast:structTypeExpr(top.givenQualifiers, ast:structDecl(ast:nilAttribute(), ast:nothingName(), ast:foldStructItem([])))]
+        | union_c(_) -> [ast:unionTypeExpr(top.givenQualifiers, ast:unionDecl(ast:nilAttribute(), ast:nothingName(), ast:foldStructItem([])))]
         end; }
 
 -- struct/union attributes
 | su::StructOrUnion_c aa::Attributes_c id::Identifier_c TypeLCurly_t ss::StructDeclarationList_c '}'
     { top.realTypeSpecifiers =
         case su of
-        | struct_c(_) -> [ast:structTypeExpr(top.givenQualifiers, ast:structDecl(aa.ast, ast:justName(id.ast), ast:foldStructItem(ss.ast), location=top.location))]
-        | union_c(_) -> [ast:unionTypeExpr(top.givenQualifiers, ast:unionDecl(aa.ast, ast:justName(id.ast), ast:foldStructItem(ss.ast), location=top.location))]
+        | struct_c(_) -> [ast:structTypeExpr(top.givenQualifiers, ast:structDecl(aa.ast, ast:justName(id.ast), ast:foldStructItem(ss.ast)))]
+        | union_c(_) -> [ast:unionTypeExpr(top.givenQualifiers, ast:unionDecl(aa.ast, ast:justName(id.ast), ast:foldStructItem(ss.ast)))]
         end;
     }
 | su::StructOrUnion_c id::Identifier_c TypeLCurly_t ss::StructDeclarationList_c '}' aa::Attributes_c
     { top.realTypeSpecifiers =
         case su of
-        | struct_c(_) -> [ast:structTypeExpr(top.givenQualifiers, ast:structDecl(aa.ast, ast:justName(id.ast), ast:foldStructItem(ss.ast), location=top.location))]
-        | union_c(_) -> [ast:unionTypeExpr(top.givenQualifiers, ast:unionDecl(aa.ast, ast:justName(id.ast), ast:foldStructItem(ss.ast), location=top.location))]
+        | struct_c(_) -> [ast:structTypeExpr(top.givenQualifiers, ast:structDecl(aa.ast, ast:justName(id.ast), ast:foldStructItem(ss.ast)))]
+        | union_c(_) -> [ast:unionTypeExpr(top.givenQualifiers, ast:unionDecl(aa.ast, ast:justName(id.ast), ast:foldStructItem(ss.ast)))]
         end;
     }
 | su::StructOrUnion_c aa::Attributes_c id::Identifier_c TypeLCurly_t '}'
     { top.realTypeSpecifiers =
         case su of
-        | struct_c(_) -> [ast:structTypeExpr(top.givenQualifiers, ast:structDecl(aa.ast, ast:justName(id.ast), ast:foldStructItem([]), location=top.location))]
-        | union_c(_) -> [ast:unionTypeExpr(top.givenQualifiers, ast:unionDecl(aa.ast, ast:justName(id.ast), ast:foldStructItem([]), location=top.location))]
+        | struct_c(_) -> [ast:structTypeExpr(top.givenQualifiers, ast:structDecl(aa.ast, ast:justName(id.ast), ast:foldStructItem([])))]
+        | union_c(_) -> [ast:unionTypeExpr(top.givenQualifiers, ast:unionDecl(aa.ast, ast:justName(id.ast), ast:foldStructItem([])))]
         end; }
 | su::StructOrUnion_c id::Identifier_c TypeLCurly_t '}' aa::Attributes_c
     { top.realTypeSpecifiers =
         case su of
-        | struct_c(_) -> [ast:structTypeExpr(top.givenQualifiers, ast:structDecl(aa.ast, ast:justName(id.ast), ast:foldStructItem([]), location=top.location))]
-        | union_c(_) -> [ast:unionTypeExpr(top.givenQualifiers, ast:unionDecl(aa.ast, ast:justName(id.ast), ast:foldStructItem([]), location=top.location))]
+        | struct_c(_) -> [ast:structTypeExpr(top.givenQualifiers, ast:structDecl(aa.ast, ast:justName(id.ast), ast:foldStructItem([])))]
+        | union_c(_) -> [ast:unionTypeExpr(top.givenQualifiers, ast:unionDecl(aa.ast, ast:justName(id.ast), ast:foldStructItem([])))]
         end; }
 | su::StructOrUnion_c aa::Attributes_c TypeLCurly_t '}'
     { top.realTypeSpecifiers =
         case su of
-        | struct_c(_) -> [ast:structTypeExpr(top.givenQualifiers, ast:structDecl(aa.ast, ast:nothingName(), ast:foldStructItem([]), location=top.location))]
-        | union_c(_) -> [ast:unionTypeExpr(top.givenQualifiers, ast:unionDecl(aa.ast, ast:nothingName(), ast:foldStructItem([]), location=top.location))]
+        | struct_c(_) -> [ast:structTypeExpr(top.givenQualifiers, ast:structDecl(aa.ast, ast:nothingName(), ast:foldStructItem([])))]
+        | union_c(_) -> [ast:unionTypeExpr(top.givenQualifiers, ast:unionDecl(aa.ast, ast:nothingName(), ast:foldStructItem([])))]
         end; }
 | su::StructOrUnion_c TypeLCurly_t '}' aa::Attributes_c
     { top.realTypeSpecifiers =
         case su of
-        | struct_c(_) -> [ast:structTypeExpr(top.givenQualifiers, ast:structDecl(aa.ast, ast:nothingName(), ast:foldStructItem([]), location=top.location))]
-        | union_c(_) -> [ast:unionTypeExpr(top.givenQualifiers, ast:unionDecl(aa.ast, ast:nothingName(), ast:foldStructItem([]), location=top.location))]
+        | struct_c(_) -> [ast:structTypeExpr(top.givenQualifiers, ast:structDecl(aa.ast, ast:nothingName(), ast:foldStructItem([])))]
+        | union_c(_) -> [ast:unionTypeExpr(top.givenQualifiers, ast:unionDecl(aa.ast, ast:nothingName(), ast:foldStructItem([])))]
         end; }
 
 concrete productions top::StructDeclaration_c
 | su::StructOrUnion_c aa::Attributes_c id::Identifier_c TypeLCurly_t ss::StructDeclarationList_c '}' ';'
     { top.ast =
         case su of
-        | struct_c(_) -> [ast:anonStructStructItem(ast:structDecl(aa.ast, ast:justName(id.ast), ast:foldStructItem(ss.ast), location=top.location))]
-        | union_c(_) -> [ast:anonUnionStructItem(ast:unionDecl(aa.ast, ast:justName(id.ast), ast:foldStructItem(ss.ast), location=top.location))]
+        | struct_c(_) -> [ast:anonStructStructItem(ast:structDecl(aa.ast, ast:justName(id.ast), ast:foldStructItem(ss.ast)))]
+        | union_c(_) -> [ast:anonUnionStructItem(ast:unionDecl(aa.ast, ast:justName(id.ast), ast:foldStructItem(ss.ast)))]
         end; }
 | su::StructOrUnion_c aa::Attributes_c TypeLCurly_t ss::StructDeclarationList_c '}' ';'
     { top.ast =
         case su of
-        | struct_c(_) -> [ast:anonStructStructItem(ast:structDecl(aa.ast, ast:nothingName(), ast:foldStructItem(ss.ast), location=top.location))]
-        | union_c(_) -> [ast:anonUnionStructItem(ast:unionDecl(aa.ast, ast:nothingName(), ast:foldStructItem(ss.ast), location=top.location))]
+        | struct_c(_) -> [ast:anonStructStructItem(ast:structDecl(aa.ast, ast:nothingName(), ast:foldStructItem(ss.ast)))]
+        | union_c(_) -> [ast:anonUnionStructItem(ast:unionDecl(aa.ast, ast:nothingName(), ast:foldStructItem(ss.ast)))]
         end; }
 | su::StructOrUnion_c id::Identifier_c TypeLCurly_t ss::StructDeclarationList_c '}' aa::Attributes_c ';'
     { top.ast =
         case su of
-        | struct_c(_) -> [ast:anonStructStructItem(ast:structDecl(aa.ast, ast:justName(id.ast), ast:foldStructItem(ss.ast), location=top.location))]
-        | union_c(_) -> [ast:anonUnionStructItem(ast:unionDecl(aa.ast, ast:justName(id.ast), ast:foldStructItem(ss.ast), location=top.location))]
+        | struct_c(_) -> [ast:anonStructStructItem(ast:structDecl(aa.ast, ast:justName(id.ast), ast:foldStructItem(ss.ast)))]
+        | union_c(_) -> [ast:anonUnionStructItem(ast:unionDecl(aa.ast, ast:justName(id.ast), ast:foldStructItem(ss.ast)))]
         end; }
 | su::StructOrUnion_c TypeLCurly_t ss::StructDeclarationList_c '}' aa::Attributes_c ';'
     { top.ast =
         case su of
-        | struct_c(_) -> [ast:anonStructStructItem(ast:structDecl(aa.ast, ast:nothingName(), ast:foldStructItem(ss.ast), location=top.location))]
-        | union_c(_) -> [ast:anonUnionStructItem(ast:unionDecl(aa.ast, ast:nothingName(), ast:foldStructItem(ss.ast), location=top.location))]
+        | struct_c(_) -> [ast:anonStructStructItem(ast:structDecl(aa.ast, ast:nothingName(), ast:foldStructItem(ss.ast)))]
+        | union_c(_) -> [ast:anonUnionStructItem(ast:unionDecl(aa.ast, ast:nothingName(), ast:foldStructItem(ss.ast)))]
         end; }
 
 ------------------
@@ -360,7 +360,7 @@ concrete productions top::ParameterDeclaration_c
       ds.givenQualifiers = ds.typeQualifiers;
       d.givenType = ast:baseTypeExpr();
       local bt :: ast:BaseTypeExpr =
-        ast:figureOutTypeFromSpecifiers(ds.location, ds.typeQualifiers, ds.preTypeSpecifiers, ds.realTypeSpecifiers, ds.mutateTypeSpecifiers);
+        ast:figureOutTypeFromSpecifiers( ds.typeQualifiers, ds.preTypeSpecifiers, ds.realTypeSpecifiers, ds.mutateTypeSpecifiers);
       top.ast = ast:parameterDecl(ast:foldStorageClass(ds.storageClass), bt, d.ast, ast:justName(d.declaredIdent), ast:appendAttribute(ds.attributes, ast:appendAttribute(d.attributes, aa.ast)));
       }
 | ds::DeclarationSpecifiers_c  d::AbstractDeclarator_c  aa::Attributes_c
@@ -368,7 +368,7 @@ concrete productions top::ParameterDeclaration_c
       ds.givenQualifiers = ds.typeQualifiers;
       d.givenType = ast:baseTypeExpr();
       local bt :: ast:BaseTypeExpr =
-        ast:figureOutTypeFromSpecifiers(ds.location, ds.typeQualifiers, ds.preTypeSpecifiers, ds.realTypeSpecifiers, ds.mutateTypeSpecifiers);
+        ast:figureOutTypeFromSpecifiers( ds.typeQualifiers, ds.preTypeSpecifiers, ds.realTypeSpecifiers, ds.mutateTypeSpecifiers);
       top.ast = ast:parameterDecl(ast:foldStorageClass(ds.storageClass), bt, d.ast, ast:nothingName(), ast:appendAttribute(ds.attributes, aa.ast));
     }
 -- wtf gcc, first declspecs have attributes and then they're supposed to appear here??

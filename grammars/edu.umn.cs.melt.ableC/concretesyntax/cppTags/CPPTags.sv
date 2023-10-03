@@ -73,8 +73,8 @@ terminal TagFilename_t /[\"]([^\"]|[\\][\"])*[\"]/;
 terminal TagNumber_t /0|([1-9][0-9]*)/;
 terminal TagFlag_t /[1234]/;
 
-closed nonterminal TagLine_c with location;
-closed nonterminal TagFlagSeq_c with location;
+closed tracked nonterminal TagLine_c;
+closed tracked nonterminal TagFlagSeq_c;
 
 concrete production tagline_c
 top::TagLine_c ::= h::Hash_t cpp_line::TagNumber_t cpp_filename::TagFilename_t cpp_flags::TagFlagSeq_c n::Newline_t

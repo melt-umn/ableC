@@ -27,7 +27,7 @@ top::Expr ::= ty::TypeName  e::MemberDesignator
   top.isSimple = true;
 }
 
-nonterminal MemberDesignator with pp, host, errors, globalDecls, functionDecls,
+tracked nonterminal MemberDesignator with pp, host, errors, globalDecls, functionDecls,
   defs, env, freeVariables, controlStmtContext;
 flowtype MemberDesignator = decorate {env, controlStmtContext};
 

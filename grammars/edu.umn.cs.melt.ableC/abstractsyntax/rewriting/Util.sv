@@ -2,6 +2,8 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax:rewriting;
 
 imports silver:core hiding all;
 imports silver:rewrite;
+imports silver:langutil;
+imports silver:langutil:pp;
 
 imports edu:umn:cs:melt:ableC:abstractsyntax:host;
 
@@ -31,5 +33,6 @@ global normalizeDecProds::Strategy =
 abstract production topDownSubs
 top::Strategy ::= s::Strategy
 {
+  top.pp = pp"topDownSubs(${s})";
   forwards to try(normalizeDecProds) <* (s <+ all(topDownSubs(s)));
 }

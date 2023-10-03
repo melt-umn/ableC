@@ -1,22 +1,20 @@
 -- x = a ;
 function mkIntAssign
-Stmt ::= x::String a::String l::Location
+Stmt ::= x::String a::String
 { return exprStmt (
            eqExpr(
-             declRefExpr(name(x,location=l),location=l),
-             mkIntExpr(a,l),
-             location=l
+             declRefExpr(name(x)),
+             mkIntExpr(a)
             )
           );
 }
 
 function mkAssign
-Stmt ::= x::String e::Expr l::Location
+Stmt ::= x::String e::Expr
 { return exprStmt (
            eqExpr(
-             declRefExpr(name(x,location=l),location=l),
-             e,
-             location=l
+             declRefExpr(name(x)),
+             e
             )
           );
 }

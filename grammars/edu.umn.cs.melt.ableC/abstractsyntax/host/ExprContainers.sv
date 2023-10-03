@@ -1,6 +1,6 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 
-nonterminal MaybeExpr with pp, host, isJust, errors, globalDecls, functionDecls,
+tracked nonterminal MaybeExpr with pp, host, isJust, errors, globalDecls, functionDecls,
   defs, env, maybeTyperep, freeVariables, justTheExpr, isLValue,
   integerConstantValue, controlStmtContext;
 
@@ -34,7 +34,7 @@ top::MaybeExpr ::=
   implicit top.integerConstantValue = ;
 }
 
-nonterminal Exprs with pps, host, errors, globalDecls, functionDecls, defs, env,
+tracked nonterminal Exprs with pps, host, errors, globalDecls, functionDecls, defs, env,
   expectedTypes, argumentPosition, callExpr, argumentErrors, typereps, count,
   callVariadic, freeVariables, appendedExprs, appendedRes, isLValue,
   controlStmtContext;
@@ -72,15 +72,15 @@ top::Exprs ::= h::Expr  t::Exprs
    if null(top.expectedTypes) then
       if top.callVariadic then []
       else
-        [err(top.callExpr.location, s"call expected ${toString(top.argumentPosition - 1)} arguments, got ${toString(top.argumentPosition + t.count)}")]
+        [errFromOrigin(top.callExpr, s"call expected ${toString(top.argumentPosition - 1)} arguments, got ${toString(top.argumentPosition + t.count)}")]
     else
      (if !typeAssignableTo(head(top.expectedTypes).defaultFunctionArrayLvalueConversion, h.typerep) then
-        [err(h.location, s"argument ${toString(top.argumentPosition)} expected type ${showType(head(top.expectedTypes))} (got ${showType(h.typerep)})")] ++ t.argumentErrors
+        [errFromOrigin(h, s"argument ${toString(top.argumentPosition)} expected type ${showType(head(top.expectedTypes))} (got ${showType(h.typerep)})")] ++ t.argumentErrors
       else
         t.argumentErrors) ++
       case head(top.expectedTypes), h.typerep of
       | arrayType(_, _, staticArraySize(), constantArrayType(s1)), arrayType(_, _, _, constantArrayType(s2)) when s1 > s2 ->
-        [wrn(h.location, s"array argument is too small; contains ${toString(s2)} elements, callee requires at least ${toString(s1)}")]
+        [wrnFromOrigin(h, s"array argument is too small; contains ${toString(s2)} elements, callee requires at least ${toString(s1)}")]
       | _, _ -> []
       end;
   t.expectedTypes = tail(top.expectedTypes);
@@ -103,7 +103,7 @@ top::Exprs ::=
   top.argumentErrors =
     if null(top.expectedTypes) then []
     else
-      [err(top.callExpr.location, s"call expected ${toString(top.argumentPosition + length(top.expectedTypes) - 1)} arguments, got only ${toString(top.argumentPosition - 1)}")];
+      [errFromOrigin(top.callExpr, s"call expected ${toString(top.argumentPosition + length(top.expectedTypes) - 1)} arguments, got only ${toString(top.argumentPosition - 1)}")];
 }
 {--
  - The purpose of this production is for an extension production to use to wrap
@@ -139,7 +139,7 @@ Exprs ::= e1::Exprs e2::Exprs
   return e1.appendedRes;
 }
 
-nonterminal ExprOrTypeName with pp, host, errors, globalDecls, functionDecls,
+tracked nonterminal ExprOrTypeName with pp, host, errors, globalDecls, functionDecls,
   defs, env, typerep, freeVariables, isLValue, controlStmtContext;
 
 flowtype ExprOrTypeName = decorate {env, controlStmtContext};
