@@ -62,7 +62,7 @@ top::Type ::=
   top.isIntegerType = false;
   top.isScalarType = false;
   top.isArithmeticType = false;
-  top.isCompleteType = \ Decorated Env -> true;
+  top.isCompleteType = \ _ -> true;
   top.maybeRefId := nothing();
 }
 
@@ -459,7 +459,7 @@ top::ExtType ::=
   top.isIntegerType = false;
   top.isArithmeticType = false;
   top.isScalarType = false;
-  top.isCompleteType = \ Decorated Env -> true;
+  top.isCompleteType = \ _ -> true;
   top.maybeRefId := nothing();
 }
 
