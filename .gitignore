@@ -22,3 +22,7 @@ out
 *.tests_failed
 
 generated-oi
+
+.direnv/
+result
+result-*
