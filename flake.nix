@@ -13,6 +13,13 @@
           nativeBuildInputs = [ ];
         };
 
+        legacyPackages = {
+          mkComposedAbleC = pkgs.callPackage ./mkComposedAbleC.nix {
+            inherit (silver.legacyPackages.${system}) mkSilverBin;
+            inherit (packages) ableC;
+          };
+        };
+
         packages = {
           default = packages.ableC;
           ableC = silver.legacyPackages.${system}.mkSilverBin {
