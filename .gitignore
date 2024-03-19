@@ -21,7 +21,8 @@ out
 *.test.stderr
 *.tests_failed
 
-generated-oi
+generated/
+generated-oi/
 
 .direnv/
 result
