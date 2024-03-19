@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 gedit $1 ${1/.c/.gen_cpp} ${1/.c/.cpp_errs} ${1/.c/.errs}
 

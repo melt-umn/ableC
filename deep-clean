@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # find by default never follows symlinks, so this should be relatively safe:
 find . -name "*~" -delete

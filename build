@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 silver -o ableC.jar -I grammars $@ edu:umn:cs:melt:ableC:compiler
 
