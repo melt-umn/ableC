@@ -50,10 +50,10 @@ Expr ::= val::String
 { return realConstant(integerConstant(val, false, noIntSuffix())) ;
 }
 
-function mkErrorCheck
-Expr ::= msg::[Message] e::Decorated! Expr with {}
+production mkErrorCheck
+Expr ::= msg::[Message] e::Expr
 {
-  return
+  forwards to
     if null(msg)
     then @e
     else if !containsErrors(msg, false)
