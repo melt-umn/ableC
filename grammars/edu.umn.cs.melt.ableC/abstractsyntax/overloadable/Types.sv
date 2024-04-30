@@ -267,7 +267,7 @@ top::host:Expr ::=
 }
 
 aspect production host:transformedExpr
-top::host:Expr ::= original::host:Expr  resolved::host:Expr
+top::host:Expr ::= @original::host:Expr  resolved::host:Expr
 {  
   propagate env;
   

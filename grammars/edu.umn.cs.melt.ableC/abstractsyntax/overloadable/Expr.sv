@@ -12,7 +12,7 @@ top::host:Expr ::= ty::host:TypeName  e::host:Expr
   ty.env = top.env;
   e.env = addEnv(ty.defs, ty.env);
 
-  local fwrd::host:Expr =
+  forward fwrd =
     inj:explicitCastExpr(
       host:decTypeName(ty),
       host:decExpr(e));
@@ -40,11 +40,11 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
     | nothing() -> nothing()
     end;
   
-  local host::host:Expr =
+  forward host =
     inj:arraySubscriptExpr(
       host:decExpr(lhs),
       host:decExpr(rhs));
-  local fwrd::host:Expr =
+  forward fwrd =
     case orElse(lhs.host:typerep.arraySubscriptProd, rewriteProd) of
     | just(prod) ->
       host:transformedExpr(
@@ -52,7 +52,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
         prod(
           host:decExpr(lhs),
           host:decExpr(rhs)))
-    | nothing() -> host
+    | nothing() -> @host
     end;
 
   forwards to host:wrapWarnExpr(lerrors, fwrd);
@@ -74,7 +74,7 @@ top::host:Expr ::= f::host:Expr  a::host:Exprs
   forward host = inj:callExpr(@f, @a);
   forwards to
     case orElse(f.callProd, rewriteProd) of
-    | just(prod) -> host:transformedExpr(@host, prod(host:decExprs(a)))
+    | just(prod) -> host:transformedExpr(host, prod(host:decExprs(a)))
     | nothing() -> @host
     end;
 }
@@ -89,17 +89,17 @@ top::host:Expr ::= lhs::host:Expr  deref::Boolean  rhs::host:Name
 
   local t::host:Type = lhs.host:typerep;
   t.isDeref = deref;
-  local host::host:Expr =
+  forward host =
     inj:memberExpr(
       host:decExpr(lhs),
       deref, rhs);
-  local fwrd::host:Expr =
+  forward fwrd =
     case t.memberProd of
     | just(prod) ->
        host:transformedExpr(
          host,
          prod(host:decExpr(lhs), rhs))
-    | nothing() -> host
+    | nothing() -> @host
     end;
   
   forwards to host:wrapWarnExpr(lerrors, fwrd);
@@ -112,7 +112,7 @@ top::host:Expr ::= ty::host:TypeName  init::host:InitList
   top.pp = parens( ppConcat([parens(ty.pp), text("{"), ppImplode(text(", "), init.pps), text("}")]) );
   
   local t::host:Type = ty.host:typerep;
-  local host::host:Expr =
+  forward host =
     host:compoundLiteralExpr(host:decTypeName(ty), init);
   local tmpName::host:Name = host:name("_res_" ++ toString(genInt()));
   forwards to
@@ -133,6 +133,6 @@ top::host:Expr ::= ty::host:TypeName  init::host:InitList
                    host:justInitializer(prod(init))),
                  host:nilDeclarator()))),
            host:declRefExpr(tmpName)))
-    | nothing() -> host
+    | nothing() -> @host
     end;
 }

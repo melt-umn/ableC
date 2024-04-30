@@ -34,17 +34,17 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
     then just(mkEqRewriteExpr(\ lhs::host:Expr rhs::host:Expr -> rhs, lhs, _))
     else nothing();
   
-  local host::host:Expr =
+  forward host =
     inj:eqExpr(
       host:decExpr(lhs),
       host:decExpr(rhs));
-  local fwrd::host:Expr =
+  forward fwrd =
     case orElse(lhs.lEqProd, orElse(map(\ p::BinaryProd -> p(lhs, _), rType.rEqProd), rewriteProd)) of
     | just(prod) ->
       host:transformedExpr(
         host, 
         prod(host:decExpr(rhs)))
-    | nothing() -> host
+    | nothing() -> @host
     end;
   
   forwards to
@@ -82,11 +82,11 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
     then just(mkEqRewriteExpr(mulExpr, _, _))
     else nothing();
   
-  local host::host:Expr =
+  forward host =
     inj:mulEqExpr(
       host:decExpr(lhs),
       host:decExpr(rhs));
-  local fwrd::host:Expr =
+  forward fwrd =
     case orElse(lType.lMulEqProd, orElse(rType.rMulEqProd, rewriteProd)) of
     | just(prod) ->
       host:transformedExpr(
@@ -94,7 +94,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
         prod(
           host:decExpr(lhs),
           host:decExpr(rhs)))
-    | nothing() -> host
+    | nothing() -> @host
     end;
 
   forwards to
@@ -132,11 +132,11 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
     then just(mkEqRewriteExpr(divExpr, _, _))
     else nothing();
   
-  local host::host:Expr =
+  forward host =
     inj:divEqExpr(
       host:decExpr(lhs),
       host:decExpr(rhs));
-  local fwrd::host:Expr =
+  forward fwrd =
     case orElse(lType.lDivEqProd, orElse(rType.rDivEqProd, rewriteProd)) of
     | just(prod) ->
       host:transformedExpr(
@@ -144,7 +144,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
         prod(
           host:decExpr(lhs),
           host:decExpr(rhs)))
-    | nothing() -> host
+    | nothing() -> @host
     end;
 
   forwards to
@@ -182,11 +182,11 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
     then just(mkEqRewriteExpr(modExpr, _, _))
     else nothing();
   
-  local host::host:Expr =
+  forward host =
     inj:modEqExpr(
       host:decExpr(lhs),
       host:decExpr(rhs));
-  local fwrd::host:Expr =
+  forward fwrd =
     case orElse(lType.lModEqProd, orElse(rType.rModEqProd, rewriteProd)) of
     | just(prod) ->
       host:transformedExpr(
@@ -194,7 +194,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
         prod(
           host:decExpr(lhs),
           host:decExpr(rhs)))
-    | nothing() -> host
+    | nothing() -> @host
     end;
 
   forwards to
@@ -232,11 +232,11 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
     then just(mkEqRewriteExpr(addExpr, _, _))
     else nothing();
   
-  local host::host:Expr =
+  forward host =
     inj:addEqExpr(
       host:decExpr(lhs),
       host:decExpr(rhs));
-  local fwrd::host:Expr =
+  forward fwrd =
     case orElse(lType.lAddEqProd, orElse(rType.rAddEqProd, rewriteProd)) of
     | just(prod) ->
       host:transformedExpr(
@@ -244,7 +244,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
         prod(
           host:decExpr(lhs),
           host:decExpr(rhs)))
-    | nothing() -> host
+    | nothing() -> @host
     end;
 
   forwards to
@@ -282,11 +282,11 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
     then just(mkEqRewriteExpr(subExpr, _, _))
     else nothing();
   
-  local host::host:Expr =
+  forward host =
     inj:subEqExpr(
       host:decExpr(lhs),
       host:decExpr(rhs));
-  local fwrd::host:Expr =
+  forward fwrd =
     case orElse(lType.lSubEqProd, orElse(rType.rSubEqProd, rewriteProd)) of
     | just(prod) ->
       host:transformedExpr(
@@ -294,7 +294,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
         prod(
           host:decExpr(lhs),
           host:decExpr(rhs)))
-    | nothing() -> host
+    | nothing() -> @host
     end;
 
   forwards to
@@ -332,11 +332,11 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
     then just(mkEqRewriteExpr(lshExpr, _, _))
     else nothing();
   
-  local host::host:Expr =
+  forward host =
     inj:lshEqExpr(
       host:decExpr(lhs),
       host:decExpr(rhs));
-  local fwrd::host:Expr =
+  forward fwrd =
     case orElse(lType.lLshEqProd, orElse(rType.rLshEqProd, rewriteProd)) of
     | just(prod) ->
       host:transformedExpr(
@@ -344,7 +344,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
         prod(
           host:decExpr(lhs),
           host:decExpr(rhs)))
-    | nothing() -> host
+    | nothing() -> @host
     end;
 
   forwards to
@@ -382,11 +382,11 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
     then just(mkEqRewriteExpr(rshExpr, _, _))
     else nothing();
   
-  local host::host:Expr =
+  forward host =
     inj:rshEqExpr(
       host:decExpr(lhs),
       host:decExpr(rhs));
-  local fwrd::host:Expr =
+  forward fwrd =
     case orElse(lType.lRshEqProd, orElse(rType.rRshEqProd, rewriteProd)) of
     | just(prod) ->
       host:transformedExpr(
@@ -394,7 +394,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
         prod(
           host:decExpr(lhs),
           host:decExpr(rhs)))
-    | nothing() -> host
+    | nothing() -> @host
     end;
 
   forwards to
@@ -432,11 +432,11 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
     then just(mkEqRewriteExpr(andExpr, _, _))
     else nothing();
   
-  local host::host:Expr =
+  forward host =
     inj:andEqExpr(
       host:decExpr(lhs),
       host:decExpr(rhs));
-  local fwrd::host:Expr =
+  forward fwrd =
     case orElse(lType.lAndEqProd, orElse(rType.rAndEqProd, rewriteProd)) of
     | just(prod) ->
       host:transformedExpr(
@@ -444,7 +444,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
         prod(
           host:decExpr(lhs),
           host:decExpr(rhs)))
-    | nothing() -> host
+    | nothing() -> @host
     end;
 
 
@@ -483,11 +483,11 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
     then just(mkEqRewriteExpr(xorExpr, _, _))
     else nothing();
   
-  local host::host:Expr =
+  forward host =
     inj:xorEqExpr(
       host:decExpr(lhs),
       host:decExpr(rhs));
-  local fwrd::host:Expr =
+  forward fwrd =
     case orElse(lType.lXorEqProd, orElse(rType.rXorEqProd, rewriteProd)) of
     | just(prod) ->
       host:transformedExpr(
@@ -495,7 +495,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
         prod(
           host:decExpr(lhs),
           host:decExpr(rhs)))
-    | nothing() -> host
+    | nothing() -> @host
     end;
 
   forwards to
@@ -533,11 +533,11 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
     then just(mkEqRewriteExpr(orExpr, _, _))
     else nothing();
   
-  local host::host:Expr =
+  forward host =
     inj:orEqExpr(
       host:decExpr(lhs),
       host:decExpr(rhs));
-  local fwrd::host:Expr =
+  forward fwrd =
     case orElse(lType.lOrEqProd, orElse(rType.rOrEqProd, rewriteProd)) of
     | just(prod) ->
       host:transformedExpr(
@@ -545,7 +545,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
         prod(
           host:decExpr(lhs),
           host:decExpr(rhs)))
-    | nothing() -> host
+    | nothing() -> @host
     end;
 
   forwards to
@@ -579,11 +579,11 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   local rType::host:Type = rhs.host:typerep;
   rType.otherType = lType;
   
-  local host::host:Expr =
+  forward host =
     inj:andExpr(
       host:decExpr(lhs),
       host:decExpr(rhs));
-  local fwrd::host:Expr =
+  forward fwrd =
     case orElse(lType.lAndProd, rType.rAndProd) of
     | just(prod) ->
       host:transformedExpr(
@@ -591,7 +591,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
         prod(
           host:decExpr(lhs),
           host:decExpr(rhs)))
-    | nothing() -> host
+    | nothing() -> @host
     end;
 
   forwards to
@@ -624,11 +624,11 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   local rType::host:Type = rhs.host:typerep;
   rType.otherType = lType;
   
-  local host::host:Expr =
+  forward host =
     inj:orExpr(
       host:decExpr(lhs),
       host:decExpr(rhs));
-  local fwrd::host:Expr =
+  forward fwrd =
     case orElse(lType.lOrProd, rType.rOrProd) of
     | just(prod) ->
       host:transformedExpr(
@@ -636,7 +636,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
         prod(
           host:decExpr(lhs),
           host:decExpr(rhs)))
-    | nothing() -> host
+    | nothing() -> @host
     end;
 
   forwards to
@@ -669,11 +669,11 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   local rType::host:Type = rhs.host:typerep;
   rType.otherType = lType;
   
-  local host::host:Expr =
+  forward host =
     inj:andBitExpr(
       host:decExpr(lhs),
       host:decExpr(rhs));
-  local fwrd::host:Expr =
+  forward fwrd =
     case orElse(lType.lAndBitProd, rType.rAndBitProd) of
     | just(prod) ->
       host:transformedExpr(
@@ -681,7 +681,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
         prod(
           host:decExpr(lhs),
           host:decExpr(rhs)))
-    | nothing() -> host
+    | nothing() -> @host
     end;
 
   forwards to
@@ -711,11 +711,11 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   local rType::host:Type = rhs.host:typerep;
   rType.otherType = lType;
   
-  local host::host:Expr =
+  forward host =
     inj:orBitExpr(
       host:decExpr(lhs),
       host:decExpr(rhs));
-  local fwrd::host:Expr =
+  forward fwrd =
     case orElse(lType.lOrBitProd, rType.rOrBitProd) of
     | just(prod) ->
       host:transformedExpr(
@@ -723,7 +723,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
         prod(
           host:decExpr(lhs),
           host:decExpr(rhs)))
-    | nothing() -> host
+    | nothing() -> @host
     end;
 
   forwards to
@@ -756,11 +756,11 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   local rType::host:Type = rhs.host:typerep;
   rType.otherType = lType;
   
-  local host::host:Expr =
+  forward host =
     inj:xorExpr(
       host:decExpr(lhs),
       host:decExpr(rhs));
-  local fwrd::host:Expr =
+  forward fwrd =
     case orElse(lType.lXorProd, rType.rXorProd) of
     | just(prod) ->
       host:transformedExpr(
@@ -768,7 +768,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
         prod(
           host:decExpr(lhs),
           host:decExpr(rhs)))
-    | nothing() -> host
+    | nothing() -> @host
     end;
 
   forwards to
@@ -801,11 +801,11 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   local rType::host:Type = rhs.host:typerep;
   rType.otherType = lType;
   
-  local host::host:Expr =
+  forward host =
     inj:lshExpr(
       host:decExpr(lhs),
       host:decExpr(rhs));
-  local fwrd::host:Expr =
+  forward fwrd =
     case orElse(lType.lLshBitProd, rType.rLshBitProd) of
     | just(prod) ->
       host:transformedExpr(
@@ -813,7 +813,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
         prod(
           host:decExpr(lhs),
           host:decExpr(rhs)))
-    | nothing() -> host
+    | nothing() -> @host
     end;
 
   forwards to
@@ -846,11 +846,11 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   local rType::host:Type = rhs.host:typerep;
   rType.otherType = lType;
   
-  local host::host:Expr =
+  forward host =
     inj:rshExpr(
       host:decExpr(lhs),
       host:decExpr(rhs));
-  local fwrd::host:Expr =
+  forward fwrd =
     case orElse(lType.lRshBitProd, rType.rRshBitProd) of
     | just(prod) ->
       host:transformedExpr(
@@ -858,7 +858,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
         prod(
           host:decExpr(lhs),
           host:decExpr(rhs)))
-    | nothing() -> host
+    | nothing() -> @host
     end;
 
   forwards to
@@ -899,11 +899,11 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
          notExpr(notEqualsExpr(lhs, rhs))) 
     else nothing();
   
-  local host::host:Expr =
+  forward host =
     inj:equalsExpr(
       host:decExpr(lhs),
       host:decExpr(rhs));
-  local fwrd::host:Expr =
+  forward fwrd =
     case orElse(lType.lEqualsProd, orElse(rType.rEqualsProd, rewriteProd)) of
     | just(prod) ->
       host:transformedExpr(
@@ -911,7 +911,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
         prod(
           host:decExpr(lhs),
           host:decExpr(rhs)))
-    | nothing() -> host
+    | nothing() -> @host
     end;
 
   forwards to
@@ -952,11 +952,11 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
          notExpr(equalsExpr(lhs, rhs))) 
     else nothing();
   
-  local host::host:Expr =
+  forward host =
     inj:notEqualsExpr(
       host:decExpr(lhs),
       host:decExpr(rhs));
-  local fwrd::host:Expr =
+  forward fwrd =
     case orElse(lType.lNotEqualsProd, orElse(rType.rNotEqualsProd, rewriteProd)) of
     | just(prod) ->
       host:transformedExpr(
@@ -964,7 +964,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
         prod(
           host:decExpr(lhs),
           host:decExpr(rhs)))
-    | nothing() -> host
+    | nothing() -> @host
     end;
 
   forwards to
@@ -1031,11 +1031,11 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
          _, _))
     else nothing();
   
-  local host::host:Expr =
+  forward host =
     inj:ltExpr(
       host:decExpr(lhs),
       host:decExpr(rhs));
-  local fwrd::host:Expr =
+  forward fwrd =
     case foldr1(orElse, [lType.lLtProd, rType.rLtProd, rewriteProd1, rewriteProd2, rewriteProd3]) of
     | just(prod) ->
       host:transformedExpr(
@@ -1043,7 +1043,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
         prod(
           host:decExpr(lhs),
           host:decExpr(rhs)))
-    | nothing() -> host
+    | nothing() -> @host
     end;
 
   forwards to
@@ -1110,11 +1110,11 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
          _, _))
     else nothing();
   
-  local host::host:Expr =
+  forward host =
     inj:gtExpr(
       host:decExpr(lhs),
       host:decExpr(rhs));
-  local fwrd::host:Expr =
+  forward fwrd =
     case foldr1(orElse, [lType.lGtProd, rType.rGtProd, rewriteProd1, rewriteProd2, rewriteProd3]) of
     | just(prod) ->
       host:transformedExpr(
@@ -1122,7 +1122,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
         prod(
           host:decExpr(lhs),
           host:decExpr(rhs)))
-    | nothing() -> host
+    | nothing() -> @host
     end;
 
   forwards to
@@ -1189,11 +1189,11 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
          _, _))
     else nothing();
   
-  local host::host:Expr =
+  forward host =
     inj:lteExpr(
       host:decExpr(lhs),
       host:decExpr(rhs));
-  local fwrd::host:Expr =
+  forward fwrd =
     case foldr1(orElse, [lType.lLteProd, rType.rLteProd, rewriteProd1, rewriteProd2, rewriteProd3]) of
     | just(prod) ->
       host:transformedExpr(
@@ -1201,7 +1201,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
         prod(
           host:decExpr(lhs),
           host:decExpr(rhs)))
-    | nothing() -> host
+    | nothing() -> @host
     end;
 
   forwards to
@@ -1268,11 +1268,11 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
          _, _))
     else nothing();
   
-  local host::host:Expr =
+  forward host =
     inj:gteExpr(
       host:decExpr(lhs),
       host:decExpr(rhs));
-  local fwrd::host:Expr =
+  forward fwrd =
     case foldr1(orElse, [lType.lGteProd, rType.rGteProd, rewriteProd1, rewriteProd2, rewriteProd3]) of
     | just(prod) ->
       host:transformedExpr(
@@ -1280,7 +1280,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
         prod(
           host:decExpr(lhs),
           host:decExpr(rhs)))
-    | nothing() -> host
+    | nothing() -> @host
     end;
 
   forwards to
@@ -1313,11 +1313,11 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   local rType::host:Type = rhs.host:typerep;
   rType.otherType = lType;
   
-  local host::host:Expr =
+  forward host =
     inj:addExpr(
       host:decExpr(lhs),
       host:decExpr(rhs));
-  local fwrd::host:Expr =
+  forward fwrd =
     case orElse(lType.lAddProd, rType.rAddProd) of
     | just(prod) ->
       host:transformedExpr(
@@ -1325,7 +1325,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
         prod(
           host:decExpr(lhs),
           host:decExpr(rhs)))
-    | nothing() -> host
+    | nothing() -> @host
     end;
 
   forwards to
@@ -1358,11 +1358,11 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   local rType::host:Type = rhs.host:typerep;
   rType.otherType = lType;
   
-  local host::host:Expr =
+  forward host =
     inj:subExpr(
       host:decExpr(lhs),
       host:decExpr(rhs));
-  local fwrd::host:Expr =
+  forward fwrd =
     case orElse(lType.lSubProd, rType.rSubProd) of
     | just(prod) ->
       host:transformedExpr(
@@ -1370,7 +1370,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
         prod(
           host:decExpr(lhs),
           host:decExpr(rhs)))
-    | nothing() -> host
+    | nothing() -> @host
     end;
 
   forwards to
@@ -1403,11 +1403,11 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   local rType::host:Type = rhs.host:typerep;
   rType.otherType = lType;
   
-  local host::host:Expr =
+  forward host =
     inj:mulExpr(
       host:decExpr(lhs),
       host:decExpr(rhs));
-  local fwrd::host:Expr =
+  forward fwrd =
     case orElse(lType.lMulProd, rType.rMulProd) of
     | just(prod) ->
       host:transformedExpr(
@@ -1415,7 +1415,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
         prod(
           host:decExpr(lhs),
           host:decExpr(rhs)))
-    | nothing() -> host
+    | nothing() -> @host
     end;
 
   forwards to
@@ -1448,11 +1448,11 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   local rType::host:Type = rhs.host:typerep;
   rType.otherType = lType;
   
-  local host::host:Expr =
+  forward host =
     inj:divExpr(
       host:decExpr(lhs),
       host:decExpr(rhs));
-  local fwrd::host:Expr =
+  forward fwrd =
     case orElse(lType.lDivProd, rType.rDivProd) of
     | just(prod) ->
       host:transformedExpr(
@@ -1460,7 +1460,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
         prod(
           host:decExpr(lhs),
           host:decExpr(rhs)))
-    | nothing() -> host
+    | nothing() -> @host
     end;
 
   forwards to
@@ -1493,11 +1493,11 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   local rType::host:Type = rhs.host:typerep;
   rType.otherType = lType;
   
-  local host::host:Expr =
+  forward host =
     inj:modExpr(
       host:decExpr(lhs),
       host:decExpr(rhs));
-  local fwrd::host:Expr =
+  forward fwrd =
     case orElse(lType.lModProd, rType.rModProd) of
     | just(prod) ->
       host:transformedExpr(
@@ -1505,7 +1505,7 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
         prod(
           host:decExpr(lhs),
           host:decExpr(rhs)))
-    | nothing() -> host
+    | nothing() -> @host
     end;
 
   forwards to

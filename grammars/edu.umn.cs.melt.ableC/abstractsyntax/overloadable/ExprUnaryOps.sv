@@ -9,15 +9,15 @@ top::host:Expr ::= e::host:Expr
   production attribute lerrors :: [Message] with ++;
   lerrors := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
-  local host::host:Expr =
+  forward host =
     inj:preIncExpr(host:decExpr(e));
-  local fwrd::host:Expr =
+  forward fwrd =
     case e.host:typerep.preIncProd of
     | just(prod) ->
       host:transformedExpr(
         host,
         prod(host:decExpr(e)))
-    | nothing() -> host
+    | nothing() -> @host
     end;
 
   forwards to host:wrapWarnExpr(lerrors, fwrd);
@@ -30,15 +30,15 @@ top::host:Expr ::= e::host:Expr
   production attribute lerrors :: [Message] with ++;
   lerrors := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
-  local host::host:Expr =
+  forward host =
     inj:preDecExpr(host:decExpr(e));
-  local fwrd::host:Expr =
+  forward fwrd =
     case e.host:typerep.preDecProd of
     | just(prod) ->
       host:transformedExpr(
         host,
         prod(host:decExpr(e)))
-    | nothing() -> host
+    | nothing() -> @host
     end;
 
   forwards to host:wrapWarnExpr(lerrors, fwrd);
@@ -52,15 +52,15 @@ top::host:Expr ::= e::host:Expr
   production attribute lerrors :: [Message] with ++;
   lerrors := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
-  local host::host:Expr =
+  forward host =
     inj:postIncExpr(host:decExpr(e));
-  local fwrd::host:Expr =
+  forward fwrd =
     case e.host:typerep.postIncProd of
     | just(prod) ->
       host:transformedExpr(
         host,
         prod(host:decExpr(e)))
-    | nothing() -> host
+    | nothing() -> @host
     end;
 
   forwards to host:wrapWarnExpr(lerrors, fwrd);
@@ -74,15 +74,15 @@ top::host:Expr ::= e::host:Expr
   production attribute lerrors :: [Message] with ++;
   lerrors := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
-  local host::host:Expr =
+  forward host =
     inj:postDecExpr(host:decExpr(e));
-  local fwrd::host:Expr =
+  forward fwrd =
     case e.host:typerep.postDecProd of
     | just(prod) ->
       host:transformedExpr(
         host,
         prod(host:decExpr(e)))
-    | nothing() -> host
+    | nothing() -> @host
     end;
 
   forwards to host:wrapWarnExpr(lerrors, fwrd);
@@ -96,12 +96,12 @@ top::host:Expr ::= e::host:Expr
   production attribute lerrors :: [Message] with ++;
   lerrors := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
-  local host::host:Expr =
+  forward host =
     inj:addressOfExpr(host:decExpr(e));
-  local fwrd::host:Expr =
+  forward fwrd =
     case e.addressOfProd of
     | just(prod) -> host:transformedExpr(host, prod())
-    | nothing() -> host
+    | nothing() -> @host
     end;
 
   forwards to host:wrapWarnExpr(lerrors, fwrd);
@@ -115,15 +115,15 @@ top::host:Expr ::= e::host:Expr
   production attribute lerrors :: [Message] with ++;
   lerrors := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
-  local host::host:Expr =
+  forward host =
     inj:dereferenceExpr(host:decExpr(e));
-  local fwrd::host:Expr =
+  forward fwrd =
     case e.host:typerep.dereferenceProd of
     | just(prod) ->
       host:transformedExpr(
         host,
         prod(host:decExpr(e)))
-    | nothing() -> host
+    | nothing() -> @host
     end;
 
   forwards to host:wrapWarnExpr(lerrors, fwrd);
@@ -137,15 +137,15 @@ top::host:Expr ::= e::host:Expr
   production attribute lerrors :: [Message] with ++;
   lerrors := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
-  local host::host:Expr =
+  forward host =
     inj:positiveExpr(host:decExpr(e));
-  local fwrd::host:Expr =
+  forward fwrd =
     case e.host:typerep.positiveProd of
     | just(prod) ->
       host:transformedExpr(
         host,
         prod(host:decExpr(e)))
-    | nothing() -> host
+    | nothing() -> @host
     end;
 
   forwards to host:wrapWarnExpr(lerrors, fwrd);
@@ -159,15 +159,15 @@ top::host:Expr ::= e::host:Expr
   production attribute lerrors :: [Message] with ++;
   lerrors := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
-  local host::host:Expr =
+  forward host =
     inj:negativeExpr(host:decExpr(e));
-  local fwrd::host:Expr =
+  forward fwrd =
     case e.host:typerep.negativeProd of
     | just(prod) ->
       host:transformedExpr(
         host,
         prod(host:decExpr(e)))
-    | nothing() -> host
+    | nothing() -> @host
     end;
 
   forwards to host:wrapWarnExpr(lerrors, fwrd);
@@ -181,15 +181,15 @@ top::host:Expr ::= e::host:Expr
   production attribute lerrors :: [Message] with ++;
   lerrors := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
-  local host::host:Expr =
+  forward host =
     inj:bitNegateExpr(host:decExpr(e));
-  local fwrd::host:Expr =
+  forward fwrd =
     case e.host:typerep.bitNegateProd of
     | just(prod) ->
       host:transformedExpr(
         host,
         prod(host:decExpr(e)))
-    | nothing() -> host
+    | nothing() -> @host
     end;
 
   forwards to host:wrapWarnExpr(lerrors, fwrd);
@@ -203,15 +203,15 @@ top::host:Expr ::= e::host:Expr
   production attribute lerrors :: [Message] with ++;
   lerrors := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
-  local host::host:Expr =
+  forward host =
     inj:notExpr(host:decExpr(e));
-  local fwrd::host:Expr =
+  forward fwrd =
     case e.host:typerep.notProd of
     | just(prod) ->
       host:transformedExpr(
         host,
         prod(host:decExpr(e)))
-    | nothing() -> host
+    | nothing() -> @host
     end;
 
   forwards to host:wrapWarnExpr(lerrors, fwrd);
