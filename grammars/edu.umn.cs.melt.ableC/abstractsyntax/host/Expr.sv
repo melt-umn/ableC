@@ -90,7 +90,7 @@ Expr ::= q::[Qualifier]  e::Expr
 -- to allow for "syntactic" analyses on the original host Expr.  Otherwise this
 -- is semantically equivalent to resolved.
 abstract production transformedExpr
-top::Expr ::= @original::Expr  resolved::Expr
+top::Expr ::= original::Expr  resolved::Expr
 {
   propagate controlStmtContext;
   
