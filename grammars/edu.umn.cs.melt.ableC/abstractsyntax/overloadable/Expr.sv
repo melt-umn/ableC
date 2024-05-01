@@ -74,7 +74,7 @@ top::host:Expr ::= f::host:Expr  a::host:Exprs
   forward host = inj:callExpr(@f, @a);
   forwards to
     case orElse(f.callProd, rewriteProd) of
-    | just(prod) -> host:transformedExpr(@host, prod(host:decExprs(a)))
+    | just(prod) -> host:transformedExpr(host:decExpr(host), prod(host:decExprs(a)))
     | nothing() -> @host
     end;
 }
