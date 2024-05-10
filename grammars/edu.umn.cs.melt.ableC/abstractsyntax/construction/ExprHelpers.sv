@@ -51,7 +51,7 @@ Expr ::= val::String
 }
 
 production mkErrorCheck
-Expr ::= msg::[Message] e::Expr
+top::Expr ::= msg::[Message] e::Expr
 {
   forwards to
     if null(msg)
