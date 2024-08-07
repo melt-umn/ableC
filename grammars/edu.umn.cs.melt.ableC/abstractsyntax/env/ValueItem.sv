@@ -42,14 +42,14 @@ top::ValueItem ::= s::Decorated FunctionDecl
 abstract production builtinValueItem
 top::ValueItem ::= t::Type
 {
-  top.typerep = t;
+  top.typerep = ^t;
   top.isItemValue = true;
 }
 
 abstract production builtinFunctionValueItem
 top::ValueItem ::= t::Type  handler::(Expr ::= Name Exprs)
 {
-  top.typerep = t;
+  top.typerep = ^t;
   top.directCallHandler = handler;
   top.directRefHandler = \ n::Name ->
     errorExpr([errFromOrigin(n, s"use of built-in function ${n.name} as a value")]);
@@ -88,7 +88,7 @@ top::ValueItem ::= e::Decorated Expr
 abstract production preDeclValueItem
 top::ValueItem ::= ty::Type
 {
-  top.typerep = ty;
+  top.typerep = ^ty;
   top.isItemValue = true;
 }
 

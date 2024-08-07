@@ -359,7 +359,7 @@ top::host:Expr ::= lhs::host:Expr  deref::Boolean  rhs::host:Name
         just(
           prod(
             host:decExpr(lhs),
-            rhs, _))
+            ^rhs, _))
       | nothing() -> nothing()
       end,
       case top.host:typerep.callProd of
@@ -373,7 +373,7 @@ top::host:Expr ::= lhs::host:Expr  deref::Boolean  rhs::host:Name
         just(
           (\ -> prod(
             host:decExpr(lhs),
-            rhs)))
+            ^rhs)))
       | nothing() -> nothing()
       end,
       case top.host:typerep.addressOfProd of
@@ -387,7 +387,7 @@ top::host:Expr ::= lhs::host:Expr  deref::Boolean  rhs::host:Name
         just(
           prod(
             host:decExpr(lhs),
-            rhs, _))
+            ^rhs, _))
       | nothing() -> nothing()
       end,
       case t.lEqProd of

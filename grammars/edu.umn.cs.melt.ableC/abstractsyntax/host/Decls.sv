@@ -72,7 +72,7 @@ top::Decls ::=
 function appendDecls
 Decls ::= d1::Decls d2::Decls
 {
-  return consDecl(decls(d1), d2);
+  return consDecl(decls(^d1), ^d2);
 }
 
 
@@ -117,7 +117,7 @@ top::Decl ::= storage::StorageClasses  attrs::Attributes  ty::BaseTypeExpr  dcls
   propagate errors, globalDecls, functionDecls, defs, freeVariables;
   top.pp = ppConcat(
     terminate(space(), storage.pps) ::
-      ppAttributes(attrs) ::
+      ppAttributes(^attrs) ::
       [ty.pp, space(), ppImplode(text(", "), dcls.pps), semi()]);
   -- host defined in Deferred.sv
 
@@ -128,8 +128,8 @@ top::Decl ::= storage::StorageClasses  attrs::Attributes  ty::BaseTypeExpr  dcls
   dcls.baseType = ty.typerep;
   dcls.typeModifierIn = ty.typeModifier;
   dcls.isTypedef = false;
-  dcls.givenStorageClasses = storage;
-  dcls.givenAttributes = attrs;
+  dcls.givenStorageClasses = ^storage;
+  dcls.givenAttributes = ^attrs;
 }
 
 abstract production typeExprDecl
@@ -137,7 +137,7 @@ top::Decl ::= attrs::Attributes ty::BaseTypeExpr
 {
   propagate env, errors, globalDecls, functionDecls, defs, freeVariables;
   -- host defined in Deferred.sv
-  top.pp = ppConcat( ppAttributes(attrs) :: [ty.pp, semi()] );
+  top.pp = ppConcat( ppAttributes(^attrs) :: [ty.pp, semi()] );
   ty.givenRefId = attrs.maybeRefId;
 }
 
@@ -145,7 +145,7 @@ abstract production typedefDecls
 top::Decl ::= attrs::Attributes  ty::BaseTypeExpr  dcls::Declarators
 {
   propagate errors, globalDecls, functionDecls, defs, freeVariables;
-  top.pp = ppConcat([text("typedef "), ppAttributes(attrs), ty.pp, space(), ppImplode(text(", "), dcls.pps), semi()]);
+  top.pp = ppConcat([text("typedef "), ppAttributes(^attrs), ty.pp, space(), ppImplode(text(", "), dcls.pps), semi()]);
   -- host defined in Deferred.sv
 
   ty.givenRefId = attrs.maybeRefId;
@@ -156,7 +156,7 @@ top::Decl ::= attrs::Attributes  ty::BaseTypeExpr  dcls::Declarators
   dcls.typeModifierIn = ty.typeModifier;
   dcls.isTypedef = true;
   dcls.givenStorageClasses = nilStorageClass();
-  dcls.givenAttributes = attrs;
+  dcls.givenAttributes = ^attrs;
 }
 
 abstract production functionDeclaration
@@ -243,7 +243,7 @@ top::Decl ::= n::Name  e::Expr
       e.typerep.host.baseTypeExpr,
       consDeclarator(
         declarator(
-          n,
+          ^n,
           e.typerep.host.typeModifierExpr,
           nilAttribute(),
           justInitializer(exprInitializer(e.host))),
@@ -266,14 +266,14 @@ top::Decl ::= ty::Type  n::Name
       ty.host.baseTypeExpr,
       consDeclarator(
         declarator(
-          n,
+          ^n,
           ty.host.typeModifierExpr,
           nilAttribute(),
           nothingInitializer()),
         nilDeclarator()));
 
   top.errors <- n.valueRedeclarationCheckNoCompatible;
-  top.defs <- [valueDef(n.name, preDeclValueItem(ty))];
+  top.defs <- [valueDef(n.name, preDeclValueItem(^ty))];
 }
 
 
@@ -350,10 +350,11 @@ top::Declarator ::= name::Name  ty::TypeModifierExpr  attrs::Attributes  initial
         parens(ppImplode(text(", "),
         map((.pp), ids))),
         result.rpp])]-}
-    | _ -> [ppConcat([ty.lpp, name.pp, ty.rpp, ppAttributesRHS(attrs), initializer.pp])]
+    | _ -> [ppConcat([ty.lpp, name.pp, ty.rpp, ppAttributesRHS(^attrs), initializer.pp])]
     end;
 
-  local hostTy::BaseTypeExpr = fromMaybe(top.baseType.baseTypeExpr, ty.modifiedBaseTypeExpr);
+  nondecorated local hostTy::BaseTypeExpr =
+    fromMaybe(top.baseType.baseTypeExpr, ty.modifiedBaseTypeExpr);
   top.hostDecl =
     if top.isTypedef
     then typedefDecls(top.givenAttributes, hostTy, consDeclarator(top.host, nilDeclarator()))
@@ -398,15 +399,15 @@ top::Declarator ::= name::Name  ty::TypeModifierExpr  attrs::Attributes  initial
       else []
     else [];
 
-  local allAttrs :: Attributes = appendAttribute(top.givenAttributes, attrs);
+  local allAttrs :: Attributes = appendAttribute(top.givenAttributes, ^attrs);
   allAttrs.env = top.env;
   allAttrs.controlStmtContext = top.controlStmtContext;
 
-  local animatedTyperep :: Type = animateAttributeOnType(allAttrs, initializer.typerep);
+  nondecorated local animatedTyperep::Type = animateAttributeOnType(allAttrs, initializer.typerep);
 
   -- accumulate extension qualifiers on redeclaration
-  local typerepWithAllExtnQuals :: Type =
-		if top.isTopLevel
+  nondecorated local typerepWithAllExtnQuals::Type =
+    if top.isTopLevel
 		then name.valueMergeRedeclExtnQualifiers(animatedTyperep)
 		else animatedTyperep;
 }
@@ -431,14 +432,14 @@ abstract production functionDecl
 top::FunctionDecl ::= storage::StorageClasses  fnquals::SpecialSpecifiers  bty::BaseTypeExpr mty::TypeModifierExpr  name::Name  attrs::Attributes  ds::Decls  body::Stmt
 {
   top.pp = ppConcat([terminate(space(), storage.pps), terminate( space(), fnquals.pps ),
-    bty.pp, space(), mty.lpp, space(), ppAttributes(attrs), name.pp, mty.rpp, line(), terminate(cat(semi(), line()), ds.pps),
-    text("{"), line(), nestlines(2,body.pp), text("}")]);
+    bty.pp, space(), mty.lpp, space(), ppAttributes(^attrs), name.pp, mty.rpp, line(), terminate(cat(semi(), line()), ds.pps),
+     text("{"), line(), nestlines(2,body.pp), text("}")]);
 
   local functionDecls :: [Decorated Decl] = bty.functionDecls ++
     mty.functionDecls ++ ds.functionDecls ++ body.functionDecls ++
     fnquals.functionDecls;
 
-  local hostBody :: Stmt =
+  nondecorated local hostBody::Stmt =
     seqStmt(
       foldr(
         \ decl::Decorated Decl stmt::Stmt ->
@@ -453,7 +454,7 @@ top::FunctionDecl ::= storage::StorageClasses  fnquals::SpecialSpecifiers  bty::
         foldDecl(bty.hostDecls ++
           [functionDeclaration(
              functionDecl(
-               storage,
+               ^storage,
                fnquals.host,
                mbty,
                mty.host,
@@ -464,7 +465,7 @@ top::FunctionDecl ::= storage::StorageClasses  fnquals::SpecialSpecifiers  bty::
     | nothing() ->
       functionDeclaration(
         functionDecl(
-          storage,
+          ^storage,
           fnquals.host,
           bty.host,
           mty.host,
@@ -490,7 +491,7 @@ top::FunctionDecl ::= storage::StorageClasses  fnquals::SpecialSpecifiers  bty::
   production attribute implicitDefs::[Def] with ++;
   implicitDefs := [miscDef("this_func", currentFunctionItem(name, top))];
 
-  local nameValueItem::ValueItem =
+  nondecorated local nameValueItem::ValueItem =
     builtinValueItem(
       pointerType(
         nilQualifier(),
@@ -525,8 +526,8 @@ top::FunctionDecl ::= storage::StorageClasses  fnquals::SpecialSpecifiers  bty::
   -- refIds, in case someone decides to declare a new struct in the function return type.
   local retMty::TypeModifierExpr =
     case mty of
-    | functionTypeExprWithArgs(ret, _, _, _) -> ret
-    | functionTypeExprWithoutArgs(ret, _, _) -> ret
+    | functionTypeExprWithArgs(ret, _, _, _) -> ^ret
+    | functionTypeExprWithoutArgs(ret, _, _) -> ^ret
     | _ -> error("functionDecl TypeModifierExpr should always be a functionTypeExpr")
     end;
   retMty.env = mty.env;
@@ -575,7 +576,7 @@ top::FunctionDecl ::= storage::StorageClasses  fnquals::SpecialSpecifiers  bty::
 
   ds.isTopLevel = false;
 
-  forwards to functionDecl(storage, fnquals, bty, mty, name, attrs, ds, body);
+  forwards to functionDecl(@storage, @fnquals, @bty, @mty, @name, @attrs, @ds, @body);
 }
 
 abstract production badFunctionDecl
@@ -584,7 +585,7 @@ top::FunctionDecl ::= msg::[Message]
   top.pp = ppConcat([text("/*"),
     ppImplode(line(), map(text, map((.output), msg))),
     text("*/")]);
-  top.host = functionDeclaration(top);
+  top.host = functionDeclaration(^top);
   top.defs := [];
   top.freeVariables := [];
   top.typerep = errorType();
@@ -617,7 +618,7 @@ top::Parameters ::= h::ParameterDecl  t::Parameters
   top.freeVariables :=
     h.freeVariables ++
     removeDefsFromNames(h.defs, t.freeVariables);
-  top.appendedParametersRes = consParameters(h, t.appendedParametersRes);
+  top.appendedParametersRes = consParameters(^h, t.appendedParametersRes);
 
   h.env = top.env;
   t.env = addEnv(h.defs ++ h.functionDefs, top.env);
@@ -656,7 +657,7 @@ top::Parameters ::= p::Decorated Parameters
 function appendParameters
 Parameters ::= p1::Parameters p2::Parameters
 {
-  p1.appendedParameters = p2;
+  p1.appendedParameters = ^p2;
   return p1.appendedParametersRes;
 }
 
@@ -675,11 +676,11 @@ abstract production parameterDecl
 top::ParameterDecl ::= storage::StorageClasses  bty::BaseTypeExpr  mty::TypeModifierExpr  name::MaybeName  attrs::Attributes
 {
   top.pp = ppConcat([terminate(space(), storage.pps),
-    bty.pp, space(), mty.lpp, space(), name.pp, mty.rpp, ppAttributesRHS(attrs)]);
+    bty.pp, space(), mty.lpp, space(), name.pp, mty.rpp, ppAttributesRHS(^attrs)]);
   top.host =
     case mty.modifiedBaseTypeExpr of
-    | just(mbty) -> parameterDecl(storage, mbty, mty.host, name.host, attrs.host)
-    | nothing() -> parameterDecl(storage, bty.host, mty.host, name.host, attrs.host)
+    | just(mbty) -> parameterDecl(^storage, mbty, mty.host, name.host, attrs.host)
+    | nothing() -> parameterDecl(^storage, bty.host, mty.host, name.host, attrs.host)
     end;
   top.paramname = name.maybename;
   top.typerep = mty.typerep;
@@ -740,7 +741,7 @@ abstract production structDecl
 top::StructDecl ::= attrs::Attributes  name::MaybeName  dcls::StructItemList
 {
   top.maybename = name.maybename;
-  top.pp = ppConcat([text("struct "), ppAttributes(attrs),
+  top.pp = ppConcat([text("struct "), ppAttributes(^attrs),
     if name.hasName || top.inAnonStructItem then name.pp else text("anon_" ++ name.anonTagRefId),
     -- DEBUGGING
     --text("/*" ++ top.refId ++ "*/"),
@@ -814,7 +815,7 @@ abstract production unionDecl
 top::UnionDecl ::= attrs::Attributes  name::MaybeName  dcls::StructItemList
 {
   top.maybename = name.maybename;
-  top.pp = ppConcat([text("union "), ppAttributes(attrs),
+  top.pp = ppConcat([text("union "), ppAttributes(^attrs),
     if name.hasName || top.inAnonStructItem then name.pp else text("anon_" ++ name.anonTagRefId),
     -- DEBUGGING
     --text("/*" ++ top.refId ++ "*/"),
@@ -914,7 +915,7 @@ top::StructItemList ::= h::StructItem  t::StructItemList
   top.freeVariables :=
     h.freeVariables ++
     removeDefsFromNames(h.defs, t.freeVariables);
-  top.appendedStructItemListRes = consStructItem(h, t.appendedStructItemListRes);
+  top.appendedStructItemListRes = consStructItem(^h, t.appendedStructItemListRes);
 
   h.isLast =
     top.isLast &&
@@ -942,7 +943,7 @@ top::StructItemList ::=
 function appendStructItemList
 StructItemList ::= s1::StructItemList s2::StructItemList
 {
-  s1.appendedStructItemList = s2;
+  s1.appendedStructItemList = ^s2;
   return s1.appendedStructItemListRes;
 }
 
@@ -971,7 +972,7 @@ top::EnumItemList ::= h::EnumItem  t::EnumItemList
   top.freeVariables :=
     h.freeVariables ++
     removeDefsFromNames(h.defs, t.freeVariables);
-  top.appendedEnumItemListRes = consEnumItem(h, t.appendedEnumItemListRes);
+  top.appendedEnumItemListRes = consEnumItem(^h, t.appendedEnumItemListRes);
 
   h.env = top.env;
   t.env = addEnv(h.defs, h.env);
@@ -991,7 +992,7 @@ top::EnumItemList ::=
 function appendEnumItemList
 EnumItemList ::= e1::EnumItemList e2::EnumItemList
 {
-  e1.appendedEnumItemList = e2;
+  e1.appendedEnumItemList = ^e2;
   return e1.appendedEnumItemListRes;
 }
 
@@ -1008,7 +1009,7 @@ propagate fieldNames on StructItem excluding anonStructStructItem, anonUnionStru
 abstract production structItem
 top::StructItem ::= attrs::Attributes  ty::BaseTypeExpr  dcls::StructDeclarators
 {
-  top.pp = ppConcat([ppAttributes(attrs), ty.pp, space(), ppImplode(text(", "), dcls.pps), semi()]);
+  top.pp = ppConcat([ppAttributes(^attrs), ty.pp, space(), ppImplode(text(", "), dcls.pps), semi()]);
   top.host =
     if dcls.hasModifiedTypeExpr
     -- TODO: Discarding ty.decls!
@@ -1022,7 +1023,7 @@ top::StructItem ::= attrs::Attributes  ty::BaseTypeExpr  dcls::StructDeclarators
   dcls.baseType = ty.typerep;
   dcls.isLast = top.isLast;
   dcls.typeModifierIn = ty.typeModifier;
-  dcls.givenAttributes = attrs;
+  dcls.givenAttributes = ^attrs;
 }
 abstract production structItems
 top::StructItem ::= dcls::StructItemList
@@ -1123,7 +1124,7 @@ propagate host, errors, globalDecls, functionDecls, defs, freeVariables, typeMod
 abstract production structField
 top::StructDeclarator ::= name::Name  ty::TypeModifierExpr  attrs::Attributes
 {
-  top.pps = [ppConcat([ty.lpp, name.pp, ty.rpp, ppAttributesRHS(attrs)])];
+  top.pps = [ppConcat([ty.lpp, name.pp, ty.rpp, ppAttributesRHS(^attrs)])];
 
   top.hostStructItem =
     structItem(
@@ -1157,14 +1158,14 @@ top::StructDeclarator ::= name::Name  ty::TypeModifierExpr  attrs::Attributes
   ty.env = top.env;
   attrs.env = top.env;
 
-  local allAttrs :: Attributes = appendAttribute(top.givenAttributes, attrs);
+  local allAttrs :: Attributes = appendAttribute(top.givenAttributes, ^attrs);
   allAttrs.env = top.env;
   allAttrs.controlStmtContext = top.controlStmtContext;
 }
 abstract production structBitfield
 top::StructDeclarator ::= name::MaybeName  ty::TypeModifierExpr  e::Expr  attrs::Attributes
 {
-  top.pps = [ppConcat([ty.lpp, name.pp, ty.rpp, text(" : "), e.pp, ppAttributesRHS(attrs)])];
+  top.pps = [ppConcat([ty.lpp, name.pp, ty.rpp, text(" : "), e.pp, ppAttributesRHS(^attrs)])];
 
   top.hostStructItem =
     structItem(
@@ -1204,7 +1205,7 @@ top::StructDeclarator ::= name::MaybeName  ty::TypeModifierExpr  e::Expr  attrs:
   e.env = top.env;
   attrs.env = top.env;
 
-  local allAttrs :: Attributes = appendAttribute(top.givenAttributes, attrs);
+  local allAttrs :: Attributes = appendAttribute(top.givenAttributes, ^attrs);
   allAttrs.env = top.env;
   allAttrs.controlStmtContext = top.controlStmtContext;
 }
@@ -1262,7 +1263,7 @@ abstract production consStorageClass
 top::StorageClasses ::= h::StorageClass  t::StorageClasses
 {
   top.pps = h.pp :: t.pps;
-  top.appendedStorageClassesRes = consStorageClass(h, t.appendedStorageClassesRes);
+  top.appendedStorageClassesRes = consStorageClass(^h, t.appendedStorageClassesRes);
 }
 
 abstract production nilStorageClass
@@ -1275,7 +1276,7 @@ top::StorageClasses ::=
 function appendStorageClasses
 StorageClasses ::= s1::StorageClasses s2::StorageClasses
 {
-  s1.appendedStorageClasses = s2;
+  s1.appendedStorageClasses = ^s2;
   return s1.appendedStorageClassesRes;
 }
 

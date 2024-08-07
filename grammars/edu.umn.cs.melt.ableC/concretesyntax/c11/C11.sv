@@ -116,7 +116,7 @@ concrete productions top::TypeQualifier_c
 function atomicMutator -- TODO MOVE
 ast:BaseTypeExpr ::= q::ast:Qualifiers bt::ast:BaseTypeExpr
 {
-  return ast:atomicTypeExpr(q, ast:typeName(bt, ast:baseTypeExpr()));
+  return ast:atomicTypeExpr(^q, ast:typeName(^bt, ast:baseTypeExpr()));
 }
 
 -- Thread_local

@@ -65,7 +65,7 @@ top::Exprs ::= h::Expr  t::Exprs
   top.freeVariables := h.freeVariables ++ removeDefsFromNames(h.defs, t.freeVariables);
   top.typereps = h.typerep :: t.typereps;
   top.count = 1 + t.count;
-  top.appendedRes = consExpr(h, t.appendedRes);
+  top.appendedRes = consExpr(^h, t.appendedRes);
   top.isLValue = t.isLValue;
 
   top.argumentErrors =
@@ -135,7 +135,7 @@ function appendExprs
 Exprs ::= e1::Exprs e2::Exprs
 {
   propagate env;
-  e1.appendedExprs = e2;
+  e1.appendedExprs = ^e2;
   return e1.appendedRes;
 }
 

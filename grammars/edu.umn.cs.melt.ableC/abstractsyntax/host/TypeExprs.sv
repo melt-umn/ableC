@@ -77,8 +77,8 @@ top::TypeName ::= bty::BaseTypeExpr  mty::TypeModifierExpr
     | nothing() -> typeName(bty.host, mty.host)
     end;
   top.typerep = mty.typerep;
-  top.bty = bty;
-  top.mty = mty;
+  top.bty = ^bty;
+  top.mty = ^mty;
   bty.givenRefId = nothing();
   bty.env = top.env;
   mty.env = addEnv(bty.defs, bty.env);
@@ -251,7 +251,7 @@ top::BaseTypeExpr ::= q::Qualifiers  result::BuiltinType
 {
   propagate host, errors, globalDecls, functionDecls, decls, defs, freeVariables, env, controlStmtContext;
   top.pp = ppConcat([terminate(space(), q.pps), result.pp]);
-  top.typerep = builtinType(q, result);
+  top.typerep = builtinType(^q, ^result);
   top.typeModifier = baseTypeExpr();
   q.typeToQualify = top.typerep;
 }
@@ -283,12 +283,12 @@ top::BaseTypeExpr ::= q::Qualifiers  kwd::StructOrEnumOrUnion  n::Name
   top.typerep =
     case kwd, tags of
     -- It's an enum and we see the declaration.
-    | enumSEU(), enumTagItem(d) :: _ -> extType(q, enumExtType(d))
+    | enumSEU(), enumTagItem(d) :: _ -> extType(^q, enumExtType(d))
     -- We don't see the declaration, so we're adding it.
-    | _, [] -> extType(q, refIdExtType(kwd, just(n.name), refId))
+    | _, [] -> extType(^q, refIdExtType(kwd, just(n.name), refId))
     -- It's a struct/union and the tag type agrees.
-    | structSEU(), refIdTagItem(structSEU(), rid) :: _ -> extType(q, refIdExtType(kwd, just(n.name), rid))
-    | unionSEU(), refIdTagItem(unionSEU(), rid) :: _ -> extType(q, refIdExtType(kwd, just(n.name), rid))
+    | structSEU(), refIdTagItem(structSEU(), rid) :: _ -> extType(^q, refIdExtType(kwd, just(n.name), rid))
+    | unionSEU(), refIdTagItem(unionSEU(), rid) :: _ -> extType(^q, refIdExtType(kwd, just(n.name), rid))
     -- Otherwise, error!
     | _, _ -> errorType()
     end;
@@ -316,7 +316,7 @@ top::BaseTypeExpr ::= q::Qualifiers  kwd::StructOrEnumOrUnion  n::Name
       -- TODO: Ugly way of forward-declaring a tag without overriding an existing definition
       [typedefDecls(
          nilAttribute(),
-         withRefId(refId, top),
+         withRefId(refId, ^top),
          consDeclarator(
            declarator(
              name("_unused_" ++ toString(genInt())),
@@ -348,7 +348,7 @@ abstract production withRefId
 top::BaseTypeExpr ::= refId::String  ty::BaseTypeExpr
 {
   forward.givenRefId = just(refId);
-  forwards to ty;
+  forwards to @ty;
 }
 
 {-- References to anon tag types by refId.  Can't appear in code, but can be generated
@@ -358,7 +358,7 @@ top::BaseTypeExpr ::= q::Qualifiers  kwd::StructOrEnumOrUnion  refId::String
 {
   propagate host, errors, globalDecls, functionDecls, defs, freeVariables, controlStmtContext;
   top.pp = ppConcat([terminate(space(), q.pps), kwd.pp, space(), text("anon_" ++ refId)]);
-  top.typerep = extType(q, refIdExtType(kwd, nothing(), refId));
+  top.typerep = extType(^q, refIdExtType(kwd, nothing(), refId));
   top.typeModifier = baseTypeExpr();
   top.decls := [];
 
@@ -371,7 +371,7 @@ top::BaseTypeExpr ::= q::Qualifiers  def::StructDecl
 {
   propagate env, host, errors, globalDecls, functionDecls, defs, freeVariables, controlStmtContext;
   top.pp = ppConcat([terminate(space(), q.pps), def.pp ]);
-  top.typerep = extType(q, refIdExtType(structSEU(), map((.name), def.maybename), def.refId));
+  top.typerep = extType(^q, refIdExtType(structSEU(), map((.name), def.maybename), def.refId));
   top.typeModifier = baseTypeExpr();
   -- Avoid re-decorating and re-generating refIds
   top.decls := [typeExprDecl(nilAttribute(), decTypeExpr(top))];
@@ -388,7 +388,7 @@ top::BaseTypeExpr ::= q::Qualifiers  def::UnionDecl
 {
   propagate env, host, errors, globalDecls, functionDecls, defs, freeVariables, controlStmtContext;
   top.pp = ppConcat([terminate(space(), q.pps), def.pp ]);
-  top.typerep = extType(q, refIdExtType(unionSEU(), map((.name), def.maybename), def.refId));
+  top.typerep = extType(^q, refIdExtType(unionSEU(), map((.name), def.maybename), def.refId));
   top.typeModifier = baseTypeExpr();
   -- Avoid re-decorating and re-generating refIds
   top.decls := [typeExprDecl(nilAttribute(), decTypeExpr(top))];
@@ -405,9 +405,9 @@ top::BaseTypeExpr ::= q::Qualifiers  def::EnumDecl
 {
   propagate env, host, errors, globalDecls, functionDecls, defs, freeVariables, controlStmtContext;
   top.pp = ppConcat([terminate(space(), q.pps), def.pp ]);
-  top.typerep = extType(q, enumExtType(def));
+  top.typerep = extType(^q, enumExtType(def));
   top.typeModifier = baseTypeExpr();
-  top.decls := [typeExprDecl(nilAttribute(), top)];
+  top.decls := [typeExprDecl(nilAttribute(), ^top)];
   q.typeToQualify = top.typerep;
 }
 
@@ -417,11 +417,11 @@ top::BaseTypeExpr ::= q::Qualifiers  sub::ExtType
 {
   propagate errors, globalDecls, functionDecls, defs, decls, freeVariables, controlStmtContext;
   top.pp = ppConcat([terminate(space(), q.pps), sub.lpp, sub.rpp]);
-  top.typerep = extType(q, sub);
+  top.typerep = extType(^q, ^sub);
   top.host = sub.host.baseTypeExpr;
   top.typeModifier = sub.host.typeModifierExpr;
   q.typeToQualify = top.typerep;
-  sub.givenQualifiers = q;
+  sub.givenQualifiers = ^q;
 }
 
 {-- A name, that needs to be looked up. -}
@@ -434,7 +434,7 @@ top::BaseTypeExpr ::= q::Qualifiers  name::Name
   top.typerep =
     noncanonicalType(
       typedefType(
-        q, name.name,
+        ^q, name.name,
         if !null(name.valueLookupCheck)
         then errorType()
         else addQualifiers(q.qualifiers, name.valueItem.typerep)));
@@ -459,16 +459,15 @@ top::BaseTypeExpr ::= attrs::Attributes  bt::BaseTypeExpr
 {
   propagate controlStmtContext;
 
-  top.pp = cat(ppAttributes(attrs), bt.pp);
+  top.pp = cat(ppAttributes(^attrs), bt.pp);
 
-  local liftedName::Name =
-    name(s"_attributedType_${toString(genInt())}");
+  nondecorated local liftedName::Name = name(s"_attributedType_${toString(genInt())}");
   forwards to
     -- TODO: We can currently only lift to the global level, but this should be lifted to the closest scope
     injectGlobalDeclsTypeExpr(
       consDecl(
         typedefDecls(
-          attrs, bt,
+          @attrs, @bt,
           consDeclarator(
             declarator(liftedName, baseTypeExpr(), nilAttribute(), nothingInitializer()),
             nilDeclarator())),
@@ -480,7 +479,7 @@ abstract production atomicTypeExpr
 top::BaseTypeExpr ::= q::Qualifiers  wrapped::TypeName
 {
   propagate env, host, errors, globalDecls, functionDecls, defs, decls, freeVariables, controlStmtContext;
-  top.typerep = atomicType(q, wrapped.typerep);
+  top.typerep = atomicType(^q, wrapped.typerep);
   top.pp = ppConcat([ terminate(space(), q.pps),
                      text("_Atomic"), parens(wrapped.pp)]);
   top.typeModifier = baseTypeExpr();
@@ -501,7 +500,7 @@ abstract production typeofTypeExpr
 top::BaseTypeExpr ::= q::Qualifiers  e::ExprOrTypeName
 {
   propagate env, host, errors, globalDecls, functionDecls, defs, decls, freeVariables, controlStmtContext;
-  top.typerep = noncanonicalType(typeofType(q, e.typerep));
+  top.typerep = noncanonicalType(typeofType(^q, e.typerep));
   top.pp = ppConcat([text("__typeof__"), parens(e.pp)]);
   top.typeModifier = baseTypeExpr();
   q.typeToQualify = top.typerep;
@@ -603,7 +602,7 @@ top::TypeModifierExpr ::= q::Qualifiers  target::TypeModifierExpr
                      terminate(space(), q.pps) ]);
   top.rpp = cat(if target.isFunctionArrayTypeExpr then text(")") else notext(), target.rpp);
   top.modifiedBaseTypeExpr = target.modifiedBaseTypeExpr;
-  top.typerep = pointerType(q, target.typerep);
+  top.typerep = pointerType(^q, target.typerep);
   q.typeToQualify = top.typerep;
 }
 
@@ -625,7 +624,7 @@ top::TypeModifierExpr ::= element::TypeModifierExpr  indexQualifiers::Qualifiers
 
   top.typerep =
     arrayType(
-      element.typerep, indexQualifiers, sizeModifier,
+      element.typerep, ^indexQualifiers, ^sizeModifier,
       case size.integerConstantValue of
         just(v) -> constantArrayType(v)
       | nothing() -> variableArrayType(size)
@@ -646,7 +645,7 @@ top::TypeModifierExpr ::= element::TypeModifierExpr  indexQualifiers::Qualifiers
 
   top.isFunctionArrayTypeExpr = true;
 
-  top.typerep = arrayType(element.typerep, indexQualifiers, sizeModifier, incompleteArrayType());
+  top.typerep = arrayType(element.typerep, ^indexQualifiers, ^sizeModifier, incompleteArrayType());
   indexQualifiers.typeToQualify = top.typerep;
 }
 
@@ -671,7 +670,7 @@ top::TypeModifierExpr ::= result::TypeModifierExpr  args::Parameters  variadic::
   top.isFunctionArrayTypeExpr = true;
 
   top.typerep = functionType(result.typerep,
-                             protoFunctionType(args.typereps, variadic), q);
+                             protoFunctionType(args.typereps, variadic), ^q);
   result.env = top.env;
   
   args.env = openScopeEnv(top.env);
@@ -690,7 +689,7 @@ top::TypeModifierExpr ::= result::TypeModifierExpr  ids::[Name]  q::Qualifiers -
 
   top.isFunctionArrayTypeExpr = true;
 
-  top.typerep = functionType(result.typerep, noProtoFunctionType(), q);
+  top.typerep = functionType(result.typerep, noProtoFunctionType(), ^q);
   q.typeToQualify = top.typerep;
 }
 {-- Parens -}
@@ -723,7 +722,7 @@ top::TypeNames ::= h::TypeName t::TypeNames
   top.pps = h.pp :: t.pps;
   top.typereps = h.typerep :: t.typereps;
   top.count = t.count + 1;
-  top.appendedTypeNamesRes = consTypeName(h, t.appendedTypeNamesRes);
+  top.appendedTypeNamesRes = consTypeName(^h, t.appendedTypeNamesRes);
 
   h.env = top.env;
   t.env = addEnv(h.defs, h.env);
@@ -741,6 +740,6 @@ top::TypeNames ::=
 function appendTypeNames
 TypeNames ::= e1::TypeNames e2::TypeNames
 {
-  e1.appendedTypeNames = e2;
+  e1.appendedTypeNames = ^e2;
   return e1.appendedTypeNamesRes;
 }

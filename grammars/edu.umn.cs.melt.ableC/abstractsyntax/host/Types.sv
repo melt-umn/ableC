@@ -55,9 +55,9 @@ inherited attribute addedTypeQualifiers :: [Qualifier];
 aspect default production
 top::Type ::=
 {
-  top.withoutAttributes = top;
-  top.withoutTypeQualifiers = top;
-  top.withTypeQualifiers = top;
+  top.withoutAttributes = ^top;
+  top.withoutTypeQualifiers = ^top;
+  top.withTypeQualifiers = ^top;
 
   top.isIntegerType = false;
   top.isScalarType = false;
@@ -80,12 +80,12 @@ top::Type ::=
   top.baseTypeExpr = errorTypeExpr([]);
   top.typeModifierExpr = baseTypeExpr();
   top.mangledName = "error";
-  top.integerPromotions = top;
-  top.defaultArgumentPromotions = top;
-  top.defaultLvalueConversion = top;
-  top.defaultFunctionArrayLvalueConversion = top;
-  top.withoutTypeQualifiers = top;
-  top.withoutExtensionQualifiers = top;
+  top.integerPromotions = ^top;
+  top.defaultArgumentPromotions = ^top;
+  top.defaultLvalueConversion = ^top;
+  top.defaultFunctionArrayLvalueConversion = ^top;
+  top.withoutTypeQualifiers = ^top;
+  top.withoutExtensionQualifiers = ^top;
   top.mergeQualifiers = \t2::Type -> errorType();
   top.qualifiers = [];
 
@@ -108,27 +108,27 @@ top::Type ::= q::Qualifiers  bt::BuiltinType
   top.lpp =
     ppConcat([terminate(space(), q.pps), bt.pp]);
   top.rpp = notext();
-  top.baseTypeExpr = builtinTypeExpr(q, bt);
+  top.baseTypeExpr = builtinTypeExpr(^q, ^bt);
   top.typeModifierExpr = baseTypeExpr();
   top.mangledName = s"${q.mangledName}_builtin_${bt.mangledName}_";
-  top.integerPromotions = builtinType(q, bt.integerPromotionsBuiltin);
-  top.defaultArgumentPromotions = builtinType(q, bt.defaultArgumentPromotionsBuiltin);
-  top.defaultLvalueConversion = builtinType(nilQualifier(), bt);
-  top.defaultFunctionArrayLvalueConversion = top;
+  top.integerPromotions = builtinType(^q, bt.integerPromotionsBuiltin);
+  top.defaultArgumentPromotions = builtinType(^q, bt.defaultArgumentPromotionsBuiltin);
+  top.defaultLvalueConversion = builtinType(nilQualifier(), ^bt);
+  top.defaultFunctionArrayLvalueConversion = ^top;
   top.isIntegerType = bt.isIntegerType;
   top.isArithmeticType = bt.isArithmeticType;
   top.isScalarType = bt.isArithmeticType;
-  top.withoutTypeQualifiers = builtinType(nilQualifier(), bt);
-  top.withoutExtensionQualifiers = builtinType(filterExtensionQualifiers(q), bt);
+  top.withoutTypeQualifiers = builtinType(nilQualifier(), ^bt);
+  top.withoutExtensionQualifiers = builtinType(filterExtensionQualifiers(^q), ^bt);
   top.withTypeQualifiers = builtinType(foldQualifier(top.addedTypeQualifiers ++
-    q.qualifiers), bt);
+    q.qualifiers), ^bt);
   top.mergeQualifiers = \t2::Type ->
     case t2 of
-      builtinType(q2, bt2) -> builtinType(unionQualifiers(top.qualifiers, q2.qualifiers), bt)
-    | _ -> builtinType(q, bt)
+      builtinType(q2, bt2) -> builtinType(unionQualifiers(top.qualifiers, q2.qualifiers), ^bt)
+    | _ -> builtinType(^q, ^bt)
     end;
   top.qualifiers = q.qualifiers;
-  q.typeToQualify = top;
+  q.typeToQualify = ^top;
 }
 
 
@@ -158,26 +158,26 @@ top::Type ::= q::Qualifiers  target::Type
       space(), ppImplode(space(), q.pps)]);
   top.rpp = cat(if wrapTarget then text(")") else notext(), target.rpp);
   top.baseTypeExpr = target.baseTypeExpr;
-  top.typeModifierExpr = pointerTypeExpr(q, target.typeModifierExpr);
+  top.typeModifierExpr = pointerTypeExpr(^q, target.typeModifierExpr);
   top.mangledName = s"${q.mangledName}_pointer_${target.mangledName}_";
-  top.integerPromotions = top;
-  top.defaultArgumentPromotions = top;
-  top.defaultLvalueConversion = pointerType(nilQualifier(), target);
-  top.defaultFunctionArrayLvalueConversion = top;
-  top.withoutTypeQualifiers = pointerType(nilQualifier(), target);
-  top.withoutExtensionQualifiers = pointerType(filterExtensionQualifiers(q), target.withoutExtensionQualifiers);
+  top.integerPromotions = ^top;
+  top.defaultArgumentPromotions = ^top;
+  top.defaultLvalueConversion = pointerType(nilQualifier(), ^target);
+  top.defaultFunctionArrayLvalueConversion = ^top;
+  top.withoutTypeQualifiers = pointerType(nilQualifier(), ^target);
+  top.withoutExtensionQualifiers = pointerType(filterExtensionQualifiers(^q), target.withoutExtensionQualifiers);
   top.withTypeQualifiers = pointerType(foldQualifier(top.addedTypeQualifiers ++
-    q.qualifiers), target);
+    q.qualifiers), ^target);
   top.mergeQualifiers = \t2::Type ->
     case t2 of
       pointerType(q2, target2) ->
-        pointerType(unionQualifiers(top.qualifiers, q2.qualifiers), target.mergeQualifiers(target2))
-    | _ -> pointerType(q, target)
+        pointerType(unionQualifiers(top.qualifiers, q2.qualifiers), target.mergeQualifiers(^target2))
+    | _ -> pointerType(^q, ^target)
     end;
   top.qualifiers = q.qualifiers;
 
   top.isScalarType = true;
-  q.typeToQualify = top;
+  q.typeToQualify = ^top;
 }
 
 
@@ -217,42 +217,42 @@ top::Type ::= element::Type  indexQualifiers::Qualifiers  sizeModifier::ArraySiz
       constantArrayType(size) ->
         arrayTypeExprWithExpr(
           element.typeModifierExpr,
-          indexQualifiers,
-          sizeModifier,
+          ^indexQualifiers,
+          ^sizeModifier,
           mkIntConst(size)) -- TODO: location
     | incompleteArrayType() ->
         arrayTypeExprWithoutExpr(
           element.typeModifierExpr,
-          indexQualifiers,
-          sizeModifier)
+          ^indexQualifiers,
+          ^sizeModifier)
     | variableArrayType(size) ->
         arrayTypeExprWithExpr(
           element.typeModifierExpr,
-          indexQualifiers,
-          sizeModifier,
+          ^indexQualifiers,
+          ^sizeModifier,
           new(size))
     end;
   top.mangledName = top.defaultFunctionArrayLvalueConversion.mangledName; -- TODO?
-  top.integerPromotions = top;
-  top.defaultArgumentPromotions = top;
-  top.defaultLvalueConversion = top;
+  top.integerPromotions = ^top;
+  top.defaultArgumentPromotions = ^top;
+  top.defaultLvalueConversion = ^top;
   top.defaultFunctionArrayLvalueConversion =
-    noncanonicalType(decayedType(top,
-      pointerType(indexQualifiers, element)));
-  top.withoutExtensionQualifiers = arrayType(element.withoutExtensionQualifiers, filterExtensionQualifiers(indexQualifiers), sizeModifier, sub);
+    noncanonicalType(decayedType(^top,
+      pointerType(^indexQualifiers, ^element)));
+  top.withoutExtensionQualifiers = arrayType(element.withoutExtensionQualifiers, filterExtensionQualifiers(^indexQualifiers), ^sizeModifier, ^sub);
   -- Added qualfiers go on the element type!
-  top.withTypeQualifiers = arrayType(element.withTypeQualifiers, indexQualifiers, sizeModifier, sub);
+  top.withTypeQualifiers = arrayType(element.withTypeQualifiers, ^indexQualifiers, ^sizeModifier, ^sub);
   element.addedTypeQualifiers = top.addedTypeQualifiers;
 
   top.mergeQualifiers = \t2::Type ->
     case t2 of
       arrayType(element2, q2, _, _) ->
-        arrayType(element.mergeQualifiers(element2),
-          unionQualifiers(top.qualifiers, q2.qualifiers), sizeModifier, sub)
-    | _ -> arrayType(element, indexQualifiers, sizeModifier, sub)
+        arrayType(element.mergeQualifiers(^element2),
+          unionQualifiers(top.qualifiers, q2.qualifiers), ^sizeModifier, ^sub)
+    | _ -> arrayType(^element, ^indexQualifiers, ^sizeModifier, ^sub)
     end;
   top.qualifiers = indexQualifiers.qualifiers;
-  indexQualifiers.typeToQualify = top;
+  indexQualifiers.typeToQualify = ^top;
 }
 
 {-- The subtypes of arrays -}
@@ -314,25 +314,25 @@ top::Type ::= result::Type  sub::FunctionType  q::Qualifiers
   top.typeModifierExpr =
     case sub of
       protoFunctionType(args, variadic) ->
-        functionTypeExprWithArgs(result.typeModifierExpr, argTypesToParameters(args), variadic, q)
+        functionTypeExprWithArgs(result.typeModifierExpr, argTypesToParameters(args), variadic, ^q)
     | noProtoFunctionType() ->
-        functionTypeExprWithoutArgs(result.typeModifierExpr, [], q)
+        functionTypeExprWithoutArgs(result.typeModifierExpr, [], ^q)
     end;
   top.mangledName = s"function_${result.mangledName}_${sub.mangledName}_";
-  top.integerPromotions = top;
-  top.defaultArgumentPromotions = top;
-  top.defaultLvalueConversion = top;
+  top.integerPromotions = ^top;
+  top.defaultArgumentPromotions = ^top;
+  top.defaultLvalueConversion = ^top;
   top.defaultFunctionArrayLvalueConversion =
-    noncanonicalType(decayedType(top,
-      pointerType(nilQualifier(), top)));
+    noncanonicalType(decayedType(^top,
+      pointerType(nilQualifier(), ^top)));
   top.mergeQualifiers = \t2::Type ->
     case t2 of
       functionType(result2, sub2, q2) ->
-        functionType(result.mergeQualifiers(result2), sub.mergeQualifiers(sub2), unionQualifiers(q.qualifiers, q2.qualifiers))
-    | _ -> functionType(result, sub, q)
+        functionType(result.mergeQualifiers(^result2), sub.mergeQualifiers(^sub2), unionQualifiers(q.qualifiers, q2.qualifiers))
+    | _ -> functionType(^result, ^sub, ^q)
     end;
   top.qualifiers = q.qualifiers;
-  q.typeToQualify = top;
+  q.typeToQualify = ^top;
 }
 
 {-- The subtypes of functions -}
@@ -378,18 +378,14 @@ top::FunctionType ::=
   top.mangledName = "noproto";
 }
 
-function argTypesToParameters
-Parameters ::= args::[Type]
-{
-  return
-    case args of
-      h :: t ->
-        consParameters(
-          parameterDecl(nilStorageClass(), directTypeExpr(h), baseTypeExpr(), nothingName(), nilAttribute()),
-          argTypesToParameters(t))
-    | [] -> nilParameters()
-    end;
-}
+fun argTypesToParameters Parameters ::= args::[Type] =
+  case args of
+    h :: t ->
+      consParameters(
+        parameterDecl(nilStorageClass(), directTypeExpr(h), baseTypeExpr(), nothingName(), nilAttribute()),
+        argTypesToParameters(t))
+  | [] -> nilParameters()
+  end;
 
 {-------------------------------------------------------------------------------
  - "New" types: structs, unions and enums, but also new types defined by extensions.
@@ -409,13 +405,13 @@ top::Type ::= q::Qualifiers  sub::ExtType
   top.defaultArgumentPromotions = sub.defaultArgumentPromotions;
   top.defaultLvalueConversion = sub.defaultLvalueConversion;
   top.defaultFunctionArrayLvalueConversion = sub.defaultFunctionArrayLvalueConversion;
-  top.withoutTypeQualifiers = extType(nilQualifier(), sub);
-  top.withoutExtensionQualifiers = extType(filterExtensionQualifiers(q), sub);
+  top.withoutTypeQualifiers = extType(nilQualifier(), ^sub);
+  top.withoutExtensionQualifiers = extType(filterExtensionQualifiers(^q), ^sub);
   top.withTypeQualifiers = extType(foldQualifier(top.addedTypeQualifiers ++
-    q.qualifiers), sub);
+    q.qualifiers), ^sub);
   top.mergeQualifiers = \t2::Type ->
     case t2 of
-      extType(q2, _) -> extType(unionQualifiers(q.qualifiers, q2.qualifiers), sub)
+      extType(q2, _) -> extType(unionQualifiers(q.qualifiers, q2.qualifiers), ^sub)
     | _ -> top
     end;
   top.qualifiers = q.qualifiers;
@@ -426,8 +422,8 @@ top::Type ::= q::Qualifiers  sub::ExtType
   top.isCompleteType = sub.isCompleteType;
   top.maybeRefId := sub.maybeRefId;
 
-  q.typeToQualify = top;
-  sub.givenQualifiers = q;
+  q.typeToQualify = ^top;
+  sub.givenQualifiers = ^q;
 }
 
 inherited attribute givenQualifiers::Qualifiers;
@@ -447,13 +443,13 @@ top::ExtType ::=
 {
   top.lpp = ppConcat([ terminate(space(), top.givenQualifiers.pps), top.pp ]);
   top.rpp = notext();
-  top.baseTypeExpr = extTypeExpr(top.givenQualifiers, top);
+  top.baseTypeExpr = extTypeExpr(top.givenQualifiers, ^top);
   top.typeModifierExpr = baseTypeExpr();
 
-  top.integerPromotions = extType(top.givenQualifiers, top);
-  top.defaultArgumentPromotions = extType(top.givenQualifiers, top);
-  top.defaultLvalueConversion = extType(top.givenQualifiers, top);
-  top.defaultFunctionArrayLvalueConversion = extType(top.givenQualifiers, top);
+  top.integerPromotions = extType(top.givenQualifiers, ^top);
+  top.defaultArgumentPromotions = extType(top.givenQualifiers, ^top);
+  top.defaultLvalueConversion = extType(top.givenQualifiers, ^top);
+  top.defaultFunctionArrayLvalueConversion = extType(top.givenQualifiers, ^top);
   top.freeVariables := [];
 
   top.isIntegerType = false;
@@ -467,7 +463,7 @@ abstract production enumExtType
 top::ExtType ::= ref::Decorated EnumDecl
 {
   propagate canonicalType;
-  top.host = extType(top.givenQualifiers, top);
+  top.host = extType(top.givenQualifiers, ^top);
   top.baseTypeExpr =
     case ref.maybename of
     | just(n) -> tagReferenceTypeExpr(top.givenQualifiers, enumSEU(), n)
@@ -520,7 +516,7 @@ abstract production refIdExtType
 top::ExtType ::= kwd::StructOrEnumOrUnion  mn::Maybe<String>  refId::String
 {
   propagate canonicalType;
-  top.host = extType(top.givenQualifiers, top);
+  top.host = extType(top.givenQualifiers, ^top);
   top.baseTypeExpr =
     case mn of
     | just(n) -> tagReferenceTypeExpr(top.givenQualifiers, kwd, name(n))
@@ -560,25 +556,25 @@ top::Type ::= q::Qualifiers  bt::Type
                      text("_Atomic"), parens(cat(bt.lpp, bt.rpp))]);
   top.rpp = notext();
   top.mangledName = s"${q.mangledName}_atomic_${bt.mangledName}_";
-  top.baseTypeExpr = atomicTypeExpr(q, typeName(bt.baseTypeExpr, bt.typeModifierExpr));
+  top.baseTypeExpr = atomicTypeExpr(^q, typeName(bt.baseTypeExpr, bt.typeModifierExpr));
   top.typeModifierExpr = baseTypeExpr();
-  top.integerPromotions = top;
-  top.defaultArgumentPromotions = top;
+  top.integerPromotions = ^top;
+  top.defaultArgumentPromotions = ^top;
   -- discarding qualifiers in lvalue conversion discards atomic qualifier, too.
   top.defaultLvalueConversion = bt.defaultLvalueConversion;
-  top.defaultFunctionArrayLvalueConversion = top;
-  top.withoutTypeQualifiers = atomicType(nilQualifier(), bt);
-  top.withoutExtensionQualifiers = atomicType(filterExtensionQualifiers(q), bt.withoutExtensionQualifiers);
+  top.defaultFunctionArrayLvalueConversion = ^top;
+  top.withoutTypeQualifiers = atomicType(nilQualifier(), ^bt);
+  top.withoutExtensionQualifiers = atomicType(filterExtensionQualifiers(^q), bt.withoutExtensionQualifiers);
   top.withTypeQualifiers = atomicType(foldQualifier(top.addedTypeQualifiers ++
-    q.qualifiers), bt);
+    q.qualifiers), ^bt);
   top.mergeQualifiers = \t2::Type ->
     case t2 of
       atomicType(q2, bt2) ->
-        atomicType(unionQualifiers(top.qualifiers, q2.qualifiers), bt.mergeQualifiers(bt2))
-    | _ -> atomicType(q, bt)
+        atomicType(unionQualifiers(top.qualifiers, q2.qualifiers), bt.mergeQualifiers(^bt2))
+    | _ -> atomicType(^q, ^bt)
     end;
   top.qualifiers = q.qualifiers;
-  q.typeToQualify = top;
+  q.typeToQualify = ^top;
 
   top.isIntegerType = bt.isIntegerType;
   top.isScalarType = bt.isScalarType;
@@ -597,24 +593,24 @@ abstract production attributedType
 top::Type ::= attrs::Attributes  bt::Type
 {
   propagate host, canonicalType, withoutExtensionQualifiers, errors, freeVariables;
-  top.lpp = ppConcat([ ppAttributes(attrs), space(), bt.lpp]);
+  top.lpp = ppConcat([ ppAttributes(^attrs), space(), bt.lpp]);
   top.rpp = bt.rpp;
   top.mangledName = bt.mangledName;
-  top.baseTypeExpr = attributedTypeExpr(attrs, bt.baseTypeExpr);
+  top.baseTypeExpr = attributedTypeExpr(^attrs, bt.baseTypeExpr);
   top.typeModifierExpr = baseTypeExpr();
-  top.integerPromotions = attributedType(attrs, bt.integerPromotions);
-  top.defaultArgumentPromotions = attributedType(attrs, bt.defaultArgumentPromotions);
+  top.integerPromotions = attributedType(^attrs, bt.integerPromotions);
+  top.defaultArgumentPromotions = attributedType(^attrs, bt.defaultArgumentPromotions);
   top.defaultLvalueConversion = bt.defaultLvalueConversion;
   top.defaultFunctionArrayLvalueConversion = bt.defaultFunctionArrayLvalueConversion;
   top.withoutAttributes = bt.withoutAttributes;
-  top.withoutTypeQualifiers = attributedType(attrs, bt.withoutTypeQualifiers);
-  top.withTypeQualifiers = attributedType(attrs, bt.withTypeQualifiers);
+  top.withoutTypeQualifiers = attributedType(^attrs, bt.withoutTypeQualifiers);
+  top.withTypeQualifiers = attributedType(^attrs, bt.withTypeQualifiers);
   bt.addedTypeQualifiers = top.addedTypeQualifiers;
   top.mergeQualifiers = \t2::Type ->
     case t2 of
       attributedType(_, bt2) ->
-        attributedType(attrs, bt.mergeQualifiers(bt2))
-    | _ -> attributedType(attrs, bt)
+        attributedType(^attrs, bt.mergeQualifiers(^bt2))
+    | _ -> attributedType(^attrs, ^bt)
     end;
   top.qualifiers = bt.qualifiers;
   top.isIntegerType = bt.isIntegerType;
@@ -654,16 +650,16 @@ top::Type ::= bt::Type  bytes::Integer
       bt.baseTypeExpr);
   top.typeModifierExpr = baseTypeExpr();
   -- You know, who knows what these rules are: TODO
-  top.integerPromotions = top;
-  top.defaultArgumentPromotions = top;
-  top.defaultLvalueConversion = top;
-  top.defaultFunctionArrayLvalueConversion = top;
-  top.withTypeQualifiers = top; -- TODO Discarding Qualifiers!
+  top.integerPromotions = ^top;
+  top.defaultArgumentPromotions = ^top;
+  top.defaultLvalueConversion = ^top;
+  top.defaultFunctionArrayLvalueConversion = ^top;
+  top.withTypeQualifiers = ^top; -- TODO Discarding Qualifiers!
   top.mergeQualifiers = \t2::Type ->
     case t2 of
       vectorType(bt2, _) ->
-        vectorType(bt.mergeQualifiers(bt2), bytes)
-    | _ -> vectorType(bt, bytes)
+        vectorType(bt.mergeQualifiers(^bt2), bytes)
+    | _ -> vectorType(^bt, bytes)
     end;
   top.qualifiers = [];
   -- TODO: dunno? left here explicitly since... dunno what to do here.
@@ -717,7 +713,7 @@ top::NoncanonicalType ::= resolved::Type
   top.withTypeQualifiers = resolved.withTypeQualifiers;
   resolved.addedTypeQualifiers = top.addedTypeQualifiers;
 
-  top.canonicalType = resolved;
+  top.canonicalType = ^resolved;
 }
 
 {-- Parens.
@@ -744,7 +740,7 @@ top::NoncanonicalType ::= wrapped::Type
   top.withTypeQualifiers = wrapped.withTypeQualifiers;
   wrapped.addedTypeQualifiers = top.addedTypeQualifiers;
 
-  top.canonicalType = wrapped;
+  top.canonicalType = ^wrapped;
 }
 
 {-- Represents "decayed pointers" from array or function type.
@@ -774,7 +770,7 @@ top::NoncanonicalType ::= original::Type  pointer::Type
   top.withTypeQualifiers = pointer.withTypeQualifiers;
   pointer.addedTypeQualifiers = top.addedTypeQualifiers;
 
-  top.canonicalType = pointer;
+  top.canonicalType = ^pointer;
 }
 
 {-- A name, that has already been looked up, but of course we'd like to
@@ -792,7 +788,7 @@ top::NoncanonicalType ::= q::Qualifiers  n::String  resolved::Type
   propagate host;
   top.lpp = ppConcat([ terminate(space(), q.pps), text(n) ]);
   top.rpp = notext();
-  top.baseTypeExpr = typedefTypeExpr(q, name(n));
+  top.baseTypeExpr = typedefTypeExpr(^q, name(n));
   top.typeModifierExpr = baseTypeExpr();
   top.withTypeQualifiers =
     noncanonicalType(
@@ -801,7 +797,7 @@ top::NoncanonicalType ::= q::Qualifiers  n::String  resolved::Type
         n, resolved.withTypeQualifiers));
   resolved.addedTypeQualifiers = top.addedTypeQualifiers;
 
-  top.canonicalType = resolved;
+  top.canonicalType = ^resolved;
 }
 
 {-- GCC typeof type expression -}
@@ -809,11 +805,11 @@ abstract production typeofType
 top::NoncanonicalType ::= q::Qualifiers  resolved::Type
 {
   propagate host;
-  top.canonicalType = resolved;-- TODO: some sort of discipline of what to do with qualifiers here
+  top.canonicalType = ^resolved;-- TODO: some sort of discipline of what to do with qualifiers here
   top.lpp = ppConcat([text("__typeof__"), parens(cat(resolved.lpp, resolved.rpp))]);
   top.rpp = notext();
   top.baseTypeExpr =
-    typeofTypeExpr(q, typeNameExpr(typeName(resolved.baseTypeExpr, resolved.typeModifierExpr)));
+    typeofTypeExpr(^q, typeNameExpr(typeName(resolved.baseTypeExpr, resolved.typeModifierExpr)));
   top.typeModifierExpr = baseTypeExpr();
   top.withTypeQualifiers =
     noncanonicalType(

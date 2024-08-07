@@ -17,8 +17,8 @@ top::BuiltinType ::=
 {
   top.pp = text("void");
   top.mangledName = "void";
-  top.integerPromotionsBuiltin = top;
-  top.defaultArgumentPromotionsBuiltin = top;
+  top.integerPromotionsBuiltin = ^top;
+  top.defaultArgumentPromotionsBuiltin = ^top;
   top.isIntegerType = false;
   top.isArithmeticType = false;
 }
@@ -41,7 +41,7 @@ top::BuiltinType ::= rt::RealType
 {
   top.pp = rt.pp;
   top.mangledName = "real_" ++ rt.mangledName;
-  top.integerPromotionsBuiltin = top;
+  top.integerPromotionsBuiltin = ^top;
   top.defaultArgumentPromotionsBuiltin =
     realType(
       case rt of
@@ -58,7 +58,7 @@ top::BuiltinType ::= rt::RealType
 {
   top.pp = ppConcat([ text("_Complex "), rt.pp ]);
   top.mangledName = "complex_" ++ rt.mangledName;
-  top.integerPromotionsBuiltin = top;
+  top.integerPromotionsBuiltin = ^top;
   top.defaultArgumentPromotionsBuiltin =
     complexType(
       case rt of
@@ -75,7 +75,7 @@ top::BuiltinType ::= rt::RealType
 {
   top.pp = ppConcat([ text("_Imaginary "), rt.pp ]);
   top.mangledName = "imaginary_" ++ rt.mangledName;
-  top.integerPromotionsBuiltin = top;
+  top.integerPromotionsBuiltin = ^top;
   top.defaultArgumentPromotionsBuiltin =
     imaginaryType(
       case rt of

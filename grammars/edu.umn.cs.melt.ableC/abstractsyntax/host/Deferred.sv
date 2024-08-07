@@ -12,7 +12,7 @@ top::Decl ::= refId::String d::Decl
   top.errors := if refIdExists then d.errors else [];
   top.globalDecls := if refIdExists then d.globalDecls else [];
   top.functionDecls := if refIdExists then d.functionDecls else [];
-  top.defs := if refIdExists then d.defs else [deferredDeclDef(refId, d)];
+  top.defs := if refIdExists then d.defs else [deferredDeclDef(refId, ^d)];
   top.freeVariables := if refIdExists then d.freeVariables else [];
 }
 
@@ -30,14 +30,14 @@ function defsDeferredDecls
             map(fst, foldr(consDefs, nilDefs(), defs).refIdContribs)))));
   deferredDecls.env = env;
   deferredDecls.isTopLevel = isTopLevel;
-  deferredDecls.controlStmtContext = controlStmtContext;
+  deferredDecls.controlStmtContext = ^controlStmtContext;
 
   return
     if !null(deferredDecls.defs)
     then
       deferredDecls ::
       defsDeferredDecls(
-        addEnv(deferredDecls.defs, env), isTopLevel, controlStmtContext,
+        addEnv(deferredDecls.defs, env), isTopLevel, ^controlStmtContext,
           deferredDecls.defs)
     else [];
 }
@@ -63,14 +63,14 @@ top::Decl ::= storage::StorageClasses  attrs::Attributes  ty::BaseTypeExpr  dcls
   local host::Decl =
     if dcls.hasModifiedTypeExpr
     then decls(foldDecl(ty.hostDecls ++ dcls.hostDecls))
-    else variableDecls(storage, attrs.host, ty.host, dcls.host);
+    else variableDecls(@storage, attrs.host, ty.host, dcls.host);
   local deferredDecls::[Decorated Decl] =
     defsDeferredDecls(addEnv(dcls.defs, dcls.env), top.isTopLevel,
       top.controlStmtContext, ty.defs ++ dcls.defs);
   top.host =
     if !null(deferredDecls)
     then decls(foldDecl(host :: map(\ d::Decorated Decl -> d.host, deferredDecls)))
-    else host;
+    else ^host;
   top.globalDecls <- concat(map((.globalDecls), deferredDecls));
   top.functionDecls <- concat(map((.functionDecls), deferredDecls));
   top.defs <- concat(map((.defs), deferredDecls));
@@ -87,7 +87,7 @@ top::Decl ::= attrs::Attributes ty::BaseTypeExpr
   top.host =
     if !null(deferredDecls)
     then decls(foldDecl(host :: map(\ d::Decorated Decl -> d.host, deferredDecls)))
-    else host;
+    else ^host;
   top.globalDecls <- concat(map((.globalDecls), deferredDecls));
   top.functionDecls <- concat(map((.functionDecls), deferredDecls));
   top.defs <- concat(map((.defs), deferredDecls));
@@ -107,7 +107,7 @@ top::Decl ::= attrs::Attributes  ty::BaseTypeExpr  dcls::Declarators
   top.host =
     if !null(deferredDecls)
     then decls(foldDecl(host :: map(\ d::Decorated Decl -> d.host, deferredDecls)))
-    else host;
+    else ^host;
   top.globalDecls <- concat(map((.globalDecls), deferredDecls));
   top.functionDecls <- concat(map((.functionDecls), deferredDecls));
   top.defs <- concat(map((.defs), deferredDecls));
@@ -124,7 +124,7 @@ top::Decl ::= f::FunctionDecl
   top.host =
     if !null(deferredDecls)
     then decls(foldDecl(host :: map(\ d::Decorated Decl -> d.host, deferredDecls)))
-    else host;
+    else ^host;
   top.globalDecls <- concat(map((.globalDecls), deferredDecls));
   top.functionDecls <- concat(map((.functionDecls), deferredDecls));
   top.defs <- concat(map((.defs), deferredDecls));

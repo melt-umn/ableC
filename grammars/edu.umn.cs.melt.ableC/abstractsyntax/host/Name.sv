@@ -140,7 +140,7 @@ top::Names ::= h::Name t::Names
   top.names = h.name :: t.names;
   top.count = 1 + t.count;
   t.appendedNames = top.appendedNames;
-  top.appendedNamesRes = consName(h, t.appendedNamesRes);
+  top.appendedNamesRes = consName(^h, t.appendedNamesRes);
 }
 
 abstract production nilName
@@ -155,15 +155,11 @@ top::Names ::=
 function appendNames
 Names ::= e1::Names e2::Names
 {
-  e1.appendedNames = e2;
+  e1.appendedNames = ^e2;
   return e1.appendedNamesRes;
 }
 
-function doNotDoValueRedeclarationCheck
-[Message] ::= t::Type
-{
-  return [];
-}
+fun doNotDoValueRedeclarationCheck [Message] ::= t::Type = [];
 function doValueRedeclarationCheck
 [Message] ::= t::Type  n::Decorated Name
 {
@@ -184,17 +180,14 @@ function doValueRedeclarationCheck
   end;
 }
 
-function doValueRedeclarationCheckNoCompatible
-[Message] ::= n::Decorated Name
-{
-  return case n.valueLocalLookup of
+fun doValueRedeclarationCheckNoCompatible [Message] ::= n::Decorated Name =
+  case n.valueLocalLookup of
   | [] -> []
   | v :: _ -> 
       [errFromOrigin(n, 
         "Redeclaration of " ++ n.name ++ ". Original (from " ++
         getParsedOriginLocationOrFallback(v).unparse ++ ")")]
   end;
-}
 
 function doValueMergeQualifiers
 Type ::= t::Type  n::Decorated Name

@@ -67,7 +67,7 @@ top::Expr ::= e::Expr
   top.pp = parens( cat(text("*"), e.pp) );
   top.typerep =
     case e.typerep.defaultFunctionArrayLvalueConversion of
-    | pointerType(_, innerty) -> innerty
+    | pointerType(_, innerty) -> ^innerty
     | _ -> errorType()
     end;
   top.isLValue = true;

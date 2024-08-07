@@ -34,5 +34,5 @@ abstract production topDownSubs
 top::Strategy ::= s::Strategy
 {
   top.pp = pp"topDownSubs(${s})";
-  forwards to try(normalizeDecProds) <* (s <+ all(topDownSubs(s)));
+  forwards to try(normalizeDecProds) <* (@s <+ all(topDownSubs(@s)));
 }

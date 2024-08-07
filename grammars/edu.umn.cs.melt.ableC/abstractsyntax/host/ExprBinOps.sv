@@ -165,30 +165,26 @@ top::Expr ::= lhs::Expr rhs::Expr
   top.isLValue = false;
 }
 
-function assignErrors
-[Message] ::= lhs::Decorated Expr  rhs::Decorated Expr 
-{
-	return
-    (if typeAssignableTo(lhs.typerep, rhs.typerep)
-     then
-       (if containsQualifier(constQualifier(), lhs.typerep)
-        then [errFromOrigin(lhs, "Assignment of read-only variable")]
-        else []) ++
-       case lhs.typerep of
-         extType(_, refIdExtType(_, _, refId)) ->
-           case lookupRefId(refId, lhs.env) of
-             item :: _ ->
-               if item.hasConstField
-               then [errFromOrigin(lhs, s"Assignment of read-only variable (${show(80, lhs.pp)} has const fields)")]
-               else []
-           | [] -> []
-           end 
-       | _ -> []
-       end
-     else [errFromOrigin(rhs, "Incompatible type in rhs of assignment, expected " ++ showType(lhs.typerep) ++ " but found " ++ showType(rhs.typerep))]) ++
-    if lhs.isLValue then []
-      else [errFromOrigin(lhs, "lvalue required as left operand of assignment")];
-}
+fun assignErrors [Message] ::= lhs::Decorated Expr  rhs::Decorated Expr =
+  (if typeAssignableTo(lhs.typerep, rhs.typerep)
+   then
+     (if containsQualifier(constQualifier(), lhs.typerep)
+      then [errFromOrigin(lhs, "Assignment of read-only variable")]
+      else []) ++
+     case lhs.typerep of
+       extType(_, refIdExtType(_, _, refId)) ->
+         case lookupRefId(refId, lhs.env) of
+           item :: _ ->
+             if item.hasConstField
+             then [errFromOrigin(lhs, s"Assignment of read-only variable (${show(80, lhs.pp)} has const fields)")]
+             else []
+         | [] -> []
+         end 
+     | _ -> []
+     end
+   else [errFromOrigin(rhs, "Incompatible type in rhs of assignment, expected " ++ showType(lhs.typerep) ++ " but found " ++ showType(rhs.typerep))]) ++
+  if lhs.isLValue then []
+    else [errFromOrigin(lhs, "lvalue required as left operand of assignment")];
 
 abstract production andExpr
 top::Expr ::= lhs::Expr rhs::Expr
@@ -499,32 +495,20 @@ top::Expr ::= lhs::Expr rhs::Expr
 }
 
 -- These are little-endian
-function toBits
-[Boolean] ::= i::Integer
-{
-  return if i == 0 then [] else (i % 2 == 1) :: toBits(i / 2);
-}
+fun toBits [Boolean] ::= i::Integer = if i == 0 then [] else (i % 2 == 1) :: toBits(i / 2);
 
-function fromBits
-Integer ::= bs::[Boolean]
-{
-  return
-    case bs of
-    | [] -> 0
-    | true :: t -> 1 + 2 * fromBits(t)
-    | false :: t -> 2 * fromBits(t)
-    end;
-}
+fun fromBits Integer ::= bs::[Boolean] =
+  case bs of
+  | [] -> 0
+  | true :: t -> 1 + 2 * fromBits(t)
+  | false :: t -> 2 * fromBits(t)
+  end;
 
-function zipWithPad
-[a] ::= fn::(a ::= a a) pad::a l1::[a] l2::[a]
-{
-  return
-    case l1, l2 of
-    | [], [] -> []
-    | h1::t1, [] -> fn(h1, pad) :: zipWithPad(fn, pad, t1, [])
-    | [], h2::t2 -> fn(h2, pad) :: zipWithPad(fn, pad, [], t2)
-    | h1::t1, h2::t2 -> fn(h1, h2) :: zipWithPad(fn, pad, t1, t2)
-    end;
-}
+fun zipWithPad [a] ::= fn::(a ::= a a) pad::a l1::[a] l2::[a] =
+  case l1, l2 of
+  | [], [] -> []
+  | h1::t1, [] -> fn(h1, pad) :: zipWithPad(fn, pad, t1, [])
+  | [], h2::t2 -> fn(h2, pad) :: zipWithPad(fn, pad, [], t2)
+  | h1::t1, h2::t2 -> fn(h1, h2) :: zipWithPad(fn, pad, t1, t2)
+  end;
 

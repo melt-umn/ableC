@@ -7,27 +7,16 @@ import silver:langutil:pp;
 -- Decl --
 
 -- int n ;
-function mkIntDecl
-Stmt ::= n::String
-{
-  return  mkIntDeclGeneral( n, nothingInitializer());
-}
+fun mkIntDecl Stmt ::= n::String = mkIntDeclGeneral( n, nothingInitializer());
 
-function mkNamedTypeDecl
-Stmt ::= n::String
-{
-  return  mkIntDeclGeneral( n, nothingInitializer());
-}
+fun mkNamedTypeDecl Stmt ::= n::String = mkIntDeclGeneral( n, nothingInitializer());
 
 -- int n = val;
-function mkIntDeclInit
-Stmt ::= n::String val::String
-{
-  return mkIntDeclGeneral( 
-           n, 
-           justInitializer(
-             exprInitializer( mkIntExpr(val) ) ));
-}
+fun mkIntDeclInit Stmt ::= n::String val::String =
+  mkIntDeclGeneral( 
+    n, 
+    justInitializer(
+      exprInitializer( mkIntExpr(val) ) ));
 
 function mkIntDeclExpr
 Stmt ::= n::String val::Expr
@@ -35,7 +24,7 @@ Stmt ::= n::String val::Expr
   return mkIntDeclGeneral( 
            n, 
            justInitializer(
-             exprInitializer( val ) ));
+             exprInitializer( ^val ) ));
 }
 
 
@@ -48,7 +37,7 @@ Stmt ::= n::String init::MaybeInitializer
                 builtinType(nilQualifier(), signedType(intType()))),
               consDeclarator( 
                 declarator( name(n), baseTypeExpr(), nilAttribute(), 
-                  init) , 
+                  ^init) , 
                 nilDeclarator() 
               )
             )
@@ -58,7 +47,7 @@ Stmt ::= n::String init::MaybeInitializer
 function mkDeclGeneral
 Stmt ::= n::String typ::Type
 {
-  local bty::BaseTypeExpr = directTypeExpr(typ);
+  nondecorated local bty::BaseTypeExpr = directTypeExpr(^typ);
 
   return  declStmt( 
             variableDecls(nilStorageClass(), nilAttribute(), bty,
@@ -74,26 +63,23 @@ Stmt ::= n::String typ::Type
 function mkDecl
 Stmt ::= n::String typ::Type v::Expr
 {
-  local bty::BaseTypeExpr = directTypeExpr(typ);
+  nondecorated local bty::BaseTypeExpr = directTypeExpr(^typ);
 
   return  declStmt( 
             variableDecls(nilStorageClass(), nilAttribute(), bty,
               consDeclarator( 
                 declarator( name(n), baseTypeExpr(), nilAttribute(), 
-                    justInitializer(exprInitializer(v)) ) , 
+                    justInitializer(exprInitializer(^v)) ) , 
                 nilDeclarator() )
             )
           ) ;
 }
 
-function makeDeclIntInit
-Decl ::= n::String val::String
-{
-  return makeDeclIntGeneral( 
-           n, 
-           justInitializer(
-             exprInitializer( mkIntExpr(val) ) ));
-}
+fun makeDeclIntInit Decl ::= n::String val::String =
+  makeDeclIntGeneral( 
+    n, 
+    justInitializer(
+      exprInitializer( mkIntExpr(val) ) ));
 function makeDeclIntGeneral
 Decl ::= n::String init::MaybeInitializer
 {
@@ -102,7 +88,7 @@ Decl ::= n::String init::MaybeInitializer
              builtinType(nilQualifier(), signedType(intType()))),
            consDeclarator( 
              declarator( name(n), baseTypeExpr(), nilAttribute(), 
-               init) , 
+               ^init) , 
              nilDeclarator() 
            ) ) ;
 }

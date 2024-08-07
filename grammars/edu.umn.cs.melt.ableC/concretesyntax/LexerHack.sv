@@ -95,34 +95,21 @@ parser attribute globalPreferences::[Pair<[TerminalId] TerminalId>]
 
 -- The following functions are not difficult, but we provide them to give
 -- a name to the actions.
-function openScope
-[[Pair<String TerminalId>]] ::= l::[[Pair<String TerminalId>]]
-{
-  return head(l) :: l;
-}
+fun openScope [[Pair<String TerminalId>]] ::= l::[[Pair<String TerminalId>]] = head(l) :: l;
 
-function closeScope
-[[Pair<String TerminalId>]] ::= l::[[Pair<String TerminalId>]]
-{
-  return tail(l);
-}
+fun closeScope [[Pair<String TerminalId>]] ::= l::[[Pair<String TerminalId>]] = tail(l);
 
-function addIdentsToScope
-[[Pair<String TerminalId>]] ::= l::[ast:Name]  id::TerminalId  context::[[Pair<String TerminalId>]]
-{
-  return (map(pair(fst=_, snd=id), map((.ast:name), l)) ++ head(context)) :: tail(context);
-}
+fun addIdentsToScope
+[[Pair<String TerminalId>]] ::= l::[ast:Name]  id::TerminalId  context::[[Pair<String TerminalId>]] =
+  (map(pair(fst=_, snd=id), map((.ast:name), l)) ++ head(context)) :: tail(context);
 
-function beginFunctionScope
-[[Pair<String TerminalId>]] ::= funName::ast:Name  id::TerminalId  paramNames::Maybe<[ast:Name]>  paramId::TerminalId  context::[[Pair<String TerminalId>]]
-{
-  return
-    addIdentsToScope(
-      fromMaybe([], paramNames),
-      paramId,
-      openScope(
-        addIdentsToScope(
-          [funName],
-          id,
-          context)));
-}
+fun beginFunctionScope
+[[Pair<String TerminalId>]] ::= funName::ast:Name  id::TerminalId  paramNames::Maybe<[ast:Name]>  paramId::TerminalId  context::[[Pair<String TerminalId>]] =
+  addIdentsToScope(
+    fromMaybe([], paramNames),
+    paramId,
+    openScope(
+      addIdentsToScope(
+        [funName],
+        id,
+        context)));

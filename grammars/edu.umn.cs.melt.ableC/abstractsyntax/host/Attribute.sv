@@ -16,8 +16,8 @@ Attributes ::= l1::Attributes l2::Attributes
 {
   return
     case l1 of
-      nilAttribute() -> l2
-    | consAttribute(h, t) -> consAttribute(h, appendAttribute(t, l2))
+      nilAttribute() -> ^l2
+    | consAttribute(h, t) -> consAttribute(^h, appendAttribute(^t, ^l2))
     end;
 }
 

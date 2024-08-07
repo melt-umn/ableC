@@ -137,7 +137,7 @@ top::InitList ::=
   top.typerep =
     case top.expectedType of
     | arrayType(e, i, sm, incompleteArrayType()) ->
-      arrayType(e, i, sm, constantArrayType(top.maxIndex + 1))
+      arrayType(^e, ^i, ^sm, constantArrayType(top.maxIndex + 1))
     | t -> t
     end;
 }
@@ -326,7 +326,7 @@ top::Designator ::= d::Designator  e::Expr
 
   d.expectedType =
     case top.expectedType of
-    | arrayType(e, _, _, _) -> e
+    | arrayType(e, _, _, _) -> ^e
     | _ -> errorType()
     end;
   top.expectedTypesOut =
@@ -385,7 +385,7 @@ top::Designator ::= d::Designator  l::Expr  u::Expr
 
   d.expectedType =
     case top.expectedType of
-    | arrayType(e, _, _, _) -> e
+    | arrayType(e, _, _, _) -> ^e
     | _ -> errorType()
     end;
   top.expectedTypesOut =

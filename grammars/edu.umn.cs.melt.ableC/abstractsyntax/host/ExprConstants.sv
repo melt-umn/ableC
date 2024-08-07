@@ -21,9 +21,9 @@ top::Expr ::= c::NumericConstant
   top.pp = c.pp;
   top.typerep = builtinType(nilQualifier(),
     case c.constanttyperep of
-    | realType(rt) -> complexType(rt)
-    | signedType(it) -> complexIntegerType(it)
-    | unsignedType(it) -> complexIntegerType(it) -- probably not possible, but buggy!
+    | realType(rt) -> complexType(^rt)
+    | signedType(it) -> complexIntegerType(^it)
+    | unsignedType(it) -> complexIntegerType(^it) -- probably not possible, but buggy!
     | t -> error("Unexpected constanttyperep: " ++ show(80, t.pp))
     end);
   top.isLValue = false;

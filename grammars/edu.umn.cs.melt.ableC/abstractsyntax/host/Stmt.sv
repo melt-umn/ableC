@@ -238,7 +238,7 @@ top::Stmt ::= i::MaybeExpr  c::MaybeExpr  s::MaybeExpr  b::Stmt
   local cty :: Type = fromMaybe(errorType(), c.maybeTyperep);
   top.errors <-
     if cty.defaultFunctionArrayLvalueConversion.isScalarType then []
-    else [errFromOrigin(c, "For condition must be scalar type, instead it is " ++ showType(cty))];
+    else [errFromOrigin(c, "For condition must be scalar type, instead it is " ++ showType(^cty))];
 
   b.controlStmtContext = controlEnterLoop(top.controlStmtContext);
 }
@@ -286,7 +286,7 @@ top::Stmt ::= i::Decl  c::MaybeExpr  s::MaybeExpr  b::Stmt
   local cty :: Type = fromMaybe(errorType(), c.maybeTyperep);
   top.errors <-
     if cty.defaultFunctionArrayLvalueConversion.isScalarType then []
-    else [errFromOrigin(c, "For condition must be scalar type, instead it is " ++ showType(cty))];
+    else [errFromOrigin(c, "For condition must be scalar type, instead it is " ++ showType(^cty))];
 
   b.controlStmtContext = controlEnterLoop(top.controlStmtContext);
 }

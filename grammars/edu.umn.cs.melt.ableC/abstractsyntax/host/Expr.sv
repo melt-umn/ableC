@@ -41,7 +41,7 @@ top::Expr ::= msg::[Message] e::Expr
 function wrapWarnExpr
 Expr ::= msg::[Message] e::Expr
 {
-  return if null(msg) then e else warnExpr(msg, e);
+  return if null(msg) then ^e else warnExpr(msg, ^e);
 }
 
 {--
@@ -84,7 +84,7 @@ top::Expr ::= q::Qualifiers e::Expr
 function wrapQualifiedExpr
 Expr ::= q::[Qualifier]  e::Expr 
 {
-  return if null(q) then e else qualifiedExpr(foldQualifier(q), e);
+  return if null(q) then ^e else qualifiedExpr(foldQualifier(q), ^e);
 }
 -- Wraps the result of a forwarding transformation (e.g. overloading or injection)
 -- to allow for "syntactic" analyses on the original host Expr.  Otherwise this
@@ -112,13 +112,13 @@ top::Expr ::= id::Name
   -- Forwarding depends on env. We must be able to compute a pp without using env.
   top.pp = id.pp;
 
-  forwards to id.valueItem.directRefHandler(id);
+  forwards to id.valueItem.directRefHandler(^id);
 }
 -- If the identifier is an ordinary one, use the normal var reference production
 function ordinaryVariableHandler
 Expr ::= id::Name 
 {
-  return declRefExpr(id);
+  return declRefExpr(^id);
 }
 abstract production declRefExpr
 top::Expr ::= id::Name
@@ -199,14 +199,14 @@ top::Expr ::= f::Name  a::Exprs
   -- Forwarding depends on env. We must be able to compute a pp without using env.
   top.pp = parens( ppConcat([ f.pp, parens( ppImplode( cat( comma(), space() ), a.pps ))]) );
 
-  forwards to f.valueItem.directCallHandler(f, a);
+  forwards to f.valueItem.directCallHandler(^f, ^a);
 }
 -- If the identifier is an ordinary one, use the normal function call production
 -- Or, if it's a pass-through builtin one, this works too!
 function ordinaryFunctionHandler
 Expr ::= f::Name  a::Exprs 
 {
-  return ovrld:callExpr(declRefExpr(f), a);
+  return ovrld:callExpr(declRefExpr(^f), ^a);
 }
 
 {- Calls where the function is determined by an arbitrary expression. -}
@@ -412,8 +412,8 @@ top::Expr ::= t::Type
 {
   top.pp = pp"<defaultInit>";
   forwards to compoundLiteralExpr(
-    typeName(directTypeExpr(t), baseTypeExpr()),
-    case objectMembers(top.env, t) of
+    typeName(directTypeExpr(^t), baseTypeExpr()),
+    case objectMembers(top.env, ^t) of
     | just([]) -> nilInit()
     | just(mt :: _) when !typeAssignableTo(mt, builtinType(nilQualifier(), signedType(intType()))) ->
         consInit(

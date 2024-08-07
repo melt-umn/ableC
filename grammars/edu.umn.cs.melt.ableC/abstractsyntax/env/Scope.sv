@@ -17,80 +17,42 @@ type Scopes<a> = [tm:Map<String a>];
 type Contribs<a> = [Pair<String a>];
 
 {-- Create an empty scope -}
-function emptyScope
-Scopes<a> ::= 
-{
-  return [tm:empty()];
-}
+fun emptyScope Scopes<a> ::= = [tm:empty()];
 {-- Adds contributions to the innermost scope -}
-function addScope
-Scopes<a> ::= d::Contribs<a>  s::Scopes<a>
-{
-  return tm:add(d, head(s)) :: tail(s);
-}
+fun addScope Scopes<a> ::= d::Contribs<a>  s::Scopes<a> = tm:add(d, head(s)) :: tail(s);
 {-- Adds contributions to the outermost scope -}
-function addGlobalScope
-Scopes<a> ::= d::Contribs<a>  s::Scopes<a>
-{
-  return case d, s of
+fun addGlobalScope Scopes<a> ::= d::Contribs<a>  s::Scopes<a> =
+  case d, s of
     | [], _ -> s
     | _, [] -> error("No scopes in env!")
     | _, [_] -> addScope(d, s)
     | _, h :: t -> h :: addGlobalScope(d, t)
     end;
-}
 {-- Adds contributions to the second outermost scope -}
 {- TODO: This implementation is slightly broken because gcc supports nested
    functions. We should inject into the outermost scope for the current 
    function, which is not necessarily the second outermost scope -}
-function addFunctionScope
-Scopes<a> ::= d::Contribs<a> s::Scopes<a>
-{
-  return case d, s of
+fun addFunctionScope Scopes<a> ::= d::Contribs<a> s::Scopes<a> =
+  case d, s of
     | [], _ -> s
     | _, [] -> error("No scopes in env!")
     | _, [_] -> addScope(d, s)
     | _, h :: m :: [] -> addScope(d, h :: m :: [])
     | _, h :: t -> h :: addFunctionScope(d, t)
   end;
-}
 {-- Create a new innermost scope -}
-function openScope
-Scopes<a> ::= s::Scopes<a>
-{
-  return tm:empty() :: s;
-}
+fun openScope Scopes<a> ::= s::Scopes<a> = tm:empty() :: s;
 {-- Get the outermost scope -}
-function globalScope
-Scopes<a> ::= s::Scopes<a>
-{
-  return [last(s)];
-}
+fun globalScope Scopes<a> ::= s::Scopes<a> = [last(s)];
 {-- Get all but the outermost scope -}
-function nonGlobalScope
-Scopes<a> ::= s::Scopes<a>
-{
-  return init(s);
-}
+fun nonGlobalScope Scopes<a> ::= s::Scopes<a> = init(s);
 {-- Get the outermost 2 scopes -}
-function functionScope
-Scopes<a> ::= s::Scopes<a>
-{
-  return drop(length(s) - 2, s);
-}
+fun functionScope Scopes<a> ::= s::Scopes<a> = drop(length(s) - 2, s);
 {-- Looks up an identifier in the closest scope that has a match -}
-function lookupScope
-[a] ::= n::String  s::Scopes<a>
-{
-  -- Laziness is awesome.
-  return case dropWhile(null, map(tm:lookup(n, _), s)) of
-  | h :: _ -> h
-  | [] -> []
-  end;
-}
+fun lookupScope [a] ::= n::String  s::Scopes<a> =
+  case dropWhile(null, map(tm:lookup(n, _), s)) of
+| h :: _ -> h
+| [] -> []
+end;
 {-- Looks up an identifier in the innermost scope -}
-function lookupInLocalScope
-[a] ::= n::String  s::Scopes<a>
-{
-  return tm:lookup(n, head(s));
-}
+fun lookupInLocalScope [a] ::= n::String  s::Scopes<a> = tm:lookup(n, head(s));

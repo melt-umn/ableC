@@ -94,7 +94,7 @@ top::Decl ::= include::(Boolean ::= Decorated Env) decl::Decl
 
   forwards to
     if include(top.env)
-    then decl
+    then @decl
     else decls(nilDecl());
 }
 
@@ -104,21 +104,21 @@ top::Decl ::= name::String decl::Decl
 {
   top.pp = cat(pp"maybeValue (${text(name)}) ", braces(nestlines(2, decl.pp)));
 
-  forwards to maybeDecl(\ env::Decorated Env -> null(lookupValue(name, top.env)), decl);
+  forwards to maybeDecl(\ env::Decorated Env -> null(lookupValue(name, top.env)), @decl);
 }
 abstract production maybeTagDecl
 top::Decl ::= name::String decl::Decl
 {
   top.pp = cat(pp"maybeTag (${text(name)}) ", braces(nestlines(2, decl.pp)));
 
-  forwards to maybeDecl(\ env::Decorated Env -> null(lookupTag(name, top.env)), decl);
+  forwards to maybeDecl(\ env::Decorated Env -> null(lookupTag(name, top.env)), @decl);
 }
 abstract production maybeRefIdDecl
 top::Decl ::= name::String decl::Decl
 {
   top.pp = cat(pp"maybeRefId (${text(name)}) ", braces(nestlines(2, decl.pp)));
 
-  forwards to maybeDecl(\ env::Decorated Env -> null(lookupRefId(name, top.env)), decl);
+  forwards to maybeDecl(\ env::Decorated Env -> null(lookupRefId(name, top.env)), @decl);
 }
 
 -- Injection production for Expr
@@ -201,7 +201,7 @@ top::BaseTypeExpr ::= decls::Decls lifted::BaseTypeExpr
   top.freeVariables := removeDefsFromNames(decls.defs, lifted.freeVariables);
 
   -- Preserve injected decls when transforming to and back from typerep
-  top.decls := [injectGlobalDeclsDecl(decls)];
+  top.decls := [injectGlobalDeclsDecl(^decls)];
 
   -- Define other attributes to be the same as on lifted
   top.typerep = lifted.typerep;
@@ -269,14 +269,8 @@ top::GlobalDecls ::= h::Decl  t::GlobalDecls
 }
 
 -- Utility functions
-function globalDeclsDefs
-[Def] ::= d::[Decorated Decl]
-{
-  return [globalDefsDef(foldr(append, [], map((.defs), d)))];
-}
+fun globalDeclsDefs [Def] ::= d::[Decorated Decl] =
+  [globalDefsDef(foldr(append, [], map((.defs), d)))];
 
-function functionDeclsDefs
-[Def] ::= d::[Decorated Decl]
-{
-  return [functionDefsDef(foldr(append, [], map((.defs), d)))];
-}
+fun functionDeclsDefs [Def] ::= d::[Decorated Decl] =
+  [functionDefsDef(foldr(append, [], map((.defs), d)))];

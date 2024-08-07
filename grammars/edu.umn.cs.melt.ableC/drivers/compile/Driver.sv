@@ -52,7 +52,7 @@ imports silver:langutil:pp;
 import edu:umn:cs:melt:ableC:abstractsyntax:env;
 
 function driver
-IOVal<Integer> ::= args::[String] ioIn::IOToken 
+IO<Integer> ::= args::[String]
   theParser::(ParseResult<cst:Root>::=String String)
 {
   local fileName :: String = head(args);
@@ -70,7 +70,7 @@ IOVal<Integer> ::= args::[String] ioIn::IOToken
   local cppCmd :: String = "gcc -E -x c -D _POSIX_C_SOURCE=200908L -std=gnu1x -I . " ++ cppOptions;
   local fullCppCmd :: String = cppCmd ++ " \"" ++ fileName ++ "\" > " ++ cppFileName;
   
-  local result::IO<Integer> = do {
+  return do {
     if null(args) then do {
       print("Usage: [ableC invocation] [file name] [c preprocessor arguments]\n");
       return 5;
@@ -123,33 +123,25 @@ IOVal<Integer> ::= args::[String] ioIn::IOToken
       };
     };
   };
-  
-  return evalIO(result, ioIn);
 }
 
 
-function partitionArg
-Boolean ::= arg::String
-{
-  return 
-    arg=="--show-ast" ||
-    arg=="--show-host-ast" ||
-    arg=="--show-lifted-ast" ||
-    arg=="--show-pp" ||
-    arg=="--show-host-pp" ||
-    arg=="--show-lifted-pp" ||
-    arg=="--show-cpp" ||
-    arg=="--force-trans" ||
-    arg=="--skip-cpp" ||
-    startsWith("--xc-", arg) ;
-}
+fun partitionArg Boolean ::= arg::String =
+  arg=="--show-ast" ||
+  arg=="--show-host-ast" ||
+  arg=="--show-lifted-ast" ||
+  arg=="--show-pp" ||
+  arg=="--show-host-pp" ||
+  arg=="--show-lifted-pp" ||
+  arg=="--show-cpp" ||
+  arg=="--force-trans" ||
+  arg=="--skip-cpp" ||
+  startsWith("--xc-", arg);
 
 -- From an arg, create the environment Def that indicates its presence
 -- Note that no value is stored in the env for this.
 -- ToDo: Add ability to add a value for these xc arguments.
-function xcArgDef
-Def ::= arg::String
-{ return miscDef(arg,emptyMiscItem()); }
+fun xcArgDef Def ::= arg::String = miscDef(arg,emptyMiscItem());
 
 
 

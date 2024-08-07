@@ -12,7 +12,7 @@ propagate errors, typeToQualify, controlStmtContext on Qualifiers;
 abstract production consQualifier
 top::Qualifiers ::= h::Qualifier  t::Qualifiers
 {
-  top.host = if h.qualIsHost then consQualifier(h, t.host) else t.host;
+  top.host = if h.qualIsHost then consQualifier(^h, t.host) else t.host;
   top.mangledName = h.mangledName ++ "_" ++ t.mangledName;
   top.qualifiers = cons(h, t.qualifiers);
   top.pps = cons(h.pp, t.pps);
@@ -27,19 +27,15 @@ top::Qualifiers ::=
   top.pps = [];
 }
 
-function unionQualifiers
-Qualifiers ::= q1::[Qualifier]  q2::[Qualifier]
-{
-  return
-    foldQualifier(
-      filter(
-        -- remove qualifiers in q1 that are also in q2
-        \q::Qualifier -> !containsBy(qualifierCompat, q, q2),
-        -- remove duplicates from within q1
-        nubBy(qualifierCompat, q1)
-      ) ++ q2
-    );
-}
+fun unionQualifiers Qualifiers ::= q1::[Qualifier]  q2::[Qualifier] =
+  foldQualifier(
+    filter(
+      -- remove qualifiers in q1 that are also in q2
+      \q::Qualifier -> !containsBy(qualifierCompat, q, q2),
+      -- remove duplicates from within q1
+      nubBy(qualifierCompat, q1)
+    ) ++ q2
+  );
 
 {-- Type qualifiers (cv or cvr qualifiers) -}
 closed tracked nonterminal Qualifier with pp, qualIsPositive, qualIsNegative, qualAppliesWithinRef, qualCompat, qualIsHost, mangledName, typeToQualify, errors;

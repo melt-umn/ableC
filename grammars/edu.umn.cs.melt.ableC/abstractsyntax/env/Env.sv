@@ -64,84 +64,31 @@ synthesized attribute tagEnv :: Decorated Env;
 
 -- Environment manipulation functions
 
-function emptyEnv
-Decorated Env ::=
-{
-  return decorate emptyEnv_i() with {};
-}
-function openScopeEnv
-Decorated Env ::= e::Decorated Env
-{
-  return decorate openScopeEnv_i(e) with {};
-}
-function addEnv
-Decorated Env ::= d::[Def]  e::Decorated Env
-{
-  return if null(d) then e else addEnvDefs(foldr(consDefs, nilDefs(), d), e);
-}
+fun emptyEnv Decorated Env ::= = decorate emptyEnv_i() with {};
+fun openScopeEnv Decorated Env ::= e::Decorated Env = decorate openScopeEnv_i(e) with {};
+fun addEnv Decorated Env ::= d::[Def]  e::Decorated Env =
+  if null(d) then e else addEnvDefs(foldr(consDefs, nilDefs(), d), e);
 function addEnvDefs
 Decorated Env ::= d::Defs  e::Decorated Env
 {
-  return decorate addEnv_i(d, e) with {};
+  return decorate addEnv_i(@d, e) with {};
 }
-function globalEnv
-Decorated Env ::= e::Decorated Env
-{
-  return decorate globalEnv_i(e) with {};
-}
-function nonGlobalEnv
-Decorated Env ::= e::Decorated Env
-{
-  return decorate nonGlobalEnv_i(e) with {};
-}
-function functionEnv
-Decorated Env ::= e::Decorated Env
-{
-  return decorate functionEnv_i(e) with {};
-}
+fun globalEnv Decorated Env ::= e::Decorated Env = decorate globalEnv_i(e) with {};
+fun nonGlobalEnv Decorated Env ::= e::Decorated Env = decorate nonGlobalEnv_i(e) with {};
+fun functionEnv Decorated Env ::= e::Decorated Env = decorate functionEnv_i(e) with {};
 
 -- Environment lookup functions
 
-function lookupValue
-[ValueItem] ::= n::String  e::Decorated Env
-{
-  return lookupScope(n, e.values);
-}
-function lookupTag
-[TagItem] ::= n::String  e::Decorated Env
-{
-  return lookupScope(n, e.tags);
-}
-function lookupRefId
-[RefIdItem] ::= n::String  e::Decorated Env
-{
-  return lookupScope(n, e.refIds);
-}
-function lookupDeferredDecls
-[Decl] ::= n::String  e::Decorated Env
-{
-  return lookupScope(n, e.deferredDecls);
-}
-function lookupMisc
-[MiscItem] ::= n::String  e::Decorated Env
-{
-  return lookupScope(n, e.misc);
-}
+fun lookupValue [ValueItem] ::= n::String  e::Decorated Env = lookupScope(n, e.values);
+fun lookupTag [TagItem] ::= n::String  e::Decorated Env = lookupScope(n, e.tags);
+fun lookupRefId [RefIdItem] ::= n::String  e::Decorated Env = lookupScope(n, e.refIds);
+fun lookupDeferredDecls [Decl] ::= n::String  e::Decorated Env = lookupScope(n, e.deferredDecls);
+fun lookupMisc [MiscItem] ::= n::String  e::Decorated Env = lookupScope(n, e.misc);
 
 
-function lookupValueInLocalScope
-[ValueItem] ::= n::String  e::Decorated Env
-{
-  return lookupInLocalScope(n, e.values);
-}
-function lookupTagInLocalScope
-[TagItem] ::= n::String  e::Decorated Env
-{
-  return lookupInLocalScope(n, e.tags);
-}
-function lookupMiscInLocalScope
-[MiscItem] ::= n::String  e::Decorated Env
-{
-  return lookupInLocalScope(n, e.misc);
-}
+fun lookupValueInLocalScope [ValueItem] ::= n::String  e::Decorated Env =
+  lookupInLocalScope(n, e.values);
+fun lookupTagInLocalScope [TagItem] ::= n::String  e::Decorated Env = lookupInLocalScope(n, e.tags);
+fun lookupMiscInLocalScope [MiscItem] ::= n::String  e::Decorated Env =
+  lookupInLocalScope(n, e.misc);
 
