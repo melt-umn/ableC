@@ -59,7 +59,7 @@ top::Initializer ::= e::Expr
     if top.inObject
     then
       if newMembers.isJust then []
-      else [errFromOrigin(e, s"Incompatible types in ${top.initializerPos}, expected ${showType(top.expectedType)} but found ${showType(e.typerep)}")]
+      else [errFromOrigin(e, s"Incompatible types in ${top.initializerPos}, expected ${show(80, top.expectedType)} but found ${show(80, e.typerep)}")]
     else case top.expectedType of
     | arrayType(_, _, _, _) ->
       case e of
@@ -67,7 +67,7 @@ top::Initializer ::= e::Expr
       | _ -> [errFromOrigin(e, "invalid array initializer")]
       end
     | _ when typeAssignableTo(top.expectedType, e.typerep) -> []
-    | _ -> [errFromOrigin(e, s"Incompatible types in ${top.initializerPos}, expected ${showType(top.expectedType)} but found ${showType(e.typerep)}")]
+    | _ -> [errFromOrigin(e, s"Incompatible types in ${top.initializerPos}, expected ${show(80, top.expectedType)} but found ${show(80, e.typerep)}")]
     end;
 }
 
@@ -104,16 +104,16 @@ top::Initializer ::= l::InitList
     | errorType(), _, _ -> []
     -- Check that expected type for this initializer is some sort of object type or a scalar with a single init
     | arrayType(_, _, _, _), _, _ -> []
-    | t, nothing(), _ when l.maxIndex < 0 -> [errFromOrigin(top, s"Empty scalar initializer for type ${showType(t)}.")]
+    | t, nothing(), _ when l.maxIndex < 0 -> [errFromOrigin(top, s"Empty scalar initializer for type ${show(80, t)}.")]
     -- Check that this type has a definition
-    | t, just(_), [] -> [errFromOrigin(top, s"${showType(t)} does not have a definition.")]
+    | t, just(_), [] -> [errFromOrigin(top, s"${show(80, t)} does not have a definition.")]
     | _, _, _ -> []
     end;
   top.errors <-
     case top.expectedType, refId of
     | errorType(), _ -> []
     | arrayType(_, _, _, _), _ -> []
-    | t, nothing() when top.inObject -> [wrnFromOrigin(top, s"Braces around scalar initializer for type ${showType(t)}.")]
+    | t, nothing() when top.inObject -> [wrnFromOrigin(top, s"Braces around scalar initializer for type ${show(80, t)}.")]
     | _, _ -> []
     end;
 }
@@ -121,7 +121,7 @@ top::Initializer ::= l::InitList
 threaded attribute initIndex, initIndexOut::Integer;
 monoid attribute maxIndex::Integer with -1, max;
 
-inherited attribute tagEnvIn::Decorated Env;
+inherited attribute tagEnvIn::Env;
 
 tracked nonterminal InitList with pps, initIndex, initIndexOut, maxIndex, host, typerep,
   errors, globalDecls, functionDecls, defs, env, expectedType, expectedTypes,
@@ -194,10 +194,10 @@ top::Init ::= i::Initializer
 
   top.errors <-
     if null(top.expectedTypes)
-    then [wrnFromOrigin(i, s"Excess elements in initializer for type ${showType(top.expectedType)}")]
+    then [wrnFromOrigin(i, s"Excess elements in initializer for type ${show(80, top.expectedType)}")]
     else [];
 
-  i.initializerPos = s"positional initializer for type ${showType(top.expectedType)}"; -- TODO: Include the field name, somehow.
+  i.initializerPos = s"positional initializer for type ${show(80, top.expectedType)}"; -- TODO: Include the field name, somehow.
 }
 
 abstract production designatedInit
@@ -214,7 +214,7 @@ top::Init ::= d::Designator  i::Initializer
 
   d.env = top.env;
   i.env = addEnv(d.defs, d.env);
-  i.initializerPos = s"member ${show(80, d.pp)} of ${showType(top.expectedType)}";
+  i.initializerPos = s"member ${show(80, d.pp)} of ${show(80, top.expectedType)}";
   i.inObject = true;
   i.expectedType = d.typerep;
 }
@@ -259,7 +259,7 @@ top::Designator ::= d::Designator  f::Name
     | nothing() -> []
     end;
 
-  local tagEnv::Decorated Env =
+  local tagEnv::Env =
     case refIdLookup of
     | item :: _ -> item.tagEnv
     | [] -> emptyEnv()
@@ -276,10 +276,10 @@ top::Designator ::= d::Designator  f::Name
     case top.expectedType, refId, refIdLookup, fieldLookup of
     | errorType(), _, _, _ -> []
     -- Check that expected type for this designator is some sort of type with fields
-    | t, nothing(), _, _ -> [errFromOrigin(f, s"Field designator only permitted on struct or union types (got ${showType(t)})")]
+    | t, nothing(), _, _ -> [errFromOrigin(f, s"Field designator only permitted on struct or union types (got ${show(80, t)})")]
     -- Check that this type has a definition
-    | t, just(_), [], _ -> [errFromOrigin(f, s"${showType(t)} does not have a definition")]
-    | t, just(_), _, [] -> [errFromOrigin(f, s"${showType(t)} does not have field ${f.name}")]
+    | t, just(_), [], _ -> [errFromOrigin(f, s"${show(80, t)} does not have a definition")]
+    | t, just(_), _, [] -> [errFromOrigin(f, s"${show(80, t)} does not have field ${f.name}")]
     | _, _, _, _ -> []
     end;
 
@@ -317,7 +317,7 @@ top::Designator ::= d::Designator  e::Expr
       | _ -> []
       end
     | arrayType(_, _, _, _) -> []
-    | t -> [errFromOrigin(e, s"Array designator only permitted on array types (got ${showType(t)}).")]
+    | t -> [errFromOrigin(e, s"Array designator only permitted on array types (got ${show(80, t)}).")]
     end;
   top.errors <-
     if !e.integerConstantValue.isJust
@@ -332,8 +332,8 @@ top::Designator ::= d::Designator  e::Expr
   top.expectedTypesOut =
     case top.expectedType of
     | arrayType(elem, _, _, constantArrayType(size))
-      when e.integerConstantValue matches just(i) -> repeat(elem, size - (i + 1))
-    | arrayType(elem, _, _, incompleteArrayType()) -> repeatInfinite(elem)
+      when e.integerConstantValue matches just(i) -> repeat(^elem, size - (i + 1))
+    | arrayType(elem, _, _, incompleteArrayType()) -> repeatInfinite(^elem)
     | _ -> []
     end;
 
@@ -372,7 +372,7 @@ top::Designator ::= d::Designator  l::Expr  u::Expr
       | _, _ -> []
       end
     | arrayType(_, _, _, _) -> []
-    | t -> [errFromOrigin(l, s"Array range designator only permitted on array types (got ${showType(t)}).")]
+    | t -> [errFromOrigin(l, s"Array range designator only permitted on array types (got ${show(80, t)}).")]
     end;
   top.errors <-
     if !u.integerConstantValue.isJust
@@ -391,8 +391,8 @@ top::Designator ::= d::Designator  l::Expr  u::Expr
   top.expectedTypesOut =
     case top.expectedType of
     | arrayType(elem, _, _, constantArrayType(size))
-      when u.integerConstantValue matches just(i) -> repeat(elem, size - (i + 1))
-    | arrayType(elem, _, _, incompleteArrayType()) -> repeatInfinite(elem)
+      when u.integerConstantValue matches just(i) -> repeat(^elem, size - (i + 1))
+    | arrayType(elem, _, _, incompleteArrayType()) -> repeatInfinite(^elem)
     | _ -> []
     end;
 

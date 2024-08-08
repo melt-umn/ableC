@@ -98,33 +98,6 @@ top::TypeName ::= bty::BaseTypeExpr  mty::TypeModifierExpr
 }
 
 {--
- - The purpose of this production is for an extension production to use to wrap
- - children that have already been decorated during error checking, etc. when
- - computing a forward tree, to avoid re-decoration and potential exponential
- - performance hits.  When using this production, one must be very careful to
- - ensure that the inherited attributes recieved by the wrapped tree are equivalent
- - to the ones that would have been passed down in the forward tree.
- - See https://github.com/melt-umn/silver/issues/86
- -}
-abstract production decTypeName
-top::TypeName ::= ty::Decorated TypeName
-{
-  top.pp = ty.pp;
-  top.host = ty.host;
-  top.typerep = ty.typerep;
-  top.bty = ty.bty;
-  top.mty = ty.mty;
-  top.errors := ty.errors;
-  top.globalDecls := ty.globalDecls;
-  top.functionDecls := ty.functionDecls;
-  top.decls := ty.decls;
-  top.defs := ty.defs;
-  top.freeVariables := ty.freeVariables;
-  forwards to new(ty);
-}
-
-
-{--
  - Corresponds to types obtainable from a TypeSpecifiers.
  -}
 tracked nonterminal BaseTypeExpr with env, typerep, pp, host, errors, globalDecls,
@@ -181,31 +154,6 @@ BaseTypeExpr ::= result::Type
   return typeModifierTypeExpr(result.baseTypeExpr, result.typeModifierExpr);
 }
 
-{--
- - The purpose of this production is for an extension production to use to wrap
- - children that have already been decorated during error checking, etc. when
- - computing a forward tree, to avoid re-decoration and potential exponential
- - performance hits.  When using this production, one must be very careful to
- - ensure that the inherited attributes recieved by the wrapped tree are equivalent
- - to the ones that would have been passed down in the forward tree.
- - See https://github.com/melt-umn/silver/issues/86
- -}
-abstract production decTypeExpr
-top::BaseTypeExpr ::= ty::Decorated BaseTypeExpr
-{
-  top.pp = ty.pp;
-  top.host = ty.host;
-  top.typerep = ty.typerep;
-  top.errors := ty.errors;
-  top.globalDecls := ty.globalDecls;
-  top.functionDecls := ty.functionDecls;
-  top.typeModifier = ty.typeModifier;
-  top.decls := ty.decls;
-  top.defs := ty.defs;
-  top.freeVariables := ty.freeVariables;
-  forwards to new(ty); -- for easier pattern matching
-}
-
 {-- A TypeExpr that contains extra extension defs to be placed in the environment
  - This production should not occur in the host AST
  -}
@@ -251,7 +199,7 @@ top::BaseTypeExpr ::= q::Qualifiers  result::BuiltinType
 {
   propagate host, errors, globalDecls, functionDecls, decls, defs, freeVariables, env, controlStmtContext;
   top.pp = ppConcat([terminate(space(), q.pps), result.pp]);
-  top.typerep = builtinType(^q, ^result);
+  top.typerep = builtinType(^q, result);
   top.typeModifier = baseTypeExpr();
   q.typeToQualify = top.typerep;
 }
@@ -374,7 +322,7 @@ top::BaseTypeExpr ::= q::Qualifiers  def::StructDecl
   top.typerep = extType(^q, refIdExtType(structSEU(), map((.name), def.maybename), def.refId));
   top.typeModifier = baseTypeExpr();
   -- Avoid re-decorating and re-generating refIds
-  top.decls := [typeExprDecl(nilAttribute(), decTypeExpr(top))];
+  top.decls := [typeExprDecl(nilAttribute(), decTypeExpr(^top))];
   top.hostDecls = [typeExprDecl(nilAttribute(), top.host)];
   q.typeToQualify = top.typerep;
   def.localEnv = emptyEnv();
@@ -391,7 +339,7 @@ top::BaseTypeExpr ::= q::Qualifiers  def::UnionDecl
   top.typerep = extType(^q, refIdExtType(unionSEU(), map((.name), def.maybename), def.refId));
   top.typeModifier = baseTypeExpr();
   -- Avoid re-decorating and re-generating refIds
-  top.decls := [typeExprDecl(nilAttribute(), decTypeExpr(top))];
+  top.decls := [typeExprDecl(nilAttribute(), decTypeExpr(^top))];
   top.hostDecls = [typeExprDecl(nilAttribute(), top.host)];
   q.typeToQualify = top.typerep;
   def.localEnv = emptyEnv();
@@ -457,8 +405,6 @@ top::BaseTypeExpr ::= q::Qualifiers  name::Name
 abstract production attributedTypeExpr
 top::BaseTypeExpr ::= attrs::Attributes  bt::BaseTypeExpr
 {
-  propagate controlStmtContext;
-
   top.pp = cat(ppAttributes(^attrs), bt.pp);
 
   nondecorated local liftedName::Name = name(s"_attributedType_${toString(genInt())}");
@@ -566,31 +512,6 @@ top::TypeModifierExpr ::= bty::BaseTypeExpr
   bty.givenRefId = nothing();
 }
 
-{--
- - The purpose of this production is for an extension production to use to wrap
- - children that have already been decorated during error checking, etc. when
- - computing a forward tree, to avoid re-decoration and potential exponential
- - performance hits.  When using this production, one must be very careful to
- - ensure that the inherited attributes recieved by the wrapped tree are equivalent
- - to the ones that would have been passed down in the forward tree.
- - See https://github.com/melt-umn/silver/issues/86
- -}
-abstract production decTypeModifierExpr
-top::TypeModifierExpr ::= ty::Decorated TypeModifierExpr
-{
-  top.lpp = ty.lpp;
-  top.rpp = ty.rpp;
-  top.host = ty.host;
-  top.modifiedBaseTypeExpr = ty.modifiedBaseTypeExpr;
-  top.typerep = ty.typerep;
-  top.errors := ty.errors;
-  top.globalDecls := ty.globalDecls;
-  top.functionDecls := ty.functionDecls;
-  top.decls := ty.decls;
-  top.defs := ty.defs;
-  top.freeVariables := ty.freeVariables;
-  forwards to new(ty);
-}
 
 {-- Pointers -}
 abstract production pointerTypeExpr

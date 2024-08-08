@@ -9,13 +9,13 @@ top::host:Expr ::= e::host:Expr
   production attribute lerrors :: [Message] with ++;
   lerrors := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
-  nondecorated local host::host:Expr = inj:preIncExpr(host:decExpr(e));
+  nondecorated local host::host:Expr = inj:preIncExpr(host:decExpr(^e));
   nondecorated local fwrd::host:Expr =
     case e.host:typerep.preIncProd of
     | just(prod) ->
       host:transformedExpr(
         host,
-        prod(host:decExpr(e)))
+        prod(host:decExpr(^e)))
     | nothing() -> host
     end;
 
@@ -29,13 +29,13 @@ top::host:Expr ::= e::host:Expr
   production attribute lerrors :: [Message] with ++;
   lerrors := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
-  nondecorated local host::host:Expr = inj:preDecExpr(host:decExpr(e));
+  nondecorated local host::host:Expr = inj:preDecExpr(host:decExpr(^e));
   nondecorated local fwrd::host:Expr =
     case e.host:typerep.preDecProd of
     | just(prod) ->
       host:transformedExpr(
         host,
-        prod(host:decExpr(e)))
+        prod(host:decExpr(^e)))
     | nothing() -> host
     end;
 
@@ -50,13 +50,13 @@ top::host:Expr ::= e::host:Expr
   production attribute lerrors :: [Message] with ++;
   lerrors := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
-  nondecorated local host::host:Expr = inj:postIncExpr(host:decExpr(e));
+  nondecorated local host::host:Expr = inj:postIncExpr(host:decExpr(^e));
   nondecorated local fwrd::host:Expr =
     case e.host:typerep.postIncProd of
     | just(prod) ->
       host:transformedExpr(
         host,
-        prod(host:decExpr(e)))
+        prod(host:decExpr(^e)))
     | nothing() -> host
     end;
 
@@ -71,13 +71,13 @@ top::host:Expr ::= e::host:Expr
   production attribute lerrors :: [Message] with ++;
   lerrors := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
-  nondecorated local host::host:Expr = inj:postDecExpr(host:decExpr(e));
+  nondecorated local host::host:Expr = inj:postDecExpr(host:decExpr(^e));
   nondecorated local fwrd::host:Expr =
     case e.host:typerep.postDecProd of
     | just(prod) ->
       host:transformedExpr(
         host,
-        prod(host:decExpr(e)))
+        prod(host:decExpr(^e)))
     | nothing() -> host
     end;
 
@@ -92,7 +92,7 @@ top::host:Expr ::= e::host:Expr
   production attribute lerrors :: [Message] with ++;
   lerrors := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
-  nondecorated local host::host:Expr = inj:addressOfExpr(host:decExpr(e));
+  nondecorated local host::host:Expr = inj:addressOfExpr(host:decExpr(^e));
   nondecorated local fwrd::host:Expr =
     case e.addressOfProd of
     | just(prod) -> host:transformedExpr(host, prod())
@@ -110,13 +110,13 @@ top::host:Expr ::= e::host:Expr
   production attribute lerrors :: [Message] with ++;
   lerrors := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
-  nondecorated local host::host:Expr = inj:dereferenceExpr(host:decExpr(e));
+  nondecorated local host::host:Expr = inj:dereferenceExpr(host:decExpr(^e));
   nondecorated local fwrd::host:Expr =
     case e.host:typerep.dereferenceProd of
     | just(prod) ->
       host:transformedExpr(
         host,
-        prod(host:decExpr(e)))
+        prod(host:decExpr(^e)))
     | nothing() -> host
     end;
 
@@ -131,13 +131,13 @@ top::host:Expr ::= e::host:Expr
   production attribute lerrors :: [Message] with ++;
   lerrors := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
-  nondecorated local host::host:Expr = inj:positiveExpr(host:decExpr(e));
+  nondecorated local host::host:Expr = inj:positiveExpr(host:decExpr(^e));
   nondecorated local fwrd::host:Expr =
     case e.host:typerep.positiveProd of
     | just(prod) ->
       host:transformedExpr(
         host,
-        prod(host:decExpr(e)))
+        prod(host:decExpr(^e)))
     | nothing() -> host
     end;
 
@@ -152,13 +152,13 @@ top::host:Expr ::= e::host:Expr
   production attribute lerrors :: [Message] with ++;
   lerrors := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
-  nondecorated local host::host:Expr = inj:negativeExpr(host:decExpr(e));
+  nondecorated local host::host:Expr = inj:negativeExpr(host:decExpr(^e));
   nondecorated local fwrd::host:Expr =
     case e.host:typerep.negativeProd of
     | just(prod) ->
       host:transformedExpr(
         host,
-        prod(host:decExpr(e)))
+        prod(host:decExpr(^e)))
     | nothing() -> host
     end;
 
@@ -173,13 +173,13 @@ top::host:Expr ::= e::host:Expr
   production attribute lerrors :: [Message] with ++;
   lerrors := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
-  nondecorated local host::host:Expr = inj:bitNegateExpr(host:decExpr(e));
+  nondecorated local host::host:Expr = inj:bitNegateExpr(host:decExpr(^e));
   nondecorated local fwrd::host:Expr =
     case e.host:typerep.bitNegateProd of
     | just(prod) ->
       host:transformedExpr(
         host,
-        prod(host:decExpr(e)))
+        prod(host:decExpr(^e)))
     | nothing() -> host
     end;
 
@@ -194,13 +194,13 @@ top::host:Expr ::= e::host:Expr
   production attribute lerrors :: [Message] with ++;
   lerrors := case top.env, top.host:controlStmtContext.host:returnType of emptyEnv_i(), nothing() -> [] | _, _ -> [] end;
 
-  nondecorated local host::host:Expr = inj:notExpr(host:decExpr(e));
+  nondecorated local host::host:Expr = inj:notExpr(host:decExpr(^e));
   nondecorated local fwrd::host:Expr =
     case e.host:typerep.notProd of
     | just(prod) ->
       host:transformedExpr(
         host,
-        prod(host:decExpr(e)))
+        prod(host:decExpr(^e)))
     | nothing() -> host
     end;
 

@@ -36,14 +36,14 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   
   nondecorated local host::host:Expr =
     inj:eqExpr(
-      host:decExpr(lhs),
-      host:decExpr(rhs));
+      host:decExpr(^lhs),
+      host:decExpr(^rhs));
   nondecorated local fwrd::host:Expr =
     case orElse(lhs.lEqProd, orElse(map(\ p::BinaryProd -> p(^lhs, _), rType.rEqProd), rewriteProd)) of
     | just(prod) ->
       host:transformedExpr(
         host, 
-        prod(host:decExpr(rhs)))
+        prod(host:decExpr(^rhs)))
     | nothing() -> host
     end;
   
@@ -84,16 +84,16 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   
   nondecorated local host::host:Expr =
     inj:mulEqExpr(
-      host:decExpr(lhs),
-      host:decExpr(rhs));
+      host:decExpr(^lhs),
+      host:decExpr(^rhs));
   nondecorated local fwrd::host:Expr =
     case orElse(lType.lMulEqProd, orElse(rType.rMulEqProd, rewriteProd)) of
     | just(prod) ->
       host:transformedExpr(
         host,
         prod(
-          host:decExpr(lhs),
-          host:decExpr(rhs)))
+          host:decExpr(^lhs),
+          host:decExpr(^rhs)))
     | nothing() -> host
     end;
 
@@ -134,16 +134,16 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   
   nondecorated local host::host:Expr =
     inj:divEqExpr(
-      host:decExpr(lhs),
-      host:decExpr(rhs));
+      host:decExpr(^lhs),
+      host:decExpr(^rhs));
   nondecorated local fwrd::host:Expr =
     case orElse(lType.lDivEqProd, orElse(rType.rDivEqProd, rewriteProd)) of
     | just(prod) ->
       host:transformedExpr(
         host,
         prod(
-          host:decExpr(lhs),
-          host:decExpr(rhs)))
+          host:decExpr(^lhs),
+          host:decExpr(^rhs)))
     | nothing() -> host
     end;
 
@@ -184,16 +184,16 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   
   nondecorated local host::host:Expr =
     inj:modEqExpr(
-      host:decExpr(lhs),
-      host:decExpr(rhs));
+      host:decExpr(^lhs),
+      host:decExpr(^rhs));
   nondecorated local fwrd::host:Expr =
     case orElse(lType.lModEqProd, orElse(rType.rModEqProd, rewriteProd)) of
     | just(prod) ->
       host:transformedExpr(
         host,
         prod(
-          host:decExpr(lhs),
-          host:decExpr(rhs)))
+          host:decExpr(^lhs),
+          host:decExpr(^rhs)))
     | nothing() -> host
     end;
 
@@ -234,16 +234,16 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   
   nondecorated local host::host:Expr =
     inj:addEqExpr(
-      host:decExpr(lhs),
-      host:decExpr(rhs));
+      host:decExpr(^lhs),
+      host:decExpr(^rhs));
   nondecorated local fwrd::host:Expr =
     case orElse(lType.lAddEqProd, orElse(rType.rAddEqProd, rewriteProd)) of
     | just(prod) ->
       host:transformedExpr(
         host,
         prod(
-          host:decExpr(lhs),
-          host:decExpr(rhs)))
+          host:decExpr(^lhs),
+          host:decExpr(^rhs)))
     | nothing() -> host
     end;
 
@@ -284,16 +284,16 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   
   nondecorated local host::host:Expr =
     inj:subEqExpr(
-      host:decExpr(lhs),
-      host:decExpr(rhs));
+      host:decExpr(^lhs),
+      host:decExpr(^rhs));
   nondecorated local fwrd::host:Expr =
     case orElse(lType.lSubEqProd, orElse(rType.rSubEqProd, rewriteProd)) of
     | just(prod) ->
       host:transformedExpr(
         host,
         prod(
-          host:decExpr(lhs),
-          host:decExpr(rhs)))
+          host:decExpr(^lhs),
+          host:decExpr(^rhs)))
     | nothing() -> host
     end;
 
@@ -334,16 +334,16 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   
   nondecorated local host::host:Expr =
     inj:lshEqExpr(
-      host:decExpr(lhs),
-      host:decExpr(rhs));
+      host:decExpr(^lhs),
+      host:decExpr(^rhs));
   nondecorated local fwrd::host:Expr =
     case orElse(lType.lLshEqProd, orElse(rType.rLshEqProd, rewriteProd)) of
     | just(prod) ->
       host:transformedExpr(
         host,
         prod(
-          host:decExpr(lhs),
-          host:decExpr(rhs)))
+          host:decExpr(^lhs),
+          host:decExpr(^rhs)))
     | nothing() -> host
     end;
 
@@ -384,16 +384,16 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   
   nondecorated local host::host:Expr =
     inj:rshEqExpr(
-      host:decExpr(lhs),
-      host:decExpr(rhs));
+      host:decExpr(^lhs),
+      host:decExpr(^rhs));
   nondecorated local fwrd::host:Expr =
     case orElse(lType.lRshEqProd, orElse(rType.rRshEqProd, rewriteProd)) of
     | just(prod) ->
       host:transformedExpr(
         host,
         prod(
-          host:decExpr(lhs),
-          host:decExpr(rhs)))
+          host:decExpr(^lhs),
+          host:decExpr(^rhs)))
     | nothing() -> host
     end;
 
@@ -434,16 +434,16 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   
   nondecorated local host::host:Expr =
     inj:andEqExpr(
-      host:decExpr(lhs),
-      host:decExpr(rhs));
+      host:decExpr(^lhs),
+      host:decExpr(^rhs));
   nondecorated local fwrd::host:Expr =
     case orElse(lType.lAndEqProd, orElse(rType.rAndEqProd, rewriteProd)) of
     | just(prod) ->
       host:transformedExpr(
         host,
         prod(
-          host:decExpr(lhs),
-          host:decExpr(rhs)))
+          host:decExpr(^lhs),
+          host:decExpr(^rhs)))
     | nothing() -> host
     end;
 
@@ -485,16 +485,16 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   
   nondecorated local host::host:Expr =
     inj:xorEqExpr(
-      host:decExpr(lhs),
-      host:decExpr(rhs));
+      host:decExpr(^lhs),
+      host:decExpr(^rhs));
   nondecorated local fwrd::host:Expr =
     case orElse(lType.lXorEqProd, orElse(rType.rXorEqProd, rewriteProd)) of
     | just(prod) ->
       host:transformedExpr(
         host,
         prod(
-          host:decExpr(lhs),
-          host:decExpr(rhs)))
+          host:decExpr(^lhs),
+          host:decExpr(^rhs)))
     | nothing() -> host
     end;
 
@@ -535,16 +535,16 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   
   nondecorated local host::host:Expr =
     inj:orEqExpr(
-      host:decExpr(lhs),
-      host:decExpr(rhs));
+      host:decExpr(^lhs),
+      host:decExpr(^rhs));
   nondecorated local fwrd::host:Expr =
     case orElse(lType.lOrEqProd, orElse(rType.rOrEqProd, rewriteProd)) of
     | just(prod) ->
       host:transformedExpr(
         host,
         prod(
-          host:decExpr(lhs),
-          host:decExpr(rhs)))
+          host:decExpr(^lhs),
+          host:decExpr(^rhs)))
     | nothing() -> host
     end;
 
@@ -581,16 +581,16 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   
   nondecorated local host::host:Expr =
     inj:andExpr(
-      host:decExpr(lhs),
-      host:decExpr(rhs));
+      host:decExpr(^lhs),
+      host:decExpr(^rhs));
   nondecorated local fwrd::host:Expr =
     case orElse(lType.lAndProd, rType.rAndProd) of
     | just(prod) ->
       host:transformedExpr(
         host,
         prod(
-          host:decExpr(lhs),
-          host:decExpr(rhs)))
+          host:decExpr(^lhs),
+          host:decExpr(^rhs)))
     | nothing() -> host
     end;
 
@@ -626,16 +626,16 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   
   nondecorated local host::host:Expr =
     inj:orExpr(
-      host:decExpr(lhs),
-      host:decExpr(rhs));
+      host:decExpr(^lhs),
+      host:decExpr(^rhs));
   nondecorated local fwrd::host:Expr =
     case orElse(lType.lOrProd, rType.rOrProd) of
     | just(prod) ->
       host:transformedExpr(
         host,
         prod(
-          host:decExpr(lhs),
-          host:decExpr(rhs)))
+          host:decExpr(^lhs),
+          host:decExpr(^rhs)))
     | nothing() -> host
     end;
 
@@ -671,16 +671,16 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   
   nondecorated local host::host:Expr =
     inj:andBitExpr(
-      host:decExpr(lhs),
-      host:decExpr(rhs));
+      host:decExpr(^lhs),
+      host:decExpr(^rhs));
   nondecorated local fwrd::host:Expr =
     case orElse(lType.lAndBitProd, rType.rAndBitProd) of
     | just(prod) ->
       host:transformedExpr(
         host,
         prod(
-          host:decExpr(lhs),
-          host:decExpr(rhs)))
+          host:decExpr(^lhs),
+          host:decExpr(^rhs)))
     | nothing() -> host
     end;
 
@@ -713,16 +713,16 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   
   nondecorated local host::host:Expr =
     inj:orBitExpr(
-      host:decExpr(lhs),
-      host:decExpr(rhs));
+      host:decExpr(^lhs),
+      host:decExpr(^rhs));
   nondecorated local fwrd::host:Expr =
     case orElse(lType.lOrBitProd, rType.rOrBitProd) of
     | just(prod) ->
       host:transformedExpr(
         host,
         prod(
-          host:decExpr(lhs),
-          host:decExpr(rhs)))
+          host:decExpr(^lhs),
+          host:decExpr(^rhs)))
     | nothing() -> host
     end;
 
@@ -758,16 +758,16 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   
   nondecorated local host::host:Expr =
     inj:xorExpr(
-      host:decExpr(lhs),
-      host:decExpr(rhs));
+      host:decExpr(^lhs),
+      host:decExpr(^rhs));
   nondecorated local fwrd::host:Expr =
     case orElse(lType.lXorProd, rType.rXorProd) of
     | just(prod) ->
       host:transformedExpr(
         host,
         prod(
-          host:decExpr(lhs),
-          host:decExpr(rhs)))
+          host:decExpr(^lhs),
+          host:decExpr(^rhs)))
     | nothing() -> host
     end;
 
@@ -803,16 +803,16 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   
   nondecorated local host::host:Expr =
     inj:lshExpr(
-      host:decExpr(lhs),
-      host:decExpr(rhs));
+      host:decExpr(^lhs),
+      host:decExpr(^rhs));
   nondecorated local fwrd::host:Expr =
     case orElse(lType.lLshBitProd, rType.rLshBitProd) of
     | just(prod) ->
       host:transformedExpr(
         host,
         prod(
-          host:decExpr(lhs),
-          host:decExpr(rhs)))
+          host:decExpr(^lhs),
+          host:decExpr(^rhs)))
     | nothing() -> host
     end;
 
@@ -848,16 +848,16 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   
   nondecorated local host::host:Expr =
     inj:rshExpr(
-      host:decExpr(lhs),
-      host:decExpr(rhs));
+      host:decExpr(^lhs),
+      host:decExpr(^rhs));
   nondecorated local fwrd::host:Expr =
     case orElse(lType.lRshBitProd, rType.rRshBitProd) of
     | just(prod) ->
       host:transformedExpr(
         host,
         prod(
-          host:decExpr(lhs),
-          host:decExpr(rhs)))
+          host:decExpr(^lhs),
+          host:decExpr(^rhs)))
     | nothing() -> host
     end;
 
@@ -901,16 +901,16 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   
   nondecorated local host::host:Expr =
     inj:equalsExpr(
-      host:decExpr(lhs),
-      host:decExpr(rhs));
+      host:decExpr(^lhs),
+      host:decExpr(^rhs));
   nondecorated local fwrd::host:Expr =
     case orElse(lType.lEqualsProd, orElse(rType.rEqualsProd, rewriteProd)) of
     | just(prod) ->
       host:transformedExpr(
         host,
         prod(
-          host:decExpr(lhs),
-          host:decExpr(rhs)))
+          host:decExpr(^lhs),
+          host:decExpr(^rhs)))
     | nothing() -> host
     end;
 
@@ -954,16 +954,16 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   
   nondecorated local host::host:Expr =
     inj:notEqualsExpr(
-      host:decExpr(lhs),
-      host:decExpr(rhs));
+      host:decExpr(^lhs),
+      host:decExpr(^rhs));
   nondecorated local fwrd::host:Expr =
     case orElse(lType.lNotEqualsProd, orElse(rType.rNotEqualsProd, rewriteProd)) of
     | just(prod) ->
       host:transformedExpr(
         host,
         prod(
-          host:decExpr(lhs),
-          host:decExpr(rhs)))
+          host:decExpr(^lhs),
+          host:decExpr(^rhs)))
     | nothing() -> host
     end;
 
@@ -1033,16 +1033,16 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   
   nondecorated local host::host:Expr =
     inj:ltExpr(
-      host:decExpr(lhs),
-      host:decExpr(rhs));
+      host:decExpr(^lhs),
+      host:decExpr(^rhs));
   nondecorated local fwrd::host:Expr =
     case foldr1(orElse, [lType.lLtProd, rType.rLtProd, rewriteProd1, rewriteProd2, rewriteProd3]) of
     | just(prod) ->
       host:transformedExpr(
         host,
         prod(
-          host:decExpr(lhs),
-          host:decExpr(rhs)))
+          host:decExpr(^lhs),
+          host:decExpr(^rhs)))
     | nothing() -> host
     end;
 
@@ -1112,16 +1112,16 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   
   nondecorated local host::host:Expr =
     inj:gtExpr(
-      host:decExpr(lhs),
-      host:decExpr(rhs));
+      host:decExpr(^lhs),
+      host:decExpr(^rhs));
   nondecorated local fwrd::host:Expr =
     case foldr1(orElse, [lType.lGtProd, rType.rGtProd, rewriteProd1, rewriteProd2, rewriteProd3]) of
     | just(prod) ->
       host:transformedExpr(
         host,
         prod(
-          host:decExpr(lhs),
-          host:decExpr(rhs)))
+          host:decExpr(^lhs),
+          host:decExpr(^rhs)))
     | nothing() -> host
     end;
 
@@ -1191,16 +1191,16 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   
   nondecorated local host::host:Expr =
     inj:lteExpr(
-      host:decExpr(lhs),
-      host:decExpr(rhs));
+      host:decExpr(^lhs),
+      host:decExpr(^rhs));
   nondecorated local fwrd::host:Expr =
     case foldr1(orElse, [lType.lLteProd, rType.rLteProd, rewriteProd1, rewriteProd2, rewriteProd3]) of
     | just(prod) ->
       host:transformedExpr(
         host,
         prod(
-          host:decExpr(lhs),
-          host:decExpr(rhs)))
+          host:decExpr(^lhs),
+          host:decExpr(^rhs)))
     | nothing() -> host
     end;
 
@@ -1270,16 +1270,16 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   
   nondecorated local host::host:Expr =
     inj:gteExpr(
-      host:decExpr(lhs),
-      host:decExpr(rhs));
+      host:decExpr(^lhs),
+      host:decExpr(^rhs));
   nondecorated local fwrd::host:Expr =
     case foldr1(orElse, [lType.lGteProd, rType.rGteProd, rewriteProd1, rewriteProd2, rewriteProd3]) of
     | just(prod) ->
       host:transformedExpr(
         host,
         prod(
-          host:decExpr(lhs),
-          host:decExpr(rhs)))
+          host:decExpr(^lhs),
+          host:decExpr(^rhs)))
     | nothing() -> host
     end;
 
@@ -1315,16 +1315,16 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   
   nondecorated local host::host:Expr =
     inj:addExpr(
-      host:decExpr(lhs),
-      host:decExpr(rhs));
+      host:decExpr(^lhs),
+      host:decExpr(^rhs));
   nondecorated local fwrd::host:Expr =
     case orElse(lType.lAddProd, rType.rAddProd) of
     | just(prod) ->
       host:transformedExpr(
         host,
         prod(
-          host:decExpr(lhs),
-          host:decExpr(rhs)))
+          host:decExpr(^lhs),
+          host:decExpr(^rhs)))
     | nothing() -> host
     end;
 
@@ -1360,16 +1360,16 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   
   nondecorated local host::host:Expr =
     inj:subExpr(
-      host:decExpr(lhs),
-      host:decExpr(rhs));
+      host:decExpr(^lhs),
+      host:decExpr(^rhs));
   nondecorated local fwrd::host:Expr =
     case orElse(lType.lSubProd, rType.rSubProd) of
     | just(prod) ->
       host:transformedExpr(
         host,
         prod(
-          host:decExpr(lhs),
-          host:decExpr(rhs)))
+          host:decExpr(^lhs),
+          host:decExpr(^rhs)))
     | nothing() -> host
     end;
 
@@ -1405,16 +1405,16 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   
   nondecorated local host::host:Expr =
     inj:mulExpr(
-      host:decExpr(lhs),
-      host:decExpr(rhs));
+      host:decExpr(^lhs),
+      host:decExpr(^rhs));
   nondecorated local fwrd::host:Expr =
     case orElse(lType.lMulProd, rType.rMulProd) of
     | just(prod) ->
       host:transformedExpr(
         host,
         prod(
-          host:decExpr(lhs),
-          host:decExpr(rhs)))
+          host:decExpr(^lhs),
+          host:decExpr(^rhs)))
     | nothing() -> host
     end;
 
@@ -1450,16 +1450,16 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   
   nondecorated local host::host:Expr =
     inj:divExpr(
-      host:decExpr(lhs),
-      host:decExpr(rhs));
+      host:decExpr(^lhs),
+      host:decExpr(^rhs));
   nondecorated local fwrd::host:Expr =
     case orElse(lType.lDivProd, rType.rDivProd) of
     | just(prod) ->
       host:transformedExpr(
         host,
         prod(
-          host:decExpr(lhs),
-          host:decExpr(rhs)))
+          host:decExpr(^lhs),
+          host:decExpr(^rhs)))
     | nothing() -> host
     end;
 
@@ -1495,16 +1495,16 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
   
   nondecorated local host::host:Expr =
     inj:modExpr(
-      host:decExpr(lhs),
-      host:decExpr(rhs));
+      host:decExpr(^lhs),
+      host:decExpr(^rhs));
   nondecorated local fwrd::host:Expr =
     case orElse(lType.lModProd, rType.rModProd) of
     | just(prod) ->
       host:transformedExpr(
         host,
         prod(
-          host:decExpr(lhs),
-          host:decExpr(rhs)))
+          host:decExpr(^lhs),
+          host:decExpr(^rhs)))
     | nothing() -> host
     end;
 

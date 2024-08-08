@@ -23,22 +23,22 @@ fun addScope Scopes<a> ::= d::Contribs<a>  s::Scopes<a> = tm:add(d, head(s)) :: 
 {-- Adds contributions to the outermost scope -}
 fun addGlobalScope Scopes<a> ::= d::Contribs<a>  s::Scopes<a> =
   case d, s of
-    | [], _ -> s
-    | _, [] -> error("No scopes in env!")
-    | _, [_] -> addScope(d, s)
-    | _, h :: t -> h :: addGlobalScope(d, t)
-    end;
+  | [], _ -> s
+  | _, [] -> error("No scopes in env!")
+  | _, [_] -> addScope(d, s)
+  | _, h :: t -> h :: addGlobalScope(d, t)
+  end;
 {-- Adds contributions to the second outermost scope -}
 {- TODO: This implementation is slightly broken because gcc supports nested
    functions. We should inject into the outermost scope for the current 
    function, which is not necessarily the second outermost scope -}
 fun addFunctionScope Scopes<a> ::= d::Contribs<a> s::Scopes<a> =
   case d, s of
-    | [], _ -> s
-    | _, [] -> error("No scopes in env!")
-    | _, [_] -> addScope(d, s)
-    | _, h :: m :: [] -> addScope(d, h :: m :: [])
-    | _, h :: t -> h :: addFunctionScope(d, t)
+  | [], _ -> s
+  | _, [] -> error("No scopes in env!")
+  | _, [_] -> addScope(d, s)
+  | _, h :: m :: [] -> addScope(d, h :: m :: [])
+  | _, h :: t -> h :: addFunctionScope(d, t)
   end;
 {-- Create a new innermost scope -}
 fun openScope Scopes<a> ::= s::Scopes<a> = tm:empty() :: s;
@@ -51,8 +51,8 @@ fun functionScope Scopes<a> ::= s::Scopes<a> = drop(length(s) - 2, s);
 {-- Looks up an identifier in the closest scope that has a match -}
 fun lookupScope [a] ::= n::String  s::Scopes<a> =
   case dropWhile(null, map(tm:lookup(n, _), s)) of
-| h :: _ -> h
-| [] -> []
-end;
+  | h :: _ -> h
+  | [] -> []
+  end;
 {-- Looks up an identifier in the innermost scope -}
 fun lookupInLocalScope [a] ::= n::String  s::Scopes<a> = tm:lookup(n, head(s));

@@ -186,30 +186,6 @@ top::Decl ::= msg::[Message]
   top.errors := msg;
 }
 
-{--
- - The purpose of this production is for an extension production to use to wrap
- - children that have already been decorated during error checking, etc. when
- - computing a forward tree, to avoid re-decoration and potential exponential
- - performance hits.  When using this production, one must be very careful to
- - ensure that the inherited attributes recieved by the wrapped tree are equivalent
- - to the ones that would have been passed down in the forward tree.
- - See https://github.com/melt-umn/silver/issues/86
- -}
-abstract production decDecl
-top::Decl ::= d::Decorated Decl
-{
-  top.pp = d.pp;
-  top.host = d.host;
-  top.errors := d.errors;
-  top.globalDecls := d.globalDecls;
-  top.functionDecls := d.functionDecls;
-  top.unfoldedGlobalDecls = d.unfoldedGlobalDecls;
-  top.unfoldedFunctionDecls = d.unfoldedFunctionDecls;
-  top.defs := d.defs;
-  top.freeVariables := d.freeVariables;
-  forwards to new(d); -- for easier pattern matching
-}
-
 -- C11
 abstract production staticAssertDecl
 top::Decl ::= e::Expr  s::String
@@ -388,14 +364,14 @@ top::Declarator ::= name::Name  ty::TypeModifierExpr  attrs::Attributes  initial
     then
       case initializer of
       | justInitializer(_) ->
-        [errFromOrigin(top, s"variable ${name.name} has initializer but incomplete type ${showType(top.typerep)}")]
+        [errFromOrigin(top, s"variable ${name.name} has initializer but incomplete type ${show(80, top.typerep)}")]
       | nothingInitializer() -> []
       end ++
       -- TODO: This check should be included for non-extern top-level declarations. However, we
       -- somehow need to check if a struct actually does have a declaration later on in the file,
       -- which would complicate the environment.
       if !top.isTopLevel --!(top.isTopLevel && top.givenStorageClasses.isExtern)
-      then [errFromOrigin(top, s"storage size of ${name.name} (type ${showType(top.typerep)}) isn't known")]
+      then [errFromOrigin(top, s"storage size of ${name.name} (type ${show(80, top.typerep)}) isn't known")]
       else []
     else [];
 
@@ -540,14 +516,14 @@ top::FunctionDecl ::= storage::StorageClasses  fnquals::SpecialSpecifiers  bty::
   mty.controlStmtContext = top.controlStmtContext;
   bty.controlStmtContext = top.controlStmtContext;
 
-  body.controlStmtContext = 
-    controlStmtContext(
+  body.controlStmtContext = controlStmtContext(
+    returnType =
       case mty of
       | functionTypeExprWithArgs(ret, _, _, _) -> just(retMty.typerep)
       | functionTypeExprWithoutArgs(ret, _, _) -> just(retMty.typerep)
       | _ -> nothing() -- Don't error here, this is caught in type checking
       end,
-      false, false, tm:add(body.labelDefs, tm:empty()));
+    breakValid=false, continueValid=false, labels=tm:add(body.labelDefs, tm:empty()));
 
   name.env = top.env;
   bty.env = top.env;
@@ -563,7 +539,7 @@ top::FunctionDecl ::= storage::StorageClasses  fnquals::SpecialSpecifiers  bty::
   top.errors <-
     if name.name == "main" &&
       !compatibleTypes(bty.typerep, builtinType(nilQualifier(), signedType(intType())), false, false)
-    then [wrnFromOrigin(name, "Main function should return 'int' not " ++ showType(bty.typerep))]
+    then [wrnFromOrigin(name, "Main function should return 'int' not " ++ show(80, bty.typerep))]
     else []; -- TODO: check the rest of the signature.
 }
 
@@ -634,24 +610,6 @@ top::Parameters ::=
   top.typereps = [];
   top.freeVariables := [];
   top.appendedParametersRes = top.appendedParameters;
-}
-
-abstract production decParameters
-top::Parameters ::= p::Decorated Parameters
-{
-  top.pps = p.pps;
-  top.host = p.host;
-  top.count = p.count;
-  top.typereps = p.typereps;
-  top.errors := p.errors;
-  top.globalDecls := p.globalDecls;
-  top.functionDecls := p.functionDecls;
-  top.decls := p.decls;
-  top.defs := p.defs;
-  top.functionDefs := p.functionDefs;
-  top.labelDefs := p.labelDefs;
-  top.freeVariables := p.freeVariables;
-  forwards to new(p);
 }
 
 function appendParameters

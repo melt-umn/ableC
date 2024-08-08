@@ -88,7 +88,7 @@ flowtype unfoldedFunctionDecls {decorate} on
  - the environment before including that decl in the Decls passed to an injection production
  -}
 abstract production maybeDecl
-top::Decl ::= include::(Boolean ::= Decorated Env) decl::Decl
+top::Decl ::= include::(Boolean ::= Env) decl::Decl
 {
   top.pp = cat(pp"maybe ", braces(nestlines(2, decl.pp)));
 
@@ -104,21 +104,21 @@ top::Decl ::= name::String decl::Decl
 {
   top.pp = cat(pp"maybeValue (${text(name)}) ", braces(nestlines(2, decl.pp)));
 
-  forwards to maybeDecl(\ env::Decorated Env -> null(lookupValue(name, top.env)), @decl);
+  forwards to maybeDecl(\ env::Env -> null(lookupValue(name, top.env)), @decl);
 }
 abstract production maybeTagDecl
 top::Decl ::= name::String decl::Decl
 {
   top.pp = cat(pp"maybeTag (${text(name)}) ", braces(nestlines(2, decl.pp)));
 
-  forwards to maybeDecl(\ env::Decorated Env -> null(lookupTag(name, top.env)), @decl);
+  forwards to maybeDecl(\ env::Env -> null(lookupTag(name, top.env)), @decl);
 }
 abstract production maybeRefIdDecl
 top::Decl ::= name::String decl::Decl
 {
   top.pp = cat(pp"maybeRefId (${text(name)}) ", braces(nestlines(2, decl.pp)));
 
-  forwards to maybeDecl(\ env::Decorated Env -> null(lookupRefId(name, top.env)), @decl);
+  forwards to maybeDecl(\ env::Env -> null(lookupRefId(name, top.env)), @decl);
 }
 
 -- Injection production for Expr

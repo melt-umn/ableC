@@ -5,18 +5,18 @@ imports edu:umn:cs:melt:ableC:abstractsyntax:host;
 {--
  - The environment values that get passed around and used to look up names.
  -}
-nonterminal Env with tags, values, refIds, deferredDecls, misc;
+data nonterminal Env with tags, values, refIds, deferredDecls, misc;
 
 {--
  - A list of definitions, only used in contributing new names to the environment.
  -}
-nonterminal Defs 
+data nonterminal Defs 
   with tagContribs, valueContribs, refIdContribs, deferredDeclContribs, miscContribs, globalDefs, functionScopeDefs;
 
 {--
  - An individual definition of a name.
  -}
-closed nonterminal Def 
+closed data nonterminal Def 
   with tagContribs, valueContribs, refIdContribs, deferredDeclContribs, miscContribs, globalDefs, functionScopeDefs;
 
 
@@ -50,45 +50,33 @@ monoid attribute localDefs :: [Def];
 {--
  - The environment, on which all lookups are performed.
  -}
-inherited attribute env :: Decorated Env;
+inherited attribute env :: Env;
 
 {--
  - The local field environment for a struct or union. Could be a different type, I suppose. TODO
  -}
-inherited attribute localEnv :: Decorated Env;
+inherited attribute localEnv :: Env;
 
 {--
  - The local environment found when looking up a struct or union.
  -}
-synthesized attribute tagEnv :: Decorated Env;
+synthesized attribute tagEnv :: Env;
 
 -- Environment manipulation functions
 
-fun emptyEnv Decorated Env ::= = decorate emptyEnv_i() with {};
-fun openScopeEnv Decorated Env ::= e::Decorated Env = decorate openScopeEnv_i(e) with {};
-fun addEnv Decorated Env ::= d::[Def]  e::Decorated Env =
+fun addEnv Env ::= d::[Def]  e::Env =
   if null(d) then e else addEnvDefs(foldr(consDefs, nilDefs(), d), e);
-function addEnvDefs
-Decorated Env ::= d::Defs  e::Decorated Env
-{
-  return decorate addEnv_i(@d, e) with {};
-}
-fun globalEnv Decorated Env ::= e::Decorated Env = decorate globalEnv_i(e) with {};
-fun nonGlobalEnv Decorated Env ::= e::Decorated Env = decorate nonGlobalEnv_i(e) with {};
-fun functionEnv Decorated Env ::= e::Decorated Env = decorate functionEnv_i(e) with {};
 
 -- Environment lookup functions
 
-fun lookupValue [ValueItem] ::= n::String  e::Decorated Env = lookupScope(n, e.values);
-fun lookupTag [TagItem] ::= n::String  e::Decorated Env = lookupScope(n, e.tags);
-fun lookupRefId [RefIdItem] ::= n::String  e::Decorated Env = lookupScope(n, e.refIds);
-fun lookupDeferredDecls [Decl] ::= n::String  e::Decorated Env = lookupScope(n, e.deferredDecls);
-fun lookupMisc [MiscItem] ::= n::String  e::Decorated Env = lookupScope(n, e.misc);
+fun lookupValue [ValueItem] ::= n::String  e::Env = lookupScope(n, e.values);
+fun lookupTag [TagItem] ::= n::String  e::Env = lookupScope(n, e.tags);
+fun lookupRefId [RefIdItem] ::= n::String  e::Env = lookupScope(n, e.refIds);
+fun lookupDeferredDecls [Decl] ::= n::String  e::Env = lookupScope(n, e.deferredDecls);
+fun lookupMisc [MiscItem] ::= n::String  e::Env = lookupScope(n, e.misc);
 
 
-fun lookupValueInLocalScope [ValueItem] ::= n::String  e::Decorated Env =
-  lookupInLocalScope(n, e.values);
-fun lookupTagInLocalScope [TagItem] ::= n::String  e::Decorated Env = lookupInLocalScope(n, e.tags);
-fun lookupMiscInLocalScope [MiscItem] ::= n::String  e::Decorated Env =
-  lookupInLocalScope(n, e.misc);
+fun lookupValueInLocalScope [ValueItem] ::= n::String  e::Env = lookupInLocalScope(n, e.values);
+fun lookupTagInLocalScope [TagItem] ::= n::String  e::Env = lookupInLocalScope(n, e.tags);
+fun lookupMiscInLocalScope [MiscItem] ::= n::String  e::Env = lookupInLocalScope(n, e.misc);
 

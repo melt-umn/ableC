@@ -8,7 +8,7 @@ top::host:Initializer ::= e::host:Expr
   
   forwards to
     case top.host:expectedType.exprInitProd of
-    | just(prod) -> prod(host:decExpr(e))
+    | just(prod) -> prod(host:decExpr(^e))
     | nothing() -> host:exprInitializer(@e)
     end;
 }

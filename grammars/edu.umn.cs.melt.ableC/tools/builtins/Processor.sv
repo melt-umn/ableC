@@ -111,7 +111,7 @@ top::Builtin ::= 'TARGET_BUILTIN' '(' id::Identifier ',' '"' types::Types
   feature::IgnoredStuff '"' ')'
 {
   forwards to builtinFunction(terminal(BUILTIN, "BUILTIN"), '(', id, ',', '"',
-    types, dots, '"', ',', '"', attrs, '"', ')');
+    @types, @dots, '"', ',', '"', attrs, '"', ')');
 }
 concrete production targetHeaderBuiltinFunction
 top::Builtin ::= 'TARGET_HEADER_BUILTIN' '(' id::Identifier ',' '"'
@@ -120,14 +120,14 @@ top::Builtin ::= 'TARGET_HEADER_BUILTIN' '(' id::Identifier ',' '"'
   '"' ')'
 {
   forwards to builtinFunction(terminal(BUILTIN, "BUILTIN"), '(', id, ',', '"',
-    types, dots, '"', ',', '"', attrs, '"', ')');
+    @types, @dots, '"', ',', '"', attrs, '"', ')');
 }
 concrete production langBuiltinFunction
 top::Builtin ::= 'LANGBUILTIN' '(' id::Identifier ',' '"' types::Types
   dots::MaybeDots '"' ',' '"' attrs::IgnoredStuff '"' ',' lang::Languages ')'
 {
   forwards to builtinFunction(terminal(BUILTIN, "BUILTIN"), '(', id, ',', '"',
-    types, dots, '"', ',', '"', attrs, '"', ')');
+    @types, @dots, '"', ',', '"', attrs, '"', ')');
 }
 concrete production ignoredLIBBUILTIN
 top::Builtin ::= LIBBUILTIN_NotProcessed
@@ -157,16 +157,13 @@ top::Type ::= p::TypePrefixes  t::TypeSpecifier  s::TypeSuffixes
 {
   t.givenSign = if p.issigned then a:signedType else a:unsignedType;
   t.givenDomain = a:realType;
-  local typerep1 :: a:Type = t.specifier(s.qualifiers);
+  nondecorated local typerep1::a:Type = t.specifier(s.qualifiers);
   
   top.typerep = addpointers(s.pointercount, typerep1);
 }
 
-function addpointers
-a:Type ::= count::Integer  t::a:Type
-{
-  return if count == 0 then t else addpointers(count-1, a:pointerType(a:nilQualifier(), t));
-}
+fun addpointers a:Type ::= count::Integer  t::a:Type =
+  if count == 0 then t else addpointers(count-1, a:pointerType(a:nilQualifier(), t));
 
 monoid attribute issigned :: Boolean with true, &&;
 

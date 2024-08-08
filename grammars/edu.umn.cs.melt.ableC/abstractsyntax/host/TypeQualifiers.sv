@@ -14,7 +14,7 @@ top::Qualifiers ::= h::Qualifier  t::Qualifiers
 {
   top.host = if h.qualIsHost then consQualifier(^h, t.host) else t.host;
   top.mangledName = h.mangledName ++ "_" ++ t.mangledName;
-  top.qualifiers = cons(h, t.qualifiers);
+  top.qualifiers = cons(^h, t.qualifiers);
   top.pps = cons(h.pp, t.pps);
 }
 
@@ -182,15 +182,9 @@ top::SpecialSpecifiers ::=
 }
 
 
-function containsQualifier
-Boolean ::= q::Qualifier t::Type
-{
-  return containsBy(qualifierCompat, q, t.qualifiers);
-}
+fun containsQualifier Boolean ::= q::Qualifier t::Type =
+  containsBy(qualifierCompat, q, t.qualifiers);
 
-function qualifierCat
-Qualifiers ::= q1::Qualifiers  q2::Qualifiers
-{
-  return foldQualifier(q1.qualifiers ++ q2.qualifiers);
-}
+fun qualifierCat Qualifiers ::= q1::Qualifiers  q2::Qualifiers =
+  foldQualifier(q1.qualifiers ++ q2.qualifiers);
 

@@ -17,7 +17,7 @@ top::Decl ::= refId::String d::Decl
 }
 
 function defsDeferredDecls
-[Decorated Decl] ::= env::Decorated Env isTopLevel::Boolean
+[Decorated Decl] ::= env::Env isTopLevel::Boolean
                       controlStmtContext::ControlStmtContext
                       defs::[Def]
 {
@@ -30,14 +30,14 @@ function defsDeferredDecls
             map(fst, foldr(consDefs, nilDefs(), defs).refIdContribs)))));
   deferredDecls.env = env;
   deferredDecls.isTopLevel = isTopLevel;
-  deferredDecls.controlStmtContext = ^controlStmtContext;
+  deferredDecls.controlStmtContext = controlStmtContext;
 
   return
     if !null(deferredDecls.defs)
     then
       deferredDecls ::
       defsDeferredDecls(
-        addEnv(deferredDecls.defs, env), isTopLevel, ^controlStmtContext,
+        addEnv(deferredDecls.defs, env), isTopLevel, controlStmtContext,
           deferredDecls.defs)
     else [];
 }
@@ -60,17 +60,17 @@ top::Decl ::= d::[Def]
 aspect production variableDecls
 top::Decl ::= storage::StorageClasses  attrs::Attributes  ty::BaseTypeExpr  dcls::Declarators
 {
-  local host::Decl =
+  nondecorated local host::Decl =
     if dcls.hasModifiedTypeExpr
     then decls(foldDecl(ty.hostDecls ++ dcls.hostDecls))
-    else variableDecls(@storage, attrs.host, ty.host, dcls.host);
+    else variableDecls(^storage, attrs.host, ty.host, dcls.host);
   local deferredDecls::[Decorated Decl] =
     defsDeferredDecls(addEnv(dcls.defs, dcls.env), top.isTopLevel,
       top.controlStmtContext, ty.defs ++ dcls.defs);
   top.host =
     if !null(deferredDecls)
-    then decls(foldDecl(host :: map(\ d::Decorated Decl -> d.host, deferredDecls)))
-    else ^host;
+    then decls(foldDecl(host :: map((.host), deferredDecls)))
+    else host;
   top.globalDecls <- concat(map((.globalDecls), deferredDecls));
   top.functionDecls <- concat(map((.functionDecls), deferredDecls));
   top.defs <- concat(map((.defs), deferredDecls));
@@ -80,14 +80,14 @@ top::Decl ::= storage::StorageClasses  attrs::Attributes  ty::BaseTypeExpr  dcls
 aspect production typeExprDecl
 top::Decl ::= attrs::Attributes ty::BaseTypeExpr
 {
-  local host::Decl = typeExprDecl(attrs.host, ty.host);
+  nondecorated local host::Decl = typeExprDecl(attrs.host, ty.host);
   local deferredDecls::[Decorated Decl] =
     defsDeferredDecls(addEnv(ty.defs, ty.env), top.isTopLevel,
       top.controlStmtContext, ty.defs);
   top.host =
     if !null(deferredDecls)
-    then decls(foldDecl(host :: map(\ d::Decorated Decl -> d.host, deferredDecls)))
-    else ^host;
+    then decls(foldDecl(host :: map((.host), deferredDecls)))
+    else host;
   top.globalDecls <- concat(map((.globalDecls), deferredDecls));
   top.functionDecls <- concat(map((.functionDecls), deferredDecls));
   top.defs <- concat(map((.defs), deferredDecls));
@@ -97,7 +97,7 @@ top::Decl ::= attrs::Attributes ty::BaseTypeExpr
 aspect production typedefDecls
 top::Decl ::= attrs::Attributes  ty::BaseTypeExpr  dcls::Declarators
 {
-  local host::Decl =
+  nondecorated local host::Decl =
     if dcls.hasModifiedTypeExpr
     then decls(foldDecl(ty.hostDecls ++ dcls.hostDecls))
     else typedefDecls(attrs.host, ty.host, dcls.host);
@@ -106,8 +106,8 @@ top::Decl ::= attrs::Attributes  ty::BaseTypeExpr  dcls::Declarators
       top.controlStmtContext, ty.defs ++ dcls.defs);
   top.host =
     if !null(deferredDecls)
-    then decls(foldDecl(host :: map(\ d::Decorated Decl -> d.host, deferredDecls)))
-    else ^host;
+    then decls(foldDecl(host :: map((.host), deferredDecls)))
+    else host;
   top.globalDecls <- concat(map((.globalDecls), deferredDecls));
   top.functionDecls <- concat(map((.functionDecls), deferredDecls));
   top.defs <- concat(map((.defs), deferredDecls));
@@ -117,14 +117,14 @@ top::Decl ::= attrs::Attributes  ty::BaseTypeExpr  dcls::Declarators
 aspect production functionDeclaration
 top::Decl ::= f::FunctionDecl
 {
-  local host::Decl = f.host;
+  nondecorated local host::Decl = f.host;
   local deferredDecls::[Decorated Decl] =
     defsDeferredDecls(addEnv(f.defs, f.env), top.isTopLevel,
       top.controlStmtContext, f.defs);
   top.host =
     if !null(deferredDecls)
-    then decls(foldDecl(host :: map(\ d::Decorated Decl -> d.host, deferredDecls)))
-    else ^host;
+    then decls(foldDecl(host :: map((.host), deferredDecls)))
+    else host;
   top.globalDecls <- concat(map((.globalDecls), deferredDecls));
   top.functionDecls <- concat(map((.functionDecls), deferredDecls));
   top.defs <- concat(map((.defs), deferredDecls));

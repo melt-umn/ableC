@@ -2,7 +2,7 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax:env;
 
 import silver:langutil;
 
-closed tracked nonterminal ValueItem with typerep, directRefHandler, directCallHandler, isItemValue, isItemType, integerConstantValue;
+closed tracked data nonterminal ValueItem with typerep, directRefHandler, directCallHandler, isItemValue, isItemType, integerConstantValue;
 
 synthesized attribute directRefHandler :: (Expr ::= Name);
 synthesized attribute directCallHandler :: (Expr ::= Name Exprs);

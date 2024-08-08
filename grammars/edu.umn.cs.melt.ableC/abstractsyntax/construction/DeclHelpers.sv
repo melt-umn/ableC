@@ -12,11 +12,11 @@ fun mkIntDecl Stmt ::= n::String = mkIntDeclGeneral( n, nothingInitializer());
 fun mkNamedTypeDecl Stmt ::= n::String = mkIntDeclGeneral( n, nothingInitializer());
 
 -- int n = val;
-fun mkIntDeclInit Stmt ::= n::String val::String =
+fun mkIntDeclInit Stmt ::= n::String val::Integer =
   mkIntDeclGeneral( 
     n, 
     justInitializer(
-      exprInitializer( mkIntExpr(val) ) ));
+      exprInitializer( mkIntConst(val) ) ));
 
 function mkIntDeclExpr
 Stmt ::= n::String val::Expr
@@ -75,23 +75,20 @@ Stmt ::= n::String typ::Type v::Expr
           ) ;
 }
 
-fun makeDeclIntInit Decl ::= n::String val::String =
+fun makeDeclIntInit Decl ::= n::String val::Integer =
   makeDeclIntGeneral( 
     n, 
     justInitializer(
-      exprInitializer( mkIntExpr(val) ) ));
-function makeDeclIntGeneral
-Decl ::= n::String init::MaybeInitializer
-{
-  return variableDecls(nilStorageClass(), nilAttribute(), 
-           directTypeExpr(
-             builtinType(nilQualifier(), signedType(intType()))),
-           consDeclarator( 
-             declarator( name(n), baseTypeExpr(), nilAttribute(), 
-               ^init) , 
-             nilDeclarator() 
-           ) ) ;
-}
+      exprInitializer( mkIntConst(val) ) ));
+fun makeDeclIntGeneral Decl ::= n::String init::MaybeInitializer =
+  variableDecls(nilStorageClass(), nilAttribute(), 
+    directTypeExpr(
+      builtinType(nilQualifier(), signedType(intType()))),
+    consDeclarator( 
+      declarator( name(n), baseTypeExpr(), nilAttribute(), 
+        init) , 
+      nilDeclarator() 
+    ) ) ;
 
 
 {-

@@ -250,18 +250,18 @@ top::host:Expr ::=
 {
   top.callProd =
     case top.host:typerep.callProd of
-    | just(prod) -> just(prod(host:decExpr(top), _))
+    | just(prod) -> just(prod(host:decExpr(^top), _))
     | nothing() -> nothing()
     end;
   top.addressOfProd =
     case top.host:typerep.addressOfProd of
-    | just(prod) -> just((\ -> prod(host:decExpr(top))))
+    | just(prod) -> just((\ -> prod(host:decExpr(^top))))
     | nothing() -> nothing()
     end;
   top.lEqProd =
     -- Can't use a local here, unfourtunately
     case decorate top.host:typerep with {otherType=top.otherType;}.lEqProd of
-    | just(prod) -> just(prod(host:decExpr(top), _))
+    | just(prod) -> just(prod(host:decExpr(^top), _))
     | nothing() -> nothing()
     end;
 }
@@ -289,12 +289,12 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
       | just(prod) ->
         just(
           (\ -> prod(
-            host:decExpr(lhs),
-            host:decExpr(rhs))))
+            host:decExpr(^lhs),
+            host:decExpr(^rhs))))
       | nothing() -> nothing()
       end,
       case top.host:typerep.addressOfProd of
-      | just(prod) -> just((\ -> prod(host:decExpr(top))))
+      | just(prod) -> just((\ -> prod(host:decExpr(^top))))
       | nothing() -> nothing()
       end);
   top.lEqProd =
@@ -303,13 +303,13 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
       | just(prod) ->
         just(
           prod(
-            host:decExpr(lhs),
-            host:decExpr(rhs),
+            host:decExpr(^lhs),
+            host:decExpr(^rhs),
             _))
       | nothing() -> nothing()
       end,
       case t.lEqProd of
-      | just(prod) -> just(prod(host:decExpr(top), _))
+      | just(prod) -> just(prod(host:decExpr(^top), _))
       | nothing() -> nothing()
       end);
   lhs.otherType = top.otherType;
@@ -324,22 +324,22 @@ top::host:Expr ::= f::host:Expr  a::host:Exprs
     orElse(
       case f.host:typerep.addressOfCallProd of
       | just(prod) ->
-        just((\ -> prod(host:decExpr(f), host:decExprs(a))))
+        just((\ -> prod(host:decExpr(^f), host:decExprs(^a))))
       | nothing() -> nothing()
       end,
       case top.host:typerep.addressOfProd of
-      | just(prod) -> just((\ -> prod(host:decExpr(top))))
+      | just(prod) -> just((\ -> prod(host:decExpr(^top))))
       | nothing() -> nothing()
       end);
   top.lEqProd =
     orElse(
       case t.eqCallProd of
       | just(prod) ->
-        just(prod(host:decExpr(f), host:decExprs(a), _))
+        just(prod(host:decExpr(^f), host:decExprs(^a), _))
       | nothing() -> nothing()
       end,
       case t.lEqProd of
-      | just(prod) -> just(prod(host:decExpr(top), _))
+      | just(prod) -> just(prod(host:decExpr(^top), _))
       | nothing() -> nothing()
       end);
   f.otherType = top.otherType;
@@ -358,12 +358,12 @@ top::host:Expr ::= lhs::host:Expr  deref::Boolean  rhs::host:Name
       | just(prod) ->
         just(
           prod(
-            host:decExpr(lhs),
+            host:decExpr(^lhs),
             ^rhs, _))
       | nothing() -> nothing()
       end,
       case top.host:typerep.callProd of
-      | just(prod) -> just(prod(host:decExpr(top), _))
+      | just(prod) -> just(prod(host:decExpr(^top), _))
       | nothing() -> nothing()
       end);
   top.addressOfProd =
@@ -372,12 +372,12 @@ top::host:Expr ::= lhs::host:Expr  deref::Boolean  rhs::host:Name
       | just(prod) ->
         just(
           (\ -> prod(
-            host:decExpr(lhs),
+            host:decExpr(^lhs),
             ^rhs)))
       | nothing() -> nothing()
       end,
       case top.host:typerep.addressOfProd of
-      | just(prod) -> just((\ -> prod(host:decExpr(top))))
+      | just(prod) -> just((\ -> prod(host:decExpr(^top))))
       | nothing() -> nothing()
       end);
   top.lEqProd =
@@ -386,12 +386,12 @@ top::host:Expr ::= lhs::host:Expr  deref::Boolean  rhs::host:Name
       | just(prod) ->
         just(
           prod(
-            host:decExpr(lhs),
+            host:decExpr(^lhs),
             ^rhs, _))
       | nothing() -> nothing()
       end,
       case t.lEqProd of
-      | just(prod) -> just(prod(host:decExpr(top), _))
+      | just(prod) -> just(prod(host:decExpr(^top), _))
       | nothing() -> nothing()
       end);
   lhs.otherType = top.otherType;

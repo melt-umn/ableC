@@ -182,7 +182,7 @@ fun assignErrors [Message] ::= lhs::Decorated Expr  rhs::Decorated Expr =
          end 
      | _ -> []
      end
-   else [errFromOrigin(rhs, "Incompatible type in rhs of assignment, expected " ++ showType(lhs.typerep) ++ " but found " ++ showType(rhs.typerep))]) ++
+   else [errFromOrigin(rhs, "Incompatible type in rhs of assignment, expected " ++ show(80, lhs.typerep) ++ " but found " ++ show(80, rhs.typerep))]) ++
   if lhs.isLValue then []
     else [errFromOrigin(lhs, "lvalue required as left operand of assignment")];
 

@@ -12,7 +12,7 @@ synthesized attribute values :: Scopes<ValueItem>;
 synthesized attribute refIds :: Scopes<RefIdItem>;
 synthesized attribute deferredDecls :: Scopes<Decl>;
 synthesized attribute misc :: Scopes<MiscItem>;
-synthesized attribute globalEnv :: Decorated Env;
+synthesized attribute globalEnv :: Env;
 
 synthesized attribute tagContribs :: Contribs<TagItem>;
 synthesized attribute valueContribs :: Contribs<ValueItem>;
@@ -29,7 +29,7 @@ synthesized attribute functionScopeDefs :: [Def];
  - globalEnv_i gets the last (global) scope from the scope lists
  -}
 
-abstract production emptyEnv_i
+abstract production emptyEnv
 top::Env ::=
 {
   top.tags = emptyScope();
@@ -38,8 +38,8 @@ top::Env ::=
   top.deferredDecls = emptyScope();
   top.misc = emptyScope();
 }
-abstract production addEnv_i
-top::Env ::= d::Defs  e::Decorated Env
+abstract production addEnvDefs
+top::Env ::= d::Defs  e::Env
 {
   production gd::Defs = foldr(consDefs, nilDefs(), d.globalDefs);
   production fd::Defs = foldr(consDefs, nilDefs(), d.functionScopeDefs);
@@ -50,8 +50,8 @@ top::Env ::= d::Defs  e::Decorated Env
   top.deferredDecls = addFunctionScope(fd.deferredDeclContribs, addGlobalScope(gd.deferredDeclContribs, addScope(d.deferredDeclContribs, e.deferredDecls)));
   top.misc = addFunctionScope(fd.miscContribs, addGlobalScope(gd.miscContribs, addScope(d.miscContribs, e.misc)));
 }
-abstract production openScopeEnv_i
-top::Env ::= e::Decorated Env
+abstract production openScopeEnv
+top::Env ::= e::Env
 {
   top.tags = openScope(e.tags);
   top.values = openScope(e.values);
@@ -59,8 +59,8 @@ top::Env ::= e::Decorated Env
   top.deferredDecls = openScope(e.deferredDecls);
   top.misc = openScope(e.misc);
 }
-abstract production globalEnv_i
-top::Env ::= e::Decorated Env
+abstract production globalEnv
+top::Env ::= e::Env
 {
   top.tags = globalScope(e.tags);
   top.values = globalScope(e.values);
@@ -68,8 +68,8 @@ top::Env ::= e::Decorated Env
   top.deferredDecls = globalScope(e.deferredDecls);
   top.misc = globalScope(e.misc);
 }
-abstract production nonGlobalEnv_i
-top::Env ::= e::Decorated Env
+abstract production nonGlobalEnv
+top::Env ::= e::Env
 {
   top.tags = nonGlobalScope(e.tags);
   top.values = nonGlobalScope(e.values);
@@ -77,8 +77,8 @@ top::Env ::= e::Decorated Env
   top.deferredDecls = nonGlobalScope(e.deferredDecls);
   top.misc = nonGlobalScope(e.misc);
 }
-abstract production functionEnv_i
-top::Env ::= e::Decorated Env
+abstract production functionEnv
+top::Env ::= e::Env
 {
   top.tags = functionScope(e.tags);
   top.values = functionScope(e.values);

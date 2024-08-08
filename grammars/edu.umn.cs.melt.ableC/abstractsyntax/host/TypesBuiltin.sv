@@ -2,7 +2,7 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 
 propagate host on BuiltinType, IntegerType, RealType;
 
-tracked nonterminal BuiltinType with pp, host, mangledName, integerPromotionsBuiltin, defaultArgumentPromotionsBuiltin, isIntegerType, isArithmeticType;
+tracked data nonterminal BuiltinType with pp, host, mangledName, integerPromotionsBuiltin, defaultArgumentPromotionsBuiltin, isIntegerType, isArithmeticType;
 flowtype BuiltinType = decorate {}, integerPromotionsBuiltin {}, defaultArgumentPromotionsBuiltin {}, isIntegerType {}, isArithmeticType {};
 
 synthesized attribute integerPromotionsBuiltin :: BuiltinType;
@@ -17,8 +17,8 @@ top::BuiltinType ::=
 {
   top.pp = text("void");
   top.mangledName = "void";
-  top.integerPromotionsBuiltin = ^top;
-  top.defaultArgumentPromotionsBuiltin = ^top;
+  top.integerPromotionsBuiltin = top;
+  top.defaultArgumentPromotionsBuiltin = top;
   top.isIntegerType = false;
   top.isArithmeticType = false;
 }
@@ -41,7 +41,7 @@ top::BuiltinType ::= rt::RealType
 {
   top.pp = rt.pp;
   top.mangledName = "real_" ++ rt.mangledName;
-  top.integerPromotionsBuiltin = ^top;
+  top.integerPromotionsBuiltin = top;
   top.defaultArgumentPromotionsBuiltin =
     realType(
       case rt of
@@ -58,7 +58,7 @@ top::BuiltinType ::= rt::RealType
 {
   top.pp = ppConcat([ text("_Complex "), rt.pp ]);
   top.mangledName = "complex_" ++ rt.mangledName;
-  top.integerPromotionsBuiltin = ^top;
+  top.integerPromotionsBuiltin = top;
   top.defaultArgumentPromotionsBuiltin =
     complexType(
       case rt of
@@ -75,7 +75,7 @@ top::BuiltinType ::= rt::RealType
 {
   top.pp = ppConcat([ text("_Imaginary "), rt.pp ]);
   top.mangledName = "imaginary_" ++ rt.mangledName;
-  top.integerPromotionsBuiltin = ^top;
+  top.integerPromotionsBuiltin = top;
   top.defaultArgumentPromotionsBuiltin =
     imaginaryType(
       case rt of
@@ -147,7 +147,7 @@ top::BuiltinType ::= it::IntegerType
 
 
 {-- Floating types, for which there is a normal and complex variant -}
-nonterminal RealType with pp, host, mangledName;
+data nonterminal RealType with pp, host, mangledName;
 flowtype RealType = decorate {};
 
 abstract production floatType
@@ -173,7 +173,7 @@ top::RealType ::=
 
 
 {-- Integer types, for which there is a signed and unsigned variant -}
-nonterminal IntegerType with pp, host, mangledName, integerConversionRank;
+data nonterminal IntegerType with pp, host, mangledName, integerConversionRank;
 flowtype IntegerType = decorate {}, integerConversionRank {};
 
 synthesized attribute integerConversionRank :: Integer;

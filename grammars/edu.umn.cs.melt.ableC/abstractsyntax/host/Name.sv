@@ -17,9 +17,9 @@ synthesized attribute valueLookupCheck :: [Message];
 synthesized attribute tagLookupCheck :: [Message];
 synthesized attribute labelLookupCheck :: [Message];
 
-restricted synthesized attribute valueItem :: Decorated ValueItem;
-restricted synthesized attribute tagItem :: Decorated TagItem;
-restricted synthesized attribute labelItem :: Decorated LabelItem;
+restricted synthesized attribute valueItem :: ValueItem;
+restricted synthesized attribute tagItem :: TagItem;
+restricted synthesized attribute labelItem :: LabelItem;
 
 tracked nonterminal Name with name, compareTo, isEqual, pp, host, env, valueLocalLookup, labelRedeclarationCheck, valueLookupCheck, tagLookupCheck, labelLookupCheck, valueItem, tagItem, labelItem, tagLocalLookup, tagHasForwardDcl, tagRefId, valueRedeclarationCheck, valueRedeclarationCheckNoCompatible, valueMergeRedeclExtnQualifiers, controlStmtContext;
 flowtype Name = decorate {env}, name {}, valueLocalLookup {env}, labelRedeclarationCheck {controlStmtContext}, valueLookupCheck {env}, tagLookupCheck {env}, labelLookupCheck {controlStmtContext}, valueItem {env}, tagItem {env}, labelItem {controlStmtContext}, tagLocalLookup {env}, tagHasForwardDcl {env}, tagRefId {env}, valueRedeclarationCheck {decorate}, valueRedeclarationCheckNoCompatible {decorate}, valueMergeRedeclExtnQualifiers {decorate};
@@ -94,7 +94,7 @@ top::MaybeName ::= n::Name
 {
   propagate env, host;
   top.pp = n.pp;
-  top.maybename = just(n);
+  top.maybename = just(^n);
   top.hasName = true;
 
   top.valueRedeclarationCheck = n.valueRedeclarationCheck;
@@ -189,11 +189,8 @@ fun doValueRedeclarationCheckNoCompatible [Message] ::= n::Decorated Name =
         getParsedOriginLocationOrFallback(v).unparse ++ ")")]
   end;
 
-function doValueMergeQualifiers
-Type ::= t::Type  n::Decorated Name
-{
-  return foldr(\t1::Type t2::Type -> t2.mergeQualifiers(t1), t, map((.typerep), n.valueLocalLookup));
-}
+fun doValueMergeQualifiers Type ::= t::Type  n::Decorated Name =
+  foldr(\t1::Type t2::Type -> t2.mergeQualifiers(t1), t, map((.typerep), n.valueLocalLookup));
 
 --  return
 --    if null(valueLookup)

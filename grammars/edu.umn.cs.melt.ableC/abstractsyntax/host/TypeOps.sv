@@ -10,28 +10,30 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 synthesized attribute isIntegerType :: Boolean; -- enum or integer builtin
 synthesized attribute isArithmeticType :: Boolean; -- integer or floating (incl complex)
 synthesized attribute isScalarType :: Boolean; -- pointers or arithmetic
-synthesized attribute isCompleteType :: (Boolean ::= Decorated Env); -- test if we know the size of a type
+synthesized attribute isCompleteType :: (Boolean ::= Env); -- test if we know the size of a type
 
 
-function showType
-String ::= t::Type
+function ppType
+Document ::= t::Type
 {
-  return show(80, cat(t.lpp, t.rpp));
+  return cat(t.lpp, t.rpp);
+}
+
+instance Show Type {
+  pp = ppType;
 }
 
 
 -- if allowSubtypes is false then check type equality; otherwise
 --   return true if a is a supertype of b; otherwise false
 -- if dropOuterQual is true then remove qualifiers with qualAppliesWithinRef=false
-function compatibleTypes
-Boolean ::= a::Type  b::Type  allowSubtypes::Boolean  dropOuterQual::Boolean
-{
-  return case a, b of
+fun compatibleTypes Boolean ::= a::Type  b::Type  allowSubtypes::Boolean  dropOuterQual::Boolean =
+  case a, b of
   -- Allow already raised errors to go by unbothered by more errors
   | errorType(), _ -> true
   | _, errorType() -> true
   -- Type specifiers
-  | builtinType(q1, b1), builtinType(q2, b2) -> builtinCompatible(^b1, ^b2, allowSubtypes) && compatibleQualifiers(^q1, ^q2, allowSubtypes, dropOuterQual)
+  | builtinType(q1, b1), builtinType(q2, b2) -> builtinCompatible(b1, b2, allowSubtypes) && compatibleQualifiers(^q1, ^q2, allowSubtypes, dropOuterQual)
   | builtinType(q1, b1), extType(q2, enumExtType(_)) -> allowSubtypes && b1.isIntegerType && compatibleQualifiers(^q1, ^q2, allowSubtypes, dropOuterQual)
   | extType(q1, enumExtType(_)), builtinType(q2, b2) -> allowSubtypes && b2.isIntegerType && compatibleQualifiers(^q1, ^q2, allowSubtypes, dropOuterQual)
   | extType(q1, s1), extType(q2, s2) -> s1.isEqualTo(^s2) && compatibleQualifiers(^q1, ^q2, allowSubtypes, dropOuterQual)
@@ -59,108 +61,96 @@ Boolean ::= a::Type  b::Type  allowSubtypes::Boolean  dropOuterQual::Boolean
         compatibleQualifiers(^q1, ^q2, allowSubtypes, dropOuterQual)
   -- extensions
   | attributedType(_, t1), attributedType(_, t2) -> compatibleTypes(^t1, ^t2, allowSubtypes, dropOuterQual)
-  | attributedType(_, t1), t2 -> compatibleTypes(^t1, ^t2, allowSubtypes, dropOuterQual)
-  | t1, attributedType(_, t2) -> compatibleTypes(^t1, ^t2, allowSubtypes, dropOuterQual)
+  | attributedType(_, t1), t2 -> compatibleTypes(^t1, t2, allowSubtypes, dropOuterQual)
+  | t1, attributedType(_, t2) -> compatibleTypes(t1, ^t2, allowSubtypes, dropOuterQual)
   | vectorType(b1, s1), vectorType(b2, s2) -> s1 == s2 && compatibleTypes(^b1, ^b2, allowSubtypes, dropOuterQual)
   -- otherwise
-  | noncanonicalType(s1), _ -> compatibleTypes(s1.canonicalType, ^b, allowSubtypes, dropOuterQual)
-  | _, noncanonicalType(s2) -> compatibleTypes(^a, s2.canonicalType, allowSubtypes, dropOuterQual)
+  | noncanonicalType(s1), _ -> compatibleTypes(s1.canonicalType, b, allowSubtypes, dropOuterQual)
+  | _, noncanonicalType(s2) -> compatibleTypes(a, s2.canonicalType, allowSubtypes, dropOuterQual)
   -- atomics
-  | atomicType(q1, t1), _ -> compatibleTypes((decorate ^t1 with {addedTypeQualifiers=q1.qualifiers;}).withTypeQualifiers, ^b, allowSubtypes, dropOuterQual)
-  | _, atomicType(q2, t2) -> compatibleTypes(^a, (decorate ^t2 with {addedTypeQualifiers=q2.qualifiers;}).withTypeQualifiers, allowSubtypes, dropOuterQual)
+  | atomicType(q1, t1), _ -> compatibleTypes((decorate ^t1 with {addedTypeQualifiers=q1.qualifiers;}).withTypeQualifiers, b, allowSubtypes, dropOuterQual)
+  | _, atomicType(q2, t2) -> compatibleTypes(a, (decorate ^t2 with {addedTypeQualifiers=q2.qualifiers;}).withTypeQualifiers, allowSubtypes, dropOuterQual)
   | _, _ -> false
   end;
-}
 
 fun compatibleTypeList
 Boolean ::= a::[Type]  b::[Type]  allowSubtypes::Boolean  dropOuterQual::Boolean =
   if null(a) && null(b) then true
-else if null(a) || null(b) then false -- different lengths
-else compatibleTypes(head(a), head(b), allowSubtypes, dropOuterQual) &&
-  compatibleTypeList(tail(a), tail(b), allowSubtypes, dropOuterQual);
+  else if null(a) || null(b) then false -- different lengths
+  else compatibleTypes(head(a), head(b), allowSubtypes, dropOuterQual) &&
+    compatibleTypeList(tail(a), tail(b), allowSubtypes, dropOuterQual);
 
-function usualAdditiveConversionsOnTypes
-Type ::= a::Type  b::Type
-{
-  return case a.defaultFunctionArrayLvalueConversion, b.defaultFunctionArrayLvalueConversion of
+fun usualAdditiveConversionsOnTypes Type ::= a::Type  b::Type =
+  case a.defaultFunctionArrayLvalueConversion, b.defaultFunctionArrayLvalueConversion of
   | builtinType(_, x), builtinType(_, y) ->
-      case usualArithmeticConversions(^x, ^y) of
+      case usualArithmeticConversions(x, y) of
       | nothing() -> errorType()
       | just(z) -> builtinType(nilQualifier(), z) -- qualifiers?
       end
   -- TODO: these are not complete. they should be integers, etc.
-  | pointerType(_, _), builtinType(_, _) -> ^a
-  | builtinType(_, _), pointerType(_, _) -> ^b
+  | pointerType(_, _), builtinType(_, _) -> a
+  | builtinType(_, _), pointerType(_, _) -> b
   -- extensions
   | vectorType(b1, s1), vectorType(b2, s2) ->
-      if compatibleTypes(^b1, ^b2, true, false) && s1 == s2 then ^a else errorType() -- TODO: no idea
+      if compatibleTypes(^b1, ^b2, true, false) && s1 == s2 then a else errorType() -- TODO: no idea
   | _, _ -> errorType()
   end;
-}
-function usualSubtractiveConversionsOnTypes
-Type ::= a::Type  b::Type
-{
-  return case a.defaultFunctionArrayLvalueConversion, b.defaultFunctionArrayLvalueConversion of
+
+fun usualSubtractiveConversionsOnTypes Type ::= a::Type  b::Type =
+  case a.defaultFunctionArrayLvalueConversion, b.defaultFunctionArrayLvalueConversion of
   | builtinType(_, x), builtinType(_, y) ->
-      case usualArithmeticConversions(^x, ^y) of
+      case usualArithmeticConversions(x, y) of
       | nothing() -> errorType()
       | just(z) -> builtinType(nilQualifier(), z) -- qualifiers?
       end
   -- TODO: these are not complete. they should be integers, etc.
-  | pointerType(_, _), builtinType(_, _) -> ^a
-  | builtinType(_, _), pointerType(_, _) -> ^b
+  | pointerType(_, _), builtinType(_, _) -> a
+  | builtinType(_, _), pointerType(_, _) -> b
   -- The special case for subtraction:
   | pointerType(_, _), pointerType(_, _) -> builtinType(nilQualifier(), signedType(intType()))
   -- extensions
   | vectorType(b1, s1), vectorType(b2, s2) ->
-      if compatibleTypes(^b1, ^b2, true, false) && s1 == s2 then ^a else errorType() -- TODO: no idea
+      if compatibleTypes(^b1, ^b2, true, false) && s1 == s2 then a else errorType() -- TODO: no idea
   | _, _ -> errorType()
   end;
-}
-function usualArithmeticConversionsOnTypes
-Type ::= a::Type  b::Type
-{
-  return case a, b of
+
+fun usualArithmeticConversionsOnTypes Type ::= a::Type  b::Type =
+  case a, b of
   | builtinType(_, x), builtinType(_, y) ->
-      case usualArithmeticConversions(^x, ^y) of
+      case usualArithmeticConversions(x, y) of
       | nothing() -> errorType()
       | just(z) -> builtinType(nilQualifier(), z) -- qualifiers?
       end
   -- extensions
   | vectorType(b1, s1), vectorType(b2, s2) ->
-      if compatibleTypes(^b1, ^b2, true, false) && s1 == s2 then ^a else errorType() -- TODO: no idea
+      if compatibleTypes(^b1, ^b2, true, false) && s1 == s2 then a else errorType() -- TODO: no idea
   | _, _ -> errorType()
   end;
-}
-function usualArithmeticConversions
-Maybe<BuiltinType> ::= a::BuiltinType  b::BuiltinType
-{
-  return case a, b of
+
+fun usualArithmeticConversions Maybe<BuiltinType> ::= a::BuiltinType  b::BuiltinType =
+  case a, b of
   | voidType(), _ -> nothing()
   | _, voidType() -> nothing()
-  | realType(_), _ -> just(floatingConversion(^a, ^b))
-  | complexType(_), _ -> just(floatingConversion(^a, ^b))
-  | imaginaryType(_), _ -> just(floatingConversion(^a, ^b))
-  | _, realType(_) -> just(floatingConversion(^b, ^a))
-  | _, complexType(_) -> just(floatingConversion(^b, ^a))
-  | _, imaginaryType(_) -> just(floatingConversion(^b, ^a))
-  | _, _ -> just(integerConversion(^a, ^b))
+  | realType(_), _ -> just(floatingConversion(a, b))
+  | complexType(_), _ -> just(floatingConversion(a, b))
+  | imaginaryType(_), _ -> just(floatingConversion(a, b))
+  | _, realType(_) -> just(floatingConversion(b, a))
+  | _, complexType(_) -> just(floatingConversion(b, a))
+  | _, imaginaryType(_) -> just(floatingConversion(b, a))
+  | _, _ -> just(integerConversion(a, b))
   end;
-}
 
-function floatingConversion
-BuiltinType ::= a::BuiltinType  b::BuiltinType
-{
-  return case a, b of
-  | realType(at),      realType(bt) ->      realType(realTypeConversion(^at, ^bt))
-  | realType(at),      complexType(bt) ->   complexType(realTypeConversion(^at, ^bt))
-  | realType(at),      imaginaryType(bt) -> complexType(realTypeConversion(^at, ^bt))
-  | complexType(at),   realType(bt) ->      complexType(realTypeConversion(^at, ^bt))
-  | complexType(at),   complexType(bt) ->   complexType(realTypeConversion(^at, ^bt))
-  | complexType(at),   imaginaryType(bt) -> complexType(realTypeConversion(^at, ^bt))
-  | imaginaryType(at), realType(bt) ->      complexType(realTypeConversion(^at, ^bt))
-  | imaginaryType(at), complexType(bt) ->   complexType(realTypeConversion(^at, ^bt))
-  | imaginaryType(at), imaginaryType(bt) -> imaginaryType(realTypeConversion(^at, ^bt))
+fun floatingConversion BuiltinType ::= a::BuiltinType  b::BuiltinType =
+  case a, b of
+  | realType(at),      realType(bt) ->      realType(realTypeConversion(at, bt))
+  | realType(at),      complexType(bt) ->   complexType(realTypeConversion(at, bt))
+  | realType(at),      imaginaryType(bt) -> complexType(realTypeConversion(at, bt))
+  | complexType(at),   realType(bt) ->      complexType(realTypeConversion(at, bt))
+  | complexType(at),   complexType(bt) ->   complexType(realTypeConversion(at, bt))
+  | complexType(at),   imaginaryType(bt) -> complexType(realTypeConversion(at, bt))
+  | imaginaryType(at), realType(bt) ->      complexType(realTypeConversion(at, bt))
+  | imaginaryType(at), complexType(bt) ->   complexType(realTypeConversion(at, bt))
+  | imaginaryType(at), imaginaryType(bt) -> imaginaryType(realTypeConversion(at, bt))
   -- If floating with non-floating type, just use the floating type.
   | realType(rt), _ -> a
   | complexType(rt), _ -> a
@@ -168,89 +158,70 @@ BuiltinType ::= a::BuiltinType  b::BuiltinType
   -- Invariant: function always called with 'a' as one of these three contructors
   | _, _ -> error("floating conversion called with " ++ show(100, a.pp) ++ " and " ++ show(100, b.pp))
   end;
-}
 
-function realTypeConversion
-RealType ::= a::RealType  b::RealType
-{
-  return case a, b of
+fun realTypeConversion RealType ::= a::RealType  b::RealType =
+  case a, b of
   | longdoubleType(), _ -> longdoubleType()
   | _, longdoubleType() -> longdoubleType()
   | floatType(), floatType() -> floatType()
   | _, _ -> doubleType()
   end;
-}
 
-function integerConversion
-BuiltinType ::= a::BuiltinType  b::BuiltinType
-{
-  return case a.integerPromotionsBuiltin, b.integerPromotionsBuiltin of
-  | signedType(at), signedType(bt) -> signedType(maximumConversionRank(^at, ^bt))
+fun integerConversion BuiltinType ::= a::BuiltinType  b::BuiltinType =
+  case a.integerPromotionsBuiltin, b.integerPromotionsBuiltin of
+  | signedType(at), signedType(bt) -> signedType(maximumConversionRank(at, bt))
   | signedType(at), unsignedType(bt) ->
       if at.integerConversionRank > bt.integerConversionRank then
-        signedType(^at)
+        signedType(at)
       else
-        unsignedType(^bt)
+        unsignedType(bt)
   | unsignedType(at), signedType(bt) ->
       if at.integerConversionRank > bt.integerConversionRank then
-        signedType(^at)
+        signedType(at)
       else
-        unsignedType(^bt)
-  | unsignedType(at), unsignedType(bt) -> unsignedType(maximumConversionRank(^at, ^bt))
+        unsignedType(bt)
+  | unsignedType(at), unsignedType(bt) -> unsignedType(maximumConversionRank(at, bt))
   -- complex integer types:
   -- TODO: We don't have an "unsigned complex integer" type. Not sure if that's a bug or not
   -- considering it's not C anymore but gnu extension land. Since we don't even have syntax for
   -- '18ULI' yet, we'll just go with signed of whatever the larger is, complex type.
-  | unsignedType(at), complexIntegerType(bt) -> complexIntegerType(maximumConversionRank(^at, ^bt))
-  | signedType(at), complexIntegerType(bt) -> complexIntegerType(maximumConversionRank(^at, ^bt))
-  | complexIntegerType(at), signedType(bt) -> complexIntegerType(maximumConversionRank(^at, ^bt))
-  | complexIntegerType(at), unsignedType(bt) -> complexIntegerType(maximumConversionRank(^at, ^bt))
-  | complexIntegerType(at), complexIntegerType(bt) -> complexIntegerType(maximumConversionRank(^at, ^bt))
+  | unsignedType(at), complexIntegerType(bt) -> complexIntegerType(maximumConversionRank(at, bt))
+  | signedType(at), complexIntegerType(bt) -> complexIntegerType(maximumConversionRank(at, bt))
+  | complexIntegerType(at), signedType(bt) -> complexIntegerType(maximumConversionRank(at, bt))
+  | complexIntegerType(at), unsignedType(bt) -> complexIntegerType(maximumConversionRank(at, bt))
+  | complexIntegerType(at), complexIntegerType(bt) -> complexIntegerType(maximumConversionRank(at, bt))
   -- No bools thanks to promotions, Invariant: always called with on of these three *only*
   | _, _ -> error("integer conversion called with " ++ show(100, a.pp) ++ " and " ++ show(100, b.pp))
   end;
-}
 
-function maximumConversionRank
-IntegerType ::= a::IntegerType  b::IntegerType
-{
-  return if a.integerConversionRank < b.integerConversionRank then ^b else ^a;
-}
+fun maximumConversionRank IntegerType ::= a::IntegerType  b::IntegerType =
+  if a.integerConversionRank < b.integerConversionRank then b else a;
 
 
-function builtinCompatible
-Boolean ::= a::BuiltinType  b::BuiltinType  allowSubtypes::Boolean
-{
-  return
-    (allowSubtypes && a.isArithmeticType && b.isArithmeticType) ||
-    case a, b of
-    | voidType(), voidType() -> true
-    | boolType(), boolType() -> true
-    | realType(r1), realType(r2) -> realTypeEq(^r1, ^r2)
-    | complexType(r1), complexType(r2) -> realTypeEq(^r1, ^r2)
-    | imaginaryType(r1), imaginaryType(r2) -> realTypeEq(^r1, ^r2)
-    | signedType(i1), signedType(i2) -> intTypeEq(^i1, ^i2)
-    | unsignedType(i1), unsignedType(i2) -> intTypeEq(^i1, ^i2)
-    | complexIntegerType(i1), complexIntegerType(i2) -> intTypeEq(^i1, ^i2)
-    | _, _ -> false
-    end;
-}
+fun builtinCompatible Boolean ::= a::BuiltinType  b::BuiltinType  allowSubtypes::Boolean =
+  (allowSubtypes && a.isArithmeticType && b.isArithmeticType) ||
+  case a, b of
+  | voidType(), voidType() -> true
+  | boolType(), boolType() -> true
+  | realType(r1), realType(r2) -> realTypeEq(r1, r2)
+  | complexType(r1), complexType(r2) -> realTypeEq(r1, r2)
+  | imaginaryType(r1), imaginaryType(r2) -> realTypeEq(r1, r2)
+  | signedType(i1), signedType(i2) -> intTypeEq(i1, i2)
+  | unsignedType(i1), unsignedType(i2) -> intTypeEq(i1, i2)
+  | complexIntegerType(i1), complexIntegerType(i2) -> intTypeEq(i1, i2)
+  | _, _ -> false
+  end;
 
-function realTypeEq
-Boolean ::= a::RealType  b::RealType
-{
-  return case a, b of
+fun realTypeEq Boolean ::= a::RealType  b::RealType =
+  case a, b of
   | floatType(), floatType() -> true
   | doubleType(), doubleType() -> true
   | longdoubleType(), longdoubleType() -> true
   | _, _ -> false
   end;
-}
 
-function intTypeEq
-Boolean ::= a::IntegerType  b::IntegerType
-{
-  return case a, b of
+fun intTypeEq Boolean ::= a::IntegerType  b::IntegerType =
+  case a, b of
   | charType(), charType() -> true
   | shortType(), shortType() -> true
   | intType(), intType() -> true
@@ -259,7 +230,6 @@ Boolean ::= a::IntegerType  b::IntegerType
   | int128Type(), int128Type() -> true
   | _, _ -> false
   end;
-}
 
 -- if allowSubtypes is false then check qualifier equality; otherwise
 --   return true if q1 T is a supertype of q2 T, for some type T; otherwise false
@@ -387,56 +357,43 @@ Type ::= qs::[Qualifier] base::Type
 
 fun repeatInfinite [a] ::= x::a = x :: repeatInfinite(x);
 
-function objectMembers
-Maybe<[Type]> ::= env::Decorated Env t::Type
-{
-  return
-    case t of
-    | arrayType(e, _, _, constantArrayType(size)) -> just(repeat(e, size))
-    | arrayType(e, _, _, incompleteArrayType()) -> just(repeatInfinite(e))
-    | extType(_, sub) when sub.maybeRefId matches just(refId) ->
-      case lookupRefId(refId, env) of
-      | r :: _ ->
-        just(
-          map(
-            \ f::Either<String ExtType> ->
-              case f of
-              | left(fn) -> head(lookupValue(fn, r.tagEnv)).typerep
-              | right(e) -> extType(nilQualifier(), e)
-              end,
-            r.fieldNames))
-      | [] -> just([]) -- Don't know the members yet, but still not a scalar
-      end
-    | extType(_, _) -> just([]) -- May translate into an object type, so don't treat as scalar
-    | _ -> nothing()
-    end;
-}
+fun objectMembers Maybe<[Type]> ::= env::Env t::Type =
+  case t of
+  | arrayType(e, _, _, constantArrayType(size)) -> just(repeat(^e, size))
+  | arrayType(e, _, _, incompleteArrayType()) -> just(repeatInfinite(^e))
+  | extType(_, sub) when sub.maybeRefId matches just(refId) ->
+    case lookupRefId(refId, env) of
+    | r :: _ ->
+      just(
+        map(
+          \ f::Either<String ExtType> ->
+            case f of
+            | left(fn) -> head(lookupValue(fn, r.tagEnv)).typerep
+            | right(e) -> extType(nilQualifier(), e)
+            end,
+          r.fieldNames))
+    | [] -> just([]) -- Don't know the members yet, but still not a scalar
+    end
+  | extType(_, _) -> just([]) -- May translate into an object type, so don't treat as scalar
+  | _ -> nothing()
+  end;
 
-function remainingObjectMembers
-Maybe<[Type]> ::= env::Decorated Env expected::Type actual::Type
-{
-  return
-    if typeAssignableTo(^expected, ^actual)
-    then just([])
-    else do {
-      ts1 :: [Type] <- objectMembers(env, ^expected);
-      if null(ts1) then nothing() else do {
-        ts2 :: [Type] <- remainingObjectMembers(env, head(ts1), ^actual);
-        return ts2 ++ tail(ts1);
-      };
-    };
-}
+fun remainingObjectMembers Maybe<[Type]> ::= env::Env expected::Type actual::Type =
+  if typeAssignableTo(expected, actual)
+  then just([])
+  else do {
+    ts1 :: [Type] <- objectMembers(env, expected);
+    guard(!null(ts1));
+    ts2 :: [Type] <- remainingObjectMembers(env, head(ts1), actual);
+    return ts2 ++ tail(ts1);
+  };
 
-function objectTagEnv
-Decorated Env ::= env::Decorated Env t::Type
-{
-  return
-    case t of
-    | extType(_, sub) when sub.maybeRefId matches just(refId) ->
-      case lookupRefId(refId, env) of
-      | r :: _ -> r.tagEnv
-      | [] -> emptyEnv()
-      end
-    | _ -> emptyEnv()
-    end;
-}
+fun objectTagEnv Env ::= env::Env t::Type =
+  case t of
+  | extType(_, sub) when sub.maybeRefId matches just(refId) ->
+    case lookupRefId(refId, env) of
+    | r :: _ -> r.tagEnv
+    | [] -> emptyEnv()
+    end
+  | _ -> emptyEnv()
+  end;

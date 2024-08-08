@@ -21,12 +21,8 @@ fun removeDefsFromNames [Name] ::= defs::[Def] names::[Name] =
   then removeDefsFromNames(defs, tail(names))
   else head(names) :: removeDefsFromNames(defs, tail(names));
 
-function definesVarWithName
-Boolean ::= d::Def n::String
-{
-  return
-    case d of
-      valueDef(n1, _) -> n == n1
-    | _ -> false
-    end;
-}
+fun definesVarWithName Boolean ::= d::Def n::String =
+  case d of
+    valueDef(n1, _) -> n == n1
+  | _ -> false
+  end;

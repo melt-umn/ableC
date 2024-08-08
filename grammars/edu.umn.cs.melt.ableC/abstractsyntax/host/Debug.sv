@@ -56,7 +56,7 @@ e::Expr ::=
 
 
 function showEnv
-Document ::= e::Decorated Env
+Document ::= e::Env
 {
   return ppConcat( [
     text(" Environment:"),

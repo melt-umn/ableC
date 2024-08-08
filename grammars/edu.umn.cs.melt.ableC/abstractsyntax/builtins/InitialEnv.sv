@@ -4,7 +4,7 @@ imports edu:umn:cs:melt:ableC:abstractsyntax:host;
 imports edu:umn:cs:melt:ableC:abstractsyntax:env;
 
 -- The environment used at the top-level.
-global initialEnv :: Decorated Env =
+global initialEnv :: Env =
   openScopeEnv(addEnv(getInitialEnvDefs(), emptyEnv()));
 
 -- Contributed to from other files in this grammar.

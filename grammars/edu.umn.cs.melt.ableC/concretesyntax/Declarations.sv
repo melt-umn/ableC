@@ -304,7 +304,7 @@ concrete productions top::InitialFunctionDefinition_c
           ast:functionTypeExprWithArgs(^t, ^p, v, ast:nilQualifier())
         | false, ast:functionTypeExprWithoutArgs(t, v, q) ->
           ast:functionTypeExprWithoutArgs(^t, v, ast:nilQualifier())
-        | _, mt -> mt
+        | _, mt -> ^mt
         end;
 
       top.ast =
@@ -346,7 +346,7 @@ concrete productions top::InitialFunctionDefinition_c
           ast:functionTypeExprWithArgs(^t, ^p, v, ast:nilQualifier())
         | false, ast:functionTypeExprWithoutArgs(t, v, q) ->
           ast:functionTypeExprWithoutArgs(^t, v, ast:nilQualifier())
-        | _, mt -> mt
+        | _, mt -> ^mt
         end;
 
       top.ast =

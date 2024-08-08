@@ -78,7 +78,7 @@ top::Expr ::= e::Expr
     | pointerType(_, _) -> []
     | errorType() -> []
     | _ -> [errFromOrigin(top, "invalid type argument of unary ‘*’ (have ‘" ++
-                               showType(e.typerep) ++ "’)")]
+                               show(80, e.typerep) ++ "’)")]
     end;
 }
 abstract production positiveExpr

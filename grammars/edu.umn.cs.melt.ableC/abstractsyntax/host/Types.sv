@@ -108,24 +108,24 @@ top::Type ::= q::Qualifiers  bt::BuiltinType
   top.lpp =
     ppConcat([terminate(space(), q.pps), bt.pp]);
   top.rpp = notext();
-  top.baseTypeExpr = builtinTypeExpr(^q, ^bt);
+  top.baseTypeExpr = builtinTypeExpr(^q, bt);
   top.typeModifierExpr = baseTypeExpr();
   top.mangledName = s"${q.mangledName}_builtin_${bt.mangledName}_";
   top.integerPromotions = builtinType(^q, bt.integerPromotionsBuiltin);
   top.defaultArgumentPromotions = builtinType(^q, bt.defaultArgumentPromotionsBuiltin);
-  top.defaultLvalueConversion = builtinType(nilQualifier(), ^bt);
+  top.defaultLvalueConversion = builtinType(nilQualifier(), bt);
   top.defaultFunctionArrayLvalueConversion = ^top;
   top.isIntegerType = bt.isIntegerType;
   top.isArithmeticType = bt.isArithmeticType;
   top.isScalarType = bt.isArithmeticType;
-  top.withoutTypeQualifiers = builtinType(nilQualifier(), ^bt);
-  top.withoutExtensionQualifiers = builtinType(filterExtensionQualifiers(^q), ^bt);
+  top.withoutTypeQualifiers = builtinType(nilQualifier(), bt);
+  top.withoutExtensionQualifiers = builtinType(filterExtensionQualifiers(^q), bt);
   top.withTypeQualifiers = builtinType(foldQualifier(top.addedTypeQualifiers ++
-    q.qualifiers), ^bt);
+    q.qualifiers), bt);
   top.mergeQualifiers = \t2::Type ->
     case t2 of
-      builtinType(q2, bt2) -> builtinType(unionQualifiers(top.qualifiers, q2.qualifiers), ^bt)
-    | _ -> builtinType(^q, ^bt)
+      builtinType(q2, bt2) -> builtinType(unionQualifiers(top.qualifiers, q2.qualifiers), bt)
+    | _ -> builtinType(^q, bt)
     end;
   top.qualifiers = q.qualifiers;
   q.typeToQualify = ^top;
@@ -412,7 +412,7 @@ top::Type ::= q::Qualifiers  sub::ExtType
   top.mergeQualifiers = \t2::Type ->
     case t2 of
       extType(q2, _) -> extType(unionQualifiers(q.qualifiers, q2.qualifiers), ^sub)
-    | _ -> top
+    | _ -> ^top
     end;
   top.qualifiers = q.qualifiers;
 
@@ -533,17 +533,24 @@ top::ExtType ::= kwd::StructOrEnumOrUnion  mn::Maybe<String>  refId::String
       | _ -> false
       end;
   top.isCompleteType =
-    \ env::Decorated Env -> !null(lookupRefId(refId, env));
+    \ env::Env -> !null(lookupRefId(refId, env));
   top.maybeRefId := just(refId);
 }
 
-data nonterminal StructOrEnumOrUnion with pp, mangledName; -- Silver enums would be nice.
-abstract production structSEU
-top::StructOrEnumOrUnion ::= { top.pp = text("struct"); top.mangledName = "struct"; }
-abstract production unionSEU
-top::StructOrEnumOrUnion ::= { top.pp = text("union"); top.mangledName = "union"; }
-abstract production enumSEU
-top::StructOrEnumOrUnion ::= { top.pp = text("enum"); top.mangledName = "enum"; }
+data StructOrEnumOrUnion = structSEU | unionSEU | enumSEU
+  with pp, mangledName;
+
+aspect pp on StructOrEnumOrUnion of
+| structSEU() -> pp"struct"
+| unionSEU() -> pp"union"
+| enumSEU() -> pp"enum"
+end;
+
+aspect mangledName on StructOrEnumOrUnion of
+| structSEU() -> "struct"
+| unionSEU() -> "union"
+| enumSEU() -> "enum"
+end;
 
 {-------------------------------------------------------------------------------
  - C11 atomic types.
