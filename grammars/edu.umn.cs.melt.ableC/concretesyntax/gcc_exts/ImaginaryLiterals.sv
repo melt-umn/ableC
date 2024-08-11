@@ -1,6 +1,5 @@
 grammar edu:umn:cs:melt:ableC:concretesyntax:gcc_exts;
 
-import edu:umn:cs:melt:ableC:abstractsyntax:overloadable as ovrld;
 -- Begins with 1-9 or is just 0 alone
 terminal IDecConstant_t /((0)|([1-9][0-9]*))[IiJj]/ lexer classes {NumericLiteral};
 terminal IDecConstantU_t   /((0)|([1-9][0-9]*))(([Uu][IiJj])|([IiJj][Uu]))/ lexer classes {NumericLiteral};

@@ -1,7 +1,5 @@
 grammar edu:umn:cs:melt:ableC:concretesyntax:gcc_exts;
 
-import edu:umn:cs:melt:ableC:abstractsyntax:overloadable as ovrld;
-
 terminal GNU_AlignOf_T '__alignof' lexer classes {Keyword, Reserved};
 terminal GNU_AlignOfUU_T '__alignof__' lexer classes {Keyword, Reserved};
 
@@ -38,7 +36,7 @@ concrete productions top::UnaryOp_c
 
 concrete productions top::PostfixExpr_c
 | '(' ty::TypeName_c ')' '{' '}'
-    { top.ast = ovrld:compoundLiteralExpr(ty.ast, ast:nilInit()); }
+    { top.ast = ast:compoundLiteralExpr(ty.ast, ast:nilInit()); }
 
 concrete productions top::PrimaryExpr_c
 | '(' '{' bis::BlockItemList_c '}' ')'

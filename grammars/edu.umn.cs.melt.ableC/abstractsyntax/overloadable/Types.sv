@@ -7,7 +7,6 @@ imports edu:umn:cs:melt:ableC:abstractsyntax:env;
 imports edu:umn:cs:melt:ableC:abstractsyntax:construction;
 
 imports edu:umn:cs:melt:ableC:abstractsyntax:host as host;
-imports edu:umn:cs:melt:ableC:abstractsyntax:injectable as inj;
 
 -- Useful defs to make signatures more managable
 type UnaryProd = (host:Expr ::= host:Expr);

@@ -1,7 +1,5 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 
-import edu:umn:cs:melt:ableC:abstractsyntax:overloadable as ovrld;
-
 tracked nonterminal Expr with pp, host, globalDecls, functionDecls, errors,
   defs, env, freeVariables, typerep, isLValue, isSimple, integerConstantValue,
   controlStmtContext;
