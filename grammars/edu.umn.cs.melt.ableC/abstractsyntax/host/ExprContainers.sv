@@ -114,17 +114,18 @@ Exprs ::= e1::Exprs e2::Exprs
   return e1.appendedRes;
 }
 
-tracked nonterminal ExprOrTypeName with pp, host, errors, globalDecls, functionDecls,
+tracked nonterminal ExprOrTypeName with pp, host, hostDecls, errors, globalDecls, functionDecls,
   defs, env, typerep, freeVariables, isLValue, controlStmtContext;
 
 flowtype ExprOrTypeName = decorate {env, controlStmtContext};
 
-propagate env, host, errors, globalDecls, functionDecls, defs, freeVariables, controlStmtContext on ExprOrTypeName;
+propagate env, host, hostDecls, errors, globalDecls, functionDecls, defs, freeVariables, controlStmtContext on ExprOrTypeName;
 
 abstract production exprExpr
 top::ExprOrTypeName ::= e::Expr
 {
   top.pp = e.pp;
+  -- Disregarding type exprs in e for hostDecls here.
   top.typerep = e.typerep;
   top.isLValue = e.isLValue;
 }

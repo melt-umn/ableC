@@ -107,3 +107,6 @@ Stmt ::= n::String type: init::MaybeInitializer
           ) ;
 }
  -}
+
+fun refIdAttribute Attribute ::= n::String = 
+  gccAttribute(consAttrib(appliedAttrib(attribName(name("refid")), foldExpr([mkStringConst(n)])), nilAttrib()));

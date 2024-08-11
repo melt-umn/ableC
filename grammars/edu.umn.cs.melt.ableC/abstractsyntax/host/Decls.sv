@@ -159,6 +159,19 @@ top::Decl ::= attrs::Attributes  ty::BaseTypeExpr  dcls::Declarators
   dcls.givenAttributes = ^attrs;
 }
 
+{-
+ - This production exists for use by extension productions containing type expressions
+ - to forward to, to ensure that any declarations introduced by the type expression are
+ - included. This should not appear in the host tree.
+ -}
+abstract production typePreDecls
+top::Decl ::= ty::TypeName
+{
+  propagate env, errors, globalDecls, functionDecls, defs, freeVariables;
+  top.pp = ppConcat([text("predecl "), ty.pp, semi()]);
+  top.host = decls(foldDecl(ty.hostDecls));
+}
+
 abstract production functionDeclaration
 top::Decl ::= f::FunctionDecl
 {
@@ -254,7 +267,7 @@ top::Decl ::= ty::Type  n::Name
 
 
 monoid attribute hasModifiedTypeExpr::Boolean with false, ||;
-synthesized attribute hostDecls::[Decl];
+monoid attribute hostDecls::[Decl];
 
 tracked nonterminal Declarators with pps, host, hostDecls, hasModifiedTypeExpr, errors,
   globalDecls, functionDecls, defs, env, baseType, typeModifierIn, isTopLevel,
@@ -273,7 +286,7 @@ top::Declarators ::= h::Declarator  t::Declarators
 {  
   propagate isTypedef;
   top.pps = h.pps ++ t.pps;
-  top.hostDecls = h.hostDecl :: t.hostDecls;
+  top.hostDecls := h.hostDecl :: t.hostDecls;
   top.freeVariables :=
     h.freeVariables ++
     removeDefsFromNames(h.defs, t.freeVariables);
@@ -285,7 +298,7 @@ abstract production nilDeclarator
 top::Declarators ::=
 {
   top.pps = [];
-  top.hostDecls = [];
+  top.hostDecls := [];
   top.freeVariables := [];
 }
 
@@ -330,7 +343,7 @@ top::Declarator ::= name::Name  ty::TypeModifierExpr  attrs::Attributes  initial
     end;
 
   nondecorated local hostTy::BaseTypeExpr =
-    fromMaybe(top.baseType.baseTypeExpr, ty.modifiedBaseTypeExpr);
+    fromMaybe(top.baseType.host.baseTypeExpr, map((.host), ty.modifiedBaseTypeExpr));
   top.hostDecl =
     if top.isTypedef
     then typedefDecls(top.givenAttributes, hostTy, consDeclarator(top.host, nilDeclarator()))
@@ -432,7 +445,7 @@ top::FunctionDecl ::= storage::StorageClasses  fnquals::SpecialSpecifiers  bty::
              functionDecl(
                ^storage,
                fnquals.host,
-               mbty,
+               mbty.host,
                mty.host,
                name.host,
                attrs.host,
@@ -572,7 +585,7 @@ synthesized attribute len::Integer;
 inherited attribute position::Integer;
 
 tracked nonterminal Parameters with typereps, pps, count, host, errors, globalDecls,
-  functionDecls, decls, defs, functionDefs, env, position, freeVariables,
+  functionDecls, hostDecls, defs, functionDefs, env, position, freeVariables,
   appendedParameters, appendedParametersRes, controlStmtContext, labelDefs;
 flowtype Parameters = decorate {env, controlStmtContext, position},
   appendedParametersRes {appendedParameters};
@@ -580,7 +593,7 @@ flowtype Parameters = decorate {env, controlStmtContext, position},
 inherited attribute appendedParameters :: Parameters;
 synthesized attribute appendedParametersRes :: Parameters;
 
-propagate host, errors, globalDecls, functionDecls, decls, defs, functionDefs,
+propagate host, errors, globalDecls, functionDecls, hostDecls, defs, functionDefs,
   labelDefs, appendedParameters, givenAttributes on Parameters;
 
 propagate controlStmtContext on Parameters;
@@ -623,23 +636,19 @@ Parameters ::= p1::Parameters p2::Parameters
 synthesized attribute paramname :: Maybe<Name>;
 
 tracked nonterminal ParameterDecl with paramname, typerep, pp, host, errors, globalDecls,
-  functionDecls, decls, defs, functionDefs, env, position,
+  functionDecls, hostDecls, defs, functionDefs, env, position,
   freeVariables, controlStmtContext, labelDefs;
 flowtype ParameterDecl = decorate {env, position, controlStmtContext},
   paramname {};
 
-propagate errors, globalDecls, functionDecls, decls, defs, freeVariables, controlStmtContext on ParameterDecl;
+propagate errors, globalDecls, functionDecls, defs, hostDecls, freeVariables, controlStmtContext on ParameterDecl;
 
 abstract production parameterDecl
 top::ParameterDecl ::= storage::StorageClasses  bty::BaseTypeExpr  mty::TypeModifierExpr  name::MaybeName  attrs::Attributes
 {
   top.pp = ppConcat([terminate(space(), storage.pps),
     bty.pp, space(), mty.lpp, space(), name.pp, mty.rpp, ppAttributesRHS(^attrs)]);
-  top.host =
-    case mty.modifiedBaseTypeExpr of
-    | just(mbty) -> parameterDecl(^storage, mbty, mty.host, name.host, attrs.host)
-    | nothing() -> parameterDecl(^storage, bty.host, mty.host, name.host, attrs.host)
-    end;
+  top.host = parameterDecl(^storage, fromMaybe(bty, mty.modifiedBaseTypeExpr).host, mty.host, name.host, attrs.host);
   top.paramname = name.maybename;
   top.typerep = mty.typerep;
   top.globalDecls <-
@@ -1087,7 +1096,7 @@ top::StructDeclarator ::= name::Name  ty::TypeModifierExpr  attrs::Attributes
   top.hostStructItem =
     structItem(
       top.givenAttributes,
-      fromMaybe(top.baseType.baseTypeExpr, ty.modifiedBaseTypeExpr),
+      fromMaybe(top.baseType.host.baseTypeExpr, map((.host), ty.modifiedBaseTypeExpr)),
       consStructDeclarator(top.host, nilStructDeclarator()));
   top.hasModifiedTypeExpr := ty.modifiedBaseTypeExpr.isJust;
 
@@ -1128,7 +1137,7 @@ top::StructDeclarator ::= name::MaybeName  ty::TypeModifierExpr  e::Expr  attrs:
   top.hostStructItem =
     structItem(
       top.givenAttributes,
-      fromMaybe(top.baseType.baseTypeExpr, ty.modifiedBaseTypeExpr),
+      fromMaybe(top.baseType.host.baseTypeExpr, map((.host), ty.modifiedBaseTypeExpr)),
       consStructDeclarator(top.host, nilStructDeclarator()));
   top.hasModifiedTypeExpr := ty.modifiedBaseTypeExpr.isJust;
 

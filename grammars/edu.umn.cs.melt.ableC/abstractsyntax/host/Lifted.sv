@@ -195,13 +195,11 @@ top::BaseTypeExpr ::= decls::Decls lifted::BaseTypeExpr
   -- Note that the invariant over `globalDecls` and `lifted` is maintained.
   top.globalDecls := decls.unfoldedGlobalDecls ++ lifted.globalDecls;
   top.host = lifted.host;
+  top.hostDecls := lifted.hostDecls;
 
   -- Variables corresponing to lifted values are *not* considered free, since they are either bound
   -- here (host tree) or available globally and shouldn't recieve special treatment (lifted tree).
   top.freeVariables := removeDefsFromNames(decls.defs, lifted.freeVariables);
-
-  -- Preserve injected decls when transforming to and back from typerep
-  top.decls := [injectGlobalDeclsDecl(^decls)];
 
   -- Define other attributes to be the same as on lifted
   top.typerep = lifted.typerep;
