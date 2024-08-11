@@ -58,24 +58,6 @@ Expr ::= q::[Qualifier]  e::Expr
 {
   return if null(q) then ^e else qualifiedExpr(foldQualifier(q), ^e);
 }
--- Wraps the result of a forwarding transformation (e.g. overloading or injection)
--- to allow for "syntactic" analyses on the original host Expr.  Otherwise this
--- is semantically equivalent to resolved.
-abstract production transformedExpr
-top::Expr ::= original::Expr  resolved::Expr
-{
-  propagate controlStmtContext;
-  
-  top.pp = original.pp;
-  top.host = resolved.host;
-  top.errors := resolved.errors;
-  top.globalDecls := resolved.globalDecls;
-  top.functionDecls := resolved.functionDecls;
-  top.defs := resolved.defs;
-  top.typerep = resolved.typerep;
-  top.freeVariables := resolved.freeVariables;
-  top.isLValue = resolved.isLValue;
-}
 
 abstract production directRefExpr
 top::Expr ::= id::Name
@@ -122,12 +104,9 @@ top::Expr ::= l::String
 abstract production parenExpr
 top::Expr ::= e::Expr
 {
-  propagate host, errors, globalDecls, functionDecls, defs, freeVariables, controlStmtContext;
+  propagate host;
   top.pp = parens( e.pp );
-  top.typerep = e.typerep;
-  top.isLValue = e.isLValue;
-  top.isSimple = e.isSimple;
-  top.integerConstantValue = e.integerConstantValue;
+  forwards to @e;
 }
 abstract production arraySubscriptExpr
 top::Expr ::= lhs::Expr  rhs::Expr
@@ -171,14 +150,14 @@ top::Expr ::= f::Name  a::Exprs
   -- Forwarding depends on env. We must be able to compute a pp without using env.
   top.pp = parens( ppConcat([ f.pp, parens( ppImplode( cat( comma(), space() ), a.pps ))]) );
 
-  forwards to f.valueItem.directCallHandler(^f, ^a);
+  forwards to f.valueItem.directCallHandler(^f, ^a);  -- TODO don't undecorate here!
 }
 -- If the identifier is an ordinary one, use the normal function call production
 -- Or, if it's a pass-through builtin one, this works too!
 function ordinaryFunctionHandler
 Expr ::= f::Name  a::Exprs 
 {
-  return ovrld:callExpr(declRefExpr(^f), ^a);
+  return callExpr(declRefExpr(^f), ^a);
 }
 
 {- Calls where the function is determined by an arbitrary expression. -}
@@ -228,7 +207,7 @@ top::Expr ::= f::Expr  a::Exprs
 abstract production memberExpr
 top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
 {
-  propagate host, errors, globalDecls, functionDecls, defs, freeVariables, controlStmtContext;
+  propagate env, host, errors, globalDecls, functionDecls, defs, freeVariables, controlStmtContext;
   top.pp = parens(ppConcat([lhs.pp, text(if deref then "->" else "."), rhs.pp]));
 
   local isPointer::Boolean =
