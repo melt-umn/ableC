@@ -32,6 +32,60 @@ DEP_GRAMMAR_SOURCES=$(shell find $(addsuffix /grammars,$(DEPS)) -name *.sv -prin
 # The grammar path containing local sources and dependency jars
 export GRAMMAR_PATH=$(shell echo $(DEP_JARS) $(abspath grammars) | sed "s/ \+/:/g")
 
+# All directories contining extension header files that may be included
+XC_INCLUDE_DIRS=$(wildcard include $(addsuffix /include,$(DEPS)))
+# All header files that may be included, to be included as dependencies
+XC_INCLUDE_SOURCES=$(foreach dir,$(XC_INCLUDE_DIRS),$(wildcard $(dir)/*.*h))
+# Flags passed to the C preprocessor including the extension header directories
+XC_INCLUDE_FLAGS=$(addprefix -I,$(XC_INCLUDE_DIRS))
+# Flags passed to ableC including the appropriate directories
+override XCFLAGS+=$(XC_INCLUDE_FLAGS)
+# Flags passed to Java when invoking ableC
+override JAVAFLAGS+=-Xss6M
+
+# The extension library to build
+LIB_NAME?=
+# All library extended c files to compile
+LIB_XC_FILES=$(wildcard src/*.xc)
+# All C library source files to compile
+LIB_C_FILES=$(wildcard src/*.c)
+# All library C files that should be generated
+LIB_C_GEN_FILES=$(LIB_XC_FILES:src/%.xc=bin/%.c)
+# All library object files that should be generated
+LIB_OBJECTS=$(LIB_C_FILES:src/%.c=bin/%.o) $(LIB_XC_FILES:src/%.xc=bin/%.o)
+# The name of the shared library.
+SHARED_LIBRARY=lib/lib$(LIB_NAME).so
+# The name of the static library.
+STATIC_LIBRARY=lib/lib$(LIB_NAME).a
+# Flags passed to ableC including the appropriate directories when building libraries
+override LIB_XCFLAGS+=$(XC_INCLUDE_FLAGS)
+# Flags passed to the C preprocessor when building libraries
+override LIB_CPPFLAGS+=$(XC_INCLUDE_FLAGS)
+# Flags passed to the C compiler when building libraries, e.g. to enable various compiler extensions
+override LIB_CFLAGS+=-fpic
+# Flags passed to the linker when building the shared library
+override LIB_LDFLAGS+=-shared
+
+CONF?=opt
+ifeq ($(CONF),opt)
+  override LIB_XCFLAGS+=-DNDEBUG
+  override LIB_CPPFLAGS+=-DNDEBUG
+  override LIB_CFLAGS+=-O3
+  override LIB_LDFLAGS+=-O3
+else ifeq ($(CONF),dbg)
+  override LIB_CFLAGS+=-g -O0
+  override LIB_LDFLAGS+=-g
+else
+  $(error "Unknown configuration $(CONF)")
+endif
+
+ifneq ($(LIB_NAME),)
+  override LDFLAGS+=-Llib
+  # Specify this library is to be linked statically, everything else dynamically
+  override LDLIBS+=-Wl,-Bstatic -l${LIB_NAME} -Wl,-Bdynamic
+  override LIB_FILES+=$(STATIC_LIBRARY)
+endif
+
 # Extended C files to test
 EXAMPLE_XC_FILES=$(wildcard examples/*.xc)
 TEST_XC_FILES=$(wildcard tests/*/*.xc)
@@ -49,23 +103,18 @@ TEST_EXECUTABLES=$(TEST_TRANS_XC_FILES:.xc=.out)
 EXAMPLE_TESTS=$(EXAMPLE_XC_FILES:.xc=.test)
 TEST_TESTS=$(TEST_XC_FILES:.xc=.test)
 
-# All directories contining extension header files that may be included
-XC_INCLUDE_DIRS=$(wildcard $(addsuffix /include,$(DEPS)))
-# All header files that may be included, to be included as dependencies
-XC_INCLUDE_SOURCES=$(foreach dir,$(XC_INCLUDE_DIRS),$(wildcard $(dir)/*.*h))
-# Flags passed to ableC including the appropriate directories
-override XCFLAGS+=$(addprefix -I,$(XC_INCLUDE_DIRS))
-# Flags passed to Java when invoking ableC
-override JAVAFLAGS+=-Xss6M
-
 # Flags passed to the C compiler, e.g. to enable various compiler extensions
 override CFLAGS+=
 
-all: build examples analyses test
+all: build libraries examples analyses test
 
 build: $(ARTIFACT_JAR) $(COMPILER_JAR)
-build_artifact: $(ARTIFACT_JAR)
-grammar_deps: $(ABLEC_BASE)/ableC.jar
+
+ifeq ($(LIB_NAME),)
+  libraries:
+else
+  libraries: $(LIB_C_GEN_FILES) $(LIB_OBJECTS) $(SHARED_LIBRARY) $(STATIC_LIBRARY)
+endif
 
 examples: $(EXAMPLE_C_FILES) $(EXAMPLE_OBJECTS) $(EXAMPLE_EXECUTABLES) $(EXAMPLE_TESTS)
 test: $(TEST_C_FILES) $(TEST_OBJECTS) $(TEST_EXECUTABLES) $(TEST_TESTS)
@@ -75,8 +124,8 @@ analyses: mda mwda
 mda: mda.test
 mwda: mwda.test
 
-generated:
-	mkdir -p generated/
+generated bin lib:
+	mkdir -p $@
 
 $(DEP_JARS): export GRAMMAR_PATH=
 $(DEP_JARS): $(DEP_GRAMMAR_SOURCES)
@@ -97,10 +146,26 @@ mwda.test: $(GRAMMAR_SOURCES) $(DEP_JARS) | generated
 	$(SILVER) --dont-translate --mwda --clean --build-xml-location build_mwda.xml $(SVFLAGS) $(EXT_GRAMMAR)
 	touch $@
 
+bin/%.c: src/%.xc $(XC_INCLUDE_SOURCES) $(COMPILER_JAR) | bin
+	java $(JAVAFLAGS) -jar $(COMPILER_JAR) $< $(LIB_XCFLAGS)
+	mv src/$*.c src/$*.i bin
+
 %.c: %.xc $(XC_INCLUDE_SOURCES) $(COMPILER_JAR)
 	java $(JAVAFLAGS) -jar $(COMPILER_JAR) $< $(XCFLAGS)
 
-%.out: %.o $(SRC_SOURCES)
+bin/%.o: src/%.c $(XC_INCLUDE_SOURCES) | bin
+	$(CC) -c $(LIB_CPPFLAGS) $(LIB_CFLAGS) $< -o $@
+
+bin/%.o: bin/%.c | bin
+	$(CC) -c $(LIB_CFLAGS) $< -o $@
+
+$(SHARED_LIBRARY): $(LIB_OBJECTS) | lib
+	$(CC) $(LIB_LDFLAGS) $^ -o $@
+
+$(STATIC_LIBRARY): $(LIB_OBJECTS) | lib
+	$(AR) rcs $@ $^
+
+%.out: %.o $(LIB_FILES)
 	$(CC) $(LDFLAGS) $< $(LOADLIBES) $(LDLIBS) -o $@
 
 %.test: %.out
@@ -123,9 +188,9 @@ tests/positive/%.test: tests/positive/%.out
 	touch $@
 
 clean:
-	rm -rf generated/
+	rm -rf generated/ bin/ lib/
 	rm -f *.jar *.copperdump.html build*.xml *.test
 	cd examples && rm -f build*.xml *.jar *.test *.c *.i *.o *.out
 	cd tests && rm -f build*.xml *.jar */*.test */*.c */*.i */*.o */*.out
 
-.PHONY: build build_artifact examples test check analyses mda mwda clean
+.PHONY: build libraries examples test check analyses mda mwda clean
