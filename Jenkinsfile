@@ -42,7 +42,7 @@ melt.trynode('ableC') {
 
   stage ("Integration") {
     // All known, stable extensions to build downstream
-    def extensions = [
+    def extensions = [/* Disabled for now:
       "silver-ableC",
       "ableC-skeleton", "ableC-lib-skeleton",
       "ableC-constructor",
@@ -56,7 +56,7 @@ melt.trynode('ableC') {
       
       // Treat ableP like an extension since it depends on ableC
       "ableP",
-    ]
+    */]
     /* These are now downstream of silver-ableC, so we don't build them here:
       "ableC-sample-projects",
       "ableC-closure",
