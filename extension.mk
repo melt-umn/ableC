@@ -1,8 +1,8 @@
 
 # Path from current directory to top level ableC repository
-ABLEC_BASE?=../../../ableC
+ABLEC_BASE?=../../ableC
 # Path from current directory to top level extensions directory
-EXTS_BASE?=../../../extensions
+EXTS_BASE?=../../extensions
 
 MAKEOVERRIDES=ABLEC_BASE=$(abspath $(ABLEC_BASE)) EXTS_BASE=$(abspath $(EXTS_BASE))
 
@@ -24,11 +24,9 @@ COMPILER_JAR=compiler.jar
 # All silver files in included grammars, to be included as dependancies
 GRAMMAR_SOURCES=$(shell find grammars/ -name *.sv -print0 | xargs -0)
 # All repo folders we depend on
-DEPS=$(ABLEC_BASE) $(addprefix $(EXTS_BASE),$(EXT_DEPS))
+DEPS=$(ABLEC_BASE) $(addprefix $(EXTS_BASE)/,$(EXT_DEPS))
 # All jars we depend on
 DEP_JARS=$(ABLEC_BASE)/ableC.jar $(foreach dep,$(EXT_DEPS),$(EXTS_BASE)/$(dep)/$(dep).jar)
-# All silver files depended on by DEP_JARS
-DEP_GRAMMAR_SOURCES=$(shell find $(addsuffix /grammars,$(DEPS)) -name *.sv -print0 | xargs -0)
 # The grammar path containing local sources and dependency jars
 export GRAMMAR_PATH=$(shell echo $(DEP_JARS) $(abspath grammars) | sed "s/ \+/:/g")
 
@@ -79,11 +77,14 @@ else
   $(error "Unknown configuration $(CONF)")
 endif
 
+# All (static) library files we depend on in linking examples/tests
+LIB_FILES=$(DEP_LIBS)
+
 ifneq ($(LIB_NAME),)
+  override LIB_FILES+=$(STATIC_LIBRARY)
   override LDFLAGS+=-Llib
   # Specify this library is to be linked statically, everything else dynamically
   override LDLIBS+=-Wl,-Bstatic -l${LIB_NAME} -Wl,-Bdynamic
-  override LIB_FILES+=$(STATIC_LIBRARY)
 endif
 
 # Extended C files to test
@@ -124,12 +125,15 @@ analyses: mda mwda
 mda: mda.test
 mwda: mwda.test
 
+# This file is generated below, containing dependency information for included extensions,
+# and also setting variables to pass appropriate flags.
+include depends.mk
+
 generated bin lib:
 	mkdir -p $@
 
 $(DEP_JARS): export GRAMMAR_PATH=
-$(DEP_JARS): $(DEP_GRAMMAR_SOURCES)
-# TODO: Use a lock file here to avoid the 'diamond rebuild' problem
+$(DEP_JARS):
 	$(MAKE) -C $(dir $@) $(notdir $@)
 
 $(ARTIFACT_JAR): $(GRAMMAR_SOURCES) $(DEP_JARS) | generated
@@ -165,6 +169,9 @@ $(SHARED_LIBRARY): $(LIB_OBJECTS) | lib
 $(STATIC_LIBRARY): $(LIB_OBJECTS) | lib
 	$(AR) rcs $@ $^
 
+$(DEP_LIBS):
+	$(MAKE) -C $(abspath $(dir $@)/..) lib/$(notdir $@)
+
 %.out: %.o $(LIB_FILES)
 	$(CC) $(LDFLAGS) $< $(LOADLIBES) $(LDLIBS) -o $@
 
@@ -189,8 +196,35 @@ tests/positive/%.test: tests/positive/%.out
 
 clean:
 	rm -rf generated/ bin/ lib/
-	rm -f *.jar *.copperdump.html build*.xml *.test
+	rm -f depends.mk *.jar *.copperdump.html build*.xml *.test
 	cd examples && rm -f build*.xml *.jar *.test *.c *.i *.o *.out
 	cd tests && rm -f build*.xml *.jar */*.test */*.c */*.i */*.o */*.out
 
-.PHONY: build libraries examples test check analyses mda mwda clean
+depclean: clean
+	cd $(ABLEC_BASE) && ./deep-clean
+	for dep in $(EXT_DEPS); do $(MAKE) -C $(EXTS_BASE)/$$dep clean; done
+
+# Normally MAKEOVERRIDES= up above makes sure that sub-make calls get the right
+# ABLEC_BASE and EXTS_BASE if this extension isn't actually in EXTS_BASE (which
+# is the case on Jenkins.) However when generating depends.mk, we want to use
+# paths that are valid in *this* directory, so override MAKEOVERRIDES to ensure
+# that the ABLEC_BASE and EXTS_BASE variables are inherited like normal.
+depends.mk: override MAKEOVERRIDES=
+depends.mk:
+	@for dep in $(EXT_DEPS); do $(MAKE) -C $(EXTS_BASE)/$$dep --no-print-directory print_depends; done > $@
+
+# Path to this extension, from any other extension
+THIS_EXT=$(EXTS_BASE)/$(EXT_NAME)
+
+# Print the definitions that should be added to the Makefile of any extension depending on this one.
+print_depends:
+	@echo '$(THIS_EXT)/$(ARTIFACT_JAR): $(addprefix $(THIS_EXT)/,$(GRAMMAR_SOURCES)) $(DEP_JARS)'
+ifneq ($(LIB_NAME),)
+	@echo '$(THIS_EXT)/$(STATIC_LIBRARY): $(addprefix $(THIS_EXT)/,$(ARTIFACT_JAR) $(XC_INCLUDE_SOURCES) $(LIB_C_FILES) $(LIB_XC_FILES))'
+	@echo 'override DEP_LIBS+=$(THIS_EXT)/$(STATIC_LIBRARY)'
+	@echo 'override LDFLAGS+=-L$(THIS_EXT)/lib'
+	@echo 'override LDLIBS+=-Wl,-Bstatic -l${LIB_NAME} -Wl,-Bdynamic'
+endif
+
+
+.PHONY: print_depends build libraries examples test check analyses mda mwda clean depclean print_depends

@@ -5,13 +5,13 @@ find . -name "*~" -delete
 find . -name "build.xml" -delete
 find . -name "*.copperdump.html" -delete
 
-find testing/ extensions/ -name "*.gen_cpp" -delete
-find testing/ extensions/ -name "*.pp_out.c" -delete
+find testing/ -name "*.gen_cpp" -delete
+find testing/ -name "*.pp_out.c" -delete
 find testing/ -name "*.c.std[oe][ur][tr]" -delete
-find testing/ extensions/ -name "*.o" -delete
+find testing/ -name "*.o" -delete
 
-find testing/ extensions/ -name "*.jar" -delete
-find testing/ extensions/ -name "a.out" -delete
+find testing/ -name "*.jar" -delete
+find testing/ -name "a.out" -delete
 
 rm -f *.jar
 
