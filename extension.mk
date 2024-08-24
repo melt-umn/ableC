@@ -21,7 +21,7 @@ override SVFLAGS+=-G generated
 ARTIFACT_JAR=$(EXT_NAME).jar
 # THe compiler jar to build
 COMPILER_JAR=compiler.jar
-# All silver files in included grammars, to be included as dependancies
+# All silver files in included grammars, to be included as dependencies
 GRAMMAR_SOURCES=$(shell find grammars/ -name *.sv -print0 | xargs -0)
 # All repo folders we depend on
 DEPS=$(ABLEC_BASE) $(addprefix $(EXTS_BASE)/,$(EXT_DEPS))
@@ -227,4 +227,4 @@ ifneq ($(LIB_NAME),)
 endif
 
 
-.PHONY: print_depends build libraries examples test check analyses mda mwda clean depclean print_depends
+.PHONY: build libraries examples test check analyses mda mwda clean depclean print_depends
