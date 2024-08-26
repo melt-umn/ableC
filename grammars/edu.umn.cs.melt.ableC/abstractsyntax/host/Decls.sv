@@ -69,10 +69,10 @@ top::Decls ::=
   top.unfoldedFunctionDecls = [];
 }
 
-function appendDecls
+production appendDecls
 Decls ::= d1::Decls d2::Decls
 {
-  return consDecl(decls(^d1), ^d2);
+  forwards to consDecl(decls(@d1), @d2);
 }
 
 
