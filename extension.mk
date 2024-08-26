@@ -15,7 +15,9 @@ EXT_DEPS?=
 # The Silver compiler to use
 SILVER?=silver
 # Extra flags passed to silver
-override SVFLAGS+=-G generated
+SVFLAGS?=
+# The directory containing generated files
+export SILVER_GEN=generated
 
 # The extension artifact jar to build
 ARTIFACT_JAR=$(EXT_NAME).jar
@@ -25,8 +27,10 @@ COMPILER_JAR=compiler.jar
 GRAMMAR_SOURCES=$(shell find grammars/ -name *.sv -print0 | xargs -0)
 # All repo folders we depend on
 DEPS=$(ABLEC_BASE) $(addprefix $(EXTS_BASE)/,$(EXT_DEPS))
+# All extension jars we depend on
+EXT_DEP_JARS=$(foreach dep,$(EXT_DEPS),$(EXTS_BASE)/$(dep)/$(dep).jar)
 # All jars we depend on
-DEP_JARS=$(ABLEC_BASE)/ableC.jar $(foreach dep,$(EXT_DEPS),$(EXTS_BASE)/$(dep)/$(dep).jar)
+DEP_JARS=$(ABLEC_BASE)/ableC.jar $(EXT_DEP_JARS)
 # The grammar path containing local sources and dependency jars
 export GRAMMAR_PATH=$(shell echo $(DEP_JARS) $(abspath grammars) | sed "s/ \+/:/g")
 
@@ -132,8 +136,12 @@ include depends.mk
 generated bin lib:
 	mkdir -p $@
 
-$(DEP_JARS): export GRAMMAR_PATH=
-$(DEP_JARS):
+$(ABLEC_BASE)/ableC.jar: export GRAMMAR_PATH=
+$(ABLEC_BASE)/ableC.jar: $(shell find $(ABLEC_BASE)/grammars/ -name *.sv -print0 | xargs -0)
+	cd $(ABLEC_BASE) && ./build $(SVFLAGS)
+
+$(EXT_DEP_JARS): export GRAMMAR_PATH=
+$(EXT_DEP_JARS):
 	$(MAKE) -C $(dir $@) $(notdir $@)
 
 $(ARTIFACT_JAR): $(GRAMMAR_SOURCES) $(DEP_JARS) | generated
