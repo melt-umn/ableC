@@ -1,5 +1,7 @@
 #!/bin/bash
 
+export GRAMMAR_PATH=
+
 mkdir -p generated
 export SILVER_GEN=generated
 

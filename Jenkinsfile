@@ -16,7 +16,7 @@ melt.trynode('ableC') {
     melt.clearGenerated()
 
     withEnv(newenv) {
-      sh './build ${SVFLAGS} --warn-all --warn-error'
+      sh './build ${SVFLAGS} --mwda'
     }
   }
 

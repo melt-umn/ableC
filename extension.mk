@@ -6,36 +6,44 @@ EXTS_BASE?=../../extensions
 
 MAKEOVERRIDES=ABLEC_BASE=$(abspath $(ABLEC_BASE)) EXTS_BASE=$(abspath $(EXTS_BASE))
 
+# Variables that should be defined by the extension Makefile
 # The name of the extension, must be defined
 EXT_NAME?=$(error EXT_NAME must be defined)
 # The extension's base grammar name, must be defined
 EXT_GRAMMAR?=$(error EXT_GRAMMAR must be defined)
 # Other extensions this extension depends on, including transitive dependencies
 EXT_DEPS?=
-# The Silver compiler to use
-SILVER?=silver
 # Extra flags passed to silver
 SVFLAGS?=
+
+# The Silver compiler to use
+ifdef USE_SILVER_ABLEC
+  SILVER=silver-custom silver-compiler.jar
+  SV_COMPILER_JAR=silver-compiler.jar
+else
+  SILVER=silver
+  SV_COMPILER_JAR=
+endif
 # The directory containing generated files
 export SILVER_GEN=generated
 
 # The extension artifact jar to build
 ARTIFACT_JAR=$(EXT_NAME).jar
-# THe compiler jar to build
-COMPILER_JAR=compiler.jar
 # All silver files in included grammars, to be included as dependencies
 GRAMMAR_SOURCES=$(shell find grammars/ -name *.sv -print0 | xargs -0)
-# All repo folders we depend on
-DEPS=$(ABLEC_BASE) $(addprefix $(EXTS_BASE)/,$(EXT_DEPS))
+# The artifact for ableC
+ABLEC_JAR=$(ABLEC_BASE)/ableC.jar
+# The artifact for silver-ableC
+SILVER_ABLEC_JAR=$(EXTS_BASE)/silver-ableC/silver-ableC.jar
 # All extension jars we depend on
 EXT_DEP_JARS=$(foreach dep,$(EXT_DEPS),$(EXTS_BASE)/$(dep)/$(dep).jar)
 # All jars we depend on
-DEP_JARS=$(ABLEC_BASE)/ableC.jar $(EXT_DEP_JARS)
+DEP_JARS=$(ABLEC_JAR) $(EXT_DEP_JARS)
 # The grammar path containing local sources and dependency jars
 export GRAMMAR_PATH=$(shell echo $(DEP_JARS) $(abspath grammars) | sed "s/ \+/:/g")
 
 # All directories contining extension header files that may be included
-XC_INCLUDE_DIRS=$(wildcard include $(addsuffix /include,$(DEPS)))
+XC_INCLUDE_DIRS=$(wildcard include $(addsuffix /include,$(addprefix $(EXTS_BASE)/,$(EXT_DEPS))))
 # All header files that may be included, to be included as dependencies
 XC_INCLUDE_SOURCES=$(foreach dir,$(XC_INCLUDE_DIRS),$(wildcard $(dir)/*.*h))
 # Flags passed to the C preprocessor including the extension header directories
@@ -113,7 +121,7 @@ override CFLAGS+=
 
 all: build libraries examples analyses test
 
-build: $(ARTIFACT_JAR) $(COMPILER_JAR)
+build: $(ARTIFACT_JAR) compiler.jar
 
 ifeq ($(LIB_NAME),)
   libraries:
@@ -136,34 +144,42 @@ include depends.mk
 generated bin lib:
 	mkdir -p $@
 
-$(ABLEC_BASE)/ableC.jar: export GRAMMAR_PATH=
-$(ABLEC_BASE)/ableC.jar: $(shell find $(ABLEC_BASE)/grammars/ -name *.sv -print0 | xargs -0)
+$(ABLEC_JAR): $(shell find $(ABLEC_BASE)/grammars/ -name *.sv -print0 | xargs -0)
 	cd $(ABLEC_BASE) && ./build $(SVFLAGS)
 
-$(EXT_DEP_JARS): export GRAMMAR_PATH=
-$(EXT_DEP_JARS):
+$(SILVER_ABLEC_JAR): $(shell find $(EXTS_BASE)/silver-ableC/grammars/ -name *.sv -print0 | xargs -0) | $(ABLEC_JAR)
+	cd $(dir $@) && ./build $(SVFLAGS)
+
+$(EXTS_BASE)/%.jar:
 	$(MAKE) -C $(dir $@) $(notdir $@)
 
-$(ARTIFACT_JAR): $(GRAMMAR_SOURCES) $(DEP_JARS) | generated
+ifdef USE_SILVER_ABLEC
+# Note that $(DEP_JARS) are order-only dependencies, to avoid expensive rebuilds.
+# If dependency extension syntax changes, this may require `make depclean` to be reflected.
+silver-compiler.jar: $(SILVER_ABLEC_JAR) | $(DEP_JARS)
+	silver -o $@ -I $(SILVER_ABLEC_JAR) $(SVFLAGS) $(EXT_GRAMMAR):artifacts:silver_compiler
+endif
+
+$(ARTIFACT_JAR): $(GRAMMAR_SOURCES) $(DEP_JARS) $(SV_COMPILER_JAR) | generated
 	$(SILVER) -o $@ $(SVFLAGS) $(EXT_GRAMMAR)
 
-$(COMPILER_JAR): ${ARTIFACT_JAR} $(GRAMMAR_SOURCES) $(DEP_JARS) | generated
-	$(SILVER) -o $@ -I $(ARTIFACT_JAR) $(SVFLAGS) $(EXT_GRAMMAR):artifacts:compiler
+compiler.jar: ${ARTIFACT_JAR} $(GRAMMAR_SOURCES) $(DEP_JARS) $(SV_COMPILER_JAR) | generated
+	silver -o $@ -I $(ARTIFACT_JAR) $(SVFLAGS) $(EXT_GRAMMAR):artifacts:compiler
 
-mda.test: $(ARTIFACT_JAR) $(DEP_JARS) | generated
-	$(SILVER) --dont-translate --build-xml-location build_mda.xml -I $(ARTIFACT_JAR) $(SVFLAGS) $(EXT_GRAMMAR):artifacts:mda_test
+mda.test: $(ARTIFACT_JAR) $(DEP_JARS) $(SV_COMPILER_JAR) | generated
+	silver --dont-translate --build-xml-location build_mda.xml -I $(ARTIFACT_JAR) $(SVFLAGS) $(EXT_GRAMMAR):artifacts:mda_test
 	touch $@
 
-mwda.test: $(GRAMMAR_SOURCES) $(DEP_JARS) | generated
+mwda.test: $(GRAMMAR_SOURCES) $(DEP_JARS) $(SV_COMPILER_JAR) | generated
 	$(SILVER) --dont-translate --mwda --clean --build-xml-location build_mwda.xml $(SVFLAGS) $(EXT_GRAMMAR)
 	touch $@
 
-bin/%.c: src/%.xc $(XC_INCLUDE_SOURCES) $(COMPILER_JAR) | bin
-	java $(JAVAFLAGS) -jar $(COMPILER_JAR) $< $(LIB_XCFLAGS)
+bin/%.c: src/%.xc $(XC_INCLUDE_SOURCES) compiler.jar | bin
+	java $(JAVAFLAGS) -jar compiler.jar $< $(LIB_XCFLAGS)
 	mv src/$*.c src/$*.i bin
 
-%.c: %.xc $(XC_INCLUDE_SOURCES) $(COMPILER_JAR)
-	java $(JAVAFLAGS) -jar $(COMPILER_JAR) $< $(XCFLAGS)
+%.c: %.xc $(XC_INCLUDE_SOURCES) compiler.jar
+	java $(JAVAFLAGS) -jar compiler.jar $< $(XCFLAGS)
 
 bin/%.o: src/%.c $(XC_INCLUDE_SOURCES) | bin
 	$(CC) -c $(LIB_CPPFLAGS) $(LIB_CFLAGS) $< -o $@
@@ -188,9 +204,9 @@ $(DEP_LIBS):
 	@./$< || echo "(exit $$?)"
 	touch $@
 
-tests/translate_error/%.test: tests/translate_error/%.xc $(XC_INCLUDE_SOURCES) $(COMPILER_JAR)
-	@echo "java $(JAVAFLAGS) -jar $(COMPILER_JAR) $< $(XCFLAGS)"
-	@if java $(JAVAFLAGS) -jar $(COMPILER_JAR) $< $(XCFLAGS); then echo "Failed to error"; exit 1; fi
+tests/translate_error/%.test: tests/translate_error/%.xc $(XC_INCLUDE_SOURCES) compiler.jar
+	@echo "java $(JAVAFLAGS) -jar compiler.jar $< $(XCFLAGS)"
+	@if java $(JAVAFLAGS) -jar compiler.jar $< $(XCFLAGS); then echo "Failed to error"; exit 1; fi
 	touch $@
 
 tests/runtime_error/%.test: tests/runtime_error/%.out
@@ -210,6 +226,9 @@ clean:
 
 depclean: clean
 	cd $(ABLEC_BASE) && ./deep-clean
+ifdef USE_SILVER_ABLEC
+	cd $(SILVER_ABLEC_BASE) && ./deep-clean
+endif
 	for dep in $(EXT_DEPS); do $(MAKE) -C $(EXTS_BASE)/$$dep clean; done
 
 # Normally MAKEOVERRIDES= up above makes sure that sub-make calls get the right
@@ -226,7 +245,10 @@ THIS_EXT=$(EXTS_BASE)/$(EXT_NAME)
 
 # Print the definitions that should be added to the Makefile of any extension depending on this one.
 print_depends:
-	@echo '$(THIS_EXT)/$(ARTIFACT_JAR): $(addprefix $(THIS_EXT)/,$(GRAMMAR_SOURCES)) $(DEP_JARS)'
+ifdef USE_SILVER_ABLEC
+	@echo '$(THIS_EXT)/silver-compiler.jar: $(SILVER_ABLEC_JAR) | $(DEP_JARS)'
+endif
+	@echo '$(THIS_EXT)/$(ARTIFACT_JAR): $(addprefix $(THIS_EXT)/,$(GRAMMAR_SOURCES) $(SV_COMPILER_JAR)) $(DEP_JARS)'
 ifneq ($(LIB_NAME),)
 	@echo '$(THIS_EXT)/$(STATIC_LIBRARY): $(addprefix $(THIS_EXT)/,$(ARTIFACT_JAR) $(XC_INCLUDE_SOURCES) $(LIB_C_FILES) $(LIB_XC_FILES))'
 	@echo 'override DEP_LIBS+=$(THIS_EXT)/$(STATIC_LIBRARY)'
