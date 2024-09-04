@@ -16,7 +16,7 @@ melt.trynode('ableC') {
     melt.clearGenerated()
 
     withEnv(newenv) {
-      sh './build ${SVFLAGS} --mwda'
+      sh './build --mwda'
     }
   }
 
@@ -36,17 +36,16 @@ melt.trynode('ableC') {
   stage ("Integration") {
     // All known, stable extensions to build downstream
     def extensions = [
-      // "silver-ableC",
       "ableC-skeleton", "ableC-lib-skeleton", "ableC-dep-skeleton",
       // "ableC-constructor",
       "ableC-condition-tables",
       // "ableC-sqlite",
-      // "ableC-templating",
+      // "ableC-allocation",
       
       // Treat ableP like an extension since it depends on ableC
       // "ableP",
     ]
-    /* These are now downstream of silver-ableC, so we don't build them here:
+    /*
       "ableC-sample-projects",
       "ableC-closure",
       "ableC-refcount-closure",

@@ -17,7 +17,7 @@ EXT_DEPS?=
 SVFLAGS?=
 
 # The Silver compiler to use
-ifdef USE_SILVER_ABLEC
+ifdef USE_CUSTOM_SILVER
   SILVER=silver-custom silver-compiler.jar
   SV_COMPILER_JAR=silver-compiler.jar
 else
@@ -33,8 +33,6 @@ ARTIFACT_JAR=$(EXT_NAME).jar
 GRAMMAR_SOURCES=$(shell find grammars/ -name *.sv -print0 | xargs -0)
 # The artifact for ableC
 ABLEC_JAR=$(ABLEC_BASE)/ableC.jar
-# The artifact for silver-ableC
-SILVER_ABLEC_JAR=$(EXTS_BASE)/silver-ableC/silver-ableC.jar
 # All extension jars we depend on
 EXT_DEP_JARS=$(foreach dep,$(EXT_DEPS),$(EXTS_BASE)/$(dep)/$(dep).jar)
 # All jars we depend on
@@ -147,27 +145,26 @@ generated bin lib:
 $(ABLEC_JAR): $(shell find $(ABLEC_BASE)/grammars/ -name *.sv -print0 | xargs -0)
 	cd $(ABLEC_BASE) && ./build $(SVFLAGS)
 
-$(SILVER_ABLEC_JAR): $(shell find $(EXTS_BASE)/silver-ableC/grammars/ -name *.sv -print0 | xargs -0) | $(ABLEC_JAR)
-	cd $(dir $@) && ./build $(SVFLAGS)
-
 $(EXTS_BASE)/%.jar:
 	$(MAKE) -C $(dir $@) $(notdir $@)
 
-ifdef USE_SILVER_ABLEC
+ifdef USE_CUSTOM_SILVER
 # Note that $(DEP_JARS) are order-only dependencies, to avoid expensive rebuilds.
 # If dependency extension syntax changes, this may require `make depclean` to be reflected.
-silver-compiler.jar: $(SILVER_ABLEC_JAR) | $(DEP_JARS)
-	silver -o $@ -I $(SILVER_ABLEC_JAR) $(SVFLAGS) $(EXT_GRAMMAR):artifacts:silver_compiler
+silver-compiler.jar: | $(DEP_JARS)
+	silver -o $@ $(SVFLAGS) $(EXT_GRAMMAR):artifacts:silver_compiler
 endif
 
 $(ARTIFACT_JAR): $(GRAMMAR_SOURCES) $(DEP_JARS) $(SV_COMPILER_JAR) | generated
 	$(SILVER) -o $@ $(SVFLAGS) $(EXT_GRAMMAR)
 
 compiler.jar: ${ARTIFACT_JAR} $(GRAMMAR_SOURCES) $(DEP_JARS) $(SV_COMPILER_JAR) | generated
-	silver -o $@ -I $(ARTIFACT_JAR) $(SVFLAGS) $(EXT_GRAMMAR):artifacts:compiler
+# TODO: Shouldn't need to use the extended Silver here?
+	$(SILVER) -o $@ -I $(ARTIFACT_JAR) $(SVFLAGS) $(EXT_GRAMMAR):artifacts:compiler
 
 mda.test: $(ARTIFACT_JAR) $(DEP_JARS) $(SV_COMPILER_JAR) | generated
-	silver --dont-translate --build-xml-location build_mda.xml -I $(ARTIFACT_JAR) $(SVFLAGS) $(EXT_GRAMMAR):artifacts:mda_test
+# TODO: Shouldn't need to use the extended Silver here?
+	$(SILVER) --dont-translate --build-xml-location build_mda.xml -I $(ARTIFACT_JAR) $(SVFLAGS) $(EXT_GRAMMAR):artifacts:mda_test
 	touch $@
 
 mwda.test: $(GRAMMAR_SOURCES) $(DEP_JARS) $(SV_COMPILER_JAR) | generated
@@ -226,9 +223,6 @@ clean:
 
 depclean: clean
 	cd $(ABLEC_BASE) && ./deep-clean
-ifdef USE_SILVER_ABLEC
-	cd $(SILVER_ABLEC_BASE) && ./deep-clean
-endif
 	for dep in $(EXT_DEPS); do $(MAKE) -C $(EXTS_BASE)/$$dep clean; done
 
 # Normally MAKEOVERRIDES= up above makes sure that sub-make calls get the right
@@ -245,8 +239,8 @@ THIS_EXT=$(EXTS_BASE)/$(EXT_NAME)
 
 # Print the definitions that should be added to the Makefile of any extension depending on this one.
 print_depends:
-ifdef USE_SILVER_ABLEC
-	@echo '$(THIS_EXT)/silver-compiler.jar: $(SILVER_ABLEC_JAR) | $(DEP_JARS)'
+ifdef USE_CUSTOM_SILVER
+	@echo '$(THIS_EXT)/silver-compiler.jar: | $(DEP_JARS)'
 endif
 	@echo '$(THIS_EXT)/$(ARTIFACT_JAR): $(addprefix $(THIS_EXT)/,$(GRAMMAR_SOURCES) $(SV_COMPILER_JAR)) $(DEP_JARS)'
 ifneq ($(LIB_NAME),)
