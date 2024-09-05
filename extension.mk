@@ -151,7 +151,7 @@ $(EXTS_BASE)/%.jar:
 ifdef USE_CUSTOM_SILVER
 # Note that $(DEP_JARS) are order-only dependencies, to avoid expensive rebuilds.
 # If dependency extension syntax changes, this may require `make depclean` to be reflected.
-silver-compiler.jar: | $(DEP_JARS)
+silver-compiler.jar: | $(DEP_JARS) generated
 	silver -o $@ $(SVFLAGS) $(EXT_GRAMMAR):artifacts:silver_compiler
 endif
 
