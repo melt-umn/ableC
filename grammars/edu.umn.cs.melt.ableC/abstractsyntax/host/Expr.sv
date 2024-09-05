@@ -145,19 +145,18 @@ top::Expr ::= lhs::Expr  rhs::Expr
 abstract production directCallExpr
 top::Expr ::= f::Name  a::Exprs
 {
-  propagate env, controlStmtContext;
-
   -- Forwarding depends on env. We must be able to compute a pp without using env.
   top.pp = parens( ppConcat([ f.pp, parens( ppImplode( cat( comma(), space() ), a.pps ))]) );
 
-  forwards to f.valueItem.directCallHandler(^f, ^a);  -- TODO don't undecorate here!
+  f.env = top.env;
+  forwards to f.valueItem.directCallHandler(^f, a);
 }
 -- If the identifier is an ordinary one, use the normal function call production
 -- Or, if it's a pass-through builtin one, this works too!
-function ordinaryFunctionHandler
-Expr ::= f::Name  a::Exprs 
+production ordinaryFunctionHandler implements ReferenceCall
+top::Expr ::= f::Name  @a::Exprs 
 {
-  return callExpr(declRefExpr(^f), ^a);
+  forwards to callExpr(declRefExpr(@f), @a);
 }
 
 {- Calls where the function is determined by an arbitrary expression. -}
