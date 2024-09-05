@@ -20,6 +20,14 @@ melt.trynode('ableC') {
     }
   }
 
+  stage ("Modular Analyses") {
+    // Run the MDA for the Silver extension for construcing ableC ASTs.
+    // MWDA is already run in the build step above
+    withEnv(newenv) {
+      sh "./mda-test"
+    }
+  }
+
   stage ("Test") {
     dir("testing") {
       withEnv(newenv) {
