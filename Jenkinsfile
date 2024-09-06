@@ -47,7 +47,7 @@ melt.trynode('ableC') {
       "ableC-skeleton", "ableC-lib-skeleton", "ableC-dep-skeleton",
       // "ableC-constructor",
       "ableC-condition-tables",
-      // "ableC-sqlite",
+      "ableC-sqlite",
       // "ableC-allocation",
       "ableC-halide",
       
