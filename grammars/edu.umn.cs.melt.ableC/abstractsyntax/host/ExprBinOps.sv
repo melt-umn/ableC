@@ -3,165 +3,298 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 abstract production eqExpr
 top::Expr ::= lhs::Expr rhs::Expr
 {
-  propagate host, errors, globalDecls, functionDecls, defs, controlStmtContext;
   top.pp = parens( ppConcat([lhs.pp, space(), text("="), space(), rhs.pp]) );
+
+  lhs.env = top.env;
+  lhs.controlStmtContext = top.controlStmtContext;
+
+  forwards to
+    case lhs.typerep.eqProd of
+    | just(prod) -> prod(lhs, rhs)
+    | nothing() -> defaultEqExpr(lhs, rhs)
+    end;
+}
+abstract production defaultEqExpr
+top::Expr ::= @lhs::Expr @rhs::Expr
+{
+  propagate errors, globalDecls, functionDecls, defs;
+  top.pp = forwardParent.pp;
+  top.host = eqExpr(lhs.host, rhs.host);
   top.errors <- assignErrors(lhs, rhs);
   top.freeVariables :=
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = lhs.typerep.defaultLvalueConversion;
-  lhs.env = top.env;
-  rhs.env = addEnv(lhs.defs, lhs.env);
   top.isLValue = false;
 }
 
 abstract production mulEqExpr
 top::Expr ::= lhs::Expr rhs::Expr
 {
-  propagate host, errors, globalDecls, functionDecls, defs, controlStmtContext;
   top.pp = parens( ppConcat([lhs.pp, space(), text("*="), space(), rhs.pp]) );
+
+  lhs.env = top.env;
+  lhs.controlStmtContext = top.controlStmtContext;
+
+  forwards to
+    case lhs.typerep.mulEqProd of
+    | just(prod) -> prod(lhs, rhs)
+    | nothing() -> defaultMulEqExpr(lhs, rhs)
+    end;
+}
+abstract production defaultMulEqExpr
+top::Expr ::= @lhs::Expr @rhs::Expr
+{
+  propagate host, errors, globalDecls, functionDecls, defs;
+  top.pp = forwardParent.pp;
   top.errors <- assignErrors(lhs, rhs);
   top.freeVariables :=
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = lhs.typerep.defaultLvalueConversion;
-  lhs.env = top.env;
-  rhs.env = addEnv(lhs.defs, lhs.env);
   top.isLValue = false;
 }
 
 abstract production divEqExpr
 top::Expr ::= lhs::Expr rhs::Expr
 {
-  propagate host, errors, globalDecls, functionDecls, defs, controlStmtContext;
   top.pp = parens( ppConcat([lhs.pp, space(), text("/="), space(), rhs.pp]) );
+
+  lhs.env = top.env;
+  lhs.controlStmtContext = top.controlStmtContext;
+
+  forwards to
+    case lhs.typerep.divEqProd of
+    | just(prod) -> prod(lhs, rhs)
+    | nothing() -> defaultDivEqExpr(lhs, rhs)
+    end;
+}
+abstract production defaultDivEqExpr
+top::Expr ::= @lhs::Expr @rhs::Expr
+{
+  propagate host, errors, globalDecls, functionDecls, defs;
+  top.pp = forwardParent.pp;
   top.errors <- assignErrors(lhs, rhs);
   top.freeVariables :=
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = lhs.typerep.defaultLvalueConversion;
-  lhs.env = top.env;
-  rhs.env = addEnv(lhs.defs, lhs.env);
   top.isLValue = false;
 }
 
 abstract production modEqExpr
 top::Expr ::= lhs::Expr rhs::Expr
 {
-  propagate host, errors, globalDecls, functionDecls, defs, controlStmtContext;
   top.pp = parens( ppConcat([lhs.pp, space(), text("%="), space(), rhs.pp]) );
+
+  lhs.env = top.env;
+  lhs.controlStmtContext = top.controlStmtContext;
+
+  forwards to
+    case lhs.typerep.modEqProd of
+    | just(prod) -> prod(lhs, rhs)
+    | nothing() -> defaultModEqExpr(lhs, rhs)
+    end;
+}
+abstract production defaultModEqExpr
+top::Expr ::= @lhs::Expr @rhs::Expr
+{
+  propagate host, errors, globalDecls, functionDecls, defs;
+  top.pp = forwardParent.pp;
   top.errors <- assignErrors(lhs, rhs);
   top.freeVariables :=
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = lhs.typerep.defaultLvalueConversion;
-  lhs.env = top.env;
-  rhs.env = addEnv(lhs.defs, lhs.env);
   top.isLValue = false;
 }
 
 abstract production addEqExpr
 top::Expr ::= lhs::Expr rhs::Expr
 {
-  propagate host, errors, globalDecls, functionDecls, defs, controlStmtContext;
   top.pp = parens( ppConcat([lhs.pp, space(), text("+="), space(), rhs.pp]) );
+
+  lhs.env = top.env;
+  lhs.controlStmtContext = top.controlStmtContext;
+
+  forwards to
+    case lhs.typerep.addEqProd of
+    | just(prod) -> prod(lhs, rhs)
+    | nothing() -> defaultAddEqExpr(lhs, rhs)
+    end;
+}
+abstract production defaultAddEqExpr
+top::Expr ::= @lhs::Expr @rhs::Expr
+{
+  propagate host, errors, globalDecls, functionDecls, defs;
+  top.pp = forwardParent.pp;
   top.errors <- assignErrors(lhs, rhs);
   top.freeVariables :=
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = lhs.typerep.defaultLvalueConversion;
-  lhs.env = top.env;
-  rhs.env = addEnv(lhs.defs, lhs.env);
   top.isLValue = false;
 }
 
 abstract production subEqExpr
 top::Expr ::= lhs::Expr rhs::Expr
 {
-  propagate host, errors, globalDecls, functionDecls, defs, controlStmtContext;
   top.pp = parens( ppConcat([lhs.pp, space(), text("-="), space(), rhs.pp]) );
+
+  lhs.env = top.env;
+  lhs.controlStmtContext = top.controlStmtContext;
+
+  forwards to
+    case lhs.typerep.subEqProd of
+    | just(prod) -> prod(lhs, rhs)
+    | nothing() -> defaultSubEqExpr(lhs, rhs)
+    end;
+}
+abstract production defaultSubEqExpr
+top::Expr ::= @lhs::Expr @rhs::Expr
+{
+  propagate host, errors, globalDecls, functionDecls, defs;
+  top.pp = forwardParent.pp;
   top.errors <- assignErrors(lhs, rhs);
   top.freeVariables :=
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = lhs.typerep.defaultLvalueConversion;
-  lhs.env = top.env;
-  rhs.env = addEnv(lhs.defs, lhs.env);
   top.isLValue = false;
 }
 
 abstract production lshEqExpr
 top::Expr ::= lhs::Expr rhs::Expr
 {
-  propagate host, errors, globalDecls, functionDecls, defs, controlStmtContext;
   top.pp = parens( ppConcat([lhs.pp, space(), text("<<="), space(), rhs.pp]) );
+
+  lhs.env = top.env;
+  lhs.controlStmtContext = top.controlStmtContext;
+
+  forwards to
+    case lhs.typerep.lshEqProd of
+    | just(prod) -> prod(lhs, rhs)
+    | nothing() -> defaultLshEqExpr(lhs, rhs)
+    end;
+}
+abstract production defaultLshEqExpr
+top::Expr ::= @lhs::Expr @rhs::Expr
+{
+  propagate host, errors, globalDecls, functionDecls, defs;
+  top.pp = forwardParent.pp;
   top.errors <- assignErrors(lhs, rhs);
   top.freeVariables :=
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = lhs.typerep.defaultLvalueConversion;
-  lhs.env = top.env;
-  rhs.env = addEnv(lhs.defs, lhs.env);
   top.isLValue = false;
 }
 
 abstract production rshEqExpr
 top::Expr ::= lhs::Expr rhs::Expr
 {
-  propagate host, errors, globalDecls, functionDecls, defs, controlStmtContext;
   top.pp = parens( ppConcat([lhs.pp, space(), text(">>="), space(), rhs.pp]) );
+
+  lhs.env = top.env;
+  lhs.controlStmtContext = top.controlStmtContext;
+
+  forwards to
+    case lhs.typerep.rshEqProd of
+    | just(prod) -> prod(lhs, rhs)
+    | nothing() -> defaultRshEqExpr(lhs, rhs)
+    end;
+}
+abstract production defaultRshEqExpr
+top::Expr ::= @lhs::Expr @rhs::Expr
+{
+  propagate host, errors, globalDecls, functionDecls, defs;
+  top.pp = forwardParent.pp;
   top.errors <- assignErrors(lhs, rhs);
   top.freeVariables :=
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = lhs.typerep.defaultLvalueConversion;
-  lhs.env = top.env;
-  rhs.env = addEnv(lhs.defs, lhs.env);
   top.isLValue = false;
 }
 
 abstract production andEqExpr
 top::Expr ::= lhs::Expr rhs::Expr
 {
-  propagate host, errors, globalDecls, functionDecls, defs, controlStmtContext;
   top.pp = parens( ppConcat([lhs.pp, space(), text("&="), space(), rhs.pp]) );
+
+  lhs.env = top.env;
+  lhs.controlStmtContext = top.controlStmtContext;
+
+  forwards to
+    case lhs.typerep.andEqProd of
+    | just(prod) -> prod(lhs, rhs)
+    | nothing() -> defaultAndEqExpr(lhs, rhs)
+    end;
+}
+abstract production defaultAndEqExpr
+top::Expr ::= @lhs::Expr @rhs::Expr
+{
+  propagate host, errors, globalDecls, functionDecls, defs;
+  top.pp = forwardParent.pp;
   top.errors <- assignErrors(lhs, rhs);
   top.freeVariables :=
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = lhs.typerep.defaultLvalueConversion;
-  lhs.env = top.env;
-  rhs.env = addEnv(lhs.defs, lhs.env);
   top.isLValue = false;
 }
 
 abstract production xorEqExpr
 top::Expr ::= lhs::Expr rhs::Expr
 {
-  propagate host, errors, globalDecls, functionDecls, defs, controlStmtContext;
   top.pp = parens( ppConcat([lhs.pp, space(), text("^="), space(), rhs.pp]) );
+
+  lhs.env = top.env;
+  lhs.controlStmtContext = top.controlStmtContext;
+
+  forwards to
+    case lhs.typerep.xorEqProd of
+    | just(prod) -> prod(lhs, rhs)
+    | nothing() -> defaultXorEqExpr(lhs, rhs)
+    end;
+}
+abstract production defaultXorEqExpr
+top::Expr ::= @lhs::Expr @rhs::Expr
+{
+  propagate host, errors, globalDecls, functionDecls, defs;
+  top.pp = forwardParent.pp;
   top.errors <- assignErrors(lhs, rhs);
   top.freeVariables :=
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = lhs.typerep.defaultLvalueConversion;
-  lhs.env = top.env;
-  rhs.env = addEnv(lhs.defs, lhs.env);
   top.isLValue = false;
 }
 
 abstract production orEqExpr
 top::Expr ::= lhs::Expr rhs::Expr
 {
-  propagate host, errors, globalDecls, functionDecls, defs, controlStmtContext;
   top.pp = parens( ppConcat([lhs.pp, space(), text("|="), space(), rhs.pp]) );
+
+  lhs.env = top.env;
+  lhs.controlStmtContext = top.controlStmtContext;
+
+  forwards to
+    case lhs.typerep.orEqProd of
+    | just(prod) -> prod(lhs, rhs)
+    | nothing() -> defaultOrEqExpr(lhs, rhs)
+    end;
+}
+abstract production defaultOrEqExpr
+top::Expr ::= @lhs::Expr @rhs::Expr
+{
+  propagate host, errors, globalDecls, functionDecls, defs;
+  top.pp = forwardParent.pp;
   top.errors <- assignErrors(lhs, rhs);
   top.freeVariables :=
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = lhs.typerep.defaultLvalueConversion;
-  lhs.env = top.env;
-  rhs.env = addEnv(lhs.defs, lhs.env);
   top.isLValue = false;
 }
 
