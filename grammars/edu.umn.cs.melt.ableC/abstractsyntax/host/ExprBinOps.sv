@@ -189,14 +189,34 @@ fun assignErrors [Message] ::= lhs::Decorated Expr  rhs::Decorated Expr =
 abstract production andExpr
 top::Expr ::= lhs::Expr rhs::Expr
 {
-  propagate host, errors, globalDecls, functionDecls, defs, controlStmtContext;
   top.pp = parens( ppConcat([lhs.pp, space(), text("&&"), space(), rhs.pp]) );
+
+  propagate controlStmtContext;
+  lhs.env = top.env;
+  rhs.env = addEnv(lhs.defs, lhs.env);
+
+  local lType::Type = lhs.typerep;
+  lType.otherType = rhs.typerep;
+  local rType::Type = rhs.typerep;
+  rType.otherType = lhs.typerep;
+  local overload::Maybe<BinaryOp> = orElse(lType.lAndProd, rType.rAndProd);
+
+  forwards to
+    case overload of
+    | just(prod) -> prod(lhs, rhs)
+    | nothing() -> defaultAndExpr(lhs, rhs)
+    end;
+}
+abstract production defaultAndExpr
+top::Expr ::= @lhs::Expr @rhs::Expr
+{
+  propagate errors, globalDecls, functionDecls, defs;
+  top.pp = forwardParent.pp;
+  top.host = andExpr(lhs.host, rhs.host);
   top.freeVariables :=
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = builtinType(nilQualifier(), signedType(intType()));
-  lhs.env = top.env;
-  rhs.env = addEnv(lhs.defs, lhs.env);
   top.isLValue = false;
   top.integerConstantValue =
     if lhs.integerConstantValue != 0 && rhs.integerConstantValue != 0 then 1 else 0;
@@ -205,14 +225,34 @@ top::Expr ::= lhs::Expr rhs::Expr
 abstract production orExpr
 top::Expr ::= lhs::Expr rhs::Expr
 {
-  propagate host, errors, globalDecls, functionDecls, defs, controlStmtContext;
   top.pp = parens( ppConcat([lhs.pp, space(), text("||"), space(), rhs.pp]) );
+
+  propagate controlStmtContext;
+  lhs.env = top.env;
+  rhs.env = addEnv(lhs.defs, lhs.env);
+
+  local lType::Type = lhs.typerep;
+  lType.otherType = rhs.typerep;
+  local rType::Type = rhs.typerep;
+  rType.otherType = lhs.typerep;
+  local overload::Maybe<BinaryOp> = orElse(lType.lOrProd, rType.rOrProd);
+
+  forwards to
+    case overload of
+    | just(prod) -> prod(lhs, rhs)
+    | nothing() -> defaultOrExpr(lhs, rhs)
+    end;
+}
+abstract production defaultOrExpr
+top::Expr ::= @lhs::Expr @rhs::Expr
+{
+  propagate errors, globalDecls, functionDecls, defs;
+  top.pp = forwardParent.pp;
+  top.host = orExpr(lhs.host, rhs.host);
   top.freeVariables :=
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = builtinType(nilQualifier(), signedType(intType()));
-  lhs.env = top.env;
-  rhs.env = addEnv(lhs.defs, lhs.env);
   top.isLValue = false;
   top.integerConstantValue =
     if lhs.integerConstantValue != 0 || rhs.integerConstantValue != 0 then 1 else 0;
@@ -221,14 +261,34 @@ top::Expr ::= lhs::Expr rhs::Expr
 abstract production andBitExpr
 top::Expr ::= lhs::Expr rhs::Expr
 {
-  propagate host, errors, globalDecls, functionDecls, defs, controlStmtContext;
   top.pp = parens( ppConcat([lhs.pp, space(), text("&"), space(), rhs.pp]) );
+
+  propagate controlStmtContext;
+  lhs.env = top.env;
+  rhs.env = addEnv(lhs.defs, lhs.env);
+
+  local lType::Type = lhs.typerep;
+  lType.otherType = rhs.typerep;
+  local rType::Type = rhs.typerep;
+  rType.otherType = lhs.typerep;
+  local overload::Maybe<BinaryOp> = orElse(lType.lAndBitProd, rType.rAndBitProd);
+
+  forwards to
+    case overload of
+    | just(prod) -> prod(lhs, rhs)
+    | nothing() -> defaultAndBitExpr(lhs, rhs)
+    end;
+}
+abstract production defaultAndBitExpr
+top::Expr ::= @lhs::Expr @rhs::Expr
+{
+  propagate errors, globalDecls, functionDecls, defs;
+  top.pp = forwardParent.pp;
+  top.host = andBitExpr(lhs.host, rhs.host);
   top.freeVariables :=
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = usualArithmeticConversionsOnTypes(lhs.typerep, rhs.typerep);
-  lhs.env = top.env;
-  rhs.env = addEnv(lhs.defs, lhs.env);
   top.isLValue = false;
   top.integerConstantValue = fromBits(
       zipWithPad(\ a::Boolean b::Boolean -> a && b, false,
@@ -239,14 +299,34 @@ top::Expr ::= lhs::Expr rhs::Expr
 abstract production orBitExpr
 top::Expr ::= lhs::Expr rhs::Expr
 {
-  propagate host, errors, globalDecls, functionDecls, defs, controlStmtContext;
   top.pp = parens( ppConcat([lhs.pp, space(), text("|"), space(), rhs.pp]) );
+
+  propagate controlStmtContext;
+  lhs.env = top.env;
+  rhs.env = addEnv(lhs.defs, lhs.env);
+
+  local lType::Type = lhs.typerep;
+  lType.otherType = rhs.typerep;
+  local rType::Type = rhs.typerep;
+  rType.otherType = lhs.typerep;
+  local overload::Maybe<BinaryOp> = orElse(lType.lOrBitProd, rType.rOrBitProd);
+
+  forwards to
+    case overload of
+    | just(prod) -> prod(lhs, rhs)
+    | nothing() -> defaultOrBitExpr(lhs, rhs)
+    end;
+}
+abstract production defaultOrBitExpr
+top::Expr ::= @lhs::Expr @rhs::Expr
+{
+  propagate errors, globalDecls, functionDecls, defs;
+  top.pp = forwardParent.pp;
+  top.host = orBitExpr(lhs.host, rhs.host);
   top.freeVariables :=
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = usualArithmeticConversionsOnTypes(lhs.typerep, rhs.typerep);
-  lhs.env = top.env;
-  rhs.env = addEnv(lhs.defs, lhs.env);
   top.isLValue = false;
   top.integerConstantValue = fromBits(
       zipWithPad(\ a::Boolean b::Boolean -> a || b, false,
@@ -257,14 +337,34 @@ top::Expr ::= lhs::Expr rhs::Expr
 abstract production xorExpr
 top::Expr ::= lhs::Expr rhs::Expr
 {
-  propagate host, errors, globalDecls, functionDecls, defs, controlStmtContext;
   top.pp = parens( ppConcat([lhs.pp, space(), text("^"), space(), rhs.pp]) );
+
+  propagate controlStmtContext;
+  lhs.env = top.env;
+  rhs.env = addEnv(lhs.defs, lhs.env);
+
+  local lType::Type = lhs.typerep;
+  lType.otherType = rhs.typerep;
+  local rType::Type = rhs.typerep;
+  rType.otherType = lhs.typerep;
+  local overload::Maybe<BinaryOp> = orElse(lType.lXorProd, rType.rXorProd);
+
+  forwards to
+    case overload of
+    | just(prod) -> prod(lhs, rhs)
+    | nothing() -> defaultXorExpr(lhs, rhs)
+    end;
+}
+abstract production defaultXorExpr
+top::Expr ::= @lhs::Expr @rhs::Expr
+{
+  propagate errors, globalDecls, functionDecls, defs;
+  top.pp = forwardParent.pp;
+  top.host = xorExpr(lhs.host, rhs.host);
   top.freeVariables :=
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = usualArithmeticConversionsOnTypes(lhs.typerep, rhs.typerep);
-  lhs.env = top.env;
-  rhs.env = addEnv(lhs.defs, lhs.env);
   top.isLValue = false;
   top.integerConstantValue = fromBits(
       zipWithPad(\ a::Boolean b::Boolean -> (a && !b) || (!a && b), false,
@@ -275,14 +375,34 @@ top::Expr ::= lhs::Expr rhs::Expr
 abstract production lshExpr
 top::Expr ::= lhs::Expr rhs::Expr
 {
-  propagate host, errors, globalDecls, functionDecls, defs, controlStmtContext;
   top.pp = parens( ppConcat([lhs.pp, space(), text("<<"), space(), rhs.pp]) );
+  
+  propagate controlStmtContext;
+  lhs.env = top.env;
+  rhs.env = addEnv(lhs.defs, lhs.env);
+
+  local lType::Type = lhs.typerep;
+  lType.otherType = rhs.typerep;
+  local rType::Type = rhs.typerep;
+  rType.otherType = lhs.typerep;
+  local overload::Maybe<BinaryOp> = orElse(lType.lLshProd, rType.rLshProd);
+
+  forwards to
+    case overload of
+    | just(prod) -> prod(lhs, rhs)
+    | nothing() -> defaultLshExpr(lhs, rhs)
+    end;
+}
+abstract production defaultLshExpr
+top::Expr ::= @lhs::Expr @rhs::Expr
+{
+  propagate errors, globalDecls, functionDecls, defs;
+  top.pp = forwardParent.pp;
+  top.host = lshExpr(lhs.host, rhs.host);
   top.freeVariables :=
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = usualArithmeticConversionsOnTypes(lhs.typerep, rhs.typerep);
-  lhs.env = top.env;
-  rhs.env = addEnv(lhs.defs, lhs.env);
   top.isLValue = false;
   top.integerConstantValue =
     foldr(\ Unit i::Integer -> i * 2, lhs.integerConstantValue, repeat(unit(), rhs.integerConstantValue));
@@ -291,14 +411,34 @@ top::Expr ::= lhs::Expr rhs::Expr
 abstract production rshExpr
 top::Expr ::= lhs::Expr rhs::Expr
 {
-  propagate host, errors, globalDecls, functionDecls, defs, controlStmtContext;
   top.pp = parens( ppConcat([lhs.pp, space(), text(">>"), space(), rhs.pp]) );
+  
+  propagate controlStmtContext;
+  lhs.env = top.env;
+  rhs.env = addEnv(lhs.defs, lhs.env);
+
+  local lType::Type = lhs.typerep;
+  lType.otherType = rhs.typerep;
+  local rType::Type = rhs.typerep;
+  rType.otherType = lhs.typerep;
+  local overload::Maybe<BinaryOp> = orElse(lType.lRshProd, rType.rRshProd);
+
+  forwards to
+    case overload of
+    | just(prod) -> prod(lhs, rhs)
+    | nothing() -> defaultRshExpr(lhs, rhs)
+    end;
+}
+abstract production defaultRshExpr
+top::Expr ::= @lhs::Expr @rhs::Expr
+{
+  propagate errors, globalDecls, functionDecls, defs;
+  top.pp = forwardParent.pp;
+  top.host = rshExpr(lhs.host, rhs.host);
   top.freeVariables :=
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = usualArithmeticConversionsOnTypes(lhs.typerep, rhs.typerep);
-  lhs.env = top.env;
-  rhs.env = addEnv(lhs.defs, lhs.env);
   top.isLValue = false;
   top.integerConstantValue =
     foldr(\ Unit i::Integer -> i / 2, lhs.integerConstantValue, repeat(unit(), rhs.integerConstantValue));
@@ -307,14 +447,34 @@ top::Expr ::= lhs::Expr rhs::Expr
 abstract production equalsExpr
 top::Expr ::= lhs::Expr rhs::Expr
 {
-  propagate host, errors, globalDecls, functionDecls, defs, controlStmtContext;
   top.pp = parens( ppConcat([lhs.pp, space(), text("=="), space(), rhs.pp]) );
+
+  propagate controlStmtContext;
+  lhs.env = top.env;
+  rhs.env = addEnv(lhs.defs, lhs.env);
+
+  local lType::Type = lhs.typerep;
+  lType.otherType = rhs.typerep;
+  local rType::Type = rhs.typerep;
+  rType.otherType = lhs.typerep;
+  local overload::Maybe<BinaryOp> = orElse(lType.lEqualsProd, rType.rEqualsProd);
+
+  forwards to
+    case overload of
+    | just(prod) -> prod(lhs, rhs)
+    | nothing() -> defaultEqualsExpr(lhs, rhs)
+    end;
+}
+abstract production defaultEqualsExpr
+top::Expr ::= @lhs::Expr @rhs::Expr
+{
+  propagate errors, globalDecls, functionDecls, defs;
+  top.pp = forwardParent.pp;
+  top.host = equalsExpr(lhs.host, rhs.host);
   top.freeVariables :=
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = builtinType(nilQualifier(), signedType(intType()));
-  lhs.env = top.env;
-  rhs.env = addEnv(lhs.defs, lhs.env);
   top.isLValue = false;
   top.integerConstantValue =
     if lhs.integerConstantValue == rhs.integerConstantValue then 1 else 0;
@@ -323,14 +483,34 @@ top::Expr ::= lhs::Expr rhs::Expr
 abstract production notEqualsExpr
 top::Expr ::= lhs::Expr rhs::Expr
 {
-  propagate host, errors, globalDecls, functionDecls, defs, controlStmtContext;
   top.pp = parens( ppConcat([lhs.pp, space(), text("!="), space(), rhs.pp]) );
+
+  propagate controlStmtContext;
+  lhs.env = top.env;
+  rhs.env = addEnv(lhs.defs, lhs.env);
+
+  local lType::Type = lhs.typerep;
+  lType.otherType = rhs.typerep;
+  local rType::Type = rhs.typerep;
+  rType.otherType = lhs.typerep;
+  local overload::Maybe<BinaryOp> = orElse(lType.lNotEqualsProd, rType.rNotEqualsProd);
+
+  forwards to
+    case overload of
+    | just(prod) -> prod(lhs, rhs)
+    | nothing() -> defaultNotEqualsExpr(lhs, rhs)
+    end;
+}
+abstract production defaultNotEqualsExpr
+top::Expr ::= @lhs::Expr @rhs::Expr
+{
+  propagate errors, globalDecls, functionDecls, defs;
+  top.pp = forwardParent.pp;
+  top.host = notEqualsExpr(lhs.host, rhs.host);
   top.freeVariables :=
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = builtinType(nilQualifier(), signedType(intType()));
-  lhs.env = top.env;
-  rhs.env = addEnv(lhs.defs, lhs.env);
   top.isLValue = false;
   top.integerConstantValue =
     if lhs.integerConstantValue != rhs.integerConstantValue then 1 else 0;
@@ -339,14 +519,34 @@ top::Expr ::= lhs::Expr rhs::Expr
 abstract production gtExpr
 top::Expr ::= lhs::Expr rhs::Expr
 {
-  propagate host, errors, globalDecls, functionDecls, defs, controlStmtContext;
   top.pp = parens( ppConcat([lhs.pp, space(), text(">"), space(), rhs.pp]) );
+
+  propagate controlStmtContext;
+  lhs.env = top.env;
+  rhs.env = addEnv(lhs.defs, lhs.env);
+
+  local lType::Type = lhs.typerep;
+  lType.otherType = rhs.typerep;
+  local rType::Type = rhs.typerep;
+  rType.otherType = lhs.typerep;
+  local overload::Maybe<BinaryOp> = orElse(lType.lGtProd, rType.rGtProd);
+
+  forwards to
+    case overload of
+    | just(prod) -> prod(lhs, rhs)
+    | nothing() -> defaultGtExpr(lhs, rhs)
+    end;
+}
+abstract production defaultGtExpr
+top::Expr ::= @lhs::Expr @rhs::Expr
+{
+  propagate errors, globalDecls, functionDecls, defs;
+  top.pp = forwardParent.pp;
+  top.host = gtExpr(lhs.host, rhs.host);
   top.freeVariables :=
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = builtinType(nilQualifier(), signedType(intType()));
-  lhs.env = top.env;
-  rhs.env = addEnv(lhs.defs, lhs.env);
   top.isLValue = false;
   top.integerConstantValue =
     if lhs.integerConstantValue > rhs.integerConstantValue then 1 else 0;
@@ -355,14 +555,34 @@ top::Expr ::= lhs::Expr rhs::Expr
 abstract production ltExpr
 top::Expr ::= lhs::Expr rhs::Expr
 {
-  propagate host, errors, globalDecls, functionDecls, defs, controlStmtContext;
   top.pp = parens( ppConcat([lhs.pp, space(), text("<"), space(), rhs.pp]) );
+
+  propagate controlStmtContext;
+  lhs.env = top.env;
+  rhs.env = addEnv(lhs.defs, lhs.env);
+
+  local lType::Type = lhs.typerep;
+  lType.otherType = rhs.typerep;
+  local rType::Type = rhs.typerep;
+  rType.otherType = lhs.typerep;
+  local overload::Maybe<BinaryOp> = orElse(lType.lLtProd, rType.rLtProd);
+
+  forwards to
+    case overload of
+    | just(prod) -> prod(lhs, rhs)
+    | nothing() -> defaultLtExpr(lhs, rhs)
+    end;
+}
+abstract production defaultLtExpr
+top::Expr ::= @lhs::Expr @rhs::Expr
+{
+  propagate errors, globalDecls, functionDecls, defs;
+  top.pp = forwardParent.pp;
+  top.host = ltExpr(lhs.host, rhs.host);
   top.freeVariables :=
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = builtinType(nilQualifier(), signedType(intType()));
-  lhs.env = top.env;
-  rhs.env = addEnv(lhs.defs, lhs.env);
   top.isLValue = false;
   top.integerConstantValue =
     if lhs.integerConstantValue < rhs.integerConstantValue then 1 else 0;
@@ -371,14 +591,34 @@ top::Expr ::= lhs::Expr rhs::Expr
 abstract production gteExpr
 top::Expr ::= lhs::Expr rhs::Expr
 {
-  propagate host, errors, globalDecls, functionDecls, defs, controlStmtContext;
   top.pp = parens( ppConcat([lhs.pp, space(), text(">="), space(), rhs.pp]) );
+
+  propagate controlStmtContext;
+  lhs.env = top.env;
+  rhs.env = addEnv(lhs.defs, lhs.env);
+
+  local lType::Type = lhs.typerep;
+  lType.otherType = rhs.typerep;
+  local rType::Type = rhs.typerep;
+  rType.otherType = lhs.typerep;
+  local overload::Maybe<BinaryOp> = orElse(lType.lGteProd, rType.rGteProd);
+
+  forwards to
+    case overload of
+    | just(prod) -> prod(lhs, rhs)
+    | nothing() -> defaultGteExpr(lhs, rhs)
+    end;
+}
+abstract production defaultGteExpr
+top::Expr ::= @lhs::Expr @rhs::Expr
+{
+  propagate errors, globalDecls, functionDecls, defs;
+  top.pp = forwardParent.pp;
+  top.host = gteExpr(lhs.host, rhs.host);
   top.freeVariables :=
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = builtinType(nilQualifier(), signedType(intType()));
-  lhs.env = top.env;
-  rhs.env = addEnv(lhs.defs, lhs.env);
   top.isLValue = false;
   top.integerConstantValue =
     if lhs.integerConstantValue >= rhs.integerConstantValue then 1 else 0;
@@ -387,14 +627,34 @@ top::Expr ::= lhs::Expr rhs::Expr
 abstract production lteExpr
 top::Expr ::= lhs::Expr rhs::Expr
 {
-  propagate host, errors, globalDecls, functionDecls, defs, controlStmtContext;
   top.pp = parens( ppConcat([lhs.pp, space(), text("<="), space(), rhs.pp]) );
+
+  propagate controlStmtContext;
+  lhs.env = top.env;
+  rhs.env = addEnv(lhs.defs, lhs.env);
+
+  local lType::Type = lhs.typerep;
+  lType.otherType = rhs.typerep;
+  local rType::Type = rhs.typerep;
+  rType.otherType = lhs.typerep;
+  local overload::Maybe<BinaryOp> = orElse(lType.lLteProd, rType.rLteProd);
+
+  forwards to
+    case overload of
+    | just(prod) -> prod(lhs, rhs)
+    | nothing() -> defaultLteExpr(lhs, rhs)
+    end;
+}
+abstract production defaultLteExpr
+top::Expr ::= @lhs::Expr @rhs::Expr
+{
+  propagate errors, globalDecls, functionDecls, defs;
+  top.pp = forwardParent.pp;
+  top.host = lteExpr(lhs.host, rhs.host);
   top.freeVariables :=
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = builtinType(nilQualifier(), signedType(intType()));
-  lhs.env = top.env;
-  rhs.env = addEnv(lhs.defs, lhs.env);
   top.isLValue = false;
   top.integerConstantValue =
     if lhs.integerConstantValue <= rhs.integerConstantValue then 1 else 0;
@@ -403,14 +663,34 @@ top::Expr ::= lhs::Expr rhs::Expr
 abstract production addExpr
 top::Expr ::= lhs::Expr rhs::Expr
 {
-  propagate host, errors, globalDecls, functionDecls, defs, controlStmtContext;
   top.pp = parens( ppConcat([lhs.pp, space(), text("+"), space(), rhs.pp]) );
+
+  propagate controlStmtContext;
+  lhs.env = top.env;
+  rhs.env = addEnv(lhs.defs, lhs.env);
+
+  local lType::Type = lhs.typerep;
+  lType.otherType = rhs.typerep;
+  local rType::Type = rhs.typerep;
+  rType.otherType = lhs.typerep;
+  local overload::Maybe<BinaryOp> = orElse(lType.lAddProd, rType.rAddProd);
+
+  forwards to
+    case overload of
+    | just(prod) -> prod(lhs, rhs)
+    | nothing() -> defaultAddExpr(lhs, rhs)
+    end;
+}
+abstract production defaultAddExpr
+top::Expr ::= @lhs::Expr @rhs::Expr
+{
+  propagate errors, globalDecls, functionDecls, defs;
+  top.pp = forwardParent.pp;
+  top.host = addExpr(lhs.host, rhs.host);
   top.freeVariables :=
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = usualAdditiveConversionsOnTypes(lhs.typerep, rhs.typerep);
-  lhs.env = top.env;
-  rhs.env = addEnv(lhs.defs, lhs.env);
   top.isLValue = false;
   top.integerConstantValue =
     lhs.integerConstantValue + rhs.integerConstantValue;
@@ -419,14 +699,34 @@ top::Expr ::= lhs::Expr rhs::Expr
 abstract production subExpr
 top::Expr ::= lhs::Expr rhs::Expr
 {
-  propagate host, errors, globalDecls, functionDecls, defs, controlStmtContext;
   top.pp = parens( ppConcat([lhs.pp, space(), text("-"), space(), rhs.pp]) );
+
+  propagate controlStmtContext;
+  lhs.env = top.env;
+  rhs.env = addEnv(lhs.defs, lhs.env);
+
+  local lType::Type = lhs.typerep;
+  lType.otherType = rhs.typerep;
+  local rType::Type = rhs.typerep;
+  rType.otherType = lhs.typerep;
+  local overload::Maybe<BinaryOp> = orElse(lType.lSubProd, rType.rSubProd);
+
+  forwards to
+    case overload of
+    | just(prod) -> prod(lhs, rhs)
+    | nothing() -> defaultSubExpr(lhs, rhs)
+    end;
+}
+abstract production defaultSubExpr
+top::Expr ::= @lhs::Expr @rhs::Expr
+{
+  propagate errors, globalDecls, functionDecls, defs;
+  top.pp = forwardParent.pp;
+  top.host = subExpr(lhs.host, rhs.host);
   top.freeVariables :=
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = usualSubtractiveConversionsOnTypes(lhs.typerep, rhs.typerep);
-  lhs.env = top.env;
-  rhs.env = addEnv(lhs.defs, lhs.env);
   top.isLValue = false;
   top.integerConstantValue =
     lhs.integerConstantValue - rhs.integerConstantValue;
@@ -435,14 +735,34 @@ top::Expr ::= lhs::Expr rhs::Expr
 abstract production mulExpr
 top::Expr ::= lhs::Expr rhs::Expr
 {
-  propagate host, errors, globalDecls, functionDecls, defs, controlStmtContext;
   top.pp = parens( ppConcat([lhs.pp, space(), text("*"), space(), rhs.pp]) );
+
+  propagate controlStmtContext;
+  lhs.env = top.env;
+  rhs.env = addEnv(lhs.defs, lhs.env);
+
+  local lType::Type = lhs.typerep;
+  lType.otherType = rhs.typerep;
+  local rType::Type = rhs.typerep;
+  rType.otherType = lhs.typerep;
+  local overload::Maybe<BinaryOp> = orElse(lType.lMulProd, rType.rMulProd);
+
+  forwards to
+    case overload of
+    | just(prod) -> prod(lhs, rhs)
+    | nothing() -> defaultMulExpr(lhs, rhs)
+    end;
+}
+abstract production defaultMulExpr
+top::Expr ::= @lhs::Expr @rhs::Expr
+{
+  propagate errors, globalDecls, functionDecls, defs;
+  top.pp = forwardParent.pp;
+  top.host = mulExpr(lhs.host, rhs.host);
   top.freeVariables :=
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = usualArithmeticConversionsOnTypes(lhs.typerep, rhs.typerep);
-  lhs.env = top.env;
-  rhs.env = addEnv(lhs.defs, lhs.env);
   top.isLValue = false;
   top.integerConstantValue =
     lhs.integerConstantValue * rhs.integerConstantValue;
@@ -451,14 +771,34 @@ top::Expr ::= lhs::Expr rhs::Expr
 abstract production divExpr
 top::Expr ::= lhs::Expr rhs::Expr
 {
-  propagate host, errors, globalDecls, functionDecls, defs, controlStmtContext;
   top.pp = parens( ppConcat([lhs.pp, space(), text("/"), space(), rhs.pp]) );
+
+  propagate controlStmtContext;
+  lhs.env = top.env;
+  rhs.env = addEnv(lhs.defs, lhs.env);
+
+  local lType::Type = lhs.typerep;
+  lType.otherType = rhs.typerep;
+  local rType::Type = rhs.typerep;
+  rType.otherType = lhs.typerep;
+  local overload::Maybe<BinaryOp> = orElse(lType.lDivProd, rType.rDivProd);
+
+  forwards to
+    case overload of
+    | just(prod) -> prod(lhs, rhs)
+    | nothing() -> defaultDivExpr(lhs, rhs)
+    end;
+}
+abstract production defaultDivExpr
+top::Expr ::= @lhs::Expr @rhs::Expr
+{
+  propagate errors, globalDecls, functionDecls, defs;
+  top.pp = forwardParent.pp;
+  top.host = divExpr(lhs.host, rhs.host);
   top.freeVariables :=
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = usualArithmeticConversionsOnTypes(lhs.typerep, rhs.typerep);
-  lhs.env = top.env;
-  rhs.env = addEnv(lhs.defs, lhs.env);
   top.isLValue = false;
   top.integerConstantValue =
     lhs.integerConstantValue / rhs.integerConstantValue;
@@ -467,14 +807,34 @@ top::Expr ::= lhs::Expr rhs::Expr
 abstract production modExpr
 top::Expr ::= lhs::Expr rhs::Expr
 {
-  propagate host, errors, globalDecls, functionDecls, defs, controlStmtContext;
   top.pp = parens( ppConcat([lhs.pp, space(), text("%"), space(), rhs.pp]) );
+
+  propagate controlStmtContext;
+  lhs.env = top.env;
+  rhs.env = addEnv(lhs.defs, lhs.env);
+
+  local lType::Type = lhs.typerep;
+  lType.otherType = rhs.typerep;
+  local rType::Type = rhs.typerep;
+  rType.otherType = lhs.typerep;
+  local overload::Maybe<BinaryOp> = orElse(lType.lModProd, rType.rModProd);
+
+  forwards to
+    case overload of
+    | just(prod) -> prod(lhs, rhs)
+    | nothing() -> defaultModExpr(lhs, rhs)
+    end;
+}
+abstract production defaultModExpr
+top::Expr ::= @lhs::Expr @rhs::Expr
+{
+  propagate errors, globalDecls, functionDecls, defs;
+  top.pp = forwardParent.pp;
+  top.host = modExpr(lhs.host, rhs.host);
   top.freeVariables :=
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = usualArithmeticConversionsOnTypes(lhs.typerep, rhs.typerep);
-  lhs.env = top.env;
-  rhs.env = addEnv(lhs.defs, lhs.env);
   top.isLValue = false;
   top.integerConstantValue =
     lhs.integerConstantValue % rhs.integerConstantValue;

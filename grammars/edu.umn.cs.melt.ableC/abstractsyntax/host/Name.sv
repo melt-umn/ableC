@@ -159,6 +159,8 @@ Names ::= e1::Names e2::Names
   return e1.appendedNamesRes;
 }
 
+fun freshName Name ::= n::String = name(s"_${n}_${toString(genInt())}");
+
 fun doNotDoValueRedeclarationCheck [Message] ::= t::Type = [];
 function doValueRedeclarationCheck
 [Message] ::= t::Type  n::Decorated Name
