@@ -3,11 +3,26 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 synthesized attribute arraySubscriptProd::Maybe<BinaryOp> occurs on Type, ExtType;
 flowtype arraySubscriptProd {decorate} on Type, ExtType;
 
-synthesized attribute callProd<a>::Maybe<a>;
-attribute callProd<(Expr ::= Exprs)> occurs on Expr;
-attribute callProd<(Expr ::= Expr Exprs)> occurs on Type, ExtType;
-flowtype callProd {decorate} on Expr, Type, ExtType;
+dispatch Call = Expr ::= @fn::Expr @args::Exprs;
 
+synthesized attribute callProd::Maybe<Call> occurs on Type, ExtType;
+flowtype callProd {decorate} on Type, ExtType;
+{-
+production bindFnCall implements Call
+top::Expr ::= @fn::Expr @args::Exprs prod::(Call ::= Expr)
+{
+  nondecorated local fnTmp::Name = freshName("fn");
+  forwards to
+    if fn.isSimple && args.isSimple
+    then result
+    else 
+      stmtExpr(
+        seqStmt(
+          if fn.isSimple then nullStmt() else declStmt(autoDecl(fnTmp, @fn)),
+          if args.isSimple then nullStmt() else declStmt(autoDecl(argsTmp, @args))),
+        result);
+}
+-}
 inherited attribute isDeref::Boolean occurs on Type;
 synthesized attribute callMemberProd<a>::Maybe<a>;
 attribute callMemberProd<(Expr ::= Expr Name Exprs)> occurs on Type;
@@ -71,10 +86,8 @@ top::Expr ::= @e::Expr result::Expr
 }
 -}
 
-synthesized attribute addressOfProd<a>::Maybe<a>;
-attribute addressOfProd<(Expr ::=)> occurs on Expr;
-attribute addressOfProd<UnaryOp> occurs on Type, ExtType;
-flowtype addressOfProd {decorate} on Expr, Type, ExtType;
+synthesized attribute addressOfProd::Maybe<UnaryOp> occurs on Type, ExtType;
+flowtype addressOfProd {decorate} on Type, ExtType;
 
 synthesized attribute addressOfArraySubscriptProd::Maybe<(Expr ::= Expr Expr)> occurs on Type, ExtType;
 flowtype addressOfArraySubscriptProd {decorate} on Type, ExtType;
@@ -103,32 +116,16 @@ flowtype bitNegateProd {decorate} on Type, ExtType;
 synthesized attribute notProd::Maybe<UnaryOp> occurs on Type, ExtType;
 flowtype notProd {decorate} on Type, ExtType;
 
-production bindLValueBinaryOp implements BinaryOp
-top::Expr ::= @lhs::Expr @rhs::Expr prod::(Expr ::= Expr Expr)
-{
-  nondecorated local lhsTmp::Name = freshName("lhs");
-  nondecorated local rhsTmp::Name = freshName("rhs");
-  nondecorated local result::Expr = prod(
-    if lhs.isSimple then ^lhs else dereferenceExpr(declRefExpr(lhsTmp)),
-    if rhs.isSimple then ^rhs else declRefExpr(rhsTmp));
-  forwards to
-    if lhs.isSimple && rhs.isSimple
-    then result
-    else 
-      stmtExpr(
-        seqStmt(
-          if lhs.isSimple then nullStmt() else declStmt(autoDecl(lhsTmp, addressOfExpr(@lhs))),
-          if rhs.isSimple then nullStmt() else declStmt(autoDecl(rhsTmp, @rhs))),
-        result);
-}
-
-inherited attribute otherType::Type occurs on Expr, Type, ExtType;
+inherited attribute otherType::Type occurs on Type, ExtType;
 
 dispatch AssignOp = Expr ::= @lhs::Expr @rhs::Expr;
 
 production bindAssignOp implements AssignOp
 top::Expr ::= @lhs::Expr @rhs::Expr prod::(Expr ::= Expr Expr)
 {
+  rhs.env = addEnv(lhs.defs, lhs.env);
+  rhs.controlStmtContext = top.controlStmtContext;
+
   nondecorated local lhsTmp::Name = freshName("lhs");
   nondecorated local rhsTmp::Name = freshName("rhs");
   nondecorated local result::Expr = prod(
@@ -137,7 +134,7 @@ top::Expr ::= @lhs::Expr @rhs::Expr prod::(Expr ::= Expr Expr)
   forwards to
     if lhs.isSimple && rhs.isSimple
     then result
-    else 
+    else
       stmtExpr(
         seqStmt(
           if lhs.isSimple then nullStmt() else declStmt(autoDecl(lhsTmp, addressOfExpr(@lhs))),
@@ -145,52 +142,50 @@ top::Expr ::= @lhs::Expr @rhs::Expr prod::(Expr ::= Expr Expr)
         result);
 }
 
-synthesized attribute eqProd<a>::Maybe<a>;
-attribute eqProd<UnaryOp> occurs on Expr;
-attribute eqProd<AssignOp> occurs on Type, ExtType;
-flowtype eqProd {decorate, otherType} on Type, ExtType;
+synthesized attribute eqProd::Maybe<AssignOp> occurs on Type, ExtType;
+flowtype eqProd {decorate} on Type, ExtType;
 
 synthesized attribute eqArraySubscriptProd::Maybe<(Expr ::= Expr Expr Expr)> occurs on Type, ExtType;
-flowtype eqArraySubscriptProd {decorate, otherType} on Type, ExtType;
+flowtype eqArraySubscriptProd {decorate} on Type, ExtType;
 
 synthesized attribute eqCallProd::Maybe<(Expr ::= Expr Exprs Expr)> occurs on Type, ExtType;
-flowtype eqCallProd {decorate, otherType} on Type, ExtType;
+flowtype eqCallProd {decorate} on Type, ExtType;
 
 synthesized attribute eqMemberProd<a>::Maybe<a>;
 attribute eqMemberProd<(Expr ::= Expr Name Expr)> occurs on Type;
 attribute eqMemberProd<(Expr ::= Expr Boolean Name Expr)> occurs on ExtType;
-flowtype eqMemberProd {decorate, otherType, isDeref} on Type;
-flowtype eqMemberProd {decorate, otherType} on ExtType;
+flowtype eqMemberProd {decorate, isDeref} on Type;
+flowtype eqMemberProd {decorate} on ExtType;
 
 synthesized attribute mulEqProd::Maybe<AssignOp> occurs on Type, ExtType;
-flowtype mulEqProd {decorate, otherType} on Type, ExtType;
+flowtype mulEqProd {decorate} on Type, ExtType;
 
 synthesized attribute divEqProd::Maybe<AssignOp> occurs on Type, ExtType;
-flowtype divEqProd {decorate, otherType} on Type, ExtType;
+flowtype divEqProd {decorate} on Type, ExtType;
 
 synthesized attribute modEqProd::Maybe<AssignOp> occurs on Type, ExtType;
-flowtype modEqProd {decorate, otherType} on Type, ExtType;
+flowtype modEqProd {decorate} on Type, ExtType;
 
 synthesized attribute addEqProd::Maybe<AssignOp> occurs on Type, ExtType;
-flowtype addEqProd {decorate, otherType} on Type, ExtType;
+flowtype addEqProd {decorate} on Type, ExtType;
 
 synthesized attribute subEqProd::Maybe<AssignOp> occurs on Type, ExtType;
-flowtype subEqProd {decorate, otherType} on Type, ExtType;
+flowtype subEqProd {decorate} on Type, ExtType;
 
 synthesized attribute lshEqProd::Maybe<AssignOp> occurs on Type, ExtType;
-flowtype lshEqProd {decorate, otherType} on Type, ExtType;
+flowtype lshEqProd {decorate} on Type, ExtType;
 
 synthesized attribute rshEqProd::Maybe<AssignOp> occurs on Type, ExtType;
-flowtype rshEqProd {decorate, otherType} on Type, ExtType;
+flowtype rshEqProd {decorate} on Type, ExtType;
 
 synthesized attribute andEqProd::Maybe<AssignOp> occurs on Type, ExtType;
-flowtype andEqProd {decorate, otherType} on Type, ExtType;
+flowtype andEqProd {decorate} on Type, ExtType;
 
 synthesized attribute xorEqProd::Maybe<AssignOp> occurs on Type, ExtType;
-flowtype xorEqProd {decorate, otherType} on Type, ExtType;
+flowtype xorEqProd {decorate} on Type, ExtType;
 
 synthesized attribute orEqProd::Maybe<AssignOp> occurs on Type, ExtType;
-flowtype orEqProd {decorate, otherType} on Type, ExtType;
+flowtype orEqProd {decorate} on Type, ExtType;
 
 dispatch BinaryOp = Expr ::= @lhs::Expr @rhs::Expr;
 

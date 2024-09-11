@@ -108,11 +108,27 @@ top::Expr ::= e::Expr
   top.pp = parens( e.pp );
   forwards to @e;
 }
+
 abstract production arraySubscriptExpr
 top::Expr ::= lhs::Expr  rhs::Expr
 {
-  propagate host, errors, globalDecls, functionDecls, defs, controlStmtContext;
   top.pp = parens( ppConcat([ lhs.pp, brackets( rhs.pp )]) );
+
+  lhs.env = top.env;
+  rhs.env = addEnv(lhs.defs, lhs.env);
+  propagate controlStmtContext;
+
+  forwards to
+    case lhs.typerep.arraySubscriptProd of
+    | just(prod) -> prod(lhs, rhs)
+    | nothing() -> defaultArraySubscriptExpr(lhs, rhs)
+    end;
+}
+abstract production defaultArraySubscriptExpr
+top::Expr ::= @lhs::Expr  @rhs::Expr
+{
+  propagate host, errors, globalDecls, functionDecls, defs;
+  top.pp = forwardParent.pp;
   top.freeVariables := lhs.freeVariables ++ removeDefsFromNames(rhs.defs, rhs.freeVariables);
   top.isLValue = true;
 
@@ -137,10 +153,8 @@ top::Expr ::= lhs::Expr  rhs::Expr
                 | left(_) -> []
                 | right(m) -> m
                 end;
-
-  lhs.env = top.env;
-  rhs.env = addEnv(lhs.defs, lhs.env);
 }
+
 {- Calls where the function expression is just an identifier. -}
 abstract production directCallExpr
 top::Expr ::= f::Name  a::Exprs
@@ -161,10 +175,18 @@ top::Expr ::= f::Name  @a::Exprs
 
 {- Calls where the function is determined by an arbitrary expression. -}
 abstract production callExpr
-top::Expr ::= f::Expr  a::Exprs
+top::Expr ::= f::Expr a::Exprs
 {
-  propagate host, errors, globalDecls, functionDecls, defs, controlStmtContext;
   top.pp = parens( ppConcat([ f.pp, parens( ppImplode( cat( comma(), space() ), a.pps ))]) );
+
+  f.env = top.env;
+  
+}
+abstract production defaultCallExpr implements Call
+top::Expr ::= @f::Expr  @a::Exprs
+{
+  propagate errors, globalDecls, functionDecls, defs, controlStmtContext;
+  top.host = callExpr(f.host, a.host);
   top.freeVariables := f.freeVariables ++ removeDefsFromNames(f.defs, a.freeVariables);
   top.isLValue = false; -- C++ style references would change this
 
@@ -200,7 +222,6 @@ top::Expr ::= f::Expr  a::Exprs
     | _ -> true -- suppress errors
     end;
 
-  f.env = top.env;
   a.env = addEnv(f.defs, f.env);
 }
 abstract production memberExpr

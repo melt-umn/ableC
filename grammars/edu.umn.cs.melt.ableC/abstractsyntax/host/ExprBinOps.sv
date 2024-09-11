@@ -26,6 +26,9 @@ top::Expr ::= @lhs::Expr @rhs::Expr
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = lhs.typerep.defaultLvalueConversion;
   top.isLValue = false;
+
+  rhs.env = addEnv(lhs.defs, lhs.env);
+  rhs.controlStmtContext = top.controlStmtContext;
 }
 
 abstract production mulEqExpr
@@ -45,14 +48,18 @@ top::Expr ::= lhs::Expr rhs::Expr
 abstract production defaultMulEqExpr
 top::Expr ::= @lhs::Expr @rhs::Expr
 {
-  propagate host, errors, globalDecls, functionDecls, defs;
+  propagate errors, globalDecls, functionDecls, defs;
   top.pp = forwardParent.pp;
+  top.host = mulEqExpr(lhs.host, rhs.host);
   top.errors <- assignErrors(lhs, rhs);
   top.freeVariables :=
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = lhs.typerep.defaultLvalueConversion;
   top.isLValue = false;
+
+  rhs.env = addEnv(lhs.defs, lhs.env);
+  rhs.controlStmtContext = top.controlStmtContext;
 }
 
 abstract production divEqExpr
@@ -72,14 +79,18 @@ top::Expr ::= lhs::Expr rhs::Expr
 abstract production defaultDivEqExpr
 top::Expr ::= @lhs::Expr @rhs::Expr
 {
-  propagate host, errors, globalDecls, functionDecls, defs;
+  propagate errors, globalDecls, functionDecls, defs;
   top.pp = forwardParent.pp;
+  top.host = divEqExpr(lhs.host, rhs.host);
   top.errors <- assignErrors(lhs, rhs);
   top.freeVariables :=
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = lhs.typerep.defaultLvalueConversion;
   top.isLValue = false;
+
+  rhs.env = addEnv(lhs.defs, lhs.env);
+  rhs.controlStmtContext = top.controlStmtContext;
 }
 
 abstract production modEqExpr
@@ -99,14 +110,18 @@ top::Expr ::= lhs::Expr rhs::Expr
 abstract production defaultModEqExpr
 top::Expr ::= @lhs::Expr @rhs::Expr
 {
-  propagate host, errors, globalDecls, functionDecls, defs;
+  propagate errors, globalDecls, functionDecls, defs;
   top.pp = forwardParent.pp;
+  top.host = modEqExpr(lhs.host, rhs.host);
   top.errors <- assignErrors(lhs, rhs);
   top.freeVariables :=
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = lhs.typerep.defaultLvalueConversion;
   top.isLValue = false;
+
+  rhs.env = addEnv(lhs.defs, lhs.env);
+  rhs.controlStmtContext = top.controlStmtContext;
 }
 
 abstract production addEqExpr
@@ -126,14 +141,18 @@ top::Expr ::= lhs::Expr rhs::Expr
 abstract production defaultAddEqExpr
 top::Expr ::= @lhs::Expr @rhs::Expr
 {
-  propagate host, errors, globalDecls, functionDecls, defs;
+  propagate errors, globalDecls, functionDecls, defs;
   top.pp = forwardParent.pp;
+  top.host = addEqExpr(lhs.host, rhs.host);
   top.errors <- assignErrors(lhs, rhs);
   top.freeVariables :=
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = lhs.typerep.defaultLvalueConversion;
   top.isLValue = false;
+
+  rhs.env = addEnv(lhs.defs, lhs.env);
+  rhs.controlStmtContext = top.controlStmtContext;
 }
 
 abstract production subEqExpr
@@ -153,14 +172,18 @@ top::Expr ::= lhs::Expr rhs::Expr
 abstract production defaultSubEqExpr
 top::Expr ::= @lhs::Expr @rhs::Expr
 {
-  propagate host, errors, globalDecls, functionDecls, defs;
+  propagate errors, globalDecls, functionDecls, defs;
   top.pp = forwardParent.pp;
+  top.host = subEqExpr(lhs.host, rhs.host);
   top.errors <- assignErrors(lhs, rhs);
   top.freeVariables :=
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = lhs.typerep.defaultLvalueConversion;
   top.isLValue = false;
+
+  rhs.env = addEnv(lhs.defs, lhs.env);
+  rhs.controlStmtContext = top.controlStmtContext;
 }
 
 abstract production lshEqExpr
@@ -180,14 +203,18 @@ top::Expr ::= lhs::Expr rhs::Expr
 abstract production defaultLshEqExpr
 top::Expr ::= @lhs::Expr @rhs::Expr
 {
-  propagate host, errors, globalDecls, functionDecls, defs;
+  propagate errors, globalDecls, functionDecls, defs;
   top.pp = forwardParent.pp;
+  top.host = lshEqExpr(lhs.host, rhs.host);
   top.errors <- assignErrors(lhs, rhs);
   top.freeVariables :=
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = lhs.typerep.defaultLvalueConversion;
   top.isLValue = false;
+
+  rhs.env = addEnv(lhs.defs, lhs.env);
+  rhs.controlStmtContext = top.controlStmtContext;
 }
 
 abstract production rshEqExpr
@@ -207,14 +234,18 @@ top::Expr ::= lhs::Expr rhs::Expr
 abstract production defaultRshEqExpr
 top::Expr ::= @lhs::Expr @rhs::Expr
 {
-  propagate host, errors, globalDecls, functionDecls, defs;
+  propagate errors, globalDecls, functionDecls, defs;
   top.pp = forwardParent.pp;
+  top.host = rshEqExpr(lhs.host, rhs.host);
   top.errors <- assignErrors(lhs, rhs);
   top.freeVariables :=
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = lhs.typerep.defaultLvalueConversion;
   top.isLValue = false;
+
+  rhs.env = addEnv(lhs.defs, lhs.env);
+  rhs.controlStmtContext = top.controlStmtContext;
 }
 
 abstract production andEqExpr
@@ -234,14 +265,18 @@ top::Expr ::= lhs::Expr rhs::Expr
 abstract production defaultAndEqExpr
 top::Expr ::= @lhs::Expr @rhs::Expr
 {
-  propagate host, errors, globalDecls, functionDecls, defs;
+  propagate errors, globalDecls, functionDecls, defs;
   top.pp = forwardParent.pp;
+  top.host = andEqExpr(lhs.host, rhs.host);
   top.errors <- assignErrors(lhs, rhs);
   top.freeVariables :=
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = lhs.typerep.defaultLvalueConversion;
   top.isLValue = false;
+
+  rhs.env = addEnv(lhs.defs, lhs.env);
+  rhs.controlStmtContext = top.controlStmtContext;
 }
 
 abstract production xorEqExpr
@@ -261,14 +296,18 @@ top::Expr ::= lhs::Expr rhs::Expr
 abstract production defaultXorEqExpr
 top::Expr ::= @lhs::Expr @rhs::Expr
 {
-  propagate host, errors, globalDecls, functionDecls, defs;
+  propagate errors, globalDecls, functionDecls, defs;
   top.pp = forwardParent.pp;
+  top.host = xorEqExpr(lhs.host, rhs.host);
   top.errors <- assignErrors(lhs, rhs);
   top.freeVariables :=
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = lhs.typerep.defaultLvalueConversion;
   top.isLValue = false;
+
+  rhs.env = addEnv(lhs.defs, lhs.env);
+  rhs.controlStmtContext = top.controlStmtContext;
 }
 
 abstract production orEqExpr
@@ -288,14 +327,18 @@ top::Expr ::= lhs::Expr rhs::Expr
 abstract production defaultOrEqExpr
 top::Expr ::= @lhs::Expr @rhs::Expr
 {
-  propagate host, errors, globalDecls, functionDecls, defs;
+  propagate errors, globalDecls, functionDecls, defs;
   top.pp = forwardParent.pp;
+  top.host = orEqExpr(lhs.host, rhs.host);
   top.errors <- assignErrors(lhs, rhs);
   top.freeVariables :=
     lhs.freeVariables ++
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = lhs.typerep.defaultLvalueConversion;
   top.isLValue = false;
+
+  rhs.env = addEnv(lhs.defs, lhs.env);
+  rhs.controlStmtContext = top.controlStmtContext;
 }
 
 fun assignErrors [Message] ::= lhs::Decorated Expr  rhs::Decorated Expr =
