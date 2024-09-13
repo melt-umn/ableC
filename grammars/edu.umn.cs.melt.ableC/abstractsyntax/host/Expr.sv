@@ -127,8 +127,9 @@ top::Expr ::= lhs::Expr  rhs::Expr
 abstract production defaultArraySubscriptExpr
 top::Expr ::= @lhs::Expr  @rhs::Expr
 {
-  propagate host, errors, globalDecls, functionDecls, defs;
+  propagate errors, globalDecls, functionDecls, defs;
   top.pp = forwardParent.pp;
+  top.host = arraySubscriptExpr(lhs.host, rhs.host);
   top.freeVariables := lhs.freeVariables ++ removeDefsFromNames(rhs.defs, rhs.freeVariables);
   top.isLValue = true;
 
@@ -180,12 +181,18 @@ top::Expr ::= f::Expr a::Exprs
   top.pp = parens( ppConcat([ f.pp, parens( ppImplode( cat( comma(), space() ), a.pps ))]) );
 
   f.env = top.env;
-  
+  f.controlStmtContext = top.controlStmtContext;
+  forwards to
+    case f.typerep.callProd of
+    | just(prod) -> prod(f, a)
+    | nothing() -> defaultCallExpr(f, a)
+    end;
 }
 abstract production defaultCallExpr implements Call
 top::Expr ::= @f::Expr  @a::Exprs
 {
   propagate errors, globalDecls, functionDecls, defs, controlStmtContext;
+  top.pp = forwardParent.pp;
   top.host = callExpr(f.host, a.host);
   top.freeVariables := f.freeVariables ++ removeDefsFromNames(f.defs, a.freeVariables);
   top.isLValue = false; -- C++ style references would change this
@@ -223,6 +230,7 @@ top::Expr ::= @f::Expr  @a::Exprs
     end;
 
   a.env = addEnv(f.defs, f.env);
+  a.controlStmtContext = top.controlStmtContext;
 }
 abstract production memberExpr
 top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
