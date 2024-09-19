@@ -35,8 +35,9 @@ top::MaybeExpr ::=
 }
 
 tracked nonterminal Exprs with pps, host, errors, globalDecls, functionDecls, defs, env,
-  expectedTypes, argumentPosition, callExpr, argumentErrors, typereps, count,
-  callVariadic, freeVariables, appendedExprs, appendedRes, isLValue,
+  expectedTypes, argumentPosition, callExpr, argumentErrors, typereps, count, exprs,
+  callVariadic, freeVariables, appendedExprs, appendedRes, isLValue, isSimple,
+  autoNames, autoRefExprs, autoDefs, hostAutoDecls,
   controlStmtContext;
 
 flowtype Exprs = decorate {env, controlStmtContext},
@@ -50,9 +51,15 @@ inherited attribute callVariadic :: Boolean;
 synthesized attribute argumentErrors :: [Message];
 
 synthesized attribute count :: Integer;
+synthesized attribute exprs :: [Expr];
 
 inherited attribute appendedExprs :: Exprs;
 synthesized attribute appendedRes :: Exprs;
+
+inherited attribute autoNames :: Decorated Names;
+synthesized attribute autoRefExprs :: [Expr];
+synthesized attribute autoDefs :: [Def];
+synthesized attribute hostAutoDecls :: Decls;
 
 propagate host, errors, globalDecls, functionDecls, defs, controlStmtContext on Exprs;
 
@@ -65,8 +72,10 @@ top::Exprs ::= h::Expr  t::Exprs
   top.freeVariables := h.freeVariables ++ removeDefsFromNames(h.defs, t.freeVariables);
   top.typereps = h.typerep :: t.typereps;
   top.count = 1 + t.count;
+  top.exprs = ^h :: t.exprs;
   top.appendedRes = consExpr(^h, t.appendedRes);
   top.isLValue = t.isLValue;
+  top.isSimple = h.isSimple && t.isSimple;
 
   top.argumentErrors =
    if null(top.expectedTypes) then
@@ -89,6 +98,37 @@ top::Exprs ::= h::Expr  t::Exprs
 
   t.env = addEnv(h.defs, h.env);
   h.env = top.env;
+
+  local autoName::Name =
+    case top.autoNames of
+    | consName(n, _) -> ^n
+    | nilName() -> error("Fewer Names than Exprs")
+    end;
+  t.autoNames =
+    case top.autoNames of
+    | consName(_, ns) -> ns
+    | nilName() -> error("Fewer Names than Exprs")
+    end;
+  top.autoRefExprs = (if h.isSimple then ^h else declRefExpr(^autoName)) :: t.autoRefExprs;
+  top.autoDefs =
+    (if h.isSimple then [] else [valueDef(autoName.name, preDeclValueItem(h.typerep))]) ++
+    t.autoDefs;
+  top.hostAutoDecls =
+    if h.isSimple
+    then t.hostAutoDecls
+    else consDecl(
+      variableDecls(
+        nilStorageClass(),
+        nilAttribute(),
+        h.typerep.host.baseTypeExpr,
+        consDeclarator(
+          declarator(
+            ^autoName,
+            h.typerep.host.typeModifierExpr,
+            nilAttribute(),
+            justInitializer(exprInitializer(h.host))),
+          nilDeclarator())),
+      t.hostAutoDecls);
 }
 abstract production nilExpr
 top::Exprs ::=
@@ -97,8 +137,13 @@ top::Exprs ::=
   top.freeVariables := [];
   top.typereps = [];
   top.count = 0;
+  top.exprs = [];
   top.appendedRes = top.appendedExprs;
   top.isLValue = false;
+  top.isSimple = true;
+  top.autoRefExprs = [];
+  top.autoDefs = [];
+  top.hostAutoDecls = nilDecl();
 
   top.argumentErrors =
     if null(top.expectedTypes) then []

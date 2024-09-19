@@ -128,8 +128,8 @@ synthesized attribute names :: [String];
 inherited attribute appendedNames :: Names;
 synthesized attribute appendedNamesRes :: Names;
 
-tracked nonterminal Names with env, pps, names, count, appendedNames, appendedNamesRes;
-flowtype Names = decorate {env}, pps {}, names {}, count {}, appendedNamesRes {appendedNames};
+tracked nonterminal Names with env, pps, names, count, valueRedeclarationCheck, valueRedeclarationCheckNoCompatible, appendedNames, appendedNamesRes;
+flowtype Names = decorate {env}, pps {}, names {}, count {}, valueRedeclarationCheck {decorate}, valueRedeclarationCheckNoCompatible {decorate}, appendedNamesRes {appendedNames};
 
 propagate env on Names;
 
@@ -139,6 +139,8 @@ top::Names ::= h::Name t::Names
   top.pps = h.pp :: t.pps;
   top.names = h.name :: t.names;
   top.count = 1 + t.count;
+  top.valueRedeclarationCheck = \ ty -> h.valueRedeclarationCheck(ty) ++ t.valueRedeclarationCheck(ty);
+  top.valueRedeclarationCheckNoCompatible = h.valueRedeclarationCheckNoCompatible ++ t.valueRedeclarationCheckNoCompatible;
   t.appendedNames = top.appendedNames;
   top.appendedNamesRes = consName(^h, t.appendedNamesRes);
 }
@@ -149,6 +151,8 @@ top::Names ::=
   top.pps = [];
   top.names = [];
   top.count = 0;
+  top.valueRedeclarationCheck = \ _ -> [];
+  top.valueRedeclarationCheckNoCompatible = [];
   top.appendedNamesRes = top.appendedNames;
 }
 
@@ -160,6 +164,7 @@ Names ::= e1::Names e2::Names
 }
 
 fun freshName Name ::= n::String = name(s"_${n}_${toString(genInt())}");
+fun freshNames Names ::= n::String = consName(freshName(n), freshNames(n));
 
 fun doNotDoValueRedeclarationCheck [Message] ::= t::Type = [];
 function doValueRedeclarationCheck

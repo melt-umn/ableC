@@ -241,6 +241,18 @@ top::Decl ::= n::Name  e::Expr
   top.errors <- n.valueRedeclarationCheckNoCompatible;
   top.defs <- [valueDef(n.name, autoValueItem(e))];
 }
+abstract production autoDecls
+top::Decl ::= ns::Names  es::Exprs
+{
+  propagate env, errors, globalDecls, functionDecls, defs, freeVariables;
+  top.pp = pp"autos ${ppImplode(pp", ", ns.pps)} = ${ppImplode(pp", ", es.pps)};";
+  top.host = decls(es.hostAutoDecls);
+
+  es.autoNames = ns;
+
+  top.errors <- ns.valueRedeclarationCheckNoCompatible;
+  top.defs <- es.autoDefs;
+}
 
 -- Any declarations needed by the type must have already been lifted!
 abstract production preDecl

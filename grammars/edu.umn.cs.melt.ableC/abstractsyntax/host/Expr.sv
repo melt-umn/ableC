@@ -174,6 +174,16 @@ top::Expr ::= f::Name  @a::Exprs
   forwards to callExpr(declRefExpr(@f), @a);
 }
 
+production bindDirectCallExpr implements ReferenceCall
+top::Expr ::= f::Name @a::Exprs impl::(Expr ::= [Expr])
+{
+  forward fwrd = stmtExpr(
+    declStmt(autoDecls(freshNames("a"), @a)),
+    impl(a.autoRefExprs));
+  forwards to
+    if a.isSimple then impl(a.exprs) else @fwrd;
+}
+
 {- Calls where the function is determined by an arbitrary expression. -}
 abstract production callExpr
 top::Expr ::= f::Expr a::Exprs
