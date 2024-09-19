@@ -48,7 +48,7 @@ melt.trynode('ableC') {
       // "ableC-constructor",
       "ableC-condition-tables",
       "ableC-sqlite",
-      // "ableC-allocation",
+      "ableC-allocation",
       "ableC-halide",
       
       // Treat ableP like an extension since it depends on ableC
