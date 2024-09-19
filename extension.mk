@@ -115,7 +115,9 @@ EXAMPLE_TESTS=$(EXAMPLE_XC_FILES:.xc=.test)
 TEST_TESTS=$(TEST_XC_FILES:.xc=.test)
 
 # Flags passed to the C compiler, e.g. to enable various compiler extensions
-override CFLAGS+=
+override CFLAGS+=-g
+# Flags passed to the linker
+override LDFLAGS+=-g
 
 all: build libraries examples analyses test
 
