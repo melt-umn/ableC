@@ -124,6 +124,7 @@ top::Expr ::= @e::Expr
   top.host = addressOfExpr(e.host);
   top.typerep = pointerType(nilQualifier(), e.typerep);
   top.isLValue = false;
+  top.isSimple = e.isSimple;
 
   top.errors <- 
     if !e.isLValue
@@ -155,6 +156,7 @@ top::Expr ::= @e::Expr
     | _ -> errorType()
     end;
   top.isLValue = true;
+  top.isSimple = e.isSimple;
   
   top.errors <-
      -- TODO: This error check may need to change for ext host types

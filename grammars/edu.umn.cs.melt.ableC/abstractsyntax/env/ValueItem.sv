@@ -4,8 +4,6 @@ import silver:langutil;
 
 closed tracked data nonterminal ValueItem with typerep, directRefHandler, directCallHandler, isItemValue, isItemType, integerConstantValue;
 
-dispatch ReferenceCall = Expr ::= f::Name @a::Exprs;
-
 synthesized attribute directRefHandler :: (Expr ::= Name);
 synthesized attribute directCallHandler :: ReferenceCall;
 synthesized attribute isItemValue :: Boolean;

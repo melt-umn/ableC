@@ -4,7 +4,8 @@ inherited attribute initializerPos::String;
 inherited attribute expectedType::Type;
 inherited attribute inObject::Boolean;
 
-propagate host, errors, globalDecls, functionDecls, defs on MaybeInitializer, Initializer, InitList, Init, Designator;
+propagate errors, globalDecls, functionDecls, defs on MaybeInitializer, Initializer, InitList, Init, Designator;
+propagate host on MaybeInitializer, InitList, Init, Designator;
 propagate freeVariables on MaybeInitializer, Initializer, Init, Designator;
 
 tracked nonterminal MaybeInitializer with pp, host, typerep, errors, globalDecls,
@@ -46,9 +47,20 @@ propagate controlStmtContext on Initializer;
 abstract production exprInitializer
 top::Initializer ::= e::Expr
 {
-  propagate env;
-
   top.pp = e.pp;
+  forwards to
+    case top.expectedType.exprInitProd of
+    | just(prod) -> prod(e)
+    | nothing() -> defaultExprInitializer(e)
+    end;
+}
+
+abstract production defaultExprInitializer
+top::Initializer ::= @e::Expr
+{
+  propagate @env, @controlStmtContext;
+  top.pp = e.pp;
+  top.host = exprInitializer(e.host);
   top.typerep = top.expectedType;
 
   local newMembers::Maybe<[Type]> = remainingObjectMembers(top.env, top.expectedType, e.typerep);
@@ -74,9 +86,21 @@ top::Initializer ::= e::Expr
 abstract production objectInitializer
 top::Initializer ::= l::InitList
 {
-  propagate env;
-
   top.pp = ppConcat([text("{"), ppImplode(text(", "), l.pps), text("}")]);
+  forwards to
+    case top.expectedType.objectInitProd of
+    | just(prod) -> prod(l)
+    | nothing() -> defaultObjectInitializer(l)
+    end;
+}
+
+abstract production defaultObjectInitializer
+top::Initializer ::= @l::InitList
+{
+  propagate @env, @controlStmtContext;
+
+  top.pp = forwardParent.pp;
+  top.host = objectInitializer(l.host);
   top.typerep = l.typerep;
 
   top.expectedTypesOut = [];

@@ -22,7 +22,7 @@ restricted synthesized attribute tagItem :: TagItem;
 restricted synthesized attribute labelItem :: LabelItem;
 
 tracked nonterminal Name with name, compareTo, isEqual, pp, host, env, valueLocalLookup, labelRedeclarationCheck, valueLookupCheck, tagLookupCheck, labelLookupCheck, valueItem, tagItem, labelItem, tagLocalLookup, tagHasForwardDcl, tagRefId, valueRedeclarationCheck, valueRedeclarationCheckNoCompatible, valueMergeRedeclExtnQualifiers, controlStmtContext;
-flowtype Name = decorate {env}, name {}, valueLocalLookup {env}, labelRedeclarationCheck {controlStmtContext}, valueLookupCheck {env}, tagLookupCheck {env}, labelLookupCheck {controlStmtContext}, valueItem {env}, tagItem {env}, labelItem {controlStmtContext}, tagLocalLookup {env}, tagHasForwardDcl {env}, tagRefId {env}, valueRedeclarationCheck {decorate}, valueRedeclarationCheckNoCompatible {decorate}, valueMergeRedeclExtnQualifiers {decorate};
+flowtype Name = decorate {env}, name {}, host {}, valueLocalLookup {env}, labelRedeclarationCheck {controlStmtContext}, valueLookupCheck {env}, tagLookupCheck {env}, labelLookupCheck {controlStmtContext}, valueItem {env}, tagItem {env}, labelItem {controlStmtContext}, tagLocalLookup {env}, tagHasForwardDcl {env}, tagRefId {env}, valueRedeclarationCheck {decorate}, valueRedeclarationCheckNoCompatible {decorate}, valueMergeRedeclExtnQualifiers {decorate};
 
 abstract production name
 top::Name ::= n::String
@@ -87,7 +87,7 @@ synthesized attribute maybename :: Maybe<Name>;
 synthesized attribute hasName :: Boolean;
 
 tracked nonterminal MaybeName with maybename, pp, host, env, valueLocalLookup, tagLocalLookup, tagHasForwardDcl, anonTagRefId, tagRefId, hasName, valueRedeclarationCheckNoCompatible, valueRedeclarationCheck, valueMergeRedeclExtnQualifiers;
-flowtype MaybeName = decorate {env}, maybename {}, hasName {}, valueLocalLookup {env}, tagLocalLookup {env}, tagHasForwardDcl {env}, tagRefId {anonTagRefId, env}, valueRedeclarationCheckNoCompatible {decorate}, valueRedeclarationCheck {decorate}, valueMergeRedeclExtnQualifiers {decorate};
+flowtype MaybeName = decorate {env}, maybename {}, hasName {}, host {}, valueLocalLookup {env}, tagLocalLookup {env}, tagHasForwardDcl {env}, tagRefId {anonTagRefId, env}, valueRedeclarationCheckNoCompatible {decorate}, valueRedeclarationCheck {decorate}, valueMergeRedeclExtnQualifiers {decorate};
 
 abstract production justName
 top::MaybeName ::= n::Name
@@ -164,7 +164,9 @@ Names ::= e1::Names e2::Names
 }
 
 fun freshName Name ::= n::String = name(s"_${n}_${toString(genInt())}");
-fun freshNames Names ::= n::String = consName(freshName(n), freshNames(n));
+fun freshNames Names ::= i::Integer n::String =
+  if i == 0 then nilName()
+  else consName(freshName(n ++ toString(i)), freshNames(i - 1, n));
 
 fun doNotDoValueRedeclarationCheck [Message] ::= t::Type = [];
 function doValueRedeclarationCheck

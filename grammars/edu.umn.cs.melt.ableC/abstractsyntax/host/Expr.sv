@@ -23,7 +23,7 @@ abstract production errorExpr
 top::Expr ::= msg::[Message]
 {
   propagate host, globalDecls, functionDecls, defs, freeVariables, controlStmtContext;
-  top.pp = ppConcat([ text("/*"), text(messagesToString(msg)), text("*/") ]);
+  top.pp = ppConcat([ text("/*"), text(messagesToStringNoOriginsCheck(msg)), text("*/") ]);
   top.errors := msg;
   top.typerep = errorType();
 }
@@ -31,7 +31,7 @@ top::Expr ::= msg::[Message]
 abstract production warnExpr
 top::Expr ::= msg::[Message] e::Expr
 {
-  top.pp = ppConcat([ text("/*"), text(messagesToString(msg)), text("*/"), e.pp ]);
+  top.pp = ppConcat([ text("/*"), text(messagesToStringNoOriginsCheck(msg)), text("*/"), e.pp ]);
   top.errors <- msg;
   forwards to @e;
 }
@@ -166,6 +166,9 @@ top::Expr ::= f::Name  a::Exprs
   f.env = top.env;
   forwards to f.valueItem.directCallHandler(^f, a);
 }
+
+dispatch ReferenceCall = Expr ::= f::Name @a::Exprs;
+
 -- If the identifier is an ordinary one, use the normal function call production
 -- Or, if it's a pass-through builtin one, this works too!
 production ordinaryFunctionHandler implements ReferenceCall
@@ -178,7 +181,7 @@ production bindDirectCallExpr implements ReferenceCall
 top::Expr ::= f::Name @a::Exprs impl::(Expr ::= [Expr])
 {
   forward fwrd = stmtExpr(
-    declStmt(autoDecls(freshNames("a"), @a)),
+    declStmt(autoDecls(freshNames(a.count, "a"), @a)),
     impl(a.autoRefExprs));
   forwards to
     if a.isSimple then impl(a.exprs) else @fwrd;
@@ -198,10 +201,10 @@ top::Expr ::= f::Expr a::Exprs
     | nothing() -> defaultCallExpr(f, a)
     end;
 }
-abstract production defaultCallExpr implements Call
+abstract production defaultCallExpr
 top::Expr ::= @f::Expr  @a::Exprs
 {
-  propagate errors, globalDecls, functionDecls, defs, controlStmtContext;
+  propagate errors, globalDecls, functionDecls, defs;
   top.pp = forwardParent.pp;
   top.host = callExpr(f.host, a.host);
   top.freeVariables := f.freeVariables ++ removeDefsFromNames(f.defs, a.freeVariables);
@@ -245,8 +248,21 @@ top::Expr ::= @f::Expr  @a::Exprs
 abstract production memberExpr
 top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
 {
-  propagate env, host, errors, globalDecls, functionDecls, defs, freeVariables, controlStmtContext;
   top.pp = parens(ppConcat([lhs.pp, text(if deref then "->" else "."), rhs.pp]));
+  propagate env, controlStmtContext;
+
+  forwards to
+    case lhs.typerep.memberProd of
+    | just(prod) -> prod(lhs, deref, ^rhs)
+    | nothing() -> defaultMemberExpr(lhs, deref, ^rhs)
+    end;
+}
+abstract production defaultMemberExpr
+top::Expr ::= @lhs::Expr  deref::Boolean  rhs::Name
+{
+  propagate errors, globalDecls, functionDecls, defs, freeVariables;
+  top.pp = forwardParent.pp;
+  top.host = memberExpr(lhs.host, deref, rhs.host);
 
   local isPointer::Boolean =
     case lhs.typerep.defaultFunctionArrayLvalueConversion.withoutAttributes of

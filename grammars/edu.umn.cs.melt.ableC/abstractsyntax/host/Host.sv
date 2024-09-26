@@ -23,5 +23,4 @@ flowtype host {decorate} on
   NumericConstant,
   MaybeExpr, Exprs, ExprOrTypeName,
   Stmt,
-  Name, MaybeName,
   MaybeInitializer, Initializer, InitList, Init, Designator;

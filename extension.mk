@@ -49,7 +49,7 @@ XC_INCLUDE_FLAGS=$(addprefix -I,$(XC_INCLUDE_DIRS))
 # Flags passed to ableC including the appropriate directories
 override XCFLAGS+=$(XC_INCLUDE_FLAGS)
 # Flags passed to Java when invoking ableC
-override JAVAFLAGS+=-Xss6M
+override JAVAFLAGS+=-Xss6M -Xmx256M
 
 # The extension library to build
 LIB_NAME?=

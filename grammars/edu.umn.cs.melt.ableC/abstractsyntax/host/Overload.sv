@@ -23,28 +23,75 @@ top::Expr ::= @fn::Expr @args::Exprs prod::(Call ::= Expr)
         result);
 }
 -}
-inherited attribute isDeref::Boolean occurs on Type;
 synthesized attribute callMemberProd<a>::Maybe<a>;
 attribute callMemberProd<(Expr ::= Expr Name Exprs)> occurs on Type;
 attribute callMemberProd<(Expr ::= Expr Boolean Name Exprs)> occurs on ExtType;
-flowtype callMemberProd {decorate, isDeref} on Type;
+flowtype callMemberProd {decorate} on Type;
 flowtype callMemberProd {decorate} on ExtType;
 
-synthesized attribute memberProd<a>::Maybe<a>;
-attribute memberProd<(Expr ::= Expr Name)> occurs on Type;
-attribute memberProd<(Expr ::= Expr Boolean Name)> occurs on ExtType;
-flowtype memberProd {decorate, isDeref} on Type;
-flowtype memberProd {decorate} on ExtType;
+dispatch MemberAccess = Expr ::= @e::Expr deref::Boolean name::Name;
 
-synthesized attribute exprInitProd::Maybe<(Initializer ::= Expr)> occurs on Type, ExtType;
+production bindMemberAccess implements MemberAccess
+top::Expr ::= @e::Expr deref::Boolean name::Name prod::(Expr ::= Expr Boolean Name)
+{
+  nondecorated local tmp::Name = freshName("e");
+  forwards to
+    if e.isSimple then prod(^e, deref, ^name)
+    else stmtExpr(declStmt(autoDecl(tmp, @e)), prod(declRefExpr(tmp), deref, ^name));
+}
+
+production callMemberAccess implements MemberAccess
+top::Expr ::= @e::Expr deref::Boolean name::Name fn::Name extraArgs::Exprs
+{
+  forwards to directCallExpr(@fn, consExpr(@e, @extraArgs));
+}
+
+-- Helper to supply an overload of -> for pointers when . is overloaded for the base type.
+production derefMemberAccess implements MemberAccess
+top::Expr ::= @e::Expr deref::Boolean name::Name prod::MemberAccess
+{
+  production derefE::Expr = if deref then dereferenceExpr(@e) else @e;
+  derefE.env = top.env;
+  derefE.controlStmtContext = top.controlStmtContext;
+  forwards to prod(derefE, false, ^name);
+}
+
+synthesized attribute memberProd::Maybe<MemberAccess> occurs on Type, ExtType;
+flowtype memberProd {decorate} on Type, ExtType;
+
+dispatch ExprInitializer = Initializer ::= @e::Expr;
+{-
+production bindExprInitializer implements ExprInitializer
+top::Initializer ::= @e::Expr prod::(Expr ::= Expr)
+{
+  propagate @env, @controlStmtContext;
+  nondecorated local tmp::Name = freshName("e");
+  production fwrd::Expr =
+    if e.isSimple then prod(^e)
+    else stmtExpr(declStmt(autoDecl(tmp, @e)), prod(declRefExpr(tmp)));
+  forwards to defaultExprInitializer(fwrd);
+}
+-}
+
+production transformExprInitializer implements ExprInitializer
+top::Initializer ::= @e::Expr result::Expr
+{
+  forwards to defaultExprInitializer(result);
+}
+
+synthesized attribute exprInitProd::Maybe<ExprInitializer> occurs on Type, ExtType;
 flowtype exprInitProd {decorate} on Type, ExtType;
 
-synthesized attribute objectInitProd::Maybe<(Initializer ::= InitList)> occurs on Type, ExtType;
+dispatch ObjectInitializer = Initializer ::= @l::InitList;
+
+-- TODO: Need a way to bind object initializers, somehow
+
+synthesized attribute objectInitProd::Maybe<ObjectInitializer> occurs on Type, ExtType;
 flowtype objectInitProd {decorate} on Type, ExtType;
 
 dispatch UnaryUpdateOp = Expr ::= @e::Expr;
 
-production bindLValueUnaryOp implements UnaryUpdateOp
+production bindUnaryUpdateOp implements UnaryUpdateOp
 top::Expr ::= @e::Expr prod::(Expr ::= Expr)
 {
   nondecorated local tmp::Name = freshName("e");
@@ -53,6 +100,12 @@ top::Expr ::= @e::Expr prod::(Expr ::= Expr)
     else stmtExpr(
       declStmt(autoDecl(tmp, addressOfExpr(@e))),
       prod(dereferenceExpr(declRefExpr(tmp))));
+}
+
+production callUnaryUpdateOp implements UnaryUpdateOp
+top::Expr ::= @e::Expr fn::Name extraArgs::Exprs
+{
+  forwards to directCallExpr(@fn, consExpr(addressOfExpr(@e), @extraArgs));
 }
 
 synthesized attribute preIncProd::Maybe<UnaryUpdateOp> occurs on Type, ExtType;
@@ -78,13 +131,17 @@ top::Expr ::= @e::Expr prod::(Expr ::= Expr)
     else stmtExpr(declStmt(autoDecl(tmp, @e)), prod(declRefExpr(tmp)));
 }
 
-{- TODO: Should we support forwarding to an arbitrary expression and re-decorating?
+production callUnaryOp implements UnaryOp
+top::Expr ::= @e::Expr fn::Name extraArgs::Exprs
+{
+  forwards to directCallExpr(@fn, consExpr(@e, @extraArgs));
+}
+
 production transformUnaryOp implements UnaryOp
 top::Expr ::= @e::Expr result::Expr
 {
   forwards to @result;
 }
--}
 
 synthesized attribute addressOfProd::Maybe<UnaryOp> occurs on Type, ExtType;
 flowtype addressOfProd {decorate} on Type, ExtType;
@@ -98,8 +155,7 @@ flowtype addressOfCallProd {decorate} on Type, ExtType;
 synthesized attribute addressOfMemberProd<a>::Maybe<a>;
 attribute addressOfMemberProd<(Expr ::= Expr Name)> occurs on Type;
 attribute addressOfMemberProd<(Expr ::= Expr Boolean Name)> occurs on ExtType;
-flowtype addressOfMemberProd {decorate, isDeref} on Type;
-flowtype addressOfMemberProd {decorate} on ExtType;
+flowtype addressOfMemberProd {decorate} on Type, ExtType;
 
 synthesized attribute dereferenceProd::Maybe<UnaryOp> occurs on Type, ExtType;
 flowtype dereferenceProd {decorate} on Type, ExtType;
@@ -142,6 +198,27 @@ top::Expr ::= @lhs::Expr @rhs::Expr prod::(Expr ::= Expr Expr)
         result);
 }
 
+production updateAssignOp implements AssignOp
+top::Expr ::= @lhs::Expr @rhs::Expr prod::(Expr ::= Expr Expr)
+{
+  forwards to bindAssignOp(lhs, rhs, \ tmpLhs tmpRhs ->
+    eqExpr(tmpLhs, prod(tmpLhs, tmpRhs)));
+}
+
+production callAssignOp implements AssignOp
+top::Expr ::= @lhs::Expr @rhs::Expr fn::Name extraArgs::Exprs
+{
+  forwards to directCallExpr(@fn, consExpr(addressOfExpr(@lhs), consExpr(@rhs, @extraArgs)));
+}
+
+production directEqExpr
+top::Expr ::= lhs::Expr rhs::Expr
+{
+  lhs.env = top.env;
+  lhs.controlStmtContext = top.controlStmtContext;
+  forwards to defaultEqExpr(lhs, rhs);
+}
+
 synthesized attribute eqProd::Maybe<AssignOp> occurs on Type, ExtType;
 flowtype eqProd {decorate} on Type, ExtType;
 
@@ -154,8 +231,7 @@ flowtype eqCallProd {decorate} on Type, ExtType;
 synthesized attribute eqMemberProd<a>::Maybe<a>;
 attribute eqMemberProd<(Expr ::= Expr Name Expr)> occurs on Type;
 attribute eqMemberProd<(Expr ::= Expr Boolean Name Expr)> occurs on ExtType;
-flowtype eqMemberProd {decorate, isDeref} on Type;
-flowtype eqMemberProd {decorate} on ExtType;
+flowtype eqMemberProd {decorate} on Type, ExtType;
 
 synthesized attribute mulEqProd::Maybe<AssignOp> occurs on Type, ExtType;
 flowtype mulEqProd {decorate} on Type, ExtType;
@@ -208,13 +284,17 @@ top::Expr ::= @lhs::Expr @rhs::Expr prod::(Expr ::= Expr Expr)
         result);
 }
 
-{- TODO: Should we support forwarding to an arbitrary expression and re-decorating?
+production callBinaryOp implements BinaryOp
+top::Expr ::= @lhs::Expr @rhs::Expr fn::Name extraArgs::Exprs
+{
+  forwards to directCallExpr(@fn, consExpr(@lhs, consExpr(@rhs, @extraArgs)));
+}
+
 production transformBinaryOp implements BinaryOp
 top::Expr ::= @lhs::Expr @rhs::Expr result::Expr
 {
   forwards to @result;
 }
--}
 
 synthesized attribute lAndProd::Maybe<BinaryOp> occurs on Type, ExtType;
 flowtype lAndProd {decorate, otherType} on Type, ExtType;
@@ -383,13 +463,12 @@ top::Type ::=
 aspect production pointerType
 top::Type ::= q::Qualifiers target::Type
 {
-  top.callMemberProd = if top.isDeref then target.callMemberProd else nothing();
-  top.memberProd = if top.isDeref then target.memberProd else nothing();
-  top.addressOfMemberProd = if top.isDeref then target.addressOfMemberProd else nothing();
-  top.eqMemberProd = if top.isDeref then target.eqMemberProd else nothing();
+  --top.callMemberProd = if top.isDeref then target.callMemberProd else nothing();
+  top.memberProd = map(derefMemberAccess, target.memberProd);
+  --top.addressOfMemberProd = if top.isDeref then target.addressOfMemberProd else nothing();
+  --top.eqMemberProd = if top.isDeref then target.eqMemberProd else nothing();
   
   target.otherType = top.otherType;
-  target.isDeref = false;
 }
 
 aspect production extType
@@ -397,16 +476,8 @@ top::Type ::= q::Qualifiers  sub::ExtType
 {
   top.arraySubscriptProd = sub.arraySubscriptProd;
   top.callProd = sub.callProd;
-  top.callMemberProd =
-    case sub.callMemberProd of
-    | just(prod) -> just(prod(_, top.isDeref, _, _))
-    | nothing() -> nothing()
-    end;
-  top.memberProd =
-    case sub.memberProd of
-    | just(prod) -> just(prod(_, top.isDeref, _))
-    | nothing() -> nothing()
-    end;
+  --top.callMemberProd = sub.callMemberProd;
+  top.memberProd = sub.memberProd;
   top.exprInitProd = sub.exprInitProd;
   top.objectInitProd = sub.objectInitProd;
   
@@ -417,11 +488,7 @@ top::Type ::= q::Qualifiers  sub::ExtType
   top.addressOfProd = sub.addressOfProd;
   top.addressOfArraySubscriptProd = sub.addressOfArraySubscriptProd;
   top.addressOfCallProd = sub.addressOfCallProd;
-  top.addressOfMemberProd =
-    case sub.addressOfMemberProd of
-    | just(prod) -> just(prod(_, top.isDeref, _))
-    | nothing() -> nothing()
-    end;
+  --top.addressOfMemberProd = sub.addressOfMemberProd;
   top.dereferenceProd = sub.dereferenceProd;
   top.positiveProd = sub.positiveProd;
   top.negativeProd = sub.negativeProd;
@@ -432,11 +499,7 @@ top::Type ::= q::Qualifiers  sub::ExtType
   top.eqProd = sub.eqProd;
   top.eqArraySubscriptProd = sub.eqArraySubscriptProd;
   top.eqCallProd = sub.eqCallProd;
-  top.eqMemberProd =
-    case sub.eqMemberProd of
-    | just(prod) -> just(prod(_, top.isDeref, _, _))
-    | nothing() -> nothing()
-    end;
+  --top.eqMemberProd = sub.eqMemberProd;
   top.mulEqProd = sub.mulEqProd;
   top.divEqProd = sub.divEqProd;
   top.modEqProd = sub.modEqProd;

@@ -36,11 +36,24 @@ top::Expr ::= lhs::Expr rhs::Expr
 {
   top.pp = parens( ppConcat([lhs.pp, space(), text("*="), space(), rhs.pp]) );
 
+  propagate controlStmtContext;
   lhs.env = top.env;
-  lhs.controlStmtContext = top.controlStmtContext;
+  rhs.env = addEnv(lhs.defs, lhs.env);
+
+  local lType::Type = lhs.typerep;
+  lType.otherType = rhs.typerep;
+
+  local overload::Maybe<AssignOp> =
+    case lType.mulEqProd of
+    | just(prod) -> just(prod)
+    | _ ->
+      if lType.eqProd.isJust || lType.lMulProd.isJust
+      then just(updateAssignOp(mulExpr))
+      else nothing()
+    end;
 
   forwards to
-    case lhs.typerep.mulEqProd of
+    case overload of
     | just(prod) -> prod(lhs, rhs)
     | nothing() -> defaultMulEqExpr(lhs, rhs)
     end;
@@ -57,9 +70,6 @@ top::Expr ::= @lhs::Expr @rhs::Expr
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = lhs.typerep.defaultLvalueConversion;
   top.isLValue = false;
-
-  rhs.env = addEnv(lhs.defs, lhs.env);
-  rhs.controlStmtContext = top.controlStmtContext;
 }
 
 abstract production divEqExpr
@@ -67,11 +77,24 @@ top::Expr ::= lhs::Expr rhs::Expr
 {
   top.pp = parens( ppConcat([lhs.pp, space(), text("/="), space(), rhs.pp]) );
 
+  propagate controlStmtContext;
   lhs.env = top.env;
-  lhs.controlStmtContext = top.controlStmtContext;
+  rhs.env = addEnv(lhs.defs, lhs.env);
+
+  local lType::Type = lhs.typerep;
+  lType.otherType = rhs.typerep;
+
+  local overload::Maybe<AssignOp> =
+    case lType.divEqProd of
+    | just(prod) -> just(prod)
+    | _ ->
+      if lType.eqProd.isJust || lType.lDivProd.isJust
+      then just(updateAssignOp(divExpr))
+      else nothing()
+    end;
 
   forwards to
-    case lhs.typerep.divEqProd of
+    case overload of
     | just(prod) -> prod(lhs, rhs)
     | nothing() -> defaultDivEqExpr(lhs, rhs)
     end;
@@ -88,9 +111,6 @@ top::Expr ::= @lhs::Expr @rhs::Expr
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = lhs.typerep.defaultLvalueConversion;
   top.isLValue = false;
-
-  rhs.env = addEnv(lhs.defs, lhs.env);
-  rhs.controlStmtContext = top.controlStmtContext;
 }
 
 abstract production modEqExpr
@@ -98,11 +118,24 @@ top::Expr ::= lhs::Expr rhs::Expr
 {
   top.pp = parens( ppConcat([lhs.pp, space(), text("%="), space(), rhs.pp]) );
 
+  propagate controlStmtContext;
   lhs.env = top.env;
-  lhs.controlStmtContext = top.controlStmtContext;
+  rhs.env = addEnv(lhs.defs, lhs.env);
+
+  local lType::Type = lhs.typerep;
+  lType.otherType = rhs.typerep;
+
+  local overload::Maybe<AssignOp> =
+    case lType.modEqProd of
+    | just(prod) -> just(prod)
+    | _ ->
+      if lType.eqProd.isJust || lType.lModProd.isJust
+      then just(updateAssignOp(modExpr))
+      else nothing()
+    end;
 
   forwards to
-    case lhs.typerep.modEqProd of
+    case overload of
     | just(prod) -> prod(lhs, rhs)
     | nothing() -> defaultModEqExpr(lhs, rhs)
     end;
@@ -119,9 +152,6 @@ top::Expr ::= @lhs::Expr @rhs::Expr
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = lhs.typerep.defaultLvalueConversion;
   top.isLValue = false;
-
-  rhs.env = addEnv(lhs.defs, lhs.env);
-  rhs.controlStmtContext = top.controlStmtContext;
 }
 
 abstract production addEqExpr
@@ -129,11 +159,24 @@ top::Expr ::= lhs::Expr rhs::Expr
 {
   top.pp = parens( ppConcat([lhs.pp, space(), text("+="), space(), rhs.pp]) );
 
+  propagate controlStmtContext;
   lhs.env = top.env;
-  lhs.controlStmtContext = top.controlStmtContext;
+  rhs.env = addEnv(lhs.defs, lhs.env);
+
+  local lType::Type = lhs.typerep;
+  lType.otherType = rhs.typerep;
+
+  local overload::Maybe<AssignOp> =
+    case lType.addEqProd of
+    | just(prod) -> just(prod)
+    | _ ->
+      if lType.eqProd.isJust || lType.lAddProd.isJust
+      then just(updateAssignOp(addExpr))
+      else nothing()
+    end;
 
   forwards to
-    case lhs.typerep.addEqProd of
+    case overload of
     | just(prod) -> prod(lhs, rhs)
     | nothing() -> defaultAddEqExpr(lhs, rhs)
     end;
@@ -150,9 +193,6 @@ top::Expr ::= @lhs::Expr @rhs::Expr
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = lhs.typerep.defaultLvalueConversion;
   top.isLValue = false;
-
-  rhs.env = addEnv(lhs.defs, lhs.env);
-  rhs.controlStmtContext = top.controlStmtContext;
 }
 
 abstract production subEqExpr
@@ -160,11 +200,24 @@ top::Expr ::= lhs::Expr rhs::Expr
 {
   top.pp = parens( ppConcat([lhs.pp, space(), text("-="), space(), rhs.pp]) );
 
+  propagate controlStmtContext;
   lhs.env = top.env;
-  lhs.controlStmtContext = top.controlStmtContext;
+  rhs.env = addEnv(lhs.defs, lhs.env);
+
+  local lType::Type = lhs.typerep;
+  lType.otherType = rhs.typerep;
+
+  local overload::Maybe<AssignOp> =
+    case lType.subEqProd of
+    | just(prod) -> just(prod)
+    | _ ->
+      if lType.eqProd.isJust || lType.lSubProd.isJust
+      then just(updateAssignOp(subExpr))
+      else nothing()
+    end;
 
   forwards to
-    case lhs.typerep.subEqProd of
+    case overload of
     | just(prod) -> prod(lhs, rhs)
     | nothing() -> defaultSubEqExpr(lhs, rhs)
     end;
@@ -181,9 +234,6 @@ top::Expr ::= @lhs::Expr @rhs::Expr
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = lhs.typerep.defaultLvalueConversion;
   top.isLValue = false;
-
-  rhs.env = addEnv(lhs.defs, lhs.env);
-  rhs.controlStmtContext = top.controlStmtContext;
 }
 
 abstract production lshEqExpr
@@ -191,11 +241,24 @@ top::Expr ::= lhs::Expr rhs::Expr
 {
   top.pp = parens( ppConcat([lhs.pp, space(), text("<<="), space(), rhs.pp]) );
 
+  propagate controlStmtContext;
   lhs.env = top.env;
-  lhs.controlStmtContext = top.controlStmtContext;
+  rhs.env = addEnv(lhs.defs, lhs.env);
+
+  local lType::Type = lhs.typerep;
+  lType.otherType = rhs.typerep;
+
+  local overload::Maybe<AssignOp> =
+    case lType.lshEqProd of
+    | just(prod) -> just(prod)
+    | _ ->
+      if lType.eqProd.isJust || lType.lLshProd.isJust
+      then just(updateAssignOp(lshExpr))
+      else nothing()
+    end;
 
   forwards to
-    case lhs.typerep.lshEqProd of
+    case overload of
     | just(prod) -> prod(lhs, rhs)
     | nothing() -> defaultLshEqExpr(lhs, rhs)
     end;
@@ -212,9 +275,6 @@ top::Expr ::= @lhs::Expr @rhs::Expr
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = lhs.typerep.defaultLvalueConversion;
   top.isLValue = false;
-
-  rhs.env = addEnv(lhs.defs, lhs.env);
-  rhs.controlStmtContext = top.controlStmtContext;
 }
 
 abstract production rshEqExpr
@@ -222,11 +282,24 @@ top::Expr ::= lhs::Expr rhs::Expr
 {
   top.pp = parens( ppConcat([lhs.pp, space(), text(">>="), space(), rhs.pp]) );
 
+  propagate controlStmtContext;
   lhs.env = top.env;
-  lhs.controlStmtContext = top.controlStmtContext;
+  rhs.env = addEnv(lhs.defs, lhs.env);
+
+  local lType::Type = lhs.typerep;
+  lType.otherType = rhs.typerep;
+
+  local overload::Maybe<AssignOp> =
+    case lType.rshEqProd of
+    | just(prod) -> just(prod)
+    | _ ->
+      if lType.eqProd.isJust || lType.lRshProd.isJust
+      then just(updateAssignOp(rshExpr))
+      else nothing()
+    end;
 
   forwards to
-    case lhs.typerep.rshEqProd of
+    case overload of
     | just(prod) -> prod(lhs, rhs)
     | nothing() -> defaultRshEqExpr(lhs, rhs)
     end;
@@ -243,9 +316,6 @@ top::Expr ::= @lhs::Expr @rhs::Expr
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = lhs.typerep.defaultLvalueConversion;
   top.isLValue = false;
-
-  rhs.env = addEnv(lhs.defs, lhs.env);
-  rhs.controlStmtContext = top.controlStmtContext;
 }
 
 abstract production andEqExpr
@@ -253,11 +323,24 @@ top::Expr ::= lhs::Expr rhs::Expr
 {
   top.pp = parens( ppConcat([lhs.pp, space(), text("&="), space(), rhs.pp]) );
 
+  propagate controlStmtContext;
   lhs.env = top.env;
-  lhs.controlStmtContext = top.controlStmtContext;
+  rhs.env = addEnv(lhs.defs, lhs.env);
+
+  local lType::Type = lhs.typerep;
+  lType.otherType = rhs.typerep;
+
+  local overload::Maybe<AssignOp> =
+    case lType.andEqProd of
+    | just(prod) -> just(prod)
+    | _ ->
+      if lType.eqProd.isJust || lType.lAndProd.isJust
+      then just(updateAssignOp(andExpr))
+      else nothing()
+    end;
 
   forwards to
-    case lhs.typerep.andEqProd of
+    case overload of
     | just(prod) -> prod(lhs, rhs)
     | nothing() -> defaultAndEqExpr(lhs, rhs)
     end;
@@ -274,9 +357,6 @@ top::Expr ::= @lhs::Expr @rhs::Expr
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = lhs.typerep.defaultLvalueConversion;
   top.isLValue = false;
-
-  rhs.env = addEnv(lhs.defs, lhs.env);
-  rhs.controlStmtContext = top.controlStmtContext;
 }
 
 abstract production xorEqExpr
@@ -284,11 +364,24 @@ top::Expr ::= lhs::Expr rhs::Expr
 {
   top.pp = parens( ppConcat([lhs.pp, space(), text("^="), space(), rhs.pp]) );
 
+  propagate controlStmtContext;
   lhs.env = top.env;
-  lhs.controlStmtContext = top.controlStmtContext;
+  rhs.env = addEnv(lhs.defs, lhs.env);
+
+  local lType::Type = lhs.typerep;
+  lType.otherType = rhs.typerep;
+
+  local overload::Maybe<AssignOp> =
+    case lType.xorEqProd of
+    | just(prod) -> just(prod)
+    | _ ->
+      if lType.eqProd.isJust || lType.lXorProd.isJust
+      then just(updateAssignOp(xorExpr))
+      else nothing()
+    end;
 
   forwards to
-    case lhs.typerep.xorEqProd of
+    case overload of
     | just(prod) -> prod(lhs, rhs)
     | nothing() -> defaultXorEqExpr(lhs, rhs)
     end;
@@ -305,9 +398,6 @@ top::Expr ::= @lhs::Expr @rhs::Expr
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = lhs.typerep.defaultLvalueConversion;
   top.isLValue = false;
-
-  rhs.env = addEnv(lhs.defs, lhs.env);
-  rhs.controlStmtContext = top.controlStmtContext;
 }
 
 abstract production orEqExpr
@@ -315,11 +405,24 @@ top::Expr ::= lhs::Expr rhs::Expr
 {
   top.pp = parens( ppConcat([lhs.pp, space(), text("|="), space(), rhs.pp]) );
 
+  propagate controlStmtContext;
   lhs.env = top.env;
-  lhs.controlStmtContext = top.controlStmtContext;
+  rhs.env = addEnv(lhs.defs, lhs.env);
+
+  local lType::Type = lhs.typerep;
+  lType.otherType = rhs.typerep;
+
+  local overload::Maybe<AssignOp> =
+    case lType.orEqProd of
+    | just(prod) -> just(prod)
+    | _ ->
+      if lType.eqProd.isJust || lType.lOrProd.isJust
+      then just(updateAssignOp(orExpr))
+      else nothing()
+    end;
 
   forwards to
-    case lhs.typerep.orEqProd of
+    case overload of
     | just(prod) -> prod(lhs, rhs)
     | nothing() -> defaultOrEqExpr(lhs, rhs)
     end;
@@ -336,9 +439,6 @@ top::Expr ::= @lhs::Expr @rhs::Expr
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = lhs.typerep.defaultLvalueConversion;
   top.isLValue = false;
-
-  rhs.env = addEnv(lhs.defs, lhs.env);
-  rhs.controlStmtContext = top.controlStmtContext;
 }
 
 fun assignErrors [Message] ::= lhs::Decorated Expr  rhs::Decorated Expr =
@@ -669,7 +769,11 @@ top::Expr ::= lhs::Expr rhs::Expr
   lType.otherType = rhs.typerep;
   local rType::Type = rhs.typerep;
   rType.otherType = lhs.typerep;
-  local overload::Maybe<BinaryOp> = orElse(lType.lNotEqualsProd, rType.rNotEqualsProd);
+  local overload::Maybe<BinaryOp> = orElse(
+    orElse(lType.lNotEqualsProd, rType.rNotEqualsProd),
+    if lType.lEqualsProd.isJust || rType.rEqualsProd.isJust
+    then just(bindBinaryOp(\ l r -> notExpr(equalsExpr(l, r))))
+    else nothing());
 
   forwards to
     case overload of
@@ -764,6 +868,7 @@ top::Expr ::= @lhs::Expr @rhs::Expr
     if lhs.integerConstantValue < rhs.integerConstantValue then 1 else 0;
 }
 
+-- TODO: Defaults for >=, <=?
 abstract production gteExpr
 top::Expr ::= lhs::Expr rhs::Expr
 {
