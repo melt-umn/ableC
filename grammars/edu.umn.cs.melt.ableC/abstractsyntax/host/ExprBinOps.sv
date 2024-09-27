@@ -5,16 +5,25 @@ top::Expr ::= lhs::Expr rhs::Expr
 {
   top.pp = parens( ppConcat([lhs.pp, space(), text("="), space(), rhs.pp]) );
 
+  propagate controlStmtContext;
   lhs.env = top.env;
-  lhs.controlStmtContext = top.controlStmtContext;
+  rhs.env = addEnv(lhs.defs, lhs.env);
 
-  forwards to
-    case lhs.typerep.eqProd of
-    | just(prod) -> prod(lhs, rhs)
-    | nothing() -> defaultEqExpr(lhs, rhs)
-    end;
+  local lType::Type = lhs.typerep;
+  lType.otherType = rhs.typerep;
+
+  forwards to fromMaybe(defaultEqExpr, lType.eqProd)(lhs, rhs);
 }
-abstract production defaultEqExpr
+-- Non-overloaded version, for use in defining overloads to avoid a circularity
+production hostEqExpr
+top::Expr ::= lhs::Expr rhs::Expr
+{
+  propagate controlStmtContext;
+  lhs.env = top.env;
+  rhs.env = addEnv(lhs.defs, lhs.env);
+  forwards to defaultEqExpr(lhs, rhs);
+}
+abstract production defaultEqExpr implements AssignOp
 top::Expr ::= @lhs::Expr @rhs::Expr
 {
   propagate errors, globalDecls, functionDecls, defs;
@@ -26,9 +35,6 @@ top::Expr ::= @lhs::Expr @rhs::Expr
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = lhs.typerep.defaultLvalueConversion;
   top.isLValue = false;
-
-  rhs.env = addEnv(lhs.defs, lhs.env);
-  rhs.controlStmtContext = top.controlStmtContext;
 }
 
 abstract production mulEqExpr
@@ -43,22 +49,18 @@ top::Expr ::= lhs::Expr rhs::Expr
   local lType::Type = lhs.typerep;
   lType.otherType = rhs.typerep;
 
-  local overload::Maybe<AssignOp> =
+  local prod::AssignOp =
     case lType.mulEqProd of
-    | just(prod) -> just(prod)
+    | just(prod) -> prod
     | _ ->
       if lType.eqProd.isJust || lType.lMulProd.isJust
-      then just(updateAssignOp(mulExpr))
-      else nothing()
+      then updateAssignOp(mulExpr)
+      else defaultMulEqExpr
     end;
 
-  forwards to
-    case overload of
-    | just(prod) -> prod(lhs, rhs)
-    | nothing() -> defaultMulEqExpr(lhs, rhs)
-    end;
+  forwards to prod(lhs, rhs);
 }
-abstract production defaultMulEqExpr
+abstract production defaultMulEqExpr implements AssignOp
 top::Expr ::= @lhs::Expr @rhs::Expr
 {
   propagate errors, globalDecls, functionDecls, defs;
@@ -84,22 +86,18 @@ top::Expr ::= lhs::Expr rhs::Expr
   local lType::Type = lhs.typerep;
   lType.otherType = rhs.typerep;
 
-  local overload::Maybe<AssignOp> =
+  local prod::AssignOp =
     case lType.divEqProd of
-    | just(prod) -> just(prod)
+    | just(prod) -> prod
     | _ ->
       if lType.eqProd.isJust || lType.lDivProd.isJust
-      then just(updateAssignOp(divExpr))
-      else nothing()
+      then updateAssignOp(divExpr)
+      else defaultDivEqExpr
     end;
 
-  forwards to
-    case overload of
-    | just(prod) -> prod(lhs, rhs)
-    | nothing() -> defaultDivEqExpr(lhs, rhs)
-    end;
+  forwards to prod(lhs, rhs);
 }
-abstract production defaultDivEqExpr
+abstract production defaultDivEqExpr implements AssignOp
 top::Expr ::= @lhs::Expr @rhs::Expr
 {
   propagate errors, globalDecls, functionDecls, defs;
@@ -112,7 +110,6 @@ top::Expr ::= @lhs::Expr @rhs::Expr
   top.typerep = lhs.typerep.defaultLvalueConversion;
   top.isLValue = false;
 }
-
 abstract production modEqExpr
 top::Expr ::= lhs::Expr rhs::Expr
 {
@@ -125,22 +122,18 @@ top::Expr ::= lhs::Expr rhs::Expr
   local lType::Type = lhs.typerep;
   lType.otherType = rhs.typerep;
 
-  local overload::Maybe<AssignOp> =
+  local prod::AssignOp =
     case lType.modEqProd of
-    | just(prod) -> just(prod)
+    | just(prod) -> prod
     | _ ->
       if lType.eqProd.isJust || lType.lModProd.isJust
-      then just(updateAssignOp(modExpr))
-      else nothing()
+      then updateAssignOp(modExpr)
+      else defaultModEqExpr
     end;
 
-  forwards to
-    case overload of
-    | just(prod) -> prod(lhs, rhs)
-    | nothing() -> defaultModEqExpr(lhs, rhs)
-    end;
+  forwards to prod(lhs, rhs);
 }
-abstract production defaultModEqExpr
+abstract production defaultModEqExpr implements AssignOp
 top::Expr ::= @lhs::Expr @rhs::Expr
 {
   propagate errors, globalDecls, functionDecls, defs;
@@ -166,22 +159,18 @@ top::Expr ::= lhs::Expr rhs::Expr
   local lType::Type = lhs.typerep;
   lType.otherType = rhs.typerep;
 
-  local overload::Maybe<AssignOp> =
+  local prod::AssignOp =
     case lType.addEqProd of
-    | just(prod) -> just(prod)
+    | just(prod) -> prod
     | _ ->
       if lType.eqProd.isJust || lType.lAddProd.isJust
-      then just(updateAssignOp(addExpr))
-      else nothing()
+      then updateAssignOp(addExpr)
+      else defaultAddEqExpr
     end;
 
-  forwards to
-    case overload of
-    | just(prod) -> prod(lhs, rhs)
-    | nothing() -> defaultAddEqExpr(lhs, rhs)
-    end;
+  forwards to prod(lhs, rhs);
 }
-abstract production defaultAddEqExpr
+abstract production defaultAddEqExpr implements AssignOp
 top::Expr ::= @lhs::Expr @rhs::Expr
 {
   propagate errors, globalDecls, functionDecls, defs;
@@ -207,22 +196,18 @@ top::Expr ::= lhs::Expr rhs::Expr
   local lType::Type = lhs.typerep;
   lType.otherType = rhs.typerep;
 
-  local overload::Maybe<AssignOp> =
+  local prod::AssignOp =
     case lType.subEqProd of
-    | just(prod) -> just(prod)
+    | just(prod) -> prod
     | _ ->
       if lType.eqProd.isJust || lType.lSubProd.isJust
-      then just(updateAssignOp(subExpr))
-      else nothing()
+      then updateAssignOp(subExpr)
+      else defaultSubEqExpr
     end;
 
-  forwards to
-    case overload of
-    | just(prod) -> prod(lhs, rhs)
-    | nothing() -> defaultSubEqExpr(lhs, rhs)
-    end;
+  forwards to prod(lhs, rhs);
 }
-abstract production defaultSubEqExpr
+abstract production defaultSubEqExpr implements AssignOp
 top::Expr ::= @lhs::Expr @rhs::Expr
 {
   propagate errors, globalDecls, functionDecls, defs;
@@ -248,22 +233,18 @@ top::Expr ::= lhs::Expr rhs::Expr
   local lType::Type = lhs.typerep;
   lType.otherType = rhs.typerep;
 
-  local overload::Maybe<AssignOp> =
+  local prod::AssignOp =
     case lType.lshEqProd of
-    | just(prod) -> just(prod)
+    | just(prod) -> prod
     | _ ->
       if lType.eqProd.isJust || lType.lLshProd.isJust
-      then just(updateAssignOp(lshExpr))
-      else nothing()
+      then updateAssignOp(lshExpr)
+      else defaultLshEqExpr
     end;
 
-  forwards to
-    case overload of
-    | just(prod) -> prod(lhs, rhs)
-    | nothing() -> defaultLshEqExpr(lhs, rhs)
-    end;
+  forwards to prod(lhs, rhs);
 }
-abstract production defaultLshEqExpr
+abstract production defaultLshEqExpr implements AssignOp
 top::Expr ::= @lhs::Expr @rhs::Expr
 {
   propagate errors, globalDecls, functionDecls, defs;
@@ -289,22 +270,18 @@ top::Expr ::= lhs::Expr rhs::Expr
   local lType::Type = lhs.typerep;
   lType.otherType = rhs.typerep;
 
-  local overload::Maybe<AssignOp> =
+  local prod::AssignOp =
     case lType.rshEqProd of
-    | just(prod) -> just(prod)
+    | just(prod) -> prod
     | _ ->
       if lType.eqProd.isJust || lType.lRshProd.isJust
-      then just(updateAssignOp(rshExpr))
-      else nothing()
+      then updateAssignOp(rshExpr)
+      else defaultRshEqExpr
     end;
 
-  forwards to
-    case overload of
-    | just(prod) -> prod(lhs, rhs)
-    | nothing() -> defaultRshEqExpr(lhs, rhs)
-    end;
+  forwards to prod(lhs, rhs);
 }
-abstract production defaultRshEqExpr
+abstract production defaultRshEqExpr implements AssignOp
 top::Expr ::= @lhs::Expr @rhs::Expr
 {
   propagate errors, globalDecls, functionDecls, defs;
@@ -330,22 +307,18 @@ top::Expr ::= lhs::Expr rhs::Expr
   local lType::Type = lhs.typerep;
   lType.otherType = rhs.typerep;
 
-  local overload::Maybe<AssignOp> =
+  local prod::AssignOp =
     case lType.andEqProd of
-    | just(prod) -> just(prod)
+    | just(prod) -> prod
     | _ ->
       if lType.eqProd.isJust || lType.lAndProd.isJust
-      then just(updateAssignOp(andExpr))
-      else nothing()
+      then updateAssignOp(andExpr)
+      else defaultAndEqExpr
     end;
 
-  forwards to
-    case overload of
-    | just(prod) -> prod(lhs, rhs)
-    | nothing() -> defaultAndEqExpr(lhs, rhs)
-    end;
+  forwards to prod(lhs, rhs);
 }
-abstract production defaultAndEqExpr
+abstract production defaultAndEqExpr implements AssignOp
 top::Expr ::= @lhs::Expr @rhs::Expr
 {
   propagate errors, globalDecls, functionDecls, defs;
@@ -371,22 +344,18 @@ top::Expr ::= lhs::Expr rhs::Expr
   local lType::Type = lhs.typerep;
   lType.otherType = rhs.typerep;
 
-  local overload::Maybe<AssignOp> =
+  local prod::AssignOp =
     case lType.xorEqProd of
-    | just(prod) -> just(prod)
+    | just(prod) -> prod
     | _ ->
       if lType.eqProd.isJust || lType.lXorProd.isJust
-      then just(updateAssignOp(xorExpr))
-      else nothing()
+      then updateAssignOp(xorExpr)
+      else defaultXorEqExpr
     end;
 
-  forwards to
-    case overload of
-    | just(prod) -> prod(lhs, rhs)
-    | nothing() -> defaultXorEqExpr(lhs, rhs)
-    end;
+  forwards to prod(lhs, rhs);
 }
-abstract production defaultXorEqExpr
+abstract production defaultXorEqExpr implements AssignOp
 top::Expr ::= @lhs::Expr @rhs::Expr
 {
   propagate errors, globalDecls, functionDecls, defs;
@@ -412,22 +381,18 @@ top::Expr ::= lhs::Expr rhs::Expr
   local lType::Type = lhs.typerep;
   lType.otherType = rhs.typerep;
 
-  local overload::Maybe<AssignOp> =
+  local prod::AssignOp =
     case lType.orEqProd of
-    | just(prod) -> just(prod)
+    | just(prod) -> prod
     | _ ->
       if lType.eqProd.isJust || lType.lOrProd.isJust
-      then just(updateAssignOp(orExpr))
-      else nothing()
+      then updateAssignOp(orExpr)
+      else defaultOrEqExpr
     end;
 
-  forwards to
-    case overload of
-    | just(prod) -> prod(lhs, rhs)
-    | nothing() -> defaultOrEqExpr(lhs, rhs)
-    end;
+  forwards to prod(lhs, rhs);
 }
-abstract production defaultOrEqExpr
+abstract production defaultOrEqExpr implements AssignOp
 top::Expr ::= @lhs::Expr @rhs::Expr
 {
   propagate errors, globalDecls, functionDecls, defs;
@@ -475,15 +440,11 @@ top::Expr ::= lhs::Expr rhs::Expr
   lType.otherType = rhs.typerep;
   local rType::Type = rhs.typerep;
   rType.otherType = lhs.typerep;
-  local overload::Maybe<BinaryOp> = orElse(lType.lAndProd, rType.rAndProd);
+  local prod::BinaryOp = fromMaybe(defaultAddExpr, orElse(lType.lAndProd, rType.rAndProd));
 
-  forwards to
-    case overload of
-    | just(prod) -> prod(lhs, rhs)
-    | nothing() -> defaultAndExpr(lhs, rhs)
-    end;
+  forwards to prod(lhs, rhs);
 }
-abstract production defaultAndExpr
+abstract production defaultAndExpr implements BinaryOp
 top::Expr ::= @lhs::Expr @rhs::Expr
 {
   propagate errors, globalDecls, functionDecls, defs;
@@ -511,15 +472,11 @@ top::Expr ::= lhs::Expr rhs::Expr
   lType.otherType = rhs.typerep;
   local rType::Type = rhs.typerep;
   rType.otherType = lhs.typerep;
-  local overload::Maybe<BinaryOp> = orElse(lType.lOrProd, rType.rOrProd);
+  local prod::BinaryOp = fromMaybe(defaultOrExpr, orElse(lType.lOrProd, rType.rOrProd));
 
-  forwards to
-    case overload of
-    | just(prod) -> prod(lhs, rhs)
-    | nothing() -> defaultOrExpr(lhs, rhs)
-    end;
+  forwards to prod(lhs, rhs);
 }
-abstract production defaultOrExpr
+abstract production defaultOrExpr implements BinaryOp
 top::Expr ::= @lhs::Expr @rhs::Expr
 {
   propagate errors, globalDecls, functionDecls, defs;
@@ -547,15 +504,11 @@ top::Expr ::= lhs::Expr rhs::Expr
   lType.otherType = rhs.typerep;
   local rType::Type = rhs.typerep;
   rType.otherType = lhs.typerep;
-  local overload::Maybe<BinaryOp> = orElse(lType.lAndBitProd, rType.rAndBitProd);
+  local prod::BinaryOp = fromMaybe(defaultAndBitExpr, orElse(lType.lAndBitProd, rType.rAndBitProd));
 
-  forwards to
-    case overload of
-    | just(prod) -> prod(lhs, rhs)
-    | nothing() -> defaultAndBitExpr(lhs, rhs)
-    end;
+  forwards to prod(lhs, rhs);
 }
-abstract production defaultAndBitExpr
+abstract production defaultAndBitExpr implements BinaryOp
 top::Expr ::= @lhs::Expr @rhs::Expr
 {
   propagate errors, globalDecls, functionDecls, defs;
@@ -585,15 +538,11 @@ top::Expr ::= lhs::Expr rhs::Expr
   lType.otherType = rhs.typerep;
   local rType::Type = rhs.typerep;
   rType.otherType = lhs.typerep;
-  local overload::Maybe<BinaryOp> = orElse(lType.lOrBitProd, rType.rOrBitProd);
+  local prod::BinaryOp = fromMaybe(defaultOrBitExpr, orElse(lType.lOrBitProd, rType.rOrBitProd));
 
-  forwards to
-    case overload of
-    | just(prod) -> prod(lhs, rhs)
-    | nothing() -> defaultOrBitExpr(lhs, rhs)
-    end;
+  forwards to prod(lhs, rhs);
 }
-abstract production defaultOrBitExpr
+abstract production defaultOrBitExpr implements BinaryOp
 top::Expr ::= @lhs::Expr @rhs::Expr
 {
   propagate errors, globalDecls, functionDecls, defs;
@@ -623,15 +572,11 @@ top::Expr ::= lhs::Expr rhs::Expr
   lType.otherType = rhs.typerep;
   local rType::Type = rhs.typerep;
   rType.otherType = lhs.typerep;
-  local overload::Maybe<BinaryOp> = orElse(lType.lXorProd, rType.rXorProd);
+  local prod::BinaryOp = fromMaybe(defaultXorExpr, orElse(lType.lXorProd, rType.rXorProd));
 
-  forwards to
-    case overload of
-    | just(prod) -> prod(lhs, rhs)
-    | nothing() -> defaultXorExpr(lhs, rhs)
-    end;
+  forwards to prod(lhs, rhs);
 }
-abstract production defaultXorExpr
+abstract production defaultXorExpr implements BinaryOp
 top::Expr ::= @lhs::Expr @rhs::Expr
 {
   propagate errors, globalDecls, functionDecls, defs;
@@ -661,15 +606,11 @@ top::Expr ::= lhs::Expr rhs::Expr
   lType.otherType = rhs.typerep;
   local rType::Type = rhs.typerep;
   rType.otherType = lhs.typerep;
-  local overload::Maybe<BinaryOp> = orElse(lType.lLshProd, rType.rLshProd);
+  local prod::BinaryOp = fromMaybe(defaultLshExpr, orElse(lType.lLshProd, rType.rLshProd));
 
-  forwards to
-    case overload of
-    | just(prod) -> prod(lhs, rhs)
-    | nothing() -> defaultLshExpr(lhs, rhs)
-    end;
+  forwards to prod(lhs, rhs);
 }
-abstract production defaultLshExpr
+abstract production defaultLshExpr implements BinaryOp
 top::Expr ::= @lhs::Expr @rhs::Expr
 {
   propagate errors, globalDecls, functionDecls, defs;
@@ -697,15 +638,11 @@ top::Expr ::= lhs::Expr rhs::Expr
   lType.otherType = rhs.typerep;
   local rType::Type = rhs.typerep;
   rType.otherType = lhs.typerep;
-  local overload::Maybe<BinaryOp> = orElse(lType.lRshProd, rType.rRshProd);
+  local prod::BinaryOp = fromMaybe(defaultRshExpr, orElse(lType.lRshProd, rType.rRshProd));
 
-  forwards to
-    case overload of
-    | just(prod) -> prod(lhs, rhs)
-    | nothing() -> defaultRshExpr(lhs, rhs)
-    end;
+  forwards to prod(lhs, rhs);
 }
-abstract production defaultRshExpr
+abstract production defaultRshExpr implements BinaryOp
 top::Expr ::= @lhs::Expr @rhs::Expr
 {
   propagate errors, globalDecls, functionDecls, defs;
@@ -733,15 +670,11 @@ top::Expr ::= lhs::Expr rhs::Expr
   lType.otherType = rhs.typerep;
   local rType::Type = rhs.typerep;
   rType.otherType = lhs.typerep;
-  local overload::Maybe<BinaryOp> = orElse(lType.lEqualsProd, rType.rEqualsProd);
+  local prod::BinaryOp = fromMaybe(defaultEqualsExpr, orElse(lType.lEqualsProd, rType.rEqualsProd));
 
-  forwards to
-    case overload of
-    | just(prod) -> prod(lhs, rhs)
-    | nothing() -> defaultEqualsExpr(lhs, rhs)
-    end;
+  forwards to prod(lhs, rhs);
 }
-abstract production defaultEqualsExpr
+abstract production defaultEqualsExpr implements BinaryOp
 top::Expr ::= @lhs::Expr @rhs::Expr
 {
   propagate errors, globalDecls, functionDecls, defs;
@@ -769,19 +702,17 @@ top::Expr ::= lhs::Expr rhs::Expr
   lType.otherType = rhs.typerep;
   local rType::Type = rhs.typerep;
   rType.otherType = lhs.typerep;
-  local overload::Maybe<BinaryOp> = orElse(
-    orElse(lType.lNotEqualsProd, rType.rNotEqualsProd),
-    if lType.lEqualsProd.isJust || rType.rEqualsProd.isJust
-    then just(bindBinaryOp(\ l r -> notExpr(equalsExpr(l, r))))
-    else nothing());
+  local prod::BinaryOp = fromMaybe(
+    defaultNotEqualsExpr,
+    orElse(
+      orElse(lType.lNotEqualsProd, rType.rNotEqualsProd),
+      if lType.lEqualsProd.isJust || rType.rEqualsProd.isJust
+      then just(bindBinaryOp(\ l r -> notExpr(equalsExpr(l, r))))
+      else nothing()));
 
-  forwards to
-    case overload of
-    | just(prod) -> prod(lhs, rhs)
-    | nothing() -> defaultNotEqualsExpr(lhs, rhs)
-    end;
+  forwards to prod(lhs, rhs);
 }
-abstract production defaultNotEqualsExpr
+abstract production defaultNotEqualsExpr implements BinaryOp
 top::Expr ::= @lhs::Expr @rhs::Expr
 {
   propagate errors, globalDecls, functionDecls, defs;
@@ -809,15 +740,11 @@ top::Expr ::= lhs::Expr rhs::Expr
   lType.otherType = rhs.typerep;
   local rType::Type = rhs.typerep;
   rType.otherType = lhs.typerep;
-  local overload::Maybe<BinaryOp> = orElse(lType.lGtProd, rType.rGtProd);
+  local prod::BinaryOp = fromMaybe(defaultGtExpr, orElse(lType.lGtProd, rType.rGtProd));
 
-  forwards to
-    case overload of
-    | just(prod) -> prod(lhs, rhs)
-    | nothing() -> defaultGtExpr(lhs, rhs)
-    end;
+  forwards to prod(lhs, rhs);
 }
-abstract production defaultGtExpr
+abstract production defaultGtExpr implements BinaryOp
 top::Expr ::= @lhs::Expr @rhs::Expr
 {
   propagate errors, globalDecls, functionDecls, defs;
@@ -845,15 +772,11 @@ top::Expr ::= lhs::Expr rhs::Expr
   lType.otherType = rhs.typerep;
   local rType::Type = rhs.typerep;
   rType.otherType = lhs.typerep;
-  local overload::Maybe<BinaryOp> = orElse(lType.lLtProd, rType.rLtProd);
+  local prod::BinaryOp = fromMaybe(defaultLtExpr, orElse(lType.lLtProd, rType.rLtProd));
 
-  forwards to
-    case overload of
-    | just(prod) -> prod(lhs, rhs)
-    | nothing() -> defaultLtExpr(lhs, rhs)
-    end;
+  forwards to prod(lhs, rhs);
 }
-abstract production defaultLtExpr
+abstract production defaultLtExpr implements BinaryOp
 top::Expr ::= @lhs::Expr @rhs::Expr
 {
   propagate errors, globalDecls, functionDecls, defs;
@@ -868,7 +791,6 @@ top::Expr ::= @lhs::Expr @rhs::Expr
     if lhs.integerConstantValue < rhs.integerConstantValue then 1 else 0;
 }
 
--- TODO: Defaults for >=, <=?
 abstract production gteExpr
 top::Expr ::= lhs::Expr rhs::Expr
 {
@@ -882,15 +804,11 @@ top::Expr ::= lhs::Expr rhs::Expr
   lType.otherType = rhs.typerep;
   local rType::Type = rhs.typerep;
   rType.otherType = lhs.typerep;
-  local overload::Maybe<BinaryOp> = orElse(lType.lGteProd, rType.rGteProd);
+  local prod::BinaryOp = fromMaybe(defaultGteExpr, orElse(lType.lGteProd, rType.rGteProd));
 
-  forwards to
-    case overload of
-    | just(prod) -> prod(lhs, rhs)
-    | nothing() -> defaultGteExpr(lhs, rhs)
-    end;
+  forwards to prod(lhs, rhs);
 }
-abstract production defaultGteExpr
+abstract production defaultGteExpr implements BinaryOp
 top::Expr ::= @lhs::Expr @rhs::Expr
 {
   propagate errors, globalDecls, functionDecls, defs;
@@ -918,15 +836,11 @@ top::Expr ::= lhs::Expr rhs::Expr
   lType.otherType = rhs.typerep;
   local rType::Type = rhs.typerep;
   rType.otherType = lhs.typerep;
-  local overload::Maybe<BinaryOp> = orElse(lType.lLteProd, rType.rLteProd);
+  local prod::BinaryOp = fromMaybe(defaultLteExpr, orElse(lType.lLteProd, rType.rLteProd));
 
-  forwards to
-    case overload of
-    | just(prod) -> prod(lhs, rhs)
-    | nothing() -> defaultLteExpr(lhs, rhs)
-    end;
+  forwards to prod(lhs, rhs);
 }
-abstract production defaultLteExpr
+abstract production defaultLteExpr implements BinaryOp
 top::Expr ::= @lhs::Expr @rhs::Expr
 {
   propagate errors, globalDecls, functionDecls, defs;
@@ -954,15 +868,11 @@ top::Expr ::= lhs::Expr rhs::Expr
   lType.otherType = rhs.typerep;
   local rType::Type = rhs.typerep;
   rType.otherType = lhs.typerep;
-  local overload::Maybe<BinaryOp> = orElse(lType.lAddProd, rType.rAddProd);
+  local prod::BinaryOp = fromMaybe(defaultAddExpr, orElse(lType.lAddProd, rType.rAddProd));
 
-  forwards to
-    case overload of
-    | just(prod) -> prod(lhs, rhs)
-    | nothing() -> defaultAddExpr(lhs, rhs)
-    end;
+  forwards to prod(lhs, rhs);
 }
-abstract production defaultAddExpr
+abstract production defaultAddExpr implements BinaryOp
 top::Expr ::= @lhs::Expr @rhs::Expr
 {
   propagate errors, globalDecls, functionDecls, defs;
@@ -990,15 +900,11 @@ top::Expr ::= lhs::Expr rhs::Expr
   lType.otherType = rhs.typerep;
   local rType::Type = rhs.typerep;
   rType.otherType = lhs.typerep;
-  local overload::Maybe<BinaryOp> = orElse(lType.lSubProd, rType.rSubProd);
+  local prod::BinaryOp = fromMaybe(defaultSubExpr, orElse(lType.lSubProd, rType.rSubProd));
 
-  forwards to
-    case overload of
-    | just(prod) -> prod(lhs, rhs)
-    | nothing() -> defaultSubExpr(lhs, rhs)
-    end;
+  forwards to prod(lhs, rhs);
 }
-abstract production defaultSubExpr
+abstract production defaultSubExpr implements BinaryOp
 top::Expr ::= @lhs::Expr @rhs::Expr
 {
   propagate errors, globalDecls, functionDecls, defs;
@@ -1026,15 +932,11 @@ top::Expr ::= lhs::Expr rhs::Expr
   lType.otherType = rhs.typerep;
   local rType::Type = rhs.typerep;
   rType.otherType = lhs.typerep;
-  local overload::Maybe<BinaryOp> = orElse(lType.lMulProd, rType.rMulProd);
+  local prod::BinaryOp = fromMaybe(defaultMulExpr, orElse(lType.lMulProd, rType.rMulProd));
 
-  forwards to
-    case overload of
-    | just(prod) -> prod(lhs, rhs)
-    | nothing() -> defaultMulExpr(lhs, rhs)
-    end;
+  forwards to prod(lhs, rhs);
 }
-abstract production defaultMulExpr
+abstract production defaultMulExpr implements BinaryOp
 top::Expr ::= @lhs::Expr @rhs::Expr
 {
   propagate errors, globalDecls, functionDecls, defs;
@@ -1062,15 +964,11 @@ top::Expr ::= lhs::Expr rhs::Expr
   lType.otherType = rhs.typerep;
   local rType::Type = rhs.typerep;
   rType.otherType = lhs.typerep;
-  local overload::Maybe<BinaryOp> = orElse(lType.lDivProd, rType.rDivProd);
+  local prod::BinaryOp = fromMaybe(defaultDivExpr, orElse(lType.lDivProd, rType.rDivProd));
 
-  forwards to
-    case overload of
-    | just(prod) -> prod(lhs, rhs)
-    | nothing() -> defaultDivExpr(lhs, rhs)
-    end;
+  forwards to prod(lhs, rhs);
 }
-abstract production defaultDivExpr
+abstract production defaultDivExpr implements BinaryOp
 top::Expr ::= @lhs::Expr @rhs::Expr
 {
   propagate errors, globalDecls, functionDecls, defs;
@@ -1098,15 +996,11 @@ top::Expr ::= lhs::Expr rhs::Expr
   lType.otherType = rhs.typerep;
   local rType::Type = rhs.typerep;
   rType.otherType = lhs.typerep;
-  local overload::Maybe<BinaryOp> = orElse(lType.lModProd, rType.rModProd);
+  local prod::BinaryOp = fromMaybe(defaultModExpr, orElse(lType.lModProd, rType.rModProd));
 
-  forwards to
-    case overload of
-    | just(prod) -> prod(lhs, rhs)
-    | nothing() -> defaultModExpr(lhs, rhs)
-    end;
+  forwards to prod(lhs, rhs);
 }
-abstract production defaultModExpr
+abstract production defaultModExpr implements BinaryOp
 top::Expr ::= @lhs::Expr @rhs::Expr
 {
   propagate errors, globalDecls, functionDecls, defs;

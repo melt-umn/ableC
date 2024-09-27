@@ -5,39 +5,37 @@ flowtype arraySubscriptProd {decorate} on Type, ExtType;
 
 dispatch Call = Expr ::= @fn::Expr @args::Exprs;
 
-synthesized attribute callProd::Maybe<Call> occurs on Type, ExtType;
-flowtype callProd {decorate} on Type, ExtType;
-{-
 production bindFnCall implements Call
-top::Expr ::= @fn::Expr @args::Exprs prod::(Call ::= Expr)
+top::Expr ::= @fn::Expr @args::Exprs prod::(Expr ::= Expr [Expr])
 {
-  nondecorated local fnTmp::Name = freshName("fn");
+  nondecorated local fnTmp::Name = freshName("f");
+  nondecorated local argsTmps::Names = freshNames(args.count, "a");
+
+  forward fwrd =
+    stmtExpr(
+      seqStmt(
+        if fn.isSimple then nullStmt() else declStmt(autoDecl(fnTmp, @fn)),
+        declStmt(autoDecls(argsTmps, @args))),
+      prod(if fn.isSimple then ^fn else declRefExpr(fnTmp), args.autoRefExprs));
+
   forwards to
     if fn.isSimple && args.isSimple
-    then result
-    else 
-      stmtExpr(
-        seqStmt(
-          if fn.isSimple then nullStmt() else declStmt(autoDecl(fnTmp, @fn)),
-          if args.isSimple then nullStmt() else declStmt(autoDecl(argsTmp, @args))),
-        result);
+    then prod(^fn, args.exprs)
+    else @fwrd;
 }
--}
-synthesized attribute callMemberProd<a>::Maybe<a>;
-attribute callMemberProd<(Expr ::= Expr Name Exprs)> occurs on Type;
-attribute callMemberProd<(Expr ::= Expr Boolean Name Exprs)> occurs on ExtType;
-flowtype callMemberProd {decorate} on Type;
-flowtype callMemberProd {decorate} on ExtType;
+
+synthesized attribute callProd::Maybe<Call> occurs on Type, ExtType;
+flowtype callProd {decorate} on Type, ExtType;
 
 dispatch MemberAccess = Expr ::= @e::Expr deref::Boolean name::Name;
 
 production bindMemberAccess implements MemberAccess
-top::Expr ::= @e::Expr deref::Boolean name::Name prod::(Expr ::= Expr Boolean Name)
+top::Expr ::= @e::Expr deref::Boolean name::Name prod::(Expr ::= Expr)
 {
   nondecorated local tmp::Name = freshName("e");
   forwards to
-    if e.isSimple then prod(^e, deref, ^name)
-    else stmtExpr(declStmt(autoDecl(tmp, @e)), prod(declRefExpr(tmp), deref, ^name));
+    if e.isSimple then prod(^e)
+    else stmtExpr(declStmt(autoDecl(tmp, @e)), prod(declRefExpr(tmp)));
 }
 
 production callMemberAccess implements MemberAccess
@@ -53,11 +51,45 @@ top::Expr ::= @e::Expr deref::Boolean name::Name prod::MemberAccess
   production derefE::Expr = if deref then dereferenceExpr(@e) else @e;
   derefE.env = top.env;
   derefE.controlStmtContext = top.controlStmtContext;
-  forwards to prod(derefE, false, ^name);
+  forwards to prod(derefE, false, @name);
 }
 
 synthesized attribute memberProd::Maybe<MemberAccess> occurs on Type, ExtType;
 flowtype memberProd {decorate} on Type, ExtType;
+
+dispatch MemberCall = Expr ::= @e::Expr deref::Boolean name::Name @args::Exprs;
+
+production bindMemberCall implements MemberCall
+top::Expr ::= @e::Expr deref::Boolean name::Name @args::Exprs prod::(Expr ::= Expr [Expr])
+{
+  nondecorated local tmp::Name = freshName("e");
+  nondecorated local argsTmps::Names = freshNames(args.count, "a");
+
+  forward fwrd =
+    stmtExpr(
+      seqStmt(
+        if e.isSimple then nullStmt() else declStmt(autoDecl(tmp, @e)),
+        declStmt(autoDecls(argsTmps, @args))),
+      prod(if e.isSimple then ^e else declRefExpr(tmp), args.autoRefExprs));
+
+  forwards to
+    if e.isSimple && args.isSimple
+    then prod(^e, args.exprs)
+    else @fwrd;
+}
+
+-- Helper to supply an overload of -> for pointers when . is overloaded for the base type.
+production derefMemberCallAccess implements MemberCall
+top::Expr ::= @e::Expr deref::Boolean name::Name @args::Exprs prod::MemberCall
+{
+  production derefE::Expr = if deref then dereferenceExpr(@e) else @e;
+  derefE.env = top.env;
+  derefE.controlStmtContext = top.controlStmtContext;
+  forwards to prod(derefE, false, @name, args);
+}
+
+synthesized attribute memberCallProd::Maybe<MemberCall> occurs on Type, ExtType;
+flowtype memberCallProd {decorate} on Type, ExtType;
 
 dispatch ExprInitializer = Initializer ::= @e::Expr;
 {-
@@ -76,6 +108,8 @@ top::Initializer ::= @e::Expr prod::(Expr ::= Expr)
 production transformExprInitializer implements ExprInitializer
 top::Initializer ::= @e::Expr result::Expr
 {
+  e.env = top.env;
+  e.controlStmtContext = top.controlStmtContext;
   forwards to defaultExprInitializer(result);
 }
 
@@ -98,14 +132,14 @@ top::Expr ::= @e::Expr prod::(Expr ::= Expr)
   forwards to
     if e.isSimple then prod(^e)
     else stmtExpr(
-      declStmt(autoDecl(tmp, addressOfExpr(@e))),
+      declStmt(autoDecl(tmp, hostAddressOfExpr(@e))),
       prod(dereferenceExpr(declRefExpr(tmp))));
 }
 
 production callUnaryUpdateOp implements UnaryUpdateOp
 top::Expr ::= @e::Expr fn::Name extraArgs::Exprs
 {
-  forwards to directCallExpr(@fn, consExpr(addressOfExpr(@e), @extraArgs));
+  forwards to directCallExpr(@fn, consExpr(hostAddressOfExpr(@e), @extraArgs));
 }
 
 synthesized attribute preIncProd::Maybe<UnaryUpdateOp> occurs on Type, ExtType;
@@ -179,9 +213,6 @@ dispatch AssignOp = Expr ::= @lhs::Expr @rhs::Expr;
 production bindAssignOp implements AssignOp
 top::Expr ::= @lhs::Expr @rhs::Expr prod::(Expr ::= Expr Expr)
 {
-  rhs.env = addEnv(lhs.defs, lhs.env);
-  rhs.controlStmtContext = top.controlStmtContext;
-
   nondecorated local lhsTmp::Name = freshName("lhs");
   nondecorated local rhsTmp::Name = freshName("rhs");
   nondecorated local result::Expr = prod(
@@ -193,7 +224,7 @@ top::Expr ::= @lhs::Expr @rhs::Expr prod::(Expr ::= Expr Expr)
     else
       stmtExpr(
         seqStmt(
-          if lhs.isSimple then nullStmt() else declStmt(autoDecl(lhsTmp, addressOfExpr(@lhs))),
+          if lhs.isSimple then nullStmt() else declStmt(autoDecl(lhsTmp, hostAddressOfExpr(@lhs))),
           if rhs.isSimple then nullStmt() else declStmt(autoDecl(rhsTmp, @rhs))),
         result);
 }
@@ -208,19 +239,11 @@ top::Expr ::= @lhs::Expr @rhs::Expr prod::(Expr ::= Expr Expr)
 production callAssignOp implements AssignOp
 top::Expr ::= @lhs::Expr @rhs::Expr fn::Name extraArgs::Exprs
 {
-  forwards to directCallExpr(@fn, consExpr(addressOfExpr(@lhs), consExpr(@rhs, @extraArgs)));
-}
-
-production directEqExpr
-top::Expr ::= lhs::Expr rhs::Expr
-{
-  lhs.env = top.env;
-  lhs.controlStmtContext = top.controlStmtContext;
-  forwards to defaultEqExpr(lhs, rhs);
+  forwards to directCallExpr(@fn, consExpr(hostAddressOfExpr(@lhs), consExpr(@rhs, @extraArgs)));
 }
 
 synthesized attribute eqProd::Maybe<AssignOp> occurs on Type, ExtType;
-flowtype eqProd {decorate} on Type, ExtType;
+flowtype eqProd {decorate, otherType} on Type, ExtType;
 
 synthesized attribute eqArraySubscriptProd::Maybe<(Expr ::= Expr Expr Expr)> occurs on Type, ExtType;
 flowtype eqArraySubscriptProd {decorate} on Type, ExtType;
@@ -234,34 +257,34 @@ attribute eqMemberProd<(Expr ::= Expr Boolean Name Expr)> occurs on ExtType;
 flowtype eqMemberProd {decorate} on Type, ExtType;
 
 synthesized attribute mulEqProd::Maybe<AssignOp> occurs on Type, ExtType;
-flowtype mulEqProd {decorate} on Type, ExtType;
+flowtype mulEqProd {decorate, otherType} on Type, ExtType;
 
 synthesized attribute divEqProd::Maybe<AssignOp> occurs on Type, ExtType;
-flowtype divEqProd {decorate} on Type, ExtType;
+flowtype divEqProd {decorate, otherType} on Type, ExtType;
 
 synthesized attribute modEqProd::Maybe<AssignOp> occurs on Type, ExtType;
-flowtype modEqProd {decorate} on Type, ExtType;
+flowtype modEqProd {decorate, otherType} on Type, ExtType;
 
 synthesized attribute addEqProd::Maybe<AssignOp> occurs on Type, ExtType;
-flowtype addEqProd {decorate} on Type, ExtType;
+flowtype addEqProd {decorate, otherType} on Type, ExtType;
 
 synthesized attribute subEqProd::Maybe<AssignOp> occurs on Type, ExtType;
-flowtype subEqProd {decorate} on Type, ExtType;
+flowtype subEqProd {decorate, otherType} on Type, ExtType;
 
 synthesized attribute lshEqProd::Maybe<AssignOp> occurs on Type, ExtType;
-flowtype lshEqProd {decorate} on Type, ExtType;
+flowtype lshEqProd {decorate, otherType} on Type, ExtType;
 
 synthesized attribute rshEqProd::Maybe<AssignOp> occurs on Type, ExtType;
-flowtype rshEqProd {decorate} on Type, ExtType;
+flowtype rshEqProd {decorate, otherType} on Type, ExtType;
 
 synthesized attribute andEqProd::Maybe<AssignOp> occurs on Type, ExtType;
-flowtype andEqProd {decorate} on Type, ExtType;
+flowtype andEqProd {decorate, otherType} on Type, ExtType;
 
 synthesized attribute xorEqProd::Maybe<AssignOp> occurs on Type, ExtType;
-flowtype xorEqProd {decorate} on Type, ExtType;
+flowtype xorEqProd {decorate, otherType} on Type, ExtType;
 
 synthesized attribute orEqProd::Maybe<AssignOp> occurs on Type, ExtType;
-flowtype orEqProd {decorate} on Type, ExtType;
+flowtype orEqProd {decorate, otherType} on Type, ExtType;
 
 dispatch BinaryOp = Expr ::= @lhs::Expr @rhs::Expr;
 
@@ -391,7 +414,7 @@ top::Type ::=
 {
   top.arraySubscriptProd = nothing();
   top.callProd = nothing();
-  top.callMemberProd = nothing();
+  top.memberCallProd = nothing();
   top.memberProd = nothing();
   top.exprInitProd = nothing();
   top.objectInitProd = nothing();
@@ -463,7 +486,7 @@ top::Type ::=
 aspect production pointerType
 top::Type ::= q::Qualifiers target::Type
 {
-  --top.callMemberProd = if top.isDeref then target.callMemberProd else nothing();
+  top.memberCallProd = map(derefMemberCallAccess, target.memberCallProd);
   top.memberProd = map(derefMemberAccess, target.memberProd);
   --top.addressOfMemberProd = if top.isDeref then target.addressOfMemberProd else nothing();
   --top.eqMemberProd = if top.isDeref then target.eqMemberProd else nothing();
@@ -476,7 +499,7 @@ top::Type ::= q::Qualifiers  sub::ExtType
 {
   top.arraySubscriptProd = sub.arraySubscriptProd;
   top.callProd = sub.callProd;
-  --top.callMemberProd = sub.callMemberProd;
+  top.memberCallProd = sub.memberCallProd;
   top.memberProd = sub.memberProd;
   top.exprInitProd = sub.exprInitProd;
   top.objectInitProd = sub.objectInitProd;
@@ -554,7 +577,7 @@ top::ExtType ::=
 {
   top.arraySubscriptProd = nothing();
   top.callProd = nothing();
-  top.callMemberProd = nothing();
+  top.memberCallProd = nothing();
   top.memberProd = nothing();
   top.exprInitProd = nothing();
   top.objectInitProd = nothing();

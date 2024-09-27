@@ -116,6 +116,13 @@ top::Expr ::= e::Expr
     | nothing() -> defaultAddressOfExpr(e)
     end;
 }
+-- Non-overloaded version, used in overloading resolution for assignment operators
+production hostAddressOfExpr
+top::Expr ::= e::Expr
+{
+  propagate env, controlStmtContext;
+  forwards to defaultAddressOfExpr(e);
+}
 abstract production defaultAddressOfExpr
 top::Expr ::= @e::Expr
 {

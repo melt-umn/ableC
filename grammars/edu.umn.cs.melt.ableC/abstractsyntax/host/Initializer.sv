@@ -48,14 +48,10 @@ abstract production exprInitializer
 top::Initializer ::= e::Expr
 {
   top.pp = e.pp;
-  forwards to
-    case top.expectedType.exprInitProd of
-    | just(prod) -> prod(e)
-    | nothing() -> defaultExprInitializer(e)
-    end;
+  forwards to fromMaybe(defaultExprInitializer, top.expectedType.exprInitProd)(e);
 }
 
-abstract production defaultExprInitializer
+abstract production defaultExprInitializer implements ExprInitializer
 top::Initializer ::= @e::Expr
 {
   propagate @env, @controlStmtContext;
@@ -87,14 +83,10 @@ abstract production objectInitializer
 top::Initializer ::= l::InitList
 {
   top.pp = ppConcat([text("{"), ppImplode(text(", "), l.pps), text("}")]);
-  forwards to
-    case top.expectedType.objectInitProd of
-    | just(prod) -> prod(l)
-    | nothing() -> defaultObjectInitializer(l)
-    end;
+  forwards to fromMaybe(defaultObjectInitializer, top.expectedType.objectInitProd)(l);
 }
 
-abstract production defaultObjectInitializer
+abstract production defaultObjectInitializer implements ObjectInitializer
 top::Initializer ::= @l::InitList
 {
   propagate @env, @controlStmtContext;

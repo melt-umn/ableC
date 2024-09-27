@@ -195,13 +195,17 @@ top::Expr ::= f::Expr a::Exprs
 
   f.env = top.env;
   f.controlStmtContext = top.controlStmtContext;
-  forwards to
-    case f.typerep.callProd of
-    | just(prod) -> prod(f, a)
-    | nothing() -> defaultCallExpr(f, a)
-    end;
+  forwards to fromMaybe(defaultCallExpr, f.typerep.callProd)(f, a);
 }
-abstract production defaultCallExpr
+-- Non-overloaded version, for use by extensions
+abstract production hostCallExpr
+top::Expr ::= f::Expr a::Exprs
+{
+  f.env = top.env;
+  f.controlStmtContext = top.controlStmtContext;
+  forwards to defaultCallExpr(f, a);
+}
+abstract production defaultCallExpr implements Call
 top::Expr ::= @f::Expr  @a::Exprs
 {
   propagate errors, globalDecls, functionDecls, defs;
@@ -245,6 +249,21 @@ top::Expr ::= @f::Expr  @a::Exprs
   a.env = addEnv(f.defs, f.env);
   a.controlStmtContext = top.controlStmtContext;
 }
+abstract production memberCallExpr
+top::Expr ::= e::Expr  deref::Boolean  name::Name  a::Exprs
+{
+  top.pp = parens( ppConcat([ e.pp, text(if deref then "->" else "."), name.pp, parens( ppImplode( cat( comma(), space() ), a.pps ))]) );
+  e.env = top.env;
+  e.controlStmtContext = top.controlStmtContext;
+
+  forwards to
+    fromMaybe(defaultMemberCallExpr, e.typerep.memberCallProd)(e, deref, @name, a);
+}
+abstract production defaultMemberCallExpr implements MemberCall
+top::Expr ::= @e::Expr  deref::Boolean  name::Name  @a::Exprs
+{
+  forwards to callExpr(memberExpr(@e, deref, @name), @a);
+}
 abstract production memberExpr
 top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
 {
@@ -252,12 +271,9 @@ top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
   propagate env, controlStmtContext;
 
   forwards to
-    case lhs.typerep.memberProd of
-    | just(prod) -> prod(lhs, deref, ^rhs)
-    | nothing() -> defaultMemberExpr(lhs, deref, ^rhs)
-    end;
+    fromMaybe(defaultMemberExpr, lhs.typerep.memberProd)(lhs, deref, @rhs);
 }
-abstract production defaultMemberExpr
+abstract production defaultMemberExpr implements MemberAccess
 top::Expr ::= @lhs::Expr  deref::Boolean  rhs::Name
 {
   propagate errors, globalDecls, functionDecls, defs, freeVariables;
