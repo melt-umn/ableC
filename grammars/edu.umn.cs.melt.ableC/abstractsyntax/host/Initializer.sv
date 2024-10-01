@@ -43,7 +43,7 @@ tracked nonterminal Initializer with pp, host, typerep, errors, globalDecls,
   isSimple, asExpr;
 flowtype Initializer = decorate {env, initializerPos, inObject, expectedType,
   controlStmtContext},
-  expectedTypesOut {decorate};
+  expectedTypesOut {decorate}, nestedInitsOut {decorate, nestedInits}, asExpr {decorate}, isSimple {decorate};
 
 propagate controlStmtContext on Initializer;
 
