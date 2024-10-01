@@ -707,7 +707,7 @@ top::Expr ::= lhs::Expr rhs::Expr
     orElse(
       orElse(lType.lNotEqualsProd, rType.rNotEqualsProd),
       if lType.lEqualsProd.isJust || rType.rEqualsProd.isJust
-      then just(bindBinaryOp(\ l r -> notExpr(equalsExpr(l, r))))
+      then just(expandNotEqualsExpr)
       else nothing()));
 
   forwards to prod(lhs, rhs);
@@ -725,6 +725,11 @@ top::Expr ::= @lhs::Expr @rhs::Expr
   top.isLValue = false;
   top.integerConstantValue =
     if lhs.integerConstantValue != rhs.integerConstantValue then 1 else 0;
+}
+abstract production expandNotEqualsExpr implements BinaryOp
+top::Expr ::= @lhs::Expr @rhs::Expr
+{
+  forwards to notExpr(equalsExpr(@lhs, @rhs));
 }
 
 abstract production gtExpr

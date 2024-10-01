@@ -37,7 +37,7 @@ top::MaybeExpr ::=
 tracked nonterminal Exprs with pps, host, errors, globalDecls, functionDecls, defs, env,
   expectedTypes, argumentPosition, callExpr, argumentErrors, typereps, count, exprs,
   callVariadic, freeVariables, appendedExprs, appendedRes, isLValue, isSimple,
-  autoNames, autoRefExprs, autoDefs, hostAutoDecls,
+  bindName, bindRefExprs, bindDefs, hostBindDecls,
   controlStmtContext;
 
 flowtype Exprs = decorate {env, controlStmtContext},
@@ -56,10 +56,8 @@ synthesized attribute exprs :: [Expr];
 inherited attribute appendedExprs :: Exprs;
 synthesized attribute appendedRes :: Exprs;
 
-inherited attribute autoNames :: Decorated Names;
-synthesized attribute autoRefExprs :: [Expr];
-synthesized attribute autoDefs :: [Def];
-synthesized attribute hostAutoDecls :: Decls;
+synthesized attribute bindRefExprs :: [Expr];
+synthesized attribute hostBindDecls :: Decls;
 
 propagate host, errors, globalDecls, functionDecls, defs, controlStmtContext on Exprs;
 
@@ -99,36 +97,11 @@ top::Exprs ::= h::Expr  t::Exprs
   t.env = addEnv(h.defs, h.env);
   h.env = top.env;
 
-  local autoName::Name =
-    case top.autoNames of
-    | consName(n, _) -> ^n
-    | nilName() -> error("Fewer Names than Exprs")
-    end;
-  t.autoNames =
-    case top.autoNames of
-    | consName(_, ns) -> ns
-    | nilName() -> error("Fewer Names than Exprs")
-    end;
-  top.autoRefExprs = (if h.isSimple then ^h else declRefExpr(^autoName)) :: t.autoRefExprs;
-  top.autoDefs =
-    (if h.isSimple then [] else [valueDef(autoName.name, preDeclValueItem(h.typerep))]) ++
-    t.autoDefs;
-  top.hostAutoDecls =
-    if h.isSimple
-    then t.hostAutoDecls
-    else consDecl(
-      variableDecls(
-        nilStorageClass(),
-        nilAttribute(),
-        h.typerep.host.baseTypeExpr,
-        consDeclarator(
-          declarator(
-            ^autoName,
-            h.typerep.host.typeModifierExpr,
-            nilAttribute(),
-            justInitializer(exprInitializer(h.host))),
-          nilDeclarator())),
-      t.hostAutoDecls);
+  h.bindName = name(top.bindName.name ++ "_" ++ toString(t.count));
+  t.bindName = top.bindName;
+  top.bindRefExprs = h.bindRefExpr :: t.bindRefExprs;
+  top.bindDefs = h.bindDefs ++ t.bindDefs;
+  top.hostBindDecls = consDecl(h.hostBindDecl, t.hostBindDecls);
 }
 abstract production nilExpr
 top::Exprs ::=
@@ -141,9 +114,9 @@ top::Exprs ::=
   top.appendedRes = top.appendedExprs;
   top.isLValue = false;
   top.isSimple = true;
-  top.autoRefExprs = [];
-  top.autoDefs = [];
-  top.hostAutoDecls = nilDecl();
+  top.bindRefExprs = [];
+  top.bindDefs = [];
+  top.hostBindDecls = nilDecl();
 
   top.argumentErrors =
     if null(top.expectedTypes) then []

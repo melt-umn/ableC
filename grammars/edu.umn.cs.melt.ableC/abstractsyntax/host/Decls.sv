@@ -37,14 +37,15 @@ top::GlobalDecls ::=
   top.pps = [];
 }
 
-tracked nonterminal Decls with pps, host, errors, globalDecls, functionDecls, unfoldedGlobalDecls,
+tracked nonterminal Decls with pps, host, isEmpty, errors, globalDecls, functionDecls, unfoldedGlobalDecls,
   unfoldedFunctionDecls, defs, env, isTopLevel, freeVariables,
   controlStmtContext;
 flowtype Decls = decorate {env, isTopLevel, controlStmtContext};
 
 inherited attribute isTopLevel :: Boolean;
+monoid attribute isEmpty :: Boolean with true, &&;
 
-propagate host, errors, defs, globalDecls, functionDecls, isTopLevel, controlStmtContext on Decls;
+propagate host, isEmpty, errors, defs, globalDecls, functionDecls, isTopLevel, controlStmtContext on Decls;
 
 abstract production consDecl
 top::Decls ::= h::Decl  t::Decls
@@ -72,11 +73,12 @@ top::Decls ::=
 production appendDecls
 Decls ::= d1::Decls d2::Decls
 {
+  propagate isEmpty;
   forwards to consDecl(decls(@d1), @d2);
 }
 
 
-tracked nonterminal Decl with pp, host, errors, globalDecls, functionDecls, unfoldedGlobalDecls,
+tracked nonterminal Decl with pp, host, isEmpty, errors, globalDecls, functionDecls, unfoldedGlobalDecls,
   unfoldedFunctionDecls, defs, env, isTopLevel, freeVariables, controlStmtContext;
 flowtype Decl = decorate {env, isTopLevel, controlStmtContext};
 
@@ -89,6 +91,7 @@ inherited attribute givenAttributes :: Attributes;
 aspect default production
 top::Decl ::=
 {
+  top.isEmpty := false;
   top.unfoldedGlobalDecls = top.globalDecls ++ [top];
   top.unfoldedFunctionDecls = top.functionDecls ++ [top];
 }
@@ -96,7 +99,7 @@ top::Decl ::=
 abstract production decls
 top::Decl ::= d::Decls
 {
-  propagate env, host, errors, globalDecls, functionDecls, defs, freeVariables;
+  propagate env, host, isEmpty, errors, globalDecls, functionDecls, defs, freeVariables;
   top.pp = terminate( line(), d.pps );
   top.unfoldedGlobalDecls = d.unfoldedGlobalDecls;
   top.unfoldedFunctionDecls = d.unfoldedFunctionDecls;
@@ -241,18 +244,6 @@ top::Decl ::= n::Name  e::Expr
   top.errors <- n.valueRedeclarationCheckNoCompatible;
   top.defs <- [valueDef(n.name, autoValueItem(e))];
 }
-abstract production autoDecls
-top::Decl ::= ns::Names  es::Exprs
-{
-  propagate env, errors, globalDecls, functionDecls, defs, freeVariables;
-  top.pp = pp"autos ${ppImplode(pp", ", ns.pps)} = ${ppImplode(pp", ", es.pps)};";
-  top.host = decls(es.hostAutoDecls);
-
-  es.autoNames = ns;
-
-  top.errors <- ns.valueRedeclarationCheckNoCompatible;
-  top.defs <- es.autoDefs;
-}
 
 -- Any declarations needed by the type must have already been lifted!
 abstract production preDecl
@@ -277,6 +268,47 @@ top::Decl ::= ty::Type  n::Name
   top.defs <- [valueDef(n.name, preDeclValueItem(^ty))];
 }
 
+-- Utilities to bind expressions (and constructs containing them) to fresh names.
+-- For use by overloaded operators.
+abstract production bindExprDecl
+top::Decl ::= n::Name e::Expr
+{
+  propagate env, errors, globalDecls, functionDecls, defs, freeVariables;
+  top.pp = pp"bind ${n} = ${e.pp};";
+  top.host = e.hostBindDecl;
+  top.isEmpty := e.isSimple;
+  top.defs <- e.bindDefs;
+
+  e.bindName = ^n;
+}
+abstract production bindExprsDecls
+top::Decl ::= n::Name  es::Exprs
+{
+  propagate env, errors, globalDecls, functionDecls, defs, freeVariables;
+  top.pp = pp"bind ${n} = ${ppImplode(pp", ", es.pps)};";
+  top.host = decls(es.hostBindDecls);
+  top.isEmpty := es.isSimple;
+  top.defs <- es.bindDefs;
+
+  es.bindName = ^n;
+  es.argumentPosition = 1;
+}
+abstract production bindInitListDecls
+top::Decl ::= ty::Type n::Name  l::InitList
+{
+  propagate env, errors, globalDecls, functionDecls, defs, freeVariables;
+  top.pp = pp"bind ${ty.lpp}${ty.rpp} ${n} = ${ppImplode(pp", ", l.pps)};";
+  top.host = decls(l.hostBindDecls);
+  top.isEmpty := l.isSimple;
+  top.defs <- l.bindDefs;
+
+  l.bindName = ^n;
+
+  local decSite::Expr =
+    compoundLiteralExpr(typeName(ty.baseTypeExpr, ty.typeModifierExpr), @l);
+  decSite.env = top.env;
+  decSite.controlStmtContext = top.controlStmtContext;
+}
 
 monoid attribute hasModifiedTypeExpr::Boolean with false, ||;
 monoid attribute hostDecls::[Decl];

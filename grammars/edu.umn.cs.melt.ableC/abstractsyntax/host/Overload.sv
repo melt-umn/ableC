@@ -6,22 +6,12 @@ flowtype arraySubscriptProd {decorate} on Type, ExtType;
 dispatch Call = Expr ::= @fn::Expr @args::Exprs;
 
 production bindFnCall implements Call
-top::Expr ::= @fn::Expr @args::Exprs prod::(Expr ::= Expr [Expr])
+top::Expr ::= @fn::Expr @args::Exprs result::Expr
 {
-  nondecorated local fnTmp::Name = freshName("f");
-  nondecorated local argsTmps::Names = freshNames(args.count, "a");
-
-  forward fwrd =
-    stmtExpr(
-      seqStmt(
-        if fn.isSimple then nullStmt() else declStmt(autoDecl(fnTmp, @fn)),
-        declStmt(autoDecls(argsTmps, @args))),
-      prod(if fn.isSimple then ^fn else declRefExpr(fnTmp), args.autoRefExprs));
-
-  forwards to
-    if fn.isSimple && args.isSimple
-    then prod(^fn, args.exprs)
-    else @fwrd;
+  forwards to letExpr(
+    consDecl(bindExprDecl(freshName("f"), @fn),
+      consDecl(bindExprsDecls(freshName("a"), @args), nilDecl())),
+    @result);
 }
 
 synthesized attribute callProd::Maybe<Call> occurs on Type, ExtType;
@@ -30,12 +20,11 @@ flowtype callProd {decorate} on Type, ExtType;
 dispatch MemberAccess = Expr ::= @e::Expr deref::Boolean name::Name;
 
 production bindMemberAccess implements MemberAccess
-top::Expr ::= @e::Expr deref::Boolean name::Name prod::(Expr ::= Expr)
+top::Expr ::= @e::Expr deref::Boolean name::Name result::Expr
 {
-  nondecorated local tmp::Name = freshName("e");
-  forwards to
-    if e.isSimple then prod(^e)
-    else stmtExpr(declStmt(autoDecl(tmp, @e)), prod(declRefExpr(tmp)));
+  forwards to letExpr(
+    consDecl(bindExprDecl(freshName("e"), @e), nilDecl()),
+    @result);
 }
 
 production callMemberAccess implements MemberAccess
@@ -60,22 +49,12 @@ flowtype memberProd {decorate} on Type, ExtType;
 dispatch MemberCall = Expr ::= @e::Expr deref::Boolean name::Name @args::Exprs;
 
 production bindMemberCall implements MemberCall
-top::Expr ::= @e::Expr deref::Boolean name::Name @args::Exprs prod::(Expr ::= Expr [Expr])
+top::Expr ::= @e::Expr deref::Boolean name::Name @args::Exprs result::Expr
 {
-  nondecorated local tmp::Name = freshName("e");
-  nondecorated local argsTmps::Names = freshNames(args.count, "a");
-
-  forward fwrd =
-    stmtExpr(
-      seqStmt(
-        if e.isSimple then nullStmt() else declStmt(autoDecl(tmp, @e)),
-        declStmt(autoDecls(argsTmps, @args))),
-      prod(if e.isSimple then ^e else declRefExpr(tmp), args.autoRefExprs));
-
-  forwards to
-    if e.isSimple && args.isSimple
-    then prod(^e, args.exprs)
-    else @fwrd;
+  forwards to letExpr(
+    consDecl(bindExprDecl(freshName("e"), @e),
+      consDecl(bindExprsDecls(freshName("a"), @args), nilDecl())),
+    @result);
 }
 
 -- Helper to supply an overload of -> for pointers when . is overloaded for the base type.
@@ -92,25 +71,21 @@ synthesized attribute memberCallProd::Maybe<MemberCall> occurs on Type, ExtType;
 flowtype memberCallProd {decorate} on Type, ExtType;
 
 dispatch ExprInitializer = Initializer ::= @e::Expr;
-{-
+
 production bindExprInitializer implements ExprInitializer
-top::Initializer ::= @e::Expr prod::(Expr ::= Expr)
+top::Initializer ::= @e::Expr result::Expr
 {
-  propagate @env, @controlStmtContext;
-  nondecorated local tmp::Name = freshName("e");
-  production fwrd::Expr =
-    if e.isSimple then prod(^e)
-    else stmtExpr(declStmt(autoDecl(tmp, @e)), prod(declRefExpr(tmp)));
-  forwards to defaultExprInitializer(fwrd);
+  forwards to hostExprInitializer(letExpr(
+    consDecl(bindExprDecl(freshName("e"), @e), nilDecl()),
+    @result));
 }
--}
 
 production transformExprInitializer implements ExprInitializer
-top::Initializer ::= @e::Expr result::Expr
+top::Initializer ::= @e::Expr result::Initializer
 {
   e.env = top.env;
   e.controlStmtContext = top.controlStmtContext;
-  forwards to defaultExprInitializer(result);
+  forwards to @result;
 }
 
 synthesized attribute exprInitProd::Maybe<ExprInitializer> occurs on Type, ExtType;
@@ -118,7 +93,14 @@ flowtype exprInitProd {decorate} on Type, ExtType;
 
 dispatch ObjectInitializer = Initializer ::= @l::InitList;
 
--- TODO: Need a way to bind object initializers, somehow
+production bindObjectInitializer implements ObjectInitializer
+top::Initializer ::= @l::InitList result::Expr
+{
+  top.pp = forwardParent.pp;
+  forwards to hostExprInitializer(letExpr(
+    consDecl(bindInitListDecls(top.expectedType, freshName("l"), @l), nilDecl()),
+    @result));
+}
 
 synthesized attribute objectInitProd::Maybe<ObjectInitializer> occurs on Type, ExtType;
 flowtype objectInitProd {decorate} on Type, ExtType;
@@ -157,12 +139,11 @@ flowtype postDecProd {decorate} on Type, ExtType;
 dispatch UnaryOp = Expr ::= @e::Expr;
 
 production bindUnaryOp implements UnaryOp
-top::Expr ::= @e::Expr prod::(Expr ::= Expr)
+top::Expr ::= @e::Expr result::Expr
 {
-  nondecorated local tmp::Name = freshName("tmp");
-  forwards to
-    if e.isSimple then prod(^e)
-    else stmtExpr(declStmt(autoDecl(tmp, @e)), prod(declRefExpr(tmp)));
+  forwards to letExpr(
+    consDecl(bindExprDecl(freshName("op"), @e), nilDecl()),
+    @result);
 }
 
 production callUnaryOp implements UnaryOp
@@ -210,30 +191,25 @@ inherited attribute otherType::Type occurs on Type, ExtType;
 
 dispatch AssignOp = Expr ::= @lhs::Expr @rhs::Expr;
 
+inherited attribute bindLhsRefExpr::Expr occurs on Expr;
+
 production bindAssignOp implements AssignOp
-top::Expr ::= @lhs::Expr @rhs::Expr prod::(Expr ::= Expr Expr)
+top::Expr ::= @lhs::Expr @rhs::Expr result::Expr
 {
-  nondecorated local lhsTmp::Name = freshName("lhs");
-  nondecorated local rhsTmp::Name = freshName("rhs");
-  nondecorated local result::Expr = prod(
-    if lhs.isSimple then ^lhs else dereferenceExpr(declRefExpr(lhsTmp)),
-    if rhs.isSimple then ^rhs else declRefExpr(rhsTmp));
-  forwards to
-    if lhs.isSimple && rhs.isSimple
-    then result
-    else
-      stmtExpr(
-        seqStmt(
-          if lhs.isSimple then nullStmt() else declStmt(autoDecl(lhsTmp, hostAddressOfExpr(@lhs))),
-          if rhs.isSimple then nullStmt() else declStmt(autoDecl(rhsTmp, @rhs))),
-        result);
+  local bindLhs::Expr = addressOfExpr(@lhs);
+  lhs.bindLhsRefExpr = dereferenceExpr(bindLhs.bindRefExpr);
+  forwards to letExpr(
+    consDecl(bindExprDecl(freshName("lhs"), @bindLhs),
+      consDecl(bindExprDecl(freshName("rhs"), @rhs), nilDecl())),
+    @result);
 }
 
 production updateAssignOp implements AssignOp
 top::Expr ::= @lhs::Expr @rhs::Expr prod::(Expr ::= Expr Expr)
 {
-  forwards to bindAssignOp(lhs, rhs, \ tmpLhs tmpRhs ->
-    eqExpr(tmpLhs, prod(tmpLhs, tmpRhs)));
+  top.pp = forwardParent.pp;
+  forwards to bindAssignOp(lhs, rhs,
+    eqExpr(lhs.bindLhsRefExpr, prod(lhs.bindLhsRefExpr, rhs.bindRefExpr)));
 }
 
 production callAssignOp implements AssignOp
@@ -289,22 +265,12 @@ flowtype orEqProd {decorate, otherType} on Type, ExtType;
 dispatch BinaryOp = Expr ::= @lhs::Expr @rhs::Expr;
 
 production bindBinaryOp implements BinaryOp
-top::Expr ::= @lhs::Expr @rhs::Expr prod::(Expr ::= Expr Expr)
+top::Expr ::= @lhs::Expr @rhs::Expr result::Expr
 {
-  nondecorated local lhsTmp::Name = freshName("lhs");
-  nondecorated local rhsTmp::Name = freshName("rhs");
-  nondecorated local result::Expr = prod(
-    if lhs.isSimple then ^lhs else declRefExpr(lhsTmp),
-    if rhs.isSimple then ^rhs else declRefExpr(rhsTmp));
-  forwards to
-    if lhs.isSimple && rhs.isSimple
-    then result
-    else 
-      stmtExpr(
-        seqStmt(
-          if lhs.isSimple then nullStmt() else declStmt(autoDecl(lhsTmp, @lhs)),
-          if rhs.isSimple then nullStmt() else declStmt(autoDecl(rhsTmp, @rhs))),
-        result);
+  forwards to letExpr(
+    consDecl(bindExprDecl(freshName("lhs"), @lhs),
+      consDecl(bindExprDecl(freshName("rhs"), @rhs), nilDecl())),
+    @result);
 }
 
 production callBinaryOp implements BinaryOp
