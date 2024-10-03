@@ -3,10 +3,10 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 synthesized attribute arraySubscriptProd::Maybe<BinaryOp> occurs on Type, ExtType;
 flowtype arraySubscriptProd {decorate} on Type, ExtType;
 
-dispatch Call = Expr ::= @fn::Expr @args::Exprs;
+dispatch Call = Expr ::= @fn::Expr args::Exprs;
 
 production bindFnCall implements Call
-top::Expr ::= @fn::Expr @args::Exprs result::Expr
+top::Expr ::= @fn::Expr args::Exprs result::Expr
 {
   forwards to letExpr(
     consDecl(bindExprDecl(freshName("f"), @fn),
@@ -46,10 +46,10 @@ top::Expr ::= @e::Expr deref::Boolean name::Name prod::MemberAccess
 synthesized attribute memberProd::Maybe<MemberAccess> occurs on Type, ExtType;
 flowtype memberProd {decorate} on Type, ExtType;
 
-dispatch MemberCall = Expr ::= @e::Expr deref::Boolean name::Name @args::Exprs;
+dispatch MemberCall = Expr ::= @e::Expr deref::Boolean name::Name args::Exprs;
 
 production bindMemberCall implements MemberCall
-top::Expr ::= @e::Expr deref::Boolean name::Name @args::Exprs result::Expr
+top::Expr ::= @e::Expr deref::Boolean name::Name args::Exprs result::Expr
 {
   forwards to letExpr(
     consDecl(bindExprDecl(freshName("e"), @e),
@@ -59,29 +59,29 @@ top::Expr ::= @e::Expr deref::Boolean name::Name @args::Exprs result::Expr
 
 -- Helper to supply an overload of -> for pointers when . is overloaded for the base type.
 production derefMemberCallAccess implements MemberCall
-top::Expr ::= @e::Expr deref::Boolean name::Name @args::Exprs prod::MemberCall
+top::Expr ::= @e::Expr deref::Boolean name::Name args::Exprs prod::MemberCall
 {
   production derefE::Expr = if deref then dereferenceExpr(@e) else @e;
   derefE.env = top.env;
   derefE.controlStmtContext = top.controlStmtContext;
-  forwards to prod(derefE, false, @name, args);
+  forwards to prod(derefE, false, @name, @args);
 }
 
 synthesized attribute memberCallProd::Maybe<MemberCall> occurs on Type, ExtType;
 flowtype memberCallProd {decorate} on Type, ExtType;
 
-dispatch ExprInitializer = Initializer ::= @e::Expr;
+dispatch ExprInitializer = Initializer ::= e::Expr;
 
 production bindExprInitializer implements ExprInitializer
-top::Initializer ::= @e::Expr result::Expr
+top::Initializer ::= e::Expr result::Expr
 {
-  forwards to hostExprInitializer(letExpr(
+  forwards to defaultExprInitializer(letExpr(
     consDecl(bindExprDecl(freshName("e"), @e), nilDecl()),
     @result));
 }
 
 production transformExprInitializer implements ExprInitializer
-top::Initializer ::= @e::Expr result::Initializer
+top::Initializer ::= e::Expr result::Initializer
 {
   e.env = top.env;
   e.controlStmtContext = top.controlStmtContext;
@@ -91,13 +91,13 @@ top::Initializer ::= @e::Expr result::Initializer
 synthesized attribute exprInitProd::Maybe<ExprInitializer> occurs on Type, ExtType;
 flowtype exprInitProd {decorate} on Type, ExtType;
 
-dispatch ObjectInitializer = Initializer ::= @l::InitList;
+dispatch ObjectInitializer = Initializer ::= l::InitList;
 
 production bindObjectInitializer implements ObjectInitializer
-top::Initializer ::= @l::InitList result::Expr
+top::Initializer ::= l::InitList result::Expr
 {
-  top.pp = forwardParent.pp;
-  forwards to hostExprInitializer(letExpr(
+  top.pp = ppConcat([text("{"), ppImplode(text(", "), l.pps), text("}")]);
+  forwards to defaultExprInitializer(letExpr(
     consDecl(bindInitListDecls(top.expectedType, freshName("l"), @l), nilDecl()),
     @result));
 }

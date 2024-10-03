@@ -189,21 +189,21 @@ top::Expr ::= f::Name  a::Exprs
   top.pp = parens( ppConcat([ f.pp, parens( ppImplode( cat( comma(), space() ), a.pps ))]) );
 
   f.env = top.env;
-  forwards to f.valueItem.directCallHandler(^f, a);
+  forwards to f.valueItem.directCallHandler(^f, @a);
 }
 
-dispatch ReferenceCall = Expr ::= f::Name @a::Exprs;
+dispatch ReferenceCall = Expr ::= f::Name a::Exprs;
 
 -- If the identifier is an ordinary one, use the normal function call production
 -- Or, if it's a pass-through builtin one, this works too!
 production ordinaryFunctionHandler implements ReferenceCall
-top::Expr ::= f::Name  @a::Exprs 
+top::Expr ::= f::Name  a::Exprs 
 {
   forwards to callExpr(declRefExpr(@f), @a);
 }
 
 production bindDirectCallExpr implements ReferenceCall
-top::Expr ::= f::Name @a::Exprs result::Expr
+top::Expr ::= f::Name a::Exprs result::Expr
 {
   forwards to letExpr(
     consDecl(bindExprsDecls(freshName("a"), @a), nilDecl()),
@@ -218,7 +218,7 @@ top::Expr ::= f::Expr a::Exprs
 
   f.env = top.env;
   f.controlStmtContext = top.controlStmtContext;
-  forwards to fromMaybe(defaultCallExpr, f.typerep.callProd)(f, a);
+  forwards to fromMaybe(defaultCallExpr, f.typerep.callProd)(f, @a);
 }
 -- Non-overloaded version, for use by extensions
 abstract production hostCallExpr
@@ -226,10 +226,10 @@ top::Expr ::= f::Expr a::Exprs
 {
   f.env = top.env;
   f.controlStmtContext = top.controlStmtContext;
-  forwards to defaultCallExpr(f, a);
+  forwards to defaultCallExpr(f, @a);
 }
 abstract production defaultCallExpr implements Call
-top::Expr ::= @f::Expr  @a::Exprs
+top::Expr ::= @f::Expr  a::Exprs
 {
   propagate errors, globalDecls, functionDecls, defs;
   top.pp = forwardParent.pp;
@@ -280,10 +280,10 @@ top::Expr ::= e::Expr  deref::Boolean  name::Name  a::Exprs
   e.controlStmtContext = top.controlStmtContext;
 
   forwards to
-    fromMaybe(defaultMemberCallExpr, e.typerep.memberCallProd)(e, deref, @name, a);
+    fromMaybe(defaultMemberCallExpr, e.typerep.memberCallProd)(e, deref, @name, @a);
 }
 abstract production defaultMemberCallExpr implements MemberCall
-top::Expr ::= @e::Expr  deref::Boolean  name::Name  @a::Exprs
+top::Expr ::= @e::Expr  deref::Boolean  name::Name  a::Exprs
 {
   forwards to callExpr(memberExpr(@e, deref, @name), @a);
 }
@@ -568,15 +568,15 @@ top::Expr ::= d::Decls  e::Expr
   local s::Stmt = declStmt(decls(@d));
   s.env = top.env;
   s.controlStmtContext = top.controlStmtContext;
-  forwards to (if d.isEmpty then noStmtExpr else someStmtExpr)(s, e);
+  forwards to (if d.isEmpty then noStmtExpr else someStmtExpr)(s, @e);
 }
 
-dispatch StmtExpr = Expr ::= @s::Stmt @e::Expr;
-production noStmtExpr
-top::Expr ::= @s::Stmt @e::Expr
+dispatch StmtExpr = Expr ::= @s::Stmt e::Expr;
+production noStmtExpr implements StmtExpr
+top::Expr ::= @s::Stmt e::Expr
 { forwards to @e; }
-production someStmtExpr
-top::Expr ::= @s::Stmt @e::Expr
+production someStmtExpr implements StmtExpr
+top::Expr ::= @s::Stmt e::Expr
 { forwards to stmtExpr(@s, @e); }
 
 

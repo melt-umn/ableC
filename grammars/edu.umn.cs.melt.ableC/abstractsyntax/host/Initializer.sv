@@ -45,26 +45,18 @@ flowtype Initializer = decorate {env, initializerPos, inObject, expectedType,
   controlStmtContext},
   expectedTypesOut {decorate}, nestedInitsOut {decorate, nestedInits}, asExpr {decorate}, isSimple {decorate};
 
-propagate controlStmtContext on Initializer;
+propagate env, controlStmtContext on Initializer;
 
 abstract production exprInitializer
 top::Initializer ::= e::Expr
 {
   top.pp = e.pp;
-  forwards to fromMaybe(defaultExprInitializer, top.expectedType.exprInitProd)(e);
-}
--- For use by extensions
-abstract production hostExprInitializer
-top::Initializer ::= e::Expr
-{
-  top.pp = e.pp;
-  forwards to defaultExprInitializer(e);
+  forwards to fromMaybe(defaultExprInitializer, top.expectedType.exprInitProd)(@e);
 }
 
 abstract production defaultExprInitializer implements ExprInitializer
-top::Initializer ::= @e::Expr
+top::Initializer ::= e::Expr
 {
-  propagate @env, @controlStmtContext;
   top.pp = e.pp;
   top.host = exprInitializer(e.host);
   top.typerep = top.expectedType;
@@ -95,22 +87,13 @@ abstract production objectInitializer
 top::Initializer ::= l::InitList
 {
   top.pp = ppConcat([text("{"), ppImplode(text(", "), l.pps), text("}")]);
-  forwards to fromMaybe(defaultObjectInitializer, top.expectedType.objectInitProd)(l);
+  forwards to fromMaybe(defaultObjectInitializer, top.expectedType.objectInitProd)(@l);
 }
 -- For use by extensions
-abstract production hostObjectInitializer
+abstract production defaultObjectInitializer implements ObjectInitializer
 top::Initializer ::= l::InitList
 {
   top.pp = ppConcat([text("{"), ppImplode(text(", "), l.pps), text("}")]);
-  forwards to defaultObjectInitializer(l);
-}
-
-abstract production defaultObjectInitializer implements ObjectInitializer
-top::Initializer ::= @l::InitList
-{
-  propagate @env, @controlStmtContext;
-
-  top.pp = forwardParent.pp;
   top.host = objectInitializer(l.host);
   top.typerep = l.typerep;
   top.isSimple = l.isSimple;
