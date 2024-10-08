@@ -382,9 +382,18 @@ fun argTypesToParameters Parameters ::= args::[Type] =
   case args of
     h :: t ->
       consParameters(
-        parameterDecl(nilStorageClass(), directTypeExpr(h), baseTypeExpr(), nothingName(), nilAttribute()),
+        parameterDecl(nilStorageClass(), h.baseTypeExpr, h.typeModifierExpr, nothingName(), nilAttribute()),
         argTypesToParameters(t))
   | [] -> nilParameters()
+  end;
+
+fun argTypesNamesToParameters Parameters ::= args::[Type] names::[Name] =
+  case args, names of
+    h :: t, hn :: tn ->
+      consParameters(
+        parameterDecl(nilStorageClass(), h.baseTypeExpr, h.typeModifierExpr, justName(hn), nilAttribute()),
+        argTypesNamesToParameters(t, tn))
+  | _, _ -> nilParameters()
   end;
 
 {-------------------------------------------------------------------------------
