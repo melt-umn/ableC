@@ -440,7 +440,7 @@ top::Expr ::= lhs::Expr rhs::Expr
   lType.otherType = rhs.typerep;
   local rType::Type = rhs.typerep;
   rType.otherType = lhs.typerep;
-  local prod::BinaryOp = fromMaybe(defaultAddExpr, orElse(lType.lAndProd, rType.rAndProd));
+  local prod::BinaryOp = fromMaybe(defaultAndExpr, orElse(lType.lAndProd, rType.rAndProd));
 
   forwards to prod(lhs, rhs);
 }
