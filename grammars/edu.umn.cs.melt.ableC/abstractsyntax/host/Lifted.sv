@@ -92,9 +92,10 @@ top::Decl ::= include::(Boolean ::= Env) decl::Decl
 {
   top.pp = cat(pp"maybe ", braces(nestlines(2, decl.pp)));
 
+  forward fwrd = @decl;
   forwards to
     if include(top.env)
-    then @decl
+    then @fwrd
     else decls(nilDecl());
 }
 

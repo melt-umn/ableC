@@ -16,6 +16,17 @@ top::Decl ::= refId::String d::Decl
   top.freeVariables := if refIdExists then d.freeVariables else [];
 }
 
+production foldDeferredDecl
+top::Decl ::= refIds::[String]  d::Decl
+{
+  propagate env, controlStmtContext;
+  forwards to
+    case refIds of
+    | h :: t -> deferredDecl(h, foldDeferredDecl(t, @d))
+    | [] -> @d
+    end;
+}
+
 function defsDeferredDecls
 [Decorated Decl] ::= env::Env isTopLevel::Boolean
                       controlStmtContext::ControlStmtContext

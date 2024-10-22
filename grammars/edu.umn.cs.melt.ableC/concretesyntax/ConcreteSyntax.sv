@@ -26,3 +26,6 @@ imports edu:umn:cs:melt:ableC:abstractsyntax:env as ast;
 
 -- easier construction of ast nodes
 imports edu:umn:cs:melt:ableC:abstractsyntax:construction as ast;
+
+-- Not exported, but ensure this is included in the artifact
+import edu:umn:cs:melt:ableC:concretesyntax:construction only;

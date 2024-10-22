@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+# Run the MDA test for the silver extension for constructing ableC ASTs.
+
+export SVJVM_FLAGS="-Xmx8G -Xss15M"
+
+export GRAMMAR_PATH=ableC.jar:grammars
+
+mkdir -p generated
+export SILVER_GEN=generated
+
+silver --dont-translate $@ edu:umn:cs:melt:ableC:silverconstruction:mda_test

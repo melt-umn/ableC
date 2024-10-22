@@ -2,14 +2,21 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 
 tracked nonterminal Expr with pp, host, globalDecls, functionDecls, errors,
   defs, env, freeVariables, typerep, isLValue, isSimple, integerConstantValue,
-  controlStmtContext;
+  controlStmtContext,
+  bindName, bindRefExpr, bindDefs, hostBindDecl;
 
 flowtype Expr = decorate {env, controlStmtContext},
-  isLValue {decorate}, isSimple {decorate}, integerConstantValue {decorate};
+  isLValue {decorate}, isSimple {decorate}, integerConstantValue {decorate},
+  bindRefExpr {decorate, bindName}, bindDefs {decorate, bindName}, hostBindDecl {decorate, bindName};
 
 synthesized attribute isLValue::Boolean;
 synthesized attribute isSimple::Boolean; -- true if expression can be duplicated without encurring any addtional work (is a name, constant, field access, etc.)
 implicit synthesized attribute integerConstantValue::Maybe<Integer>;
+
+inherited attribute bindName :: Name;
+synthesized attribute bindRefExpr::Expr;
+synthesized attribute bindDefs :: [Def];
+synthesized attribute hostBindDecl :: Decl;
 
 aspect default production
 top::Expr ::=
@@ -17,13 +24,31 @@ top::Expr ::=
   top.isLValue = false;
   top.isSimple = false;
   implicit top.integerConstantValue = ;
+
+  top.bindRefExpr =
+    if top.isSimple then ^top
+    else declRefExpr(top.bindName);
+  top.bindDefs = [valueDef(top.bindName.name, autoValueItem(top))];
+  top.hostBindDecl =
+    if top.isSimple then decls(nilDecl())
+    else variableDecls(
+      nilStorageClass(),
+      nilAttribute(),
+      top.typerep.host.baseTypeExpr,
+      consDeclarator(
+        declarator(
+          top.bindName,
+          top.typerep.host.typeModifierExpr,
+          nilAttribute(),
+          justInitializer(exprInitializer(top.host))),
+        nilDeclarator()));
 }
 
 abstract production errorExpr
 top::Expr ::= msg::[Message]
 {
   propagate host, globalDecls, functionDecls, defs, freeVariables, controlStmtContext;
-  top.pp = ppConcat([ text("/*"), text(messagesToString(msg)), text("*/") ]);
+  top.pp = ppConcat([ text("/*"), text(messagesToStringNoOriginsCheck(msg)), text("*/") ]);
   top.errors := msg;
   top.typerep = errorType();
 }
@@ -31,7 +56,7 @@ top::Expr ::= msg::[Message]
 abstract production warnExpr
 top::Expr ::= msg::[Message] e::Expr
 {
-  top.pp = ppConcat([ text("/*"), text(messagesToString(msg)), text("*/"), e.pp ]);
+  top.pp = ppConcat([ text("/*"), text(messagesToStringNoOriginsCheck(msg)), text("*/"), e.pp ]);
   top.errors <- msg;
   forwards to @e;
 }
@@ -108,11 +133,28 @@ top::Expr ::= e::Expr
   top.pp = parens( e.pp );
   forwards to @e;
 }
+
 abstract production arraySubscriptExpr
 top::Expr ::= lhs::Expr  rhs::Expr
 {
-  propagate host, errors, globalDecls, functionDecls, defs, controlStmtContext;
   top.pp = parens( ppConcat([ lhs.pp, brackets( rhs.pp )]) );
+
+  lhs.env = top.env;
+  rhs.env = addEnv(lhs.defs, lhs.env);
+  propagate controlStmtContext;
+
+  forwards to
+    case lhs.typerep.arraySubscriptProd of
+    | just(prod) -> prod(lhs, rhs)
+    | nothing() -> defaultArraySubscriptExpr(lhs, rhs)
+    end;
+}
+abstract production defaultArraySubscriptExpr
+top::Expr ::= @lhs::Expr  @rhs::Expr
+{
+  propagate errors, globalDecls, functionDecls, defs;
+  top.pp = forwardParent.pp;
+  top.host = arraySubscriptExpr(lhs.host, rhs.host);
   top.freeVariables := lhs.freeVariables ++ removeDefsFromNames(rhs.defs, rhs.freeVariables);
   top.isLValue = true;
 
@@ -137,35 +179,61 @@ top::Expr ::= lhs::Expr  rhs::Expr
                 | left(_) -> []
                 | right(m) -> m
                 end;
-
-  lhs.env = top.env;
-  rhs.env = addEnv(lhs.defs, lhs.env);
 }
+
 {- Calls where the function expression is just an identifier. -}
 abstract production directCallExpr
 top::Expr ::= f::Name  a::Exprs
 {
-  propagate env, controlStmtContext;
-
   -- Forwarding depends on env. We must be able to compute a pp without using env.
   top.pp = parens( ppConcat([ f.pp, parens( ppImplode( cat( comma(), space() ), a.pps ))]) );
 
-  forwards to f.valueItem.directCallHandler(^f, ^a);  -- TODO don't undecorate here!
+  f.env = top.env;
+  forwards to f.valueItem.directCallHandler(^f, @a);
 }
+
+dispatch ReferenceCall = Expr ::= f::Name a::Exprs;
+
 -- If the identifier is an ordinary one, use the normal function call production
 -- Or, if it's a pass-through builtin one, this works too!
-function ordinaryFunctionHandler
-Expr ::= f::Name  a::Exprs 
+production ordinaryFunctionHandler implements ReferenceCall
+top::Expr ::= f::Name  a::Exprs 
 {
-  return callExpr(declRefExpr(^f), ^a);
+  forwards to callExpr(declRefExpr(@f), @a);
+}
+
+production bindDirectCallExpr implements ReferenceCall
+top::Expr ::= f::Name a::Exprs result::Expr
+{
+  forwards to letExpr(
+    consDecl(bindExprsDecls(freshName("a"), @a), nilDecl()),
+    @result);
 }
 
 {- Calls where the function is determined by an arbitrary expression. -}
 abstract production callExpr
-top::Expr ::= f::Expr  a::Exprs
+top::Expr ::= f::Expr a::Exprs
 {
-  propagate host, errors, globalDecls, functionDecls, defs, controlStmtContext;
   top.pp = parens( ppConcat([ f.pp, parens( ppImplode( cat( comma(), space() ), a.pps ))]) );
+
+  f.env = top.env;
+  f.controlStmtContext = top.controlStmtContext;
+  forwards to fromMaybe(defaultCallExpr, f.typerep.callProd)(f, @a);
+}
+-- Non-overloaded version, for use by extensions
+abstract production hostCallExpr
+top::Expr ::= f::Expr a::Exprs
+{
+  f.env = top.env;
+  f.controlStmtContext = top.controlStmtContext;
+  forwards to defaultCallExpr(f, @a);
+}
+abstract production defaultCallExpr implements Call
+top::Expr ::= @f::Expr  a::Exprs
+{
+  propagate errors, globalDecls, functionDecls, defs;
+  top.pp = forwardParent.pp;
+  top.host = callExpr(f.host, a.host);
   top.freeVariables := f.freeVariables ++ removeDefsFromNames(f.defs, a.freeVariables);
   top.isLValue = false; -- C++ style references would change this
 
@@ -201,14 +269,39 @@ top::Expr ::= f::Expr  a::Exprs
     | _ -> true -- suppress errors
     end;
 
-  f.env = top.env;
   a.env = addEnv(f.defs, f.env);
+  a.controlStmtContext = top.controlStmtContext;
+}
+abstract production memberCallExpr
+top::Expr ::= e::Expr  deref::Boolean  name::Name  a::Exprs
+{
+  top.pp = parens( ppConcat([ e.pp, text(if deref then "->" else "."), name.pp, parens( ppImplode( cat( comma(), space() ), a.pps ))]) );
+  e.env = top.env;
+  e.controlStmtContext = top.controlStmtContext;
+
+  forwards to
+    fromMaybe(defaultMemberCallExpr, e.typerep.memberCallProd)(e, deref, @name, @a);
+}
+abstract production defaultMemberCallExpr implements MemberCall
+top::Expr ::= @e::Expr  deref::Boolean  name::Name  a::Exprs
+{
+  forwards to callExpr(memberExpr(@e, deref, @name), @a);
 }
 abstract production memberExpr
 top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
 {
-  propagate env, host, errors, globalDecls, functionDecls, defs, freeVariables, controlStmtContext;
   top.pp = parens(ppConcat([lhs.pp, text(if deref then "->" else "."), rhs.pp]));
+  propagate env, controlStmtContext;
+
+  forwards to
+    fromMaybe(defaultMemberExpr, lhs.typerep.memberProd)(lhs, deref, @rhs);
+}
+abstract production defaultMemberExpr implements MemberAccess
+top::Expr ::= @lhs::Expr  deref::Boolean  rhs::Name
+{
+  propagate errors, globalDecls, functionDecls, defs, freeVariables;
+  top.pp = forwardParent.pp;
+  top.host = memberExpr(lhs.host, deref, rhs.host);
 
   local isPointer::Boolean =
     case lhs.typerep.defaultFunctionArrayLvalueConversion.withoutAttributes of
@@ -346,11 +439,6 @@ top::Expr ::= ty::TypeName  init::InitList
   init.initIndex = 0;
   ty.env = top.env;
   init.env = addEnv(ty.defs, ty.env);
-  init.tagEnvIn =
-    case refIdLookup of
-    | item :: _ -> item.tagEnv
-    | [] -> emptyEnv()
-    end;
   init.expectedType = ty.typerep;
   init.expectedTypes = fromMaybe([ty.typerep], objectMembers(top.env, ty.typerep));
 }
@@ -471,6 +559,26 @@ top::Expr ::= body::Stmt result::Expr
   result.controlStmtContext = top.controlStmtContext;
   result.env = addEnv(body.defs, body.env);
 }
+
+-- Utility for use by overloading and extensions
+abstract production letExpr
+top::Expr ::= d::Decls  e::Expr
+{
+  top.pp = ppConcat([text("let {"), nestlines(2, ppConcat([ppImplode(line(), d.pps), line(), e.pp, text("; }")]))]);
+  local s::Stmt = declStmt(decls(@d));
+  s.env = top.env;
+  s.controlStmtContext = top.controlStmtContext;
+  forwards to (if d.isEmpty then noStmtExpr else someStmtExpr)(s, @e);
+}
+
+dispatch StmtExpr = Expr ::= @s::Stmt e::Expr;
+production noStmtExpr implements StmtExpr
+top::Expr ::= @s::Stmt e::Expr
+{ forwards to @e; }
+production someStmtExpr implements StmtExpr
+top::Expr ::= @s::Stmt e::Expr
+{ forwards to stmtExpr(@s, @e); }
+
 
 -- Inline comment TODO: wtf? delete this.
 abstract production comment
