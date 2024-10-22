@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 export ANT_OPTS="-Xss8M -Xmx4000M"
 export SILVER_GEN=../generated

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Run the MDA test for the silver extension for constructing ableC ASTs.
 
