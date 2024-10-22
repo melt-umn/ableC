@@ -6,7 +6,7 @@ imports edu:umn:cs:melt:ableC:abstractsyntax:env;
 imports edu:umn:cs:melt:ableC:abstractsyntax:construction;
 import edu:umn:cs:melt:ableC:abstractsyntax:host;
 
-nonterminal LhsOrRhsRuntimeMods with modLhs, modRhs, lhsToModify, rhsToModify;
+tracked nonterminal LhsOrRhsRuntimeMods with modLhs, modRhs, lhsToModify, rhsToModify;
 synthesized attribute modLhs :: Expr;
 synthesized attribute modRhs :: Expr;
 
@@ -37,9 +37,9 @@ function applyLhsRhsMods
 Pair<Expr Expr> ::= l::[LhsOrRhsRuntimeMod]  lhs::Decorated Expr  rhs::Decorated Expr
 {
   local tmpLhsName :: String = "_tmpLhs" ++ toString(genInt());
-  local tmpLhs :: Expr = declRefExpr(name(tmpLhsName, location=lhs.location), location=lhs.location);
+  local tmpLhs :: Expr = declRefExpr(name(tmpLhsName));
   local tmpRhsName :: String = "_tmpRhs" ++ toString(genInt());
-  local tmpRhs :: Expr = declRefExpr(name(tmpRhsName, location=rhs.location), location=rhs.location);
+  local tmpRhs :: Expr = declRefExpr(name(tmpRhsName));
 
   local mods :: LhsOrRhsRuntimeMods = foldr(consLhsOrRhsRuntimeMod, nilLhsOrRhsRuntimeMod(), l);
   mods.lhsToModify = tmpLhs;
@@ -51,9 +51,8 @@ Pair<Expr Expr> ::= l::[LhsOrRhsRuntimeMod]  lhs::Decorated Expr  rhs::Decorated
     then new(lhs)
     else
       stmtExpr(
-        mkDecl(tmpLhsName, lhs.typerep, new(lhs), lhs.location),
-        mods.modLhs,
-        location=lhs.location
+        mkDecl(tmpLhsName, lhs.typerep, new(lhs)),
+        mods.modLhs
       );
 
   local modRhs :: Expr =
@@ -61,15 +60,14 @@ Pair<Expr Expr> ::= l::[LhsOrRhsRuntimeMod]  lhs::Decorated Expr  rhs::Decorated
     then new(rhs)
     else
       stmtExpr(
-        mkDecl(tmpRhsName, rhs.typerep, new(rhs), rhs.location),
-        mods.modRhs,
-        location=rhs.location
+        mkDecl(tmpRhsName, rhs.typerep, new(rhs)),
+        mods.modRhs
       );
 
   return (modLhs, modRhs);
 }
 
-nonterminal LhsOrRhsRuntimeMod with modLhs, modRhs, isLhs, lhsToModify, rhsToModify;
+tracked nonterminal LhsOrRhsRuntimeMod with modLhs, modRhs, isLhs, lhsToModify, rhsToModify;
 synthesized attribute isLhs :: Boolean;
 
 abstract production lhsRuntimeMod
@@ -92,7 +90,7 @@ top::LhsOrRhsRuntimeMod ::= rm::RuntimeMod
   rm.exprToModify = top.rhsToModify;
 }
 
-nonterminal RuntimeMods with modExpr, exprToModify;
+tracked nonterminal RuntimeMods with modExpr, exprToModify;
 synthesized attribute modExpr :: Expr;
 inherited attribute exprToModify :: Expr;
 
@@ -114,23 +112,23 @@ function applyMods
 Expr ::= l::[RuntimeMod] e::Decorated Expr
 {
   local tmpName :: String = "_tmp" ++ toString(genInt());
-  local tmpDecl :: Stmt = mkDecl(tmpName, e.typerep, new(e), e.location);
+  local tmpDecl :: Stmt = mkDecl(tmpName, e.typerep, new(e));
 
   local mods :: RuntimeMods = foldr(consRuntimeMod, nilRuntimeMod(), l);
-  mods.exprToModify = declRefExpr(name(tmpName, location=e.location), location=e.location);
+  mods.exprToModify = declRefExpr(name(tmpName));
 
   local modExpr :: Expr =
     if null(l) then new(e)
-    else stmtExpr(tmpDecl, mods.modExpr, location=e.location);
+    else stmtExpr(tmpDecl, mods.modExpr);
 
   return modExpr;
 }
 
-nonterminal RuntimeMod with modExpr, exprToModify;
+tracked nonterminal RuntimeMod with modExpr, exprToModify;
 
 -- insert arbitrary boolean expressions and error message to print on exit if failed
 abstract production runtimeCheck
-top::RuntimeMod ::= check::(Expr ::= Expr)  failMessage::String  l::Location
+top::RuntimeMod ::= check::(Expr ::= Expr)  failMessage::String
 {
   top.modExpr =
     stmtExpr(
@@ -139,19 +137,16 @@ top::RuntimeMod ::= check::(Expr ::= Expr)  failMessage::String  l::Location
         seqStmt(
           exprStmt(
             directCallExpr(
-              name("fprintf", location=bogusLoc()),
+              name("fprintf"),
               foldExpr(
-                [declRefExpr(name("stderr", location=bogusLoc()), location=bogusLoc()),
-                 mkStringConst(s"${l.unparse}:${failMessage}", bogusLoc())]),
-              location=bogusLoc())),
+                [declRefExpr(name("stderr")),
+                 mkStringConst(s"${getParsedOriginLocationOrFallback(ambientOrigin()).unparse}:${failMessage}")]))),
           exprStmt(
             directCallExpr(
-              name("exit", location=bogusLoc()),
-              foldExpr([mkIntConst(255, bogusLoc())]),
-              location=bogusLoc())))
+              name("exit"),
+              foldExpr([mkIntConst(255)]))))
       ),
-      top.exprToModify,
-      location=bogusLoc()
+      top.exprToModify
     );
 }
 
@@ -166,6 +161,6 @@ top::RuntimeMod ::= conv::(Expr ::= Expr)
 abstract production runtimeInsertion
 top::RuntimeMod ::= ins::(Stmt ::= Expr)
 {
-  top.modExpr = stmtExpr(ins(top.exprToModify), top.exprToModify, location=bogusLoc());
+  top.modExpr = stmtExpr(ins(top.exprToModify), top.exprToModify);
 }
 

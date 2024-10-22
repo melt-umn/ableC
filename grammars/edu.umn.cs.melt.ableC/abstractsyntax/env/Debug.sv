@@ -22,7 +22,7 @@ top::ValueItem ::= t::Type
 { top.pp = text("BuiltinValueItem"); }
 
 aspect production builtinFunctionValueItem
-top::ValueItem ::= t::Type  handler::(Expr ::= Name Exprs Location)
+top::ValueItem ::= t::Type  handler::(Expr ::= Name Exprs)
 { top.pp = text("BuiltinFunctionValueItem"); }
 
 aspect production fieldValueItem
@@ -42,7 +42,7 @@ top::ValueItem ::= e::Decorated Expr
 { top.pp = text("autoValueItem"); }
 
 aspect production preDeclValueItem
-top::ValueItem ::= ty::Type  loc::Location
+top::ValueItem ::= ty::Type
 { top.pp = pp"preDeclValueItem"; }
 
 aspect production errorValueItem

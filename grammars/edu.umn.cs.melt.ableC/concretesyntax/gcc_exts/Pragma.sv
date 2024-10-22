@@ -20,10 +20,10 @@ disambiguate OMP_t, OMPFor_t {
 concrete productions top::ExternalDeclaration_c
 | '#' 'pragma' Pack_t
     layout { Spaces_t }
-    { top.ast = ast:warnDecl([wrn(top.location, "Ignored pack pragma")]); }
+    { top.ast = ast:warnDecl([wrnFromOrigin(top, "Ignored pack pragma")]); }
 | '#' 'pragma' 'redefine_extname' Identifier_c Identifier_c
     layout { Spaces_t }
-    { top.ast = ast:warnDecl([wrn(top.location, "Ignored redefine_extname pragma")]); }
+    { top.ast = ast:warnDecl([wrnFromOrigin(top, "Ignored redefine_extname pragma")]); }
 | '#' 'pragma' gcc::GCC_t
     layout { Spaces_t }
     { top.ast = ast:txtDecl("#pragma " ++ gcc.lexeme); }

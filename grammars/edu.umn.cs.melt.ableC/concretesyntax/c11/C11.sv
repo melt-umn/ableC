@@ -32,14 +32,13 @@ concrete productions top::DeclarationSpecifiers_c
 -- maybe we can unify those somehow. "SpecialSpecifiers" instead of FnQualifers in the
 -- abstract syntax, perhaps.
 
-closed nonterminal AlignmentSpecifier_c with location, specialSpecifiers;
+closed tracked nonterminal AlignmentSpecifier_c with specialSpecifiers;
 concrete productions top::AlignmentSpecifier_c
 | '_Alignas' '(' t::TypeName_c ')' -- equivalent to _Alignas( _Alignof( tn ) )
     { top.specialSpecifiers = 
         [ast:alignasSpecifier(
           ast:alignofExpr(
-            ast:typeNameExpr(t.ast),
-            location=top.location))]; }
+            ast:typeNameExpr(t.ast)))]; }
 | '_Alignas' '(' e::ConstantExpr_c ')'
     { top.specialSpecifiers = [ast:alignasSpecifier(e.ast)]; }
 
@@ -57,21 +56,21 @@ concrete productions top::PrimaryExpr_c
 | g::GenericSelection_c
     { top.ast = g.ast; }
 
-closed nonterminal GenericSelection_c with location, ast<ast:Expr>;
+closed tracked nonterminal GenericSelection_c with ast<ast:Expr>;
 concrete productions top::GenericSelection_c
 | '_Generic' '(' e::AssignExpr_c ',' l::GenericAssocList_c ')'
     { top.ast = 
         case l.defaultExpr of
-        | [] -> ast:genericSelectionExpr(e.ast, ast:foldGenericAssoc(l.ast), ast:nothingExpr(), location=top.location)
-        | de :: [] -> ast:genericSelectionExpr(e.ast, ast:foldGenericAssoc(l.ast), ast:justExpr(de), location=top.location)
+        | [] -> ast:genericSelectionExpr(e.ast, ast:foldGenericAssoc(l.ast), ast:nothingExpr())
+        | de :: [] -> ast:genericSelectionExpr(e.ast, ast:foldGenericAssoc(l.ast), ast:justExpr(de))
         | de1 :: de2 :: _ -> ast:genericSelectionExpr(e.ast, ast:foldGenericAssoc(l.ast), 
-            ast:justExpr(ast:errorExpr([err(de1.location, "Multiple default associations in generic selection expression")], location=top.location)), location=top.location)
+            ast:justExpr(ast:errorExpr([errFromOrigin(de1, "Multiple default associations in generic selection expression")])))
         end;
     }
 
 synthesized attribute defaultExpr :: [ast:Expr];
 
-closed nonterminal GenericAssocList_c with location, ast<[ast:GenericAssoc]>, defaultExpr;
+closed tracked nonterminal GenericAssocList_c with ast<[ast:GenericAssoc]>, defaultExpr;
 concrete productions top::GenericAssocList_c
 | h::GenericAssoc_c
     { top.ast = h.ast; 
@@ -80,10 +79,10 @@ concrete productions top::GenericAssocList_c
     { top.ast = h.ast ++ t.ast;
       top.defaultExpr = h.defaultExpr ++ t.defaultExpr; }
 
-closed nonterminal GenericAssoc_c with location, ast<[ast:GenericAssoc]>, defaultExpr;
+closed tracked nonterminal GenericAssoc_c with ast<[ast:GenericAssoc]>, defaultExpr;
 concrete productions top::GenericAssoc_c
 | ty::TypeName_c ':' e::AssignExpr_c
-    { top.ast = [ast:genericAssoc(ty.ast, e.ast, location=top.location)];
+    { top.ast = [ast:genericAssoc(ty.ast, e.ast)];
       top.defaultExpr = []; }
 | 'default' ':' e::AssignExpr_c
     { top.ast = [];
@@ -131,7 +130,7 @@ concrete productions top::StorageClassSpecifier_c
 -- Static assert
 terminal C11_Static_assert_t '_Static_assert' lexer classes {Keyword, Reserved};
 
-closed nonterminal StaticAssertDeclaration_c with location, ast<ast:Decl>;
+closed tracked nonterminal StaticAssertDeclaration_c with ast<ast:Decl>;
 concrete productions top::StaticAssertDeclaration_c
 | '_Static_assert' '(' e::ConstantExpr_c ',' s::StringConstant_c ')' ';'
     { top.ast = ast:staticAssertDecl(e.ast, s.ast); }
@@ -145,19 +144,19 @@ terminal C11_Alignof_t '_Alignof' lexer classes {Keyword, Reserved};
 
 concrete productions top::UnaryExpr_c
 | '_Alignof' '(' t::TypeName_c ')'
-    { top.ast = ast:alignofExpr(ast:typeNameExpr(t.ast), location=top.location); }
+    { top.ast = ast:alignofExpr(ast:typeNameExpr(t.ast)); }
 
 -- Anonymous struct/union
 concrete productions top::StructDeclaration_c
 | su::StructOrUnion_c id::Identifier_c TypeLCurly_t ss::StructDeclarationList_c '}' ';'
     { top.ast =
         case su of
-        | struct_c(_) -> [ast:anonStructStructItem(ast:structDecl(ast:nilAttribute(), ast:justName(id.ast), ast:foldStructItem(ss.ast), location=top.location))]
-        | union_c(_) -> [ast:anonUnionStructItem(ast:unionDecl(ast:nilAttribute(), ast:justName(id.ast), ast:foldStructItem(ss.ast), location=top.location))]
+        | struct_c(_) -> [ast:anonStructStructItem(ast:structDecl(ast:nilAttribute(), ast:justName(id.ast), ast:foldStructItem(ss.ast)))]
+        | union_c(_) -> [ast:anonUnionStructItem(ast:unionDecl(ast:nilAttribute(), ast:justName(id.ast), ast:foldStructItem(ss.ast)))]
         end; }
 | su::StructOrUnion_c TypeLCurly_t ss::StructDeclarationList_c '}' ';'
     { top.ast =
         case su of
-        | struct_c(_) -> [ast:anonStructStructItem(ast:structDecl(ast:nilAttribute(), ast:nothingName(), ast:foldStructItem(ss.ast), location=top.location))]
-        | union_c(_) -> [ast:anonUnionStructItem(ast:unionDecl(ast:nilAttribute(), ast:nothingName(), ast:foldStructItem(ss.ast), location=top.location))]
+        | struct_c(_) -> [ast:anonStructStructItem(ast:structDecl(ast:nilAttribute(), ast:nothingName(), ast:foldStructItem(ss.ast)))]
+        | union_c(_) -> [ast:anonUnionStructItem(ast:unionDecl(ast:nilAttribute(), ast:nothingName(), ast:foldStructItem(ss.ast)))]
         end; }

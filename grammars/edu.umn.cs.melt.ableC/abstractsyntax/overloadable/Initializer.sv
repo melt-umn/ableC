@@ -8,8 +8,8 @@ top::host:Initializer ::= e::host:Expr
   
   forwards to
     case top.host:expectedType.exprInitProd of
-    | just(prod) -> prod(host:decExpr(e, location=top.location), top.location)
-    | nothing() -> host:exprInitializer(@e, location=top.location)
+    | just(prod) -> prod(host:decExpr(e))
+    | nothing() -> host:exprInitializer(@e)
     end;
 }
 
@@ -20,7 +20,7 @@ top::host:Initializer ::= l::host:InitList
 
   forwards to
     case top.host:expectedType.objectInitProd of
-    | just(prod) -> prod(l, top.location)
-    | nothing() -> host:objectInitializer(l, location=top.location)
+    | just(prod) -> prod(l)
+    | nothing() -> host:objectInitializer(l)
     end;
 }

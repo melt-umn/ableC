@@ -79,14 +79,14 @@ terminal IgnoredStuff /[A-Za-z0-9:,.|]*/;
 -- Actual builtin translation stuff
 monoid attribute ignoredBuiltins :: [String];
 
-nonterminal Builtins with ignoredBuiltins;
+tracked nonterminal Builtins with ignoredBuiltins;
 propagate ignoredBuiltins on Builtins;
 
 concrete productions top::Builtins
 | h::Builtin  t::Builtins  {}
 | {}
 
-nonterminal Builtin with ignoredBuiltins;
+tracked nonterminal Builtin with ignoredBuiltins;
 
 concrete production builtinFunction
 top::Builtin ::= BUILTIN '(' id::Identifier ',' '"' t::Types dots::MaybeDots '"' ',' '"' x::IgnoredStuff '"' ')'
@@ -138,7 +138,7 @@ top::Builtin ::= LIBBUILTIN_NotProcessed
 monoid attribute ignoreMe :: Boolean with false, ||;
 synthesized attribute signature :: [a:Type];
 
-nonterminal Types with ignoreMe, signature;
+tracked nonterminal Types with ignoreMe, signature;
 propagate ignoreMe on Types;
 
 concrete productions top::Types
@@ -147,7 +147,7 @@ concrete productions top::Types
 |
   { top.signature = []; }
 
-nonterminal Type with ignoreMe, typerep;
+tracked nonterminal Type with ignoreMe, typerep;
 propagate ignoreMe on Type;
 
 synthesized attribute typerep :: a:Type;
@@ -170,7 +170,7 @@ a:Type ::= count::Integer  t::a:Type
 
 monoid attribute issigned :: Boolean with true, &&;
 
-nonterminal TypePrefixes with ignoreMe, issigned;
+tracked nonterminal TypePrefixes with ignoreMe, issigned;
 propagate ignoreMe, issigned on TypePrefixes;
 
 concrete production consTypePrefixes
@@ -183,14 +183,14 @@ top::TypePrefixes ::=
 monoid attribute qualifiers :: a:Qualifiers with a:nilQualifier(), a:qualifierCat;
 monoid attribute pointercount :: Integer with 0, +;
 
-nonterminal TypeSuffixes with ignoreMe, qualifiers, pointercount;
+tracked nonterminal TypeSuffixes with ignoreMe, qualifiers, pointercount;
 propagate ignoreMe, qualifiers, pointercount on TypeSuffixes;
 
 concrete productions top::TypeSuffixes
 | h::TypeSuffix  t::TypeSuffixes  {}
 | {}
 
-nonterminal TypePrefix with ignoreMe, issigned;
+tracked nonterminal TypePrefix with ignoreMe, issigned;
 
 aspect default production
 top::TypePrefix ::=
@@ -206,17 +206,19 @@ concrete productions top::TypePrefix
 | 'U' { top.issigned := false;}
 | 'I' { }-- top.ignoreMe = true; } -- maybe ignore all of these? -- TODO: for now, allowing it!
 
-nonterminal TypeSpecifier with ignoreMe, specifier, size, givenSign, givenDomain;
+tracked nonterminal TypeSpecifier with ignoreMe, specifier, size, givenSign, givenDomain;
 
 synthesized attribute specifier :: (a:Type ::= a:Qualifiers);
 synthesized attribute size :: Integer;  -- Size on X86_64 (which is all we care about for vector intrinsics, for now...) 
 inherited attribute givenSign :: (a:BuiltinType ::= a:IntegerType);
 inherited attribute givenDomain :: (a:BuiltinType ::= a:RealType);
 
+propagate givenSign, givenDomain on TypeSpecifier excluding complexTypeSpec;
+
 aspect default production
 top::TypeSpecifier ::=
 {
-  propagate ignoreMe;
+  top.ignoreMe := false;
 }
 
 concrete productions top::TypeSpecifier
@@ -246,11 +248,13 @@ concrete productions top::TypeSpecifier
 | 'z' {-size_t-} { top.specifier = a:builtinType(_, top.givenSign(a:intType())); top.size = 8; } -- TODO: do better?
 | 'a' {-valist-} { top.specifier = a:builtinType(_, a:voidType()); } -- TODO
 | 'A' {-valist?pointer maybe?-} { top.specifier = a:pointerType(_, a:builtinType(a:nilQualifier(), a:voidType())); top.size = 8; }-- TODO ALSO: underscore in wrong spot
+(complexTypeSpec)
 | 'X'  more::TypeSpecifier {-_Complex-} { more.givenSign = a:complexIntegerType;
                                           more.givenDomain = a:complexType;
                                           top.specifier = more.specifier;
                                           top.size = more.size * 2; }
-| 'V'  n::VectorNum  more::TypeSpecifier { top.specifier = \ qs::a:Qualifiers -> a:vectorType(more.specifier(qs), top.size); top.size = toInteger(n.lexeme) * more.size; }
+| 'V'  n::VectorNum  more::TypeSpecifier
+  { top.specifier = \ qs::a:Qualifiers -> a:vectorType(more.specifier(qs), top.size); top.size = toInteger(n.lexeme) * more.size; }
 
 
 nonterminal Languages with ignoreMe;
@@ -263,7 +267,7 @@ concrete productions top::Languages
 | 'OCLC20_LANG' {}
 | 'OMP_LANG' {}
 
-nonterminal TypeSuffix with ignoreMe, qualifiers, pointercount;
+tracked nonterminal TypeSuffix with ignoreMe, qualifiers, pointercount;
 
 aspect default production
 top::TypeSuffix ::=
@@ -274,11 +278,11 @@ top::TypeSuffix ::=
 concrete productions top::TypeSuffix
 | '*' {-pointer-} { top.pointercount := 1; }
 | '&' {-C++-} { top.ignoreMe := true; } -- ignore these
-| 'C' {-const-} { top.qualifiers := a:consQualifier(a:constQualifier(location=builtinLoc("host")), a:nilQualifier()); }
-| 'D' {-volatile-} { top.qualifiers := a:consQualifier(a:volatileQualifier(location=builtinLoc("host")), a:nilQualifier()); }
+| 'C' {-const-} { top.qualifiers := a:consQualifier(a:constQualifier(), a:nilQualifier()); }
+| 'D' {-volatile-} { top.qualifiers := a:consQualifier(a:volatileQualifier(), a:nilQualifier()); }
 
 
-nonterminal MaybeDots with hasdots;
+tracked nonterminal MaybeDots with hasdots;
 
 synthesized attribute hasdots :: Boolean;
 

@@ -1,6 +1,6 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 
-nonterminal Qualifiers with mangledName, qualifiers, pps, host, typeToQualify, errors;
+tracked nonterminal Qualifiers with mangledName, qualifiers, pps, host, typeToQualify, errors;
 flowtype Qualifiers = decorate {}, qualifiers {}, errors {typeToQualify};
 
 inherited attribute typeToQualify :: Type;
@@ -42,7 +42,7 @@ Qualifiers ::= q1::[Qualifier]  q2::[Qualifier]
 }
 
 {-- Type qualifiers (cv or cvr qualifiers) -}
-closed nonterminal Qualifier with location, pp, qualIsPositive, qualIsNegative, qualAppliesWithinRef, qualCompat, qualIsHost, mangledName, typeToQualify, errors;
+closed tracked nonterminal Qualifier with pp, qualIsPositive, qualIsNegative, qualAppliesWithinRef, qualCompat, qualIsHost, mangledName, typeToQualify, errors;
 flowtype Qualifier = decorate {}, qualIsPositive {}, qualIsNegative {}, qualAppliesWithinRef {}, qualCompat {}, qualIsHost {}, errors {typeToQualify};
 
 synthesized attribute qualIsPositive :: Boolean;
@@ -111,7 +111,7 @@ top::Qualifier ::=
   top.errors :=
 		case top.typeToQualify.defaultFunctionArrayLvalueConversion of
 			pointerType(_, _) -> []
-		| _                 -> [err(top.location, "invalid use of `restrict'")]
+		| _                 -> [errFromOrigin(top, "invalid use of `restrict'")]
 		end;
 }
 
@@ -133,7 +133,7 @@ top::Qualifier ::=
   top.errors :=
 		case top.typeToQualify.defaultFunctionArrayLvalueConversion of
 			pointerType(_, _) -> []
-		| _                 -> [err(top.location, "invalid use of `restrict'")]
+		| _                 -> [errFromOrigin(top, "invalid use of `restrict'")]
 		end;
 }
 
@@ -141,7 +141,7 @@ top::Qualifier ::=
  - e.g. Function specifiers (inline, _Noreturn)
  -      Alignment specifiers (_Alignas)
  -}
-nonterminal SpecialSpecifier with pp, host, env, errors, globalDecls,
+tracked nonterminal SpecialSpecifier with pp, host, env, errors, globalDecls,
   functionDecls, defs, controlStmtContext;
 flowtype SpecialSpecifier = decorate {env, controlStmtContext};
 
@@ -167,7 +167,7 @@ top::SpecialSpecifier ::= e::Expr
   top.pp = ppConcat([text("_Alignas"), parens(e.pp)]);
 }
 
-nonterminal SpecialSpecifiers with pps, host, env, errors,
+tracked nonterminal SpecialSpecifiers with pps, host, env, errors,
   globalDecls, functionDecls, defs, controlStmtContext;
 flowtype SpecialSpecifiers = decorate {env, controlStmtContext};
 

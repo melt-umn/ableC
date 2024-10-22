@@ -1,47 +1,44 @@
 -- n
 function mkIntConst
-Expr ::= n::Integer l::Location
+Expr ::= n::Integer
 { return
     realConstant(
-      integerConstant (toString(n), false, noIntSuffix(),location=l),
-      location=l);
+      integerConstant (toString(n), false, noIntSuffix()));
 }
 
 -- "s"
 function mkStringConst
-Expr ::= s::String l::Location
-{ return stringLiteral(s"\"${escapeString(s)}\"", location=l);
+Expr ::= s::String
+{ return stringLiteral(s"\"${escapeString(s)}\"");
 }
 
 -- left + right
 -- TODO: Deprecated, remove this!
 function mkAdd
-Expr ::= left::Expr  right::Expr  l::Location
+Expr ::= left::Expr  right::Expr 
 { return
     addExpr (
       left,
-      right,
-      location=l
+      right
    ) ;
 }
 
 -- left && right
 -- TODO: Deprecated, remove this!
 function mkAnd
-Expr ::= left::Expr  right::Expr  l::Location
+Expr ::= left::Expr  right::Expr 
 { return
     andExpr (
       left,
-      right,
-      location=l
+      right
    ) ;
 }
 
 -- & e
 -- TODO: Deprecated, remove this!
 function mkAddressOf
-Expr ::= e::Expr l::Location
-{ return addressOfExpr(e, location=l);
+Expr ::= e::Expr
+{ return addressOfExpr(e);
 }
 
 -- Expr --
@@ -49,18 +46,17 @@ Expr ::= e::Expr l::Location
 -- 1, 2, etc.
 -- TODO: Duplicate of mkIntConst, remove
 function mkIntExpr
-Expr ::= val::String l::Location
-{ return realConstant(integerConstant(val, false, noIntSuffix(), 
-            location=l), location=l) ;
+Expr ::= val::String
+{ return realConstant(integerConstant(val, false, noIntSuffix())) ;
 }
 
-function mkErrorCheck
-Expr ::= msg::[Message] e::Decorated! Expr with {}
+production mkErrorCheck
+top::Expr ::= msg::[Message] e::Expr
 {
-  return
+  forwards to
     if null(msg)
     then @e
     else if !containsErrors(msg, false)
-    then warnExpr(msg, @e, location=e.location)
-    else errorExpr(msg, location=e.location);
+    then warnExpr(msg, @e)
+    else errorExpr(msg);
 } 

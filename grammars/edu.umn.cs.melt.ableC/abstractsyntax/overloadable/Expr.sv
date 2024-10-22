@@ -15,10 +15,9 @@ top::host:Expr ::= ty::host:TypeName  e::host:Expr
   local fwrd::host:Expr =
     inj:explicitCastExpr(
       host:decTypeName(ty),
-      host:decExpr(e, location=e.location),
-      location=top.location);
+      host:decExpr(e));
 
-  forwards to host:wrapWarnExpr(lerrors, fwrd, top.location);
+  forwards to host:wrapWarnExpr(lerrors, fwrd);
 }
 abstract production arraySubscriptExpr
 top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
@@ -36,50 +35,46 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
     case lhs.host:typerep.addressOfArraySubscriptProd of
     | just(prod) ->
       just(
-        \ lhs::host:Expr rhs::host:Expr loc::Location ->
-          dereferenceExpr(prod(lhs, rhs, loc), location=loc))
+        \ lhs::host:Expr rhs::host:Expr ->
+          dereferenceExpr(prod(lhs, rhs)))
     | nothing() -> nothing()
     end;
   
   local host::host:Expr =
     inj:arraySubscriptExpr(
-      host:decExpr(lhs, location=lhs.location),
-      host:decExpr(rhs, location=rhs.location),
-      location=top.location);
+      host:decExpr(lhs),
+      host:decExpr(rhs));
   local fwrd::host:Expr =
     case orElse(lhs.host:typerep.arraySubscriptProd, rewriteProd) of
     | just(prod) ->
       host:transformedExpr(
         host,
         prod(
-          host:decExpr(lhs, location=lhs.location),
-          host:decExpr(rhs, location=rhs.location),
-          top.location),
-        location=top.location)
+          host:decExpr(lhs),
+          host:decExpr(rhs)))
     | nothing() -> host
     end;
 
-  forwards to host:wrapWarnExpr(lerrors, fwrd, top.location);
+  forwards to host:wrapWarnExpr(lerrors, fwrd);
 }
 abstract production callExpr
 top::host:Expr ::= f::host:Expr  a::host:Exprs
 {
   top.pp = parens( ppConcat([ f.pp, parens( ppImplode( cat( comma(), space() ), a.pps ))]) );
   
-  local rewriteProd::Maybe<(host:Expr ::= host:Exprs Location)> =
+  local rewriteProd::Maybe<(host:Expr ::= host:Exprs)> =
     case f.host:typerep.addressOfCallProd of
     | just(prod) ->
-      just(\ a::host:Exprs loc::Location ->
+      just(\ a::host:Exprs ->
         dereferenceExpr(
-          prod(host:decExpr(f, location=f.location), a, loc),
-          location=loc))
+          prod(host:decExpr(f), a)))
     | nothing() -> nothing()
     end;
   
-  forward host = inj:callExpr(@f, @a, location=top.location);
+  forward host = inj:callExpr(@f, @a);
   forwards to
     case orElse(f.callProd, rewriteProd) of
-    | just(prod) -> host:transformedExpr(@host, prod(host:decExprs(a), top.location), location=top.location)
+    | just(prod) -> host:transformedExpr(host:decExpr(host), prod(host:decExprs(a)))
     | nothing() -> @host
     end;
 }
@@ -96,20 +91,18 @@ top::host:Expr ::= lhs::host:Expr  deref::Boolean  rhs::host:Name
   t.isDeref = deref;
   local host::host:Expr =
     inj:memberExpr(
-      host:decExpr(lhs, location=lhs.location),
-      deref, rhs,
-      location=top.location);
+      host:decExpr(lhs),
+      deref, rhs);
   local fwrd::host:Expr =
     case t.memberProd of
     | just(prod) ->
        host:transformedExpr(
          host,
-         prod(host:decExpr(lhs, location=lhs.location), rhs, top.location),
-         location=top.location)
+         prod(host:decExpr(lhs), rhs))
     | nothing() -> host
     end;
   
-  forwards to host:wrapWarnExpr(lerrors, fwrd, top.location);
+  forwards to host:wrapWarnExpr(lerrors, fwrd);
 }
 abstract production compoundLiteralExpr
 top::host:Expr ::= ty::host:TypeName  init::host:InitList
@@ -120,11 +113,8 @@ top::host:Expr ::= ty::host:TypeName  init::host:InitList
   
   local t::host:Type = ty.host:typerep;
   local host::host:Expr =
-    host:compoundLiteralExpr(
-      host:decTypeName(ty),
-      init,
-      location=top.location);
-  local tmpName::host:Name = host:name("_res_" ++ toString(genInt()), location=top.location);
+    host:compoundLiteralExpr(host:decTypeName(ty), init);
+  local tmpName::host:Name = host:name("_res_" ++ toString(genInt()));
   forwards to
     case t.objectInitProd of
     | just(prod) ->
@@ -140,11 +130,9 @@ top::host:Expr ::= ty::host:TypeName  init::host:InitList
                    tmpName,
                    ty.host:mty,
                    host:nilAttribute(),
-                   host:justInitializer(prod(init, top.location))),
+                   host:justInitializer(prod(init))),
                  host:nilDeclarator()))),
-           host:declRefExpr(tmpName, location=top.location),
-           location=top.location),
-         location=top.location)
+           host:declRefExpr(tmpName)))
     | nothing() -> host
     end;
 }

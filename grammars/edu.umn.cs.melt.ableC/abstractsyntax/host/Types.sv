@@ -9,7 +9,7 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
  - Variants: builtin, pointer, array, function, tagged, noncanonical.
  - Noncanonical forwards, and so doesn't need any attributes, etc attached to it.
  -}
-nonterminal Type with lpp, rpp, host, canonicalType, baseTypeExpr, typeModifierExpr, mangledName, integerPromotions, defaultArgumentPromotions, defaultLvalueConversion, defaultFunctionArrayLvalueConversion, isIntegerType, isScalarType, isArithmeticType, isCompleteType, maybeRefId, withoutAttributes, withoutTypeQualifiers, withoutExtensionQualifiers, withTypeQualifiers, addedTypeQualifiers, qualifiers, mergeQualifiers<Type>, errors, freeVariables;
+tracked nonterminal Type with lpp, rpp, host, canonicalType, baseTypeExpr, typeModifierExpr, mangledName, integerPromotions, defaultArgumentPromotions, defaultLvalueConversion, defaultFunctionArrayLvalueConversion, isIntegerType, isScalarType, isArithmeticType, isCompleteType, maybeRefId, withoutAttributes, withoutTypeQualifiers, withoutExtensionQualifiers, withTypeQualifiers, addedTypeQualifiers, qualifiers, mergeQualifiers<Type>, errors, freeVariables;
 flowtype Type = decorate {}, canonicalType {}, baseTypeExpr {}, typeModifierExpr {}, integerPromotions {}, defaultArgumentPromotions {}, defaultLvalueConversion {}, defaultFunctionArrayLvalueConversion {}, isIntegerType {}, isScalarType {}, isArithmeticType {}, isCompleteType {}, maybeRefId {}, withoutAttributes {}, withoutTypeQualifiers {}, withoutExtensionQualifiers {}, withTypeQualifiers {addedTypeQualifiers}, qualifiers {}, mergeQualifiers {};
 
 -- Transform away noncanonical types such as typedefs, etc. while preserving extension types
@@ -62,7 +62,7 @@ top::Type ::=
   top.isIntegerType = false;
   top.isScalarType = false;
   top.isArithmeticType = false;
-  top.isCompleteType = \ Decorated Env -> true;
+  top.isCompleteType = \ _ -> true;
   top.maybeRefId := nothing();
 }
 
@@ -219,7 +219,7 @@ top::Type ::= element::Type  indexQualifiers::Qualifiers  sizeModifier::ArraySiz
           element.typeModifierExpr,
           indexQualifiers,
           sizeModifier,
-          mkIntConst(size, bogusLoc())) -- TODO: location
+          mkIntConst(size)) -- TODO: location
     | incompleteArrayType() ->
         arrayTypeExprWithoutExpr(
           element.typeModifierExpr,
@@ -459,7 +459,7 @@ top::ExtType ::=
   top.isIntegerType = false;
   top.isArithmeticType = false;
   top.isScalarType = false;
-  top.isCompleteType = \ Decorated Env -> true;
+  top.isCompleteType = \ _ -> true;
   top.maybeRefId := nothing();
 }
 
@@ -523,7 +523,7 @@ top::ExtType ::= kwd::StructOrEnumOrUnion  mn::Maybe<String>  refId::String
   top.host = extType(top.givenQualifiers, top);
   top.baseTypeExpr =
     case mn of
-    | just(n) -> tagReferenceTypeExpr(top.givenQualifiers, kwd, name(n, location=builtinLoc("host")))
+    | just(n) -> tagReferenceTypeExpr(top.givenQualifiers, kwd, name(n))
     | nothing() -> anonTagReferenceTypeExpr(top.givenQualifiers, kwd, refId)
     end;
   production tagName::String = fromMaybe(s"<anon ${refId}>", mn);
@@ -541,7 +541,7 @@ top::ExtType ::= kwd::StructOrEnumOrUnion  mn::Maybe<String>  refId::String
   top.maybeRefId := just(refId);
 }
 
-nonterminal StructOrEnumOrUnion with pp, mangledName; -- Silver enums would be nice.
+data nonterminal StructOrEnumOrUnion with pp, mangledName; -- Silver enums would be nice.
 abstract production structSEU
 top::StructOrEnumOrUnion ::= { top.pp = text("struct"); top.mangledName = "struct"; }
 abstract production unionSEU
@@ -647,8 +647,8 @@ top::Type ::= bt::Type  bytes::Integer
         gccAttribute(
           consAttrib(
             appliedAttrib(
-              attribName(name("__vector_size__", location=builtinLoc("host"))),
-              consExpr(mkIntConst(bytes, builtinLoc("host")), nilExpr())),
+              attribName(name("__vector_size__")),
+              consExpr(mkIntConst(bytes), nilExpr())),
           nilAttrib())),
         nilAttribute()),
       bt.baseTypeExpr);
@@ -792,7 +792,7 @@ top::NoncanonicalType ::= q::Qualifiers  n::String  resolved::Type
   propagate host;
   top.lpp = ppConcat([ terminate(space(), q.pps), text(n) ]);
   top.rpp = notext();
-  top.baseTypeExpr = typedefTypeExpr(q, name(n, location=builtinLoc("host")));
+  top.baseTypeExpr = typedefTypeExpr(q, name(n));
   top.typeModifierExpr = baseTypeExpr();
   top.withTypeQualifiers =
     noncanonicalType(

@@ -1,6 +1,6 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 
-nonterminal Stmt with pp, host, errors, globalDecls, functionDecls, defs, env,
+tracked nonterminal Stmt with pp, host, errors, globalDecls, functionDecls, defs, env,
   functionDefs, freeVariables, controlStmtContext, labelDefs;
 flowtype Stmt = decorate {env, controlStmtContext};
 
@@ -118,7 +118,7 @@ top::Stmt ::= c::Expr  t::Stmt  e::Stmt
 
   top.errors <-
     if c.typerep.defaultFunctionArrayLvalueConversion.isScalarType then []
-    else [err(c.location, "If condition must be scalar type, instead it is " ++ showType(c.typerep))];
+    else [errFromOrigin(c, "If condition must be scalar type, instead it is " ++ showType(c.typerep))];
 }
 
 abstract production ifStmtNoElse
@@ -157,7 +157,7 @@ top::Stmt ::= e::Expr  b::Stmt
   
   top.errors <-
     if e.typerep.defaultFunctionArrayLvalueConversion.isScalarType then []
-    else [err(e.location, "While condition must be scalar type, instead it is " ++ showType(e.typerep))];
+    else [errFromOrigin(e, "While condition must be scalar type, instead it is " ++ showType(e.typerep))];
 
   b.controlStmtContext = controlEnterLoop(top.controlStmtContext);
 }
@@ -190,7 +190,7 @@ top::Stmt ::= b::Stmt  e::Expr
 
   top.errors <-
     if e.typerep.defaultFunctionArrayLvalueConversion.isScalarType then []
-    else [err(e.location, "Do-while condition must be scalar type, instead it is " ++ showType(e.typerep))];
+    else [errFromOrigin(e, "Do-while condition must be scalar type, instead it is " ++ showType(e.typerep))];
 
   b.controlStmtContext = controlEnterLoop(top.controlStmtContext);
 }
@@ -238,7 +238,7 @@ top::Stmt ::= i::MaybeExpr  c::MaybeExpr  s::MaybeExpr  b::Stmt
   local cty :: Type = fromMaybe(errorType(), c.maybeTyperep);
   top.errors <-
     if cty.defaultFunctionArrayLvalueConversion.isScalarType then []
-    else [err(loc("TODOfor1",-1,-1,-1,-1,-1,-1), "For condition must be scalar type, instead it is " ++ showType(cty))]; -- TODO: location
+    else [errFromOrigin(c, "For condition must be scalar type, instead it is " ++ showType(cty))];
 
   b.controlStmtContext = controlEnterLoop(top.controlStmtContext);
 }
@@ -286,13 +286,13 @@ top::Stmt ::= i::Decl  c::MaybeExpr  s::MaybeExpr  b::Stmt
   local cty :: Type = fromMaybe(errorType(), c.maybeTyperep);
   top.errors <-
     if cty.defaultFunctionArrayLvalueConversion.isScalarType then []
-    else [err(loc("TODOfor2",-1,-1,-1,-1,-1,-1), "For condition must be scalar type, instead it is " ++ showType(cty))]; -- TODO: location
+    else [errFromOrigin(c, "For condition must be scalar type, instead it is " ++ showType(cty))];
 
   b.controlStmtContext = controlEnterLoop(top.controlStmtContext);
 }
 
 abstract production returnStmt
-top::Stmt ::= e::MaybeExpr {- loc::Location -} -- TODO: Add location to signature
+top::Stmt ::= e::MaybeExpr {- -} -- TODO: Add location to signature
 {
   propagate env, host;
   top.pp = ppConcat([text("return"), space(), e.pp, semi()]);
@@ -301,10 +301,10 @@ top::Stmt ::= e::MaybeExpr {- loc::Location -} -- TODO: Add location to signatur
                 | just(builtinType(_, voidType())), nothing() -> []
                 | just(expected), just(actual) ->
                     if typeAssignableTo(expected, actual) then []
-                    else [err(e.justTheExpr.fromJust.location,
+                    else [errFromOrigin(e.justTheExpr.fromJust,
                               "Incorrect return type, expected " ++ showType(expected) ++ " but found " ++ showType(actual))]
-                | nothing(), just(actual) -> [err(e.justTheExpr.fromJust.location, "Unexpected return")]
-                | just(expected), nothing() -> [err({-loc-} loc("TODOreturn",-1,-1,-1,-1,-1,-1), "Expected return value, but found valueless return")] -- TODO: location
+                | nothing(), just(actual) -> [errFromOrigin(e.justTheExpr.fromJust, "Unexpected return")]
+                | just(expected), nothing() -> [errFromOrigin(top, "Expected return value, but found valueless return")]
                 end ++ e.errors;
   top.globalDecls := e.globalDecls;
   top.functionDecls := e.functionDecls;
@@ -342,7 +342,7 @@ top::Stmt ::= e::Expr  b::Stmt
 
   top.errors <-
     if e.typerep.defaultFunctionArrayLvalueConversion.isIntegerType then []
-    else [err(e.location, "Switch expression must have integer type, instead it is " ++ showType(e.typerep))];
+    else [errFromOrigin(e, "Switch expression must have integer type, instead it is " ++ showType(e.typerep))];
 
   b.controlStmtContext = controlEnterSwitch(top.controlStmtContext);
 }
@@ -369,8 +369,7 @@ top::Stmt ::=
   propagate env, host;
   top.pp = cat( text("continue"), semi() );
   top.errors := if top.controlStmtContext.continueValid then []
-                else [err(loc("TODOcontinue",-1,-1,-1,-1,-1,-1), -- TODO: Location
-                  "continue statement is in an invalid location")];
+                else [errFromOrigin(top, "continue statement is in an invalid location")];
   top.globalDecls := [];
   top.functionDecls := [];
   top.defs := [];
@@ -385,8 +384,7 @@ top::Stmt ::=
   propagate env, host;
   top.pp = ppConcat([ text("break"), semi()  ]);
   top.errors := if top.controlStmtContext.breakValid then []
-                else [err(loc("TODObreak",-1,-1,-1,-1,-1,-1), -- TODO: Location
-                  "break statement is in an invalid location")];
+                else [errFromOrigin(top, "break statement is in an invalid location")];
   top.globalDecls := [];
   top.functionDecls := [];
   top.defs := [];
@@ -409,7 +407,7 @@ top::Stmt ::= l::Name  s::Stmt
   top.labelDefs := s.labelDefs;
 
   top.errors <- l.labelRedeclarationCheck;
-  top.labelDefs <- [(l.name, labelItem(l.location))];
+  top.labelDefs <- [(l.name, labelItem())];
 }
 
 abstract production caseLabelStmt

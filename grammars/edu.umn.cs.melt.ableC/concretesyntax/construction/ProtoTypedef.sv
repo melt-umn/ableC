@@ -16,7 +16,7 @@ top::Declaration_c ::= ProtoTypedef_c
 
 terminal LexerHackTypedefProto_t 'proto_typedef' lexer classes {Keyword, Reserved};
 
-nonterminal ProtoTypedef_c with location;
+tracked nonterminal ProtoTypedef_c;
 
 concrete productions top::ProtoTypedef_c
 | 'proto_typedef' ids::IdentifierList_c ';'
@@ -25,7 +25,7 @@ concrete productions top::ProtoTypedef_c
     context = addIdentsToScope(ids.declaredIdents, TypeName_t, context);
   }
 
-nonterminal IdentifierList_c with declaredIdents;
+tracked nonterminal IdentifierList_c with declaredIdents;
 
 concrete productions top::IdentifierList_c
 | id::Identifier_c

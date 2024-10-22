@@ -59,7 +59,7 @@ flowtype decls {decorate} on
 synthesized attribute bty :: BaseTypeExpr;
 synthesized attribute mty :: TypeModifierExpr;
 
-nonterminal TypeName with env, typerep, bty, mty, pp, host, errors, globalDecls,
+tracked nonterminal TypeName with env, typerep, bty, mty, pp, host, errors, globalDecls,
   functionDecls, decls, defs, freeVariables, controlStmtContext;
 flowtype TypeName = decorate {env, controlStmtContext},
   bty {}, mty {};
@@ -127,7 +127,7 @@ top::TypeName ::= ty::Decorated TypeName
 {--
  - Corresponds to types obtainable from a TypeSpecifiers.
  -}
-nonterminal BaseTypeExpr with env, typerep, pp, host, errors, globalDecls,
+tracked nonterminal BaseTypeExpr with env, typerep, pp, host, errors, globalDecls,
   functionDecls, typeModifier, decls, hostDecls, defs, givenRefId, freeVariables,
   controlStmtContext;
 flowtype BaseTypeExpr = decorate {env, givenRefId, controlStmtContext},
@@ -297,15 +297,15 @@ top::BaseTypeExpr ::= q::Qualifiers  kwd::StructOrEnumOrUnion  n::Name
     case kwd, tags of
     -- It's an enum and we see the declaration.
     | enumSEU(), enumTagItem(d) :: _ -> []
-    | enumSEU(), [] -> [err(n.location, "Undeclared enum " ++ n.name)]
-    | enumSEU(), _ :: _ -> [err(n.location, "Tag " ++ n.name ++ " is not an enum")]
+    | enumSEU(), [] -> [errFromOrigin(n, "Undeclared enum " ++ n.name)]
+    | enumSEU(), _ :: _ -> [errFromOrigin(n, "Tag " ++ n.name ++ " is not an enum")]
     -- We don't see the declaration, so we're adding it.
     | _, [] -> []
     -- It's a struct/union and the tag type agrees.
     | structSEU(), refIdTagItem(structSEU(), rid) :: _ -> []
-    | structSEU(), _ :: _ -> [err(n.location, "Tag " ++ n.name ++ " is not a struct")]
+    | structSEU(), _ :: _ -> [errFromOrigin(n, "Tag " ++ n.name ++ " is not a struct")]
     | unionSEU(), refIdTagItem(unionSEU(), rid) :: _ -> []
-    | unionSEU(), _ :: _ -> [err(n.location, "Tag " ++ n.name ++ " is not a union")]
+    | unionSEU(), _ :: _ -> [errFromOrigin(n, "Tag " ++ n.name ++ " is not a union")]
     end;
 
   top.typeModifier = baseTypeExpr();
@@ -319,7 +319,7 @@ top::BaseTypeExpr ::= q::Qualifiers  kwd::StructOrEnumOrUnion  n::Name
          withRefId(refId, top),
          consDeclarator(
            declarator(
-             name("_unused_" ++ toString(genInt()), location=builtinLoc("host")),
+             name("_unused_" ++ toString(genInt())),
              baseTypeExpr(),
              nilAttribute(),
              nothingInitializer()),
@@ -443,7 +443,7 @@ top::BaseTypeExpr ::= q::Qualifiers  name::Name
   top.errors <- name.valueLookupCheck;
   top.errors <-
     if name.valueItem.isItemType then []
-    else [err(name.location, "'" ++ name.name ++ "' does not refer to a type.")];
+    else [errFromOrigin(name, "'" ++ name.name ++ "' does not refer to a type.")];
   q.typeToQualify = top.typerep;
 }
 {--
@@ -462,7 +462,7 @@ top::BaseTypeExpr ::= attrs::Attributes  bt::BaseTypeExpr
   top.pp = cat(ppAttributes(attrs), bt.pp);
 
   local liftedName::Name =
-    name(s"_attributedType_${toString(genInt())}", location=builtinLoc("host"));
+    name(s"_attributedType_${toString(genInt())}");
   forwards to
     -- TODO: We can currently only lift to the global level, but this should be lifted to the closest scope
     injectGlobalDeclsTypeExpr(
@@ -513,7 +513,7 @@ top::BaseTypeExpr ::= q::Qualifiers  e::ExprOrTypeName
  - Typically, these are just anchored somewhere to obtain the env,
  - and then turn into an environment-independent Type.
  -}
-nonterminal TypeModifierExpr with env, typerep, lpp, rpp, host, modifiedBaseTypeExpr,
+tracked nonterminal TypeModifierExpr with env, typerep, lpp, rpp, host, modifiedBaseTypeExpr,
   isFunctionArrayTypeExpr, baseType, typeModifierIn, errors, globalDecls,
   functionDecls, decls, defs, freeVariables, controlStmtContext;
 flowtype TypeModifierExpr = decorate {env, baseType, typeModifierIn, controlStmtContext},
@@ -709,7 +709,7 @@ top::TypeModifierExpr ::= wrapped::TypeModifierExpr
 inherited attribute appendedTypeNames :: TypeNames;
 synthesized attribute appendedTypeNamesRes :: TypeNames;
 
-nonterminal TypeNames with pps, host, env, typereps, count, errors, globalDecls,
+tracked nonterminal TypeNames with pps, host, env, typereps, count, errors, globalDecls,
   functionDecls, decls, defs, freeVariables, appendedTypeNames,
   appendedTypeNamesRes, controlStmtContext;
 flowtype TypeNames = decorate {env, controlStmtContext},

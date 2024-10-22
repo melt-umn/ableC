@@ -48,9 +48,9 @@ e::Expr ::=
 {
   propagate errors, globalDecls, functionDecls, defs;
   e.pp =
-    decorate comment("printEnv pp should be demanded through host pp", location=e.location)
+    decorate comment("printEnv pp should be demanded through host pp")
     with {env = e.env; controlStmtContext=e.controlStmtContext;}.pp;
-  forwards to comment( show(80,showEnv(e.env)), location=e.location );
+  forwards to comment( show(80,showEnv(e.env)) );
 }
 
 
