@@ -1,6 +1,6 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax:env;
 
-closed nonterminal MiscItem;
+closed data nonterminal MiscItem;
 
 {- Misc items are used to put various bits of information into the
    environment such that it can be extracted later by, typically, some

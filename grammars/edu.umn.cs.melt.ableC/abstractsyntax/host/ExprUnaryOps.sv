@@ -67,7 +67,7 @@ top::Expr ::= e::Expr
   top.pp = parens( cat(text("*"), e.pp) );
   top.typerep =
     case e.typerep.defaultFunctionArrayLvalueConversion of
-    | pointerType(_, innerty) -> innerty
+    | pointerType(_, innerty) -> ^innerty
     | _ -> errorType()
     end;
   top.isLValue = true;
@@ -78,7 +78,7 @@ top::Expr ::= e::Expr
     | pointerType(_, _) -> []
     | errorType() -> []
     | _ -> [errFromOrigin(top, "invalid type argument of unary ‘*’ (have ‘" ++
-                               showType(e.typerep) ++ "’)")]
+                               show(80, e.typerep) ++ "’)")]
     end;
 }
 abstract production positiveExpr

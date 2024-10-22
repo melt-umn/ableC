@@ -14,22 +14,15 @@ flowtype freeVariables {decorate} on
   Stmt,
   MaybeInitializer, Initializer, InitList, Init, Designator;
 
-function removeDefsFromNames
-[Name] ::= defs::[Def] names::[Name]
-{
-  return if null(names)
-         then []
-         else if !null(filter(definesVarWithName(_, head(names).name), defs))
-         then removeDefsFromNames(defs, tail(names))
-         else head(names) :: removeDefsFromNames(defs, tail(names));
-}
+fun removeDefsFromNames [Name] ::= defs::[Def] names::[Name] =
+  if null(names)
+  then []
+  else if !null(filter(definesVarWithName(_, head(names).name), defs))
+  then removeDefsFromNames(defs, tail(names))
+  else head(names) :: removeDefsFromNames(defs, tail(names));
 
-function definesVarWithName
-Boolean ::= d::Def n::String
-{
-  return
-    case d of
-      valueDef(n1, _) -> n == n1
-    | _ -> false
-    end;
-}
+fun definesVarWithName Boolean ::= d::Def n::String =
+  case d of
+    valueDef(n1, _) -> n == n1
+  | _ -> false
+  end;

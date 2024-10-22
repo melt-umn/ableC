@@ -5,10 +5,9 @@ imports edu:umn:cs:melt:ableC:abstractsyntax:host;
 imports edu:umn:cs:melt:ableC:concretesyntax as cst;
 
 
-function figureOutTypeFromSpecifiers
-BaseTypeExpr ::=  q::Qualifiers  pre_ts::[String]  real_ts::[BaseTypeExpr]  mod::[TypeSpecifierMutator]
-{
-  return if !null(mod) then
+fun figureOutTypeFromSpecifiers
+BaseTypeExpr ::=  q::Qualifiers  pre_ts::[String]  real_ts::[BaseTypeExpr]  mod::[TypeSpecifierMutator] =
+  if !null(mod) then
     case mod of
     | modifyTypeSpecifier(f) :: [] -> 
         f(q, figureOutTypeFromSpecifiers(nilQualifier(), pre_ts, real_ts, []))
@@ -29,17 +28,15 @@ BaseTypeExpr ::=  q::Qualifiers  pre_ts::[String]  real_ts::[BaseTypeExpr]  mod:
     fromMaybe(
       errorTypeExpr([errFromOrigin(q, "Unable to interpret type specifiers: " ++ implode(" ", pre_ts))]),
       interpretTypeSpecifiers(q, sort(pre_ts)));
-}
 
 
 {--
  - Translates a *sorted* type specifier multiset (list) into a BaseTypeExpr,
  - according to the C11 standard.
  -}
-function interpretTypeSpecifiers
-Maybe<BaseTypeExpr> ::= q::Qualifiers  sorted_type_specifiers::[String]
-{
-  return case sorted_type_specifiers of
+fun interpretTypeSpecifiers
+Maybe<BaseTypeExpr> ::= q::Qualifiers  sorted_type_specifiers::[String] =
+  case sorted_type_specifiers of
   -- signed char:
   | "char" :: [] ->
       just(builtinTypeExpr(q, signedType(charType())))
@@ -155,7 +152,6 @@ Maybe<BaseTypeExpr> ::= q::Qualifiers  sorted_type_specifiers::[String]
   
   | _ -> nothing()
   end;
-}
 
 tracked nonterminal TypeSpecifierMutator;
 {-- Takes a type specifier, *and* qualifiers (instead of allowing that te to have them)

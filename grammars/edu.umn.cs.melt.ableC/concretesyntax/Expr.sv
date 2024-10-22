@@ -1,7 +1,6 @@
 grammar edu:umn:cs:melt:ableC:concretesyntax;
 
 import edu:umn:cs:melt:ableC:abstractsyntax:env only env;
-import edu:umn:cs:melt:ableC:abstractsyntax:overloadable as ovrld;
 -- "Exported" nonterminals
 
 closed tracked nonterminal Expr_c with ast<ast:Expr>; 
@@ -36,11 +35,11 @@ concrete productions top::ConstantExpr_c
 closed tracked nonterminal Initializer_c with ast<ast:Initializer>; 
 concrete productions top::Initializer_c
 | e::AssignExpr_c
-    { top.ast = ovrld:exprInitializer(e.ast); }
+    { top.ast = ast:exprInitializer(e.ast); }
 | '{' il::InitializerList_c '}'
-    { top.ast = ovrld:objectInitializer(ast:foldInit(il.ast)); }
+    { top.ast = ast:objectInitializer(ast:foldInit(il.ast)); }
 | '{' il::InitializerList_c ',' '}' 
-    { top.ast = ovrld:objectInitializer(ast:foldInit(il.ast)); }
+    { top.ast = ast:objectInitializer(ast:foldInit(il.ast)); }
 
 
 -- "Non-exported" nonterminals
@@ -48,17 +47,17 @@ concrete productions top::Initializer_c
 
 closed tracked nonterminal AssignOp_c with ast<ast:Expr>, leftExpr, rightExpr;
 concrete productions top::AssignOp_c
-| '='   { top.ast = ovrld:eqExpr(top.leftExpr, top.rightExpr); }
-| '*='  { top.ast = ovrld:mulEqExpr(top.leftExpr, top.rightExpr); }
-| '/='  { top.ast = ovrld:divEqExpr(top.leftExpr, top.rightExpr); }
-| '%='  { top.ast = ovrld:modEqExpr(top.leftExpr, top.rightExpr); }
-| '+='  { top.ast = ovrld:addEqExpr(top.leftExpr, top.rightExpr); }
-| '-='  { top.ast = ovrld:subEqExpr(top.leftExpr, top.rightExpr); }
-| '<<=' { top.ast = ovrld:lshEqExpr(top.leftExpr, top.rightExpr); }
-| '>>=' { top.ast = ovrld:rshEqExpr(top.leftExpr, top.rightExpr); }
-| '&='  { top.ast = ovrld:andEqExpr(top.leftExpr, top.rightExpr); }
-| '^='  { top.ast = ovrld:xorEqExpr(top.leftExpr, top.rightExpr); }
-| '|='  { top.ast = ovrld:orEqExpr(top.leftExpr, top.rightExpr); }
+| '='   { top.ast = ast:eqExpr(top.leftExpr, top.rightExpr); }
+| '*='  { top.ast = ast:mulEqExpr(top.leftExpr, top.rightExpr); }
+| '/='  { top.ast = ast:divEqExpr(top.leftExpr, top.rightExpr); }
+| '%='  { top.ast = ast:modEqExpr(top.leftExpr, top.rightExpr); }
+| '+='  { top.ast = ast:addEqExpr(top.leftExpr, top.rightExpr); }
+| '-='  { top.ast = ast:subEqExpr(top.leftExpr, top.rightExpr); }
+| '<<=' { top.ast = ast:lshEqExpr(top.leftExpr, top.rightExpr); }
+| '>>=' { top.ast = ast:rshEqExpr(top.leftExpr, top.rightExpr); }
+| '&='  { top.ast = ast:andEqExpr(top.leftExpr, top.rightExpr); }
+| '^='  { top.ast = ast:xorEqExpr(top.leftExpr, top.rightExpr); }
+| '|='  { top.ast = ast:orEqExpr(top.leftExpr, top.rightExpr); }
 
 
 closed tracked nonterminal ConditionalExpr_c with ast<ast:Expr>, directName;
@@ -91,7 +90,7 @@ concrete productions top::LogicalOrExpr_c
 
 closed tracked nonterminal LogicalOrOp_c with ast<ast:Expr>, leftExpr, rightExpr;
 concrete productions top::LogicalOrOp_c
-| '||'   { top.ast = ovrld:orExpr(top.leftExpr, top.rightExpr); }
+| '||'   { top.ast = ast:orExpr(top.leftExpr, top.rightExpr); }
 
 
 closed tracked nonterminal LogicalAndExpr_c with ast<ast:Expr>, directName;
@@ -110,7 +109,7 @@ concrete productions top::LogicalAndExpr_c
 
 closed tracked nonterminal LogicalAndOp_c with ast<ast:Expr>, leftExpr, rightExpr;
 concrete productions top::LogicalAndOp_c
-| '&&'   { top.ast = ovrld:andExpr(top.leftExpr, top.rightExpr); }
+| '&&'   { top.ast = ast:andExpr(top.leftExpr, top.rightExpr); }
 
 
 closed tracked nonterminal InclusiveOrExpr_c with ast<ast:Expr>, directName;
@@ -129,7 +128,7 @@ concrete productions top::InclusiveOrExpr_c
 
 closed tracked nonterminal InclusiveOrOp_c with ast<ast:Expr>, leftExpr, rightExpr;
 concrete productions top::InclusiveOrOp_c
-| '|'   { top.ast = ovrld:orBitExpr(top.leftExpr, top.rightExpr); }
+| '|'   { top.ast = ast:orBitExpr(top.leftExpr, top.rightExpr); }
 
 
 closed tracked nonterminal ExclusiveOrExpr_c with ast<ast:Expr>, directName;
@@ -148,7 +147,7 @@ concrete productions top::ExclusiveOrExpr_c
 
 closed tracked nonterminal ExclusiveOrOp_c with ast<ast:Expr>, leftExpr, rightExpr;
 concrete productions top::ExclusiveOrOp_c
-| '^'   { top.ast = ovrld:xorExpr(top.leftExpr, top.rightExpr); }
+| '^'   { top.ast = ast:xorExpr(top.leftExpr, top.rightExpr); }
 
 
 closed tracked nonterminal AndExpr_c with ast<ast:Expr>, directName;
@@ -167,7 +166,7 @@ concrete productions top::AndExpr_c
 
 closed tracked nonterminal AndOp_c with ast<ast:Expr>, leftExpr, rightExpr;
 concrete productions top::AndOp_c
-| '&'   { top.ast = ovrld:andBitExpr(top.leftExpr, top.rightExpr); }
+| '&'   { top.ast = ast:andBitExpr(top.leftExpr, top.rightExpr); }
 
 
 closed tracked nonterminal EqualityExpr_c with ast<ast:Expr>, directName;
@@ -186,8 +185,8 @@ concrete productions top::EqualityExpr_c
 
 closed tracked nonterminal EqualityOp_c with ast<ast:Expr>, leftExpr, rightExpr;
 concrete productions top::EqualityOp_c
-| '=='   { top.ast = ovrld:equalsExpr(top.leftExpr, top.rightExpr); }
-| '!='   { top.ast = ovrld:notEqualsExpr(top.leftExpr, top.rightExpr); }
+| '=='   { top.ast = ast:equalsExpr(top.leftExpr, top.rightExpr); }
+| '!='   { top.ast = ast:notEqualsExpr(top.leftExpr, top.rightExpr); }
 
 
 closed tracked nonterminal RelationalExpr_c with ast<ast:Expr>, directName;
@@ -206,10 +205,10 @@ concrete productions top::RelationalExpr_c
 
 closed tracked nonterminal RelationalOp_c with ast<ast:Expr>, leftExpr, rightExpr;
 concrete productions top::RelationalOp_c
-| '<'   { top.ast = ovrld:ltExpr(top.leftExpr, top.rightExpr); }
-| '>'   { top.ast = ovrld:gtExpr(top.leftExpr, top.rightExpr); }
-| '<='   { top.ast = ovrld:lteExpr(top.leftExpr, top.rightExpr); }
-| '>='   { top.ast = ovrld:gteExpr(top.leftExpr, top.rightExpr); }
+| '<'   { top.ast = ast:ltExpr(top.leftExpr, top.rightExpr); }
+| '>'   { top.ast = ast:gtExpr(top.leftExpr, top.rightExpr); }
+| '<='   { top.ast = ast:lteExpr(top.leftExpr, top.rightExpr); }
+| '>='   { top.ast = ast:gteExpr(top.leftExpr, top.rightExpr); }
 
 
 closed tracked nonterminal ShiftExpr_c with ast<ast:Expr>, directName;
@@ -228,8 +227,8 @@ concrete productions top::ShiftExpr_c
 
 closed tracked nonterminal ShiftOp_c with ast<ast:Expr>, leftExpr, rightExpr;
 concrete productions top::ShiftOp_c
-| '<<'   { top.ast = ovrld:lshExpr(top.leftExpr, top.rightExpr); }
-| '>>'   { top.ast = ovrld:rshExpr(top.leftExpr, top.rightExpr); }
+| '<<'   { top.ast = ast:lshExpr(top.leftExpr, top.rightExpr); }
+| '>>'   { top.ast = ast:rshExpr(top.leftExpr, top.rightExpr); }
 
 
 -- Additive Expressions --
@@ -245,9 +244,9 @@ concrete productions top::AdditiveExpr_c
 | e::MultiplicativeExpr_c
     { top.ast = e.ast; }
 | l::AdditiveExpr_c  '+'  r::MultiplicativeExpr_c
-    { top.ast = ovrld:binaryOpExpr(l.ast, ast:numOp(ast:addOp()), r.ast); }
+    { top.ast = ast:binaryOpExpr(l.ast, ast:numOp(ast:addOp()), r.ast); }
 | l::AdditiveExpr_c  '-'  r::MultiplicativeExpr_c
-    { top.ast = ovrld:binaryOpExpr(l.ast, ast:numOp(ast:subOp()), r.ast); }           -}
+    { top.ast = ast:binaryOpExpr(l.ast, ast:numOp(ast:subOp()), r.ast); }           -}
 concrete productions top::AdditiveExpr_c
 | e::AddMulLeft_c 
     { top.ast = e.ast;
@@ -265,9 +264,9 @@ closed tracked nonterminal AdditiveOp_c
 -- Additive Operators
 concrete productions top::AdditiveOp_c
 | '+'
-    { top.ast = ovrld:addExpr(top.leftExpr, top.rightExpr); }
+    { top.ast = ast:addExpr(top.leftExpr, top.rightExpr); }
 | '-'
-    { top.ast = ovrld:subExpr(top.leftExpr, top.rightExpr); }
+    { top.ast = ast:subExpr(top.leftExpr, top.rightExpr); }
 
 -- Operators with precedence between Additive and Multiplicitive opererators
 
@@ -365,9 +364,9 @@ concrete productions top::MultiplicativeExpr_c
 
 closed tracked nonterminal MultiplicativeOp_c with ast<ast:Expr>, leftExpr, rightExpr;
 concrete productions top::MultiplicativeOp_c
-| '*'   { top.ast = ovrld:mulExpr(top.leftExpr, top.rightExpr); }
-| '/'   { top.ast = ovrld:divExpr(top.leftExpr, top.rightExpr); }
-| '%'   { top.ast = ovrld:modExpr(top.leftExpr, top.rightExpr); }
+| '*'   { top.ast = ast:mulExpr(top.leftExpr, top.rightExpr); }
+| '/'   { top.ast = ast:divExpr(top.leftExpr, top.rightExpr); }
+| '%'   { top.ast = ast:modExpr(top.leftExpr, top.rightExpr); }
 
 
 closed tracked nonterminal CastExpr_c with ast<ast:Expr>, directName;
@@ -381,7 +380,7 @@ concrete productions top::CastExpr_c
     { top.ast = e.ast;
       top.directName = e.directName; }
 | '(' tn::TypeName_c ')' e::CastExpr_c
-    { top.ast = ovrld:explicitCastExpr(tn.ast, e.ast); }
+    { top.ast = ast:explicitCastExpr(tn.ast, e.ast); }
 
 
 closed tracked nonterminal UnaryExpr_c with ast<ast:Expr>, directName;
@@ -395,9 +394,9 @@ concrete productions top::UnaryExpr_c
     { top.ast = e.ast;
       top.directName = e.directName; }
 | '++' e::UnaryExpr_c
-    { top.ast = ovrld:preIncExpr(e.ast); }
+    { top.ast = ast:preIncExpr(e.ast); }
 | '--' e::UnaryExpr_c
-    { top.ast = ovrld:preDecExpr(e.ast); }
+    { top.ast = ast:preDecExpr(e.ast); }
 | op::UnaryOp_c e::CastExpr_c
     { top.ast = op.ast;
       op.expr = e.ast; }
@@ -410,12 +409,12 @@ concrete productions top::UnaryExpr_c
 inherited attribute expr :: ast:Expr;
 closed tracked nonterminal UnaryOp_c with ast<ast:Expr>, expr;
 concrete productions top::UnaryOp_c
-| '&'  { top.ast = ovrld:addressOfExpr(top.expr); }
-| '*'  { top.ast = ovrld:dereferenceExpr(top.expr); }
-| '+'  { top.ast = ovrld:positiveExpr(top.expr); }
-| '-'  { top.ast = ovrld:negativeExpr(top.expr); }
-| '~'  { top.ast = ovrld:bitNegateExpr(top.expr); }
-| '!'  { top.ast = ovrld:notExpr(top.expr); }
+| '&'  { top.ast = ast:addressOfExpr(top.expr); }
+| '*'  { top.ast = ast:dereferenceExpr(top.expr); }
+| '+'  { top.ast = ast:positiveExpr(top.expr); }
+| '-'  { top.ast = ast:negativeExpr(top.expr); }
+| '~'  { top.ast = ast:bitNegateExpr(top.expr); }
+| '!'  { top.ast = ast:notExpr(top.expr); }
 
 -- Needed for constructing calls correctly
 synthesized attribute directName::Maybe<Identifier_c>;
@@ -432,41 +431,41 @@ concrete productions top::PostfixExpr_c
     { top.ast = e.ast;
       top.directName = e.directName; }
 | e::PostfixExpr_c '[' index::Expr_c ']'
-    { top.ast = ovrld:arraySubscriptExpr(e.ast, index.ast); }
+    { top.ast = ast:arraySubscriptExpr(e.ast, index.ast); }
 | e::PostfixExpr_c '(' args::ArgumentExprList_c ')'
     { top.ast = 
         case e.directName of
           just(id) -> ast:directCallExpr(id.ast, ast:foldExpr(args.ast))
-        | nothing() -> ovrld:callExpr(e.ast, ast:foldExpr(args.ast))
+        | nothing() -> ast:callExpr(e.ast, ast:foldExpr(args.ast))
         end; }
 | e::PostfixExpr_c '(' args::ArgumentExprList_c ',' ')'
     { top.ast = 
         case e.directName of
           just(id) -> ast:directCallExpr(id.ast, ast:foldExpr(args.ast))
-        | nothing() -> ovrld:callExpr(e.ast, ast:foldExpr(args.ast))
+        | nothing() -> ast:callExpr(e.ast, ast:foldExpr(args.ast))
         end; }
 | e::PostfixExpr_c '(' ')'
     { top.ast = 
         case e.directName of
           just(id) -> ast:directCallExpr(id.ast, ast:nilExpr())
-        | nothing() -> ovrld:callExpr(e.ast, ast:nilExpr())
+        | nothing() -> ast:callExpr(e.ast, ast:nilExpr())
         end; }
 | e::PostfixExpr_c op::PostfixOp_c
     { top.ast = op.ast;
       op.expr = e.ast; }
 | '(' ty::TypeName_c ')' '{' il::InitializerList_c '}'
-    { top.ast = ovrld:compoundLiteralExpr(ty.ast, ast:foldInit(il.ast)); }
+    { top.ast = ast:compoundLiteralExpr(ty.ast, ast:foldInit(il.ast)); }
 | '(' ty::TypeName_c ')' '{' il::InitializerList_c ',' '}'
-    { top.ast = ovrld:compoundLiteralExpr(ty.ast, ast:foldInit(il.ast)); }
+    { top.ast = ast:compoundLiteralExpr(ty.ast, ast:foldInit(il.ast)); }
 
 closed tracked nonterminal PostfixOp_c with ast<ast:Expr>, expr;
 concrete productions top::PostfixOp_c
 | '.' id::Identifier_c
-    { top.ast = ovrld:memberExpr(top.expr, false, id.ast); }
+    { top.ast = ast:memberExpr(top.expr, false, id.ast); }
 | '->' id::Identifier_c
-    { top.ast = ovrld:memberExpr(top.expr, true, id.ast); }
-| '++'   { top.ast = ovrld:postIncExpr(top.expr); }
-| '--'   { top.ast = ovrld:postDecExpr(top.expr); }
+    { top.ast = ast:memberExpr(top.expr, true, id.ast); }
+| '++'   { top.ast = ast:postIncExpr(top.expr); }
+| '--'   { top.ast = ast:postDecExpr(top.expr); }
 
 
 closed tracked nonterminal ArgumentExprList_c with ast<[ast:Expr]>, directName;
@@ -494,7 +493,7 @@ top::PrimaryExpr_c ::=
 concrete productions top::PrimaryExpr_c
 | id::Identifier_c
     { top.ast = ast:directRefExpr(id.ast);
-      top.directName = just(id); }
+      top.directName = just(^id); }
 | c::Constant_c
     { top.ast = c.ast; }
 | sl::StringConstant_c

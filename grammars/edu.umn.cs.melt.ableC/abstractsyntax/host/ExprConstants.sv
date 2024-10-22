@@ -24,7 +24,7 @@ top::Expr ::= c::NumericConstant
     | realType(rt) -> complexType(rt)
     | signedType(it) -> complexIntegerType(it)
     | unsignedType(it) -> complexIntegerType(it) -- probably not possible, but buggy!
-    | t -> error("Unexpected constanttyperep: " ++ show(80, t.pp))
+    | t -> error("Unexpected constanttyperep: " ++ show(80, t))
     end);
   top.isLValue = false;
   top.isSimple = true;

@@ -1,8 +1,5 @@
 grammar edu:umn:cs:melt:ableC:concretesyntax:gcc_exts;
 
-import edu:umn:cs:melt:ableC:abstractsyntax:overloadable as ovrld;
-import edu:umn:cs:melt:ableC:abstractsyntax:injectable as inj;
-
 -- Begins with 1-9 or is just 0 alone
 terminal IDecConstant_t /((0)|([1-9][0-9]*))[IiJj]/ lexer classes {NumericLiteral};
 terminal IDecConstantU_t   /((0)|([1-9][0-9]*))(([Uu][IiJj])|([IiJj][Uu]))/ lexer classes {NumericLiteral};
@@ -100,8 +97,8 @@ terminal GNU_UUImag_t '__imag' lexer classes {Keyword, Reserved};
 terminal GNU_UUImagUU_t '__imag__' lexer classes {Keyword, Reserved};
 
 concrete productions top::UnaryOp_c
-| '__real'  { top.ast = inj:realExpr(top.expr); }
-| '__real__'  { top.ast = inj:realExpr(top.expr); }
-| '__imag'  { top.ast = inj:imagExpr(top.expr); }
-| '__imag__'  { top.ast = inj:imagExpr(top.expr); }
+| '__real'  { top.ast = ast:realExpr(top.expr); }
+| '__real__'  { top.ast = ast:realExpr(top.expr); }
+| '__imag'  { top.ast = ast:imagExpr(top.expr); }
+| '__imag__'  { top.ast = ast:imagExpr(top.expr); }
 

@@ -56,7 +56,7 @@ e::Expr ::=
 
 
 function showEnv
-Document ::= e::Decorated Env
+Document ::= e::Env
 {
   return ppConcat( [
     text(" Environment:"),
@@ -77,45 +77,27 @@ Document ::= e::Decorated Env
 
 --  local labelsD :: Document
 --    = ppImplode(line(), map( showScope(_,showLabelItemBinding), map( tm:toList, e.labels )));
-  local valuesD :: Document
-    = ppImplode(line(), map( showScope(_,showValueItemBinding), map( tm:toList, e.values )));
-  local tagsD :: Document
-    = ppImplode(line(), map( showScope(_,showTagItemBinding), map( tm:toList, e.tags )));
-  local refIDsD :: Document
-    = ppImplode(line(), map( showScope(_,showRefIdItemBinding), map( tm:toList, e.refIds )));
-  local miscD :: Document
-    = ppImplode(line(), map( showScope(_,showMiscItemBinding), map( tm:toList, e.misc )));
+  nondecorated local valuesD::Document =
+    ppImplode(line(), map( showScope(_,showValueItemBinding), map( tm:toList, e.values )));
+  nondecorated local tagsD::Document =
+    ppImplode(line(), map( showScope(_,showTagItemBinding), map( tm:toList, e.tags )));
+  nondecorated local refIDsD::Document =
+    ppImplode(line(), map( showScope(_,showRefIdItemBinding), map( tm:toList, e.refIds )));
+  nondecorated local miscD::Document =
+    ppImplode(line(), map( showScope(_,showMiscItemBinding), map( tm:toList, e.misc )));
 }
 
-function showScope
-Document ::= scope::[Pair<String a>] showFunc::(Document ::= Pair<String a>)
-{
-  return ppImplode(line(), map(showFunc, scope)) ;
-}
+fun showScope Document ::= scope::[Pair<String a>] showFunc::(Document ::= Pair<String a>) =
+  ppImplode(line(), map(showFunc, scope));
 
 
-function showLabelItemBinding
-Document ::= bnd::Pair<String LabelItem>
-{
- return ppConcat( [ text(bnd.fst), text(" -> ") ]);
-}
-function showValueItemBinding
-Document ::= bnd::Pair<String ValueItem>
-{
- return ppConcat( [ text(bnd.fst), text(" -> "), nestlines(10,bnd.snd.pp) ]);
-}
-function showTagItemBinding
-Document ::= bnd::Pair<String TagItem>
-{
- return ppConcat( [ text(bnd.fst), text(" -> "), nestlines(10,bnd.snd.pp) ]);
-}
-function showRefIdItemBinding
-Document ::= bnd::Pair<String RefIdItem>
-{
- return ppConcat( [ text(bnd.fst), text(" -> "), nestlines(10,bnd.snd.pp) ]);
-}
-function showMiscItemBinding
-Document ::= bnd::Pair<String MiscItem>
-{
- return ppConcat( [ text(bnd.fst), text(" -> ") ]);
-}
+fun showLabelItemBinding Document ::= bnd::Pair<String LabelItem> =
+  ppConcat( [ text(bnd.fst), text(" -> ") ]);
+fun showValueItemBinding Document ::= bnd::Pair<String ValueItem> =
+  ppConcat( [ text(bnd.fst), text(" -> "), nestlines(10,bnd.snd.pp) ]);
+fun showTagItemBinding Document ::= bnd::Pair<String TagItem> =
+  ppConcat( [ text(bnd.fst), text(" -> "), nestlines(10,bnd.snd.pp) ]);
+fun showRefIdItemBinding Document ::= bnd::Pair<String RefIdItem> =
+  ppConcat( [ text(bnd.fst), text(" -> "), nestlines(10,bnd.snd.pp) ]);
+fun showMiscItemBinding Document ::= bnd::Pair<String MiscItem> =
+  ppConcat( [ text(bnd.fst), text(" -> ") ]);

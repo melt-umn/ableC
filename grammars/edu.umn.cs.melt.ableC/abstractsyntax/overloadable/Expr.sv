@@ -12,10 +12,10 @@ top::host:Expr ::= ty::host:TypeName  e::host:Expr
   ty.env = top.env;
   e.env = addEnv(ty.defs, ty.env);
 
-  local fwrd::host:Expr =
+  nondecorated local fwrd::host:Expr =
     inj:explicitCastExpr(
-      host:decTypeName(ty),
-      host:decExpr(e));
+      host:decTypeName(^ty),
+      host:decExpr(^e));
 
   forwards to host:wrapWarnExpr(lerrors, fwrd);
 }
@@ -40,18 +40,18 @@ top::host:Expr ::= lhs::host:Expr  rhs::host:Expr
     | nothing() -> nothing()
     end;
   
-  local host::host:Expr =
+  nondecorated local host::host:Expr =
     inj:arraySubscriptExpr(
-      host:decExpr(lhs),
-      host:decExpr(rhs));
-  local fwrd::host:Expr =
+      host:decExpr(^lhs),
+      host:decExpr(^rhs));
+  nondecorated local fwrd::host:Expr =
     case orElse(lhs.host:typerep.arraySubscriptProd, rewriteProd) of
     | just(prod) ->
       host:transformedExpr(
         host,
         prod(
-          host:decExpr(lhs),
-          host:decExpr(rhs)))
+          host:decExpr(^lhs),
+          host:decExpr(^rhs)))
     | nothing() -> host
     end;
 
@@ -67,14 +67,14 @@ top::host:Expr ::= f::host:Expr  a::host:Exprs
     | just(prod) ->
       just(\ a::host:Exprs ->
         dereferenceExpr(
-          prod(host:decExpr(f), a)))
+          prod(host:decExpr(^f), a)))
     | nothing() -> nothing()
     end;
   
   forward host = inj:callExpr(@f, @a);
   forwards to
     case orElse(f.callProd, rewriteProd) of
-    | just(prod) -> host:transformedExpr(host:decExpr(host), prod(host:decExprs(a)))
+    | just(prod) -> host:transformedExpr(host:decExpr(^host), prod(host:decExprs(^a)))
     | nothing() -> @host
     end;
 }
@@ -89,16 +89,16 @@ top::host:Expr ::= lhs::host:Expr  deref::Boolean  rhs::host:Name
 
   local t::host:Type = lhs.host:typerep;
   t.isDeref = deref;
-  local host::host:Expr =
+  nondecorated local host::host:Expr =
     inj:memberExpr(
-      host:decExpr(lhs),
-      deref, rhs);
-  local fwrd::host:Expr =
+      host:decExpr(^lhs),
+      deref, ^rhs);
+  nondecorated local fwrd::host:Expr =
     case t.memberProd of
     | just(prod) ->
        host:transformedExpr(
          host,
-         prod(host:decExpr(lhs), rhs))
+         prod(host:decExpr(^lhs), ^rhs))
     | nothing() -> host
     end;
   
@@ -112,9 +112,8 @@ top::host:Expr ::= ty::host:TypeName  init::host:InitList
   top.pp = parens( ppConcat([parens(ty.pp), text("{"), ppImplode(text(", "), init.pps), text("}")]) );
   
   local t::host:Type = ty.host:typerep;
-  local host::host:Expr =
-    host:compoundLiteralExpr(host:decTypeName(ty), init);
-  local tmpName::host:Name = host:name("_res_" ++ toString(genInt()));
+  nondecorated local host::host:Expr = host:compoundLiteralExpr(host:decTypeName(^ty), ^init);
+  nondecorated local tmpName::host:Name = host:name("_res_" ++ toString(genInt()));
   forwards to
     case t.objectInitProd of
     | just(prod) ->
@@ -130,7 +129,7 @@ top::host:Expr ::= ty::host:TypeName  init::host:InitList
                    tmpName,
                    ty.host:mty,
                    host:nilAttribute(),
-                   host:justInitializer(prod(init))),
+                   host:justInitializer(prod(^init))),
                  host:nilDeclarator()))),
            host:declRefExpr(tmpName)))
     | nothing() -> host

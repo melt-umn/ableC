@@ -55,8 +55,8 @@ top::Compilation ::= srcAst::Root
     then [nested(loc("", -1, -1, -1, -1, -1, -1), "Errors in host tree:", hostErrors)]
     else [];
   
-  top.srcAst = srcAst;
-  top.hostAst = hostAst;
+  top.srcAst = ^srcAst;
+  top.hostAst = ^hostAst;
   top.srcPP = srcAst.pp;
   top.hostPP = hostAst.pp;
   top.finalPP = top.hostPP;

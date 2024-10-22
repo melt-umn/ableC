@@ -1,12 +1,4 @@
 
-function fromId
-Name ::= n::cst:Identifier_t
-{
-  return name(n.lexeme);
-}
-function fromTy
-Name ::= n::cst:TypeName_t
-{
-  return name(n.lexeme);
-}
+fun fromId Name ::= n::cst:Identifier_t = name(n.lexeme);
+fun fromTy Name ::= n::cst:TypeName_t = name(n.lexeme);
 

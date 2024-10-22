@@ -48,10 +48,9 @@ concrete productions top::Declaration_c
     {
       ds.givenQualifiers = ds.typeQualifiers;
 
-      local bt :: ast:BaseTypeExpr =
+      nondecorated local bt::ast:BaseTypeExpr =
         ast:figureOutTypeFromSpecifiers( ds.typeQualifiers, ds.preTypeSpecifiers, ds.realTypeSpecifiers, ds.mutateTypeSpecifiers);
-      local dcls :: ast:Declarators =
-        ast:foldDeclarator(idcl.ast);
+      nondecorated local dcls::ast:Declarators = ast:foldDeclarator(idcl.ast);
 
       top.ast =
         if ds.isTypedef then
@@ -176,7 +175,7 @@ concrete productions top::TypeName_c
 | sqs::SpecifierQualifierList_c
     {
       sqs.givenQualifiers = sqs.typeQualifiers;
-      local bt :: ast:BaseTypeExpr =
+      nondecorated local bt::ast:BaseTypeExpr =
         ast:figureOutTypeFromSpecifiers( sqs.typeQualifiers, sqs.preTypeSpecifiers, sqs.realTypeSpecifiers, sqs.mutateTypeSpecifiers);
       top.ast =
         ast:typeName(
@@ -190,7 +189,7 @@ concrete productions top::TypeName_c
     {
       sqs.givenQualifiers = sqs.typeQualifiers;
       d.givenType = ast:baseTypeExpr();
-      local bt :: ast:BaseTypeExpr =
+      nondecorated local bt::ast:BaseTypeExpr =
         ast:figureOutTypeFromSpecifiers( sqs.typeQualifiers, sqs.preTypeSpecifiers, sqs.realTypeSpecifiers, sqs.mutateTypeSpecifiers);
       top.ast =
         ast:typeName(
@@ -282,15 +281,15 @@ concrete productions top::InitialFunctionDefinition_c
       d.givenType = ast:baseTypeExpr();
       l.givenQualifiers =
         case baseMT of
-        | ast:functionTypeExprWithArgs(t, p, v, q) -> q
-        | ast:functionTypeExprWithoutArgs(t, v, q) -> q
+        | ast:functionTypeExprWithArgs(t, p, v, q) -> ^q
+        | ast:functionTypeExprWithoutArgs(t, v, q) -> ^q
         | _ -> ast:nilQualifier()
         end;
 
-      local specialSpecifiers :: ast:SpecialSpecifiers =
+      nondecorated local specialSpecifiers::ast:SpecialSpecifiers =
         foldr(ast:consSpecialSpecifier, ast:nilSpecialSpecifier(), ds.specialSpecifiers);
 
-      local bt :: ast:BaseTypeExpr =
+      nondecorated local bt::ast:BaseTypeExpr =
         ast:figureOutTypeFromSpecifiers(ds.typeQualifiers, ds.preTypeSpecifiers, ds.realTypeSpecifiers, ds.mutateTypeSpecifiers);
 
       -- If this is a K&R-style declaration, attatch any function qualifiers to the first declaration instead
@@ -299,13 +298,13 @@ concrete productions top::InitialFunctionDefinition_c
       baseMT.ast:typeModifierIn = ast:baseTypeExpr();
       baseMT.ast:env = ast:emptyEnv();
       baseMT.ast:controlStmtContext = ast:initialControlStmtContext;
-      local mt :: ast:TypeModifierExpr =
+      nondecorated local mt::ast:TypeModifierExpr =
         case l.isDeclListEmpty, baseMT of
         | false, ast:functionTypeExprWithArgs(t, p, v, q) ->
-          ast:functionTypeExprWithArgs(t, p, v, ast:nilQualifier())
+          ast:functionTypeExprWithArgs(^t, ^p, v, ast:nilQualifier())
         | false, ast:functionTypeExprWithoutArgs(t, v, q) ->
-          ast:functionTypeExprWithoutArgs(t, v, ast:nilQualifier())
-        | _, mt -> mt
+          ast:functionTypeExprWithoutArgs(^t, v, ast:nilQualifier())
+        | _, mt -> ^mt
         end;
 
       top.ast =
@@ -327,12 +326,12 @@ concrete productions top::InitialFunctionDefinition_c
       d.givenType = ast:baseTypeExpr();
       l.givenQualifiers =
         case baseMT of
-        | ast:functionTypeExprWithArgs(t, p, v, q) -> q
-        | ast:functionTypeExprWithoutArgs(t, v, q) -> q
+        | ast:functionTypeExprWithArgs(t, p, v, q) -> ^q
+        | ast:functionTypeExprWithoutArgs(t, v, q) -> ^q
         | _ -> ast:nilQualifier()
         end;
 
-      local bt :: ast:BaseTypeExpr =
+      nondecorated local bt::ast:BaseTypeExpr =
         ast:figureOutTypeFromSpecifiers(ast:nilQualifier(), [], [], []);
 
       -- If this is a K&R-style declaration, attatch any function qualifiers to the first declaration instead
@@ -341,13 +340,13 @@ concrete productions top::InitialFunctionDefinition_c
       baseMT.ast:typeModifierIn = ast:baseTypeExpr();
       baseMT.ast:env = ast:emptyEnv();
       baseMT.ast:controlStmtContext = ast:initialControlStmtContext;
-      local mt :: ast:TypeModifierExpr =
+      nondecorated local mt::ast:TypeModifierExpr =
         case l.isDeclListEmpty, baseMT of
         | false, ast:functionTypeExprWithArgs(t, p, v, q) ->
-          ast:functionTypeExprWithArgs(t, p, v, ast:nilQualifier())
+          ast:functionTypeExprWithArgs(^t, ^p, v, ast:nilQualifier())
         | false, ast:functionTypeExprWithoutArgs(t, v, q) ->
-          ast:functionTypeExprWithoutArgs(t, v, ast:nilQualifier())
-        | _, mt -> mt
+          ast:functionTypeExprWithoutArgs(^t, v, ast:nilQualifier())
+        | _, mt -> ^mt
         end;
 
       top.ast =
@@ -387,10 +386,9 @@ concrete productions top::InitiallyUnqualifiedDeclaration_c
     {
       ds.givenQualifiers = ast:qualifierCat(top.givenQualifiers, ds.typeQualifiers);
 
-      local bt :: ast:BaseTypeExpr =
+      nondecorated local bt::ast:BaseTypeExpr =
         ast:figureOutTypeFromSpecifiers( ds.typeQualifiers, ds.preTypeSpecifiers, ds.realTypeSpecifiers, ds.mutateTypeSpecifiers);
-      local dcls :: ast:Declarators =
-        ast:foldDeclarator(idcl.ast);
+      nondecorated local dcls::ast:Declarators = ast:foldDeclarator(idcl.ast);
 
       top.ast =
         if ds.isTypedef then
@@ -570,7 +568,7 @@ concrete productions top::ParameterDeclaration_c
     { top.declaredIdents = [d.declaredIdent];
       ds.givenQualifiers = ds.typeQualifiers;
       d.givenType = ast:baseTypeExpr();
-      local bt :: ast:BaseTypeExpr =
+      nondecorated local bt::ast:BaseTypeExpr =
         ast:figureOutTypeFromSpecifiers( ds.typeQualifiers, ds.preTypeSpecifiers, ds.realTypeSpecifiers, ds.mutateTypeSpecifiers);
       top.ast = ast:parameterDecl(ast:foldStorageClass(ds.storageClass), bt, d.ast, ast:justName(d.declaredIdent), ast:appendAttribute(ds.attributes, d.attributes));
       }
@@ -578,14 +576,14 @@ concrete productions top::ParameterDeclaration_c
     { top.declaredIdents = [];
       ds.givenQualifiers = ds.typeQualifiers;
       d.givenType = ast:baseTypeExpr();
-      local bt :: ast:BaseTypeExpr =
+      nondecorated local bt::ast:BaseTypeExpr =
         ast:figureOutTypeFromSpecifiers( ds.typeQualifiers, ds.preTypeSpecifiers, ds.realTypeSpecifiers, ds.mutateTypeSpecifiers);
       top.ast = ast:parameterDecl(ast:foldStorageClass(ds.storageClass), bt, d.ast, ast:nothingName(), ds.attributes);
     }
 | ds::DeclarationSpecifiers_c
     { top.declaredIdents = [];
       ds.givenQualifiers = ds.typeQualifiers;
-      local bt :: ast:BaseTypeExpr =
+      nondecorated local bt::ast:BaseTypeExpr =
         ast:figureOutTypeFromSpecifiers( ds.typeQualifiers, ds.preTypeSpecifiers, ds.realTypeSpecifiers, ds.mutateTypeSpecifiers);
       top.ast = ast:parameterDecl(ast:foldStorageClass(ds.storageClass), bt, ast:baseTypeExpr(), ast:nothingName(), ds.attributes);
     }

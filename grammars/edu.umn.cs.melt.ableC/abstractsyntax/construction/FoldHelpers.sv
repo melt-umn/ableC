@@ -1,76 +1,32 @@
 
 import edu:umn:cs:melt:ableC:abstractsyntax:env;
 
-function foldStructItem
-StructItemList ::= l::[StructItem]
-{
-  return foldr(consStructItem, nilStructItem(), l);
-}
+fun foldStructItem StructItemList ::= l::[StructItem] = foldr(consStructItem, nilStructItem(), l);
 
-function foldEnumItem
-EnumItemList ::= l::[EnumItem]
-{
-  return foldr(consEnumItem, nilEnumItem(), l);
-}
+fun foldEnumItem EnumItemList ::= l::[EnumItem] = foldr(consEnumItem, nilEnumItem(), l);
 
-function foldDecl
-Decls ::= l::[Decl]
-{
-  return foldr(consDecl, nilDecl(), l);
-}
+fun foldDecl Decls ::= l::[Decl] = foldr(consDecl, nilDecl(), l);
 
-function foldGlobalDecl
-GlobalDecls ::= l::[Decl]
-{
-  return foldr(consGlobalDecl, nilGlobalDecl(), l);
-}
+fun foldGlobalDecl GlobalDecls ::= l::[Decl] = foldr(consGlobalDecl, nilGlobalDecl(), l);
 
-function foldInit
-InitList ::= l::[Init]
-{
-  return foldr(consInit, nilInit(), l);
-}
+fun foldInit InitList ::= l::[Init] = foldr(consInit, nilInit(), l);
 
-function foldExpr
-Exprs ::= l::[Expr]
-{
-  return foldr(consExpr, nilExpr(), l);
-}
+fun foldExpr Exprs ::= l::[Expr] = foldr(consExpr, nilExpr(), l);
 
-function foldName
-Names ::= l::[Name]
-{
-  return foldr(consName, nilName(), l);
-}
+fun foldName Names ::= l::[Name] = foldr(consName, nilName(), l);
 
-function foldGenericAssoc
-GenericAssocs ::= l::[GenericAssoc]
-{
-  return foldr(consGenericAssoc, nilGenericAssoc(), l);
-}
+fun foldGenericAssoc GenericAssocs ::= l::[GenericAssoc] =
+  foldr(consGenericAssoc, nilGenericAssoc(), l);
 
-function foldStructDeclarator
-StructDeclarators ::= l::[StructDeclarator]
-{
-  return foldr(consStructDeclarator, nilStructDeclarator(), l);
-}
+fun foldStructDeclarator StructDeclarators ::= l::[StructDeclarator] =
+  foldr(consStructDeclarator, nilStructDeclarator(), l);
 
-function foldDeclarator
-Declarators ::= l::[Declarator]
-{
-  return foldr(consDeclarator, nilDeclarator(), l);
-}
+fun foldDeclarator Declarators ::= l::[Declarator] = foldr(consDeclarator, nilDeclarator(), l);
 
-function foldStmt
-Stmt ::= l::[Stmt]
-{
-  return if null(l) then nullStmt() else foldr1(seqStmt, l);
-}
+fun foldStmt Stmt ::= l::[Stmt] = if null(l) then nullStmt() else foldr1(seqStmt, l);
 
-function foldParameterDecl
-Parameters ::= l::[ParameterDecl]
-{
-  return case l of
+fun foldParameterDecl Parameters ::= l::[ParameterDecl] =
+  case l of
   -- A special case.  "type name(void)"  means no parameters.
   | [d] ->
     case decorate d with {env = emptyEnv(); position = 0; 
@@ -80,22 +36,10 @@ Parameters ::= l::[ParameterDecl]
     end
   | _ -> foldr(consParameters, nilParameters(), l)
   end;
-}
 
-function foldStorageClass
-StorageClasses ::= l::[StorageClass]
-{
-  return foldr(consStorageClass, nilStorageClass(), l);
-}
+fun foldStorageClass StorageClasses ::= l::[StorageClass] =
+  foldr(consStorageClass, nilStorageClass(), l);
 
-function foldAttribute
-Attributes ::= l::[Attribute]
-{
-  return foldr(consAttribute, nilAttribute(), l);
-}
+fun foldAttribute Attributes ::= l::[Attribute] = foldr(consAttribute, nilAttribute(), l);
 
-function foldQualifier
-Qualifiers ::= l::[Qualifier]
-{
-  return foldr(consQualifier, nilQualifier(), l);
-}
+fun foldQualifier Qualifiers ::= l::[Qualifier] = foldr(consQualifier, nilQualifier(), l);

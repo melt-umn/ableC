@@ -1,47 +1,44 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 
-synthesized attribute returnType :: Maybe<Type>;
-synthesized attribute breakValid :: Boolean;
-synthesized attribute continueValid :: Boolean;
-synthesized attribute labels :: tm:Map<String LabelItem>;
+annotation returnType :: Maybe<Type>;
+annotation breakValid :: Boolean;
+annotation continueValid :: Boolean;
+annotation labels :: tm:Map<String LabelItem>;
 
-nonterminal ControlStmtContext with returnType, breakValid, continueValid, labels;
+data ControlStmtContext = controlStmtContext
+  with returnType, breakValid, continueValid, labels;
 
 inherited attribute controlStmtContext :: ControlStmtContext;
 
-abstract production controlStmtContext
-top::ControlStmtContext ::= returnType::Maybe<Type> breakValid::Boolean
-                    continueValid::Boolean labels::tm:Map<String LabelItem>
-{
-  top.returnType = returnType;
-  top.breakValid = breakValid;
-  top.continueValid = continueValid;
-  top.labels = labels;
-}
+global initialControlStmtContext :: ControlStmtContext = controlStmtContext(
+  returnType=nothing(),
+  breakValid=false,
+  continueValid=false,
+  labels=tm:empty()
+);
 
-global initialControlStmtContext :: ControlStmtContext
-  = controlStmtContext(nothing(), false, false, tm:empty());
+fun controlEnterLoop ControlStmtContext ::= cur::ControlStmtContext = controlStmtContext(
+  returnType=cur.returnType,
+  breakValid=true,
+  continueValid=true,
+  labels=cur.labels
+);
 
-function controlEnterLoop
-ControlStmtContext ::= cur::ControlStmtContext
-{
-  return controlStmtContext(cur.returnType, true, true, cur.labels);
-}
+fun controlEnterSwitch ControlStmtContext ::= cur::ControlStmtContext = controlStmtContext(
+  returnType=cur.returnType,
+  breakValid=true,
+  continueValid=cur.continueValid,
+  labels=cur.labels
+);
 
-function controlEnterSwitch
-ControlStmtContext ::= cur::ControlStmtContext
-{
-  return controlStmtContext(cur.returnType, true, cur.continueValid, cur.labels);
-}
+fun controlAddLabels ControlStmtContext ::= cur::ControlStmtContext labs::[(String, LabelItem)] = controlStmtContext(
+  returnType=cur.returnType,
+  breakValid=cur.breakValid,
+  continueValid=cur.continueValid,
+  labels=tm:add(labs, cur.labels)
+);
 
-function controlAddLabels
-ControlStmtContext ::= cur::ControlStmtContext labs::[(String, LabelItem)]
-{
-  return controlStmtContext(cur.returnType, cur.breakValid, cur.continueValid,
-                          tm:add(labs, cur.labels));
-}
-
-tracked nonterminal LabelItem;
+tracked data nonterminal LabelItem;
 monoid attribute labelDefs :: [(String, LabelItem)];
 
 -- Note that we unfortunately can't include a reference to the labeled statement here, since these
@@ -57,8 +54,4 @@ top::LabelItem ::=
 {
 }
 
-function lookupLabel
-[LabelItem] ::= n::String ctx::ControlStmtContext
-{
-  return tm:lookup(n, ctx.labels);
-}
+fun lookupLabel [LabelItem] ::= n::String ctx::ControlStmtContext = tm:lookup(n, ctx.labels);

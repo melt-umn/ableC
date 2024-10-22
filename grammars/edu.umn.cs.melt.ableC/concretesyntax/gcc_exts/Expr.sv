@@ -1,7 +1,5 @@
 grammar edu:umn:cs:melt:ableC:concretesyntax:gcc_exts;
 
-import edu:umn:cs:melt:ableC:abstractsyntax:overloadable as ovrld;
-
 terminal GNU_AlignOf_T '__alignof' lexer classes {Keyword, Reserved};
 terminal GNU_AlignOfUU_T '__alignof__' lexer classes {Keyword, Reserved};
 
@@ -38,24 +36,24 @@ concrete productions top::UnaryOp_c
 
 concrete productions top::PostfixExpr_c
 | '(' ty::TypeName_c ')' '{' '}'
-    { top.ast = ovrld:compoundLiteralExpr(ty.ast, ast:nilInit()); }
+    { top.ast = ast:compoundLiteralExpr(ty.ast, ast:nilInit()); }
 
 concrete productions top::PrimaryExpr_c
 | '(' '{' bis::BlockItemList_c '}' ')'
     { --local attribute rev:: [ast:Stmt] = reverse( bis.ast );
-      local attribute lastExpr :: ast:Expr
-        = case bis.lastBlockItem_c of
-          | blockStmt_c( exprStmt_c( nonEmptyExprStmt_c (e,_))) -> e.ast
-          {-
-          | _ -> ast:errorExpr( [ errFromOrigin( top, 
-                                        "GCC-style statement expressions require " ++ 
-                                        "at least one expression" ) ] )
-          -}
-          | _ ->
-            ast:explicitCastExpr(
-              ast:typeName(ast:builtinTypeExpr(ast:nilQualifier(), ast:voidType()), ast:baseTypeExpr()),
-              ast:mkIntConst(0))
-          end ;
+      nondecorated local attribute lastExpr::ast:Expr =
+        case bis.lastBlockItem_c of
+        | blockStmt_c( exprStmt_c( nonEmptyExprStmt_c (e,_))) -> e.ast
+        {-
+        | _ -> ast:errorExpr( [ errFromOrigin( top, 
+                                      "GCC-style statement expressions require " ++ 
+                                      "at least one expression" ) ] )
+        -}
+        | _ ->
+          ast:explicitCastExpr(
+            ast:typeName(ast:builtinTypeExpr(ast:nilQualifier(), ast:voidType()), ast:baseTypeExpr()),
+            ast:mkIntConst(0))
+        end;
       top.ast =
         case bis.lastBlockItem_c of
         | blockStmt_c(exprStmt_c(nonEmptyExprStmt_c(_,_))) -> 

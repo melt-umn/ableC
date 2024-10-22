@@ -18,7 +18,7 @@ concrete productions top::Asm_Statement_c
                   (case ds.typeQualifiers of
                      ast:nilQualifier() ->
                        error("Some TypeQualifier_c has empty typeQualifiers attribute.")
-                   | ast:consQualifier(h, _) -> h
+                   | ast:consQualifier(h, _) -> ^h
                    end),
                   arg.ast);    
     }

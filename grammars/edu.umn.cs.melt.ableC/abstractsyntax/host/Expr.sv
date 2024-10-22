@@ -1,7 +1,5 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 
-import edu:umn:cs:melt:ableC:abstractsyntax:overloadable as ovrld;
-
 tracked nonterminal Expr with pp, host, globalDecls, functionDecls, errors,
   defs, env, freeVariables, typerep, isLValue, isSimple, integerConstantValue,
   controlStmtContext;
@@ -41,35 +39,9 @@ top::Expr ::= msg::[Message] e::Expr
 function wrapWarnExpr
 Expr ::= msg::[Message] e::Expr
 {
-  return if null(msg) then e else warnExpr(msg, e);
+  return if null(msg) then ^e else warnExpr(msg, ^e);
 }
 
-{--
- - The purpose of this production is for an extension production to use to wrap
- - children that have already been decorated during error checking, etc. when
- - computing a forward tree, to avoid re-decoration and potential exponential
- - performance hits.  When using this production, one must be very careful to
- - ensure that the inherited attributes recieved by the wrapped tree are equivalent
- - to the ones that would have been passed down in the forward tree.
- - See https://github.com/melt-umn/silver/issues/86
- -}
-abstract production decExpr
-top::Expr ::= e::Decorated Expr
-{
-  propagate env, controlStmtContext;
-  top.pp = e.pp;
-  top.host = e.host;
-  top.errors := e.errors;
-  top.globalDecls := e.globalDecls;
-  top.functionDecls := e.functionDecls;
-  top.defs := e.defs;
-  top.freeVariables := e.freeVariables;
-  top.typerep = e.typerep;
-  top.isLValue = e.isLValue;
-  top.isSimple = e.isSimple;
-  top.integerConstantValue = e.integerConstantValue;
-  forwards to new(e); -- for easier pattern matching
-}
 abstract production qualifiedExpr
 top::Expr ::= q::Qualifiers e::Expr
 {
@@ -84,25 +56,7 @@ top::Expr ::= q::Qualifiers e::Expr
 function wrapQualifiedExpr
 Expr ::= q::[Qualifier]  e::Expr 
 {
-  return if null(q) then e else qualifiedExpr(foldQualifier(q), e);
-}
--- Wraps the result of a forwarding transformation (e.g. overloading or injection)
--- to allow for "syntactic" analyses on the original host Expr.  Otherwise this
--- is semantically equivalent to resolved.
-abstract production transformedExpr
-top::Expr ::= original::Expr  resolved::Expr
-{
-  propagate controlStmtContext;
-  
-  top.pp = original.pp;
-  top.host = resolved.host;
-  top.errors := resolved.errors;
-  top.globalDecls := resolved.globalDecls;
-  top.functionDecls := resolved.functionDecls;
-  top.defs := resolved.defs;
-  top.typerep = resolved.typerep;
-  top.freeVariables := resolved.freeVariables;
-  top.isLValue = resolved.isLValue;
+  return if null(q) then ^e else qualifiedExpr(foldQualifier(q), ^e);
 }
 
 abstract production directRefExpr
@@ -112,13 +66,13 @@ top::Expr ::= id::Name
   -- Forwarding depends on env. We must be able to compute a pp without using env.
   top.pp = id.pp;
 
-  forwards to id.valueItem.directRefHandler(id);
+  forwards to id.valueItem.directRefHandler(^id);
 }
 -- If the identifier is an ordinary one, use the normal var reference production
 function ordinaryVariableHandler
 Expr ::= id::Name 
 {
-  return declRefExpr(id);
+  return declRefExpr(^id);
 }
 abstract production declRefExpr
 top::Expr ::= id::Name
@@ -126,7 +80,7 @@ top::Expr ::= id::Name
   propagate env, host, errors, globalDecls, functionDecls, defs, controlStmtContext;
   top.pp = parens( id.pp );
   top.typerep = id.valueItem.typerep;
-  top.freeVariables := top.typerep.freeVariables ++ [id];
+  top.freeVariables := top.typerep.freeVariables ++ [^id];
   top.isLValue = true;
   top.isSimple = true;
   top.integerConstantValue = id.valueItem.integerConstantValue;
@@ -150,12 +104,9 @@ top::Expr ::= l::String
 abstract production parenExpr
 top::Expr ::= e::Expr
 {
-  propagate host, errors, globalDecls, functionDecls, defs, freeVariables, controlStmtContext;
+  propagate host;
   top.pp = parens( e.pp );
-  top.typerep = e.typerep;
-  top.isLValue = e.isLValue;
-  top.isSimple = e.isSimple;
-  top.integerConstantValue = e.integerConstantValue;
+  forwards to @e;
 }
 abstract production arraySubscriptExpr
 top::Expr ::= lhs::Expr  rhs::Expr
@@ -168,15 +119,15 @@ top::Expr ::= lhs::Expr  rhs::Expr
   local subtype :: Either<Type [Message]> =
     case lhs.typerep.defaultFunctionArrayLvalueConversion, rhs.typerep.defaultFunctionArrayLvalueConversion of
     | pointerType(_, sub), otherty ->
-        if otherty.isIntegerType then left(sub)
-        else right([errFromOrigin(top, "index expression does not have integer type (got " ++ showType(otherty) ++ ")")])
+        if otherty.isIntegerType then left(^sub)
+        else right([errFromOrigin(top, "index expression does not have integer type (got " ++ show(80, otherty) ++ ")")])
     | otherty, pointerType(_, sub) ->
-        if otherty.isIntegerType then left(sub)
-        else right([errFromOrigin(top, "index expression does not have integer type (got " ++ showType(otherty) ++ ")")])
+        if otherty.isIntegerType then left(^sub)
+        else right([errFromOrigin(top, "index expression does not have integer type (got " ++ show(80, otherty) ++ ")")])
     | errorType(), _ -> right([])
     | _, errorType() -> right([])
     | _, _ ->
-        right([errFromOrigin(top, "expression is not an indexable type (got " ++ showType(lhs.typerep) ++ ")")])
+        right([errFromOrigin(top, "expression is not an indexable type (got " ++ show(80, lhs.typerep) ++ ")")])
     end;
   top.typerep = case subtype of
                 | left(t) -> t
@@ -199,14 +150,14 @@ top::Expr ::= f::Name  a::Exprs
   -- Forwarding depends on env. We must be able to compute a pp without using env.
   top.pp = parens( ppConcat([ f.pp, parens( ppImplode( cat( comma(), space() ), a.pps ))]) );
 
-  forwards to f.valueItem.directCallHandler(f, a);
+  forwards to f.valueItem.directCallHandler(^f, ^a);  -- TODO don't undecorate here!
 }
 -- If the identifier is an ordinary one, use the normal function call production
 -- Or, if it's a pass-through builtin one, this works too!
 function ordinaryFunctionHandler
 Expr ::= f::Name  a::Exprs 
 {
-  return ovrld:callExpr(declRefExpr(f), a);
+  return callExpr(declRefExpr(^f), ^a);
 }
 
 {- Calls where the function is determined by an arbitrary expression. -}
@@ -220,9 +171,9 @@ top::Expr ::= f::Expr  a::Exprs
 
   local subtype :: Either<Pair<Type FunctionType> [Message]> =
     case f.typerep.defaultFunctionArrayLvalueConversion of
-    | pointerType(_, functionType(rt, sub, _)) -> left((rt, sub))
+    | pointerType(_, functionType(rt, sub, _)) -> left((^rt, ^sub))
     | errorType() -> right([]) -- error already raised.
-    | _ -> right([errFromOrigin(f, "call expression is not function type (got " ++ showType(f.typerep) ++ ")")])
+    | _ -> right([errFromOrigin(f, "call expression is not function type (got " ++ show(80, f.typerep) ++ ")")])
     end;
   top.typerep =
     case subtype of
@@ -256,7 +207,7 @@ top::Expr ::= f::Expr  a::Exprs
 abstract production memberExpr
 top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
 {
-  propagate host, errors, globalDecls, functionDecls, defs, freeVariables, controlStmtContext;
+  propagate env, host, errors, globalDecls, functionDecls, defs, freeVariables, controlStmtContext;
   top.pp = parens(ppConcat([lhs.pp, text(if deref then "->" else "."), rhs.pp]));
 
   local isPointer::Boolean =
@@ -269,10 +220,10 @@ top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
     case lhs.typerep.defaultFunctionArrayLvalueConversion.withoutAttributes of
     | pointerType(_, sub) ->
         case sub.withoutAttributes of
-        | extType(q, e) -> (q, fromMaybe("", e.maybeRefId))
+        | extType(q, e) -> (^q, fromMaybe("", e.maybeRefId))
         | _ -> (nilQualifier(), "")
         end
-    | extType(q, e) -> (q, fromMaybe("", e.maybeRefId))
+    | extType(q, e) -> (^q, fromMaybe("", e.maybeRefId))
     | _ -> (nilQualifier(), "")
     end;
 
@@ -296,11 +247,11 @@ top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
     | true, pointerType(_, errorType()) -> []
     | _, _ ->
       if null(refids) then
-        [errFromOrigin(lhs, "expression does not have defined fields (got " ++ showType(lhs.typerep) ++ ")")]
+        [errFromOrigin(lhs, "expression does not have defined fields (got " ++ show(80, lhs.typerep) ++ ")")]
       else if isPointer != deref then
         if deref
-        then [errFromOrigin(lhs, "expression does not have pointer to struct or union type (got " ++ showType(lhs.typerep) ++ ")")]
-        else [errFromOrigin(lhs, "expression does not have struct or union type (got " ++ showType(lhs.typerep) ++ ", did you mean to use -> ?)")]
+        then [errFromOrigin(lhs, "expression does not have pointer to struct or union type (got " ++ show(80, lhs.typerep) ++ ")")]
+        else [errFromOrigin(lhs, "expression does not have struct or union type (got " ++ show(80, lhs.typerep) ++ ", did you mean to use -> ?)")]
       else if null(valueitems) then
         [errFromOrigin(lhs, "expression does not have field " ++ rhs.name)]
       else []
@@ -386,9 +337,9 @@ top::Expr ::= ty::TypeName  init::InitList
     | errorType(), _, _ -> []
     -- Check that expected type for this initializer is some sort of object type or a scalar with a single init
     | arrayType(_, _, _, _), _, _ -> []
-    | t, nothing(), _ when init.maxIndex < 0 -> [errFromOrigin(top, s"Empty scalar initializer for type ${showType(t)}.")]
+    | t, nothing(), _ when init.maxIndex < 0 -> [errFromOrigin(top, s"Empty scalar initializer for type ${show(80, t)}.")]
     -- Check that this type has a definition
-    | t, just(_), [] -> [errFromOrigin(top, s"${showType(t)} does not have a definition.")]
+    | t, just(_), [] -> [errFromOrigin(top, s"${show(80, t)} does not have a definition.")]
     | _, _, _ -> []
     end;
 
@@ -412,8 +363,8 @@ top::Expr ::= t::Type
 {
   top.pp = pp"<defaultInit>";
   forwards to compoundLiteralExpr(
-    typeName(directTypeExpr(t), baseTypeExpr()),
-    case objectMembers(top.env, t) of
+    typeName(directTypeExpr(^t), baseTypeExpr()),
+    case objectMembers(top.env, ^t) of
     | just([]) -> nilInit()
     | just(mt :: _) when !typeAssignableTo(mt, builtinType(nilQualifier(), signedType(intType()))) ->
         consInit(

@@ -21,12 +21,12 @@ concrete productions top::BlockItemList_c
 (oneBlockItem_c) | h::BlockItem_c
     { top.ast = h.ast; 
       top.firstBlockItemList_c = oneBlockItem_c( blockStmt_c( exprStmt_c( emptyExprStmt_c ( terminal(Semi_t,";"))))) ;
-      top.lastBlockItem_c = h;
+      top.lastBlockItem_c = ^h;
         }
 | h::BlockItemList_c  t::BlockItem_c
     { top.ast = h.ast ++ t.ast;
-      top.firstBlockItemList_c = h ;
-      top.lastBlockItem_c = t; }
+      top.firstBlockItemList_c = ^h ;
+      top.lastBlockItem_c = ^t; }
 
 
 

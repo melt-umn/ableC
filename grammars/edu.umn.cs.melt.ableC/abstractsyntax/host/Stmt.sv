@@ -51,31 +51,6 @@ top::Stmt ::= msg::[Message]
   top.errors := msg;
 }
 
-{--
- - The purpose of this production is for an extension production to use to wrap
- - children that have already been decorated during error checking, etc. when
- - computing a forward tree, to avoid re-decoration and potential exponential
- - performance hits.  When using this production, one must be very careful to
- - ensure that the inherited attributes recieved by the wrapped tree are equivalent
- - to the ones that would have been passed down in the forward tree.
- - See https://github.com/melt-umn/silver/issues/86
- -}
-abstract production decStmt
-top::Stmt ::= s::Decorated Stmt
-{
-  propagate env;
-  top.pp = s.pp;
-  top.host = s.host;
-  top.errors := s.errors;
-  top.globalDecls := s.globalDecls;
-  top.functionDecls := s.functionDecls;
-  top.defs := s.defs;
-  top.freeVariables := s.freeVariables;
-  top.functionDefs := s.functionDefs;
-  top.labelDefs := s.labelDefs;
-  forwards to new(s); -- for easier pattern matching
-}
-
 abstract production declStmt
 top::Stmt ::= d::Decl
 {
@@ -118,7 +93,7 @@ top::Stmt ::= c::Expr  t::Stmt  e::Stmt
 
   top.errors <-
     if c.typerep.defaultFunctionArrayLvalueConversion.isScalarType then []
-    else [errFromOrigin(c, "If condition must be scalar type, instead it is " ++ showType(c.typerep))];
+    else [errFromOrigin(c, "If condition must be scalar type, instead it is " ++ show(80, c.typerep))];
 }
 
 abstract production ifStmtNoElse
@@ -157,7 +132,7 @@ top::Stmt ::= e::Expr  b::Stmt
   
   top.errors <-
     if e.typerep.defaultFunctionArrayLvalueConversion.isScalarType then []
-    else [errFromOrigin(e, "While condition must be scalar type, instead it is " ++ showType(e.typerep))];
+    else [errFromOrigin(e, "While condition must be scalar type, instead it is " ++ show(80, e.typerep))];
 
   b.controlStmtContext = controlEnterLoop(top.controlStmtContext);
 }
@@ -190,7 +165,7 @@ top::Stmt ::= b::Stmt  e::Expr
 
   top.errors <-
     if e.typerep.defaultFunctionArrayLvalueConversion.isScalarType then []
-    else [errFromOrigin(e, "Do-while condition must be scalar type, instead it is " ++ showType(e.typerep))];
+    else [errFromOrigin(e, "Do-while condition must be scalar type, instead it is " ++ show(80, e.typerep))];
 
   b.controlStmtContext = controlEnterLoop(top.controlStmtContext);
 }
@@ -238,7 +213,7 @@ top::Stmt ::= i::MaybeExpr  c::MaybeExpr  s::MaybeExpr  b::Stmt
   local cty :: Type = fromMaybe(errorType(), c.maybeTyperep);
   top.errors <-
     if cty.defaultFunctionArrayLvalueConversion.isScalarType then []
-    else [errFromOrigin(c, "For condition must be scalar type, instead it is " ++ showType(cty))];
+    else [errFromOrigin(c, "For condition must be scalar type, instead it is " ++ show(80, ^cty))];
 
   b.controlStmtContext = controlEnterLoop(top.controlStmtContext);
 }
@@ -286,7 +261,7 @@ top::Stmt ::= i::Decl  c::MaybeExpr  s::MaybeExpr  b::Stmt
   local cty :: Type = fromMaybe(errorType(), c.maybeTyperep);
   top.errors <-
     if cty.defaultFunctionArrayLvalueConversion.isScalarType then []
-    else [errFromOrigin(c, "For condition must be scalar type, instead it is " ++ showType(cty))];
+    else [errFromOrigin(c, "For condition must be scalar type, instead it is " ++ show(80, ^cty))];
 
   b.controlStmtContext = controlEnterLoop(top.controlStmtContext);
 }
@@ -302,7 +277,7 @@ top::Stmt ::= e::MaybeExpr {- -} -- TODO: Add location to signature
                 | just(expected), just(actual) ->
                     if typeAssignableTo(expected, actual) then []
                     else [errFromOrigin(e.justTheExpr.fromJust,
-                              "Incorrect return type, expected " ++ showType(expected) ++ " but found " ++ showType(actual))]
+                              "Incorrect return type, expected " ++ show(80, expected) ++ " but found " ++ show(80, actual))]
                 | nothing(), just(actual) -> [errFromOrigin(e.justTheExpr.fromJust, "Unexpected return")]
                 | just(expected), nothing() -> [errFromOrigin(top, "Expected return value, but found valueless return")]
                 end ++ e.errors;
@@ -342,7 +317,7 @@ top::Stmt ::= e::Expr  b::Stmt
 
   top.errors <-
     if e.typerep.defaultFunctionArrayLvalueConversion.isIntegerType then []
-    else [errFromOrigin(e, "Switch expression must have integer type, instead it is " ++ showType(e.typerep))];
+    else [errFromOrigin(e, "Switch expression must have integer type, instead it is " ++ show(80, e.typerep))];
 
   b.controlStmtContext = controlEnterSwitch(top.controlStmtContext);
 }

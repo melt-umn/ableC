@@ -103,10 +103,10 @@ concrete productions top::InitialNestedFunctionDefinition_c
       ds.givenQualifiers = ds.typeQualifiers;
       d.givenType = ast:baseTypeExpr();
 
-      local bt :: ast:BaseTypeExpr =
+      nondecorated local bt::ast:BaseTypeExpr =
         ast:figureOutTypeFromSpecifiers( ds.typeQualifiers, ds.preTypeSpecifiers, ds.realTypeSpecifiers, ds.mutateTypeSpecifiers);
 
-      local specialSpecifiers :: ast:SpecialSpecifiers =
+      nondecorated local specialSpecifiers::ast:SpecialSpecifiers =
         foldr(ast:consSpecialSpecifier, ast:nilSpecialSpecifier(), ds.specialSpecifiers);
 
       top.ast =
@@ -359,7 +359,7 @@ concrete productions top::ParameterDeclaration_c
     { top.declaredIdents = [d.declaredIdent];
       ds.givenQualifiers = ds.typeQualifiers;
       d.givenType = ast:baseTypeExpr();
-      local bt :: ast:BaseTypeExpr =
+      nondecorated local bt::ast:BaseTypeExpr =
         ast:figureOutTypeFromSpecifiers( ds.typeQualifiers, ds.preTypeSpecifiers, ds.realTypeSpecifiers, ds.mutateTypeSpecifiers);
       top.ast = ast:parameterDecl(ast:foldStorageClass(ds.storageClass), bt, d.ast, ast:justName(d.declaredIdent), ast:appendAttribute(ds.attributes, ast:appendAttribute(d.attributes, aa.ast)));
       }
@@ -367,7 +367,7 @@ concrete productions top::ParameterDeclaration_c
     { top.declaredIdents = [];
       ds.givenQualifiers = ds.typeQualifiers;
       d.givenType = ast:baseTypeExpr();
-      local bt :: ast:BaseTypeExpr =
+      nondecorated local bt::ast:BaseTypeExpr =
         ast:figureOutTypeFromSpecifiers( ds.typeQualifiers, ds.preTypeSpecifiers, ds.realTypeSpecifiers, ds.mutateTypeSpecifiers);
       top.ast = ast:parameterDecl(ast:foldStorageClass(ds.storageClass), bt, d.ast, ast:nothingName(), ast:appendAttribute(ds.attributes, aa.ast));
     }

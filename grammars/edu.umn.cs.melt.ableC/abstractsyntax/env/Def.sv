@@ -21,7 +21,7 @@ top::Def ::= s::String  l::RefIdItem
 abstract production deferredDeclDef
 top::Def ::= s::String  d::Decl
 {
-  top.deferredDeclContribs = [(s, d)];
+  top.deferredDeclContribs = [(s, ^d)];
 }
 
 
