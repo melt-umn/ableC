@@ -160,7 +160,7 @@ endif
 $(ARTIFACT_JAR): $(GRAMMAR_SOURCES) $(DEP_JARS) $(SV_COMPILER_JAR) | generated
 	$(SILVER) -o $@ $(SVFLAGS) $(EXT_GRAMMAR)
 
-compiler.jar: ${ARTIFACT_JAR} $(GRAMMAR_SOURCES) $(DEP_JARS) $(SV_COMPILER_JAR) | generated
+compiler.jar: $(ARTIFACT_JAR) $(GRAMMAR_SOURCES) $(DEP_JARS) $(SV_COMPILER_JAR) | generated
 # TODO: Shouldn't need to use the extended Silver here?
 	$(SILVER) -o $@ -I $(ARTIFACT_JAR) $(SVFLAGS) $(EXT_GRAMMAR):artifacts:compiler
 
