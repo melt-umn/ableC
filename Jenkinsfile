@@ -45,28 +45,26 @@ melt.trynode('ableC') {
     // All known, stable extensions to build downstream
     def extensions = [
       "ableC-skeleton", "ableC-lib-skeleton", "ableC-dep-skeleton",
-      // "ableC-constructor",
+      "ableC-constructor",
       "ableC-condition-tables",
       "ableC-sqlite",
       "ableC-allocation",
       "ableC-constructor",
-      "ableC-halide",
       "ableC-string",
       "ableC-closure",
-      
-      // Treat ableP like an extension since it depends on ableC
-      // "ableP",
+      "ableC-interval",
     ]
-    /*
-      "ableC-sample-projects",
-      "ableC-refcount-closure",
+    /* TODO: get these working again
       "ableC-vector",
       "ableC-halide",
-      "ableC-interval",
-      "ableC-watch",
-      "ableC-cilk",
-      "ableC-nondeterministic-search", "ableC-nondeterministic-search-benchmarks",
-      "ableC-algebraic-data-types", "ableC-template-algebraic-data-types"
+      "ableC-algebraic-data-types",
+      "ableC-template-algebraic-data-types",
+      "ableC-unification",
+      "ableC-prolog",
+      "ableC-rewriting",
+      "ableC-sample-projects",
+      // Treat ableP like an extension since it depends on ableC
+      "ableP",
      */
 
     def tasks = [:]
