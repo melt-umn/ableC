@@ -13,9 +13,14 @@ synthesized attribute isLValue::Boolean;
 synthesized attribute isSimple::Boolean; -- true if expression can be duplicated without encurring any addtional work (is a name, constant, field access, etc.)
 implicit synthesized attribute integerConstantValue::Maybe<Integer>;
 
+-- See bindExprDecl in Decls.sv
+-- The name to which this expression should be bound.
 inherited attribute bindName :: Name;
+-- Either the expression itself if it is simple, or a reference to bindName if it was bound.
 synthesized attribute bindRefExpr::Expr;
+-- The definitions introduced for bindName if the expression was bound.
 synthesized attribute bindDefs :: [Def];
+-- The declaration for binding this expression that should be introduced in the host translation.
 synthesized attribute hostBindDecl :: Decl;
 
 aspect default production
