@@ -58,9 +58,9 @@ LIB_XC_FILES=$(wildcard src/*.xc)
 # All C library source files to compile
 LIB_C_FILES=$(wildcard src/*.c)
 # All library C files that should be generated
-LIB_C_GEN_FILES=$(LIB_XC_FILES:src/%.xc=bin/%.c)
+LIB_C_GEN_FILES=$(LIB_XC_FILES:src/%.xc=generated/%.c)
 # All library object files that should be generated
-LIB_OBJECTS=$(LIB_C_FILES:src/%.c=bin/%.o) $(LIB_XC_FILES:src/%.xc=bin/%.o)
+LIB_OBJECTS=$(LIB_C_FILES:src/%.c=generated/%.o) $(LIB_XC_FILES:src/%.xc=generated/%.o)
 # The name of the shared library.
 SHARED_LIBRARY=lib/lib$(LIB_NAME).so
 # The name of the static library.
@@ -141,7 +141,7 @@ mwda: mwda.test
 # and also setting variables to pass appropriate flags.
 include depends.mk
 
-generated bin lib:
+generated lib:
 	mkdir -p $@
 
 $(ABLEC_JAR): $(shell find $(ABLEC_BASE)/grammars/ -name *.sv -print0 | xargs -0)
@@ -173,17 +173,17 @@ mwda.test: $(GRAMMAR_SOURCES) $(DEP_JARS) $(SV_COMPILER_JAR) | generated
 	$(SILVER) --dont-translate --mwda --clean --build-xml-location build_mwda.xml $(SVFLAGS) $(EXT_GRAMMAR)
 	touch $@
 
-bin/%.c: src/%.xc $(XC_INCLUDE_SOURCES) compiler.jar | bin
+generated/%.c: src/%.xc $(XC_INCLUDE_SOURCES) compiler.jar | generated
 	java $(JAVAFLAGS) -jar compiler.jar $< $(LIB_XCFLAGS)
-	mv src/$*.c src/$*.i bin
+	mv src/$*.c src/$*.i generated/
 
 %.c: %.xc $(XC_INCLUDE_SOURCES) compiler.jar
 	java $(JAVAFLAGS) -jar compiler.jar $< $(XCFLAGS)
 
-bin/%.o: src/%.c $(XC_INCLUDE_SOURCES) | bin
+generated/%.o: src/%.c $(XC_INCLUDE_SOURCES) | generated
 	$(CC) -c $(LIB_CPPFLAGS) $(LIB_CFLAGS) $< -o $@
 
-bin/%.o: bin/%.c | bin
+generated/%.o: generated/%.c | generated
 	$(CC) -c $(LIB_CFLAGS) $< -o $@
 
 $(SHARED_LIBRARY): $(LIB_OBJECTS) | lib
@@ -218,7 +218,7 @@ tests/positive/%.test: tests/positive/%.out
 	touch $@
 
 clean:
-	rm -rf generated/ bin/ lib/
+	rm -rf generated/ lib/
 	rm -f depends.mk *.jar *.copperdump.html build*.xml *.test
 	cd examples && rm -f build*.xml *.jar *.test *.c *.i *.o *.out
 	cd tests && rm -f build*.xml *.jar */*.test */*.c */*.i */*.o */*.out
