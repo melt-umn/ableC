@@ -47,7 +47,7 @@ top::Stmt ::= msg::[Message]
 {
   propagate env, host, globalDecls, functionDecls, defs, freeVariables, functionDefs,
     labelDefs;
-  top.pp = text(s"/*${messagesToString(msg)}*/");
+  top.pp = text(s"/*${messagesToStringNoOriginsCheck(msg)}*/");
   top.errors := msg;
 }
 

@@ -35,8 +35,9 @@ top::MaybeExpr ::=
 }
 
 tracked nonterminal Exprs with pps, host, errors, globalDecls, functionDecls, defs, env,
-  expectedTypes, argumentPosition, callExpr, argumentErrors, typereps, count,
-  callVariadic, freeVariables, appendedExprs, appendedRes, isLValue,
+  expectedTypes, argumentPosition, callExpr, argumentErrors, typereps, count, exprs,
+  callVariadic, freeVariables, appendedExprs, appendedRes, isLValue, isSimple,
+  bindName, bindRefExprs, bindDefs, hostBindDecls,
   controlStmtContext;
 
 flowtype Exprs = decorate {env, controlStmtContext},
@@ -50,9 +51,13 @@ inherited attribute callVariadic :: Boolean;
 synthesized attribute argumentErrors :: [Message];
 
 synthesized attribute count :: Integer;
+synthesized attribute exprs :: [Expr];
 
 inherited attribute appendedExprs :: Exprs;
 synthesized attribute appendedRes :: Exprs;
+
+synthesized attribute bindRefExprs :: [Expr];
+synthesized attribute hostBindDecls :: Decls;
 
 propagate host, errors, globalDecls, functionDecls, defs, controlStmtContext on Exprs;
 
@@ -65,8 +70,10 @@ top::Exprs ::= h::Expr  t::Exprs
   top.freeVariables := h.freeVariables ++ removeDefsFromNames(h.defs, t.freeVariables);
   top.typereps = h.typerep :: t.typereps;
   top.count = 1 + t.count;
+  top.exprs = ^h :: t.exprs;
   top.appendedRes = consExpr(^h, t.appendedRes);
   top.isLValue = t.isLValue;
+  top.isSimple = h.isSimple && t.isSimple;
 
   top.argumentErrors =
    if null(top.expectedTypes) then
@@ -89,6 +96,12 @@ top::Exprs ::= h::Expr  t::Exprs
 
   t.env = addEnv(h.defs, h.env);
   h.env = top.env;
+
+  h.bindName = name(top.bindName.name ++ "_" ++ toString(t.count));
+  t.bindName = top.bindName;
+  top.bindRefExprs = h.bindRefExpr :: t.bindRefExprs;
+  top.bindDefs = h.bindDefs ++ t.bindDefs;
+  top.hostBindDecls = consDecl(h.hostBindDecl, t.hostBindDecls);
 }
 abstract production nilExpr
 top::Exprs ::=
@@ -97,8 +110,13 @@ top::Exprs ::=
   top.freeVariables := [];
   top.typereps = [];
   top.count = 0;
+  top.exprs = [];
   top.appendedRes = top.appendedExprs;
   top.isLValue = false;
+  top.isSimple = true;
+  top.bindRefExprs = [];
+  top.bindDefs = [];
+  top.hostBindDecls = nilDecl();
 
   top.argumentErrors =
     if null(top.expectedTypes) then []

@@ -5,7 +5,7 @@ import silver:langutil;
 closed tracked data nonterminal ValueItem with typerep, directRefHandler, directCallHandler, isItemValue, isItemType, integerConstantValue;
 
 synthesized attribute directRefHandler :: (Expr ::= Name);
-synthesized attribute directCallHandler :: (Expr ::= Name Exprs);
+synthesized attribute directCallHandler :: ReferenceCall;
 synthesized attribute isItemValue :: Boolean;
 synthesized attribute isItemType :: Boolean;
 
@@ -47,7 +47,7 @@ top::ValueItem ::= t::Type
 }
 
 abstract production builtinFunctionValueItem
-top::ValueItem ::= t::Type  handler::(Expr ::= Name Exprs)
+top::ValueItem ::= t::Type  handler::ReferenceCall
 {
   top.typerep = ^t;
   top.directCallHandler = handler;

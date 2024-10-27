@@ -417,12 +417,18 @@ concrete productions top::UnaryOp_c
 | '!'  { top.ast = ast:notExpr(top.expr); }
 
 -- Needed for constructing calls correctly
+synthesized attribute callAst::(ast:Expr ::= ast:Exprs);
 synthesized attribute directName::Maybe<Identifier_c>;
 
-closed tracked nonterminal PostfixExpr_c with ast<ast:Expr>, directName;
+closed tracked nonterminal PostfixExpr_c with ast<ast:Expr>, callAst, directName;
 aspect default production
 top::PostfixExpr_c ::=
 {
+  top.callAst =
+    case top.directName of
+    | just(id) -> ast:directCallExpr(id.ast, _)
+    | nothing() -> ast:callExpr(top.ast, _)
+    end;
   top.directName = nothing();
 }
 
@@ -433,37 +439,34 @@ concrete productions top::PostfixExpr_c
 | e::PostfixExpr_c '[' index::Expr_c ']'
     { top.ast = ast:arraySubscriptExpr(e.ast, index.ast); }
 | e::PostfixExpr_c '(' args::ArgumentExprList_c ')'
-    { top.ast = 
-        case e.directName of
-          just(id) -> ast:directCallExpr(id.ast, ast:foldExpr(args.ast))
-        | nothing() -> ast:callExpr(e.ast, ast:foldExpr(args.ast))
-        end; }
+    { top.ast = e.callAst(ast:foldExpr(args.ast)); }
 | e::PostfixExpr_c '(' args::ArgumentExprList_c ',' ')'
-    { top.ast = 
-        case e.directName of
-          just(id) -> ast:directCallExpr(id.ast, ast:foldExpr(args.ast))
-        | nothing() -> ast:callExpr(e.ast, ast:foldExpr(args.ast))
-        end; }
+    { top.ast = e.callAst(ast:foldExpr(args.ast)); }
 | e::PostfixExpr_c '(' ')'
-    { top.ast = 
-        case e.directName of
-          just(id) -> ast:directCallExpr(id.ast, ast:nilExpr())
-        | nothing() -> ast:callExpr(e.ast, ast:nilExpr())
-        end; }
+    { top.ast = e.callAst(ast:nilExpr()); }
 | e::PostfixExpr_c op::PostfixOp_c
     { top.ast = op.ast;
+      top.callAst = op.callAst;
       op.expr = e.ast; }
 | '(' ty::TypeName_c ')' '{' il::InitializerList_c '}'
     { top.ast = ast:compoundLiteralExpr(ty.ast, ast:foldInit(il.ast)); }
 | '(' ty::TypeName_c ')' '{' il::InitializerList_c ',' '}'
     { top.ast = ast:compoundLiteralExpr(ty.ast, ast:foldInit(il.ast)); }
 
-closed tracked nonterminal PostfixOp_c with ast<ast:Expr>, expr;
+closed tracked nonterminal PostfixOp_c with ast<ast:Expr>, callAst, expr;
+aspect default production
+top::PostfixOp_c ::=
+{
+  top.callAst = ast:callExpr(top.ast, _);
+}
+
 concrete productions top::PostfixOp_c
 | '.' id::Identifier_c
-    { top.ast = ast:memberExpr(top.expr, false, id.ast); }
+    { top.ast = ast:memberExpr(top.expr, false, id.ast);
+      top.callAst = ast:memberCallExpr(top.expr, false, id.ast, _); }
 | '->' id::Identifier_c
-    { top.ast = ast:memberExpr(top.expr, true, id.ast); }
+    { top.ast = ast:memberExpr(top.expr, true, id.ast);
+      top.callAst = ast:memberCallExpr(top.expr, true, id.ast, _); }
 | '++'   { top.ast = ast:postIncExpr(top.expr); }
 | '--'   { top.ast = ast:postDecExpr(top.expr); }
 

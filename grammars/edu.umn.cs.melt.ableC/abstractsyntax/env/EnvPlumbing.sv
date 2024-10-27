@@ -38,7 +38,7 @@ top::Env ::=
   top.deferredDecls = emptyScope();
   top.misc = emptyScope();
 }
-abstract production addEnvDefs
+abstract production addDefsEnv
 top::Env ::= d::Defs  e::Env
 {
   production gd::Defs = foldr(consDefs, nilDefs(), d.globalDefs);

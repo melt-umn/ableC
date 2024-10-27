@@ -50,13 +50,13 @@ inherited attribute typeModifierIn :: TypeModifierExpr;
 inherited attribute givenRefId :: Maybe<String>;
 
 {-- Util attributes -}
-synthesized attribute bty :: BaseTypeExpr;
-synthesized attribute mty :: TypeModifierExpr;
+synthesized attribute bty :: Decorated BaseTypeExpr;
+synthesized attribute mty :: Decorated TypeModifierExpr;
 
 tracked nonterminal TypeName with env, typerep, bty, mty, pp, host, errors, globalDecls,
   functionDecls, hostDecls, defs, freeVariables, controlStmtContext;
 flowtype TypeName = decorate {env, controlStmtContext},
-  bty {}, mty {};
+  bty {decorate}, mty {decorate};
 
 propagate givenRefId on BaseTypeExpr;
 
@@ -67,8 +67,8 @@ top::TypeName ::= bty::BaseTypeExpr  mty::TypeModifierExpr
   top.pp = ppConcat([bty.pp, mty.lpp, mty.rpp]);
   top.host = typeName(fromMaybe(bty, mty.modifiedBaseTypeExpr).host, mty.host);
   top.typerep = mty.typerep;
-  top.bty = ^bty;
-  top.mty = ^mty;
+  top.bty = bty;
+  top.mty = mty;
   bty.givenRefId = nothing();
   bty.env = top.env;
   mty.env = addEnv(bty.defs, bty.env);
@@ -128,7 +128,7 @@ top::BaseTypeExpr ::= msg::[Message]  ty::BaseTypeExpr
 function directTypeExpr
 BaseTypeExpr ::= result::Type
 {
-  return typeModifierTypeExpr(result.baseTypeExpr, result.typeModifierExpr);
+  return typeNameTypeExpr(typeName(result.baseTypeExpr, result.typeModifierExpr));
 }
 
 {-- A TypeExpr that contains extra extension defs to be placed in the environment
@@ -153,18 +153,14 @@ top::BaseTypeExpr ::= d::[Def]  bty::BaseTypeExpr
 {-- A TypeExpr that contains a type modifier which must be lifted out
  - This production should not occur in the host AST
  -}
-abstract production typeModifierTypeExpr
-top::BaseTypeExpr ::= bty::BaseTypeExpr  mty::TypeModifierExpr
+abstract production typeNameTypeExpr
+top::BaseTypeExpr ::= ty::TypeName
 {
-  propagate errors, globalDecls, functionDecls, hostDecls, defs, freeVariables, controlStmtContext;
-  top.pp = parens(ppConcat([bty.pp, mty.lpp, mty.rpp]));
-  top.host = fromMaybe(bty, mty.modifiedBaseTypeExpr).host;
-  top.typerep = mty.typerep;
-  top.typeModifier = mty.host;
-  bty.env = top.env;
-  mty.env = addEnv(bty.defs, bty.env);
-  mty.baseType = bty.typerep;
-  mty.typeModifierIn = bty.typeModifier;
+  propagate env, errors, globalDecls, functionDecls, hostDecls, defs, freeVariables, controlStmtContext;
+  top.pp = ty.pp;
+  top.host = fromMaybe(ty.bty, ty.mty.modifiedBaseTypeExpr).host;
+  top.typerep = ty.typerep;
+  top.typeModifier = ty.mty.host;
 }
 
 {-- Builtin C types: void, unsigned int, signed char, float, bool, etc.

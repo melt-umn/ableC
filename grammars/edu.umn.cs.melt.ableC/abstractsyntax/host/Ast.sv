@@ -84,7 +84,7 @@ flowtype forward {} on
   AsmClobbers, AsmOperands,
   Qualifiers, SpecialSpecifiers,
   GenericAssocs,
-  TypeNames,
+  TypeName, TypeNames,
   MaybeExpr, Exprs, ExprOrTypeName,
   Name, MaybeName,
   MaybeInitializer, InitList;
@@ -99,7 +99,7 @@ flowtype forward {decorate} on
   AsmStatement, AsmArgument, AsmOperand,
   Qualifier, SpecialSpecifier,
   Expr, GenericAssoc,
-  TypeName, BaseTypeExpr, TypeModifierExpr,
+  BaseTypeExpr, TypeModifierExpr,
   BuiltinType, RealType, IntegerType,
   NumericConstant,
   Stmt,

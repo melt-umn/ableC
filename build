@@ -1,4 +1,9 @@
 #!/bin/bash
 
+export GRAMMAR_PATH=
+
+mkdir -p generated
+export SILVER_GEN=generated
+
 silver -o ableC.jar -I grammars $@ edu:umn:cs:melt:ableC:compiler
 

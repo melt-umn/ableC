@@ -6,15 +6,8 @@ melt.setProperties(silverBase: true)
 
 melt.trynode('ableC') {
   def ABLEC_BASE = env.WORKSPACE
-  def ABLEC_GEN = "${ABLEC_BASE}/generated"
   def SILVER_BASE = silver.resolveSilver()
   def newenv = silver.getSilverEnv(SILVER_BASE)
-  def SILVER_HOST_GEN = []
-  if (params.SILVER_GEN != 'no') {
-    echo "Using existing Silver generated files: ${params.SILVER_GEN}"
-    SILVER_HOST_GEN << "${params.SILVER_GEN}"
-  }
-  newenv << "SILVER_HOST_GEN=${SILVER_HOST_GEN.join(':')}"
 
   stage ("Build") {
 
@@ -23,7 +16,15 @@ melt.trynode('ableC') {
     melt.clearGenerated()
 
     withEnv(newenv) {
-      sh './build ${SVFLAGS} --warn-all --warn-error'
+      sh './build --mwda'
+    }
+  }
+
+  stage ("Modular Analyses") {
+    // Run the MDA for the Silver extension for construcing ableC ASTs.
+    // MWDA is already run in the build step above
+    withEnv(newenv) {
+      sh "./mda-test"
     }
   }
 
@@ -42,38 +43,32 @@ melt.trynode('ableC') {
 
   stage ("Integration") {
     // All known, stable extensions to build downstream
-    def extensions = [/* Disabled for now:
-      "silver-ableC",
-      "ableC-skeleton", "ableC-lib-skeleton",
+    def extensions = [
+      "ableC-skeleton", "ableC-lib-skeleton", "ableC-dep-skeleton",
       "ableC-constructor",
-      "ableC-checkBounds",
-      "ableC-checkTaggedUnion",
       "ableC-condition-tables",
-      "ableC-dimensionalAnalysis",
-      "ableC-nonnull",
       "ableC-sqlite",
-      "ableC-templating",
-      
-      // Treat ableP like an extension since it depends on ableC
-      "ableP",
-    */]
-    /* These are now downstream of silver-ableC, so we don't build them here:
-      "ableC-sample-projects",
-      "ableC-closure",
-      "ableC-refcount-closure",
+      "ableC-allocation",
+      "ableC-constructor",
       "ableC-string",
+      "ableC-closure",
+      "ableC-interval",
+    ]
+    /* TODO: get these working again
       "ableC-vector",
       "ableC-halide",
-      "ableC-interval",
-      "ableC-watch",
-      "ableC-cilk",
-      "ableC-nondeterministic-search", "ableC-nondeterministic-search-benchmarks",
-      "ableC-algebraic-data-types", "ableC-template-algebraic-data-types"
+      "ableC-algebraic-data-types",
+      "ableC-template-algebraic-data-types",
+      "ableC-unification",
+      "ableC-prolog",
+      "ableC-rewriting",
+      "ableC-sample-projects",
+      // Treat ableP like an extension since it depends on ableC
+      "ableP",
      */
 
     def tasks = [:]
-    // SILVER_GEN should get inherited automatically
-    def newargs = [SILVER_BASE: SILVER_BASE, ABLEC_BASE: ABLEC_BASE, ABLEC_GEN: ABLEC_GEN]
+    def newargs = [SILVER_BASE: SILVER_BASE, ABLEC_BASE: ABLEC_BASE]
     tasks << extensions.collectEntries { t ->
       [(t): { melt.buildProject("/melt-umn/${t}", newargs) }]
     }

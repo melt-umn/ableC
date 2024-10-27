@@ -65,7 +65,7 @@ synthesized attribute tagEnv :: Env;
 -- Environment manipulation functions
 
 fun addEnv Env ::= d::[Def]  e::Env =
-  if null(d) then e else addEnvDefs(foldr(consDefs, nilDefs(), d), e);
+  if null(d) then e else addDefsEnv(foldr(consDefs, nilDefs(), d), e);
 
 -- Environment lookup functions
 
