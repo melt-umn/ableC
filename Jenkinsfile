@@ -53,11 +53,11 @@ melt.trynode('ableC') {
       "ableC-string",
       "ableC-closure",
       "ableC-interval",
+      "ableC-algebraic-data-types",
     ]
     /* TODO: get these working again
       "ableC-vector",
       "ableC-halide",
-      "ableC-algebraic-data-types",
       "ableC-template-algebraic-data-types",
       "ableC-unification",
       "ableC-prolog",
