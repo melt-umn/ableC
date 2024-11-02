@@ -6,13 +6,10 @@ top::Expr ::= e::Expr
   top.pp = parens( cat( text("++"), e.pp ) );
   propagate env, controlStmtContext;
 
-  forwards to
-    case e.typerep.preIncProd of
-    | just(prod) -> prod(e)
-    | nothing() -> defaultPreIncExpr(e)
-    end;
+  local prod::UnaryUpdateOp = fromMaybe(defaultPreIncExpr, e.typerep.preIncProd);
+  forwards to prod(e);
 }
-abstract production defaultPreIncExpr
+abstract production defaultPreIncExpr implements UnaryUpdateOp
 top::Expr ::= @e::Expr
 {
   propagate errors, globalDecls, functionDecls, defs, freeVariables;
@@ -32,13 +29,10 @@ top::Expr ::= e::Expr
   top.pp = parens( cat( text("--"), e.pp ) );
   propagate env, controlStmtContext;
 
-  forwards to
-    case e.typerep.preDecProd of
-    | just(prod) -> prod(e)
-    | nothing() -> defaultPreDecExpr(e)
-    end;
+  local prod::UnaryUpdateOp = fromMaybe(defaultPreDecExpr, e.typerep.preDecProd);
+  forwards to prod(e);
 }
-abstract production defaultPreDecExpr
+abstract production defaultPreDecExpr implements UnaryUpdateOp
 top::Expr ::= @e::Expr
 {
   propagate errors, globalDecls, functionDecls, defs, freeVariables;
@@ -58,13 +52,10 @@ top::Expr ::= e::Expr
   top.pp = parens( cat( e.pp, text("++") ) );
   propagate env, controlStmtContext;
 
-  forwards to
-    case e.typerep.postIncProd of
-    | just(prod) -> prod(e)
-    | nothing() -> defaultPostIncExpr(e)
-    end;
+  local prod::UnaryUpdateOp = fromMaybe(defaultPostIncExpr, e.typerep.postIncProd);
+  forwards to prod(e);
 }
-abstract production defaultPostIncExpr
+abstract production defaultPostIncExpr implements UnaryUpdateOp
 top::Expr ::= @e::Expr
 {
   propagate errors, globalDecls, functionDecls, defs, freeVariables;
@@ -84,13 +75,10 @@ top::Expr ::= e::Expr
   top.pp = parens( cat( e.pp, text("--") ) );
   propagate env, controlStmtContext;
 
-  forwards to
-    case e.typerep.postDecProd of
-    | just(prod) -> prod(e)
-    | nothing() -> defaultPostDecExpr(e)
-    end;
+  local prod::UnaryUpdateOp = fromMaybe(defaultPostDecExpr, e.typerep.postDecProd);
+  forwards to prod(e);
 }
-abstract production defaultPostDecExpr
+abstract production defaultPostDecExpr implements UnaryUpdateOp
 top::Expr ::= @e::Expr
 {
   propagate errors, globalDecls, functionDecls, defs, freeVariables;
@@ -110,11 +98,8 @@ top::Expr ::= e::Expr
   top.pp = parens( cat( text("&"), e.pp ) );
   propagate env, controlStmtContext;
 
-  forwards to
-    case e.typerep.addressOfProd of
-    | just(prod) -> prod(e)
-    | nothing() -> defaultAddressOfExpr(e)
-    end;
+  local prod::UnaryOp = fromMaybe(defaultAddressOfExpr, e.typerep.addressOfProd);
+  forwards to prod(e);
 }
 -- Non-overloaded version, used in overloading resolution for assignment operators
 production hostAddressOfExpr
@@ -123,7 +108,7 @@ top::Expr ::= e::Expr
   propagate env, controlStmtContext;
   forwards to defaultAddressOfExpr(e);
 }
-abstract production defaultAddressOfExpr
+abstract production defaultAddressOfExpr implements UnaryOp
 top::Expr ::= @e::Expr
 {
   propagate errors, globalDecls, functionDecls, defs, freeVariables;
@@ -145,13 +130,10 @@ top::Expr ::= e::Expr
   top.pp = parens( cat( text("*"), e.pp ) );
   propagate env, controlStmtContext;
 
-  forwards to
-    case e.typerep.dereferenceProd of
-    | just(prod) -> prod(e)
-    | nothing() -> defaultDereferenceExpr(e)
-    end;
+  local prod::UnaryOp = fromMaybe(defaultDereferenceExpr, e.typerep.dereferenceProd);
+  forwards to prod(e);
 }
-abstract production defaultDereferenceExpr
+abstract production defaultDereferenceExpr implements UnaryOp
 top::Expr ::= @e::Expr
 {
   propagate errors, globalDecls, functionDecls, defs, freeVariables;
@@ -181,13 +163,10 @@ top::Expr ::= e::Expr
   top.pp = parens( cat( text("+"), e.pp ) );
   propagate env, controlStmtContext;
 
-  forwards to
-    case e.typerep.positiveProd of
-    | just(prod) -> prod(e)
-    | nothing() -> defaultPositiveExpr(e)
-    end;
+  local prod::UnaryOp = fromMaybe(defaultPositiveExpr, e.typerep.positiveProd);
+  forwards to prod(e);
 }
-abstract production defaultPositiveExpr
+abstract production defaultPositiveExpr implements UnaryOp
 top::Expr ::= @e::Expr
 {
   propagate errors, globalDecls, functionDecls, defs, freeVariables;
@@ -203,13 +182,10 @@ top::Expr ::= e::Expr
   top.pp = parens( cat( text("-"), e.pp ) );
   propagate env, controlStmtContext;
 
-  forwards to
-    case e.typerep.negativeProd of
-    | just(prod) -> prod(e)
-    | nothing() -> defaultNegativeExpr(e)
-    end;
+  local prod::UnaryOp = fromMaybe(defaultNegativeExpr, e.typerep.negativeProd);
+  forwards to prod(e);
 }
-abstract production defaultNegativeExpr
+abstract production defaultNegativeExpr implements UnaryOp
 top::Expr ::= @e::Expr
 {
   propagate errors, globalDecls, functionDecls, defs, freeVariables;
@@ -225,13 +201,10 @@ top::Expr ::= e::Expr
   top.pp = parens( cat( text("~"), e.pp ) );
   propagate env, controlStmtContext;
 
-  forwards to
-    case e.typerep.bitNegateProd of
-    | just(prod) -> prod(e)
-    | nothing() -> defaultBitNegateExpr(e)
-    end;
+  local prod::UnaryOp = fromMaybe(defaultBitNegateExpr, e.typerep.bitNegateProd);
+  forwards to prod(e);
 }
-abstract production defaultBitNegateExpr
+abstract production defaultBitNegateExpr implements UnaryOp
 top::Expr ::= @e::Expr
 {
   propagate errors, globalDecls, functionDecls, defs, freeVariables;
@@ -247,13 +220,10 @@ top::Expr ::= e::Expr
   top.pp = parens( cat( text("!"), e.pp ) );
   propagate env, controlStmtContext;
 
-  forwards to
-    case e.typerep.notProd of
-    | just(prod) -> prod(e)
-    | nothing() -> defaultNotExpr(e)
-    end;
+  local prod::UnaryOp = fromMaybe(defaultNotExpr, e.typerep.notProd);
+  forwards to prod(e);
 }
-abstract production defaultNotExpr
+abstract production defaultNotExpr implements UnaryOp
 top::Expr ::= @e::Expr
 {
   propagate errors, globalDecls, functionDecls, defs, freeVariables;
