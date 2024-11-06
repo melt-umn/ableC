@@ -136,6 +136,13 @@ top::ableC:Initializer ::= e::Expr
   forwards to ableC:objectInitializer(ableC:nilInit());
 }
 
+abstract production antiquoteInitList
+top::ableC:Init ::= e::Expr
+{
+  top.pp = pp"$$InitList{${text(e.unparse)}}";
+  forwards to ableC:positionalInit(ableC:objectInitializer(ableC:nilInit()));
+}
+
 abstract production antiquoteExprs
 top::ableC:Expr ::= e::Expr
 {

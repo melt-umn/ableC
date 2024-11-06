@@ -28,6 +28,10 @@ concrete productions top::Initializer_c
 | '$Initializer' '{' e::Expr '}'
   layout {silver:compiler:definition:core:WhiteSpace, BlockComments, Comments}
   { top.ast = antiquoteInitializer(^e); }
+concrete productions top::InitializerList_c
+| '$InitList' '{' e::Expr '}'
+  layout {silver:compiler:definition:core:WhiteSpace, BlockComments, Comments}
+  { top.ast = [antiquoteInitList(^e)]; }
 concrete productions top::PrimaryExpr_c
 | '$Exprs' '{' e::Expr '}'
   layout {silver:compiler:definition:core:WhiteSpace, BlockComments, Comments}

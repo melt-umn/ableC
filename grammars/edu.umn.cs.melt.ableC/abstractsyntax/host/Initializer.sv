@@ -190,6 +190,12 @@ top::InitList ::=
   top.hostBindDecls = nilDecl();
 }
 
+fun appendInitList InitList ::= l1::InitList l2::InitList =
+  case l1 of
+  | consInit(h, t) -> consInit(^h, appendInitList(^t, l2))
+  | nilInit() -> l2
+  end;
+
 tracked nonterminal Init with pp, initIndex, initIndexOut, maxIndex, host, errors,
   globalDecls, functionDecls, defs, env, expectedType, expectedTypes, expectedTypesOut,
   nestedInits, nestedInitsOut, freeVariables, controlStmtContext,
