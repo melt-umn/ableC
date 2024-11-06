@@ -273,6 +273,15 @@ top::Expr ::= @lhs::Expr @rhs::Expr result::Expr
     @result);
 }
 
+production bindLValueBinaryOp implements BinaryOp
+top::Expr ::= @lhs::Expr @rhs::Expr result::Expr
+{
+  forwards to hostDereferenceExpr(letExpr(
+    consDecl(bindExprDecl(freshName("lhs"), @lhs),
+      consDecl(bindExprDecl(freshName("rhs"), @rhs), nilDecl())),
+    hostAddressOfExpr(@result)));
+}
+
 production callBinaryOp implements BinaryOp
 top::Expr ::= @lhs::Expr @rhs::Expr fn::Name extraArgs::Exprs
 {
