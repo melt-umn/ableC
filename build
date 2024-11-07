@@ -5,5 +5,8 @@ export GRAMMAR_PATH=
 mkdir -p generated
 export SILVER_GEN=generated
 
+# Need to bump up the heap space to run the MWDA:
+export SVJVM_FLAGS="-Xmx6G -Xss25m"
+
 silver -o ableC.jar -I grammars $@ edu:umn:cs:melt:ableC:compiler
 
