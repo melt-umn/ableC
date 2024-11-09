@@ -413,8 +413,22 @@ top::Expr ::= ty::TypeName  e::Expr
 abstract production compoundLiteralExpr
 top::Expr ::= ty::TypeName  init::InitList
 {
-  propagate host, errors, globalDecls, functionDecls, defs, controlStmtContext;
   top.pp = parens( ppConcat([parens(ty.pp), text("{"), ppImplode(text(", "), init.pps), text("}")]) );
+  propagate controlStmtContext;
+  init.initIndex = 0;
+  ty.env = top.env;
+  init.env = addEnv(ty.defs, ty.env);
+  init.expectedType = ty.typerep;
+
+  local prod::CompoundLiteral = fromMaybe(defaultCompoundLiteralExpr, ty.typerep.compoundLiteralProd);
+  forwards to prod(ty, init);
+}
+abstract production defaultCompoundLiteralExpr implements CompoundLiteral
+top::Expr ::= @ty::TypeName  @init::InitList
+{
+  top.pp = forwardParent.pp;
+  propagate errors, globalDecls, functionDecls, defs;
+  top.host = compoundLiteralExpr(ty.host, init.host);
   top.freeVariables := ty.freeVariables ++ removeDefsFromNames(ty.defs, init.freeVariables);
   top.typerep = init.typerep;
 
@@ -440,11 +454,6 @@ top::Expr ::= ty::TypeName  init::InitList
     | t, just(_), [] -> [errFromOrigin(top, s"${show(80, t)} does not have a definition.")]
     | _, _, _ -> []
     end;
-
-  init.initIndex = 0;
-  ty.env = top.env;
-  init.env = addEnv(ty.defs, ty.env);
-  init.expectedType = ty.typerep;
   init.expectedTypes = fromMaybe([ty.typerep], objectMembers(top.env, ty.typerep));
 }
 -- C11 forbids empty initializer braces, but it is an error to include a scalar if one is

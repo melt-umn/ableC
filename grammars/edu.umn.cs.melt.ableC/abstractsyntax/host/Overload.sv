@@ -91,19 +91,29 @@ top::Initializer ::= e::Expr result::Initializer
 synthesized attribute exprInitProd::Maybe<ExprInitializer> occurs on Type, ExtType;
 flowtype exprInitProd {decorate} on Type, ExtType;
 
-dispatch ObjectInitializer = Initializer ::= l::InitList;
+dispatch ObjectInitializer = Initializer ::= @l::InitList;
 
-production bindObjectInitializer implements ObjectInitializer
-top::Initializer ::= l::InitList result::Expr
+production transformObjectInitializer implements ObjectInitializer
+top::Initializer ::= @l::InitList expectedTypes::[Type] result::Initializer
 {
-  top.pp = ppConcat([text("{"), ppImplode(text(", "), l.pps), text("}")]);
-  forwards to defaultExprInitializer(letExpr(
-    consDecl(bindInitListDecls(top.expectedType, freshName("l"), @l), nilDecl()),
-    @result));
+  l.expectedTypes = expectedTypes;
+  forwards to @result;
 }
 
 synthesized attribute objectInitProd::Maybe<ObjectInitializer> occurs on Type, ExtType;
 flowtype objectInitProd {decorate} on Type, ExtType;
+
+dispatch CompoundLiteral = Expr ::= @t::TypeName @l::InitList;
+
+production transformCompoundLiteral implements CompoundLiteral
+top::Expr ::= @t::TypeName @l::InitList expectedTypes::[Type] result::Expr
+{
+  l.expectedTypes = expectedTypes;
+  forwards to letExpr(consDecl(typePreDecls(@t), nilDecl()), @result);
+}
+
+synthesized attribute compoundLiteralProd::Maybe<CompoundLiteral> occurs on Type, ExtType;
+flowtype compoundLiteralProd {decorate} on Type, ExtType;
 
 dispatch UnaryUpdateOp = Expr ::= @e::Expr;
 
@@ -393,6 +403,7 @@ top::Type ::=
   top.memberProd = nothing();
   top.exprInitProd = nothing();
   top.objectInitProd = nothing();
+  top.compoundLiteralProd = nothing();
   top.preIncProd = nothing();
   top.preDecProd = nothing();
   top.postIncProd = nothing();
@@ -478,6 +489,7 @@ top::Type ::= q::Qualifiers  sub::ExtType
   top.memberProd = sub.memberProd;
   top.exprInitProd = sub.exprInitProd;
   top.objectInitProd = sub.objectInitProd;
+  top.compoundLiteralProd = sub.compoundLiteralProd;
   
   top.preIncProd = sub.preIncProd;
   top.preDecProd = sub.preDecProd;
@@ -556,6 +568,7 @@ top::ExtType ::=
   top.memberProd = nothing();
   top.exprInitProd = nothing();
   top.objectInitProd = nothing();
+  top.compoundLiteralProd = nothing();
   top.preIncProd = nothing();
   top.preDecProd = nothing();
   top.postIncProd = nothing();

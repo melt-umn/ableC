@@ -53,7 +53,6 @@ top::Initializer ::= e::Expr
   top.pp = e.pp;
   forwards to fromMaybe(defaultExprInitializer, top.expectedType.exprInitProd)(@e);
 }
-
 abstract production defaultExprInitializer implements ExprInitializer
 top::Initializer ::= e::Expr
 {
@@ -87,11 +86,14 @@ abstract production objectInitializer
 top::Initializer ::= l::InitList
 {
   top.pp = ppConcat([text("{"), ppImplode(text(", "), l.pps), text("}")]);
-  forwards to fromMaybe(defaultObjectInitializer, top.expectedType.objectInitProd)(@l);
+  propagate env, controlStmtContext;
+  l.initIndex = 0;
+  l.expectedType = top.expectedType;
+
+  forwards to fromMaybe(defaultObjectInitializer, top.expectedType.objectInitProd)(l);
 }
--- For use by extensions
 abstract production defaultObjectInitializer implements ObjectInitializer
-top::Initializer ::= l::InitList
+top::Initializer ::= @l::InitList
 {
   top.pp = ppConcat([text("{"), ppImplode(text(", "), l.pps), text("}")]);
   top.host = objectInitializer(l.host);
@@ -102,10 +104,7 @@ top::Initializer ::= l::InitList
   top.expectedTypesOut = [];
   top.nestedInitsOut = max(0, top.nestedInits - 1);
 
-  l.initIndex = 0;
-  l.expectedType = top.expectedType;
   l.expectedTypes = fromMaybe([top.expectedType], objectMembers(top.env, top.expectedType));
-
   local refId::Maybe<String> =
     case top.expectedType of
     | extType( _, e) -> e.maybeRefId
@@ -143,7 +142,7 @@ monoid attribute maxIndex::Integer with -1, max;
 tracked nonterminal InitList with pps, initIndex, initIndexOut, maxIndex, host, typerep,
   errors, globalDecls, functionDecls, defs, env, expectedType, expectedTypes,
   nestedInits, freeVariables, controlStmtContext,
-  isSimple, bindName, bindRefExprs, bindDefs, hostBindDecls;
+  isSimple;
 flowtype InitList = decorate {initIndex, env, expectedType, expectedTypes,
   controlStmtContext},
   maxIndex {decorate};
@@ -171,12 +170,6 @@ top::InitList ::= h::Init  t::InitList
 
   h.env = top.env;
   t.env = addEnv(h.defs, h.env);
-
-  h.bindName = name(top.bindName.name ++ "_" ++ toString(top.initIndex));
-  t.bindName = top.bindName;
-  top.bindRefExprs = h.bindRefExpr :: t.bindRefExprs;
-  top.bindDefs = h.bindDefs ++ t.bindDefs;
-  top.hostBindDecls = appendDecls(h.hostBindDecls, t.hostBindDecls);
 }
 
 abstract production nilInit
@@ -185,9 +178,6 @@ top::InitList ::=
   top.pps = [];
   top.freeVariables := [];
   top.isSimple = true;
-  top.bindRefExprs = [];
-  top.bindDefs = [];
-  top.hostBindDecls = nilDecl();
 }
 
 fun appendInitList InitList ::= l1::InitList l2::InitList =
@@ -199,7 +189,7 @@ fun appendInitList InitList ::= l1::InitList l2::InitList =
 tracked nonterminal Init with pp, initIndex, initIndexOut, maxIndex, host, errors,
   globalDecls, functionDecls, defs, env, expectedType, expectedTypes, expectedTypesOut,
   nestedInits, nestedInitsOut, freeVariables, controlStmtContext,
-  isSimple, bindName, bindRefExpr, bindDefs, hostBindDecls;
+  isSimple;
 flowtype Init = decorate {initIndex, env, expectedType, expectedTypes,
   controlStmtContext},
   maxIndex {decorate}, initIndexOut {decorate}, expectedTypesOut {decorate};
@@ -215,27 +205,6 @@ top::Init ::= i::Initializer
   top.initIndexOut = 1 + top.initIndex;
   top.maxIndex := top.initIndex;
   top.isSimple = i.isSimple;
-
-  top.bindRefExpr = if i.isSimple then i.asExpr else declRefExpr(top.bindName);
-  top.bindDefs =
-    if i.isSimple then []
-    else [valueDef(top.bindName.name, preDeclValueItem(i.typerep))];
-  top.hostBindDecls =
-    if i.isSimple
-    then nilDecl()
-    else consDecl(
-      variableDecls(
-        nilStorageClass(),
-        nilAttribute(),
-        i.expectedType.host.baseTypeExpr,
-        consDeclarator(
-          declarator(
-            top.bindName,
-            i.expectedType.host.typeModifierExpr,
-            nilAttribute(),
-            justInitializer(i.host)),
-          nilDeclarator())),
-      nilDecl());
 
   i.inObject = true;
   i.expectedType =
@@ -265,27 +234,6 @@ top::Init ::= d::Designator  i::Initializer
   top.initIndexOut = d.maxIndex + 1;
   top.maxIndex := d.maxIndex;
   top.isSimple = false;
-
-  top.bindRefExpr = if i.isSimple then i.asExpr else declRefExpr(top.bindName);
-  top.bindDefs =
-    if i.isSimple then []
-    else [valueDef(top.bindName.name, preDeclValueItem(i.typerep))];
-  top.hostBindDecls =
-    if i.isSimple
-    then nilDecl()
-    else consDecl(
-      variableDecls(
-        nilStorageClass(),
-        nilAttribute(),
-        i.expectedType.host.baseTypeExpr,
-        consDeclarator(
-          declarator(
-            top.bindName,
-            i.expectedType.host.typeModifierExpr,
-            nilAttribute(),
-            justInitializer(i.host)),
-          nilDeclarator())),
-      nilDecl());
 
   top.expectedTypesOut = d.expectedTypesOut;
   top.nestedInitsOut = 0;
