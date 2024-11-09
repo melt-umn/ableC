@@ -229,7 +229,10 @@ top::BaseTypeExpr ::= q::Qualifiers  kwd::StructOrEnumOrUnion  n::Name
 
   top.typeModifier = baseTypeExpr();
 
-  top.hostDecls := [typeExprDecl(nilAttribute(), top.host)];
+  top.hostDecls :=
+    if null(tags)
+    then [typeExprDecl(nilAttribute(), top.host)]
+    else [];
 
   top.defs <-
     case kwd, tags of
