@@ -215,6 +215,14 @@ top::Expr ::= f::Name a::Exprs result::Expr
     @result);
 }
 
+production transformDirectCallExpr implements ReferenceCall
+top::Expr ::= f::Name a::Exprs result::Expr
+{
+  a.env = top.env;
+  a.controlStmtContext = top.controlStmtContext;
+  forwards to @result;
+}
+
 {- Calls where the function is determined by an arbitrary expression. -}
 abstract production callExpr
 top::Expr ::= f::Expr a::Exprs
