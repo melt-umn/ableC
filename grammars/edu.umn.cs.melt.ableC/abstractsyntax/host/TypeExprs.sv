@@ -56,7 +56,7 @@ synthesized attribute mty :: Decorated TypeModifierExpr;
 tracked nonterminal TypeName with env, typerep, bty, mty, pp, host, errors, globalDecls,
   functionDecls, hostDecls, defs, freeVariables, controlStmtContext;
 flowtype TypeName = decorate {env, controlStmtContext},
-  bty {decorate}, mty {decorate};
+  bty {decorate}, mty {decorate}, hostDecls {decorate};
 
 propagate givenRefId on BaseTypeExpr;
 
@@ -94,7 +94,7 @@ tracked nonterminal BaseTypeExpr with env, typerep, pp, host, errors, globalDecl
   functionDecls, typeModifier, hostDecls, defs, givenRefId, freeVariables,
   controlStmtContext;
 flowtype BaseTypeExpr = decorate {env, givenRefId, controlStmtContext},
-  typeModifier {decorate};
+  typeModifier {decorate}, hostDecls {decorate};
 
 abstract production errorTypeExpr
 top::BaseTypeExpr ::= msg::[Message]
@@ -411,7 +411,7 @@ tracked nonterminal TypeModifierExpr with env, typerep, lpp, rpp, host, modified
   isFunctionArrayTypeExpr, baseType, typeModifierIn, errors, globalDecls,
   functionDecls, defs, freeVariables, controlStmtContext;
 flowtype TypeModifierExpr = decorate {env, baseType, typeModifierIn, controlStmtContext},
-  modifiedBaseTypeExpr {decorate}, isFunctionArrayTypeExpr {};
+  modifiedBaseTypeExpr {decorate}, hostDecls {decorate}, isFunctionArrayTypeExpr {};
 
 propagate hostDecls, typeModifierIn, baseType, controlStmtContext on TypeModifierExpr;
 
