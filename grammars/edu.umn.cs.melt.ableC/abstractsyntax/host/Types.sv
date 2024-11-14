@@ -336,7 +336,7 @@ top::Type ::= result::Type  sub::FunctionType  q::Qualifiers
 }
 
 {-- The subtypes of functions -}
-nonterminal FunctionType with lpp, rpp, host, canonicalType, mangledName, withoutExtensionQualifiers, mergeQualifiers<FunctionType>, errors, freeVariables;
+tracked nonterminal FunctionType with lpp, rpp, host, canonicalType, mangledName, withoutExtensionQualifiers, mergeQualifiers<FunctionType>, errors, freeVariables;
 flowtype FunctionType = decorate {}, canonicalType {};
 -- clang has an 'extinfo' structure with calling convention, noreturn, 'produces'?, regparam
 
@@ -440,7 +440,7 @@ inherited attribute givenQualifiers::Qualifiers;
 -- t1.isEqualTo(t2) iff t1.mangledName == t2.mangledName
 synthesized attribute isEqualTo::(Boolean ::= ExtType);
 
-closed nonterminal ExtType with givenQualifiers, pp, lpp, rpp, host<Type>, canonicalType, baseTypeExpr, typeModifierExpr, mangledName, isEqualTo, integerPromotions, defaultArgumentPromotions, defaultLvalueConversion, defaultFunctionArrayLvalueConversion, isIntegerType, isScalarType, isArithmeticType, isCompleteType, maybeRefId, freeVariables;
+closed tracked nonterminal ExtType with givenQualifiers, pp, lpp, rpp, host<Type>, canonicalType, baseTypeExpr, typeModifierExpr, mangledName, isEqualTo, integerPromotions, defaultArgumentPromotions, defaultLvalueConversion, defaultFunctionArrayLvalueConversion, isIntegerType, isScalarType, isArithmeticType, isCompleteType, maybeRefId, freeVariables;
 flowtype ExtType = decorate {givenQualifiers}, lpp {givenQualifiers}, rpp {givenQualifiers}, canonicalType {decorate}, baseTypeExpr {decorate}, typeModifierExpr {decorate}, isEqualTo {}, integerPromotions {decorate}, defaultArgumentPromotions {decorate}, defaultLvalueConversion {decorate}, defaultFunctionArrayLvalueConversion {decorate}, isIntegerType {}, isScalarType {}, isArithmeticType {}, isCompleteType {}, maybeRefId {};
 
 -- Forward flowtype is empty, since extensions would primarilly introduce new non-forwarding
@@ -712,7 +712,7 @@ top::Type ::= sub::NoncanonicalType
 }
 
 {-- Types that resolve to other types. -}
-nonterminal NoncanonicalType with canonicalType<Type>, lpp, rpp, host, baseTypeExpr, typeModifierExpr, withTypeQualifiers, addedTypeQualifiers;
+tracked nonterminal NoncanonicalType with canonicalType<Type>, lpp, rpp, host, baseTypeExpr, typeModifierExpr, withTypeQualifiers, addedTypeQualifiers;
 flowtype NoncanonicalType = decorate {}, canonicalType {}, baseTypeExpr {}, typeModifierExpr {}, withTypeQualifiers {addedTypeQualifiers};
 
 {-- A NoncanonicalType that is really just a normal Type
