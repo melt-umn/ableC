@@ -219,13 +219,20 @@ tests/positive/%.test: tests/positive/%.out
 
 clean:
 	rm -rf generated/ lib/
-	rm -f depends.mk *.jar *.copperdump.html build*.xml *.test
+	rm -f depends.mk $(ARTIFACT_JAR) compiler.jar *.copperdump.html build*.xml *.test
 	cd examples && rm -f build*.xml *.jar *.test *.c *.i *.o *.out
 	cd tests && rm -f build*.xml *.jar */*.test */*.c */*.i */*.o */*.out
+
+realclean: clean
+	rm -f $(SV_COMPILER_JAR)
 
 depclean: clean
 	cd $(ABLEC_BASE) && ./deep-clean
 	for dep in $(EXT_DEPS); do $(MAKE) -C $(EXTS_BASE)/$$dep clean; done
+
+deprealclean:
+	cd $(ABLEC_BASE) && ./deep-clean
+	for dep in $(EXT_DEPS); do $(MAKE) -C $(EXTS_BASE)/$$dep realclean; done
 
 # Normally MAKEOVERRIDES= up above makes sure that sub-make calls get the right
 # ABLEC_BASE and EXTS_BASE if this extension isn't actually in EXTS_BASE (which
@@ -253,4 +260,4 @@ ifneq ($(LIB_NAME),)
 endif
 
 
-.PHONY: build libraries examples test check analyses mda mwda clean depclean print_depends
+.PHONY: build libraries examples test check analyses mda mwda clean realclean depclean deprealclean print_depends
