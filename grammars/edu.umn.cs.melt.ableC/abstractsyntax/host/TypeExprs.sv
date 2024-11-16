@@ -42,7 +42,7 @@ synthesized attribute rpp :: Document;
 synthesized attribute typerep :: Type;
 synthesized attribute typereps :: [Type];
 
-{-- Used to transform away typeModifierTypeExpr -}
+{-- Used to transform away typeNameTypeExpr -}
 synthesized attribute typeModifier :: TypeModifierExpr;
 inherited attribute typeModifierIn :: TypeModifierExpr;
 
@@ -427,7 +427,7 @@ top::TypeModifierExpr ::=
 {--
  - A TypeModifierExpr that corresponds to whatever the base TypeExpr was.
  - This gets transformed via host to include type modifiers that were included in the base
- - TypeExpr via typeModifierTypeExpr.
+ - TypeExpr via typeNameTypeExpr.
  -}
 abstract production baseTypeExpr
 top::TypeModifierExpr ::=
