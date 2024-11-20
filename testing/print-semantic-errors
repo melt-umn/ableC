@@ -1,12 +1,12 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 
-
-FILES=`find . -name "*.errs"`
+readarray -td '' files < <(find . -name "*.errs" -print0)
 
 if [ "$1" == "" ]; then
   # strip off the file, line, column, and just print what errors appeared, somewhere
-  grep -v "Error at line\|CPP call\|^ " $FILES | cut -d: -f5- | sort | uniq
+  grep -v "Error at line\|CPP call\|^ " "${files[@]}" | cut -d: -f5- | sort | uniq
 else
-  grep "$1" $FILES
+  grep "$1" "${files[@]}"
 fi
 

@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 
 # find by default never follows symlinks, so this should be relatively safe:
 find . -name "*~" -delete
@@ -13,5 +14,5 @@ find testing/ -name "*.o" -delete
 find testing/ -name "*.jar" -delete
 find testing/ -name "a.out" -delete
 
-rm -f *.jar
+rm -f -- *.jar
 rm -rf generated/
