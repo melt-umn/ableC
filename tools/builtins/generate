@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 set -euxo pipefail
 java -jar builtins.jar BuiltinsX86.def > ../../grammars/edu.umn.cs.melt.ableC/abstractsyntax/builtins/GeneratedIntrinsics.sv
 java -jar builtins.jar Builtins.def > ../../grammars/edu.umn.cs.melt.ableC/abstractsyntax/builtins/GeneratedBuiltins.sv
