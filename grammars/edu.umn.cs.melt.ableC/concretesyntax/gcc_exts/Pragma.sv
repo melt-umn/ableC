@@ -35,3 +35,6 @@ concrete productions top::Stmt_c
 | '#' 'pragma' omp::OMPFor_t
     layout { Spaces_t }
     { top.ast = ast:txtStmt("#pragma " ++ omp.lexeme); }
+| '#' 'pragma' gcc::GCC_t
+    layout { Spaces_t }
+    { top.ast = ast:txtStmt("#pragma " ++ gcc.lexeme); }

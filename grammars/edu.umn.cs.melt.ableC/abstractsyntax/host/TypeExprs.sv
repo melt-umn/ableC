@@ -380,16 +380,6 @@ top::BaseTypeExpr ::= q::Qualifiers  wrapped::TypeName
   top.typeModifier = baseTypeExpr();
   q.typeToQualify = top.typerep;
 }
-{-- GCC builtin type -}
-abstract production vaListTypeExpr
-top::BaseTypeExpr ::=
-{
-  propagate host, errors, globalDecls, functionDecls, hostDecls, defs, freeVariables, controlStmtContext;
-  top.typerep = pointerType(nilQualifier(),
-    builtinType(nilQualifier(), voidType())); -- TODO this should be a special type, not void
-  top.pp = text("__builtin_va_list");
-  top.typeModifier = baseTypeExpr();
-}
 {-- GCC typeof type -}
 abstract production typeofTypeExpr
 top::BaseTypeExpr ::= q::Qualifiers  e::ExprOrTypeName

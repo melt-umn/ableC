@@ -58,7 +58,7 @@ concrete productions top::TypeQualifier_c
 concrete productions top::TypeSpecifier_c
 | '__builtin_va_list'
     { top.preTypeSpecifiers = [];
-      top.realTypeSpecifiers = [ast:vaListTypeExpr()]; }
+      top.realTypeSpecifiers = [ast:builtinTypeExpr(top.givenQualifiers, ast:vaListType())]; }
 | '__signed__'
     { top.realTypeSpecifiers = [];
       top.preTypeSpecifiers = ["signed"]; }

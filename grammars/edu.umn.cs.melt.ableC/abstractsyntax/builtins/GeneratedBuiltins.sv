@@ -948,14 +948,14 @@ d <- [valueDef("__builtin_rotateright64", builtinFunctionValueItem( {-  unsigned
 -- Ignored __builtin___CFStringMakeConstantString on line 469: TODO: F type
 -- Ignored __builtin___NSStringMakeConstantString on line 470: TODO: F type
 -- Ignored __builtin_va_start on line 471: needs custom type-checking logic
-d <- [valueDef("__builtin_va_end", builtinFunctionValueItem( {-  void(void * ) -}
-    functionType(builtinType(nilQualifier(), voidType()), protoFunctionType([pointerType(nilQualifier(), builtinType(nilQualifier(), voidType()))], false), nilQualifier()),
+d <- [valueDef("__builtin_va_end", builtinFunctionValueItem( {-  void(__builtin_va_list) -}
+    functionType(builtinType(nilQualifier(), voidType()), protoFunctionType([builtinType(nilQualifier(), vaListType())], false), nilQualifier()),
     ordinaryFunctionHandler))];
-d <- [valueDef("__builtin_va_copy", builtinFunctionValueItem( {-  void(void * , void * ) -}
-    functionType(builtinType(nilQualifier(), voidType()), protoFunctionType([pointerType(nilQualifier(), builtinType(nilQualifier(), voidType())), pointerType(nilQualifier(), builtinType(nilQualifier(), voidType()))], false), nilQualifier()),
+d <- [valueDef("__builtin_va_copy", builtinFunctionValueItem( {-  void(__builtin_va_list, __builtin_va_list) -}
+    functionType(builtinType(nilQualifier(), voidType()), protoFunctionType([builtinType(nilQualifier(), vaListType()), builtinType(nilQualifier(), vaListType())], false), nilQualifier()),
     ordinaryFunctionHandler))];
-d <- [valueDef("__builtin_stdarg_start", builtinFunctionValueItem( {-  void(void * , ...) -}
-    functionType(builtinType(nilQualifier(), voidType()), protoFunctionType([pointerType(nilQualifier(), builtinType(nilQualifier(), voidType()))], true), nilQualifier()),
+d <- [valueDef("__builtin_stdarg_start", builtinFunctionValueItem( {-  void(__builtin_va_list, ...) -}
+    functionType(builtinType(nilQualifier(), voidType()), protoFunctionType([builtinType(nilQualifier(), vaListType())], true), nilQualifier()),
     ordinaryFunctionHandler))];
 d <- [valueDef("__builtin_assume_aligned", builtinFunctionValueItem( {-  void * (const void * , signed int, ...) -}
     functionType(pointerType(nilQualifier(), builtinType(nilQualifier(), voidType())), protoFunctionType([pointerType(nilQualifier(), builtinType(consQualifier(constQualifier(), nilQualifier()), voidType())), builtinType(nilQualifier(), signedType(intType()))], true), nilQualifier()),
@@ -1102,11 +1102,11 @@ d <- [valueDef("__builtin_eh_return_data_regno", builtinFunctionValueItem( {-  s
 d <- [valueDef("__builtin_snprintf", builtinFunctionValueItem( {-  signed int(char * , signed int, const char * , ...) -}
     functionType(builtinType(nilQualifier(), signedType(intType())), protoFunctionType([pointerType(nilQualifier(), builtinType(nilQualifier(), signedType(charType()))), builtinType(nilQualifier(), signedType(intType())), pointerType(nilQualifier(), builtinType(consQualifier(constQualifier(), nilQualifier()), signedType(charType())))], true), nilQualifier()),
     ordinaryFunctionHandler))];
-d <- [valueDef("__builtin_vsprintf", builtinFunctionValueItem( {-  signed int(char * , const char * , void) -}
-    functionType(builtinType(nilQualifier(), signedType(intType())), protoFunctionType([pointerType(nilQualifier(), builtinType(nilQualifier(), signedType(charType()))), pointerType(nilQualifier(), builtinType(consQualifier(constQualifier(), nilQualifier()), signedType(charType()))), builtinType(nilQualifier(), voidType())], false), nilQualifier()),
+d <- [valueDef("__builtin_vsprintf", builtinFunctionValueItem( {-  signed int(char * , const char * , __builtin_va_list) -}
+    functionType(builtinType(nilQualifier(), signedType(intType())), protoFunctionType([pointerType(nilQualifier(), builtinType(nilQualifier(), signedType(charType()))), pointerType(nilQualifier(), builtinType(consQualifier(constQualifier(), nilQualifier()), signedType(charType()))), builtinType(nilQualifier(), vaListType())], false), nilQualifier()),
     ordinaryFunctionHandler))];
-d <- [valueDef("__builtin_vsnprintf", builtinFunctionValueItem( {-  signed int(char * , signed int, const char * , void) -}
-    functionType(builtinType(nilQualifier(), signedType(intType())), protoFunctionType([pointerType(nilQualifier(), builtinType(nilQualifier(), signedType(charType()))), builtinType(nilQualifier(), signedType(intType())), pointerType(nilQualifier(), builtinType(consQualifier(constQualifier(), nilQualifier()), signedType(charType()))), builtinType(nilQualifier(), voidType())], false), nilQualifier()),
+d <- [valueDef("__builtin_vsnprintf", builtinFunctionValueItem( {-  signed int(char * , signed int, const char * , __builtin_va_list) -}
+    functionType(builtinType(nilQualifier(), signedType(intType())), protoFunctionType([pointerType(nilQualifier(), builtinType(nilQualifier(), signedType(charType()))), builtinType(nilQualifier(), signedType(intType())), pointerType(nilQualifier(), builtinType(consQualifier(constQualifier(), nilQualifier()), signedType(charType()))), builtinType(nilQualifier(), vaListType())], false), nilQualifier()),
     ordinaryFunctionHandler))];
 d <- [valueDef("__builtin_thread_pointer", builtinFunctionValueItem( {-  void * (void) -}
     functionType(pointerType(nilQualifier(), builtinType(nilQualifier(), voidType())), protoFunctionType([], false), nilQualifier()),
@@ -1184,19 +1184,19 @@ d <- [valueDef("__builtin___snprintf_chk", builtinFunctionValueItem( {-  signed 
 d <- [valueDef("__builtin___sprintf_chk", builtinFunctionValueItem( {-  signed int(char * , signed int, signed int, const char * , ...) -}
     functionType(builtinType(nilQualifier(), signedType(intType())), protoFunctionType([pointerType(nilQualifier(), builtinType(nilQualifier(), signedType(charType()))), builtinType(nilQualifier(), signedType(intType())), builtinType(nilQualifier(), signedType(intType())), pointerType(nilQualifier(), builtinType(consQualifier(constQualifier(), nilQualifier()), signedType(charType())))], true), nilQualifier()),
     ordinaryFunctionHandler))];
-d <- [valueDef("__builtin___vsnprintf_chk", builtinFunctionValueItem( {-  signed int(char * , signed int, signed int, signed int, const char * , void) -}
-    functionType(builtinType(nilQualifier(), signedType(intType())), protoFunctionType([pointerType(nilQualifier(), builtinType(nilQualifier(), signedType(charType()))), builtinType(nilQualifier(), signedType(intType())), builtinType(nilQualifier(), signedType(intType())), builtinType(nilQualifier(), signedType(intType())), pointerType(nilQualifier(), builtinType(consQualifier(constQualifier(), nilQualifier()), signedType(charType()))), builtinType(nilQualifier(), voidType())], false), nilQualifier()),
+d <- [valueDef("__builtin___vsnprintf_chk", builtinFunctionValueItem( {-  signed int(char * , signed int, signed int, signed int, const char * , __builtin_va_list) -}
+    functionType(builtinType(nilQualifier(), signedType(intType())), protoFunctionType([pointerType(nilQualifier(), builtinType(nilQualifier(), signedType(charType()))), builtinType(nilQualifier(), signedType(intType())), builtinType(nilQualifier(), signedType(intType())), builtinType(nilQualifier(), signedType(intType())), pointerType(nilQualifier(), builtinType(consQualifier(constQualifier(), nilQualifier()), signedType(charType()))), builtinType(nilQualifier(), vaListType())], false), nilQualifier()),
     ordinaryFunctionHandler))];
-d <- [valueDef("__builtin___vsprintf_chk", builtinFunctionValueItem( {-  signed int(char * , signed int, signed int, const char * , void) -}
-    functionType(builtinType(nilQualifier(), signedType(intType())), protoFunctionType([pointerType(nilQualifier(), builtinType(nilQualifier(), signedType(charType()))), builtinType(nilQualifier(), signedType(intType())), builtinType(nilQualifier(), signedType(intType())), pointerType(nilQualifier(), builtinType(consQualifier(constQualifier(), nilQualifier()), signedType(charType()))), builtinType(nilQualifier(), voidType())], false), nilQualifier()),
+d <- [valueDef("__builtin___vsprintf_chk", builtinFunctionValueItem( {-  signed int(char * , signed int, signed int, const char * , __builtin_va_list) -}
+    functionType(builtinType(nilQualifier(), signedType(intType())), protoFunctionType([pointerType(nilQualifier(), builtinType(nilQualifier(), signedType(charType()))), builtinType(nilQualifier(), signedType(intType())), builtinType(nilQualifier(), signedType(intType())), pointerType(nilQualifier(), builtinType(consQualifier(constQualifier(), nilQualifier()), signedType(charType()))), builtinType(nilQualifier(), vaListType())], false), nilQualifier()),
     ordinaryFunctionHandler))];
 -- Ignored __builtin___fprintf_chk on line 558: TODO: P type
 d <- [valueDef("__builtin___printf_chk", builtinFunctionValueItem( {-  signed int(signed int, const char * , ...) -}
     functionType(builtinType(nilQualifier(), signedType(intType())), protoFunctionType([builtinType(nilQualifier(), signedType(intType())), pointerType(nilQualifier(), builtinType(consQualifier(constQualifier(), nilQualifier()), signedType(charType())))], true), nilQualifier()),
     ordinaryFunctionHandler))];
 -- Ignored __builtin___vfprintf_chk on line 560: TODO: P type
-d <- [valueDef("__builtin___vprintf_chk", builtinFunctionValueItem( {-  signed int(signed int, const char * , void) -}
-    functionType(builtinType(nilQualifier(), signedType(intType())), protoFunctionType([builtinType(nilQualifier(), signedType(intType())), pointerType(nilQualifier(), builtinType(consQualifier(constQualifier(), nilQualifier()), signedType(charType()))), builtinType(nilQualifier(), voidType())], false), nilQualifier()),
+d <- [valueDef("__builtin___vprintf_chk", builtinFunctionValueItem( {-  signed int(signed int, const char * , __builtin_va_list) -}
+    functionType(builtinType(nilQualifier(), signedType(intType())), protoFunctionType([builtinType(nilQualifier(), signedType(intType())), pointerType(nilQualifier(), builtinType(consQualifier(constQualifier(), nilQualifier()), signedType(charType()))), builtinType(nilQualifier(), vaListType())], false), nilQualifier()),
     ordinaryFunctionHandler))];
 d <- [valueDef("__builtin_unpredictable", builtinFunctionValueItem( {-  signed long(signed long) -}
     functionType(builtinType(nilQualifier(), signedType(longType())), protoFunctionType([builtinType(nilQualifier(), signedType(longType()))], false), nilQualifier()),
