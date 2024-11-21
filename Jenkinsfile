@@ -57,10 +57,10 @@ melt.trynode('ableC') {
       "ableC-algebraic-data-types", "ableC-template-algebraic-data-types",
       "ableC-unification",
       "ableC-prolog",
+      "ableC-rewriting",
     ]
     /* TODO: get these working again
       "ableC-halide",
-      "ableC-rewriting",
       "ableC-sample-projects",
       // Treat ableP like an extension since it depends on ableC
       "ableP",
