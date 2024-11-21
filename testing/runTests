@@ -2,6 +2,7 @@
 
 set -euo pipefail
 shopt -s extglob globstar
+cd "$(dirname "${BASH_SOURCE[@]}")"
 
 export LANG=C  # Disable localization to force deterministic glob ordering
 
