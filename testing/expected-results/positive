@@ -80,7 +80,7 @@
 - NO ERROR    tests/gcc/compile/positive/pr46723.c
 - NO ERROR    tests/gcc/compile/positive/pr47281.c
 - NO ERROR    tests/gcc/compile/positive/pr47370.c
-- ERROR       tests/gcc/compile/positive/pr47411.c
+- NO ERROR    tests/gcc/compile/positive/pr47411.c
 - NO ERROR    tests/gcc/compile/positive/pr47677.c
 - NO ERROR    tests/gcc/compile/positive/pr47725.c
 - NO ERROR    tests/gcc/compile/positive/pr47743.c
@@ -104,7 +104,7 @@
 - ERROR       tests/gcc/compile/positive/pr51071.c
 - NO ERROR    tests/gcc/compile/positive/pr51245.c
 - ERROR       tests/gcc/compile/positive/pr51692.c
-- ERROR       tests/gcc/compile/positive/pr51760.c
+- NO ERROR    tests/gcc/compile/positive/pr51760.c
 - NO ERROR    tests/gcc/compile/positive/pr51801.c
 - ERROR       tests/gcc/compile/positive/pr51949.c
 - NO ERROR    tests/gcc/compile/positive/pr52170.c
@@ -769,6 +769,6 @@
 
 
 Summary:
-  67 errored
-  701 did not error
+  65 errored
+  703 did not error
 
