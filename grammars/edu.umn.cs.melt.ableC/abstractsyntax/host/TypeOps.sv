@@ -203,6 +203,7 @@ fun builtinCompatible Boolean ::= a::BuiltinType  b::BuiltinType  allowSubtypes:
   case a, b of
   | voidType(), voidType() -> true
   | boolType(), boolType() -> true
+  | vaListType(), vaListType() -> true
   | realType(r1), realType(r2) -> realTypeEq(r1, r2)
   | complexType(r1), complexType(r2) -> realTypeEq(r1, r2)
   | imaginaryType(r1), imaginaryType(r2) -> realTypeEq(r1, r2)
@@ -340,6 +341,7 @@ Boolean ::= lval::Type  rval::Type
             compatibleTypes(^b1, ^b2, true, true) && s1 == s2 -- TODO: no idea
 -- the left operand has type atomic, qualified, or unqualified _Bool, and the right is a pointer.
     | builtinType(_, boolType()), _ when rval.defaultFunctionArrayLvalueConversion matches pointerType(_, _) -> true
+    | builtinType(_, vaListType()), builtinType(_, vaListType()) -> true
     | _, _ -> false
     end;
 }

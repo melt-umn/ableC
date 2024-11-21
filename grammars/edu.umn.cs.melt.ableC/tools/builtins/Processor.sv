@@ -249,8 +249,23 @@ concrete productions top::TypeSpecifier
 | 'F' {-ObjC crap-} { top.ignoreReasons := ["TODO: F type"];  } -- Ignore anything with this spec
 | 'P' {-FILE-} { top.ignoreReasons := ["TODO: P type"]; } -- dunno what to do with this?
 | 'z' {-size_t-} { top.specifier = a:builtinType(_, top.givenSign(a:intType())); top.size = 8; } -- TODO: do better?
-| 'a' {-valist-} { top.specifier = a:builtinType(_, a:voidType()); } -- TODO
-| 'A' {-valist?pointer maybe?-} { top.specifier = a:pointerType(_, a:builtinType(a:nilQualifier(), a:voidType())); top.size = 8; }-- TODO ALSO: underscore in wrong spot
+{- Builtins.def says:
+ -
+ -    a -> __builtin_va_list
+ -    A -> "reference" to __builtin_va_list
+ -
+ - They both seem to be used in ways where, if they were ordinary functions,
+ - they'd both be the same type:
+ -
+ -    BUILTIN(__builtin_va_start, "vA.", "nt")
+ -    BUILTIN(__builtin___vsprintf_chk, "ic*izcC*a", "FP:3:")
+ -
+ - The difference seems to be that va_start is _intended_ to operate on a
+ - locally-declared va_list, rather than one passed as an argument, but gcc
+ - lets you pass a va_list accepted as an argument to __builtin_va_start too...
+ -}
+| 'a' {-valist-}              { top.specifier = a:builtinType(_, a:vaListType()); top.size = 8; }
+| 'A' {-valist "reference" -} { top.specifier = a:builtinType(_, a:vaListType()); top.size = 8; }
 (complexTypeSpec)
 | 'X'  more::TypeSpecifier {-_Complex-} { more.givenSign = a:complexIntegerType;
                                           more.givenDomain = a:complexType;
