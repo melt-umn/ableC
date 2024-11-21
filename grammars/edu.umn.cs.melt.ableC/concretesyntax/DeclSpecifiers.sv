@@ -47,6 +47,7 @@ inherited attribute givenQualifiers :: ast:Qualifiers;
 
 propagate givenQualifiers on 
   DeclarationSpecifiers_c, 
+  DeclarationSpecifier_c, 
   InitiallyUnqualifiedDeclarationSpecifiers_c,
   SpecifierQualifierList_c,
   TypeSpecifierItem_c,
@@ -73,80 +74,50 @@ parser attribute seenTypeSpecifier::Boolean action { seenTypeSpecifier = false; 
 
 closed tracked nonterminal DeclarationSpecifiers_c with isTypedef, storageClass, preTypeSpecifiers, realTypeSpecifiers, typeQualifiers, specialSpecifiers, givenQualifiers, mutateTypeSpecifiers, attributes;
 concrete productions top::DeclarationSpecifiers_c
-| h::StorageClassSpecifier_c  t::DeclarationSpecifiers_c
+| h::DeclarationSpecifier_c  t::DeclarationSpecifiers_c
     { top.isTypedef = h.isTypedef || t.isTypedef;
       top.storageClass = h.storageClass ++ t.storageClass;
-      top.preTypeSpecifiers = t.preTypeSpecifiers;
-      top.realTypeSpecifiers = t.realTypeSpecifiers;
-      top.typeQualifiers = t.typeQualifiers;
-      top.specialSpecifiers = t.specialSpecifiers;
-      top.mutateTypeSpecifiers = t.mutateTypeSpecifiers;
-      top.attributes = t.attributes; }
-| h::StorageClassSpecifier_c
-    { top.isTypedef = h.isTypedef;
-      top.storageClass = h.storageClass;
-      top.preTypeSpecifiers = [];
-      top.realTypeSpecifiers = [];
-      top.typeQualifiers = ast:nilQualifier();
-      top.specialSpecifiers = [];
-      top.mutateTypeSpecifiers = [];
-      top.attributes = ast:nilAttribute(); }
-| h::TypeSpecifierItem_c  t::DeclarationSpecifiers_c
-    { top.isTypedef = t.isTypedef;
-      top.storageClass = t.storageClass;
       top.preTypeSpecifiers = h.preTypeSpecifiers ++ t.preTypeSpecifiers;
       top.realTypeSpecifiers = h.realTypeSpecifiers ++ t.realTypeSpecifiers;
-      top.typeQualifiers = t.typeQualifiers;
-      top.specialSpecifiers = t.specialSpecifiers;
-      top.mutateTypeSpecifiers = t.mutateTypeSpecifiers;
-      top.attributes = t.attributes; }
-    action { seenTypeSpecifier = false; }
-| h::TypeSpecifierItem_c
-    { top.isTypedef = false;
-      top.storageClass = [];
+      top.typeQualifiers = ast:qualifierCat(h.typeQualifiers, t.typeQualifiers);
+      top.specialSpecifiers = h.specialSpecifiers ++ t.specialSpecifiers;
+      top.mutateTypeSpecifiers = h.mutateTypeSpecifiers ++ t.mutateTypeSpecifiers;
+      top.attributes = ast:appendAttribute(h.attributes, t.attributes); }
+| h::DeclarationSpecifier_c
+    { top.isTypedef = h.isTypedef;
+      top.storageClass = h.storageClass;
       top.preTypeSpecifiers = h.preTypeSpecifiers;
       top.realTypeSpecifiers = h.realTypeSpecifiers;
-      top.typeQualifiers = ast:nilQualifier();
-      top.specialSpecifiers = [];
-      top.mutateTypeSpecifiers = [];
-      top.attributes = ast:nilAttribute(); }
-    action { seenTypeSpecifier = false; }
-| h::TypeQualifier_c  t::DeclarationSpecifiers_c
-    { top.isTypedef = t.isTypedef;
-      top.storageClass = t.storageClass;
-      top.preTypeSpecifiers = t.preTypeSpecifiers;
-      top.realTypeSpecifiers = t.realTypeSpecifiers;
-      top.typeQualifiers = ast:qualifierCat(h.typeQualifiers, t.typeQualifiers);
-      top.specialSpecifiers = t.specialSpecifiers;
-      top.mutateTypeSpecifiers = h.mutateTypeSpecifiers ++ t.mutateTypeSpecifiers;
-      top.attributes = t.attributes; }
-| h::TypeQualifier_c
-    { top.isTypedef = false;
-      top.storageClass = [];
-      top.preTypeSpecifiers = [];
-      top.realTypeSpecifiers = [];
       top.typeQualifiers = h.typeQualifiers;
-      top.specialSpecifiers = [];
-      top.mutateTypeSpecifiers = h.mutateTypeSpecifiers;
-      top.attributes = ast:nilAttribute(); }
-| h::FunctionSpecifier_c  t::DeclarationSpecifiers_c
-    { top.isTypedef = t.isTypedef;
-      top.storageClass = t.storageClass;
-      top.preTypeSpecifiers = t.preTypeSpecifiers;
-      top.realTypeSpecifiers = t.realTypeSpecifiers;
-      top.typeQualifiers = t.typeQualifiers; 
-      top.specialSpecifiers = h.specialSpecifiers ++ t.specialSpecifiers;
-      top.mutateTypeSpecifiers = t.mutateTypeSpecifiers;
-      top.attributes = t.attributes;}
-| h::FunctionSpecifier_c
-    { top.isTypedef = false;
-      top.storageClass = [];
-      top.preTypeSpecifiers = [];
-      top.realTypeSpecifiers = [];
-      top.typeQualifiers = ast:nilQualifier();
       top.specialSpecifiers = h.specialSpecifiers;
-      top.mutateTypeSpecifiers = [];
-      top.attributes = ast:nilAttribute(); }
+      top.mutateTypeSpecifiers = h.mutateTypeSpecifiers;
+      top.attributes = h.attributes; }
+
+closed tracked nonterminal DeclarationSpecifier_c with isTypedef, storageClass, preTypeSpecifiers, realTypeSpecifiers, typeQualifiers, specialSpecifiers, givenQualifiers, mutateTypeSpecifiers, attributes;
+aspect default production
+top::DeclarationSpecifier_c ::=
+{
+  top.isTypedef = false;
+  top.storageClass = [];
+  top.preTypeSpecifiers = [];
+  top.realTypeSpecifiers = [];
+  top.typeQualifiers = ast:nilQualifier();
+  top.specialSpecifiers = [];
+  top.mutateTypeSpecifiers = [];
+  top.attributes = ast:nilAttribute();
+}
+concrete productions top::DeclarationSpecifier_c
+| sc::StorageClassSpecifier_c
+    { top.isTypedef = sc.isTypedef;
+      top.storageClass = sc.storageClass; }
+| ts::TypeSpecifierItem_c
+    { top.preTypeSpecifiers = ts.preTypeSpecifiers;
+      top.realTypeSpecifiers = ts.realTypeSpecifiers; }
+| tq::TypeQualifier_c
+    { top.typeQualifiers = tq.typeQualifiers;
+      top.mutateTypeSpecifiers = tq.mutateTypeSpecifiers; }
+| f::FunctionSpecifier_c
+    { top.specialSpecifiers = f.specialSpecifiers; }
 
 closed tracked nonterminal InitiallyUnqualifiedDeclarationSpecifiers_c with isTypedef, storageClass, preTypeSpecifiers, realTypeSpecifiers, typeQualifiers, specialSpecifiers, givenQualifiers, mutateTypeSpecifiers, attributes;
 concrete productions top::InitiallyUnqualifiedDeclarationSpecifiers_c

@@ -152,28 +152,12 @@ concrete productions top::InitDeclarator_c
     }
 
 
-concrete productions top::DeclarationSpecifiers_c
-| h::Attributes_c  t::DeclarationSpecifiers_c
-    { top.isTypedef = t.isTypedef;
-      top.storageClass = t.storageClass;
-      top.preTypeSpecifiers = t.preTypeSpecifiers;
-      top.realTypeSpecifiers = t.realTypeSpecifiers;
-      top.typeQualifiers = t.typeQualifiers;
-      top.specialSpecifiers = t.specialSpecifiers;
-      top.mutateTypeSpecifiers = t.mutateTypeSpecifiers;
-      top.attributes = ast:appendAttribute(h.ast, t.attributes); }
-| h::Attributes_c
+concrete productions top::DeclarationSpecifier_c
+| attrs::Attributes_c
     precedence = 10 -- See InitDeclarator above.
     -- Looking at a function decl: DeclarationSpecifiers Declarator . DeclarationList CompoundStatement
     -- We choose to make it part of the declarator, always, not as a DeclSpec for the DeclarationList.
-    { top.isTypedef = false;
-      top.storageClass = [];
-      top.preTypeSpecifiers = [];
-      top.realTypeSpecifiers = [];
-      top.typeQualifiers = ast:nilQualifier();
-      top.specialSpecifiers = [];
-      top.mutateTypeSpecifiers = [];
-      top.attributes = h.ast; }
+    { top.attributes = attrs.ast; }
 
 concrete productions top::SpecifierQualifierList_c
 | h::Attributes_c  t::SpecifierQualifierList_c

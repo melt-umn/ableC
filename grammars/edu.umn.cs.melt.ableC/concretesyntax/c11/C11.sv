@@ -8,25 +8,9 @@ imports silver:langutil;
 -- Alignas
 terminal C11_AlignAs_t '_Alignas' lexer classes {Keyword, Reserved};
 
-concrete productions top::DeclarationSpecifiers_c
-| h::AlignmentSpecifier_c  t::DeclarationSpecifiers_c
-    { top.isTypedef = t.isTypedef;
-      top.storageClass = t.storageClass;
-      top.preTypeSpecifiers = t.preTypeSpecifiers;
-      top.realTypeSpecifiers = t.realTypeSpecifiers;
-      top.typeQualifiers = t.typeQualifiers;
-      top.specialSpecifiers = t.specialSpecifiers;
-      top.mutateTypeSpecifiers = t.mutateTypeSpecifiers;
-      top.attributes = t.attributes; }
-| h::AlignmentSpecifier_c
-    { top.isTypedef = false;
-      top.storageClass = [];
-      top.preTypeSpecifiers = [];
-      top.realTypeSpecifiers = [];
-      top.typeQualifiers = ast:nilQualifier();
-      top.specialSpecifiers = [];
-      top.mutateTypeSpecifiers = [];
-      top.attributes = ast:nilAttribute(); }
+concrete productions top::DeclarationSpecifier_c
+| a::AlignmentSpecifier_c
+    { top.specialSpecifiers = []; }
 
 -- TODO: need to figure this bit out, somehow. very similar to function specifiers.
 -- maybe we can unify those somehow. "SpecialSpecifiers" instead of FnQualifers in the
