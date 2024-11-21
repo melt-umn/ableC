@@ -16,6 +16,8 @@ top::Expr ::= @fn::Expr args::Exprs result::Expr
 
 synthesized attribute callProd::Maybe<Call> occurs on Type, ExtType;
 flowtype callProd {decorate} on Type, ExtType;
+synthesized attribute callWithUnevaluatedArgsProd::Maybe<Call> occurs on Type, ExtType;
+flowtype callWithUnevaluatedArgsProd {decorate} on Type, ExtType;
 
 dispatch MemberAccess = Expr ::= @e::Expr deref::Boolean name::Name;
 
@@ -399,6 +401,7 @@ top::Type ::=
 {
   top.arraySubscriptProd = nothing();
   top.callProd = nothing();
+  top.callWithUnevaluatedArgsProd = nothing();
   top.memberCallProd = nothing();
   top.memberProd = nothing();
   top.exprInitProd = nothing();
@@ -485,6 +488,7 @@ top::Type ::= q::Qualifiers  sub::ExtType
 {
   top.arraySubscriptProd = sub.arraySubscriptProd;
   top.callProd = sub.callProd;
+  top.callWithUnevaluatedArgsProd = sub.callWithUnevaluatedArgsProd;
   top.memberCallProd = sub.memberCallProd;
   top.memberProd = sub.memberProd;
   top.exprInitProd = sub.exprInitProd;
@@ -564,6 +568,7 @@ top::ExtType ::=
 {
   top.arraySubscriptProd = nothing();
   top.callProd = nothing();
+  top.callWithUnevaluatedArgsProd = nothing();
   top.memberCallProd = nothing();
   top.memberProd = nothing();
   top.exprInitProd = nothing();

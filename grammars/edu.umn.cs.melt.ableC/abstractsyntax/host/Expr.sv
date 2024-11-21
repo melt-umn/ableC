@@ -207,6 +207,12 @@ top::Expr ::= f::Name  a::Exprs
   forwards to callExpr(declRefExpr(@f), @a);
 }
 
+production unevaluatedFunctionHandler implements ReferenceCall
+top::Expr ::= f::Name  a::Exprs
+{
+  forwards to callWithUnevaluatedArgsExpr(declRefExpr(@f), @a);
+}
+
 production bindDirectCallExpr implements ReferenceCall
 top::Expr ::= f::Name a::Exprs result::Expr
 {
@@ -250,32 +256,32 @@ top::Expr ::= @f::Expr  a::Exprs
   top.freeVariables := f.freeVariables ++ removeDefsFromNames(f.defs, a.freeVariables);
   top.isLValue = false; -- C++ style references would change this
 
-  local subtype :: Either<Pair<Type FunctionType> [Message]> =
+  local fAsFuncType :: Either<Pair<Type FunctionType> [Message]> =
     case f.typerep.defaultFunctionArrayLvalueConversion of
     | pointerType(_, functionType(rt, sub, _)) -> left((^rt, ^sub))
     | errorType() -> right([]) -- error already raised.
     | _ -> right([errFromOrigin(f, "call expression is not function type (got " ++ show(80, f.typerep) ++ ")")])
     end;
   top.typerep =
-    case subtype of
+    case fAsFuncType of
     | left(l) -> l.fst
     | right(_) -> errorType()
     end;
   top.errors <-
-    case subtype of
+    case fAsFuncType of
      | left(_) -> a.argumentErrors
      | right(r) -> r
     end;
 
   a.expectedTypes =
-    case subtype of
+    case fAsFuncType of
     | left(pair(fst=_, snd=protoFunctionType(args, _))) -> args
     | _ -> []
     end;
   a.argumentPosition = 1;
   a.callExpr = f;
   a.callVariadic =
-    case subtype of
+    case fAsFuncType of
     | left(pair(fst=_, snd=protoFunctionType(_, variadic))) -> variadic
     | left(pair(fst=_, snd=noProtoFunctionType())) -> true
     | left(_) -> false
@@ -285,6 +291,59 @@ top::Expr ::= @f::Expr  a::Exprs
   a.env = addEnv(f.defs, f.env);
   a.controlStmtContext = top.controlStmtContext;
 }
+
+abstract production callWithUnevaluatedArgsExpr
+top::Expr ::= func::Expr  args::Exprs
+{
+  top.pp = parens(ppConcat([func.pp, parens(ppImplode(cat(comma(), space()), args.pps))]));
+  func.env = top.env;
+  func.controlStmtContext = top.controlStmtContext;
+  forwards to fromMaybe(defaultCallWithUnevaluatedArgsExpr, func.typerep.callWithUnevaluatedArgsProd)(func, @args);
+}
+abstract production defaultCallWithUnevaluatedArgsExpr implements Call
+top::Expr ::= @func::Expr  args::Exprs
+{
+  propagate errors, globalDecls, functionDecls, defs;
+  top.pp = parens(ppConcat([func.pp, parens(ppImplode(cat(comma(), space()), args.pps))]));
+  top.host = callExpr(func.host, args.host);
+  top.freeVariables := func.freeVariables ++ removeDefsFromNames(func.defs, args.freeVariables);
+
+  local funcAsFuncType :: Either<Pair<Type FunctionType> [Message]> =
+    case func.typerep.defaultFunctionArrayLvalueConversion of
+    | pointerType(_, functionType(returnType, sub, _)) -> left((^returnType, ^sub))
+    | errorType() -> right([]) -- error already raised.
+    | _ -> right([errFromOrigin(func, "call expression is not function type (got " ++ show(80, func.typerep) ++ ")")])
+    end;
+  top.typerep =
+    case funcAsFuncType of
+    | left(l) -> l.fst
+    | right(_) -> errorType()
+    end;
+  top.errors <-
+    case funcAsFuncType of
+     | left(_) -> args.argumentErrors
+     | right(r) -> r
+    end;
+
+  args.expectedTypes =
+    case funcAsFuncType of
+    | left(pair(fst=_, snd=protoFunctionType(args, _))) -> args
+    | _ -> []
+    end;
+  args.argumentPosition = 1;
+  args.callExpr = func;
+  args.callVariadic =
+    case funcAsFuncType of
+    | left(pair(fst=_, snd=protoFunctionType(_, variadic))) -> variadic
+    | left(pair(fst=_, snd=noProtoFunctionType())) -> true
+    | left(_) -> false
+    | _ -> true -- suppress errors
+    end;
+
+  args.env = addEnv(func.defs, func.env);
+  args.controlStmtContext = top.controlStmtContext;
+}
+
 abstract production memberCallExpr
 top::Expr ::= e::Expr  deref::Boolean  name::Name  a::Exprs
 {
