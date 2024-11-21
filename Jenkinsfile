@@ -7,6 +7,7 @@ melt.setProperties(silverBase: true)
 melt.trynode('ableC') {
   def ABLEC_BASE = env.WORKSPACE
   def SILVER_BASE = silver.resolveSilver()
+  def EXTS_BASE = env.WORKSPACE + "/extensions"
   def newenv = silver.getSilverEnv(SILVER_BASE)
 
   stage ("Build") {
@@ -67,7 +68,7 @@ melt.trynode('ableC') {
      */
 
     def tasks = [:]
-    def newargs = [SILVER_BASE: SILVER_BASE, ABLEC_BASE: ABLEC_BASE]
+    def newargs = [SILVER_BASE: SILVER_BASE, ABLEC_BASE: ABLEC_BASE, EXTS_BASE: EXTS_BASE]
     tasks << extensions.collectEntries { t ->
       [(t): { melt.buildProject("/melt-umn/${t}", newargs) }]
     }
