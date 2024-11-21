@@ -99,7 +99,7 @@ top::Builtin ::= BUILTIN '(' id::Identifier ',' '"' t::Types dots::MaybeDots '"'
       ["-- Ignored " ++ id.lexeme ++ " on line " ++ toString(id.location.line) ++ ": needs custom type-checking logic"]
     else if indexOf("u", attrs.lexeme) != -1 then
       --  u -> arguments are not evaluated for their side-effects
-      ["d <- [valueDef(\"" ++ id.lexeme ++ "\", builtinFunctionValueItem( {- " ++ debugprint ++ " -}\n    " ++ reflect(new(sig)).translation ++ ",\n    unevaluatedFunctionHandler))];" ]
+      ["d <- [valueDef(\"" ++ id.lexeme ++ "\", builtinFunctionValueItem( {- " ++ debugprint ++ " -}\n    " ++ reflect(new(sig)).translation ++ ",\n    unevaluatedBuiltinFunctionHandler))];" ]
     else
       ["d <- [valueDef(\"" ++ id.lexeme ++ "\", builtinFunctionValueItem( {- " ++ debugprint ++ " -}\n    " ++ reflect(new(sig)).translation ++ ",\n    ordinaryFunctionHandler))];" ];
   

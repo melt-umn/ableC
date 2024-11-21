@@ -1135,10 +1135,10 @@ d <- [valueDef("__builtin_extend_pointer", builtinFunctionValueItem( {-  unsigne
     ordinaryFunctionHandler))];
 d <- [valueDef("__builtin_object_size", builtinFunctionValueItem( {-  signed int(const void * , signed int) -}
     functionType(builtinType(nilQualifier(), signedType(intType())), protoFunctionType([pointerType(nilQualifier(), builtinType(consQualifier(constQualifier(), nilQualifier()), voidType())), builtinType(nilQualifier(), signedType(intType()))], false), nilQualifier()),
-    unevaluatedFunctionHandler))];
+    unevaluatedBuiltinFunctionHandler))];
 d <- [valueDef("__builtin_dynamic_object_size", builtinFunctionValueItem( {-  signed int(const void * , signed int) -}
     functionType(builtinType(nilQualifier(), signedType(intType())), protoFunctionType([pointerType(nilQualifier(), builtinType(consQualifier(constQualifier(), nilQualifier()), voidType())), builtinType(nilQualifier(), signedType(intType()))], false), nilQualifier()),
-    unevaluatedFunctionHandler))];
+    unevaluatedBuiltinFunctionHandler))];
 d <- [valueDef("__builtin___memcpy_chk", builtinFunctionValueItem( {-  void * (void * , const void * , signed int, signed int) -}
     functionType(pointerType(nilQualifier(), builtinType(nilQualifier(), voidType())), protoFunctionType([pointerType(nilQualifier(), builtinType(nilQualifier(), voidType())), pointerType(nilQualifier(), builtinType(consQualifier(constQualifier(), nilQualifier()), voidType())), builtinType(nilQualifier(), signedType(intType())), builtinType(nilQualifier(), signedType(intType()))], false), nilQualifier()),
     ordinaryFunctionHandler))];
