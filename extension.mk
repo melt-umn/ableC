@@ -144,25 +144,33 @@ include depends.mk
 generated lib:
 	mkdir -p $@
 
+# Locking is used to ensure that multiple parallel make invocations in the same workspace
+# don't lead to race conditions causing a dependency to be built more than once.
+ifeq ($(MAKELEVEL),0)
+LOCK=flock $(dir $@)
+else
+LOCK=
+endif
+
 $(ABLEC_JAR): $(shell find $(ABLEC_BASE)/grammars/ -name *.sv -print0 | xargs -0)
-	cd $(ABLEC_BASE) && ./build $(SVFLAGS)
+	$(LOCK) $(MAKE) -C $(ABLEC_BASE) ableC.jar
 
 $(EXTS_BASE)/%.jar:
-	$(MAKE) -C $(dir $@) $(notdir $@)
+	$(LOCK) $(MAKE) -C $(dir $@) $(notdir $@)
 
 ifdef USE_CUSTOM_SILVER
 # Note that $(DEP_JARS) are order-only dependencies, to avoid expensive rebuilds.
 # If dependency extension syntax changes, this may require `make depclean` to be reflected.
 silver-compiler.jar: $(wildcard grammars/*/artifacts/silver_compiler/*.sv) | $(DEP_JARS) generated
-	silver -o $@ $(SVFLAGS) $(EXT_GRAMMAR):artifacts:silver_compiler
+	$(LOCK) silver -o $@ $(SVFLAGS) $(EXT_GRAMMAR):artifacts:silver_compiler
 endif
 
 $(ARTIFACT_JAR): $(GRAMMAR_SOURCES) $(DEP_JARS) $(SV_COMPILER_JAR) | generated
-	$(SILVER) -o $@ $(SVFLAGS) $(EXT_GRAMMAR)
+	$(LOCK) $(SILVER) -o $@ $(SVFLAGS) $(EXT_GRAMMAR)
 
 compiler.jar: $(ARTIFACT_JAR) $(GRAMMAR_SOURCES) $(DEP_JARS) $(SV_COMPILER_JAR) | generated
 # TODO: Shouldn't need to use the extended Silver here?
-	$(SILVER) -o $@ -I $(ARTIFACT_JAR) $(SVFLAGS) $(EXT_GRAMMAR):artifacts:compiler
+	$(LOCK) $(SILVER) -o $@ -I $(ARTIFACT_JAR) $(SVFLAGS) $(EXT_GRAMMAR):artifacts:compiler
 
 mda.test: $(ARTIFACT_JAR) $(DEP_JARS) $(SV_COMPILER_JAR) | generated
 # TODO: Shouldn't need to use the extended Silver here?
