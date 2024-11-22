@@ -16,6 +16,9 @@ melt.trynode('ableC') {
 
     melt.clearGenerated()
 
+    // Delete old extension checkouts in this workspace
+    sh "rm -rf ${EXTS_BASE}/*"
+
     withEnv(newenv) {
       sh './build --mwda'
     }
