@@ -275,6 +275,7 @@ concrete productions top::Expr_c
  -}
 closed tracked nonterminal InitialFunctionDefinition_c with ast<ast:FunctionDecl>, givenStmt;
 concrete productions top::InitialFunctionDefinition_c
+(initialFunctionDefinitionWithDeclarationSpecifiers_c)
 | ds::DeclarationSpecifiers_c  d::Declarator_c  l::InitiallyUnqualifiedDeclarationList_c
     {
       ds.givenQualifiers = ds.typeQualifiers;
@@ -321,6 +322,7 @@ concrete productions top::InitialFunctionDefinition_c
       -- parameters, and close it after the brace.
       context = beginFunctionScope(d.declaredIdent, Identifier_t, d.declaredParamIdents, Identifier_t, context);
     }
+(initialFunctionDefinitionWithoutDeclarationSpecifiers_c)
 | d::Declarator_c  l::InitiallyUnqualifiedDeclarationList_c
     {
       d.givenType = ast:baseTypeExpr();
