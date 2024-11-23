@@ -149,20 +149,10 @@ generated lib:
 LOCK=flock $(dir $@)
 
 $(ABLEC_JAR): $(shell find $(ABLEC_BASE)/grammars/ -name *.sv -print0 | xargs -0)
-ifeq ($(MAKELEVEL),0)
 	$(LOCK) $(MAKE) -C $(ABLEC_BASE) ableC.jar
-else
-	echo "$@ should not be built from recursive make invocation!"
-	exit 1
-endif
 
 $(EXTS_BASE)/%.jar:
-ifeq ($(MAKELEVEL),0)
 	$(LOCK) $(MAKE) -C $(dir $@) $(notdir $@)
-else
-	echo "$@ should not be built from recursive make invocation!"
-	exit 1
-endif
 
 ifdef USE_CUSTOM_SILVER
 # Note that $(DEP_JARS) are order-only dependencies, to avoid expensive rebuilds.
