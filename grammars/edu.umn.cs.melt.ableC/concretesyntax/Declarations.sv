@@ -275,6 +275,7 @@ concrete productions top::Expr_c
  -}
 closed tracked nonterminal InitialFunctionDefinition_c with ast<ast:FunctionDecl>, givenStmt;
 concrete productions top::InitialFunctionDefinition_c
+(initialFunctionDefinitionWithDeclarationSpecifiers_c)
 | ds::DeclarationSpecifiers_c  d::Declarator_c  l::InitiallyUnqualifiedDeclarationList_c
     {
       ds.givenQualifiers = ds.typeQualifiers;
@@ -286,10 +287,10 @@ concrete productions top::InitialFunctionDefinition_c
         | _ -> ast:nilQualifier()
         end;
 
-      nondecorated local specialSpecifiers::ast:SpecialSpecifiers =
+      nondecorated production specialSpecifiers :: ast:SpecialSpecifiers =
         foldr(ast:consSpecialSpecifier, ast:nilSpecialSpecifier(), ds.specialSpecifiers);
 
-      nondecorated local bt::ast:BaseTypeExpr =
+      nondecorated production bt :: ast:BaseTypeExpr =
         ast:figureOutTypeFromSpecifiers(ds.typeQualifiers, ds.preTypeSpecifiers, ds.realTypeSpecifiers, ds.mutateTypeSpecifiers);
 
       -- If this is a K&R-style declaration, attatch any function qualifiers to the first declaration instead
@@ -298,7 +299,7 @@ concrete productions top::InitialFunctionDefinition_c
       baseMT.ast:typeModifierIn = ast:baseTypeExpr();
       baseMT.ast:env = ast:emptyEnv();
       baseMT.ast:controlStmtContext = ast:initialControlStmtContext;
-      nondecorated local mt::ast:TypeModifierExpr =
+      nondecorated production mt :: ast:TypeModifierExpr =
         case l.isDeclListEmpty, baseMT of
         | false, ast:functionTypeExprWithArgs(t, p, v, q) ->
           ast:functionTypeExprWithArgs(^t, ^p, v, ast:nilQualifier())
@@ -321,6 +322,7 @@ concrete productions top::InitialFunctionDefinition_c
       -- parameters, and close it after the brace.
       context = beginFunctionScope(d.declaredIdent, Identifier_t, d.declaredParamIdents, Identifier_t, context);
     }
+(initialFunctionDefinitionWithoutDeclarationSpecifiers_c)
 | d::Declarator_c  l::InitiallyUnqualifiedDeclarationList_c
     {
       d.givenType = ast:baseTypeExpr();
@@ -331,7 +333,7 @@ concrete productions top::InitialFunctionDefinition_c
         | _ -> ast:nilQualifier()
         end;
 
-      nondecorated local bt::ast:BaseTypeExpr =
+      nondecorated production bt :: ast:BaseTypeExpr =
         ast:figureOutTypeFromSpecifiers(ast:nilQualifier(), [], [], []);
 
       -- If this is a K&R-style declaration, attatch any function qualifiers to the first declaration instead
@@ -340,7 +342,7 @@ concrete productions top::InitialFunctionDefinition_c
       baseMT.ast:typeModifierIn = ast:baseTypeExpr();
       baseMT.ast:env = ast:emptyEnv();
       baseMT.ast:controlStmtContext = ast:initialControlStmtContext;
-      nondecorated local mt::ast:TypeModifierExpr =
+      nondecorated production mt :: ast:TypeModifierExpr =
         case l.isDeclListEmpty, baseMT of
         | false, ast:functionTypeExprWithArgs(t, p, v, q) ->
           ast:functionTypeExprWithArgs(^t, ^p, v, ast:nilQualifier())
