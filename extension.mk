@@ -246,7 +246,7 @@ depclean: clean
 	cd $(ABLEC_BASE) && ./deep-clean
 	for dep in $(EXT_DEPS); do $(MAKE) -C $(EXTS_BASE)/$$dep clean; done
 
-deprealclean:
+deprealclean: realclean
 	cd $(ABLEC_BASE) && ./deep-clean
 	for dep in $(EXT_DEPS); do $(MAKE) -C $(EXTS_BASE)/$$dep realclean; done
 
