@@ -1,7 +1,8 @@
 grammar edu:umn:cs:melt:ableC:compiler;
 
 import edu:umn:cs:melt:ableC:host;
-import edu:umn:cs:melt:ableC:drivers:compile;
+-- import edu:umn:cs:melt:ableC:drivers:compile;
+import edu:umn:cs:melt:ableC:drivers:minimal;
 
 -- Not used here, but included in the artifact
 import edu:umn:cs:melt:ableC:silverconstruction only;
