@@ -89,13 +89,19 @@ concrete productions top::Builtins
 tracked nonterminal Builtin with ignoredBuiltins;
 
 concrete production builtinFunction
-top::Builtin ::= BUILTIN '(' id::Identifier ',' '"' t::Types dots::MaybeDots '"' ',' '"' x::IgnoredStuff '"' ')'
+top::Builtin ::= BUILTIN '(' id::Identifier ',' '"' t::Types dots::MaybeDots '"' ',' '"' attrs::IgnoredStuff '"' ')'
 {
   top.ignoredBuiltins := 
-    if t.ignoreMe || indexOf("t", x.lexeme) != -1 || indexOf("u", x.lexeme) != -1 then
-      ["-- Ignored " ++ id.lexeme ++ " on line " ++ toString(id.location.line)]
-      --[]
-    else ["d <- [valueDef(\"" ++ id.lexeme ++ "\", builtinFunctionValueItem( {- " ++ debugprint ++ " -}\n    " ++ reflect(new(sig)).translation ++ ",\n    ordinaryFunctionHandler))];" ];
+    if not(null(t.ignoreReasons)) then
+      ["-- Ignored " ++ id.lexeme ++ " on line " ++ toString(id.location.line) ++ ": " ++ implode(", ", uniq(sort(t.ignoreReasons)))]
+    else if indexOf("t", attrs.lexeme) != -1 then
+      --  t -> signature is meaningless, use custom typechecking
+      ["-- Ignored " ++ id.lexeme ++ " on line " ++ toString(id.location.line) ++ ": needs custom type-checking logic"]
+    else if indexOf("u", attrs.lexeme) != -1 then
+      --  u -> arguments are not evaluated for their side-effects
+      ["d <- [valueDef(\"" ++ id.lexeme ++ "\", builtinFunctionValueItem( {- " ++ debugprint ++ " -}\n    " ++ reflect(new(sig)).translation ++ ",\n    unevaluatedBuiltinFunctionHandler))];" ]
+    else
+      ["d <- [valueDef(\"" ++ id.lexeme ++ "\", builtinFunctionValueItem( {- " ++ debugprint ++ " -}\n    " ++ reflect(new(sig)).translation ++ ",\n    ordinaryFunctionHandler))];" ];
   
   local debugprint :: String =
     debugging:show(80, debugging:cat(sig.a:lpp, sig.a:rpp));
@@ -135,11 +141,11 @@ top::Builtin ::= LIBBUILTIN_NotProcessed
   top.ignoredBuiltins := []; -- We know about this. Just the others.
 }
 
-monoid attribute ignoreMe :: Boolean with false, ||;
+monoid attribute ignoreReasons :: [String] with [], ++;
 synthesized attribute signature :: [a:Type];
 
-tracked nonterminal Types with ignoreMe, signature;
-propagate ignoreMe on Types;
+tracked nonterminal Types with ignoreReasons, signature;
+propagate ignoreReasons on Types;
 
 concrete productions top::Types
 | h::Type  t::Types
@@ -147,8 +153,8 @@ concrete productions top::Types
 |
   { top.signature = []; }
 
-tracked nonterminal Type with ignoreMe, typerep;
-propagate ignoreMe on Type;
+tracked nonterminal Type with ignoreReasons, typerep;
+propagate ignoreReasons on Type;
 
 synthesized attribute typerep :: a:Type;
 
@@ -167,8 +173,8 @@ fun addpointers a:Type ::= count::Integer  t::a:Type =
 
 monoid attribute issigned :: Boolean with true, &&;
 
-tracked nonterminal TypePrefixes with ignoreMe, issigned;
-propagate ignoreMe, issigned on TypePrefixes;
+tracked nonterminal TypePrefixes with ignoreReasons, issigned;
+propagate ignoreReasons, issigned on TypePrefixes;
 
 concrete production consTypePrefixes
 top::TypePrefixes ::= h::TypePrefix  t::TypePrefixes
@@ -180,19 +186,19 @@ top::TypePrefixes ::=
 monoid attribute qualifiers :: a:Qualifiers with a:nilQualifier(), a:qualifierCat;
 monoid attribute pointercount :: Integer with 0, +;
 
-tracked nonterminal TypeSuffixes with ignoreMe, qualifiers, pointercount;
-propagate ignoreMe, qualifiers, pointercount on TypeSuffixes;
+tracked nonterminal TypeSuffixes with ignoreReasons, qualifiers, pointercount;
+propagate ignoreReasons, qualifiers, pointercount on TypeSuffixes;
 
 concrete productions top::TypeSuffixes
 | h::TypeSuffix  t::TypeSuffixes  {}
 | {}
 
-tracked nonterminal TypePrefix with ignoreMe, issigned;
+tracked nonterminal TypePrefix with ignoreReasons, issigned;
 
 aspect default production
 top::TypePrefix ::=
 {
-  propagate ignoreMe, issigned;
+  propagate ignoreReasons, issigned;
 }
 
 concrete productions top::TypePrefix
@@ -201,9 +207,9 @@ concrete productions top::TypePrefix
 --| 'LLL' {}
 | 'S' {}
 | 'U' { top.issigned := false;}
-| 'I' { }-- top.ignoreMe = true; } -- maybe ignore all of these? -- TODO: for now, allowing it!
+| 'I' { }-- top.ignoreReasons = true; } -- maybe ignore all of these? -- TODO: for now, allowing it!
 
-tracked nonterminal TypeSpecifier with ignoreMe, specifier, size, givenSign, givenDomain;
+tracked nonterminal TypeSpecifier with ignoreReasons, specifier, size, givenSign, givenDomain;
 
 synthesized attribute specifier :: (a:Type ::= a:Qualifiers);
 synthesized attribute size :: Integer;  -- Size on X86_64 (which is all we care about for vector intrinsics, for now...) 
@@ -215,7 +221,7 @@ propagate givenSign, givenDomain on TypeSpecifier excluding complexTypeSpec;
 aspect default production
 top::TypeSpecifier ::=
 {
-  top.ignoreMe := false;
+  top.ignoreReasons := [];
 }
 
 concrete productions top::TypeSpecifier
@@ -228,23 +234,38 @@ concrete productions top::TypeSpecifier
 | 'L' 'i' {-long-} { top.specifier = a:builtinType(_, top.givenSign(a:longType())); top.size = 8; }
 | 'O' 'i' {-long long-} { top.specifier = a:builtinType(_, top.givenSign(a:longlongType())); top.size = 8; }
 | 'LL' 'i' {-long long-} { top.specifier = a:builtinType(_, top.givenSign(a:longlongType())); top.size = 8; }
-| 'N' 'i' {-whatever this is-} { top.ignoreMe := true; } -- TODO
+| 'N' 'i' {-whatever this is-} { top.ignoreReasons := ["TODO: Ni type"]; } -- TODO
 | 'LLL' 'i' {-int128-} { top.specifier = a:builtinType(_, top.givenSign(a:int128Type())); top.size = 16; }
 
 | 'Z' 'i' {-int32-} { top.specifier = a:builtinType(_, top.givenSign(a:intType())); top.size = 4; }
 | 'W' 'i' {-int64-} { top.specifier = a:builtinType(_, top.givenSign(a:longlongType())); top.size = 8; }
 
-| 'h' {-half-float/fp16-} { top.ignoreMe := true; } -- TODO
+| 'h' {-half-float/fp16-} { top.ignoreReasons := ["TODO: h type"]; } -- TODO
 | 'f' {-float-} { top.specifier = a:builtinType(_, top.givenDomain(a:floatType())); top.size = 4; }
 | 'd' {-double-} { top.specifier = a:builtinType(_, top.givenDomain(a:doubleType())); top.size = 8; }
 | 'L' 'd' {-long double-} { top.specifier = a:builtinType(_, top.givenDomain(a:longdoubleType())); top.size = 16; }
-| 'LL' 'd' {-fp128-} { top.ignoreMe := true; } -- TODO
+| 'LL' 'd' {-fp128-} { top.ignoreReasons := ["TODO: LLd type"]; } -- TODO
 
-| 'F' {-ObjC crap-} { top.ignoreMe := true;  } -- Ignore anything with this spec
-| 'P' {-FILE-} { top.ignoreMe := true; } -- dunno what to do with this?
+| 'F' {-ObjC crap-} { top.ignoreReasons := ["TODO: F type"];  } -- Ignore anything with this spec
+| 'P' {-FILE-} { top.ignoreReasons := ["TODO: P type"]; } -- dunno what to do with this?
 | 'z' {-size_t-} { top.specifier = a:builtinType(_, top.givenSign(a:intType())); top.size = 8; } -- TODO: do better?
-| 'a' {-valist-} { top.specifier = a:builtinType(_, a:voidType()); } -- TODO
-| 'A' {-valist?pointer maybe?-} { top.specifier = a:pointerType(_, a:builtinType(a:nilQualifier(), a:voidType())); top.size = 8; }-- TODO ALSO: underscore in wrong spot
+{- Builtins.def says:
+ -
+ -    a -> __builtin_va_list
+ -    A -> "reference" to __builtin_va_list
+ -
+ - They both seem to be used in ways where, if they were ordinary functions,
+ - they'd both be the same type:
+ -
+ -    BUILTIN(__builtin_va_start, "vA.", "nt")
+ -    BUILTIN(__builtin___vsprintf_chk, "ic*izcC*a", "FP:3:")
+ -
+ - The difference seems to be that va_start is _intended_ to operate on a
+ - locally-declared va_list, rather than one passed as an argument, but gcc
+ - lets you pass a va_list accepted as an argument to __builtin_va_start too...
+ -}
+| 'a' {-valist-}              { top.specifier = a:builtinType(_, a:vaListType()); top.size = 8; }
+| 'A' {-valist "reference" -} { top.specifier = a:builtinType(_, a:vaListType()); top.size = 8; }
 (complexTypeSpec)
 | 'X'  more::TypeSpecifier {-_Complex-} { more.givenSign = a:complexIntegerType;
                                           more.givenDomain = a:complexType;
@@ -254,7 +275,7 @@ concrete productions top::TypeSpecifier
   { top.specifier = \ qs::a:Qualifiers -> a:vectorType(more.specifier(qs), top.size); top.size = toInteger(n.lexeme) * more.size; }
 
 
-nonterminal Languages with ignoreMe;
+nonterminal Languages with ignoreReasons;
 
 concrete productions top::Languages
 | 'ALL_LANGUAGES' {}
@@ -264,17 +285,17 @@ concrete productions top::Languages
 | 'OCLC20_LANG' {}
 | 'OMP_LANG' {}
 
-tracked nonterminal TypeSuffix with ignoreMe, qualifiers, pointercount;
+tracked nonterminal TypeSuffix with ignoreReasons, qualifiers, pointercount;
 
 aspect default production
 top::TypeSuffix ::=
 {
-  propagate ignoreMe, qualifiers, pointercount;
+  propagate ignoreReasons, qualifiers, pointercount;
 }
 
 concrete productions top::TypeSuffix
 | '*' {-pointer-} { top.pointercount := 1; }
-| '&' {-C++-} { top.ignoreMe := true; } -- ignore these
+| '&' {-C++-} { top.ignoreReasons := ["C++ references"]; } -- ignore these
 | 'C' {-const-} { top.qualifiers := a:consQualifier(a:constQualifier(), a:nilQualifier()); }
 | 'D' {-volatile-} { top.qualifiers := a:consQualifier(a:volatileQualifier(), a:nilQualifier()); }
 

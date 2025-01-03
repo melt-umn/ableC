@@ -42,7 +42,7 @@ synthesized attribute rpp :: Document;
 synthesized attribute typerep :: Type;
 synthesized attribute typereps :: [Type];
 
-{-- Used to transform away typeModifierTypeExpr -}
+{-- Used to transform away typeNameTypeExpr -}
 synthesized attribute typeModifier :: TypeModifierExpr;
 inherited attribute typeModifierIn :: TypeModifierExpr;
 
@@ -56,7 +56,7 @@ synthesized attribute mty :: Decorated TypeModifierExpr;
 tracked nonterminal TypeName with env, typerep, bty, mty, pp, host, errors, globalDecls,
   functionDecls, hostDecls, defs, freeVariables, controlStmtContext;
 flowtype TypeName = decorate {env, controlStmtContext},
-  bty {decorate}, mty {decorate};
+  bty {decorate}, mty {decorate}, hostDecls {decorate};
 
 propagate givenRefId on BaseTypeExpr;
 
@@ -94,7 +94,7 @@ tracked nonterminal BaseTypeExpr with env, typerep, pp, host, errors, globalDecl
   functionDecls, typeModifier, hostDecls, defs, givenRefId, freeVariables,
   controlStmtContext;
 flowtype BaseTypeExpr = decorate {env, givenRefId, controlStmtContext},
-  typeModifier {decorate};
+  typeModifier {decorate}, hostDecls {decorate};
 
 abstract production errorTypeExpr
 top::BaseTypeExpr ::= msg::[Message]
@@ -229,7 +229,10 @@ top::BaseTypeExpr ::= q::Qualifiers  kwd::StructOrEnumOrUnion  n::Name
 
   top.typeModifier = baseTypeExpr();
 
-  top.hostDecls := [typeExprDecl(nilAttribute(), top.host)];
+  top.hostDecls :=
+    if null(tags)
+    then [typeExprDecl(nilAttribute(), top.host)]
+    else [];
 
   top.defs <-
     case kwd, tags of
@@ -377,16 +380,6 @@ top::BaseTypeExpr ::= q::Qualifiers  wrapped::TypeName
   top.typeModifier = baseTypeExpr();
   q.typeToQualify = top.typerep;
 }
-{-- GCC builtin type -}
-abstract production vaListTypeExpr
-top::BaseTypeExpr ::=
-{
-  propagate host, errors, globalDecls, functionDecls, hostDecls, defs, freeVariables, controlStmtContext;
-  top.typerep = pointerType(nilQualifier(),
-    builtinType(nilQualifier(), voidType())); -- TODO this should be a special type, not void
-  top.pp = text("__builtin_va_list");
-  top.typeModifier = baseTypeExpr();
-}
 {-- GCC typeof type -}
 abstract production typeofTypeExpr
 top::BaseTypeExpr ::= q::Qualifiers  e::ExprOrTypeName
@@ -408,7 +401,7 @@ tracked nonterminal TypeModifierExpr with env, typerep, lpp, rpp, host, modified
   isFunctionArrayTypeExpr, baseType, typeModifierIn, errors, globalDecls,
   functionDecls, defs, freeVariables, controlStmtContext;
 flowtype TypeModifierExpr = decorate {env, baseType, typeModifierIn, controlStmtContext},
-  modifiedBaseTypeExpr {decorate}, isFunctionArrayTypeExpr {};
+  modifiedBaseTypeExpr {decorate}, hostDecls {decorate}, isFunctionArrayTypeExpr {};
 
 propagate hostDecls, typeModifierIn, baseType, controlStmtContext on TypeModifierExpr;
 
@@ -424,7 +417,7 @@ top::TypeModifierExpr ::=
 {--
  - A TypeModifierExpr that corresponds to whatever the base TypeExpr was.
  - This gets transformed via host to include type modifiers that were included in the base
- - TypeExpr via typeModifierTypeExpr.
+ - TypeExpr via typeNameTypeExpr.
  -}
 abstract production baseTypeExpr
 top::TypeModifierExpr ::=

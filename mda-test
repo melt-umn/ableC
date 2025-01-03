@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -euo pipefail
 
 # Run the MDA test for the silver extension for constructing ableC ASTs.
 
@@ -9,4 +10,4 @@ export GRAMMAR_PATH=ableC.jar:grammars
 mkdir -p generated
 export SILVER_GEN=generated
 
-silver --dont-translate $@ edu:umn:cs:melt:ableC:silverconstruction:mda_test
+silver --dont-translate "$@" edu:umn:cs:melt:ableC:silverconstruction:mda_test

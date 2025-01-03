@@ -35,6 +35,17 @@ top::BuiltinType ::=
   top.isArithmeticType = true;
 }
 
+abstract production vaListType
+top::BuiltinType ::=
+{
+  top.pp = text("__builtin_va_list");
+  top.mangledName = "va_list";
+  top.integerPromotionsBuiltin = top;
+  top.defaultArgumentPromotionsBuiltin = top;
+  top.isIntegerType = false;
+  top.isArithmeticType = false;
+}
+
 {-- any real type -}
 abstract production realType
 top::BuiltinType ::= rt::RealType

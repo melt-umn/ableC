@@ -157,6 +157,14 @@ top::Expr ::= @e::Expr
     end;
 }
 
+-- Non-overloaded version, used in overloading resolution for l-values
+production hostDereferenceExpr
+top::Expr ::= e::Expr
+{
+  propagate env, controlStmtContext;
+  forwards to defaultDereferenceExpr(e);
+}
+
 abstract production positiveExpr
 top::Expr ::= e::Expr
 {

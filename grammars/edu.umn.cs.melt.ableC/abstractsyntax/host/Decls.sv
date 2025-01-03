@@ -293,22 +293,6 @@ top::Decl ::= n::Name  es::Exprs
   es.bindName = ^n;
   es.argumentPosition = 1;
 }
-abstract production bindInitListDecls
-top::Decl ::= ty::Type n::Name  l::InitList
-{
-  propagate env, errors, globalDecls, functionDecls, defs, freeVariables;
-  top.pp = pp"bind ${ty.lpp}${ty.rpp} ${n} = ${ppImplode(pp", ", l.pps)};";
-  top.host = decls(l.hostBindDecls);
-  top.isEmpty := l.isSimple;
-  top.defs <- l.bindDefs;
-
-  l.bindName = ^n;
-
-  local decSite::Expr =
-    compoundLiteralExpr(typeName(ty.baseTypeExpr, ty.typeModifierExpr), @l);
-  decSite.env = top.env;
-  decSite.controlStmtContext = top.controlStmtContext;
-}
 
 monoid attribute hasModifiedTypeExpr::Boolean with false, ||;
 monoid attribute hostDecls::[Decl];

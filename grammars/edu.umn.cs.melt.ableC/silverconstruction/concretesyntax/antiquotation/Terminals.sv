@@ -23,6 +23,7 @@ marking terminal AntiquoteDecls_t             '$Decls'             lexer classes
 marking terminal AntiquoteDecl_t              '$Decl'              lexer classes {ExprAntiquote, Reserved};
 marking terminal AntiquoteStmt_t              '$Stmt'              lexer classes {ExprAntiquote, Reserved};
 marking terminal AntiquoteInitializer_t       '$Initializer'       lexer classes {ExprAntiquote, Reserved};
+marking terminal AntiquoteInitList_t          '$InitList'          lexer classes {ExprAntiquote, Reserved};
 marking terminal AntiquoteExprs_t             '$Exprs'             lexer classes {ExprAntiquote, Reserved};
 marking terminal AntiquoteExpr_t              '$Expr'              lexer classes {ExprAntiquote, Reserved};
 marking terminal AntiquoteIntLiteralExpr_t    '$intLiteralExpr'    lexer classes {ExprAntiquote, Reserved};

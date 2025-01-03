@@ -1,7 +1,8 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-set -eu
+set -euo pipefail
 shopt -s extglob globstar
+cd "$(dirname "${BASH_SOURCE[@]}")"
 
 export LANG=C  # Disable localization to force deterministic glob ordering
 
@@ -16,7 +17,7 @@ java -Xss8M -jar ableC.jar tests/**/neutral/!(*.pp_out).c | tee expected-results
 
 cd expected-results
 
-set -ve
+set -x
 
 diff positive positive.out
 diff negative negative.out
