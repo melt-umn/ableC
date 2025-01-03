@@ -11,13 +11,13 @@ flowtype Root = decorate {env};
 abstract production root
 top::Root ::= d::GlobalDecls
 {
-  propagate host, errors;
+  propagate errors;
   
   top.pp = terminate(line(), d.pps);
+  top.host = root(foldr(consGlobalDecl, nilGlobalDecl(), d.hostDecls));
   
 --  d.env = addEnv(builtinfunctions:initialEnv;
   d.env = addEnv(builtinfunctions:getInitialEnvDefs(), top.env);
-  d.controlStmtContext = initialControlStmtContext;
 }
 
 synthesized attribute srcAst::Root;

@@ -10,7 +10,7 @@ propagate freeVariables on MaybeInitializer, Initializer, Init, Designator;
 
 tracked nonterminal MaybeInitializer with pp, host, typerep, errors, globalDecls,
   functionDecls, defs, env, expectedType, freeVariables, controlStmtContext;
-flowtype MaybeInitializer = decorate {env, expectedType, controlStmtContext};
+flowtype MaybeInitializer = decorate {env, expectedType, controlStmtContext, globalDecls.decorate, functionDecls.decorate};
 
 propagate controlStmtContext on MaybeInitializer;
 
@@ -42,7 +42,7 @@ tracked nonterminal Initializer with pp, host, typerep, errors, globalDecls,
   nestedInits, nestedInitsOut, freeVariables, controlStmtContext,
   isSimple, asExpr;
 flowtype Initializer = decorate {env, initializerPos, inObject, expectedType,
-  controlStmtContext},
+  controlStmtContext, globalDecls.decorate, functionDecls.decorate},
   expectedTypesOut {decorate}, nestedInitsOut {decorate, nestedInits}, asExpr {decorate}, isSimple {decorate};
 
 propagate env, controlStmtContext on Initializer;
@@ -144,7 +144,7 @@ tracked nonterminal InitList with pps, initIndex, initIndexOut, maxIndex, host, 
   nestedInits, freeVariables, controlStmtContext,
   isSimple;
 flowtype InitList = decorate {initIndex, env, expectedType, expectedTypes,
-  controlStmtContext},
+  controlStmtContext, globalDecls.decorate, functionDecls.decorate},
   maxIndex {decorate};
 propagate initIndex, initIndexOut, maxIndex, expectedTypes, nestedInits, controlStmtContext on InitList;
 
@@ -191,7 +191,7 @@ tracked nonterminal Init with pp, initIndex, initIndexOut, maxIndex, host, error
   nestedInits, nestedInitsOut, freeVariables, controlStmtContext,
   isSimple;
 flowtype Init = decorate {initIndex, env, expectedType, expectedTypes,
-  controlStmtContext},
+  controlStmtContext, globalDecls.decorate, functionDecls.decorate},
   maxIndex {decorate}, initIndexOut {decorate}, expectedTypesOut {decorate};
 
 propagate controlStmtContext, bindName on Init;
@@ -253,7 +253,7 @@ top::Init ::= d::Designator  i::Initializer
  -}
 tracked nonterminal Designator with pp, maxIndex, host, errors, globalDecls, functionDecls,
   defs, env, expectedType, expectedTypesOut, typerep, freeVariables, controlStmtContext;
-flowtype Designator = decorate {env, expectedType, controlStmtContext},
+flowtype Designator = decorate {env, expectedType, controlStmtContext, globalDecls.decorate, functionDecls.decorate},
   maxIndex {decorate}, expectedTypesOut {decorate};
 
 propagate controlStmtContext on Designator;

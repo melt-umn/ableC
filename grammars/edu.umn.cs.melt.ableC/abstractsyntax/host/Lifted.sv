@@ -1,7 +1,7 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 
 {--
- - Extensions that want to specify declartions to lift to a global scope
+ - Extensions that want to specify declarations to lift to a global scope
  - do so by forwarding to the host production `injectGlobalDecls` (or one
  - of the corresponding ones for Stmt or BaseTypeExpr.)
  -
@@ -10,16 +10,16 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
  -
  - A pair of synthesized attributes can be used for this.
  - * `globalDecls`: the list of declarations to lift up
- - * `host`: the tranformed tree containing only proper host productions.
+ - * `host`: the transformed tree containing only proper host productions.
  - An invariant here is that all Decl nodes in the original tree appear in
  - either `globalDecls` or in `host`.  Also, the 'injection' productions
  - defined here should not occur in the host tree.
  -
  - One issue with this is how to generate the correct environment for the
- - 'lifted' tree passed to an injection production.  The behaviour we *want* is
+ - 'lifted' tree passed to an injection production.  The behavior we *want* is
  - to lift the decls to the global level, then add them to the env for the rest
  - of the tree, including the decl which emitted the globalDecls in the first
- - place.  This unfortunately doesn't work, because of a cyclical dependancy in
+ - place.  This unfortunately doesn't work, because of a cyclical dependency in
  - that the env is needed in the first place to figure out the names of the
  - items being injected, which are then used to generate the env.
  -
@@ -55,10 +55,8 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
  - everything would be kind of a pain
  -}
 
-monoid attribute globalDecls::[Decorated Decl];
-monoid attribute functionDecls::[Decorated Decl];
-synthesized attribute unfoldedGlobalDecls::[Decorated Decl];
-synthesized attribute unfoldedFunctionDecls::[Decorated Decl];
+monoid translation attribute globalDecls::GlobalDecls with nilGlobalDecl(), appendGlobalDecls;
+monoid translation attribute functionDecls::FunDecls with nilFunDecl(), appendFunDecls;
 
 flowtype globalDecls {decorate} on
   Decls, Decl, Declarators, Declarator, FunctionDecl, Parameters, ParameterDecl, StructDecl, UnionDecl, EnumDecl, StructItemList, EnumItemList, StructItem, StructDeclarators, StructDeclarator, EnumItem,
@@ -78,10 +76,6 @@ flowtype functionDecls {decorate} on
   MaybeExpr, Exprs, ExprOrTypeName,
   Stmt,
   MaybeInitializer, Initializer, InitList, Init, Designator;
-flowtype unfoldedGlobalDecls {decorate} on
-  Decls, Decl;
-flowtype unfoldedFunctionDecls {decorate} on
-  Decls, Decl;
 
 {--
  - Wrapper production for a decl that first performs some sort of check for whether something is in
@@ -124,30 +118,24 @@ top::Decl ::= name::String decl::Decl
 
 -- Injection production for Expr
 abstract production injectGlobalDeclsExpr
-top::Expr ::= decls::Decls lifted::Expr
+top::Expr ::= ds::Decls lifted::Expr
 {
-  propagate errors, functionDecls;
-  top.pp = pp"injectGlobalDeclsExpr ${braces(nestlines(2, ppImplode(line(), decls.pps)))} (${lifted.pp})";
-
-  -- Insert defs from decls at the global scope
-  top.defs := globalDefsDef(decls.defs) :: lifted.defs;
+  propagate errors;
+  top.pp = pp"injectGlobalDeclsExpr ${braces(nestlines(2, ppImplode(line(), ds.pps)))} (${lifted.pp})";
 
   -- Note that the invariant over `globalDecls` and `lifted` is maintained.
-  top.globalDecls := decls.unfoldedGlobalDecls ++ lifted.globalDecls;
+  top.globalDecls = consGlobalDecl(decls(@ds), @lifted.globalDecls);
+  top.functionDecls = @lifted.functionDecls;
   top.host = lifted.host;
 
-  -- Variables corresponing to lifted values are *not* considered free, since they are either bound
-  -- here (host tree) or available globally and shouldn't recieve special treatment (lifted tree).
-  top.freeVariables := removeDefsFromNames(decls.defs, lifted.freeVariables);
+  -- Variables corresponding to lifted values are *not* considered free, since they are either bound
+  -- here (host tree) or available globally and shouldn't receive special treatment (lifted tree).
+  top.freeVariables := removeDefsFromNames(ds.defs, lifted.freeVariables);
 
   -- Define other attributes to be the same as on lifted
   top.typerep = lifted.typerep;
 
-  decls.env = globalEnv(top.env);
-  decls.isTopLevel = true;
-  decls.controlStmtContext = initialControlStmtContext;
-
-  lifted.env = addEnv([globalDefsDef(decls.defs)], top.env);
+  lifted.env = top.env;
   lifted.controlStmtContext = top.controlStmtContext;
 
   top.isLValue = lifted.isLValue;
@@ -155,103 +143,90 @@ top::Expr ::= decls::Decls lifted::Expr
 
 -- Same as injectGlobalDeclsExpr, but on Stmt
 abstract production injectGlobalDeclsStmt
-top::Stmt ::= decls::Decls lifted::Stmt
+top::Stmt ::= ds::Decls lifted::Stmt
 {
-  propagate errors, functionDecls;
-  top.pp = pp"injectGlobalDeclsStmt ${braces(nestlines(2, ppImplode(line(), decls.pps)))} ${braces(nestlines(2, lifted.pp))}";
+  propagate errors;
+  top.pp = pp"injectGlobalDeclsStmt ${braces(nestlines(2, ppImplode(line(), ds.pps)))} ${braces(nestlines(2, lifted.pp))}";
 
   -- Insert defs from decls at the global scope
-  top.defs := globalDefsDef(decls.defs) :: lifted.defs;
+  top.defs := globalDefsDef(ds.defs) :: lifted.defs;
 
   -- Note that the invariant over `globalDecls` and `lifted` is maintained.
-  top.globalDecls := decls.unfoldedGlobalDecls ++ lifted.globalDecls;
+  top.globalDecls = consGlobalDecl(decls(@ds), @lifted.globalDecls);
+  top.functionDecls = @lifted.functionDecls;
   top.host = lifted.host;
 
-  -- Variables corresponing to lifted values are *not* considered free, since they are either bound
-  -- here (host tree) or available globally and shouldn't recieve special treatment (lifted tree).
-  top.freeVariables := removeDefsFromNames(decls.defs, lifted.freeVariables);
+  -- Variables corresponding to lifted values are *not* considered free, since they are either bound
+  -- here (host tree) or available globally and shouldn't receive special treatment (lifted tree).
+  top.freeVariables := removeDefsFromNames(ds.defs, lifted.freeVariables);
 
   -- Define other attributes to be the same as on lifted
   top.functionDefs := lifted.functionDefs;
   top.labelDefs := lifted.labelDefs;
 
-  decls.env = globalEnv(top.env);
-  decls.isTopLevel = true;
-  decls.controlStmtContext = initialControlStmtContext;
-
-  lifted.env = addEnv([globalDefsDef(decls.defs)], top.env);
+  lifted.env = addEnv([globalDefsDef(ds.defs)], top.env);
   lifted.controlStmtContext = top.controlStmtContext;
 }
 
 -- Same as injectGlobalDeclsExpr, but on BaseTypeExpr
 abstract production injectGlobalDeclsTypeExpr
-top::BaseTypeExpr ::= decls::Decls lifted::BaseTypeExpr
+top::BaseTypeExpr ::= ds::Decls lifted::BaseTypeExpr
 {
-  propagate errors, functionDecls;
-  top.pp = pp"injectGlobalDeclsTypeExpr ${braces(nestlines(2, ppImplode(line(), decls.pps)))} (${lifted.pp})";
+  propagate errors;
+  top.pp = pp"injectGlobalDeclsTypeExpr ${braces(nestlines(2, ppImplode(line(), ds.pps)))} (${lifted.pp})";
 
   -- Insert defs from decls at the global scope
-  top.defs := globalDefsDef(decls.defs) :: lifted.defs;
+  top.defs := globalDefsDef(ds.defs) :: lifted.defs;
 
   -- Note that the invariant over `globalDecls` and `lifted` is maintained.
-  top.globalDecls := decls.unfoldedGlobalDecls ++ lifted.globalDecls;
+  top.globalDecls = consGlobalDecl(decls(@ds), @lifted.globalDecls);
   top.host = lifted.host;
   top.hostDecls := lifted.hostDecls;
 
-  -- Variables corresponing to lifted values are *not* considered free, since they are either bound
-  -- here (host tree) or available globally and shouldn't recieve special treatment (lifted tree).
-  top.freeVariables := removeDefsFromNames(decls.defs, lifted.freeVariables);
+  -- Variables corresponding to lifted values are *not* considered free, since they are either bound
+  -- here (host tree) or available globally and shouldn't receive special treatment (lifted tree).
+  top.freeVariables := removeDefsFromNames(ds.defs, lifted.freeVariables);
 
   -- Define other attributes to be the same as on lifted
   top.typerep = lifted.typerep;
   top.typeModifier = lifted.typeModifier;
 
-  decls.env = globalEnv(top.env);
-  decls.isTopLevel = true;
-  decls.controlStmtContext = initialControlStmtContext;
-
-  lifted.env = addEnv([globalDefsDef(decls.defs)], top.env);
+  lifted.env = addEnv([globalDefsDef(ds.defs)], top.env);
   lifted.controlStmtContext = top.controlStmtContext;
 }
 
 -- Just lift a list of Decls
 abstract production injectGlobalDeclsDecl
-top::Decl ::= decls::Decls
+top::Decl ::= ds::Decls
 {
-  propagate errors, functionDecls;
-  top.pp = pp"injectGlobalDeclsDecl ${braces(nestlines(2, ppImplode(line(), decls.pps)))}";
+  propagate errors;
+  top.pp = pp"injectGlobalDeclsDecl ${braces(nestlines(2, ppImplode(line(), ds.pps)))}";
 
   -- Insert defs from decls at the global scope
-  top.defs := [globalDefsDef(decls.defs)];
+  top.defs := [globalDefsDef(ds.defs)];
 
   -- Note that the invariant over `globalDecls` and `lifted` is maintained.
-  top.globalDecls := decls.unfoldedGlobalDecls;
-  top.host = edu:umn:cs:melt:ableC:abstractsyntax:host:decls(nilDecl());
+  top.globalDecls = consGlobalDecl(decls(@ds), nilGlobalDecl());
+  top.functionDecls = nilFunDecl();
+  top.host = decls(nilDecl());
 
   -- Define other attributes to be the same as on "lifted" (i.e. nilDecl())
   top.freeVariables := [];
-
-  decls.env = globalEnv(top.env);
-  decls.isTopLevel = true;
-  decls.controlStmtContext = initialControlStmtContext;
 }
 
 abstract production injectFunctionDeclsDecl
-top::Decl ::= decls::Decls
+top::Decl ::= ds::Decls
 {
-  propagate errors, globalDecls;
-  top.pp = pp"injectFunctionDeclsStmt ${braces(nestlines(2, ppImplode(line(), decls.pps)))}";
+  propagate errors;
+  top.pp = pp"injectFunctionDeclsStmt ${braces(nestlines(2, ppImplode(line(), ds.pps)))}";
 
-  top.defs := [functionDefsDef(decls.defs)];
-
-  top.functionDecls := decls.unfoldedFunctionDecls;
-  top.host = edu:umn:cs:melt:ableC:abstractsyntax:host:decls(nilDecl());
+  top.defs := [functionDefsDef(ds.defs)];
+ 
+  top.globalDecls = nilGlobalDecl();
+  top.functionDecls = consFunDecl(decls(@ds), nilFunDecl());
+  top.host = decls(nilDecl());
 
   top.freeVariables := [];
-
-  decls.env = functionEnv(top.env);
-  decls.isTopLevel = false;
-  decls.controlStmtContext = initialControlStmtContext;
 }
 
 {--
@@ -260,16 +235,25 @@ top::Decl ::= decls::Decls
 aspect production consGlobalDecl
 top::GlobalDecls ::= h::Decl  t::GlobalDecls
 {
-  top.host =
-    foldr(
-      consGlobalDecl,
-      t.host,
-      map(\ d::Decorated Decl -> d.host, h.unfoldedGlobalDecls));
+  h.globalDecls.env = top.env;
+  top.hostDecls := h.globalDecls.hostDecls ++ h.host :: t.hostDecls;
 }
 
--- Utility functions
-fun globalDeclsDefs [Def] ::= d::[Decorated Decl] =
-  [globalDefsDef(foldr(append, [], map((.defs), d)))];
+{--
+ - Inserts functionDecls before h
+ -}
+aspect production consFunDecl
+top::FunDecls ::= h::Decl  t::FunDecls
+{
+  h.functionDecls.env = top.env;
+  h.functionDecls.controlStmtContext = top.controlStmtContext;
+  top.hostDecls := h.functionDecls.hostDecls ++ h.host :: t.hostDecls;
+}
 
-fun functionDeclsDefs [Def] ::= d::[Decorated Decl] =
-  [functionDefsDef(foldr(append, [], map((.defs), d)))];
+
+-- Utility functions
+fun globalDeclsDefs [Def] ::= d::Decorated GlobalDecls =
+  [globalDefsDef(d.defs)];
+
+fun functionDeclsDefs [Def] ::= d::Decorated FunDecls =
+  [functionDefsDef(d.defs)];

@@ -5,7 +5,7 @@ tracked nonterminal Expr with pp, host, globalDecls, functionDecls, errors,
   controlStmtContext,
   bindName, bindRefExpr, bindDefs, hostBindDecl;
 
-flowtype Expr = decorate {env, controlStmtContext},
+flowtype Expr = decorate {env, controlStmtContext, globalDecls.decorate, functionDecls.decorate},
   isLValue {decorate}, isSimple {decorate}, integerConstantValue {decorate},
   bindRefExpr {decorate, bindName}, bindDefs {decorate, bindName}, hostBindDecl {decorate, bindName};
 
@@ -641,13 +641,22 @@ top::Expr ::= d::Decls  e::Expr
   local s::Stmt = declStmt(decls(@d));
   s.env = top.env;
   s.controlStmtContext = top.controlStmtContext;
+  s.globalDecls.env = top.globalDecls.env;
+  s.functionDecls.env = top.functionDecls.env;
+  s.functionDecls.controlStmtContext = top.functionDecls.controlStmtContext;
   forwards to (if d.isEmpty then noStmtExpr else someStmtExpr)(s, @e);
 }
 
 dispatch StmtExpr = Expr ::= @s::Stmt e::Expr;
 production noStmtExpr implements StmtExpr
 top::Expr ::= @s::Stmt e::Expr
-{ forwards to @e; }
+{
+  local sFunDecls :: FunDecls = @s.functionDecls;
+  -- TODO: Currently there is no way to write this equation on the letExpr production,
+  -- because we don't support override equations for inh on chained translation attributes.
+  sFunDecls.globalDecls.env = top.functionDecls.globalDecls.env;
+  forwards to @e;
+}
 production someStmtExpr implements StmtExpr
 top::Expr ::= @s::Stmt e::Expr
 { forwards to stmtExpr(@s, @e); }

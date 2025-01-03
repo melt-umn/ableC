@@ -275,10 +275,14 @@ top::ArrayType ::=
 abstract production variableArrayType
 top::ArrayType ::= size::Decorated Expr
 {
-  top.host =
-    variableArrayType(
-      decorate size.host with {env = size.env; 
-    controlStmtContext = size.controlStmtContext;});
+  local hostSize::Expr = size.host;
+  -- TODO: these should be from the host tree!
+  hostSize.env = size.env;
+  hostSize.controlStmtContext = size.controlStmtContext;
+  hostSize.globalDecls.env = size.globalDecls.env;
+  hostSize.functionDecls.env = size.functionDecls.env;
+  hostSize.functionDecls.controlStmtContext = size.functionDecls.controlStmtContext;
+  top.host = variableArrayType(hostSize);
   top.pp = size.pp;
   top.freeVariables := size.freeVariables;
 }
@@ -300,7 +304,7 @@ top::ArraySizeModifier ::= { top.pps = [text("*")]; }
 
 {-------------------------------------------------------------------------------
  - Functions (with or without args)
- - Evidentally, old-style K&R function *types* do not contain any information
+ - Evidently, old-style K&R function *types* do not contain any information
  - about parameter types. Not even number.
  -}
 abstract production functionType

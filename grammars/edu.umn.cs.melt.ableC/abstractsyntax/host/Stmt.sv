@@ -2,7 +2,7 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 
 tracked nonterminal Stmt with pp, host, errors, globalDecls, functionDecls, defs, env,
   functionDefs, freeVariables, controlStmtContext, labelDefs;
-flowtype Stmt = decorate {env, controlStmtContext};
+flowtype Stmt = decorate {env, controlStmtContext, globalDecls.decorate, functionDecls.decorate};
 
 propagate controlStmtContext on Stmt excluding whileStmt, doStmt, forStmt, forDeclStmt, switchStmt,
   injectGlobalDeclsStmt, whileStmt, doStmt, forStmt, forDeclStmt, switchStmt;
@@ -108,14 +108,9 @@ top::Stmt ::= c::Expr  t::Stmt
 abstract production whileStmt
 top::Stmt ::= e::Expr  b::Stmt
 {
-  propagate host;
+  propagate host, errors, globalDecls, functionDecls, functionDefs, labelDefs;
   top.pp = ppConcat([ text("while"), space(), parens(e.pp), line(),
                     braces(nestlines(2, b.pp)) ]);
-  top.errors := e.errors ++ b.errors;
-  top.globalDecls := e.globalDecls ++ b.globalDecls;
-  top.functionDecls := e.functionDecls ++ b.functionDecls;
-  top.functionDefs := b.functionDefs;
-  top.labelDefs := b.labelDefs;
 
   -- An iteration statement is a block whose scope is a strict subset of the scope of its
   -- enclosing block. The loop body is also a block whose scope is a strict subset of the scope
@@ -140,15 +135,10 @@ top::Stmt ::= e::Expr  b::Stmt
 abstract production doStmt
 top::Stmt ::= b::Stmt  e::Expr
 {
-  propagate host;
+  propagate host, errors, globalDecls, functionDecls, functionDefs, labelDefs;
   top.pp = ppConcat([ text("do"),  line(),
                     braces(nestlines(2,b.pp)), line(),
                     text("while"), space(), parens(e.pp), semi()]);
-  top.errors := b.errors ++ e.errors;
-  top.globalDecls := b.globalDecls ++ e.globalDecls;
-  top.functionDecls := b.functionDecls ++ e.functionDecls;
-  top.functionDefs := b.functionDefs;
-  top.labelDefs := b.labelDefs;
 
   -- An iteration statement is a block whose scope is a strict subset of the scope of its
   -- enclosing block. The loop body is also a block whose scope is a strict subset of the scope
@@ -173,15 +163,10 @@ top::Stmt ::= b::Stmt  e::Expr
 abstract production forStmt
 top::Stmt ::= i::MaybeExpr  c::MaybeExpr  s::MaybeExpr  b::Stmt
 {
-  propagate host;
+  propagate host, errors, globalDecls, functionDecls, functionDefs, labelDefs;
   top.pp =
     ppConcat([text("for"), parens(ppConcat([i.pp, semi(), space(), c.pp, semi(), space(), s.pp])), line(),
       braces(nestlines(2, b.pp)) ]);
-  top.errors := i.errors ++ c.errors ++ s.errors ++ b.errors;
-  top.globalDecls := i.globalDecls ++ c.globalDecls ++ s.globalDecls ++ b.globalDecls;
-  top.functionDecls := i.functionDecls ++ c.functionDecls ++ s.functionDecls ++ b.functionDecls;
-  top.functionDefs := b.functionDefs;
-  top.labelDefs := b.labelDefs;
 
   -- An iteration statement is a block whose scope is a strict subset of the scope of its
   -- enclosing block. The loop body is also a block whose scope is a strict subset of the scope
@@ -221,14 +206,9 @@ top::Stmt ::= i::MaybeExpr  c::MaybeExpr  s::MaybeExpr  b::Stmt
 abstract production forDeclStmt
 top::Stmt ::= i::Decl  c::MaybeExpr  s::MaybeExpr  b::Stmt
 {
-  propagate host;
+  propagate host, errors, globalDecls, functionDecls, functionDefs, labelDefs;
   top.pp = ppConcat([ text("for"), space(), parens( ppConcat([ i.pp, space(), c.pp, semi(), space(), s.pp]) ),
                     line(), braces(nestlines(2, b.pp)) ]);
-  top.errors := i.errors ++ c.errors ++ s.errors ++ b.errors;
-  top.globalDecls := i.globalDecls ++ c.globalDecls ++ s.globalDecls ++ b.globalDecls;
-  top.functionDecls := i.functionDecls ++ c.functionDecls ++ s.functionDecls ++ b.functionDecls;
-  top.functionDefs := b.functionDefs;
-  top.labelDefs := b.labelDefs;
 
   -- An iteration statement is a block whose scope is a strict subset of the scope of its
   -- enclosing block. The loop body is also a block whose scope is a strict subset of the scope
@@ -269,9 +249,9 @@ top::Stmt ::= i::Decl  c::MaybeExpr  s::MaybeExpr  b::Stmt
 abstract production returnStmt
 top::Stmt ::= e::MaybeExpr {- -} -- TODO: Add location to signature
 {
-  propagate env, host;
+  propagate env, host, errors, globalDecls, functionDecls, functionDefs, labelDefs;
   top.pp = ppConcat([text("return"), space(), e.pp, semi()]);
-  top.errors := case top.controlStmtContext.returnType, e.maybeTyperep of
+  top.errors <- case top.controlStmtContext.returnType, e.maybeTyperep of
                   nothing(), nothing() -> []
                 | just(builtinType(_, voidType())), nothing() -> []
                 | just(expected), just(actual) ->
@@ -280,27 +260,18 @@ top::Stmt ::= e::MaybeExpr {- -} -- TODO: Add location to signature
                               "Incorrect return type, expected " ++ show(80, expected) ++ " but found " ++ show(80, actual))]
                 | nothing(), just(actual) -> [errFromOrigin(e.justTheExpr.fromJust, "Unexpected return")]
                 | just(expected), nothing() -> [errFromOrigin(top, "Expected return value, but found valueless return")]
-                end ++ e.errors;
-  top.globalDecls := e.globalDecls;
-  top.functionDecls := e.functionDecls;
+                end;
   top.defs := e.defs;
   top.freeVariables := e.freeVariables;
-  top.functionDefs := [];
-  top.labelDefs := [];
   -- TODO: this needs to follow the same rules as assignment. We should try to factor that out.
 }
 
 abstract production switchStmt
 top::Stmt ::= e::Expr  b::Stmt
 {
-  propagate host;
+  propagate host, errors, globalDecls, functionDecls, functionDefs, labelDefs;
   top.pp = ppConcat([ text("switch"), space(), parens(e.pp),  line(),
                     braces(nestlines(2, b.pp)) ]);
-  top.errors := e.errors ++ b.errors;
-  top.globalDecls := e.globalDecls ++ b.globalDecls;
-  top.functionDecls := e.functionDecls ++ b.functionDecls;
-  top.functionDefs := b.functionDefs;
-  top.labelDefs := b.labelDefs;
 
   -- A selection statement is a block whose scope is a strict subset of the scope of its
   -- enclosing block. Each associated substatement is also a block whose scope is a strict
@@ -325,15 +296,10 @@ top::Stmt ::= e::Expr  b::Stmt
 abstract production gotoStmt
 top::Stmt ::= l::Name
 {
-  propagate env, host;
+  propagate env, host, errors, globalDecls, functionDecls, functionDefs, labelDefs;
   top.pp = ppConcat([ text("goto"), space(), l.pp, semi() ]);
-  top.errors := [];
-  top.globalDecls := [];
-  top.functionDecls := [];
   top.defs := [];
   top.freeVariables := [];
-  top.functionDefs := [];
-  top.labelDefs := [];
 
   top.errors <- l.labelLookupCheck;
 }
@@ -341,45 +307,32 @@ top::Stmt ::= l::Name
 abstract production continueStmt
 top::Stmt ::=
 {
-  propagate env, host;
+  propagate host, errors, globalDecls, functionDecls, functionDefs, labelDefs;
   top.pp = cat( text("continue"), semi() );
-  top.errors := if top.controlStmtContext.continueValid then []
+  top.errors <- if top.controlStmtContext.continueValid then []
                 else [errFromOrigin(top, "continue statement is in an invalid location")];
-  top.globalDecls := [];
-  top.functionDecls := [];
   top.defs := [];
   top.freeVariables := [];
-  top.functionDefs := [];
-  top.labelDefs := [];
 }
 
 abstract production breakStmt
 top::Stmt ::=
 {
-  propagate env, host;
+  propagate host, errors, globalDecls, functionDecls, functionDefs, labelDefs;
   top.pp = ppConcat([ text("break"), semi()  ]);
-  top.errors := if top.controlStmtContext.breakValid then []
+  top.errors <- if top.controlStmtContext.breakValid then []
                 else [errFromOrigin(top, "break statement is in an invalid location")];
-  top.globalDecls := [];
-  top.functionDecls := [];
   top.defs := [];
   top.freeVariables := [];
-  top.functionDefs := [];
-  top.labelDefs := [];
 }
 
 abstract production labelStmt
 top::Stmt ::= l::Name  s::Stmt
 {
-  propagate env, host;
+  propagate env, host, errors, globalDecls, functionDecls, functionDefs, labelDefs;
   top.pp = ppConcat([ l.pp, text(":"), space(), s.pp]);
-  top.errors := s.errors;
-  top.globalDecls := s.globalDecls;
-  top.functionDecls := s.functionDecls;
   top.defs := s.defs;
   top.freeVariables := s.freeVariables;
-  top.functionDefs := s.functionDefs;
-  top.labelDefs := s.labelDefs;
 
   top.errors <- l.labelRedeclarationCheck;
   top.labelDefs <- [(l.name, labelItem())];
@@ -388,17 +341,12 @@ top::Stmt ::= l::Name  s::Stmt
 abstract production caseLabelStmt
 top::Stmt ::= v::Expr  s::Stmt
 {
-  propagate host;
+  propagate host, errors, globalDecls, functionDecls, functionDefs, labelDefs;
   top.pp = ppConcat([text("case"), space(), v.pp, text(":"), nestlines(2,s.pp)]);
-  top.errors := v.errors ++ s.errors;
-  top.globalDecls := v.globalDecls ++ s.globalDecls;
-  top.functionDecls := v.functionDecls ++ s.functionDecls;
   top.defs := v.defs ++ s.defs;
   top.freeVariables :=
     v.freeVariables ++
     removeDefsFromNames(v.defs, s.freeVariables);
-  top.functionDefs := s.functionDefs; -- ??
-  top.labelDefs := s.labelDefs;
 
   v.env = top.env;
   s.env = addEnv(v.defs, v.env);
@@ -407,60 +355,40 @@ top::Stmt ::= v::Expr  s::Stmt
 abstract production defaultLabelStmt
 top::Stmt ::= s::Stmt
 {
-  propagate env, host;
+  propagate env, host, errors, globalDecls, functionDecls, functionDefs, labelDefs;
   top.pp = ppConcat([ text("default"), text(":"), nestlines(2,s.pp)]);
-  top.errors := s.errors;
-  top.globalDecls := s.globalDecls;
-  top.functionDecls := s.functionDecls;
   top.defs := s.defs;
   top.freeVariables := s.freeVariables;
-  top.functionDefs := s.functionDefs; -- ??
-  top.labelDefs := s.labelDefs;
 }
 
 -- GCC extension:
 abstract production functionDeclStmt
 top::Stmt ::= d::FunctionDecl
 {
-  propagate env;
+  propagate env, errors, globalDecls, functionDecls, functionDefs, labelDefs;
   top.host = declStmt(d.host);
   top.pp = d.pp;
-  top.errors := d.errors;
-  top.globalDecls := d.globalDecls;
-  top.functionDecls := [];
   top.defs := d.defs;
   top.freeVariables := d.freeVariables;
-  top.functionDefs := [];
-  top.labelDefs := [];
 }
 
 -- GCC extension:
 abstract production caseLabelRangeStmt
 top::Stmt ::= l::Expr  u::Expr  s::Stmt
 {
-  propagate env, host;
+  propagate env, host, errors, globalDecls, functionDecls, functionDefs, labelDefs;
   top.pp = ppConcat([text("case"), space(), l.pp, text("..."), u.pp, text(":"), space(),s.pp]);
-  top.errors := l.errors ++ u.errors ++ s.errors;
-  top.globalDecls := l.globalDecls ++ u.globalDecls ++ s.globalDecls;
-  top.functionDecls := l.functionDecls ++ u.functionDecls ++ s.functionDecls;
   top.defs := l.defs ++ u.defs ++ s.defs;
   top.freeVariables := l.freeVariables ++ u.freeVariables ++ s.freeVariables;
-  top.functionDefs := s.functionDefs;
-  top.labelDefs := s.labelDefs;
 }
 
 abstract production asmStmt
 top::Stmt ::= asm::AsmStatement
 {
-  propagate env, host;
+  propagate env, host, errors, globalDecls, functionDecls, functionDefs, labelDefs;
   top.pp = asm.pp;
-  top.errors := [];
-  top.globalDecls := [];
-  top.functionDecls := [];
   top.defs := [];
   top.freeVariables := asm.freeVariables;
-  top.functionDefs := [];
-  top.labelDefs := [];
 }
 
 {-

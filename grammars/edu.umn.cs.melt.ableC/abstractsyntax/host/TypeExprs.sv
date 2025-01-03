@@ -55,7 +55,7 @@ synthesized attribute mty :: Decorated TypeModifierExpr;
 
 tracked nonterminal TypeName with env, typerep, bty, mty, pp, host, errors, globalDecls,
   functionDecls, hostDecls, defs, freeVariables, controlStmtContext;
-flowtype TypeName = decorate {env, controlStmtContext},
+flowtype TypeName = decorate {env, controlStmtContext, globalDecls.decorate, functionDecls.decorate},
   bty {decorate}, mty {decorate}, hostDecls {decorate};
 
 propagate givenRefId on BaseTypeExpr;
@@ -74,17 +74,14 @@ top::TypeName ::= bty::BaseTypeExpr  mty::TypeModifierExpr
   mty.env = addEnv(bty.defs, bty.env);
   mty.baseType = bty.typerep;
   mty.typeModifierIn = bty.typeModifier;
-  top.globalDecls :=
+  top.globalDecls = appendGlobalDecls(
     case mty.modifiedBaseTypeExpr of
     | just(_) ->
       -- TODO: Should be lifting decls to the closest scope, not global!
-      map(
-        \ d::Decl ->
-          decorate d with {env = top.env; isTopLevel = true;
-                          controlStmtContext = top.controlStmtContext;},
-        bty.hostDecls)
-    | nothing() -> []
-    end ++ bty.globalDecls ++ mty.globalDecls;
+      foldr(consGlobalDecl, nilGlobalDecl(), bty.hostDecls)
+    | nothing() -> nilGlobalDecl()
+    end,
+    appendGlobalDecls(@bty.globalDecls, @mty.globalDecls));
 }
 
 {--
@@ -93,7 +90,7 @@ top::TypeName ::= bty::BaseTypeExpr  mty::TypeModifierExpr
 tracked nonterminal BaseTypeExpr with env, typerep, pp, host, errors, globalDecls,
   functionDecls, typeModifier, hostDecls, defs, givenRefId, freeVariables,
   controlStmtContext;
-flowtype BaseTypeExpr = decorate {env, givenRefId, controlStmtContext},
+flowtype BaseTypeExpr = decorate {env, givenRefId, controlStmtContext, globalDecls.decorate, functionDecls.decorate},
   typeModifier {decorate}, hostDecls {decorate};
 
 abstract production errorTypeExpr
@@ -400,7 +397,7 @@ top::BaseTypeExpr ::= q::Qualifiers  e::ExprOrTypeName
 tracked nonterminal TypeModifierExpr with env, typerep, lpp, rpp, host, modifiedBaseTypeExpr, hostDecls,
   isFunctionArrayTypeExpr, baseType, typeModifierIn, errors, globalDecls,
   functionDecls, defs, freeVariables, controlStmtContext;
-flowtype TypeModifierExpr = decorate {env, baseType, typeModifierIn, controlStmtContext},
+flowtype TypeModifierExpr = decorate {env, baseType, typeModifierIn, controlStmtContext, globalDecls.decorate, functionDecls.decorate},
   modifiedBaseTypeExpr {decorate}, hostDecls {decorate}, isFunctionArrayTypeExpr {};
 
 propagate hostDecls, typeModifierIn, baseType, controlStmtContext on TypeModifierExpr;
@@ -571,7 +568,7 @@ synthesized attribute appendedTypeNamesRes :: TypeNames;
 tracked nonterminal TypeNames with pps, host, env, typereps, count, errors, globalDecls,
   functionDecls, defs, freeVariables, appendedTypeNames,
   appendedTypeNamesRes, controlStmtContext;
-flowtype TypeNames = decorate {env, controlStmtContext},
+flowtype TypeNames = decorate {env, controlStmtContext, globalDecls.decorate, functionDecls.decorate},
   count {}, appendedTypeNamesRes {appendedTypeNames};
 
 propagate host, errors, globalDecls, functionDecls, defs, freeVariables, appendedTypeNames, controlStmtContext on TypeNames;

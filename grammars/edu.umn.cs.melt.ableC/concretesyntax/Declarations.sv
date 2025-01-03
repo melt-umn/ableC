@@ -293,12 +293,15 @@ concrete productions top::InitialFunctionDefinition_c
       nondecorated production bt :: ast:BaseTypeExpr =
         ast:figureOutTypeFromSpecifiers(ds.typeQualifiers, ds.preTypeSpecifiers, ds.realTypeSpecifiers, ds.mutateTypeSpecifiers);
 
-      -- If this is a K&R-style declaration, attatch any function qualifiers to the first declaration instead
+      -- If this is a K&R-style declaration, attach any function qualifiers to the first declaration instead
       local baseMT  :: ast:TypeModifierExpr = d.ast;
       baseMT.ast:baseType = ast:errorType();
       baseMT.ast:typeModifierIn = ast:baseTypeExpr();
       baseMT.ast:env = ast:emptyEnv();
       baseMT.ast:controlStmtContext = ast:initialControlStmtContext;
+      baseMT.ast:globalDecls.ast:env = ast:emptyEnv();
+      baseMT.ast:functionDecls.ast:env = ast:emptyEnv();
+      baseMT.ast:functionDecls.ast:controlStmtContext = ast:initialControlStmtContext;
       nondecorated production mt :: ast:TypeModifierExpr =
         case l.isDeclListEmpty, baseMT of
         | false, ast:functionTypeExprWithArgs(t, p, v, q) ->
@@ -336,12 +339,15 @@ concrete productions top::InitialFunctionDefinition_c
       nondecorated production bt :: ast:BaseTypeExpr =
         ast:figureOutTypeFromSpecifiers(ast:nilQualifier(), [], [], []);
 
-      -- If this is a K&R-style declaration, attatch any function qualifiers to the first declaration instead
+      -- If this is a K&R-style declaration, attach any function qualifiers to the first declaration instead
       local baseMT  :: ast:TypeModifierExpr = d.ast;
       baseMT.ast:baseType = ast:errorType();
       baseMT.ast:typeModifierIn = ast:baseTypeExpr();
       baseMT.ast:env = ast:emptyEnv();
       baseMT.ast:controlStmtContext = ast:initialControlStmtContext;
+      baseMT.ast:globalDecls.ast:env = ast:emptyEnv();
+      baseMT.ast:functionDecls.ast:env = ast:emptyEnv();
+      baseMT.ast:functionDecls.ast:controlStmtContext = ast:initialControlStmtContext;
       nondecorated production mt :: ast:TypeModifierExpr =
         case l.isDeclListEmpty, baseMT of
         | false, ast:functionTypeExprWithArgs(t, p, v, q) ->

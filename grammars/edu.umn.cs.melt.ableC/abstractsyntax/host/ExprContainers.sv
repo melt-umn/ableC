@@ -4,7 +4,7 @@ tracked nonterminal MaybeExpr with pp, host, isJust, errors, globalDecls, functi
   defs, env, maybeTyperep, freeVariables, justTheExpr, isLValue,
   integerConstantValue, controlStmtContext;
 
-flowtype MaybeExpr = decorate {env, controlStmtContext},
+flowtype MaybeExpr = decorate {env, controlStmtContext, globalDecls.decorate, functionDecls.decorate},
   isJust {}, justTheExpr {}, maybeTyperep {decorate}, integerConstantValue {decorate};
 
 synthesized attribute maybeTyperep :: Maybe<Type>;
@@ -40,7 +40,7 @@ tracked nonterminal Exprs with pps, host, errors, globalDecls, functionDecls, de
   bindName, bindRefExprs, bindDefs, hostBindDecls,
   controlStmtContext;
 
-flowtype Exprs = decorate {env, controlStmtContext},
+flowtype Exprs = decorate {env, controlStmtContext, globalDecls.decorate, functionDecls.decorate},
   argumentErrors {decorate, expectedTypes, argumentPosition, callExpr, callVariadic},
   count {}, appendedRes {appendedExprs};
 
@@ -135,7 +135,7 @@ Exprs ::= e1::Exprs e2::Exprs
 tracked nonterminal ExprOrTypeName with pp, host, hostDecls, errors, globalDecls, functionDecls,
   defs, env, typerep, freeVariables, isLValue, controlStmtContext;
 
-flowtype ExprOrTypeName = decorate {env, controlStmtContext};
+flowtype ExprOrTypeName = decorate {env, controlStmtContext, globalDecls.decorate, functionDecls.decorate};
 
 propagate env, host, hostDecls, errors, globalDecls, functionDecls, defs, freeVariables, controlStmtContext on ExprOrTypeName;
 

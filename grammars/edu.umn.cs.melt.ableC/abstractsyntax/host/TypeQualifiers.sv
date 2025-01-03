@@ -139,7 +139,7 @@ top::Qualifier ::=
  -}
 tracked nonterminal SpecialSpecifier with pp, host, env, errors, globalDecls,
   functionDecls, defs, controlStmtContext;
-flowtype SpecialSpecifier = decorate {env, controlStmtContext};
+flowtype SpecialSpecifier = decorate {env, controlStmtContext, globalDecls.decorate, functionDecls.decorate};
 
 propagate env, host, errors, globalDecls, functionDecls, defs, controlStmtContext on SpecialSpecifier;
 
@@ -165,7 +165,7 @@ top::SpecialSpecifier ::= e::Expr
 
 tracked nonterminal SpecialSpecifiers with pps, host, env, errors,
   globalDecls, functionDecls, defs, controlStmtContext;
-flowtype SpecialSpecifiers = decorate {env, controlStmtContext};
+flowtype SpecialSpecifiers = decorate {env, controlStmtContext, globalDecls.decorate, functionDecls.decorate};
 
 propagate env, host, errors, globalDecls, functionDecls, defs, controlStmtContext on SpecialSpecifiers;
 

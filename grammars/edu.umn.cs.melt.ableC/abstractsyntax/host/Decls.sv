@@ -5,19 +5,22 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 -- Declaration is rooted in External, but also in stmts. Either a variableDecl or a typedefDecl.
 -- ParameterDecl should probably be something special, distinct from variableDecl.
 
-tracked nonterminal GlobalDecls with pps, host, errors, env, freeVariables, controlStmtContext;
-flowtype GlobalDecls = decorate {env, controlStmtContext};
+monoid attribute hostDecls :: [Decl];
 
-propagate errors, controlStmtContext on GlobalDecls;
+-- TODO: why does this have freeVariables?
+tracked nonterminal GlobalDecls with pps, hostDecls, errors, defs, env, freeVariables;
+flowtype GlobalDecls = decorate {env};
+
+propagate errors, defs on GlobalDecls;
 
 {-- Mirrors Decls, used for lifting mechanism to insert new Decls at top level -}
 abstract production consGlobalDecl
 top::GlobalDecls ::= h::Decl  t::GlobalDecls
 {
-  -- host defined in Lifted.sv
+  -- hostDecls defined in Lifted.sv
   top.pps = h.pp :: t.pps;
   top.errors <-
-    if !null(h.functionDecls)
+    if !h.functionDecls.isEmpty
     then error("An extension is attempting to lift a declaration to a function scope, but it has reached global scope.")
     else [];
   top.freeVariables :=
@@ -25,6 +28,9 @@ top::GlobalDecls ::= h::Decl  t::GlobalDecls
     removeDefsFromNames(h.defs, t.freeVariables);
 
   h.isTopLevel = true;
+  h.controlStmtContext = initialControlStmtContext;
+  h.functionDecls.env = top.env;
+  h.functionDecls.controlStmtContext = initialControlStmtContext;
 
   h.env = top.env;
   t.env = addEnv(h.defs, h.env);
@@ -33,14 +39,28 @@ top::GlobalDecls ::= h::Decl  t::GlobalDecls
 abstract production nilGlobalDecl
 top::GlobalDecls ::=
 {
-  propagate host, freeVariables;
+  propagate hostDecls, freeVariables;
   top.pps = [];
 }
 
-tracked nonterminal Decls with pps, host, isEmpty, errors, globalDecls, functionDecls, unfoldedGlobalDecls,
-  unfoldedFunctionDecls, defs, env, isTopLevel, freeVariables,
+production appendGlobalDecls
+top::GlobalDecls ::= d1::GlobalDecls d2::GlobalDecls
+{
+  propagate hostDecls;
+  top.pps = d1.pps ++ d2.pps;
+  top.freeVariables := d1.freeVariables ++ removeDefsFromNames(d1.defs, d2.freeVariables);
+  d1.env = top.env;
+  d2.env = addEnv(d1.defs, d1.env);
+}
+
+tracked nonterminal Decls with pps, host, hostDecls, isEmpty, errors, globalDecls, functionDecls,
+  defs, env, isTopLevel, freeVariables,
   controlStmtContext;
-flowtype Decls = decorate {env, isTopLevel, controlStmtContext};
+flowtype Decls = decorate {
+  env, isTopLevel, controlStmtContext,
+  globalDecls.decorate,
+  functionDecls.decorate
+};
 
 inherited attribute isTopLevel :: Boolean;
 monoid attribute isEmpty :: Boolean with true, &&;
@@ -51,8 +71,6 @@ abstract production consDecl
 top::Decls ::= h::Decl  t::Decls
 {
   top.pps = h.pp :: t.pps;
-  top.unfoldedGlobalDecls = h.unfoldedGlobalDecls ++ t.unfoldedGlobalDecls;
-  top.unfoldedFunctionDecls = h.unfoldedFunctionDecls ++ t.unfoldedFunctionDecls;
   top.freeVariables :=
     h.freeVariables ++
     removeDefsFromNames(h.defs, t.freeVariables);
@@ -66,8 +84,6 @@ top::Decls ::=
 {
   propagate freeVariables;
   top.pps = [];
-  top.unfoldedGlobalDecls = [];
-  top.unfoldedFunctionDecls = [];
 }
 
 production appendDecls
@@ -78,9 +94,9 @@ Decls ::= d1::Decls d2::Decls
 }
 
 
-tracked nonterminal Decl with pp, host, isEmpty, errors, globalDecls, functionDecls, unfoldedGlobalDecls,
-  unfoldedFunctionDecls, defs, env, isTopLevel, freeVariables, controlStmtContext;
-flowtype Decl = decorate {env, isTopLevel, controlStmtContext};
+tracked nonterminal Decl with pp, host, isEmpty, errors, globalDecls, functionDecls,
+  defs, env, isTopLevel, freeVariables, controlStmtContext;
+flowtype Decl = decorate {env, isTopLevel, controlStmtContext, globalDecls.decorate, functionDecls.decorate};
 
 propagate isTopLevel, controlStmtContext on Decl excluding injectFunctionDeclsDecl, injectGlobalDeclsDecl;
 
@@ -92,8 +108,6 @@ aspect default production
 top::Decl ::=
 {
   top.isEmpty := false;
-  top.unfoldedGlobalDecls = top.globalDecls ++ [top];
-  top.unfoldedFunctionDecls = top.functionDecls ++ [top];
 }
 
 abstract production decls
@@ -101,8 +115,6 @@ top::Decl ::= d::Decls
 {
   propagate env, host, isEmpty, errors, globalDecls, functionDecls, defs, freeVariables;
   top.pp = terminate( line(), d.pps );
-  top.unfoldedGlobalDecls = d.unfoldedGlobalDecls;
-  top.unfoldedFunctionDecls = d.unfoldedFunctionDecls;
 }
 
 abstract production defsDecl
@@ -295,7 +307,6 @@ top::Decl ::= n::Name  es::Exprs
 }
 
 monoid attribute hasModifiedTypeExpr::Boolean with false, ||;
-monoid attribute hostDecls::[Decl];
 
 tracked nonterminal Declarators with pps, host, hostDecls, hasModifiedTypeExpr, errors,
   globalDecls, functionDecls, defs, env, baseType, typeModifierIn, isTopLevel,
@@ -303,7 +314,7 @@ tracked nonterminal Declarators with pps, host, hostDecls, hasModifiedTypeExpr, 
   controlStmtContext;
 flowtype Declarators = decorate {env, baseType, typeModifierIn,
   givenStorageClasses, givenAttributes, isTopLevel, isTypedef,
-  controlStmtContext},
+  controlStmtContext, globalDecls.decorate, functionDecls.decorate},
   hostDecls {decorate}, hasModifiedTypeExpr {decorate};
 
 propagate host, errors, defs, globalDecls, functionDecls, hasModifiedTypeExpr, givenStorageClasses, 
@@ -336,9 +347,12 @@ tracked nonterminal Declarator with pps, host, hostDecl, hasModifiedTypeExpr, er
   globalDecls, functionDecls, defs, env, baseType, typeModifierIn, typerep,
   isTopLevel, isTypedef, givenStorageClasses, givenAttributes,
   freeVariables, controlStmtContext;
-flowtype Declarator = decorate {env, baseType, typeModifierIn,
-  givenStorageClasses, givenAttributes, isTopLevel, isTypedef,
-  controlStmtContext},
+flowtype Declarator = decorate {
+    env, baseType, typeModifierIn,
+    givenStorageClasses, givenAttributes, isTopLevel, isTypedef,
+    controlStmtContext,
+    globalDecls.decorate, functionDecls.decorate
+  },
   hostDecl {decorate}, hasModifiedTypeExpr {decorate};
 
 inherited attribute isTypedef :: Boolean;
@@ -440,7 +454,7 @@ top::Declarator ::= msg::[Message]
 
 tracked nonterminal FunctionDecl with pp, host<Decl>, errors, globalDecls, defs, env,
   typerep, name, freeVariables, controlStmtContext;
-flowtype FunctionDecl = decorate {env, controlStmtContext},
+flowtype FunctionDecl = decorate {env, controlStmtContext, globalDecls.decorate},
   name {};
 
 propagate errors, globalDecls on FunctionDecl;
@@ -452,16 +466,23 @@ top::FunctionDecl ::= storage::StorageClasses  fnquals::SpecialSpecifiers  bty::
     bty.pp, space(), mty.lpp, space(), ppAttributes(^attrs), name.pp, mty.rpp, line(), terminate(cat(semi(), line()), ds.pps),
      text("{"), line(), nestlines(2,body.pp), text("}")]);
 
-  local functionDecls :: [Decorated Decl] = bty.functionDecls ++
-    mty.functionDecls ++ ds.functionDecls ++ body.functionDecls ++
-    fnquals.functionDecls;
+  production functionDecls :: FunDecls =
+    appendFunDecls(
+      @bty.functionDecls,
+      appendFunDecls(
+        @mty.functionDecls,
+        appendFunDecls(
+          @ds.functionDecls,
+          @body.functionDecls)));
+  functionDecls.env = body.env;
+  functionDecls.controlStmtContext = body.controlStmtContext;
 
   nondecorated local hostBody::Stmt =
     seqStmt(
       foldr(
-        \ decl::Decorated Decl stmt::Stmt ->
-          seqStmt(declStmt(decl.host), stmt),
-        nullStmt(), functionDecls),
+        \ decl stmt -> seqStmt(declStmt(decl), stmt),
+        nullStmt(),
+        functionDecls.hostDecls),
       body.host);
 
   top.host =
@@ -496,12 +517,16 @@ top::FunctionDecl ::= storage::StorageClasses  fnquals::SpecialSpecifiers  bty::
   fnquals.env = top.env;
   fnquals.controlStmtContext = top.controlStmtContext;
 
+  local nilParams::Parameters = nilParameters();
+  nilParams.env = top.env;
+  nilParams.controlStmtContext = top.controlStmtContext;
+  nilParams.position = 0;
+
   local parameters :: Decorated Parameters =
     case mty of
     | functionTypeExprWithArgs(result, args, variadic, q) ->
         args
-    | _ -> decorate nilParameters() with { env = top.env;
-            position = 0; controlStmtContext = top.controlStmtContext;}
+    | _ -> nilParams
     end;
 
   local funcDefs::[Def] = bty.defs ++ [valueDef(name.name, functionValueItem(top))];
@@ -606,7 +631,45 @@ top::FunctionDecl ::= msg::[Message]
   top.defs := [];
   top.freeVariables := [];
   top.typerep = errorType();
-  top.name = "badFunctionDecl"; -- TODO fix this? add locaiton maybe?
+  top.name = "badFunctionDecl"; -- TODO fix this? add location maybe?
+}
+
+-- This is only used for lifting declarations to the function level.
+tracked nonterminal FunDecls with pps, isEmpty, hostDecls, errors, globalDecls, defs, env, freeVariables, controlStmtContext;
+flowtype FunDecls = decorate {env, controlStmtContext, globalDecls.decorate}, hostDecls {decorate};
+
+propagate errors, isEmpty, globalDecls, defs, controlStmtContext on FunDecls;
+
+production consFunDecl
+top::FunDecls ::= h::Decl  t::FunDecls
+{
+  top.pps = h.pp :: t.pps;
+  -- hostDecls defined in Lifted.sv
+  top.freeVariables :=
+    h.freeVariables ++
+    removeDefsFromNames(h.defs, t.freeVariables);
+
+  h.isTopLevel = false;
+  h.env = top.env;
+  t.env = addEnv(h.defs, h.env);
+}
+
+production nilFunDecl
+top::FunDecls ::=
+{
+  top.pps = [];
+  propagate hostDecls;
+  top.freeVariables := [];
+}
+
+production appendFunDecls
+top::FunDecls ::= d1::FunDecls d2::FunDecls
+{
+  top.pps = d1.pps ++ d2.pps;
+  propagate hostDecls;
+  top.freeVariables := d1.freeVariables ++ removeDefsFromNames(d1.defs, d2.freeVariables);
+  d1.env = top.env;
+  d2.env = addEnv(d1.defs, d1.env);
 }
 
 synthesized attribute len::Integer;
@@ -615,7 +678,7 @@ inherited attribute position::Integer;
 tracked nonterminal Parameters with typereps, pps, count, host, errors, globalDecls,
   functionDecls, hostDecls, defs, functionDefs, env, position, freeVariables,
   appendedParameters, appendedParametersRes, controlStmtContext, labelDefs;
-flowtype Parameters = decorate {env, controlStmtContext, position},
+flowtype Parameters = decorate {env, controlStmtContext, globalDecls.decorate, functionDecls.decorate, position},
   appendedParametersRes {appendedParameters};
 
 inherited attribute appendedParameters :: Parameters;
@@ -666,10 +729,10 @@ synthesized attribute paramname :: Maybe<Name>;
 tracked nonterminal ParameterDecl with paramname, typerep, pp, host, errors, globalDecls,
   functionDecls, hostDecls, defs, functionDefs, env, position,
   freeVariables, controlStmtContext, labelDefs;
-flowtype ParameterDecl = decorate {env, position, controlStmtContext},
+flowtype ParameterDecl = decorate {env, position, controlStmtContext, globalDecls.decorate, functionDecls.decorate},
   paramname {};
 
-propagate errors, globalDecls, functionDecls, defs, hostDecls, freeVariables, controlStmtContext on ParameterDecl;
+propagate errors, functionDecls, defs, hostDecls, freeVariables, controlStmtContext on ParameterDecl;
 
 abstract production parameterDecl
 top::ParameterDecl ::= storage::StorageClasses  bty::BaseTypeExpr  mty::TypeModifierExpr  name::MaybeName  attrs::Attributes
@@ -679,17 +742,14 @@ top::ParameterDecl ::= storage::StorageClasses  bty::BaseTypeExpr  mty::TypeModi
   top.host = parameterDecl(^storage, fromMaybe(bty, mty.modifiedBaseTypeExpr).host, mty.host, name.host, attrs.host);
   top.paramname = name.maybename;
   top.typerep = mty.typerep;
-  top.globalDecls <-
+  top.globalDecls = appendGlobalDecls(
     case mty.modifiedBaseTypeExpr of
     | just(_) ->
       -- TODO: Should be lifting decls to the closest scope, not global!
-      map(
-        \ d::Decl ->
-          decorate d with {env = top.env; isTopLevel = true;
-            controlStmtContext = top.controlStmtContext;},
-        bty.hostDecls)
-    | nothing() -> []
-    end;
+      -- TODO: hostDecls being lifted?
+      foldr(consGlobalDecl, nilGlobalDecl(), bty.hostDecls)
+    | nothing() -> nilGlobalDecl()
+    end, appendGlobalDecls(@bty.globalDecls, @mty.globalDecls));
   top.functionDefs :=
     case name.maybename of
     | just(n) -> [valueDef(n.name, parameterValueItem(top))]
@@ -725,7 +785,7 @@ tracked nonterminal StructDecl with pp, host, maybename, errors, globalDecls,
   givenRefId, refId, hasConstField, fieldNames, freeVariables,
   controlStmtContext;
 flowtype StructDecl = decorate {env, localEnv, isLast, inAnonStructItem, givenRefId,
-  controlStmtContext},
+  controlStmtContext, globalDecls.decorate, functionDecls.decorate},
   pp {inAnonStructItem}, localDefs {decorate}, tagEnv {decorate},
   refId {decorate}, hasConstField {decorate}, fieldNames {decorate};
 
@@ -800,7 +860,7 @@ tracked nonterminal UnionDecl with pp, host, maybename, errors, globalDecls,
   givenRefId, refId, hasConstField, fieldNames, freeVariables,
   controlStmtContext;
 flowtype UnionDecl = decorate {env, localEnv, isLast, inAnonStructItem, givenRefId,
-  controlStmtContext},
+  controlStmtContext, globalDecls.decorate, functionDecls.decorate},
   pp {inAnonStructItem}, localDefs {decorate}, tagEnv {decorate},
   refId {decorate}, hasConstField {decorate}, fieldNames {decorate};
 
@@ -858,7 +918,7 @@ top::UnionDecl ::= attrs::Attributes  name::MaybeName  dcls::StructItemList
 tracked nonterminal EnumDecl with pp, host, maybename, errors, globalDecls,
   functionDecls, defs, env, givenRefId, freeVariables,
   controlStmtContext;
-flowtype EnumDecl = decorate {env, givenRefId, controlStmtContext};
+flowtype EnumDecl = decorate {env, givenRefId, controlStmtContext, globalDecls.decorate, functionDecls.decorate};
 
 propagate inStruct, host, errors, globalDecls, functionDecls, freeVariables, controlStmtContext on EnumDecl;
 
@@ -897,7 +957,7 @@ tracked nonterminal StructItemList with pps, host, errors, globalDecls, function
   defs, env, localDefs, localEnv, hasConstField, fieldNames, inStruct, isLast,
   freeVariables, appendedStructItemList, appendedStructItemListRes,
   controlStmtContext;
-flowtype StructItemList = decorate {env, localEnv, inStruct, isLast, controlStmtContext},
+flowtype StructItemList = decorate {env, localEnv, inStruct, isLast, controlStmtContext, globalDecls.decorate, functionDecls.decorate},
   hasConstField {decorate}, fieldNames {decorate}, appendedStructItemListRes {appendedStructItemList};
 
 propagate inStruct, host, errors, globalDecls, functionDecls, defs, localDefs, hasConstField, 
@@ -952,7 +1012,7 @@ restricted synthesized attribute enumItemValue::Integer;
 tracked nonterminal EnumItemList with pps, host, errors, globalDecls, functionDecls, defs,
   env, containingEnum, freeVariables, appendedEnumItemList,
   appendedEnumItemListRes, enumItemValueIn, controlStmtContext;
-flowtype EnumItemList = decorate {env, containingEnum, enumItemValueIn, controlStmtContext},
+flowtype EnumItemList = decorate {env, containingEnum, enumItemValueIn, controlStmtContext, globalDecls.decorate, functionDecls.decorate},
   appendedEnumItemListRes {appendedEnumItemList};
 
 inherited attribute containingEnum :: Type;
@@ -994,7 +1054,7 @@ EnumItemList ::= e1::EnumItemList e2::EnumItemList
 tracked nonterminal StructItem with pp, host, errors, globalDecls, functionDecls, defs,
   env, localDefs, localEnv, hasConstField, fieldNames, inStruct, isLast, freeVariables,
   controlStmtContext;
-flowtype StructItem = decorate {env, localEnv, inStruct, isLast, controlStmtContext},
+flowtype StructItem = decorate {env, localEnv, inStruct, isLast, controlStmtContext, globalDecls.decorate, functionDecls.decorate},
   hasConstField {decorate}, fieldNames {decorate};
 
 propagate inStruct, errors, globalDecls, functionDecls, defs, freeVariables, localDefs, localEnv,
@@ -1064,7 +1124,7 @@ tracked nonterminal StructDeclarators with pps, host, hostStructItems, hasModifi
   env, localEnv, baseType, inStruct, isLast, typeModifierIn, givenAttributes,
   freeVariables, controlStmtContext;
 flowtype StructDeclarators = decorate {env, localEnv, baseType, inStruct,
-  isLast, typeModifierIn, givenAttributes, controlStmtContext},
+  isLast, typeModifierIn, givenAttributes, controlStmtContext, globalDecls.decorate, functionDecls.decorate},
   hostStructItems {decorate}, hasModifiedTypeExpr {decorate},
   hasConstField {decorate}, fieldNames {decorate};
 
@@ -1109,7 +1169,7 @@ tracked nonterminal StructDeclarator with pps, host, hostStructItem, hasModified
   env, localEnv, typerep, baseType, inStruct, isLast, typeModifierIn,
   givenAttributes, freeVariables, controlStmtContext;
 flowtype StructDeclarator = decorate {env, localEnv, baseType, inStruct, isLast,
-  typeModifierIn, givenAttributes, controlStmtContext},
+  typeModifierIn, givenAttributes, controlStmtContext, globalDecls.decorate, functionDecls.decorate},
   hostStructItem {decorate}, hasModifiedTypeExpr {decorate}, hasConstField {decorate},
   fieldNames {decorate};
 
@@ -1222,7 +1282,7 @@ tracked nonterminal EnumItem with pp, name, host, errors, globalDecls, functionD
   defs, env, containingEnum, enumItemValue, enumItemValueIn, typerep,
   freeVariables, controlStmtContext;
 flowtype EnumItem = decorate {env, containingEnum, enumItemValueIn, 
-  controlStmtContext},
+  controlStmtContext, globalDecls.decorate, functionDecls.decorate},
   name {}, enumItemValue {decorate};
 
 propagate env, host, errors, globalDecls, functionDecls, freeVariables, controlStmtContext on EnumItem;

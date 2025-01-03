@@ -46,7 +46,7 @@ d::Decl ::= txt::String
 abstract production printEnv
 e::Expr ::=
 {
-  propagate errors, globalDecls, functionDecls, defs;
+  propagate errors, defs; -- globalDecls, functionDecls
   e.pp =
     decorate comment("printEnv pp should be demanded through host pp")
     with {env = e.env; controlStmtContext=e.controlStmtContext;}.pp;

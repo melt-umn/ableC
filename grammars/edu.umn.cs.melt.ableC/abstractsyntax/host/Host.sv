@@ -12,7 +12,7 @@ functor attribute host;
 flowtype host {decorate} on
   Root,
   Attributes, Attribute, Attribs, Attrib, AttribName,
-  GlobalDecls, Decls, Decl, Declarators, Declarator, FunctionDecl, Parameters, ParameterDecl, StructDecl, UnionDecl, EnumDecl, StructItemList, EnumItemList, StructItem, StructDeclarators, StructDeclarator, EnumItem,
+  Decls, Decl, Declarators, Declarator, FunctionDecl, Parameters, ParameterDecl, StructDecl, UnionDecl, EnumDecl, StructItemList, EnumItemList, StructItem, StructDeclarators, StructDeclarator, EnumItem,
   MemberDesignator,
   Type, ArrayType, FunctionType, ExtType, NoncanonicalType,
   AsmStatement, AsmArgument, AsmClobbers, AsmOperands, AsmOperand,
