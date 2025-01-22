@@ -39,11 +39,11 @@ top::Expr ::=
     else variableDecls(
       nilStorageClass(),
       nilAttribute(),
-      top.typerep.host.baseTypeExpr,
+      top.typerep.defaultFunctionArrayLvalueConversion.canonicalType.host.baseTypeExpr,
       consDeclarator(
         declarator(
           top.bindName,
-          top.typerep.host.typeModifierExpr,
+          top.typerep.defaultFunctionArrayLvalueConversion.canonicalType.host.typeModifierExpr,
           nilAttribute(),
           justInitializer(exprInitializer(top.host))),
         nilDeclarator()));
