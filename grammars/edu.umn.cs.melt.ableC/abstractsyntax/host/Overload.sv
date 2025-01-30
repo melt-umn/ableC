@@ -228,6 +228,12 @@ top::Expr ::= @lhs::Expr @rhs::Expr fn::Name extraArgs::Exprs
   forwards to directCallExpr(@fn, consExpr(hostAddressOfExpr(@lhs), consExpr(@rhs, @extraArgs)));
 }
 
+production transformAssignOp implements AssignOp
+top::Expr ::= @lhs::Expr @rhs::Expr result::Expr
+{
+  forwards to @result;
+}
+
 synthesized attribute eqProd::Maybe<AssignOp> occurs on Type, ExtType;
 flowtype eqProd {decorate, otherType} on Type, ExtType;
 
