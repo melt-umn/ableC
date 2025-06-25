@@ -20,7 +20,6 @@ IO<Decorated Compilation> ::= args::[String]
   local baseFileName :: String = splitFileName.fst;
   local skipCpp :: Boolean = contains("--skip-cpp", args);
   local cppFileName :: String = if skipCpp then fileName else baseFileName ++ ".i";
-  local ppFileName :: String = baseFileName ++ ".c";
 
   local partitionedArgs :: Pair<[String] [String]> = partition( partitionArg, init(args) );
   local cppArgs :: [String] = partitionedArgs.snd;
