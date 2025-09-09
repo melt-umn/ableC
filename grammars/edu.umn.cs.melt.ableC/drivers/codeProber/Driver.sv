@@ -31,7 +31,7 @@ IO<Decorated Compilation> ::= args::[String]
   
   return do {
     when_(null(args),
-      fail("Usage: [ableC invocation] [file name] [c preprocessor arguments]\n"));
+      fail("Usage: [ableC invocation] [c preprocessor arguments] [file name]\n"));
     isF::Boolean <- isFile(fileName);
     when_(!isF,
       fail("File \"" ++ fileName ++ "\" not found.\n"));
