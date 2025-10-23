@@ -22,6 +22,7 @@ dispatch MemberAccess = Expr ::= @e::Expr deref::Boolean name::Name;
 production bindMemberAccess implements MemberAccess
 top::Expr ::= @e::Expr deref::Boolean name::Name result::Expr
 {
+  top.pp = if true then forward.pp else name.pp; -- seed tile flow deps
   forwards to letExpr(
     consDecl(bindExprDecl(freshName("e"), @e), nilDecl()),
     @result);
