@@ -108,6 +108,7 @@ dispatch CompoundLiteral = Expr ::= @t::TypeName @l::InitList;
 production transformCompoundLiteral implements CompoundLiteral
 top::Expr ::= @t::TypeName @l::InitList expectedTypes::[Type] result::Expr
 {
+  top.pp = parens( ppConcat([parens(t.pp), text("{"), ppImplode(text(", "), l.pps), text("}")]) );
   l.expectedTypes = expectedTypes;
   forwards to letExpr(consDecl(typePreDecls(@t), nilDecl()), @result);
 }
