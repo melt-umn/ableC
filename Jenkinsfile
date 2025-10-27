@@ -62,6 +62,7 @@ melt.trynode('ableC') {
       "ableC-unification",
       "ableC-prolog",
       "ableC-rewriting",
+      "carbles-ai"
     ]
     /* TODO: get these working again
       "ableC-halide",

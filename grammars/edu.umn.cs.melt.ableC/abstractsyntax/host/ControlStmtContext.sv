@@ -17,24 +17,16 @@ global initialControlStmtContext :: ControlStmtContext = controlStmtContext(
   labels=tm:empty()
 );
 
-fun controlEnterLoop ControlStmtContext ::= cur::ControlStmtContext = controlStmtContext(
-  returnType=cur.returnType,
+fun controlEnterLoop ControlStmtContext ::= cur::ControlStmtContext = cur(
   breakValid=true,
-  continueValid=true,
-  labels=cur.labels
+  continueValid=true
 );
 
-fun controlEnterSwitch ControlStmtContext ::= cur::ControlStmtContext = controlStmtContext(
-  returnType=cur.returnType,
-  breakValid=true,
-  continueValid=cur.continueValid,
-  labels=cur.labels
+fun controlEnterSwitch ControlStmtContext ::= cur::ControlStmtContext = cur(
+  breakValid=true
 );
 
-fun controlAddLabels ControlStmtContext ::= cur::ControlStmtContext labs::[(String, LabelItem)] = controlStmtContext(
-  returnType=cur.returnType,
-  breakValid=cur.breakValid,
-  continueValid=cur.continueValid,
+fun controlAddLabels ControlStmtContext ::= cur::ControlStmtContext labs::[(String, LabelItem)] = cur(
   labels=tm:add(labs, cur.labels)
 );
 

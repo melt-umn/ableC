@@ -81,7 +81,7 @@ top::ValueItem ::= s::Decorated ParameterDecl
 abstract production autoValueItem
 top::ValueItem ::= e::Decorated Expr
 {
-  top.typerep = e.typerep;
+  top.typerep = e.typerep.defaultFunctionArrayLvalueConversion;
   top.isItemValue = true;
 }
 

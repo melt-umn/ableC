@@ -399,3 +399,11 @@ fun objectTagEnv Env ::= env::Env t::Type =
     end
   | _ -> emptyEnv()
   end;
+
+fun isExtensionType Boolean ::= t::Type =
+  case t of
+  | extType(_, enumExtType(_)) -> false
+  | extType(_, refIdExtType(_, _, _)) -> false
+  | extType(_, _) -> true
+  | _ -> false
+  end;

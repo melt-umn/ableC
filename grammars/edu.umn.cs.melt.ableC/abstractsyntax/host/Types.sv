@@ -284,7 +284,7 @@ top::ArrayType ::= size::Decorated Expr
 }
 
 {-- Modifiers attached to array types that are function parameters -}
-nonterminal ArraySizeModifier with pps;
+tracked nonterminal ArraySizeModifier with pps;
 flowtype ArraySizeModifier = decorate {};
 
 {-- Normal array. -}

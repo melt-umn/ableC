@@ -228,15 +228,16 @@ top::Decl ::= n::Name  e::Expr
 {
   propagate env, errors, globalDecls, functionDecls, defs, freeVariables;
   top.pp = pp"auto ${n.pp} = ${e.pp};";
+  local hostTy::Type = e.typerep.defaultFunctionArrayLvalueConversion.canonicalType.host;
   top.host =
     variableDecls(
       nilStorageClass(),
       nilAttribute(),
-      e.typerep.host.baseTypeExpr,
+      hostTy.baseTypeExpr,
       consDeclarator(
         declarator(
           ^n,
-          e.typerep.host.typeModifierExpr,
+          hostTy.typeModifierExpr,
           nilAttribute(),
           justInitializer(exprInitializer(e.host))),
         nilDeclarator()));

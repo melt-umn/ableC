@@ -39,11 +39,11 @@ top::Expr ::=
     else variableDecls(
       nilStorageClass(),
       nilAttribute(),
-      top.typerep.host.baseTypeExpr,
+      top.typerep.defaultFunctionArrayLvalueConversion.canonicalType.host.baseTypeExpr,
       consDeclarator(
         declarator(
           top.bindName,
-          top.typerep.host.typeModifierExpr,
+          top.typerep.defaultFunctionArrayLvalueConversion.canonicalType.host.typeModifierExpr,
           nilAttribute(),
           justInitializer(exprInitializer(top.host))),
         nilDeclarator()));
@@ -517,23 +517,26 @@ top::Expr ::= @ty::TypeName  @init::InitList
 }
 -- C11 forbids empty initializer braces, but it is an error to include a scalar if one is
 -- initializing an empty struct (gcc extension.)
--- This is provided as a convinience that just does the right thing to initialize any type.
+-- This is provided as a convenience that just does the right thing to initialize any type.
 -- TODO: We can get rid of this and just use empty initializers if we adopt C23.
 abstract production defaultInitExpr
 top::Expr ::= t::Type
 {
   top.pp = pp"<defaultInit>";
-  forwards to compoundLiteralExpr(
-    typeName(directTypeExpr(^t), baseTypeExpr()),
-    case objectMembers(top.env, ^t) of
-    | just([]) -> nilInit()
-    | just(mt :: _) when !typeAssignableTo(mt, builtinType(nilQualifier(), signedType(intType()))) ->
-        consInit(
-          positionalInit(exprInitializer(
-            explicitCastExpr(typeName(directTypeExpr(mt), baseTypeExpr()), defaultInitExpr(mt.host)))),
-          nilInit())
-    | _ -> consInit(positionalInit(exprInitializer(mkIntConst(0))), nilInit())
-    end);
+  forwards to
+    if isExtensionType(^t)
+    then explicitCastExpr(typeName(t.baseTypeExpr, t.typeModifierExpr), defaultInitExpr(t.host))
+    else compoundLiteralExpr(
+      typeName(directTypeExpr(^t), baseTypeExpr()),
+      case objectMembers(top.env, ^t) of
+      | just([]) -> nilInit()
+      | just(mt :: _) when !typeAssignableTo(mt, builtinType(nilQualifier(), signedType(intType()))) ->
+          consInit(
+            positionalInit(exprInitializer(
+              explicitCastExpr(typeName(mt.baseTypeExpr, mt.typeModifierExpr), defaultInitExpr(mt.host)))),
+            nilInit())
+      | _ -> consInit(positionalInit(exprInitializer(mkIntConst(0))), nilInit())
+      end);
 }
 abstract production predefinedFuncExpr
 top::Expr ::=
