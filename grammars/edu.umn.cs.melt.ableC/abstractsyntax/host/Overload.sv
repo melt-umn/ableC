@@ -122,6 +122,7 @@ dispatch UnaryUpdateOp = Expr ::= @e::Expr;
 production bindUnaryUpdateOp implements UnaryUpdateOp
 top::Expr ::= @e::Expr prod::(Expr ::= Expr)
 {
+  top.pp = forwardParent.pp;
   nondecorated local tmp::Name = freshName("e");
   forwards to
     if e.isSimple then prod(^e)
