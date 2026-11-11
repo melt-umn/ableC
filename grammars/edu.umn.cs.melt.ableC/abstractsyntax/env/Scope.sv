@@ -119,3 +119,8 @@ top::Datum ::= n::String d::Decl
 production datumMisc
 top::Datum ::= n::String d::MiscItem
 {}
+
+--
+
+inherited attribute edges::tm:Map<String [Decorated SGNode]> occurs on SGNode;
+
