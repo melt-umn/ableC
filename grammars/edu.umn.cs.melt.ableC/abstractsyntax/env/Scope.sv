@@ -56,3 +56,66 @@ fun lookupScope [a] ::= n::String  s::Scopes<a> =
   end;
 {-- Looks up an identifier in the innermost scope -}
 fun lookupInLocalScope [a] ::= n::String  s::Scopes<a> = tm:lookup(n, head(s));
+
+
+{- Scope Graphs -}
+
+synthesized attribute datum::Datum;
+
+nonterminal SGNode with datum;
+
+production mkScope
+top::SGNode ::= d::Datum
+{ top.datum = d; }
+
+production mkLexScope
+top::SGNode ::= 
+{ forwards to mkScope(datumNone()); }
+
+production mkValueScope
+top::SGNode ::= n::String d::ValueItem
+{ forwards to mkScope(datumValue(n, d)); }
+
+production mkTagScope
+top::SGNode ::= n::String d::TagItem
+{ forwards to mkScope(datumTag(n, d)); }
+
+production mkRefIdScope
+top::SGNode ::= n::String d::RefIdItem
+{ forwards to mkScope(datumRefId(n, d)); }
+
+production mkDeferredDeclScope
+top::SGNode ::= n::String d::Decl
+{ forwards to mkScope(datumDeferredDecl(n, ^d)); }
+
+production mkMiscScope
+top::SGNode ::= n::String d::MiscItem
+{ forwards to mkScope(datumMisc(n, d)); }
+
+--
+
+data nonterminal Datum;
+
+production datumNone
+top::Datum ::=
+{}
+
+production datumValue
+top::Datum ::= n::String d::ValueItem
+{}
+
+production datumTag
+top::Datum ::= n::String d::TagItem
+{}
+
+production datumRefId
+top::Datum ::= n::String d::RefIdItem
+{}
+
+production datumDeferredDecl
+top::Datum ::= n::String d::Decl
+{}
+
+production datumMisc
+top::Datum ::= n::String d::MiscItem
+{}
