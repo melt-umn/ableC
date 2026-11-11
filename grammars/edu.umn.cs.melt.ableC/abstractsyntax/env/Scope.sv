@@ -122,5 +122,139 @@ top::Datum ::= n::String d::MiscItem
 
 --
 
-inherited attribute edges::tm:Map<String [Decorated SGNode]> occurs on SGNode;
+fun toValueScope Decorated SGNode ::= c::Pair<String ValueItem> =
+  decorate mkValueScope(c.1, c.2) with { edges = tm:empty(); };
 
+fun toTagScope Decorated SGNode ::= c::Pair<String TagItem> =
+  decorate mkTagScope(c.1, c.2) with { edges = tm:empty(); };
+
+fun toRefIdScope Decorated SGNode ::= c::Pair<String RefIdItem> =
+  decorate mkRefIdScope(c.1, c.2) with { edges = tm:empty(); };
+
+fun toDeferreddeclScope Decorated SGNode ::= c::Pair<String Decl> =
+  decorate mkDeferredDeclScope(c.1, c.2) with { edges = tm:empty(); };
+
+fun toMiscScope Decorated SGNode ::= c::Pair<String MiscItem> =
+  decorate mkMiscScope(c.1, c.2) with { edges = tm:empty(); };
+
+--
+
+inherited attribute edges::tm:Map<String Decorated SGNode> occurs on SGNode;
+
+--
+
+{-
+fun emptyScope Scopes<a> ::= = [tm:empty()];
+-}
+
+fun emptyScopeSG Decorated SGNode ::= =
+  decorate mkLexScope() with {
+    edges = tm:empty();
+  };
+
+{-
+fun addScope Scopes<a> ::= d::Contribs<a>  s::Scopes<a> = tm:add(d, head(s)) :: tail(s);
+-}
+
+fun addScopeSG Decorated SGNode ::= d::Defs s::Decorated SGNode =
+  decorate mkLexScope() with {
+    edges =
+      updateDclEdges("val", mkValueScope, d.valueContribs,
+      updateDclEdges("tag", mkTagScope, d.tagContribs,
+      updateDclEdges("refid", mkRefIdScope, d.refIdContribs,
+      updateDclEdges("defer", mkDeferredDeclScope, d.deferredDeclContribs,
+      updateDclEdges("misc", mkMiscScope, d.miscContribs, s.edges)))));
+  }
+;
+
+{-
+fun addGlobalScope Scopes<a> ::= d::Contribs<a>  s::Scopes<a> =
+  case d, s of
+  | [], _ -> s
+  | _, [] -> error("No scopes in env!")
+  | _, [_] -> addScope(d, s)
+  | _, h :: t -> h :: addGlobalScope(d, t)
+  end;
+-}
+
+fun addGlobalScopeSG Decorated SGNode ::= d::Defs s::Decorated SGNode =
+  error("addGlobalScopeSG todo");
+
+{-
+fun addFunctionScope Scopes<a> ::= d::Contribs<a> s::Scopes<a> =
+  case d, s of
+  | [], _ -> s
+  | _, [] -> error("No scopes in env!")
+  | _, [_] -> addScope(d, s)
+  | _, h :: m :: [] -> addScope(d, h :: m :: [])
+  | _, h :: t -> h :: addFunctionScope(d, t)
+  end;
+-}
+
+fun addFunctionScopeSG Decorated SGNode ::= d::Defs s::Decorated SGNode =
+  error("addFunctionScopeSG todo");
+
+{-
+fun openScope Scopes<a> ::= s::Scopes<a> = tm:empty() :: s;
+-}
+
+fun openScopeSG Decorated SGNode ::= s::Decorated SGNode =
+  error("openScopeSG todo");
+
+{-
+fun globalScope Scopes<a> ::= s::Scopes<a> = [last(s)];
+-}
+
+fun globalScopeSG Decorated SGNode ::= s::Decorated SGNode =
+  error("globalScopeSG todo");
+
+{-
+fun nonGlobalScope Scopes<a> ::= s::Scopes<a> = init(s);
+-}
+
+fun nonGlobalScopeSG Decorated SGNode ::= s::Decorated SGNode =
+  error("nonGlobalScopeSG todo");
+
+{-
+fun functionScope Scopes<a> ::= s::Scopes<a> = drop(length(s) - 2, s);
+-}
+
+fun functionScopeSG Decorated SGNode ::= s::Decorated SGNode =
+  error("functionScopeSG todo");
+
+{-
+fun lookupScope [a] ::= n::String  s::Scopes<a> =
+  case dropWhile(null, map(tm:lookup(n, _), s)) of
+  | h :: _ -> h
+  | [] -> []
+  end;
+-}
+
+fun lookupScopeSG [Decorated SGNode] ::= n::String s::Decorated SGNode =
+  error("lookupScopeSG todo");
+
+{-
+fun lookupInLocalScope [a] ::= n::String  s::Scopes<a> = tm:lookup(n, head(s));
+-}
+
+fun lookupInLocalScopeSG [Decorated SGNode] ::= n::String s::Decorated SGNode =
+  error("lookupInLocalScopeSG todo");
+
+--
+
+fun updateDclEdges
+  tm:Map<String Decorated SGNode> ::=
+    lab::String
+    mk::(SGNode ::= String a)
+    cs::Contribs<a>
+    og::tm:Map<String Decorated SGNode>
+=
+  let nodes::[Decorated SGNode] =
+    foldr(
+      \p::(String, a) ns::[Decorated SGNode] ->
+        decorate mk(p.1, p.2) with { edges = tm:empty(); } :: ns,
+      tm:lookup("val", og), cs)
+  in
+    tm:update(lab, nodes, og)
+  end
+;
