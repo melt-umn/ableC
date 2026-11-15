@@ -22,6 +22,10 @@ synthesized attribute miscContribs :: Contribs<MiscItem>;
 synthesized attribute globalDefs :: [Def];
 synthesized attribute functionScopeDefs :: [Def];
 
+--
+synthesized attribute scope::Decorated SGNode occurs on Env;
+--
+
 {- Environment representation productions provide implementations for env functions
  - emptyEnv_i creates the basic environment with empty global scopes
  - addEnv_i adds provided defs to the current (first on list) scope, and global defs to the global (last on list) scope
@@ -29,6 +33,7 @@ synthesized attribute functionScopeDefs :: [Def];
  - globalEnv_i gets the last (global) scope from the scope lists
  -}
 
+{-
 abstract production emptyEnv
 top::Env ::=
 {
@@ -38,6 +43,14 @@ top::Env ::=
   top.deferredDecls = emptyScope();
   top.misc = emptyScope();
 }
+-}
+abstract production emptyEnv
+top::Env ::=
+{
+  top.scope = emptyScopeSG();
+}
+
+{-
 abstract production addDefsEnv
 top::Env ::= d::Defs  e::Env
 {
@@ -50,6 +63,17 @@ top::Env ::= d::Defs  e::Env
   top.deferredDecls = addFunctionScope(fd.deferredDeclContribs, addGlobalScope(gd.deferredDeclContribs, addScope(d.deferredDeclContribs, e.deferredDecls)));
   top.misc = addFunctionScope(fd.miscContribs, addGlobalScope(gd.miscContribs, addScope(d.miscContribs, e.misc)));
 }
+-}
+abstract production addDefsEnv
+top::Env ::= d::Defs  e::Env
+{
+  production gd::Defs = foldr(consDefs, nilDefs(), d.globalDefs);
+  production fd::Defs = foldr(consDefs, nilDefs(), d.functionScopeDefs);
+
+  top.scope = addFunctionScopeSG(fd, addGlobalScopeSG(gd, addScopeSG(d, e.scope)));
+}
+
+{-
 abstract production openScopeEnv
 top::Env ::= e::Env
 {
@@ -59,6 +83,14 @@ top::Env ::= e::Env
   top.deferredDecls = openScope(e.deferredDecls);
   top.misc = openScope(e.misc);
 }
+-}
+abstract production openScopeEnv
+top::Env ::= e::Env
+{
+  top.scope = openScopeSG(e.scope);
+}
+
+{-
 abstract production globalEnv
 top::Env ::= e::Env
 {
@@ -68,6 +100,14 @@ top::Env ::= e::Env
   top.deferredDecls = globalScope(e.deferredDecls);
   top.misc = globalScope(e.misc);
 }
+-}
+abstract production globalEnv
+top::Env ::= e::Env
+{
+  top.scope = globalScopeSG(e.scope);
+}
+
+{-
 abstract production nonGlobalEnv
 top::Env ::= e::Env
 {
@@ -77,6 +117,14 @@ top::Env ::= e::Env
   top.deferredDecls = nonGlobalScope(e.deferredDecls);
   top.misc = nonGlobalScope(e.misc);
 }
+-}
+abstract production nonGlobalEnv
+top::Env ::= e::Env
+{
+  top.scope = nonGlobalScopeSG(e.scope);
+}
+
+{-
 abstract production functionEnv
 top::Env ::= e::Env
 {
@@ -85,6 +133,12 @@ top::Env ::= e::Env
   top.refIds = functionScope(e.refIds);
   top.deferredDecls = functionScope(e.deferredDecls);
   top.misc = functionScope(e.misc);
+}
+-}
+abstract production functionEnv
+top::Env ::= e::Env
+{
+  top.scope = functionScopeSG(e.scope);
 }
 
 {- Definition list productions provide a way of folding up defs into Contribs lists
