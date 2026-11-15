@@ -164,8 +164,7 @@ fun addScopeSG Decorated SGNode ::= d::Defs s::Decorated SGNode =
       updateDclEdges("refid", mkRefIdScope, d.refIdContribs,
       updateDclEdges("defer", mkDeferredDeclScope, d.deferredDeclContribs,
       updateDclEdges("misc", mkMiscScope, d.miscContribs, s.edges)))));
-  }
-;
+  };
 
 {-
 fun addGlobalScope Scopes<a> ::= d::Contribs<a>  s::Scopes<a> =
@@ -177,8 +176,18 @@ fun addGlobalScope Scopes<a> ::= d::Contribs<a>  s::Scopes<a> =
   end;
 -}
 
+-- proof of concept
+-- implementing the 'hacky' updating of the decls list for a global scope
+-- replaced in future by synthesizing edges up ableC tree instead, a la SLE 2025 paper
 fun addGlobalScopeSG Decorated SGNode ::= d::Defs s::Decorated SGNode =
-  error("addGlobalScopeSG todo");
+  let lexTgts::[Decorated SGNode] = tm:lookup("lex", s.edges) in
+    case lexTgts of
+    | []  -> addScopeSG(d, s)
+    | [x] -> decorate mkLexScope()
+             with { edges = tm:update("lex", [addGlobalScopeSG(d, x)], s.edges); }
+    | _   -> error("found scope with multiple lex targets!")
+    end
+  end;
 
 {-
 fun addFunctionScope Scopes<a> ::= d::Contribs<a> s::Scopes<a> =
@@ -191,8 +200,20 @@ fun addFunctionScope Scopes<a> ::= d::Contribs<a> s::Scopes<a> =
   end;
 -}
 
+-- proof of concept
+-- implementing the 'hacky' updating of the decls list for a global scope
+-- replaced in future by synthesizing edges up ableC tree instead, a la SLE 2025 paper
 fun addFunctionScopeSG Decorated SGNode ::= d::Defs s::Decorated SGNode =
-  error("addFunctionScopeSG todo");
+  let lexTgts::[Decorated SGNode] = tm:lookup("lex", s.edges) in
+    case lexTgts of
+    | []  -> addScopeSG(d, s)
+    | [m] -> case tm:lookup("lex", m.edges) of
+             | [] -> decorate mkLexScope() with { edges = tm:update("lex", [addScopeSG(d, m)], s.edges); }
+             | _  -> decorate mkLexScope() with { edges = tm:update("lex", [addFunctionScopeSG(d, m)], s.edges); }
+             end
+    | _   -> error("found scope with multiple lex targets!")
+    end
+  end;
 
 {-
 fun openScope Scopes<a> ::= s::Scopes<a> = tm:empty() :: s;
@@ -258,3 +279,33 @@ fun updateDclEdges
     tm:update(lab, nodes, og)
   end
 ;
+
+--
+
+type Predicate = (Boolean ::= Datum);
+
+fun resolve
+[Decorated SGNode] ::= p::Predicate r::Regex s::Decorated SGNode
+=
+  let cont::[Decorated SGNode] =
+    let validLabels::[Label] = r.first in
+      foldl(
+        \acc::(Maybe<Label>, [Decorated SGNode]) nextLab::Label ->
+          let prevLab::Maybe<Label> = acc.1 in
+            let prevRes::[Decorated SGNode] = acc.2 in
+              let nextRes::[Decorated SGNode] = concat(map(resolve(p, r.deriv(nextLab), _),
+                                                          nextLab.demand(s))) in
+                (just(nextLab), prevRes ++ nextRes)
+              end
+            end
+          end,
+        (nothing(), []),
+        validLabels
+      ).2
+    end
+  in
+    case r.simplify of
+    | regexEmpty() -> []
+    | _ -> if p(s.datum) && r.nullable then s::cont else cont
+    end
+  end;
