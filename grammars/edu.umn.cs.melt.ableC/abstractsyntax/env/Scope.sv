@@ -94,31 +94,31 @@ top::SGNode ::= n::String d::MiscItem
 
 --
 
-data nonterminal Datum;
+data nonterminal Datum with name;
 
 production datumNone
 top::Datum ::=
-{}
+{ top.name = ""; }
 
 production datumValue
 top::Datum ::= n::String d::ValueItem
-{}
+{ top.name = n; }
 
 production datumTag
 top::Datum ::= n::String d::TagItem
-{}
+{ top.name = n; }
 
 production datumRefId
 top::Datum ::= n::String d::RefIdItem
-{}
+{ top.name = n; }
 
 production datumDeferredDecl
 top::Datum ::= n::String d::Decl
-{}
+{ top.name = n; }
 
 production datumMisc
 top::Datum ::= n::String d::MiscItem
-{}
+{ top.name = n; }
 
 --
 
@@ -220,28 +220,54 @@ fun openScope Scopes<a> ::= s::Scopes<a> = tm:empty() :: s;
 -}
 
 fun openScopeSG Decorated SGNode ::= s::Decorated SGNode =
-  error("openScopeSG todo");
+  decorate mkLexScope() with { edges = tm:update("lex", [s], tm:empty()); };
 
 {-
 fun globalScope Scopes<a> ::= s::Scopes<a> = [last(s)];
 -}
 
 fun globalScopeSG Decorated SGNode ::= s::Decorated SGNode =
-  error("globalScopeSG todo");
+  let lexTgts::[Decorated SGNode] = tm:lookup("lex", s.edges) in
+    case lexTgts of
+    | []  -> s
+    | [x] -> globalScopeSG(x)
+    | _   -> error("found scope with multiple lex targets!")
+    end
+  end;
 
 {-
 fun nonGlobalScope Scopes<a> ::= s::Scopes<a> = init(s);
 -}
 
+-- just a proof of concept...
 fun nonGlobalScopeSG Decorated SGNode ::= s::Decorated SGNode =
-  error("nonGlobalScopeSG todo");
+  let lexTgts::[Decorated SGNode] = tm:lookup("lex", s.edges) in
+    case lexTgts of
+    | [m] -> case tm:lookup("lex", m.edges) of
+             | []  -> decorate mkLexScope() with { edges = tm:update("lex", [], s.edges); }
+             | [y] -> decorate mkLexScope() with { edges = tm:update("lex", [nonGlobalScopeSG(m)], s.edges); }
+             | _   -> error("found scope with multiple lex targets!")
+             end
+    | _   -> error("found scope with multiple lex targets, or innermost scope had none!")
+    end
+  end;
 
 {-
 fun functionScope Scopes<a> ::= s::Scopes<a> = drop(length(s) - 2, s);
 -}
 
+-- just a proof of concept...
 fun functionScopeSG Decorated SGNode ::= s::Decorated SGNode =
-  error("functionScopeSG todo");
+  let lexTgts::[Decorated SGNode] = tm:lookup("lex", s.edges) in
+    case lexTgts of
+    | [m] -> case tm:lookup("lex", m.edges) of
+             | []  -> s
+             | [_] -> functionScopeSG(m)
+             | _   -> error("found scope with multiple lex targets!")
+             end
+    | _   -> error("found scope with multiple lex targets, or innermost scope had none!")
+    end
+  end;
 
 {-
 fun lookupScope [a] ::= n::String  s::Scopes<a> =
@@ -251,15 +277,15 @@ fun lookupScope [a] ::= n::String  s::Scopes<a> =
   end;
 -}
 
-fun lookupScopeSG [Decorated SGNode] ::= n::String s::Decorated SGNode =
-  error("lookupScopeSG todo");
+fun lookupScopeSG [Decorated SGNode] ::= n::String s::Decorated SGNode l::Label =
+  resolve(\d::Datum -> d.name == n, regexCat(regexStar(regexLex()), regexLabel(l)), s);
 
 {-
 fun lookupInLocalScope [a] ::= n::String  s::Scopes<a> = tm:lookup(n, head(s));
 -}
 
-fun lookupInLocalScopeSG [Decorated SGNode] ::= n::String s::Decorated SGNode =
-  error("lookupInLocalScopeSG todo");
+fun lookupInLocalScopeSG [Decorated SGNode] ::= n::String s::Decorated SGNode l::Label =
+  resolve(\d::Datum -> d.name == n, regexLabel(l), s);
 
 --
 
@@ -274,7 +300,7 @@ fun updateDclEdges
     foldr(
       \p::(String, a) ns::[Decorated SGNode] ->
         decorate mk(p.1, p.2) with { edges = tm:empty(); } :: ns,
-      tm:lookup("val", og), cs)
+      tm:lookup(lab, og), cs)
   in
     tm:update(lab, nodes, og)
   end
