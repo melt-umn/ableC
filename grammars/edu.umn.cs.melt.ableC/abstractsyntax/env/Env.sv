@@ -5,7 +5,8 @@ imports edu:umn:cs:melt:ableC:abstractsyntax:host;
 {--
  - The environment values that get passed around and used to look up names.
  -}
-data nonterminal Env with tags, values, refIds, deferredDecls, misc;
+-- data nonterminal Env with tags, values, refIds, deferredDecls, misc;
+data nonterminal Env;
 
 {--
  - A list of definitions, only used in contributing new names to the environment.

@@ -7,12 +7,14 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax:env;
  - build up contributions to each individual scope in an Env.  
  -}
 
+{-
 synthesized attribute tags :: Scopes<TagItem>;
 synthesized attribute values :: Scopes<ValueItem>;
 synthesized attribute refIds :: Scopes<RefIdItem>;
 synthesized attribute deferredDecls :: Scopes<Decl>;
 synthesized attribute misc :: Scopes<MiscItem>;
 synthesized attribute globalEnv :: Env;
+-}
 
 synthesized attribute tagContribs :: Contribs<TagItem>;
 synthesized attribute valueContribs :: Contribs<ValueItem>;
