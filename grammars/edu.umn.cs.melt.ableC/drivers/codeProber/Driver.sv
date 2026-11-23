@@ -49,11 +49,7 @@ IO<Decorated Compilation> ::= args::[String]
     return
       decorate compilation(result.parseTree.ast) with {
         env = addEnv( map(xcArgDef, xcArgs) , emptyEnv() );
-        envScope = decorate mkLexScope() with { 
-          lexEdges = []; globEdges = []; funcEdges = [];
-          valEdges = []; tagEdges = []; refidEdges = [];
-          deferEdges = []; miscEdges = [];
-        };
+        envScope = placeholderScope();
       };
   };
 }
