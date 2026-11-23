@@ -30,6 +30,7 @@ top::GlobalDecls ::= h::Decl  t::GlobalDecls
   h.env = top.env;
   h.envScope = top.envScope;
   t.env = addEnv(h.defs, h.env);
+  -- New SG node, LEX edge to h.envScope, define inhs using h.defs
   t.envScope = placeholderScope();
 }
 
@@ -63,6 +64,7 @@ top::Decls ::= h::Decl  t::Decls
   h.env = top.env;
   h.envScope = top.envScope;
   t.env = addEnv(h.defs, h.env);
+  -- New SG node, LEX edge to h.envScope, define inhs using h.defs
   t.envScope = placeholderScope();
 }
 
@@ -135,6 +137,7 @@ top::Decl ::= storage::StorageClasses  attrs::Attributes  ty::BaseTypeExpr  dcls
   ty.env = top.env;
   ty.envScope = top.envScope;
   dcls.env = addEnv(ty.defs, ty.env);
+  -- New SG node, LEX edge to ty.envScope, define inhs using ty.defs
   dcls.envScope = placeholderScope();
   dcls.baseType = ty.typerep;
   dcls.typeModifierIn = ty.typeModifier;
@@ -165,6 +168,7 @@ top::Decl ::= attrs::Attributes  ty::BaseTypeExpr  dcls::Declarators
   ty.env = top.env;
   ty.envScope = top.envScope;
   dcls.env = addEnv(ty.defs, ty.env);
+  -- New SG node, LEX edge to ty.envScope, define inhs using ty.defs
   dcls.envScope = placeholderScope();
   dcls.baseType = ty.typerep;
   dcls.typeModifierIn = ty.typeModifier;
@@ -334,6 +338,7 @@ top::Declarators ::= h::Declarator  t::Declarators
   h.env = top.env;
   h.envScope = top.envScope;
   t.env = addEnv(h.defs, h.env);
+  -- New SG node, LEX edge to h.envScope, define inhs using h.defs
   t.envScope = placeholderScope();
 }
 abstract production nilDeclarator
@@ -408,6 +413,7 @@ top::Declarator ::= name::Name  ty::TypeModifierExpr  attrs::Attributes  initial
   ty.env = top.env;
   ty.envScope =  top.envScope;
   attrs.env = addEnv(ty.defs, ty.env);
+  -- New SG node, LEX edge to ty.envScope, define inhs using ty.defs
   attrs.envScope = placeholderScope();
   initializer.env = attrs.env;
   initializer.envScope = attrs.envScope;
@@ -594,10 +600,13 @@ top::FunctionDecl ::= storage::StorageClasses  fnquals::SpecialSpecifiers  bty::
   bty.env = top.env;
   bty.envScope = top.envScope;
   mty.env = addEnv(implicitDefs, openScopeEnv(addEnv(funcDefs, top.env)));
+  -- New SG node, LEX edge to top.envScope, define inhs using implicitDefs
   mty.envScope = placeholderScope();
   ds.env = addEnv(mty.defs ++ parameters.functionDefs, mty.env);
+  -- New SG node, LEX edge to mty.envScope, define inhs using mty.defs ++ parameters.functionDefs
   ds.envScope = placeholderScope();
   body.env = addEnv(ds.defs ++ body.functionDefs, ds.env);
+  -- New SG node, LEX edge to df.envScope, define inhs using ds.defs ++ body.functionDefs
   body.envScope = placeholderScope();
 
   ds.isTopLevel = false;
@@ -668,6 +677,7 @@ top::Parameters ::= h::ParameterDecl  t::Parameters
   h.env = top.env;
   h.envScope = top.envScope;
   t.env = addEnv(h.defs ++ h.functionDefs, top.env);
+  -- New SG node, LEX edge to top.envScope, define inhs using h.defs ++ h.functionDefs
   t.envScope = placeholderScope();
   h.position = top.position;
   t.position = 1 + top.position;
@@ -736,6 +746,7 @@ top::ParameterDecl ::= storage::StorageClasses  bty::BaseTypeExpr  mty::TypeModi
   bty.env = top.env;
   bty.envScope = top.envScope;
   mty.env = addEnv(bty.defs, bty.env);
+  -- New SG node, LEX edge to bty.envScope, define inhs using bty.defs
   mty.envScope = placeholderScope();
   mty.baseType = bty.typerep;
   mty.typeModifierIn = bty.typeModifier;
@@ -821,6 +832,7 @@ top::StructDecl ::= attrs::Attributes  name::MaybeName  dcls::StructItemList
   name.env = top.env;
   name.envScope = top.envScope;
   dcls.env = addEnv(preDefs, top.env);
+  -- New SG node, LEX edge to top.envScope, define inhs using preDefs
   dcls.envScope = placeholderScope();
   dcls.inStruct = true;
   dcls.isLast = top.isLast;
@@ -884,6 +896,7 @@ top::UnionDecl ::= attrs::Attributes  name::MaybeName  dcls::StructItemList
   name.env = top.env;
   name.envScope = top.envScope;
   dcls.env = addEnv(preDefs, top.env);
+  -- New SG node, LEX edge to top.envScope, define inhs using preDefs
   dcls.envScope = placeholderScope();
   dcls.inStruct = false;
   dcls.isLast = top.isLast;
@@ -920,6 +933,7 @@ top::EnumDecl ::= name::MaybeName  dcls::EnumItemList
   name.env = top.env;
   name.envScope = top.envScope;
   dcls.env = addEnv(thisdcl, top.env);
+  -- New SG node, LEX edge to top.envScope, define inhs using thisdcl
   dcls.envScope = placeholderScope();
   dcls.containingEnum = extType(nilQualifier(), enumExtType(top));
   dcls.enumItemValueIn = 0;
@@ -965,6 +979,7 @@ top::StructItemList ::= h::StructItem  t::StructItemList
   h.env = top.env;
   h.envScope = top.envScope;
   t.env = addEnv(h.defs, h.env);
+  -- New SG node, LEX edge to h.envScope, define inhs using h.defs
   t.envScope = placeholderScope();
   h.localEnv = top.localEnv;
   t.localEnv = addEnv(h.localDefs, h.localEnv);
@@ -1016,6 +1031,7 @@ top::EnumItemList ::= h::EnumItem  t::EnumItemList
   h.env = top.env;
   h.envScope = top.envScope;
   t.env = addEnv(h.defs, h.env);
+  -- New SG node, LEX edge to h.envScope, define inhs using h.defs
   t.envScope = placeholderScope();
 
   h.enumItemValueIn = top.enumItemValueIn;
@@ -1063,6 +1079,7 @@ top::StructItem ::= attrs::Attributes  ty::BaseTypeExpr  dcls::StructDeclarators
   ty.envScope = top.envScope;
   ty.givenRefId = attrs.maybeRefId;
   dcls.env = addEnv(ty.defs, ty.env);
+  -- New SG node, LEX edge to ty.envScope, define inhs using ty.defs
   dcls.envScope = placeholderScope();
   dcls.baseType = ty.typerep;
   dcls.isLast = top.isLast;
@@ -1140,6 +1157,7 @@ top::StructDeclarators ::= h::StructDeclarator  t::StructDeclarators
   h.env = top.env;
   h.envScope = top.envScope;
   t.env = addEnv(h.defs, h.env);
+  -- New SG node, LEX edge to h.envScope, define inhs using h.defs
   t.envScope = placeholderScope();
   h.localEnv = top.localEnv;
   t.localEnv = addEnv(h.localDefs, h.localEnv);

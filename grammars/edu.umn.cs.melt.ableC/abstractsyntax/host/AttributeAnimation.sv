@@ -94,6 +94,7 @@ top::Attrib ::= n::AttribName  e::Exprs
   n.env = top.env;
   n.envScope = top.envScope;
   e.env = emptyEnv();
+  -- New SG node, no LEX edges
   e.envScope = placeholderScope();
   e.controlStmtContext = initialControlStmtContext;
 }

@@ -147,6 +147,7 @@ top::Expr ::= lhs::Expr  rhs::Expr
   lhs.env = top.env;
   lhs.envScope = top.envScope;
   rhs.env = addEnv(lhs.defs, lhs.env);
+  -- New SG node, LEX edge to lhs.envScope, define inhs using lhs.defs
   rhs.envScope = placeholderScope();
   propagate controlStmtContext;
 
@@ -295,6 +296,7 @@ top::Expr ::= @f::Expr  a::Exprs
     end;
 
   a.env = addEnv(f.defs, f.env);
+  -- New SG node, LEX edge to f.envScope, define inhs using f.defs
   a.envScope = placeholderScope();
   a.controlStmtContext = top.controlStmtContext;
 }
@@ -445,8 +447,10 @@ top::Expr ::= cond::Expr  t::Expr  e::Expr
   cond.env = top.env;
   cond.envScope = top.envScope;
   t.env = addEnv(cond.defs, cond.env);
+  -- New SG node, LEX edge to cond.envScope, define inhs using cond.defs
   t.envScope = placeholderScope();
   e.env = addEnv(t.defs, t.env);
+  -- New SG node, LEX edge to t.envScope, define inhs using t.defs
   e.envScope = placeholderScope();
 
   -- TODO: type checking!!
@@ -479,6 +483,7 @@ top::Expr ::= ty::TypeName  e::Expr
   ty.env = top.env;
   ty.envScope = top.envScope;
   e.env = addEnv(ty.defs, ty.env);
+  -- New SG node, LEX edge to ty.envScope, define inhs using ty.defs
   e.envScope = placeholderScope();
 
   -- TODO: type checking!!
@@ -492,6 +497,7 @@ top::Expr ::= ty::TypeName  init::InitList
   ty.env = top.env;
   ty.envScope = top.envScope;
   init.env = addEnv(ty.defs, ty.env);
+  -- New SG node, LEX edge to ty.envScope, define inhs using ty.defs
   init.envScope = placeholderScope();
   init.expectedType = ty.typerep;
 
@@ -647,10 +653,12 @@ top::Expr ::= body::Stmt result::Expr
   -- Add body.functionDefs to env here, since labels don't bubble up
   -- from expressions to the top-level function.
   body.env = addEnv(body.functionDefs, openScopeEnv(top.env));
+  -- New SG node, LEX edge to top.envScope, define inhs using body.functionDefs
   body.envScope = placeholderScope();
   body.controlStmtContext = controlAddLabels(top.controlStmtContext, body.labelDefs);
   result.controlStmtContext = top.controlStmtContext;
   result.env = addEnv(body.defs, body.env);
+  -- New SG node, LEX edge to body.envScope, define inhs using body.defs
   result.envScope = placeholderScope();
 }
 

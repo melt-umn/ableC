@@ -99,6 +99,7 @@ IO<Integer> ::= args::[String]
               -- Driver#1
               decorate abs:compilation(result.parseTree.ast) with {
                 env = addEnv( map(xcArgDef, xcArgs) , emptyEnv() );
+                -- New SG node, no LEX edges, define inhs using Compilation node
                 envScope = placeholderScope();
               };
             if contains("--show-ast", args) then do {

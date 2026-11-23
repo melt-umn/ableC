@@ -144,11 +144,13 @@ top::Expr ::= decls::Decls lifted::Expr
   top.typerep = lifted.typerep;
 
   decls.env = globalEnv(top.env);
+  -- Query for global scope
   decls.envScope = placeholderScope();
   decls.isTopLevel = true;
   decls.controlStmtContext = initialControlStmtContext;
 
   lifted.env = addEnv([globalDefsDef(decls.defs)], top.env);
+  -- New SG node, LEX edge to top.envScope, define inhs using [globalDefsDef(decls.defs)]
   lifted.envScope = placeholderScope();
   lifted.controlStmtContext = top.controlStmtContext;
 
@@ -178,11 +180,13 @@ top::Stmt ::= decls::Decls lifted::Stmt
   top.labelDefs := lifted.labelDefs;
 
   decls.env = globalEnv(top.env);
+  -- Query for global scope
   decls.envScope = placeholderScope();
   decls.isTopLevel = true;
   decls.controlStmtContext = initialControlStmtContext;
 
   lifted.env = addEnv([globalDefsDef(decls.defs)], top.env);
+  -- New SG node, LEX edge to top.envScope, define inhs using [globalDefsDef(decls.defs)]
   lifted.envScope = placeholderScope();
   lifted.controlStmtContext = top.controlStmtContext;
 }
@@ -211,11 +215,13 @@ top::BaseTypeExpr ::= decls::Decls lifted::BaseTypeExpr
   top.typeModifier = lifted.typeModifier;
 
   decls.env = globalEnv(top.env);
+  -- Query for global scope
   decls.envScope = placeholderScope();
   decls.isTopLevel = true;
   decls.controlStmtContext = initialControlStmtContext;
 
   lifted.env = addEnv([globalDefsDef(decls.defs)], top.env);
+  -- New SG node, LEX edge to top.envScope, define inhs using [globalDefsDef(decls.defs)]
   lifted.envScope = placeholderScope();
   lifted.controlStmtContext = top.controlStmtContext;
 }
@@ -238,6 +244,7 @@ top::Decl ::= decls::Decls
   top.freeVariables := [];
 
   decls.env = globalEnv(top.env);
+  -- Query for global scope
   decls.envScope = placeholderScope();
   decls.isTopLevel = true;
   decls.controlStmtContext = initialControlStmtContext;
@@ -257,6 +264,7 @@ top::Decl ::= decls::Decls
   top.freeVariables := [];
 
   decls.env = functionEnv(top.env);
+  -- Query for function scope
   decls.envScope = placeholderScope();
   decls.isTopLevel = false;
   decls.controlStmtContext = initialControlStmtContext;

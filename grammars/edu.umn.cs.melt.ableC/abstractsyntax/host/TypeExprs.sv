@@ -73,6 +73,7 @@ top::TypeName ::= bty::BaseTypeExpr  mty::TypeModifierExpr
   bty.env = top.env;
   bty.envScope = top.envScope;
   mty.env = addEnv(bty.defs, bty.env);
+  -- New SG node, LEX edge to bty.envScope, define inhs using bty.defs
   mty.envScope = placeholderScope();
   mty.baseType = bty.typerep;
   mty.typeModifierIn = bty.typeModifier;
@@ -150,6 +151,7 @@ top::BaseTypeExpr ::= d::[Def]  bty::BaseTypeExpr
   top.defs <- d;
 
   bty.env = addEnv(d, top.env);
+  -- New SG node, LEX edge to top.envScope, define inhs using d
   bty.envScope = placeholderScope();
 }
 
@@ -538,6 +540,7 @@ top::TypeModifierExpr ::= result::TypeModifierExpr  args::Parameters  variadic::
   result.envScope = top.envScope;
   
   args.env = openScopeEnv(top.env);
+  -- New SG node, LEX edge to top.envScope
   args.envScope = placeholderScope();
   args.position = 0;
 
@@ -592,6 +595,7 @@ top::TypeNames ::= h::TypeName t::TypeNames
   h.env = top.env;
   h.envScope = top.envScope;
   t.env = addEnv(h.defs, h.env);
+  -- New SG node, LEX edge to h.envScope, define inhs using h.defs
   t.envScope = placeholderScope();
 }
 

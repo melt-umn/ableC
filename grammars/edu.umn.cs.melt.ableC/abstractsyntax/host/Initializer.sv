@@ -171,6 +171,7 @@ top::InitList ::= h::Init  t::InitList
   h.env = top.env;
   h.envScope = top.envScope;
   t.env = addEnv(h.defs, h.env);
+  -- New SG node, LEX edge to h.envScope, define inhs using h.defs
   t.envScope = placeholderScope();
 }
 
@@ -245,6 +246,7 @@ top::Init ::= d::Designator  i::Initializer
   d.env = top.env;
   d.envScope = top.envScope;
   i.env = addEnv(d.defs, d.env);
+  -- New SG node, LEX edge to d.envScope, define inhs using d.defs
   i.envScope = placeholderScope();
   i.initializerPos = s"member ${show(80, d.pp)} of ${show(80, top.expectedType)}";
   i.inObject = true;
@@ -372,6 +374,7 @@ top::Designator ::= d::Designator  e::Expr
   d.env = top.env;
   d.envScope = top.envScope;
   e.env = addEnv(d.defs, d.env);
+  -- New SG node, LEX edge to d.envScope, define inhs using d.defs
   e.envScope = placeholderScope();
 
   top.typerep = d.typerep;

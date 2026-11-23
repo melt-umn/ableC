@@ -49,6 +49,7 @@ IO<Decorated Compilation> ::= args::[String]
     return
       decorate compilation(result.parseTree.ast) with {
         env = addEnv( map(xcArgDef, xcArgs) , emptyEnv() );
+        -- New SG node, no LEX edge, define inhs using Compilation node
         envScope = placeholderScope();
       };
   };

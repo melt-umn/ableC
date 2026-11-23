@@ -28,6 +28,7 @@ top::Stmt ::= h::Stmt  t::Stmt
   h.env = top.env;
   h.envScope = top.envScope;
   t.env = addEnv(h.defs, top.env);
+  -- New SG node, LEX edge to top.envScope, define inhs using h.defs
   t.envScope = placeholderScope();
 }
 
@@ -40,6 +41,7 @@ top::Stmt ::= s::Stmt
   top.defs := globalDeclsDefs(s.globalDecls) ++ functionDeclsDefs(s.functionDecls); -- compound prevents defs from bubbling up
 
   s.env = openScopeEnv(top.env);
+  -- New SG node, LEX edge to top.envScope
   s.envScope = placeholderScope();
 }
 
@@ -91,10 +93,13 @@ top::Stmt ::= c::Expr  t::Stmt  e::Stmt
     removeDefsFromNames(c.defs, e.freeVariables);
 
   c.env = openScopeEnv(top.env);
+  -- New SG node, LEX edge to top.envScope
   c.envScope = placeholderScope();
   t.env = addEnv(c.defs, c.env);
+  -- New SG node, LEX edge to c.envScope, define inhs using c.defs
   t.envScope = placeholderScope();
   e.env = addEnv(globalDeclsDefs(t.globalDecls) ++ functionDeclsDefs(t.functionDecls), t.env);
+  -- New SG node, LEX edge to t.envScope, define inhs using globalDeclsDefs(t.globalDecls) ++ functionDeclsDefs(t.functionDecls)
   e.envScope = placeholderScope();
 
   top.errors <-
@@ -132,8 +137,10 @@ top::Stmt ::= e::Expr  b::Stmt
     removeDefsFromNames(e.defs, b.freeVariables);
 
   e.env = openScopeEnv(top.env);
+  -- New SG node, LEX edge to top.envScope
   e.envScope = placeholderScope();
   b.env = addEnv(e.defs, e.env);
+  -- New SG node, LEX edge to e.envScope, define inhs using e.defs
   b.envScope = placeholderScope();
   
   e.controlStmtContext = top.controlStmtContext;
@@ -167,9 +174,11 @@ top::Stmt ::= b::Stmt  e::Expr
     removeDefsFromNames(b.defs, e.freeVariables);
 
   b.env = openScopeEnv(top.env);
+  -- New SG node, LEX edge to top.envScope
   b.envScope = placeholderScope();
 
   e.env = addEnv(globalDeclsDefs(b.globalDecls) ++ functionDeclsDefs(b.functionDecls), b.env);
+  -- New SG node, LEX edge to b.envScope, globalDeclsDefs(b.globalDecls) ++ functionDeclsDefs(b.functionDecls)
   e.envScope = placeholderScope();
 
   e.controlStmtContext = top.controlStmtContext;
@@ -213,12 +222,16 @@ top::Stmt ::= i::MaybeExpr  c::MaybeExpr  s::MaybeExpr  b::Stmt
     removeDefsFromNames(i.defs ++ c.defs ++ s.defs, b.freeVariables);
 
   i.env = openScopeEnv(top.env);
+  -- New SG node, LEX edge to top.envScope
   i.envScope = placeholderScope();
   c.env = addEnv(i.defs, i.env);
+  -- New SG node, LEX edge to i.envScope, define inhs using i.defs
   c.envScope = placeholderScope();
   s.env = addEnv(c.defs, c.env);
+  -- New SG node, LEX edge to c.envScope, define inhs using c.defs
   s.envScope = placeholderScope();
   b.env = addEnv(s.defs, s.env);
+  -- New SG node, LEX edge to s.envScope, define inhs using s.defs
   b.envScope = placeholderScope();
 
   s.controlStmtContext = top.controlStmtContext;
@@ -264,12 +277,16 @@ top::Stmt ::= i::Decl  c::MaybeExpr  s::MaybeExpr  b::Stmt
     removeDefsFromNames(i.defs ++ c.defs ++ s.defs, b.freeVariables);
 
   i.env = openScopeEnv(top.env);
+  -- New SG node, LEX edge to top.env
   i.envScope = placeholderScope();
   c.env = addEnv(i.defs, i.env);
+  -- New SG node, LEX edge to i.envScope, define inhs using i.defs
   c.envScope = placeholderScope();
   s.env = addEnv(c.defs, c.env);
+  -- New SG node, LEX edge to c.envScope, define inhs using c.defs
   s.envScope = placeholderScope();
   b.env = addEnv(s.defs, s.env);
+  -- New SG node, LEX edge to s.envScope, define inhs using s.defs
   b.envScope = placeholderScope();
 
   i.isTopLevel = false;
@@ -331,8 +348,10 @@ top::Stmt ::= e::Expr  b::Stmt
     removeDefsFromNames(e.defs, b.freeVariables);
 
   e.env = openScopeEnv(top.env);
+  -- New SG node, LEX edge to top.envScope
   e.envScope = placeholderScope();
   b.env = addEnv(e.defs, e.env);
+  -- New SG node, LEX edge to e.envScope, define inhs using e.defs
   b.envScope = placeholderScope();
 
   e.controlStmtContext = top.controlStmtContext;
@@ -425,6 +444,7 @@ top::Stmt ::= v::Expr  s::Stmt
   v.env = top.env;
   v.envScope = top.envScope;
   s.env = addEnv(v.defs, v.env);
+  -- New SG node, LEX edge to v.envScope, define inhs using v.defs
   s.envScope = placeholderScope();
 }
 
