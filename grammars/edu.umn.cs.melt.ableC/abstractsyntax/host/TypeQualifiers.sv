@@ -137,11 +137,11 @@ top::Qualifier ::=
  - e.g. Function specifiers (inline, _Noreturn)
  -      Alignment specifiers (_Alignas)
  -}
-tracked nonterminal SpecialSpecifier with pp, host, env, errors, globalDecls,
+tracked nonterminal SpecialSpecifier with pp, host, env, envScope, errors, globalDecls,
   functionDecls, defs, controlStmtContext;
-flowtype SpecialSpecifier = decorate {env, controlStmtContext};
+flowtype SpecialSpecifier = decorate {env, envScope, controlStmtContext};
 
-propagate env, host, errors, globalDecls, functionDecls, defs, controlStmtContext on SpecialSpecifier;
+propagate env, envScope, host, errors, globalDecls, functionDecls, defs, controlStmtContext on SpecialSpecifier;
 
 abstract production inlineQualifier
 top::SpecialSpecifier ::=
@@ -163,11 +163,11 @@ top::SpecialSpecifier ::= e::Expr
   top.pp = ppConcat([text("_Alignas"), parens(e.pp)]);
 }
 
-tracked nonterminal SpecialSpecifiers with pps, host, env, errors,
+tracked nonterminal SpecialSpecifiers with pps, host, env, envScope, errors,
   globalDecls, functionDecls, defs, controlStmtContext;
-flowtype SpecialSpecifiers = decorate {env, controlStmtContext};
+flowtype SpecialSpecifiers = decorate {env, envScope, controlStmtContext};
 
-propagate env, host, errors, globalDecls, functionDecls, defs, controlStmtContext on SpecialSpecifiers;
+propagate env, envScope, host, errors, globalDecls, functionDecls, defs, controlStmtContext on SpecialSpecifiers;
 
 abstract production consSpecialSpecifier
 top::SpecialSpecifiers ::= h::SpecialSpecifier t::SpecialSpecifiers

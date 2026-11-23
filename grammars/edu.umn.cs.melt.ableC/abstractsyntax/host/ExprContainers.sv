@@ -1,10 +1,10 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 
 tracked nonterminal MaybeExpr with pp, host, isJust, errors, globalDecls, functionDecls,
-  defs, env, maybeTyperep, freeVariables, justTheExpr, isLValue,
+  defs, env, envScope, maybeTyperep, freeVariables, justTheExpr, isLValue,
   integerConstantValue, controlStmtContext;
 
-flowtype MaybeExpr = decorate {env, controlStmtContext},
+flowtype MaybeExpr = decorate {env, envScope, controlStmtContext},
   isJust {}, justTheExpr {}, maybeTyperep {decorate}, integerConstantValue {decorate};
 
 synthesized attribute maybeTyperep :: Maybe<Type>;
@@ -15,7 +15,7 @@ propagate host, errors, globalDecls, functionDecls, defs, freeVariables, control
 abstract production justExpr
 top::MaybeExpr ::= e::Expr
 {
-  propagate env;
+  propagate env, envScope;
   top.pp = e.pp;
   top.isJust = true;
   top.justTheExpr = just(^e);
@@ -34,13 +34,13 @@ top::MaybeExpr ::=
   implicit top.integerConstantValue = ;
 }
 
-tracked nonterminal Exprs with pps, host, errors, globalDecls, functionDecls, defs, env,
+tracked nonterminal Exprs with pps, host, errors, globalDecls, functionDecls, defs, env, envScope,
   expectedTypes, argumentPosition, callExpr, argumentErrors, typereps, count, exprs,
   callVariadic, freeVariables, appendedExprs, appendedRes, isLValue, isSimple,
   bindName, bindRefExprs, bindDefs, hostBindDecls,
   controlStmtContext;
 
-flowtype Exprs = decorate {env, controlStmtContext},
+flowtype Exprs = decorate {env, envScope, controlStmtContext},
   argumentErrors {decorate, expectedTypes, argumentPosition, callExpr, callVariadic},
   count {}, appendedRes {appendedExprs};
 
@@ -94,8 +94,10 @@ top::Exprs ::= h::Expr  t::Exprs
   t.argumentPosition = top.argumentPosition + 1;
   t.appendedExprs = top.appendedExprs;
 
-  t.env = addEnv(h.defs, h.env);
   h.env = top.env;
+  h.envScope = top.envScope;
+  t.env = addEnv(h.defs, h.env);
+  t.envScope = placeholderScope();
 
   h.bindName = name(top.bindName.name ++ "_" ++ toString(t.count));
   t.bindName = top.bindName;
@@ -127,17 +129,17 @@ top::Exprs ::=
 function appendExprs
 Exprs ::= e1::Exprs e2::Exprs
 {
-  propagate env;
+  propagate env, envScope;
   e1.appendedExprs = ^e2;
   return e1.appendedRes;
 }
 
 tracked nonterminal ExprOrTypeName with pp, host, hostDecls, errors, globalDecls, functionDecls,
-  defs, env, typerep, freeVariables, isLValue, controlStmtContext;
+  defs, env, envScope, typerep, freeVariables, isLValue, controlStmtContext;
 
-flowtype ExprOrTypeName = decorate {env, controlStmtContext};
+flowtype ExprOrTypeName = decorate {env, envScope, controlStmtContext};
 
-propagate env, host, hostDecls, errors, globalDecls, functionDecls, defs, freeVariables, controlStmtContext on ExprOrTypeName;
+propagate env, envScope, host, hostDecls, errors, globalDecls, functionDecls, defs, freeVariables, controlStmtContext on ExprOrTypeName;
 
 abstract production exprExpr
 top::ExprOrTypeName ::= e::Expr

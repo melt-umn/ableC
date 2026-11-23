@@ -7,7 +7,7 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 abstract production realConstant
 top::Expr ::= c::NumericConstant
 {
-  propagate env, host, errors, globalDecls, functionDecls, defs, freeVariables;
+  propagate env, envScope, host, errors, globalDecls, functionDecls, defs, freeVariables;
   top.pp = c.pp;
   top.typerep = builtinType(nilQualifier(), c.constanttyperep);
   top.isLValue = false;
@@ -17,7 +17,7 @@ top::Expr ::= c::NumericConstant
 abstract production imaginaryConstant
 top::Expr ::= c::NumericConstant
 {
-  propagate env, host, errors, globalDecls, functionDecls, defs, freeVariables;
+  propagate env, envScope, host, errors, globalDecls, functionDecls, defs, freeVariables;
   top.pp = c.pp;
   top.typerep = builtinType(nilQualifier(),
     case c.constanttyperep of
@@ -39,8 +39,8 @@ top::Expr ::= num::String  c::CharPrefix
   top.isSimple = true;
 }
 
-tracked nonterminal NumericConstant with pp, mangledName, host, errors, env, constanttyperep, integerConstantValue;
-flowtype NumericConstant = decorate {env}, constanttyperep {decorate}, integerConstantValue {decorate};
+tracked nonterminal NumericConstant with pp, mangledName, host, errors, env, envScope, constanttyperep, integerConstantValue;
+flowtype NumericConstant = decorate {env, envScope}, constanttyperep {decorate}, integerConstantValue {decorate};
 
 synthesized attribute constanttyperep :: BuiltinType;
 

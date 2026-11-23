@@ -1,10 +1,10 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 
 propagate host on AsmStatement, AsmArgument, AsmClobbers, AsmOperands, AsmOperand;
-propagate env, controlStmtContext on AsmStatement, AsmArgument, AsmOperands, AsmOperand;
+propagate env, envScope, controlStmtContext on AsmStatement, AsmArgument, AsmOperands, AsmOperand;
 
-tracked nonterminal AsmStatement with pp, host, env, controlStmtContext, freeVariables;
-flowtype AsmStatement = decorate {env, controlStmtContext};
+tracked nonterminal AsmStatement with pp, host, env, envScope, controlStmtContext, freeVariables;
+flowtype AsmStatement = decorate {env, envScope, controlStmtContext};
 
 abstract production asmStatement
 a::AsmStatement ::= arg::AsmArgument
@@ -20,8 +20,8 @@ a::AsmStatement ::= tq::Qualifier arg::AsmArgument
   a.freeVariables := arg.freeVariables;
 }
 
-tracked nonterminal AsmArgument with pp, host, env, controlStmtContext, freeVariables;
-flowtype AsmArgument = decorate {env, controlStmtContext};
+tracked nonterminal AsmArgument with pp, host, env, envScope, controlStmtContext, freeVariables;
+flowtype AsmArgument = decorate {env, envScope, controlStmtContext};
 
 abstract production asmArgument
 top::AsmArgument ::= s::String asmOps1::AsmOperands asmOps2::AsmOperands asmC::AsmClobbers
@@ -61,8 +61,8 @@ top::AsmClobbers ::= asmC::AsmClobbers s::String
   top.pp = ppConcat( [asmC.pp, text(", "), text(s) ] );
 }
 
-tracked nonterminal AsmOperands with pp, exists, host, env, controlStmtContext, freeVariables;
-flowtype AsmOperands = decorate {env, controlStmtContext}, exists {};
+tracked nonterminal AsmOperands with pp, exists, host, env, envScope, controlStmtContext, freeVariables;
+flowtype AsmOperands = decorate {env, envScope, controlStmtContext}, exists {};
 
 abstract production noneAsmOps
 top::AsmOperands ::=
@@ -86,8 +86,8 @@ top::AsmOperands ::= asmOps::AsmOperands asmOp::AsmOperand
   top.freeVariables := asmOp.freeVariables ++ asmOps.freeVariables;
 }
 
-tracked nonterminal AsmOperand with pp, host, env, controlStmtContext, freeVariables;
-flowtype AsmOperand = decorate {env, controlStmtContext};
+tracked nonterminal AsmOperand with pp, host, env, envScope, controlStmtContext, freeVariables;
+flowtype AsmOperand = decorate {env, envScope, controlStmtContext};
 
 abstract production asmOperand
 top::AsmOperand ::= s::String e::Expr

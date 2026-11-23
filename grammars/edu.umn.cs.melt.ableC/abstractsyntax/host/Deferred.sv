@@ -3,7 +3,7 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 abstract production deferredDecl
 top::Decl ::= refId::String d::Decl
 {
-  propagate env;
+  propagate env, envScope;
   
   top.pp = ppConcat([pp"deferredDecl", space(), parens(text(refId)), space(), braces(nestlines(2, d.pp))]);
 
@@ -19,7 +19,7 @@ top::Decl ::= refId::String d::Decl
 production foldDeferredDecl
 top::Decl ::= refIds::[String]  d::Decl
 {
-  propagate env, controlStmtContext;
+  propagate env, envScope, controlStmtContext;
   forwards to
     case refIds of
     | h :: t -> deferredDecl(h, foldDeferredDecl(t, @d))
@@ -28,10 +28,11 @@ top::Decl ::= refIds::[String]  d::Decl
 }
 
 function defsDeferredDecls
-[Decorated Decl] ::= env::Env isTopLevel::Boolean
+[Decorated Decl] ::= env::Env envScope::Decorated SGNode isTopLevel::Boolean
                       controlStmtContext::ControlStmtContext
                       defs::[Def]
 {
+  -- todo: scope graphs here
   local deferredDecls::Decl =
     decls(
       foldDecl(
@@ -40,6 +41,7 @@ function defsDeferredDecls
             lookupDeferredDecls(_, env),
             map(fst, foldr(consDefs, nilDefs(), defs).refIdContribs)))));
   deferredDecls.env = env;
+  deferredDecls.envScope = envScope;
   deferredDecls.isTopLevel = isTopLevel;
   deferredDecls.controlStmtContext = controlStmtContext;
 
@@ -48,7 +50,7 @@ function defsDeferredDecls
     then
       deferredDecls ::
       defsDeferredDecls(
-        addEnv(deferredDecls.defs, env), isTopLevel, controlStmtContext,
+        addEnv(deferredDecls.defs, env), envScope, isTopLevel, controlStmtContext,
           deferredDecls.defs)
     else [];
 }
@@ -60,7 +62,7 @@ top::Decl ::= d::[Def]
   -- host is not simply propagated, because Def is a closed 'collection' nonterminal with special
   -- semantics.
   local deferredDecls::[Decorated Decl] =
-    defsDeferredDecls(addEnv(d, top.env), top.isTopLevel, top.controlStmtContext, d);
+    defsDeferredDecls(addEnv(d, top.env), top.envScope, top.isTopLevel, top.controlStmtContext, d);
   top.host = decls(foldDecl(map(\ d::Decorated Decl -> d.host, deferredDecls)));
   top.defs <- concat(map((.defs), deferredDecls));
   top.freeVariables <- concat(map((.freeVariables), deferredDecls));
@@ -76,7 +78,7 @@ top::Decl ::= storage::StorageClasses  attrs::Attributes  ty::BaseTypeExpr  dcls
     then decls(foldDecl(ty.hostDecls ++ dcls.hostDecls))
     else variableDecls(^storage, attrs.host, ty.host, dcls.host);
   local deferredDecls::[Decorated Decl] =
-    defsDeferredDecls(addEnv(dcls.defs, dcls.env), top.isTopLevel,
+    defsDeferredDecls(addEnv(dcls.defs, dcls.env), top.envScope, top.isTopLevel,
       top.controlStmtContext, ty.defs ++ dcls.defs);
   top.host =
     if !null(deferredDecls)
@@ -93,7 +95,7 @@ top::Decl ::= attrs::Attributes ty::BaseTypeExpr
 {
   nondecorated local host::Decl = typeExprDecl(attrs.host, ty.host);
   local deferredDecls::[Decorated Decl] =
-    defsDeferredDecls(addEnv(ty.defs, ty.env), top.isTopLevel,
+    defsDeferredDecls(addEnv(ty.defs, ty.env), top.envScope, top.isTopLevel,
       top.controlStmtContext, ty.defs);
   top.host =
     if !null(deferredDecls)
@@ -113,7 +115,7 @@ top::Decl ::= attrs::Attributes  ty::BaseTypeExpr  dcls::Declarators
     then decls(foldDecl(ty.hostDecls ++ dcls.hostDecls))
     else typedefDecls(attrs.host, ty.host, dcls.host);
   local deferredDecls::[Decorated Decl] =
-    defsDeferredDecls(addEnv(dcls.defs, dcls.env), top.isTopLevel,
+    defsDeferredDecls(addEnv(dcls.defs, dcls.env), top.envScope, top.isTopLevel,
       top.controlStmtContext, ty.defs ++ dcls.defs);
   top.host =
     if !null(deferredDecls)
@@ -130,7 +132,7 @@ top::Decl ::= f::FunctionDecl
 {
   nondecorated local host::Decl = f.host;
   local deferredDecls::[Decorated Decl] =
-    defsDeferredDecls(addEnv(f.defs, f.env), top.isTopLevel,
+    defsDeferredDecls(addEnv(f.defs, f.env), top.envScope, top.isTopLevel,
       top.controlStmtContext, f.defs);
   top.host =
     if !null(deferredDecls)

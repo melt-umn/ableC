@@ -23,13 +23,13 @@ Attributes ::= l1::Attributes l2::Attributes
 
 propagate host on Attributes, Attribute, Attrib, AttribName;
 
-tracked nonterminal Attributes with pps, host, env, controlStmtContext;
-flowtype Attributes = decorate {env, controlStmtContext};
+tracked nonterminal Attributes with pps, host, env, envScope, controlStmtContext;
+flowtype Attributes = decorate {env, envScope, controlStmtContext};
 
 abstract production consAttribute
 top::Attributes ::= h::Attribute t::Attributes
 {
-  propagate env, controlStmtContext;
+  propagate env, envScope, controlStmtContext;
   top.pps = h.pp :: t.pps;
 }
 
@@ -40,13 +40,13 @@ top::Attributes ::=
 }
 
 {-- __attribute__ syntax representation -}
-tracked nonterminal Attribute with pp, host, env, controlStmtContext;
-flowtype Attribute = decorate {env, controlStmtContext};
+tracked nonterminal Attribute with pp, host, env, envScope, controlStmtContext;
+flowtype Attribute = decorate {env, envScope, controlStmtContext};
 
 abstract production gccAttribute
 top::Attribute ::= l::Attribs
 {
-  propagate env, controlStmtContext;
+  propagate env, envScope, controlStmtContext;
   top.pp = ppConcat([text("__attribute__(("), l.pp, text("))")]);
 }
 
@@ -56,13 +56,13 @@ top::Attribute ::= s::String
   top.pp = text("__asm__(" ++ s ++ ")");
 }
 
-tracked nonterminal Attribs with pp, host, env, controlStmtContext;
-flowtype Attribs = decorate {env, controlStmtContext};
+tracked nonterminal Attribs with pp, host, env, envScope, controlStmtContext;
+flowtype Attribs = decorate {env, envScope, controlStmtContext};
 
 abstract production consAttrib
 top::Attribs ::= h::Attrib t::Attribs
 {
-  propagate env, controlStmtContext;
+  propagate env, envScope, controlStmtContext;
 
   top.host = if h.isHostAttrib then consAttrib(h.host, t.host) else t.host;
   top.pp =
@@ -79,8 +79,8 @@ top::Attribs ::=
   top.pp = text("");
 }
 
-tracked nonterminal Attrib with pp, host, env, controlStmtContext;
-flowtype Attrib = decorate {env, controlStmtContext};
+tracked nonterminal Attrib with pp, host, env, envScope, controlStmtContext;
+flowtype Attrib = decorate {env, envScope, controlStmtContext};
 
 -- e.g. __attribute__(())
 abstract production emptyAttrib
@@ -92,7 +92,7 @@ top::Attrib ::=
 abstract production wordAttrib
 top::Attrib ::= n::AttribName
 {
-  propagate env;
+  propagate env, envScope;
   top.pp = n.pp;
 }
 -- e.g. __attribute__((deprecated("don't use this duh")))
@@ -106,17 +106,17 @@ top::Attrib ::= n::AttribName  e::Exprs
 abstract production idAppliedAttrib
 top::Attrib ::= n::AttribName  id::Name  e::Exprs
 {
-  propagate env, controlStmtContext;
+  propagate env, envScope, controlStmtContext;
   top.pp = ppConcat([n.pp, parens(ppImplode(text(", "), id.pp :: e.pps))]);
   top.isHostAttrib = true;
 }
 
-tracked nonterminal AttribName with pp, env, host;
-flowtype AttribName = decorate {env};
+tracked nonterminal AttribName with pp, env, envScope, host;
+flowtype AttribName = decorate {env, envScope};
 
 abstract production attribName
 top::AttribName ::= n::Name
 {
-  propagate env;
+  propagate env, envScope;
   top.pp = n.pp;
 }

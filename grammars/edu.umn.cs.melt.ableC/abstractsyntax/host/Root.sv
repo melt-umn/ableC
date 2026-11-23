@@ -17,6 +17,7 @@ top::Root ::= d::GlobalDecls
   
   -- Root#2
   d.env = addEnv(builtinfunctions:getInitialEnvDefs(), top.env);
+  d.envScope = top.envScope;
   d.controlStmtContext = initialControlStmtContext;
 }
 

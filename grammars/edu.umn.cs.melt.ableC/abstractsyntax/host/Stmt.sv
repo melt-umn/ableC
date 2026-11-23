@@ -1,8 +1,8 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 
-tracked nonterminal Stmt with pp, host, errors, globalDecls, functionDecls, defs, env,
+tracked nonterminal Stmt with pp, host, errors, globalDecls, functionDecls, defs, env, envScope,
   functionDefs, freeVariables, controlStmtContext, labelDefs;
-flowtype Stmt = decorate {env, controlStmtContext};
+flowtype Stmt = decorate {env, envScope, controlStmtContext};
 
 propagate controlStmtContext on Stmt excluding whileStmt, doStmt, forStmt, forDeclStmt, switchStmt,
   injectGlobalDeclsStmt, whileStmt, doStmt, forStmt, forDeclStmt, switchStmt;
@@ -10,7 +10,7 @@ propagate controlStmtContext on Stmt excluding whileStmt, doStmt, forStmt, forDe
 abstract production nullStmt
 top::Stmt ::=
 {
-  propagate env, host, errors, globalDecls, functionDecls, defs, freeVariables,
+  propagate env, envScope, host, errors, globalDecls, functionDecls, defs, freeVariables,
     functionDefs, labelDefs;
   top.pp = semi();
 }
@@ -26,7 +26,9 @@ top::Stmt ::= h::Stmt  t::Stmt
     removeDefsFromNames(h.defs, t.freeVariables);
 
   h.env = top.env;
+  h.envScope = top.envScope;
   t.env = addEnv(h.defs, top.env);
+  t.envScope = placeholderScope();
 }
 
 abstract production compoundStmt
@@ -38,6 +40,7 @@ top::Stmt ::= s::Stmt
   top.defs := globalDeclsDefs(s.globalDecls) ++ functionDeclsDefs(s.functionDecls); -- compound prevents defs from bubbling up
 
   s.env = openScopeEnv(top.env);
+  s.envScope = placeholderScope();
 }
 
 -- ditto warnExternalDecl, if warning or empty, then this pretends it doesn't exist.
@@ -45,7 +48,7 @@ top::Stmt ::= s::Stmt
 abstract production warnStmt
 top::Stmt ::= msg::[Message]
 {
-  propagate env, host, globalDecls, functionDecls, defs, freeVariables, functionDefs,
+  propagate env, envScope, host, globalDecls, functionDecls, defs, freeVariables, functionDefs,
     labelDefs;
   top.pp = text(s"/*${messagesToStringNoOriginsCheck(msg)}*/");
   top.errors := msg;
@@ -54,7 +57,7 @@ top::Stmt ::= msg::[Message]
 abstract production declStmt
 top::Stmt ::= d::Decl
 {
-  propagate env, host, errors, globalDecls, functionDecls, defs, freeVariables,
+  propagate env, envScope, host, errors, globalDecls, functionDecls, defs, freeVariables,
     functionDefs, labelDefs;
   top.pp = d.pp;
   d.isTopLevel = false;
@@ -63,7 +66,7 @@ top::Stmt ::= d::Decl
 abstract production exprStmt
 top::Stmt ::= d::Expr
 {
-  propagate env, host, errors, globalDecls, functionDecls, defs, freeVariables,
+  propagate env, envScope, host, errors, globalDecls, functionDecls, defs, freeVariables,
     functionDefs, labelDefs;
   top.pp = cat( d.pp, semi() );
 }
@@ -88,8 +91,11 @@ top::Stmt ::= c::Expr  t::Stmt  e::Stmt
     removeDefsFromNames(c.defs, e.freeVariables);
 
   c.env = openScopeEnv(top.env);
+  c.envScope = placeholderScope();
   t.env = addEnv(c.defs, c.env);
+  t.envScope = placeholderScope();
   e.env = addEnv(globalDeclsDefs(t.globalDecls) ++ functionDeclsDefs(t.functionDecls), t.env);
+  e.envScope = placeholderScope();
 
   top.errors <-
     if c.typerep.defaultFunctionArrayLvalueConversion.isScalarType then []
@@ -126,7 +132,9 @@ top::Stmt ::= e::Expr  b::Stmt
     removeDefsFromNames(e.defs, b.freeVariables);
 
   e.env = openScopeEnv(top.env);
+  e.envScope = placeholderScope();
   b.env = addEnv(e.defs, e.env);
+  b.envScope = placeholderScope();
   
   e.controlStmtContext = top.controlStmtContext;
   
@@ -159,7 +167,10 @@ top::Stmt ::= b::Stmt  e::Expr
     removeDefsFromNames(b.defs, e.freeVariables);
 
   b.env = openScopeEnv(top.env);
+  b.envScope = placeholderScope();
+
   e.env = addEnv(globalDeclsDefs(b.globalDecls) ++ functionDeclsDefs(b.functionDecls), b.env);
+  e.envScope = placeholderScope();
 
   e.controlStmtContext = top.controlStmtContext;
 
@@ -202,9 +213,13 @@ top::Stmt ::= i::MaybeExpr  c::MaybeExpr  s::MaybeExpr  b::Stmt
     removeDefsFromNames(i.defs ++ c.defs ++ s.defs, b.freeVariables);
 
   i.env = openScopeEnv(top.env);
+  i.envScope = placeholderScope();
   c.env = addEnv(i.defs, i.env);
+  c.envScope = placeholderScope();
   s.env = addEnv(c.defs, c.env);
+  s.envScope = placeholderScope();
   b.env = addEnv(s.defs, s.env);
+  b.envScope = placeholderScope();
 
   s.controlStmtContext = top.controlStmtContext;
   i.controlStmtContext = top.controlStmtContext;
@@ -249,9 +264,14 @@ top::Stmt ::= i::Decl  c::MaybeExpr  s::MaybeExpr  b::Stmt
     removeDefsFromNames(i.defs ++ c.defs ++ s.defs, b.freeVariables);
 
   i.env = openScopeEnv(top.env);
+  i.envScope = placeholderScope();
   c.env = addEnv(i.defs, i.env);
+  c.envScope = placeholderScope();
   s.env = addEnv(c.defs, c.env);
+  s.envScope = placeholderScope();
   b.env = addEnv(s.defs, s.env);
+  b.envScope = placeholderScope();
+
   i.isTopLevel = false;
 
   s.controlStmtContext = top.controlStmtContext;
@@ -269,7 +289,7 @@ top::Stmt ::= i::Decl  c::MaybeExpr  s::MaybeExpr  b::Stmt
 abstract production returnStmt
 top::Stmt ::= e::MaybeExpr {- -} -- TODO: Add location to signature
 {
-  propagate env, host;
+  propagate env, envScope, host;
   top.pp = ppConcat([text("return"), space(), e.pp, semi()]);
   top.errors := case top.controlStmtContext.returnType, e.maybeTyperep of
                   nothing(), nothing() -> []
@@ -311,7 +331,9 @@ top::Stmt ::= e::Expr  b::Stmt
     removeDefsFromNames(e.defs, b.freeVariables);
 
   e.env = openScopeEnv(top.env);
+  e.envScope = placeholderScope();
   b.env = addEnv(e.defs, e.env);
+  b.envScope = placeholderScope();
 
   e.controlStmtContext = top.controlStmtContext;
 
@@ -325,7 +347,7 @@ top::Stmt ::= e::Expr  b::Stmt
 abstract production gotoStmt
 top::Stmt ::= l::Name
 {
-  propagate env, host;
+  propagate env, envScope, host;
   top.pp = ppConcat([ text("goto"), space(), l.pp, semi() ]);
   top.errors := [];
   top.globalDecls := [];
@@ -341,7 +363,7 @@ top::Stmt ::= l::Name
 abstract production continueStmt
 top::Stmt ::=
 {
-  propagate env, host;
+  propagate env, envScope, host;
   top.pp = cat( text("continue"), semi() );
   top.errors := if top.controlStmtContext.continueValid then []
                 else [errFromOrigin(top, "continue statement is in an invalid location")];
@@ -356,7 +378,7 @@ top::Stmt ::=
 abstract production breakStmt
 top::Stmt ::=
 {
-  propagate env, host;
+  propagate env, envScope, host;
   top.pp = ppConcat([ text("break"), semi()  ]);
   top.errors := if top.controlStmtContext.breakValid then []
                 else [errFromOrigin(top, "break statement is in an invalid location")];
@@ -371,7 +393,7 @@ top::Stmt ::=
 abstract production labelStmt
 top::Stmt ::= l::Name  s::Stmt
 {
-  propagate env, host;
+  propagate env, envScope, host;
   top.pp = ppConcat([ l.pp, text(":"), space(), s.pp]);
   top.errors := s.errors;
   top.globalDecls := s.globalDecls;
@@ -401,13 +423,15 @@ top::Stmt ::= v::Expr  s::Stmt
   top.labelDefs := s.labelDefs;
 
   v.env = top.env;
+  v.envScope = top.envScope;
   s.env = addEnv(v.defs, v.env);
+  s.envScope = placeholderScope();
 }
 
 abstract production defaultLabelStmt
 top::Stmt ::= s::Stmt
 {
-  propagate env, host;
+  propagate env, envScope, host;
   top.pp = ppConcat([ text("default"), text(":"), nestlines(2,s.pp)]);
   top.errors := s.errors;
   top.globalDecls := s.globalDecls;
@@ -422,7 +446,7 @@ top::Stmt ::= s::Stmt
 abstract production functionDeclStmt
 top::Stmt ::= d::FunctionDecl
 {
-  propagate env;
+  propagate env, envScope;
   top.host = declStmt(d.host);
   top.pp = d.pp;
   top.errors := d.errors;
@@ -438,7 +462,7 @@ top::Stmt ::= d::FunctionDecl
 abstract production caseLabelRangeStmt
 top::Stmt ::= l::Expr  u::Expr  s::Stmt
 {
-  propagate env, host;
+  propagate env, envScope, host;
   top.pp = ppConcat([text("case"), space(), l.pp, text("..."), u.pp, text(":"), space(),s.pp]);
   top.errors := l.errors ++ u.errors ++ s.errors;
   top.globalDecls := l.globalDecls ++ u.globalDecls ++ s.globalDecls;
@@ -452,7 +476,7 @@ top::Stmt ::= l::Expr  u::Expr  s::Stmt
 abstract production asmStmt
 top::Stmt ::= asm::AsmStatement
 {
-  propagate env, host;
+  propagate env, envScope, host;
   top.pp = asm.pp;
   top.errors := [];
   top.globalDecls := [];

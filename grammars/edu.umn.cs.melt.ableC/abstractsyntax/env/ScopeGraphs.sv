@@ -109,3 +109,12 @@ fun resolve
     end
   end;
 -}
+
+-- Helpful declarations
+
+fun placeholderScope Decorated SGNode ::= =
+  decorate mkLexScope() with {
+    lexEdges = []; globEdges = []; funcEdges = [];
+    valEdges = []; tagEdges = []; refidEdges = [];
+    deferEdges = []; miscEdges = [];
+  };

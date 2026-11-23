@@ -144,10 +144,12 @@ top::Expr ::= decls::Decls lifted::Expr
   top.typerep = lifted.typerep;
 
   decls.env = globalEnv(top.env);
+  decls.envScope = placeholderScope();
   decls.isTopLevel = true;
   decls.controlStmtContext = initialControlStmtContext;
 
   lifted.env = addEnv([globalDefsDef(decls.defs)], top.env);
+  lifted.envScope = placeholderScope();
   lifted.controlStmtContext = top.controlStmtContext;
 
   top.isLValue = lifted.isLValue;
@@ -176,10 +178,12 @@ top::Stmt ::= decls::Decls lifted::Stmt
   top.labelDefs := lifted.labelDefs;
 
   decls.env = globalEnv(top.env);
+  decls.envScope = placeholderScope();
   decls.isTopLevel = true;
   decls.controlStmtContext = initialControlStmtContext;
 
   lifted.env = addEnv([globalDefsDef(decls.defs)], top.env);
+  lifted.envScope = placeholderScope();
   lifted.controlStmtContext = top.controlStmtContext;
 }
 
@@ -207,10 +211,12 @@ top::BaseTypeExpr ::= decls::Decls lifted::BaseTypeExpr
   top.typeModifier = lifted.typeModifier;
 
   decls.env = globalEnv(top.env);
+  decls.envScope = placeholderScope();
   decls.isTopLevel = true;
   decls.controlStmtContext = initialControlStmtContext;
 
   lifted.env = addEnv([globalDefsDef(decls.defs)], top.env);
+  lifted.envScope = placeholderScope();
   lifted.controlStmtContext = top.controlStmtContext;
 }
 
@@ -232,6 +238,7 @@ top::Decl ::= decls::Decls
   top.freeVariables := [];
 
   decls.env = globalEnv(top.env);
+  decls.envScope = placeholderScope();
   decls.isTopLevel = true;
   decls.controlStmtContext = initialControlStmtContext;
 }
@@ -250,6 +257,7 @@ top::Decl ::= decls::Decls
   top.freeVariables := [];
 
   decls.env = functionEnv(top.env);
+  decls.envScope = placeholderScope();
   decls.isTopLevel = false;
   decls.controlStmtContext = initialControlStmtContext;
 }

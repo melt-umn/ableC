@@ -1,11 +1,11 @@
 grammar edu:umn:cs:melt:ableC:abstractsyntax:host;
 
 tracked nonterminal Expr with pp, host, globalDecls, functionDecls, errors,
-  defs, env, freeVariables, typerep, isLValue, isSimple, integerConstantValue,
+  defs, env, envScope, freeVariables, typerep, isLValue, isSimple, integerConstantValue,
   controlStmtContext,
   bindName, bindRefExpr, bindDefs, hostBindDecl;
 
-flowtype Expr = decorate {env, controlStmtContext},
+flowtype Expr = decorate {env, envScope, controlStmtContext},
   isLValue {decorate}, isSimple {decorate}, integerConstantValue {decorate},
   bindRefExpr {decorate, bindName}, bindDefs {decorate, bindName}, hostBindDecl {decorate, bindName};
 
@@ -75,7 +75,7 @@ Expr ::= msg::[Message] e::Expr
 abstract production qualifiedExpr
 top::Expr ::= q::Qualifiers e::Expr
 {
-  propagate env, errors, globalDecls, functionDecls, defs, freeVariables, controlStmtContext;
+  propagate env, envScope, errors, globalDecls, functionDecls, defs, freeVariables, controlStmtContext;
   top.host = e.host;
   top.typerep = addQualifiers(q.qualifiers, e.typerep);
   top.pp = pp"qualifiedExpr (${ppImplode(space(), q.pps)} (${e.pp}))";
@@ -92,7 +92,7 @@ Expr ::= q::[Qualifier]  e::Expr
 abstract production directRefExpr
 top::Expr ::= id::Name
 {
-  propagate env, controlStmtContext;
+  propagate env, envScope, controlStmtContext;
   -- Forwarding depends on env. We must be able to compute a pp without using env.
   top.pp = id.pp;
 
@@ -107,7 +107,7 @@ Expr ::= id::Name
 abstract production declRefExpr
 top::Expr ::= id::Name
 { -- Reference to a value. (Either a Decl or a EnumItem)
-  propagate env, host, errors, globalDecls, functionDecls, defs, controlStmtContext;
+  propagate env, envScope, host, errors, globalDecls, functionDecls, defs, controlStmtContext;
   top.pp = parens( id.pp );
   top.typerep = id.valueItem.typerep;
   top.freeVariables := top.typerep.freeVariables ++ [^id];
@@ -123,7 +123,7 @@ top::Expr ::= id::Name
 abstract production stringLiteral
 top::Expr ::= l::String
 {
-  propagate env, host, errors, globalDecls, functionDecls, defs, freeVariables, controlStmtContext;
+  propagate env, envScope, host, errors, globalDecls, functionDecls, defs, freeVariables, controlStmtContext;
   top.pp = text(l);
   top.typerep =
     arrayType(
@@ -145,7 +145,9 @@ top::Expr ::= lhs::Expr  rhs::Expr
   top.pp = parens( ppConcat([ lhs.pp, brackets( rhs.pp )]) );
 
   lhs.env = top.env;
+  lhs.envScope = top.envScope;
   rhs.env = addEnv(lhs.defs, lhs.env);
+  rhs.envScope = placeholderScope();
   propagate controlStmtContext;
 
   forwards to
@@ -194,6 +196,7 @@ top::Expr ::= f::Name  a::Exprs
   top.pp = parens( ppConcat([ f.pp, parens( ppImplode( cat( comma(), space() ), a.pps ))]) );
 
   f.env = top.env;
+  f.envScope = top.envScope;
   forwards to f.valueItem.directCallHandler(^f, @a);
 }
 
@@ -225,6 +228,7 @@ production transformDirectCallExpr implements ReferenceCall
 top::Expr ::= f::Name a::Exprs result::Expr
 {
   a.env = top.env;
+  a.envScope = top.envScope;
   a.controlStmtContext = top.controlStmtContext;
   forwards to @result;
 }
@@ -236,6 +240,7 @@ top::Expr ::= f::Expr a::Exprs
   top.pp = parens( ppConcat([ f.pp, parens( ppImplode( cat( comma(), space() ), a.pps ))]) );
 
   f.env = top.env;
+  f.envScope = top.envScope;
   f.controlStmtContext = top.controlStmtContext;
   forwards to fromMaybe(defaultCallExpr, f.typerep.callProd)(f, @a);
 }
@@ -244,6 +249,7 @@ abstract production hostCallExpr
 top::Expr ::= f::Expr a::Exprs
 {
   f.env = top.env;
+  f.envScope = top.envScope;
   f.controlStmtContext = top.controlStmtContext;
   forwards to defaultCallExpr(f, @a);
 }
@@ -289,19 +295,21 @@ top::Expr ::= @f::Expr  a::Exprs
     end;
 
   a.env = addEnv(f.defs, f.env);
+  a.envScope = placeholderScope();
   a.controlStmtContext = top.controlStmtContext;
 }
 
 abstract production unevaluatedBuiltinFunctionCallExpr
 top::Expr ::= func::Name  args::Exprs
 {
-  propagate controlStmtContext, defs, env, errors, functionDecls, globalDecls, host;
+  propagate controlStmtContext, defs, env, envScope, errors, functionDecls, globalDecls, host;
   top.freeVariables := ^func :: args.freeVariables;
   top.pp = parens(ppConcat([func.pp, parens(ppImplode(cat(comma(), space()), args.pps))]));
 
   production funcExpr :: Expr = declRefExpr(@func);
   funcExpr.controlStmtContext = top.controlStmtContext;
   funcExpr.env = top.env;
+  funcExpr.envScope = top.envScope;
 
   local funcAsFuncType :: Either<Pair<Type FunctionType> [Message]> =
     case func.valueItem.typerep.defaultFunctionArrayLvalueConversion of
@@ -341,6 +349,7 @@ top::Expr ::= e::Expr  deref::Boolean  name::Name  a::Exprs
 {
   top.pp = parens( ppConcat([ e.pp, text(if deref then "->" else "."), name.pp, parens( ppImplode( cat( comma(), space() ), a.pps ))]) );
   e.env = top.env;
+  e.envScope = top.envScope;
   e.controlStmtContext = top.controlStmtContext;
 
   forwards to
@@ -355,7 +364,7 @@ abstract production memberExpr
 top::Expr ::= lhs::Expr  deref::Boolean  rhs::Name
 {
   top.pp = parens(ppConcat([lhs.pp, text(if deref then "->" else "."), rhs.pp]));
-  propagate env, controlStmtContext;
+  propagate env, envScope, controlStmtContext;
 
   forwards to
     fromMaybe(defaultMemberExpr, lhs.typerep.memberProd)(lhs, deref, @rhs);
@@ -434,15 +443,18 @@ top::Expr ::= cond::Expr  t::Expr  e::Expr
     else e.integerConstantValue;
 
   cond.env = top.env;
+  cond.envScope = top.envScope;
   t.env = addEnv(cond.defs, cond.env);
+  t.envScope = placeholderScope();
   e.env = addEnv(t.defs, t.env);
+  e.envScope = placeholderScope();
 
   -- TODO: type checking!!
 }
 abstract production binaryConditionalExpr -- GCC extension.
 top::Expr ::= cond::Expr  e::Expr
 {
-  propagate env, host, errors, globalDecls, functionDecls, defs, controlStmtContext;
+  propagate env, envScope, host, errors, globalDecls, functionDecls, defs, controlStmtContext;
   top.pp = ppConcat([ cond.pp, space(), text("?:"), space(), e.pp]);
   top.freeVariables := cond.freeVariables ++ removeDefsFromNames(cond.defs, e.freeVariables);
 
@@ -465,7 +477,9 @@ top::Expr ::= ty::TypeName  e::Expr
   top.integerConstantValue = e.integerConstantValue;
 
   ty.env = top.env;
+  ty.envScope = top.envScope;
   e.env = addEnv(ty.defs, ty.env);
+  e.envScope = placeholderScope();
 
   -- TODO: type checking!!
 }
@@ -476,7 +490,9 @@ top::Expr ::= ty::TypeName  init::InitList
   propagate controlStmtContext;
   init.initIndex = 0;
   ty.env = top.env;
+  ty.envScope = top.envScope;
   init.env = addEnv(ty.defs, ty.env);
+  init.envScope = placeholderScope();
   init.expectedType = ty.typerep;
 
   local prod::CompoundLiteral = fromMaybe(defaultCompoundLiteralExpr, ty.typerep.compoundLiteralProd);
@@ -541,7 +557,7 @@ top::Expr ::= t::Type
 abstract production predefinedFuncExpr
 top::Expr ::=
 { -- Currently (C99) just __func__ in functions.
-  propagate env, host, errors, globalDecls, functionDecls, defs, freeVariables, controlStmtContext;
+  propagate env, envScope, host, errors, globalDecls, functionDecls, defs, freeVariables, controlStmtContext;
   top.pp = parens( text("__func__") );
   top.typerep = pointerType(nilQualifier(),
   builtinType(foldQualifier([constQualifier()]), signedType(charType()))); -- const char *
@@ -551,7 +567,7 @@ top::Expr ::=
 abstract production genericSelectionExpr
 top::Expr ::= e::Expr  gl::GenericAssocs  def::MaybeExpr
 {
-  propagate env, host, errors, globalDecls, functionDecls, defs, freeVariables, controlStmtContext;
+  propagate env, envScope, host, errors, globalDecls, functionDecls, defs, freeVariables, controlStmtContext;
   top.pp = ppConcat([text("_Generic"),
     parens(ppImplode(text(", "), e.pp :: gl.pps ++
       if def.isJust then
@@ -574,15 +590,15 @@ top::Expr ::= e::Expr  gl::GenericAssocs  def::MaybeExpr
 }
 
 tracked nonterminal GenericAssocs with pps, host, errors, globalDecls, functionDecls,
-  defs, env, selectionType, compatibleSelections, freeVariables,
+  defs, env, envScope, selectionType, compatibleSelections, freeVariables,
   controlStmtContext;
-flowtype GenericAssocs = decorate {env, controlStmtContext},
+flowtype GenericAssocs = decorate {env, envScope, controlStmtContext},
   compatibleSelections {decorate, selectionType};
 
 inherited attribute selectionType :: Type;
 monoid attribute compatibleSelections :: [Decorated Expr];
 
-propagate env, host, errors, globalDecls, functionDecls, defs, freeVariables, compatibleSelections, 
+propagate env, envScope, host, errors, globalDecls, functionDecls, defs, freeVariables, compatibleSelections, 
   selectionType, controlStmtContext on GenericAssocs;
 
 abstract production consGenericAssoc
@@ -597,12 +613,12 @@ top::GenericAssocs ::=
 }
 
 tracked nonterminal GenericAssoc with pp, host, globalDecls, functionDecls,
-  errors, defs, env, selectionType, compatibleSelections, freeVariables, 
+  errors, defs, env, envScope, selectionType, compatibleSelections, freeVariables, 
   controlStmtContext;
-flowtype GenericAssoc = decorate {env, controlStmtContext},
+flowtype GenericAssoc = decorate {env, envScope, controlStmtContext},
   compatibleSelections {decorate, selectionType};
 
-propagate env, host, errors, globalDecls, functionDecls, defs, freeVariables, selectionType on GenericAssoc;
+propagate env, envScope, host, errors, globalDecls, functionDecls, defs, freeVariables, selectionType on GenericAssoc;
 
 abstract production genericAssoc
 top::GenericAssoc ::= ty::TypeName  fun::Expr
@@ -631,9 +647,11 @@ top::Expr ::= body::Stmt result::Expr
   -- Add body.functionDefs to env here, since labels don't bubble up
   -- from expressions to the top-level function.
   body.env = addEnv(body.functionDefs, openScopeEnv(top.env));
+  body.envScope = placeholderScope();
   body.controlStmtContext = controlAddLabels(top.controlStmtContext, body.labelDefs);
   result.controlStmtContext = top.controlStmtContext;
   result.env = addEnv(body.defs, body.env);
+  result.envScope = placeholderScope();
 }
 
 -- Utility for use by overloading and extensions
@@ -643,6 +661,7 @@ top::Expr ::= d::Decls  e::Expr
   top.pp = ppConcat([text("let {"), nestlines(2, ppConcat([ppImplode(line(), d.pps), line(), e.pp, text("; }")]))]);
   local s::Stmt = declStmt(decls(@d));
   s.env = top.env;
+  s.envScope = top.envScope;
   s.controlStmtContext = top.controlStmtContext;
   forwards to (if d.isEmpty then noStmtExpr else someStmtExpr)(s, @e);
 }

@@ -7,7 +7,9 @@ top::Expr ::= lhs::Expr rhs::Expr
 
   propagate controlStmtContext;
   lhs.env = top.env;
+  lhs.envScope = top.envScope;
   rhs.env = addEnv(lhs.defs, lhs.env);
+  rhs.envScope = placeholderScope();
 
   local lType::Type = lhs.typerep;
   lType.otherType = rhs.typerep;
@@ -20,7 +22,9 @@ top::Expr ::= lhs::Expr rhs::Expr
 {
   propagate controlStmtContext;
   lhs.env = top.env;
+  lhs.envScope = top.envScope;
   rhs.env = addEnv(lhs.defs, lhs.env);
+  rhs.envScope = placeholderScope();
   forwards to defaultEqExpr(lhs, rhs);
 }
 abstract production defaultEqExpr implements AssignOp
@@ -44,7 +48,9 @@ top::Expr ::= lhs::Expr rhs::Expr
 
   propagate controlStmtContext;
   lhs.env = top.env;
+  lhs.envScope = top.envScope;
   rhs.env = addEnv(lhs.defs, lhs.env);
+  rhs.envScope = placeholderScope();
 
   local lType::Type = lhs.typerep;
   lType.otherType = rhs.typerep;
@@ -81,7 +87,9 @@ top::Expr ::= lhs::Expr rhs::Expr
 
   propagate controlStmtContext;
   lhs.env = top.env;
+  lhs.envScope = top.envScope;
   rhs.env = addEnv(lhs.defs, lhs.env);
+  rhs.envScope = placeholderScope();
 
   local lType::Type = lhs.typerep;
   lType.otherType = rhs.typerep;
@@ -117,7 +125,9 @@ top::Expr ::= lhs::Expr rhs::Expr
 
   propagate controlStmtContext;
   lhs.env = top.env;
+  lhs.envScope = top.envScope;
   rhs.env = addEnv(lhs.defs, lhs.env);
+  rhs.envScope = placeholderScope();
 
   local lType::Type = lhs.typerep;
   lType.otherType = rhs.typerep;
@@ -154,7 +164,9 @@ top::Expr ::= lhs::Expr rhs::Expr
 
   propagate controlStmtContext;
   lhs.env = top.env;
+  lhs.envScope = top.envScope;
   rhs.env = addEnv(lhs.defs, lhs.env);
+  rhs.envScope = placeholderScope();
 
   local lType::Type = lhs.typerep;
   lType.otherType = rhs.typerep;
@@ -191,7 +203,9 @@ top::Expr ::= lhs::Expr rhs::Expr
 
   propagate controlStmtContext;
   lhs.env = top.env;
+  lhs.envScope = top.envScope;
   rhs.env = addEnv(lhs.defs, lhs.env);
+  rhs.envScope = placeholderScope();
 
   local lType::Type = lhs.typerep;
   lType.otherType = rhs.typerep;
@@ -228,7 +242,9 @@ top::Expr ::= lhs::Expr rhs::Expr
 
   propagate controlStmtContext;
   lhs.env = top.env;
+  lhs.envScope = top.envScope;
   rhs.env = addEnv(lhs.defs, lhs.env);
+  rhs.envScope = placeholderScope();
 
   local lType::Type = lhs.typerep;
   lType.otherType = rhs.typerep;
@@ -265,7 +281,9 @@ top::Expr ::= lhs::Expr rhs::Expr
 
   propagate controlStmtContext;
   lhs.env = top.env;
+  lhs.envScope = top.envScope;
   rhs.env = addEnv(lhs.defs, lhs.env);
+  rhs.envScope = placeholderScope();
 
   local lType::Type = lhs.typerep;
   lType.otherType = rhs.typerep;
@@ -302,7 +320,9 @@ top::Expr ::= lhs::Expr rhs::Expr
 
   propagate controlStmtContext;
   lhs.env = top.env;
+  lhs.envScope = top.envScope;
   rhs.env = addEnv(lhs.defs, lhs.env);
+  rhs.envScope = placeholderScope();
 
   local lType::Type = lhs.typerep;
   lType.otherType = rhs.typerep;
@@ -339,7 +359,9 @@ top::Expr ::= lhs::Expr rhs::Expr
 
   propagate controlStmtContext;
   lhs.env = top.env;
+  lhs.envScope = top.envScope;
   rhs.env = addEnv(lhs.defs, lhs.env);
+  rhs.envScope = placeholderScope();
 
   local lType::Type = lhs.typerep;
   lType.otherType = rhs.typerep;
@@ -376,7 +398,9 @@ top::Expr ::= lhs::Expr rhs::Expr
 
   propagate controlStmtContext;
   lhs.env = top.env;
+  lhs.envScope = top.envScope;
   rhs.env = addEnv(lhs.defs, lhs.env);
+  rhs.envScope = placeholderScope();
 
   local lType::Type = lhs.typerep;
   lType.otherType = rhs.typerep;
@@ -434,7 +458,9 @@ top::Expr ::= lhs::Expr rhs::Expr
 
   propagate controlStmtContext;
   lhs.env = top.env;
+  lhs.envScope = top.envScope;
   rhs.env = addEnv(lhs.defs, lhs.env);
+  rhs.envScope = placeholderScope();
 
   local lType::Type = lhs.typerep;
   lType.otherType = rhs.typerep;
@@ -466,7 +492,9 @@ top::Expr ::= lhs::Expr rhs::Expr
 
   propagate controlStmtContext;
   lhs.env = top.env;
+  lhs.envScope = top.envScope;
   rhs.env = addEnv(lhs.defs, lhs.env);
+  rhs.envScope = placeholderScope();
 
   local lType::Type = lhs.typerep;
   lType.otherType = rhs.typerep;
@@ -498,7 +526,9 @@ top::Expr ::= lhs::Expr rhs::Expr
 
   propagate controlStmtContext;
   lhs.env = top.env;
+  lhs.envScope = top.envScope;
   rhs.env = addEnv(lhs.defs, lhs.env);
+  rhs.envScope = placeholderScope();
 
   local lType::Type = lhs.typerep;
   lType.otherType = rhs.typerep;
@@ -532,7 +562,9 @@ top::Expr ::= lhs::Expr rhs::Expr
 
   propagate controlStmtContext;
   lhs.env = top.env;
+  lhs.envScope = top.envScope;
   rhs.env = addEnv(lhs.defs, lhs.env);
+  rhs.envScope = placeholderScope();
 
   local lType::Type = lhs.typerep;
   lType.otherType = rhs.typerep;
@@ -566,7 +598,9 @@ top::Expr ::= lhs::Expr rhs::Expr
 
   propagate controlStmtContext;
   lhs.env = top.env;
+  lhs.envScope = top.envScope;
   rhs.env = addEnv(lhs.defs, lhs.env);
+  rhs.envScope = placeholderScope();
 
   local lType::Type = lhs.typerep;
   lType.otherType = rhs.typerep;
@@ -600,7 +634,9 @@ top::Expr ::= lhs::Expr rhs::Expr
   
   propagate controlStmtContext;
   lhs.env = top.env;
+  lhs.envScope = top.envScope;
   rhs.env = addEnv(lhs.defs, lhs.env);
+  rhs.envScope = placeholderScope();
 
   local lType::Type = lhs.typerep;
   lType.otherType = rhs.typerep;
@@ -632,7 +668,9 @@ top::Expr ::= lhs::Expr rhs::Expr
   
   propagate controlStmtContext;
   lhs.env = top.env;
+  lhs.envScope = top.envScope;
   rhs.env = addEnv(lhs.defs, lhs.env);
+  rhs.envScope = placeholderScope();
 
   local lType::Type = lhs.typerep;
   lType.otherType = rhs.typerep;
@@ -664,7 +702,9 @@ top::Expr ::= lhs::Expr rhs::Expr
 
   propagate controlStmtContext;
   lhs.env = top.env;
+  lhs.envScope = top.envScope;
   rhs.env = addEnv(lhs.defs, lhs.env);
+  rhs.envScope = placeholderScope();
 
   local lType::Type = lhs.typerep;
   lType.otherType = rhs.typerep;
@@ -696,7 +736,9 @@ top::Expr ::= lhs::Expr rhs::Expr
 
   propagate controlStmtContext;
   lhs.env = top.env;
+  lhs.envScope = top.envScope;
   rhs.env = addEnv(lhs.defs, lhs.env);
+  rhs.envScope = placeholderScope();
 
   local lType::Type = lhs.typerep;
   lType.otherType = rhs.typerep;
@@ -739,7 +781,9 @@ top::Expr ::= lhs::Expr rhs::Expr
 
   propagate controlStmtContext;
   lhs.env = top.env;
+  lhs.envScope = top.envScope;
   rhs.env = addEnv(lhs.defs, lhs.env);
+  rhs.envScope = placeholderScope();
 
   local lType::Type = lhs.typerep;
   lType.otherType = rhs.typerep;
@@ -771,7 +815,9 @@ top::Expr ::= lhs::Expr rhs::Expr
 
   propagate controlStmtContext;
   lhs.env = top.env;
+  lhs.envScope = top.envScope;
   rhs.env = addEnv(lhs.defs, lhs.env);
+  rhs.envScope = placeholderScope();
 
   local lType::Type = lhs.typerep;
   lType.otherType = rhs.typerep;
@@ -803,7 +849,9 @@ top::Expr ::= lhs::Expr rhs::Expr
 
   propagate controlStmtContext;
   lhs.env = top.env;
+  lhs.envScope = top.envScope;
   rhs.env = addEnv(lhs.defs, lhs.env);
+  rhs.envScope = placeholderScope();
 
   local lType::Type = lhs.typerep;
   lType.otherType = rhs.typerep;
@@ -835,7 +883,9 @@ top::Expr ::= lhs::Expr rhs::Expr
 
   propagate controlStmtContext;
   lhs.env = top.env;
+  lhs.envScope = top.envScope;
   rhs.env = addEnv(lhs.defs, lhs.env);
+  rhs.envScope = placeholderScope();
 
   local lType::Type = lhs.typerep;
   lType.otherType = rhs.typerep;
@@ -867,7 +917,9 @@ top::Expr ::= lhs::Expr rhs::Expr
 
   propagate controlStmtContext;
   lhs.env = top.env;
+  lhs.envScope = top.envScope;
   rhs.env = addEnv(lhs.defs, lhs.env);
+  rhs.envScope = placeholderScope();
 
   local lType::Type = lhs.typerep;
   lType.otherType = rhs.typerep;
@@ -899,7 +951,9 @@ top::Expr ::= lhs::Expr rhs::Expr
 
   propagate controlStmtContext;
   lhs.env = top.env;
+  lhs.envScope = top.envScope;
   rhs.env = addEnv(lhs.defs, lhs.env);
+  rhs.envScope = placeholderScope();
 
   local lType::Type = lhs.typerep;
   lType.otherType = rhs.typerep;
@@ -931,7 +985,9 @@ top::Expr ::= lhs::Expr rhs::Expr
 
   propagate controlStmtContext;
   lhs.env = top.env;
+  lhs.envScope = top.envScope;
   rhs.env = addEnv(lhs.defs, lhs.env);
+  rhs.envScope = placeholderScope();
 
   local lType::Type = lhs.typerep;
   lType.otherType = rhs.typerep;
@@ -963,7 +1019,9 @@ top::Expr ::= lhs::Expr rhs::Expr
 
   propagate controlStmtContext;
   lhs.env = top.env;
+  lhs.envScope = top.envScope;
   rhs.env = addEnv(lhs.defs, lhs.env);
+  rhs.envScope = placeholderScope();
 
   local lType::Type = lhs.typerep;
   lType.otherType = rhs.typerep;
@@ -995,7 +1053,9 @@ top::Expr ::= lhs::Expr rhs::Expr
 
   propagate controlStmtContext;
   lhs.env = top.env;
+  lhs.envScope = top.envScope;
   rhs.env = addEnv(lhs.defs, lhs.env);
+  rhs.envScope = placeholderScope();
 
   local lType::Type = lhs.typerep;
   lType.otherType = rhs.typerep;
@@ -1030,7 +1090,9 @@ top::Expr ::= lhs::Expr rhs::Expr
     removeDefsFromNames(lhs.defs, rhs.freeVariables);
   top.typerep = rhs.typerep;
   lhs.env = top.env;
+  lhs.envScope = top.envScope;
   rhs.env = addEnv(lhs.defs, lhs.env);
+  rhs.envScope = placeholderScope();
   top.isLValue = false;
 }
 

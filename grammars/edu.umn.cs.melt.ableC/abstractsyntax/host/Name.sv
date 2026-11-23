@@ -21,8 +21,14 @@ restricted synthesized attribute valueItem :: ValueItem;
 restricted synthesized attribute tagItem :: TagItem;
 restricted synthesized attribute labelItem :: LabelItem;
 
-tracked nonterminal Name with name, compareTo, isEqual, pp, host, env, valueLocalLookup, labelRedeclarationCheck, valueLookupCheck, tagLookupCheck, labelLookupCheck, valueItem, tagItem, labelItem, tagLocalLookup, tagHasForwardDcl, tagRefId, valueRedeclarationCheck, valueRedeclarationCheckNoCompatible, valueMergeRedeclExtnQualifiers, controlStmtContext;
-flowtype Name = decorate {env}, name {}, host {}, valueLocalLookup {env}, labelRedeclarationCheck {controlStmtContext}, valueLookupCheck {env}, tagLookupCheck {env}, labelLookupCheck {controlStmtContext}, valueItem {env}, tagItem {env}, labelItem {controlStmtContext}, tagLocalLookup {env}, tagHasForwardDcl {env}, tagRefId {env}, valueRedeclarationCheck {decorate}, valueRedeclarationCheckNoCompatible {decorate}, valueMergeRedeclExtnQualifiers {decorate};
+tracked nonterminal Name with name, compareTo, isEqual, pp, host, env, envScope, valueLocalLookup, labelRedeclarationCheck, valueLookupCheck, tagLookupCheck, labelLookupCheck, valueItem, tagItem, labelItem, tagLocalLookup, tagHasForwardDcl, tagRefId, valueRedeclarationCheck, valueRedeclarationCheckNoCompatible, valueMergeRedeclExtnQualifiers, controlStmtContext;
+flowtype Name = decorate {env, envScope}, name {}, host {}, valueLocalLookup {env, envScope},
+                  labelRedeclarationCheck {controlStmtContext}, valueLookupCheck {env, envScope},
+                  tagLookupCheck {env, envScope}, labelLookupCheck {controlStmtContext},
+                  valueItem {env, envScope}, tagItem {env, envScope}, labelItem {controlStmtContext},
+                  tagLocalLookup {env, envScope}, tagHasForwardDcl {env, envScope}, tagRefId {env, envScope},
+                  valueRedeclarationCheck {decorate},
+                  valueRedeclarationCheckNoCompatible {decorate}, valueMergeRedeclExtnQualifiers {decorate};
 
 abstract production name
 top::Name ::= n::String
@@ -86,13 +92,18 @@ inherited attribute anonTagRefId::String;
 synthesized attribute maybename :: Maybe<Name>;
 synthesized attribute hasName :: Boolean;
 
-tracked nonterminal MaybeName with maybename, pp, host, env, valueLocalLookup, tagLocalLookup, tagHasForwardDcl, anonTagRefId, tagRefId, hasName, valueRedeclarationCheckNoCompatible, valueRedeclarationCheck, valueMergeRedeclExtnQualifiers;
-flowtype MaybeName = decorate {env}, maybename {}, hasName {}, host {}, valueLocalLookup {env}, tagLocalLookup {env}, tagHasForwardDcl {env}, tagRefId {anonTagRefId, env}, valueRedeclarationCheckNoCompatible {decorate}, valueRedeclarationCheck {decorate}, valueMergeRedeclExtnQualifiers {decorate};
+tracked nonterminal MaybeName with maybename, pp, host, env, envScope,
+  valueLocalLookup, tagLocalLookup, tagHasForwardDcl, anonTagRefId, tagRefId,
+  hasName, valueRedeclarationCheckNoCompatible, valueRedeclarationCheck, valueMergeRedeclExtnQualifiers;
+flowtype MaybeName = decorate {env, envScope}, maybename {}, hasName {}, host {},
+  valueLocalLookup {env, envScope}, tagLocalLookup {env, envScope}, tagHasForwardDcl {env, envScope},
+  tagRefId {anonTagRefId, env, envScope}, valueRedeclarationCheckNoCompatible {decorate},
+  valueRedeclarationCheck {decorate}, valueMergeRedeclExtnQualifiers {decorate};
 
 abstract production justName
 top::MaybeName ::= n::Name
 {
-  propagate env, host;
+  propagate env, envScope, host;
   top.pp = n.pp;
   top.maybename = just(^n);
   top.hasName = true;
@@ -128,10 +139,10 @@ synthesized attribute names :: [String];
 inherited attribute appendedNames :: Names;
 synthesized attribute appendedNamesRes :: Names;
 
-tracked nonterminal Names with env, pps, names, count, valueRedeclarationCheck, valueRedeclarationCheckNoCompatible, appendedNames, appendedNamesRes;
-flowtype Names = decorate {env}, pps {}, names {}, count {}, valueRedeclarationCheck {decorate}, valueRedeclarationCheckNoCompatible {decorate}, appendedNamesRes {appendedNames};
+tracked nonterminal Names with env, envScope, pps, names, count, valueRedeclarationCheck, valueRedeclarationCheckNoCompatible, appendedNames, appendedNamesRes;
+flowtype Names = decorate {env, envScope}, pps {}, names {}, count {}, valueRedeclarationCheck {decorate}, valueRedeclarationCheckNoCompatible {decorate}, appendedNamesRes {appendedNames};
 
-propagate env on Names;
+propagate env, envScope on Names;
 
 abstract production consName
 top::Names ::= h::Name t::Names

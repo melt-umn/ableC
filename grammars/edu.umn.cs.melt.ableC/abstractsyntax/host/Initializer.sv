@@ -9,8 +9,8 @@ propagate host on MaybeInitializer, InitList, Init, Designator;
 propagate freeVariables on MaybeInitializer, Initializer, Init, Designator;
 
 tracked nonterminal MaybeInitializer with pp, host, typerep, errors, globalDecls,
-  functionDecls, defs, env, expectedType, freeVariables, controlStmtContext;
-flowtype MaybeInitializer = decorate {env, expectedType, controlStmtContext};
+  functionDecls, defs, env, envScope, expectedType, freeVariables, controlStmtContext;
+flowtype MaybeInitializer = decorate {env, envScope, expectedType, controlStmtContext};
 
 propagate controlStmtContext on MaybeInitializer;
 
@@ -23,7 +23,7 @@ top::MaybeInitializer ::=
 abstract production justInitializer
 top::MaybeInitializer ::= i::Initializer
 {
-  propagate env;
+  propagate env, envScope;
   
   top.pp = ppConcat([ text(" = "), i.pp ]);
   top.typerep = i.typerep;
@@ -38,14 +38,14 @@ threaded attribute nestedInits, nestedInitsOut :: Integer;
 synthesized attribute asExpr::Expr;
 
 tracked nonterminal Initializer with pp, host, typerep, errors, globalDecls,
-  functionDecls, defs, env, initializerPos, inObject, expectedType, expectedTypesOut,
+  functionDecls, defs, env, envScope, initializerPos, inObject, expectedType, expectedTypesOut,
   nestedInits, nestedInitsOut, freeVariables, controlStmtContext,
   isSimple, asExpr;
-flowtype Initializer = decorate {env, initializerPos, inObject, expectedType,
+flowtype Initializer = decorate {env, envScope, initializerPos, inObject, expectedType,
   controlStmtContext},
   expectedTypesOut {decorate}, nestedInitsOut {decorate, nestedInits}, asExpr {decorate}, isSimple {decorate};
 
-propagate env, controlStmtContext on Initializer;
+propagate env, envScope, controlStmtContext on Initializer;
 
 abstract production exprInitializer
 top::Initializer ::= e::Expr
@@ -86,7 +86,7 @@ abstract production objectInitializer
 top::Initializer ::= l::InitList
 {
   top.pp = ppConcat([text("{"), ppImplode(text(", "), l.pps), text("}")]);
-  propagate env, controlStmtContext;
+  propagate env, envScope, controlStmtContext;
   l.initIndex = 0;
   l.expectedType = top.expectedType;
 
@@ -140,10 +140,10 @@ threaded attribute initIndex, initIndexOut::Integer;
 monoid attribute maxIndex::Integer with -1, max;
 
 tracked nonterminal InitList with pps, initIndex, initIndexOut, maxIndex, host, typerep,
-  errors, globalDecls, functionDecls, defs, env, expectedType, expectedTypes,
+  errors, globalDecls, functionDecls, defs, env, envScope, expectedType, expectedTypes,
   nestedInits, freeVariables, controlStmtContext,
   isSimple;
-flowtype InitList = decorate {initIndex, env, expectedType, expectedTypes,
+flowtype InitList = decorate {initIndex, env, envScope, expectedType, expectedTypes,
   controlStmtContext},
   maxIndex {decorate};
 propagate initIndex, initIndexOut, maxIndex, expectedTypes, nestedInits, controlStmtContext on InitList;
@@ -169,7 +169,9 @@ top::InitList ::= h::Init  t::InitList
   top.isSimple = h.isSimple && t.isSimple;
 
   h.env = top.env;
+  h.envScope = top.envScope;
   t.env = addEnv(h.defs, h.env);
+  t.envScope = placeholderScope();
 }
 
 abstract production nilInit
@@ -187,10 +189,10 @@ fun appendInitList InitList ::= l1::InitList l2::InitList =
   end;
 
 tracked nonterminal Init with pp, initIndex, initIndexOut, maxIndex, host, errors,
-  globalDecls, functionDecls, defs, env, expectedType, expectedTypes, expectedTypesOut,
+  globalDecls, functionDecls, defs, env, envScope, expectedType, expectedTypes, expectedTypesOut,
   nestedInits, nestedInitsOut, freeVariables, controlStmtContext,
   isSimple;
-flowtype Init = decorate {initIndex, env, expectedType, expectedTypes,
+flowtype Init = decorate {initIndex, env, envScope, expectedType, expectedTypes,
   controlStmtContext},
   maxIndex {decorate}, initIndexOut {decorate}, expectedTypesOut {decorate};
 
@@ -199,7 +201,7 @@ propagate controlStmtContext, bindName on Init;
 abstract production positionalInit
 top::Init ::= i::Initializer
 {
-  propagate env;
+  propagate env, envScope;
 
   top.pp = i.pp;
   top.initIndexOut = 1 + top.initIndex;
@@ -241,7 +243,9 @@ top::Init ::= d::Designator  i::Initializer
   d.expectedType = top.expectedType;
 
   d.env = top.env;
+  d.envScope = top.envScope;
   i.env = addEnv(d.defs, d.env);
+  i.envScope = placeholderScope();
   i.initializerPos = s"member ${show(80, d.pp)} of ${show(80, top.expectedType)}";
   i.inObject = true;
   i.expectedType = d.typerep;
@@ -252,8 +256,8 @@ top::Init ::= d::Designator  i::Initializer
  - e.g.  "[1].d[0] = e" gives "array(0, field(d, array(1, initial)))"
  -}
 tracked nonterminal Designator with pp, maxIndex, host, errors, globalDecls, functionDecls,
-  defs, env, expectedType, expectedTypesOut, typerep, freeVariables, controlStmtContext;
-flowtype Designator = decorate {env, expectedType, controlStmtContext},
+  defs, env, envScope, expectedType, expectedTypesOut, typerep, freeVariables, controlStmtContext;
+flowtype Designator = decorate {env, envScope, expectedType, controlStmtContext},
   maxIndex {decorate}, expectedTypesOut {decorate};
 
 propagate controlStmtContext on Designator;
@@ -270,7 +274,7 @@ top::Designator ::=
 abstract production fieldDesignator
 top::Designator ::= d::Designator  f::Name
 {
-  propagate env;
+  propagate env, envScope;
 
   top.pp = ppConcat([d.pp, text("."), f.pp]);
   top.maxIndex := -1;
@@ -366,7 +370,9 @@ top::Designator ::= d::Designator  e::Expr
     end;
 
   d.env = top.env;
+  d.envScope = top.envScope;
   e.env = addEnv(d.defs, d.env);
+  e.envScope = placeholderScope();
 
   top.typerep = d.typerep;
 }
@@ -375,7 +381,7 @@ top::Designator ::= d::Designator  e::Expr
 abstract production arrayRangeDesignator
 top::Designator ::= d::Designator  l::Expr  u::Expr
 {
-  propagate env;
+  propagate env, envScope;
 
   top.pp = ppConcat([d.pp, text("["), l.pp, text("..."), u.pp, text("]")]);
   top.maxIndex := fromMaybe(-1, u.integerConstantValue);

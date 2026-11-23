@@ -92,7 +92,9 @@ top::Attrib ::= n::AttribName  e::Exprs
   -- Needed since we are matching on Expr
   -- Not a big deal since these are pretty much just constants
   n.env = top.env;
+  n.envScope = top.envScope;
   e.env = emptyEnv();
+  e.envScope = placeholderScope();
   e.controlStmtContext = initialControlStmtContext;
 }
 -- e.g. __attribute__((something(foo, "well whatever")))

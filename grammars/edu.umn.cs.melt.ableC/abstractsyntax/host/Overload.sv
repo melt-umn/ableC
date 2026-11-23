@@ -40,6 +40,7 @@ top::Expr ::= @e::Expr deref::Boolean name::Name prod::MemberAccess
 {
   production derefE::Expr = if deref then dereferenceExpr(@e) else @e;
   derefE.env = top.env;
+  derefE.envScope = top.envScope;
   derefE.controlStmtContext = top.controlStmtContext;
   forwards to prod(derefE, false, @name);
 }
@@ -64,6 +65,7 @@ top::Expr ::= @e::Expr deref::Boolean name::Name args::Exprs prod::MemberCall
 {
   production derefE::Expr = if deref then dereferenceExpr(@e) else @e;
   derefE.env = top.env;
+  derefE.envScope = top.envScope;
   derefE.controlStmtContext = top.controlStmtContext;
   forwards to prod(derefE, false, @name, @args);
 }
@@ -85,6 +87,7 @@ production transformExprInitializer implements ExprInitializer
 top::Initializer ::= e::Expr result::Initializer
 {
   e.env = top.env;
+  e.envScope = top.envScope;
   e.controlStmtContext = top.controlStmtContext;
   forwards to @result;
 }

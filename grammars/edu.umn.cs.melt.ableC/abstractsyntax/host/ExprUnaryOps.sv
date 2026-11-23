@@ -4,7 +4,7 @@ abstract production preIncExpr
 top::Expr ::= e::Expr
 {
   top.pp = parens( cat( text("++"), e.pp ) );
-  propagate env, controlStmtContext;
+  propagate env, envScope, controlStmtContext;
 
   local prod::UnaryUpdateOp = fromMaybe(defaultPreIncExpr, e.typerep.preIncProd);
   forwards to prod(e);
@@ -27,7 +27,7 @@ abstract production preDecExpr
 top::Expr ::= e::Expr
 {
   top.pp = parens( cat( text("--"), e.pp ) );
-  propagate env, controlStmtContext;
+  propagate env, envScope, controlStmtContext;
 
   local prod::UnaryUpdateOp = fromMaybe(defaultPreDecExpr, e.typerep.preDecProd);
   forwards to prod(e);
@@ -50,7 +50,7 @@ abstract production postIncExpr
 top::Expr ::= e::Expr
 {
   top.pp = parens( cat( e.pp, text("++") ) );
-  propagate env, controlStmtContext;
+  propagate env, envScope, controlStmtContext;
 
   local prod::UnaryUpdateOp = fromMaybe(defaultPostIncExpr, e.typerep.postIncProd);
   forwards to prod(e);
@@ -73,7 +73,7 @@ abstract production postDecExpr
 top::Expr ::= e::Expr
 {
   top.pp = parens( cat( e.pp, text("--") ) );
-  propagate env, controlStmtContext;
+  propagate env, envScope, controlStmtContext;
 
   local prod::UnaryUpdateOp = fromMaybe(defaultPostDecExpr, e.typerep.postDecProd);
   forwards to prod(e);
@@ -96,7 +96,7 @@ abstract production addressOfExpr
 top::Expr ::= e::Expr
 {
   top.pp = parens( cat( text("&"), e.pp ) );
-  propagate env, controlStmtContext;
+  propagate env, envScope, controlStmtContext;
 
   local prod::UnaryOp = fromMaybe(defaultAddressOfExpr, e.typerep.addressOfProd);
   forwards to prod(e);
@@ -105,7 +105,7 @@ top::Expr ::= e::Expr
 production hostAddressOfExpr
 top::Expr ::= e::Expr
 {
-  propagate env, controlStmtContext;
+  propagate env, envScope, controlStmtContext;
   forwards to defaultAddressOfExpr(e);
 }
 abstract production defaultAddressOfExpr implements UnaryOp
@@ -128,7 +128,7 @@ abstract production dereferenceExpr
 top::Expr ::= e::Expr
 {
   top.pp = parens( cat( text("*"), e.pp ) );
-  propagate env, controlStmtContext;
+  propagate env, envScope, controlStmtContext;
 
   local prod::UnaryOp = fromMaybe(defaultDereferenceExpr, e.typerep.dereferenceProd);
   forwards to prod(e);
@@ -161,7 +161,7 @@ top::Expr ::= @e::Expr
 production hostDereferenceExpr
 top::Expr ::= e::Expr
 {
-  propagate env, controlStmtContext;
+  propagate env, envScope, controlStmtContext;
   forwards to defaultDereferenceExpr(e);
 }
 
@@ -169,7 +169,7 @@ abstract production positiveExpr
 top::Expr ::= e::Expr
 {
   top.pp = parens( cat( text("+"), e.pp ) );
-  propagate env, controlStmtContext;
+  propagate env, envScope, controlStmtContext;
 
   local prod::UnaryOp = fromMaybe(defaultPositiveExpr, e.typerep.positiveProd);
   forwards to prod(e);
@@ -188,7 +188,7 @@ abstract production negativeExpr
 top::Expr ::= e::Expr
 {
   top.pp = parens( cat( text("-"), e.pp ) );
-  propagate env, controlStmtContext;
+  propagate env, envScope, controlStmtContext;
 
   local prod::UnaryOp = fromMaybe(defaultNegativeExpr, e.typerep.negativeProd);
   forwards to prod(e);
@@ -207,7 +207,7 @@ abstract production bitNegateExpr
 top::Expr ::= e::Expr
 {
   top.pp = parens( cat( text("~"), e.pp ) );
-  propagate env, controlStmtContext;
+  propagate env, envScope, controlStmtContext;
 
   local prod::UnaryOp = fromMaybe(defaultBitNegateExpr, e.typerep.bitNegateProd);
   forwards to prod(e);
@@ -226,7 +226,7 @@ abstract production notExpr
 top::Expr ::= e::Expr
 {
   top.pp = parens( cat( text("!"), e.pp ) );
-  propagate env, controlStmtContext;
+  propagate env, envScope, controlStmtContext;
 
   local prod::UnaryOp = fromMaybe(defaultNotExpr, e.typerep.notProd);
   forwards to prod(e);
@@ -245,7 +245,7 @@ top::Expr ::= @e::Expr
 abstract production realExpr
 top::Expr ::= e::Expr
 {
-  propagate env, host, errors, globalDecls, functionDecls, defs, freeVariables, controlStmtContext;
+  propagate env, envScope, host, errors, globalDecls, functionDecls, defs, freeVariables, controlStmtContext;
   top.pp = parens( cat( text("__real__"), e.pp ) );
   top.typerep = e.typerep.defaultLvalueConversion.integerPromotions;
 }
@@ -253,7 +253,7 @@ top::Expr ::= e::Expr
 abstract production imagExpr
 top::Expr ::= e::Expr
 {
-  propagate env, host, errors, globalDecls, functionDecls, defs, freeVariables, controlStmtContext;
+  propagate env, envScope, host, errors, globalDecls, functionDecls, defs, freeVariables, controlStmtContext;
   top.pp = parens( cat( text("__imag__"), e.pp ) );
   top.typerep = e.typerep.defaultLvalueConversion.integerPromotions;
 }
@@ -261,7 +261,7 @@ top::Expr ::= e::Expr
 abstract production sizeofExpr
 top::Expr ::= e::ExprOrTypeName
 {
-  propagate env, host, errors, globalDecls, functionDecls, defs, freeVariables, controlStmtContext;
+  propagate env, envScope, host, errors, globalDecls, functionDecls, defs, freeVariables, controlStmtContext;
   top.pp = parens( ppConcat([text("sizeof"), parens(e.pp)]) );
   top.typerep = builtinType(nilQualifier(), signedType(intType())); -- TODO result type
 }
@@ -269,7 +269,7 @@ top::Expr ::= e::ExprOrTypeName
 abstract production alignofExpr
 top::Expr ::= e::ExprOrTypeName
 {
-  propagate env, host, errors, globalDecls, functionDecls, defs, freeVariables, controlStmtContext;
+  propagate env, envScope, host, errors, globalDecls, functionDecls, defs, freeVariables, controlStmtContext;
   top.pp = parens( ppConcat([text("_Alignof"), parens(e.pp)]) );
   top.typerep = builtinType(nilQualifier(), signedType(intType())); -- TODO result type
 }
