@@ -2,11 +2,13 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax:env;
 
 imports edu:umn:cs:melt:ableC:abstractsyntax:host;
 
+-- True if using scope graphs
+global sgOn::Boolean = false;
+
 {--
  - The environment values that get passed around and used to look up names.
  -}
--- data nonterminal Env with tags, values, refIds, deferredDecls, misc;
-data nonterminal Env;
+data nonterminal Env with tags, values, refIds, deferredDecls, misc;
 
 {--
  - A list of definitions, only used in contributing new names to the environment.
@@ -70,32 +72,48 @@ fun addEnv Env ::= d::[Def]  e::Env =
 
 -- Environment lookup functions
 
-{-
-fun lookupValue [ValueItem] ::= n::String  e::Env = lookupScope(n, e.values);
-fun lookupTag [TagItem] ::= n::String  e::Env = lookupScope(n, e.tags);
-fun lookupRefId [RefIdItem] ::= n::String  e::Env = lookupScope(n, e.refIds);
-fun lookupDeferredDecls [Decl] ::= n::String  e::Env = lookupScope(n, e.deferredDecls);
-fun lookupMisc [MiscItem] ::= n::String  e::Env = lookupScope(n, e.misc);
--}
 fun lookupValue [ValueItem] ::= n::String  e::Env = 
-  map(\sd::Decorated SGNode -> case sd.datum of datumValue(_, v) -> v | _ -> error("") end, lookupScopeSG(n, e.scope, labelVal()));
-fun lookupTag [TagItem] ::= n::String  e::Env = 
-  map(\sd::Decorated SGNode -> case sd.datum of datumTag(_, v) -> v | _ -> error("") end, lookupScopeSG(n, e.scope, labelTag()));
+  if sgOn then lookupValueSG(n, e) else lookupValueList(n, e);
+fun lookupTag [TagItem] ::= n::String  e::Env =  
+  if sgOn then lookupTagSG(n, e) else lookupTagList(n, e);
 fun lookupRefId [RefIdItem] ::= n::String  e::Env =
-  map(\sd::Decorated SGNode -> case sd.datum of datumRefId(_, v) -> v | _ -> error("") end, lookupScopeSG(n, e.scope, labelRefId()));
+  if sgOn then lookupRefIdSG(n, e) else lookupRefIdList(n, e);
 fun lookupDeferredDecls [Decl] ::= n::String  e::Env =
-  map(\sd::Decorated SGNode -> case sd.datum of datumDeferredDecl(_, v) -> ^v | _ -> error("") end, lookupScopeSG(n, e.scope, labelDefer()));
+  if sgOn then lookupDeferredDeclsSG(n, e) else lookupDeferredDeclsList(n, e);
 fun lookupMisc [MiscItem] ::= n::String  e::Env =
+  if sgOn then lookupMiscSG(n, e) else lookupMiscList(n, e);
+
+fun lookupValueInLocalScope [ValueItem] ::= n::String  e::Env =
+  if sgOn then lookupValueInLocalScopeSG(n, e) else lookupValueInLocalScopeList(n, e);
+fun lookupTagInLocalScope [TagItem] ::= n::String  e::Env =
+  if sgOn then lookupTagInLocalScopeSG(n, e) else lookupTagInLocalScopeList(n, e);
+fun lookupMiscInLocalScope [MiscItem] ::= n::String  e::Env =
+  if sgOn then lookupMiscInLocalScopeSG(n, e) else lookupMiscInLocalScopeList(n, e);
+
+fun lookupValueList [ValueItem] ::= n::String  e::Env = lookupScope(n, e.values);
+fun lookupTagList [TagItem] ::= n::String  e::Env = lookupScope(n, e.tags);
+fun lookupRefIdList [RefIdItem] ::= n::String  e::Env = lookupScope(n, e.refIds);
+fun lookupDeferredDeclsList [Decl] ::= n::String  e::Env = lookupScope(n, e.deferredDecls);
+fun lookupMiscList [MiscItem] ::= n::String  e::Env = lookupScope(n, e.misc);
+
+fun lookupValueInLocalScopeList [ValueItem] ::= n::String  e::Env = lookupInLocalScope(n, e.values);
+fun lookupTagInLocalScopeList [TagItem] ::= n::String  e::Env = lookupInLocalScope(n, e.tags);
+fun lookupMiscInLocalScopeList [MiscItem] ::= n::String  e::Env = lookupInLocalScope(n, e.misc);
+
+fun lookupValueSG [ValueItem] ::= n::String  e::Env = 
+  map(\sd::Decorated SGNode -> case sd.datum of datumValue(_, v) -> v | _ -> error("") end, lookupScopeSG(n, e.scope, labelVal()));
+fun lookupTagSG [TagItem] ::= n::String  e::Env = 
+  map(\sd::Decorated SGNode -> case sd.datum of datumTag(_, v) -> v | _ -> error("") end, lookupScopeSG(n, e.scope, labelTag()));
+fun lookupRefIdSG [RefIdItem] ::= n::String  e::Env =
+  map(\sd::Decorated SGNode -> case sd.datum of datumRefId(_, v) -> v | _ -> error("") end, lookupScopeSG(n, e.scope, labelRefId()));
+fun lookupDeferredDeclsSG [Decl] ::= n::String  e::Env =
+  map(\sd::Decorated SGNode -> case sd.datum of datumDeferredDecl(_, v) -> ^v | _ -> error("") end, lookupScopeSG(n, e.scope, labelDefer()));
+fun lookupMiscSG [MiscItem] ::= n::String  e::Env =
   map(\sd::Decorated SGNode -> case sd.datum of datumMisc(_, v) -> v | _ -> error("") end, lookupScopeSG(n, e.scope, labelMisc()));
 
-{-
-fun lookupValueInLocalScope [ValueItem] ::= n::String  e::Env = lookupInLocalScope(n, e.values);
-fun lookupTagInLocalScope [TagItem] ::= n::String  e::Env = lookupInLocalScope(n, e.tags);
-fun lookupMiscInLocalScope [MiscItem] ::= n::String  e::Env = lookupInLocalScope(n, e.misc);
--}
-fun lookupValueInLocalScope [ValueItem] ::= n::String  e::Env =
+fun lookupValueInLocalScopeSG [ValueItem] ::= n::String  e::Env =
   map(\sd::Decorated SGNode -> case sd.datum of datumValue(_, v) -> v | _ -> error("") end, lookupInLocalScopeSG(n, e.scope, labelVal()));
-fun lookupTagInLocalScope [TagItem] ::= n::String  e::Env =
+fun lookupTagInLocalScopeSG [TagItem] ::= n::String  e::Env =
   map(\sd::Decorated SGNode -> case sd.datum of datumTag(_, v) -> v | _ -> error("") end, lookupInLocalScopeSG(n, e.scope, labelTag()));
-fun lookupMiscInLocalScope [MiscItem] ::= n::String  e::Env =
+fun lookupMiscInLocalScopeSG [MiscItem] ::= n::String  e::Env =
   map(\sd::Decorated SGNode -> case sd.datum of datumMisc(_, v) -> v | _ -> error("") end, lookupInLocalScopeSG(n, e.scope, labelMisc()));

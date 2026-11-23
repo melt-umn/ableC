@@ -15,7 +15,7 @@ top::Root ::= d::GlobalDecls
   
   top.pp = terminate(line(), d.pps);
   
---  d.env = addEnv(builtinfunctions:initialEnv;
+  -- Root#2
   d.env = addEnv(builtinfunctions:getInitialEnvDefs(), top.env);
   d.controlStmtContext = initialControlStmtContext;
 }
@@ -34,6 +34,7 @@ flowtype Compilation = decorate {env}, srcAst {}, hostAst {env}, srcPP {}, hostP
 abstract production compilation
 top::Compilation ::= srcAst::Root
 {
+  -- Root#1
   srcAst.env = top.env;
   production hostAst::Root = srcAst.host;
   hostAst.env = top.env;

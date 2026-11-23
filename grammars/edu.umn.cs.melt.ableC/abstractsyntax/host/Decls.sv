@@ -26,6 +26,7 @@ top::GlobalDecls ::= h::Decl  t::GlobalDecls
 
   h.isTopLevel = true;
 
+  -- Decls#1
   h.env = top.env;
   t.env = addEnv(h.defs, h.env);
 }
@@ -567,6 +568,7 @@ top::FunctionDecl ::= storage::StorageClasses  fnquals::SpecialSpecifiers  bty::
       end,
     breakValid=false, continueValid=false, labels=tm:add(body.labelDefs, tm:empty()));
 
+  -- Decls#2
   name.env = top.env;
   bty.env = top.env;
   mty.env = addEnv(implicitDefs, openScopeEnv(addEnv(funcDefs, top.env)));
