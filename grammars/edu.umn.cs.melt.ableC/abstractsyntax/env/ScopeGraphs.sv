@@ -2,7 +2,19 @@ grammar edu:umn:cs:melt:ableC:abstractsyntax:env;
 
 -- SG attrs
 
-inherited attribute edges::tm:Map<String Decorated SGNode> occurs on SGNode;
+inherited attribute lexEdges::[Decorated SGNode] occurs on SGNode;
+inherited attribute globEdges::[Decorated SGNode] occurs on SGNode;
+inherited attribute funcEdges::[Decorated SGNode] occurs on SGNode;
+inherited attribute valEdges::[Decorated SGNode] occurs on SGNode;
+inherited attribute tagEdges::[Decorated SGNode] occurs on SGNode;
+inherited attribute refidEdges::[Decorated SGNode] occurs on SGNode;
+inherited attribute deferEdges::[Decorated SGNode] occurs on SGNode;
+inherited attribute miscEdges::[Decorated SGNode] occurs on SGNode;
+
+-- mimics `env` attribute, but passing down 1 scope graph node instead of a list
+-- of different scoping structures for each namespace
+-- currently won't be demanded
+inherited attribute envScope::Decorated SGNode;
 
 -- Scope prods
 
@@ -66,25 +78,9 @@ production datumMisc
 top::Datum ::= n::String d::MiscItem
 { top.name = n; }
 
--- Helpers for current naive 'plugging in' SG implementation, will go away
-
-fun toValueScope Decorated SGNode ::= c::Pair<String ValueItem> =
-  decorate mkValueScope(c.1, c.2) with { edges = tm:empty(); };
-
-fun toTagScope Decorated SGNode ::= c::Pair<String TagItem> =
-  decorate mkTagScope(c.1, c.2) with { edges = tm:empty(); };
-
-fun toRefIdScope Decorated SGNode ::= c::Pair<String RefIdItem> =
-  decorate mkRefIdScope(c.1, c.2) with { edges = tm:empty(); };
-
-fun toDeferreddeclScope Decorated SGNode ::= c::Pair<String Decl> =
-  decorate mkDeferredDeclScope(c.1, c.2) with { edges = tm:empty(); };
-
-fun toMiscScope Decorated SGNode ::= c::Pair<String MiscItem> =
-  decorate mkMiscScope(c.1, c.2) with { edges = tm:empty(); };
-
 -- Query using Brzozowski dirivatives
 
+{-
 type Predicate = (Boolean ::= Datum);
 
 fun resolve
@@ -112,3 +108,4 @@ fun resolve
     | _ -> if p(s.datum) && r.nullable then s::cont else cont
     end
   end;
+-}

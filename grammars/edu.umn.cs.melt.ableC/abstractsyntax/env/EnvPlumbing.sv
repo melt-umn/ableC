@@ -24,8 +24,6 @@ synthesized attribute globalDefs :: [Def];
 synthesized attribute functionScopeDefs :: [Def];
 
 --
-synthesized attribute scope::Decorated SGNode occurs on Env;
---
 
 {- Environment representation productions provide implementations for env functions
  - emptyEnv_i creates the basic environment with empty global scopes
@@ -43,8 +41,6 @@ top::Env ::=
   top.refIds = emptyScope();
   top.deferredDecls = emptyScope();
   top.misc = emptyScope();
-
-  top.scope = emptyScopeSG();
 }
 
 abstract production addDefsEnv
@@ -58,8 +54,6 @@ top::Env ::= d::Defs  e::Env
   top.refIds = addFunctionScope(fd.refIdContribs, addGlobalScope(gd.refIdContribs, addScope(d.refIdContribs, e.refIds)));
   top.deferredDecls = addFunctionScope(fd.deferredDeclContribs, addGlobalScope(gd.deferredDeclContribs, addScope(d.deferredDeclContribs, e.deferredDecls)));
   top.misc = addFunctionScope(fd.miscContribs, addGlobalScope(gd.miscContribs, addScope(d.miscContribs, e.misc)));
-
-  top.scope = addFunctionScopeSG(fd, addGlobalScopeSG(gd, addScopeSG(d, e.scope)));
 }
 
 
@@ -71,8 +65,6 @@ top::Env ::= e::Env
   top.refIds = openScope(e.refIds);
   top.deferredDecls = openScope(e.deferredDecls);
   top.misc = openScope(e.misc);
-
-  top.scope = openScopeSG(e.scope);
 }
 
 
@@ -84,8 +76,6 @@ top::Env ::= e::Env
   top.refIds = globalScope(e.refIds);
   top.deferredDecls = globalScope(e.deferredDecls);
   top.misc = globalScope(e.misc);
-
-  top.scope = globalScopeSG(e.scope);
 }
 
 
@@ -97,8 +87,6 @@ top::Env ::= e::Env
   top.refIds = nonGlobalScope(e.refIds);
   top.deferredDecls = nonGlobalScope(e.deferredDecls);
   top.misc = nonGlobalScope(e.misc);
-
-  top.scope = nonGlobalScopeSG(e.scope);
 }
 
 
@@ -110,8 +98,6 @@ top::Env ::= e::Env
   top.refIds = functionScope(e.refIds);
   top.deferredDecls = functionScope(e.deferredDecls);
   top.misc = functionScope(e.misc);
-
-  top.scope = functionScopeSG(e.scope);
 }
 
 {- Definition list productions provide a way of folding up defs into Contribs lists

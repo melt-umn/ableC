@@ -5,8 +5,8 @@ import edu:umn:cs:melt:ableC:abstractsyntax:builtins as builtinfunctions;
 
 global fullErrorCheck::Boolean = true;
 
-tracked nonterminal Root with pp, host, errors, env;
-flowtype Root = decorate {env};
+tracked nonterminal Root with pp, host, errors, env, envScope;
+flowtype Root = decorate {env, envScope};
 
 abstract production root
 top::Root ::= d::GlobalDecls
@@ -28,16 +28,18 @@ synthesized attribute finalPP::Document;
 -- functions that given an error return false if the error should be dropped
 synthesized attribute srcErrorFilters::[(Boolean ::= Message)] with ++;
 synthesized attribute hostErrorFilters::[(Boolean ::= Message)] with ++;
-tracked nonterminal Compilation with srcAst, hostAst, srcPP, hostPP, finalPP, errors, env, srcErrorFilters, hostErrorFilters;
-flowtype Compilation = decorate {env}, srcAst {}, hostAst {env}, srcPP {}, hostPP {env}, finalPP {env};
+tracked nonterminal Compilation with srcAst, hostAst, srcPP, hostPP, finalPP, errors, env, envScope, srcErrorFilters, hostErrorFilters;
+flowtype Compilation = decorate {env, envScope}, srcAst {}, hostAst {env, envScope}, srcPP {}, hostPP {env, envScope}, finalPP {env, envScope};
 
 abstract production compilation
 top::Compilation ::= srcAst::Root
 {
   -- Root#1
   srcAst.env = top.env;
+  srcAst.envScope = top.envScope;
   production hostAst::Root = srcAst.host;
   hostAst.env = top.env;
+  hostAst.envScope = top.envScope;
   top.srcErrorFilters := [];
   top.hostErrorFilters := [];
 

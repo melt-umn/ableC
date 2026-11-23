@@ -182,14 +182,9 @@ nonterminal Label;
 
 synthesized attribute name::String occurs on Label;
 
-synthesized attribute demand::([Decorated SGNode] ::= Decorated SGNode) occurs on Label;
-
 instance Eq Label {
   eq = \l::Label r::Label -> l.name == r.name;
 }
-
-aspect default production top::Label ::=
-{ top.demand = \s::Decorated SGNode -> tm:lookup(top.name, s.edges); }
 
 production labelLex
 top::Label ::=

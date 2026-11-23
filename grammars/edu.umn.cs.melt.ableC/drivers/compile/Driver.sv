@@ -99,6 +99,11 @@ IO<Integer> ::= args::[String]
               -- Driver#1
               decorate abs:compilation(result.parseTree.ast) with {
                 env = addEnv( map(xcArgDef, xcArgs) , emptyEnv() );
+                envScope = decorate mkLexScope() with { 
+                  lexEdges = []; globEdges = []; funcEdges = [];
+                  valEdges = []; tagEdges = []; refidEdges = [];
+                  deferEdges = []; miscEdges = [];
+                };
               };
             if contains("--show-ast", args) then do {
               print(substitute("edu:umn:cs:melt:", "", hackUnparse(comp.abs:srcAst)) ++ "\n");

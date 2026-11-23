@@ -75,82 +75,38 @@ Document ::= e::Env
        ]) )
    ] );
 
---  local labelsD :: Document
---    = ppImplode(line(), map( showScope(_,showLabelItemBinding), map( tm:toList, e.labels )));
+  --local labelsD :: Document
+  --  = ppImplode(line(), map( showScope(_,showLabelItemBinding), map( tm:toList, e.labels )));
 
-  {-
   nondecorated local valuesD::Document =
     ppImplode(line(), map( showScope(_,showValueItemBinding), map( tm:toList, e.values )));
-  -}
-  nondecorated local valuesD::Document =
-    ppImplode(line(), map(showValueItemBinding(_), tm:lookup("val", e.scope.edges)));
 
-  {-
   nondecorated local tagsD::Document =
     ppImplode(line(), map( showScope(_,showTagItemBinding), map( tm:toList, e.tags )));
-  -}
-  nondecorated local tagsD::Document =
-    ppImplode(line(), map(showValueItemBinding(_), tm:lookup("tag", e.scope.edges)));
 
-  {-
   nondecorated local refIDsD::Document =
     ppImplode(line(), map( showScope(_,showRefIdItemBinding), map( tm:toList, e.refIds )));
-  -}
-  nondecorated local refIDsD::Document =
-    ppImplode(line(), map(showValueItemBinding(_), tm:lookup("refid", e.scope.edges)));
 
-  {-
+
   nondecorated local miscD::Document =
     ppImplode(line(), map( showScope(_,showMiscItemBinding), map( tm:toList, e.misc )));
-  -}
-  nondecorated local miscD::Document =
-    ppImplode(line(), map(showValueItemBinding(_), tm:lookup("misc", e.scope.edges)));
 
 }
 
-{-
 fun showScope Document ::= scope::[Pair<String a>] showFunc::(Document ::= Pair<String a>) =
   ppImplode(line(), map(showFunc, scope));
--}
 
--- todo: cleanup these using prod signatures on Datum?
-
-{-
 fun showLabelItemBinding Document ::= bnd::Pair<String LabelItem> =
   ppConcat( [ text(bnd.fst), text(" -> ") ]);
--}
-fun showValueItemBinding Document ::= bnd::Decorated SGNode =
-  case bnd.datum of
-  | datumValue(n, d) -> ppConcat([text(n), text(" -> "), nestlines(10, d.pp)])
-  | _ -> error("showValueItemBinding")
-  end;
 
-{-
 fun showValueItemBinding Document ::= bnd::Pair<String ValueItem> =
   ppConcat( [ text(bnd.fst), text(" -> "), nestlines(10,bnd.snd.pp) ]);
--}
-fun showTagItemBinding Document ::= bnd::Decorated SGNode =
-  case bnd.datum of
-  | datumTag(n, d) -> ppConcat([text(n), text(" -> "), nestlines(10, d.pp)])
-  | _ -> error("showValueItemBinding")
-  end;
 
-{-
 fun showTagItemBinding Document ::= bnd::Pair<String TagItem> =
   ppConcat( [ text(bnd.fst), text(" -> "), nestlines(10,bnd.snd.pp) ]);
--}
-fun showRefIdItemBinding Document ::= bnd::Decorated SGNode =
-  case bnd.datum of
-  | datumRefId(n, d) -> ppConcat([text(n), text(" -> "), nestlines(10, d.pp)])
-  | _ -> error("showValueItemBinding")
-  end;
 
-{-
+fun showRefIdItemBinding Document ::= bnd::Pair<String RefIdItem> =
+  ppConcat( [ text(bnd.fst), text(" -> "), nestlines(10,bnd.snd.pp) ]);
+
 fun showMiscItemBinding Document ::= bnd::Pair<String MiscItem> =
   ppConcat( [ text(bnd.fst), text(" -> ") ]);
--}
-fun showMiscItemBinding Document ::= bnd::Decorated SGNode =
-  case bnd.datum of
-  | datumMisc(n, d) -> ppConcat([text(n), text(" -> ")])
-  | _ -> error("showValueItemBinding")
-  end;
