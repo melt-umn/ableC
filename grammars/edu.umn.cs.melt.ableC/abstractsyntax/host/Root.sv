@@ -5,13 +5,13 @@ import edu:umn:cs:melt:ableC:abstractsyntax:builtins as builtinfunctions;
 
 global fullErrorCheck::Boolean = true;
 
-tracked nonterminal Root with pp, host, errors, env, envScope;
+tracked nonterminal Root with pp, host, errors, env, defs, envScope;
 flowtype Root = decorate {env, envScope};
 
 abstract production root
 top::Root ::= d::GlobalDecls
 {
-  propagate host, errors;
+  propagate host, defs, errors;
   
   top.pp = terminate(line(), d.pps);
   
@@ -29,12 +29,14 @@ synthesized attribute finalPP::Document;
 -- functions that given an error return false if the error should be dropped
 synthesized attribute srcErrorFilters::[(Boolean ::= Message)] with ++;
 synthesized attribute hostErrorFilters::[(Boolean ::= Message)] with ++;
-tracked nonterminal Compilation with srcAst, hostAst, srcPP, hostPP, finalPP, errors, env, envScope, srcErrorFilters, hostErrorFilters;
+tracked nonterminal Compilation with srcAst, hostAst, srcPP, hostPP, finalPP, errors, env, defs, envScope, srcErrorFilters, hostErrorFilters;
 flowtype Compilation = decorate {env, envScope}, srcAst {}, hostAst {env, envScope}, srcPP {}, hostPP {env, envScope}, finalPP {env, envScope};
 
 abstract production compilation
 top::Compilation ::= srcAst::Root
 {
+  propagate defs;
+  
   -- Root#1
   srcAst.env = top.env;
   srcAst.envScope = top.envScope;

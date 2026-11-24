@@ -95,13 +95,13 @@ IO<Integer> ::= args::[String]
             print(result.parseErrors ++ "\n");
             return 2;
           } else do {
+            {-
             let comp :: Decorated abs:Compilation =
-              -- Driver#1
               decorate abs:compilation(result.parseTree.ast) with {
                 env = addEnv( map(xcArgDef, xcArgs) , emptyEnv() );
-                -- New SG node, no LEX edges, define inhs using Compilation node
-                envScope = placeholderScope();
               };
+            -}
+            let comp :: Decorated abs:Compilation = decCompilation(result, xcArgs);
             if contains("--show-ast", args) then do {
               print(substitute("edu:umn:cs:melt:", "", hackUnparse(comp.abs:srcAst)) ++ "\n");
               return 0;
@@ -128,6 +128,14 @@ IO<Integer> ::= args::[String]
   };
 }
 
+function decCompilation
+Decorated abs:Compilation ::= pr::ParseResult<cst:Root> xcArgs::[String]
+{
+  local r::abs:Compilation = abs:compilation(pr.parseTree.ast);
+  r.env = addEnv( map(xcArgDef, xcArgs) , emptyEnv() );
+  r.envScope = newScopeGlob(r.defs);
+  return r;
+}
 
 fun partitionArg Boolean ::= arg::String =
   arg=="--show-ast" ||

@@ -47,10 +47,20 @@ IO<Decorated Compilation> ::= args::[String]
     when_(!result.parseSuccess, fail(result.parseErrors ++ "\n"));
     eprintln("Decorating parse tree...");
     return
+      {-
       decorate compilation(result.parseTree.ast) with {
         env = addEnv( map(xcArgDef, xcArgs) , emptyEnv() );
-        -- New SG node, no LEX edge, define inhs using Compilation node
-        envScope = placeholderScope();
       };
+      -}
+      decCompilation(result, xcArgs);
   };
+}
+
+function decCompilation
+Decorated Compilation ::= pr::ParseResult<cst:Root> xcArgs::[String]
+{
+  local r::Compilation = compilation(pr.parseTree.ast);
+  r.env = addEnv( map(xcArgDef, xcArgs) , emptyEnv() );
+  r.envScope = newScopeGlob(r.defs);
+  return r;
 }

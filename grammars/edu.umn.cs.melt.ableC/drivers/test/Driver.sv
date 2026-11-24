@@ -30,8 +30,12 @@ IO<Boolean> ::=
     let result :: ParseResult<cst:Root> = theParser(text, cppFileName);
     unless(result.parseSuccess,
       fail(result.parseErrors ++ "\n"));
+    {-
     let comp :: Decorated abs:Compilation =
-      decorate abs:compilation(result.parseTree.ast) with { env = emptyEnv(); envScope = placeholderScope(); };
+      decorate abs:compilation(result.parseTree.ast) with { env = emptyEnv(); };
+    -}
+    let comp :: Decorated abs:Compilation =
+      decCompilation(result, []);
     unless(null(comp.errors),
       fail(messagesToString(comp.errors) ++ "\n"));
     lift(writeFile(ppFileName, show(80, comp.abs:finalPP)));
@@ -65,4 +69,13 @@ Summary:
 """);
     return 0;
   };
+}
+
+function decCompilation
+Decorated abs:Compilation ::= pr::ParseResult<cst:Root> xcArgs::[String]
+{
+  local r::abs:Compilation = abs:compilation(pr.parseTree.ast);
+  r.env = addEnv( map(xcArgDef, xcArgs) , emptyEnv() );
+  r.envScope = newScopeGlob(r.defs);
+  return r;
 }

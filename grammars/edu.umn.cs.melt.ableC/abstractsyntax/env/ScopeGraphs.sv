@@ -94,11 +94,18 @@ fun partDefsInternal AllContribs ::= ds::[Def] acc::AllContribs =
 ;
 
 fun newScopeLex Decorated SGNode ::= lex::Decorated SGNode ds::[Def] =
+   newScopeBoth(just(lex), ds);
+
+fun newScopeGlob Decorated SGNode ::= ds::[Def] =
+  newScopeBoth(nothing(), ds);
+
+
+fun newScopeBoth Decorated SGNode ::= lex::Maybe<Decorated SGNode> ds::[Def] =
   let splitDefs::AllContribs = partDefs(ds)
   in
   let newSGNode::Decorated SGNode =
     decorate mkScope() with {
-      lexEdge = just(lex); funcEdge = nothing(); globEdge = nothing();
+      lexEdge = lex; funcEdge = nothing(); globEdge = nothing();
       tagsSG = splitDefs.1;
       valsSG = splitDefs.2;
       refIdsSG = splitDefs.3;
