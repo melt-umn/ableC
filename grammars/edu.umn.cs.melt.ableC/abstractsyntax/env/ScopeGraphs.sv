@@ -10,13 +10,12 @@ inherited attribute tagsSG::Contribs<TagItem> occurs on SGNode;
 inherited attribute valsSG::Contribs<ValueItem> occurs on SGNode;
 inherited attribute miscsSG::Contribs<MiscItem> occurs on SGNode;
 inherited attribute refIdsSG::Contribs<RefIdItem> occurs on SGNode;
-inherited attribute defersSG::Contribs<RefIdItem> occurs on SGNode;
+inherited attribute defersSG::Contribs<Decl> occurs on SGNode;
 
 -- mimics `env` attribute, but passing down 1 scope graph node instead of a list
 -- of different scoping structures for each namespace
 -- currently won't be demanded
 inherited attribute envScope::Decorated SGNode;
-
 
 -- Scope prods
 
@@ -65,3 +64,47 @@ fun placeholderScope Decorated SGNode ::= =
     lexEdge = nothing(); funcEdge = nothing(); globEdge = nothing();
     tagsSG = []; valsSG = []; miscsSG = []; refIdsSG = []; defersSG = [];
   };
+
+type AllContribs = (Contribs<TagItem>, Contribs<ValueItem>, Contribs<RefIdItem>,
+                    Contribs<Decl>, Contribs<MiscItem>, [Def]);
+
+fun partDefs AllContribs ::= ds::[Def] =
+  partDefsInternal(ds, ([], [], [], [], [], []))
+;
+
+fun partDefsInternal AllContribs ::= ds::[Def] acc::AllContribs =
+  case ds of
+  | []    -> acc
+  | d::ds ->
+    case d of
+    | tagDef(s, l) ->
+        ((s, l)::acc.1, acc.2, acc.3, acc.4, acc.5, acc.6)
+    | valueDef(s, l) ->
+        (acc.1, (s, l)::acc.2, acc.3, acc.4, acc.5, acc.6)
+    | refIdDef(s, l) ->
+        (acc.1, acc.2, (s, l)::acc.3, acc.4, acc.5, acc.6)
+    | deferredDeclDef(s, l) ->
+        (acc.1, acc.2, acc.3, (s, ^l)::acc.4, acc.5, acc.6)
+    | miscDef(s, l) ->
+        (acc.1, acc.2, acc.3, acc.4, (s, l)::acc.5, acc.6)
+    | _ -> -- globalDefsDef or functionDefsDef
+        (acc.1, acc.2, acc.3, acc.4, acc.5, d::acc.6)
+    end
+  end
+;
+
+fun newScopeLex (Decorated SGNode, [Def]) ::= lex::Decorated SGNode ds::[Def] =
+  let splitDefs::AllContribs = partDefs(ds)
+  in
+  let newSGNode::Decorated SGNode =
+    decorate mkScope() with {
+      lexEdge = just(lex); funcEdge = nothing(); globEdge = nothing();
+      tagsSG = splitDefs.1;
+      valsSG = splitDefs.2;
+      refIdsSG = splitDefs.3;
+      defersSG = splitDefs.4;
+      miscsSG = splitDefs.5; }
+  in
+    (newSGNode, splitDefs.6)
+  end end
+;

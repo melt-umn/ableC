@@ -29,7 +29,9 @@ top::Stmt ::= h::Stmt  t::Stmt
   h.envScope = top.envScope;
   t.env = addEnv(h.defs, top.env);
   -- New SG node, LEX edge to top.envScope, define inhs using h.defs
-  t.envScope = placeholderScope();
+  local nodeAndGlobs::(Decorated SGNode, [Def]) = newScopeLex(top.envScope, h.defs);
+  t.envScope = nodeAndGlobs.1;
+  -- do something with nodeAndGlobs.2
 }
 
 abstract production compoundStmt
