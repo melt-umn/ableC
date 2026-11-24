@@ -66,10 +66,10 @@ fun placeholderScope Decorated SGNode ::= =
   };
 
 type AllContribs = (Contribs<TagItem>, Contribs<ValueItem>, Contribs<RefIdItem>,
-                    Contribs<Decl>, Contribs<MiscItem>, [Def]);
+                    Contribs<Decl>, Contribs<MiscItem>);
 
 fun partDefs AllContribs ::= ds::[Def] =
-  partDefsInternal(ds, ([], [], [], [], [], []))
+  partDefsInternal(ds, ([], [], [], [], []))
 ;
 
 fun partDefsInternal AllContribs ::= ds::[Def] acc::AllContribs =
@@ -78,22 +78,22 @@ fun partDefsInternal AllContribs ::= ds::[Def] acc::AllContribs =
   | d::ds ->
     case d of
     | tagDef(s, l) ->
-        ((s, l)::acc.1, acc.2, acc.3, acc.4, acc.5, acc.6)
+        ((s, l)::acc.1, acc.2, acc.3, acc.4, acc.5)
     | valueDef(s, l) ->
-        (acc.1, (s, l)::acc.2, acc.3, acc.4, acc.5, acc.6)
+        (acc.1, (s, l)::acc.2, acc.3, acc.4, acc.5)
     | refIdDef(s, l) ->
-        (acc.1, acc.2, (s, l)::acc.3, acc.4, acc.5, acc.6)
+        (acc.1, acc.2, (s, l)::acc.3, acc.4, acc.5)
     | deferredDeclDef(s, l) ->
-        (acc.1, acc.2, acc.3, (s, ^l)::acc.4, acc.5, acc.6)
+        (acc.1, acc.2, acc.3, (s, ^l)::acc.4, acc.5)
     | miscDef(s, l) ->
-        (acc.1, acc.2, acc.3, acc.4, (s, l)::acc.5, acc.6)
-    | _ -> -- globalDefsDef or functionDefsDef
-        (acc.1, acc.2, acc.3, acc.4, acc.5, d::acc.6)
+        (acc.1, acc.2, acc.3, acc.4, (s, l)::acc.5)
+    | _ -> -- ignore globalDefsDef and functionDefsDef
+        acc
     end
   end
 ;
 
-fun newScopeLex (Decorated SGNode, [Def]) ::= lex::Decorated SGNode ds::[Def] =
+fun newScopeLex Decorated SGNode ::= lex::Decorated SGNode ds::[Def] =
   let splitDefs::AllContribs = partDefs(ds)
   in
   let newSGNode::Decorated SGNode =
@@ -105,6 +105,17 @@ fun newScopeLex (Decorated SGNode, [Def]) ::= lex::Decorated SGNode ds::[Def] =
       defersSG = splitDefs.4;
       miscsSG = splitDefs.5; }
   in
-    (newSGNode, splitDefs.6)
+    newSGNode
   end end
+;
+
+fun newScopeEmpty Decorated SGNode ::= =
+  decorate mkScope() with {
+    lexEdge = nothing(); funcEdge = nothing(); globEdge = nothing();
+    tagsSG = [];
+    valsSG = [];
+    refIdsSG = [];
+    defersSG = [];
+    miscsSG = [];
+  }
 ;

@@ -151,7 +151,8 @@ top::Expr ::= decls::Decls lifted::Expr
 
   lifted.env = addEnv([globalDefsDef(decls.defs)], top.env);
   -- New SG node, LEX edge to top.envScope, define inhs using [globalDefsDef(decls.defs)]
-  lifted.envScope = placeholderScope();
+  -- or []
+  lifted.envScope = newScopeLex(top.envScope, []);
   lifted.controlStmtContext = top.controlStmtContext;
 
   top.isLValue = lifted.isLValue;
@@ -187,7 +188,8 @@ top::Stmt ::= decls::Decls lifted::Stmt
 
   lifted.env = addEnv([globalDefsDef(decls.defs)], top.env);
   -- New SG node, LEX edge to top.envScope, define inhs using [globalDefsDef(decls.defs)]
-  lifted.envScope = placeholderScope();
+  -- or []
+  lifted.envScope = newScopeLex(top.envScope, []);
   lifted.controlStmtContext = top.controlStmtContext;
 }
 
@@ -222,7 +224,8 @@ top::BaseTypeExpr ::= decls::Decls lifted::BaseTypeExpr
 
   lifted.env = addEnv([globalDefsDef(decls.defs)], top.env);
   -- New SG node, LEX edge to top.envScope, define inhs using [globalDefsDef(decls.defs)]
-  lifted.envScope = placeholderScope();
+  -- or []
+  lifted.envScope = newScopeLex(top.envScope, []);
   lifted.controlStmtContext = top.controlStmtContext;
 }
 

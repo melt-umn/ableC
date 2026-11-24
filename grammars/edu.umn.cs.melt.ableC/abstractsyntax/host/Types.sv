@@ -637,7 +637,7 @@ top::Type ::= attrs::Attributes  bt::Type
 
   -- Whatever...
   attrs.env = emptyEnv();
-  attrs.envScope = placeholderScope();
+  attrs.envScope = newScopeEmpty();
   attrs.controlStmtContext = initialControlStmtContext;
 }
 

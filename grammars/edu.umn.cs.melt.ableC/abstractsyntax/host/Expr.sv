@@ -148,7 +148,7 @@ top::Expr ::= lhs::Expr  rhs::Expr
   lhs.envScope = top.envScope;
   rhs.env = addEnv(lhs.defs, lhs.env);
   -- New SG node, LEX edge to lhs.envScope, define inhs using lhs.defs
-  rhs.envScope = placeholderScope();
+  rhs.envScope = newScopeLex(lhs.envScope, lhs.defs);
   propagate controlStmtContext;
 
   forwards to
@@ -297,7 +297,7 @@ top::Expr ::= @f::Expr  a::Exprs
 
   a.env = addEnv(f.defs, f.env);
   -- New SG node, LEX edge to f.envScope, define inhs using f.defs
-  a.envScope = placeholderScope();
+  a.envScope = newScopeLex(f.envScope, f.defs);
   a.controlStmtContext = top.controlStmtContext;
 }
 
@@ -448,10 +448,10 @@ top::Expr ::= cond::Expr  t::Expr  e::Expr
   cond.envScope = top.envScope;
   t.env = addEnv(cond.defs, cond.env);
   -- New SG node, LEX edge to cond.envScope, define inhs using cond.defs
-  t.envScope = placeholderScope();
+  t.envScope = newScopeLex(cond.envScope, cond.defs);
   e.env = addEnv(t.defs, t.env);
   -- New SG node, LEX edge to t.envScope, define inhs using t.defs
-  e.envScope = placeholderScope();
+  e.envScope = newScopeLex(t.envScope, t.defs);
 
   -- TODO: type checking!!
 }
@@ -484,7 +484,7 @@ top::Expr ::= ty::TypeName  e::Expr
   ty.envScope = top.envScope;
   e.env = addEnv(ty.defs, ty.env);
   -- New SG node, LEX edge to ty.envScope, define inhs using ty.defs
-  e.envScope = placeholderScope();
+  e.envScope = newScopeLex(ty.envScope, ty.defs);
 
   -- TODO: type checking!!
 }
@@ -498,7 +498,7 @@ top::Expr ::= ty::TypeName  init::InitList
   ty.envScope = top.envScope;
   init.env = addEnv(ty.defs, ty.env);
   -- New SG node, LEX edge to ty.envScope, define inhs using ty.defs
-  init.envScope = placeholderScope();
+  init.envScope = newScopeLex(ty.envScope, ty.defs);
   init.expectedType = ty.typerep;
 
   local prod::CompoundLiteral = fromMaybe(defaultCompoundLiteralExpr, ty.typerep.compoundLiteralProd);
@@ -652,14 +652,17 @@ top::Expr ::= body::Stmt result::Expr
 
   -- Add body.functionDefs to env here, since labels don't bubble up
   -- from expressions to the top-level function.
+
   body.env = addEnv(body.functionDefs, openScopeEnv(top.env));
   -- New SG node, LEX edge to top.envScope, define inhs using body.functionDefs
-  body.envScope = placeholderScope();
-  body.controlStmtContext = controlAddLabels(top.controlStmtContext, body.labelDefs);
-  result.controlStmtContext = top.controlStmtContext;
+  body.envScope = newScopeLex(top.envScope, body.functionDefs);
+  
   result.env = addEnv(body.defs, body.env);
   -- New SG node, LEX edge to body.envScope, define inhs using body.defs
-  result.envScope = placeholderScope();
+  result.envScope = newScopeLex(body.envScope, body.defs);
+
+  body.controlStmtContext = controlAddLabels(top.controlStmtContext, body.labelDefs);
+  result.controlStmtContext = top.controlStmtContext;
 }
 
 -- Utility for use by overloading and extensions

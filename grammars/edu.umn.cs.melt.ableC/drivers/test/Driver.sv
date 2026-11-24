@@ -31,7 +31,7 @@ IO<Boolean> ::=
     unless(result.parseSuccess,
       fail(result.parseErrors ++ "\n"));
     let comp :: Decorated abs:Compilation =
-      decorate abs:compilation(result.parseTree.ast) with { env = emptyEnv(); };
+      decorate abs:compilation(result.parseTree.ast) with { env = emptyEnv(); envScope = placeholderScope(); };
     unless(null(comp.errors),
       fail(messagesToString(comp.errors) ++ "\n"));
     lift(writeFile(ppFileName, show(80, comp.abs:finalPP)));

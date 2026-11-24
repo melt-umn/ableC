@@ -98,7 +98,7 @@ top::Exprs ::= h::Expr  t::Exprs
   h.envScope = top.envScope;
   t.env = addEnv(h.defs, h.env);
   -- New SG node, LEX edge to h.envScope, define inhs using h.defs
-  t.envScope = placeholderScope();
+  t.envScope = newScopeLex(h.envScope, h.defs);
 
   h.bindName = name(top.bindName.name ++ "_" ++ toString(t.count));
   t.bindName = top.bindName;

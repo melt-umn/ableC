@@ -29,9 +29,7 @@ top::Stmt ::= h::Stmt  t::Stmt
   h.envScope = top.envScope;
   t.env = addEnv(h.defs, top.env);
   -- New SG node, LEX edge to top.envScope, define inhs using h.defs
-  local nodeAndGlobs::(Decorated SGNode, [Def]) = newScopeLex(top.envScope, h.defs);
-  t.envScope = nodeAndGlobs.1;
-  -- do something with nodeAndGlobs.2
+  t.envScope = newScopeLex(top.envScope, h.defs);
 }
 
 abstract production compoundStmt
@@ -44,7 +42,7 @@ top::Stmt ::= s::Stmt
 
   s.env = openScopeEnv(top.env);
   -- New SG node, LEX edge to top.envScope
-  s.envScope = placeholderScope();
+  s.envScope = newScopeLex(top.envScope, []);
 }
 
 -- ditto warnExternalDecl, if warning or empty, then this pretends it doesn't exist.
@@ -96,13 +94,14 @@ top::Stmt ::= c::Expr  t::Stmt  e::Stmt
 
   c.env = openScopeEnv(top.env);
   -- New SG node, LEX edge to top.envScope
-  c.envScope = placeholderScope();
+  c.envScope = newScopeLex(top.envScope, []);
   t.env = addEnv(c.defs, c.env);
   -- New SG node, LEX edge to c.envScope, define inhs using c.defs
-  t.envScope = placeholderScope();
+  t.envScope = newScopeLex(c.envScope, c.defs);
   e.env = addEnv(globalDeclsDefs(t.globalDecls) ++ functionDeclsDefs(t.functionDecls), t.env);
   -- New SG node, LEX edge to t.envScope, define inhs using globalDeclsDefs(t.globalDecls) ++ functionDeclsDefs(t.functionDecls)
-  e.envScope = placeholderScope();
+  -- or define edges as []?
+  e.envScope = newScopeLex(t.envScope, []);
 
   top.errors <-
     if c.typerep.defaultFunctionArrayLvalueConversion.isScalarType then []
@@ -140,10 +139,10 @@ top::Stmt ::= e::Expr  b::Stmt
 
   e.env = openScopeEnv(top.env);
   -- New SG node, LEX edge to top.envScope
-  e.envScope = placeholderScope();
+  e.envScope = newScopeLex(top.envScope, []);
   b.env = addEnv(e.defs, e.env);
   -- New SG node, LEX edge to e.envScope, define inhs using e.defs
-  b.envScope = placeholderScope();
+  b.envScope = newScopeLex(e.envScope, e.defs);
   
   e.controlStmtContext = top.controlStmtContext;
   
@@ -177,11 +176,12 @@ top::Stmt ::= b::Stmt  e::Expr
 
   b.env = openScopeEnv(top.env);
   -- New SG node, LEX edge to top.envScope
-  b.envScope = placeholderScope();
+  b.envScope = newScopeLex(top.envScope, []);
 
   e.env = addEnv(globalDeclsDefs(b.globalDecls) ++ functionDeclsDefs(b.functionDecls), b.env);
   -- New SG node, LEX edge to b.envScope, globalDeclsDefs(b.globalDecls) ++ functionDeclsDefs(b.functionDecls)
-  e.envScope = placeholderScope();
+  -- or []?
+  e.envScope = newScopeLex(b.envScope, []);
 
   e.controlStmtContext = top.controlStmtContext;
 
@@ -225,16 +225,19 @@ top::Stmt ::= i::MaybeExpr  c::MaybeExpr  s::MaybeExpr  b::Stmt
 
   i.env = openScopeEnv(top.env);
   -- New SG node, LEX edge to top.envScope
-  i.envScope = placeholderScope();
+  i.envScope = newScopeLex(top.envScope, []);
+
   c.env = addEnv(i.defs, i.env);
   -- New SG node, LEX edge to i.envScope, define inhs using i.defs
-  c.envScope = placeholderScope();
+  c.envScope = newScopeLex(i.envScope, i.defs);
+  
   s.env = addEnv(c.defs, c.env);
   -- New SG node, LEX edge to c.envScope, define inhs using c.defs
-  s.envScope = placeholderScope();
+  s.envScope = newScopeLex(c.envScope, c.defs);
+  
   b.env = addEnv(s.defs, s.env);
   -- New SG node, LEX edge to s.envScope, define inhs using s.defs
-  b.envScope = placeholderScope();
+  b.envScope = newScopeLex(s.envScope, s.defs);
 
   s.controlStmtContext = top.controlStmtContext;
   i.controlStmtContext = top.controlStmtContext;
@@ -280,16 +283,19 @@ top::Stmt ::= i::Decl  c::MaybeExpr  s::MaybeExpr  b::Stmt
 
   i.env = openScopeEnv(top.env);
   -- New SG node, LEX edge to top.env
-  i.envScope = placeholderScope();
+  i.envScope = newScopeLex(top.envScope, []);
+  
   c.env = addEnv(i.defs, i.env);
   -- New SG node, LEX edge to i.envScope, define inhs using i.defs
-  c.envScope = placeholderScope();
+  c.envScope = newScopeLex(i.envScope, i.defs);
+  
   s.env = addEnv(c.defs, c.env);
   -- New SG node, LEX edge to c.envScope, define inhs using c.defs
-  s.envScope = placeholderScope();
+  s.envScope = newScopeLex(c.envScope, c.defs);
+  
   b.env = addEnv(s.defs, s.env);
   -- New SG node, LEX edge to s.envScope, define inhs using s.defs
-  b.envScope = placeholderScope();
+  b.envScope = newScopeLex(s.envScope, s.defs);
 
   i.isTopLevel = false;
 
@@ -351,10 +357,11 @@ top::Stmt ::= e::Expr  b::Stmt
 
   e.env = openScopeEnv(top.env);
   -- New SG node, LEX edge to top.envScope
-  e.envScope = placeholderScope();
+  e.envScope = newScopeLex(top.envScope, []);
+  
   b.env = addEnv(e.defs, e.env);
   -- New SG node, LEX edge to e.envScope, define inhs using e.defs
-  b.envScope = placeholderScope();
+  b.envScope = newScopeLex(e.envScope, e.defs);
 
   e.controlStmtContext = top.controlStmtContext;
 
@@ -447,7 +454,7 @@ top::Stmt ::= v::Expr  s::Stmt
   v.envScope = top.envScope;
   s.env = addEnv(v.defs, v.env);
   -- New SG node, LEX edge to v.envScope, define inhs using v.defs
-  s.envScope = placeholderScope();
+  s.envScope = newScopeLex(v.envScope, v.defs);
 }
 
 abstract production defaultLabelStmt

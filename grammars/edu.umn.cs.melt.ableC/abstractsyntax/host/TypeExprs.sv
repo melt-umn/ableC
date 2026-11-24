@@ -74,7 +74,7 @@ top::TypeName ::= bty::BaseTypeExpr  mty::TypeModifierExpr
   bty.envScope = top.envScope;
   mty.env = addEnv(bty.defs, bty.env);
   -- New SG node, LEX edge to bty.envScope, define inhs using bty.defs
-  mty.envScope = placeholderScope();
+  mty.envScope = newScopeLex(bty.envScope, bty.defs);
   mty.baseType = bty.typerep;
   mty.typeModifierIn = bty.typeModifier;
   top.globalDecls :=
@@ -152,7 +152,7 @@ top::BaseTypeExpr ::= d::[Def]  bty::BaseTypeExpr
 
   bty.env = addEnv(d, top.env);
   -- New SG node, LEX edge to top.envScope, define inhs using d
-  bty.envScope = placeholderScope();
+  bty.envScope = newScopeLex(top.envScope, d);
 }
 
 {-- A TypeExpr that contains a type modifier which must be lifted out
@@ -541,7 +541,7 @@ top::TypeModifierExpr ::= result::TypeModifierExpr  args::Parameters  variadic::
   
   args.env = openScopeEnv(top.env);
   -- New SG node, LEX edge to top.envScope
-  args.envScope = placeholderScope();
+  args.envScope = newScopeLex(top.envScope, []);
   args.position = 0;
 
   q.typeToQualify = top.typerep;
@@ -596,7 +596,7 @@ top::TypeNames ::= h::TypeName t::TypeNames
   h.envScope = top.envScope;
   t.env = addEnv(h.defs, h.env);
   -- New SG node, LEX edge to h.envScope, define inhs using h.defs
-  t.envScope = placeholderScope();
+  t.envScope = newScopeLex(h.envScope, h.defs);
 }
 
 abstract production nilTypeName

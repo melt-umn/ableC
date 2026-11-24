@@ -172,7 +172,7 @@ top::InitList ::= h::Init  t::InitList
   h.envScope = top.envScope;
   t.env = addEnv(h.defs, h.env);
   -- New SG node, LEX edge to h.envScope, define inhs using h.defs
-  t.envScope = placeholderScope();
+  t.envScope = newScopeLex(h.envScope, h.defs);
 }
 
 abstract production nilInit
@@ -247,7 +247,7 @@ top::Init ::= d::Designator  i::Initializer
   d.envScope = top.envScope;
   i.env = addEnv(d.defs, d.env);
   -- New SG node, LEX edge to d.envScope, define inhs using d.defs
-  i.envScope = placeholderScope();
+  i.envScope = newScopeLex(d.envScope, d.defs);
   i.initializerPos = s"member ${show(80, d.pp)} of ${show(80, top.expectedType)}";
   i.inObject = true;
   i.expectedType = d.typerep;
@@ -375,7 +375,7 @@ top::Designator ::= d::Designator  e::Expr
   d.envScope = top.envScope;
   e.env = addEnv(d.defs, d.env);
   -- New SG node, LEX edge to d.envScope, define inhs using d.defs
-  e.envScope = placeholderScope();
+  e.envScope = newScopeLex(d.envScope, d.defs);
 
   top.typerep = d.typerep;
 }

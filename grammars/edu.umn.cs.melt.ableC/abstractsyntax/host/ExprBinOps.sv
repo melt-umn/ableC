@@ -10,7 +10,7 @@ top::Expr ::= lhs::Expr rhs::Expr
   lhs.envScope = top.envScope;
   rhs.env = addEnv(lhs.defs, lhs.env);
   -- New SG node, LEX edge to lhs.envScope, define inhs using lhs.defs
-  rhs.envScope = placeholderScope();
+  rhs.envScope = newScopeLex(lhs.envScope, lhs.defs);
 
   local lType::Type = lhs.typerep;
   lType.otherType = rhs.typerep;
@@ -26,7 +26,7 @@ top::Expr ::= lhs::Expr rhs::Expr
   lhs.envScope = top.envScope;
   rhs.env = addEnv(lhs.defs, lhs.env);
   -- New SG node, LEX edge to lhs.envScope, define inhs using lhs.defs
-  rhs.envScope = placeholderScope();
+  rhs.envScope = newScopeLex(lhs.envScope, lhs.defs);
   forwards to defaultEqExpr(lhs, rhs);
 }
 abstract production defaultEqExpr implements AssignOp
@@ -53,7 +53,7 @@ top::Expr ::= lhs::Expr rhs::Expr
   lhs.envScope = top.envScope;
   rhs.env = addEnv(lhs.defs, lhs.env);
   -- New SG node, LEX edge to lhs.envScope, define inhs using lhs.defs
-  rhs.envScope = placeholderScope();
+  rhs.envScope = newScopeLex(lhs.envScope, lhs.defs);
 
   local lType::Type = lhs.typerep;
   lType.otherType = rhs.typerep;
@@ -93,7 +93,7 @@ top::Expr ::= lhs::Expr rhs::Expr
   lhs.envScope = top.envScope;
   rhs.env = addEnv(lhs.defs, lhs.env);
   -- New SG node, LEX edge to lhs.envScope, define inhs using lhs.defs
-  rhs.envScope = placeholderScope();
+  rhs.envScope = newScopeLex(lhs.envScope, lhs.defs);
 
   local lType::Type = lhs.typerep;
   lType.otherType = rhs.typerep;
@@ -132,7 +132,7 @@ top::Expr ::= lhs::Expr rhs::Expr
   lhs.envScope = top.envScope;
   rhs.env = addEnv(lhs.defs, lhs.env);
   -- New SG node, LEX edge to lhs.envScope, define inhs using lhs.defs
-  rhs.envScope = placeholderScope();
+  rhs.envScope = newScopeLex(lhs.envScope, lhs.defs);
 
   local lType::Type = lhs.typerep;
   lType.otherType = rhs.typerep;
@@ -172,7 +172,7 @@ top::Expr ::= lhs::Expr rhs::Expr
   lhs.envScope = top.envScope;
   rhs.env = addEnv(lhs.defs, lhs.env);
   -- New SG node, LEX edge to lhs.envScope, define inhs using lhs.defs
-  rhs.envScope = placeholderScope();
+  rhs.envScope = newScopeLex(lhs.envScope, lhs.defs);
 
   local lType::Type = lhs.typerep;
   lType.otherType = rhs.typerep;
@@ -212,7 +212,7 @@ top::Expr ::= lhs::Expr rhs::Expr
   lhs.envScope = top.envScope;
   rhs.env = addEnv(lhs.defs, lhs.env);
   -- New SG node, LEX edge to lhs.envScope, define inhs using lhs.defs
-  rhs.envScope = placeholderScope();
+  rhs.envScope = newScopeLex(lhs.envScope, lhs.defs);
 
   local lType::Type = lhs.typerep;
   lType.otherType = rhs.typerep;
@@ -252,7 +252,7 @@ top::Expr ::= lhs::Expr rhs::Expr
   lhs.envScope = top.envScope;
   rhs.env = addEnv(lhs.defs, lhs.env);
   -- New SG node, LEX edge to lhs.envScope, define inhs using lhs.defs
-  rhs.envScope = placeholderScope();
+  rhs.envScope = newScopeLex(lhs.envScope, lhs.defs);
 
   local lType::Type = lhs.typerep;
   lType.otherType = rhs.typerep;
@@ -292,7 +292,7 @@ top::Expr ::= lhs::Expr rhs::Expr
   lhs.envScope = top.envScope;
   rhs.env = addEnv(lhs.defs, lhs.env);
   -- New SG node, LEX edge to lhs.envScope, define inhs using lhs.defs
-  rhs.envScope = placeholderScope();
+  rhs.envScope = newScopeLex(lhs.envScope, lhs.defs);
 
   local lType::Type = lhs.typerep;
   lType.otherType = rhs.typerep;
@@ -332,7 +332,7 @@ top::Expr ::= lhs::Expr rhs::Expr
   lhs.envScope = top.envScope;
   rhs.env = addEnv(lhs.defs, lhs.env);
   -- New SG node, LEX edge to lhs.envScope, define inhs using lhs.defs
-  rhs.envScope = placeholderScope();
+  rhs.envScope = newScopeLex(lhs.envScope, lhs.defs);
 
   local lType::Type = lhs.typerep;
   lType.otherType = rhs.typerep;
@@ -372,7 +372,7 @@ top::Expr ::= lhs::Expr rhs::Expr
   lhs.envScope = top.envScope;
   rhs.env = addEnv(lhs.defs, lhs.env);
   -- New SG node, LEX edge to lhs.envScope, define inhs using lhs.defs
-  rhs.envScope = placeholderScope();
+  rhs.envScope = newScopeLex(lhs.envScope, lhs.defs);
 
   local lType::Type = lhs.typerep;
   lType.otherType = rhs.typerep;
@@ -412,7 +412,7 @@ top::Expr ::= lhs::Expr rhs::Expr
   lhs.envScope = top.envScope;
   rhs.env = addEnv(lhs.defs, lhs.env);
   -- New SG node, LEX edge to lhs.envScope, define inhs using lhs.defs
-  rhs.envScope = placeholderScope();
+  rhs.envScope = newScopeLex(lhs.envScope, lhs.defs);
 
   local lType::Type = lhs.typerep;
   lType.otherType = rhs.typerep;
@@ -473,7 +473,7 @@ top::Expr ::= lhs::Expr rhs::Expr
   lhs.envScope = top.envScope;
   rhs.env = addEnv(lhs.defs, lhs.env);
   -- New SG node, LEX edge to lhs.envScope, define inhs using lhs.defs
-  rhs.envScope = placeholderScope();
+  rhs.envScope = newScopeLex(lhs.envScope, lhs.defs);
 
   local lType::Type = lhs.typerep;
   lType.otherType = rhs.typerep;
@@ -508,7 +508,7 @@ top::Expr ::= lhs::Expr rhs::Expr
   lhs.envScope = top.envScope;
   rhs.env = addEnv(lhs.defs, lhs.env);
   -- New SG node, LEX edge to lhs.envScope, define inhs using lhs.defs
-  rhs.envScope = placeholderScope();
+  rhs.envScope = newScopeLex(lhs.envScope, lhs.defs);
 
   local lType::Type = lhs.typerep;
   lType.otherType = rhs.typerep;
@@ -543,7 +543,7 @@ top::Expr ::= lhs::Expr rhs::Expr
   lhs.envScope = top.envScope;
   rhs.env = addEnv(lhs.defs, lhs.env);
   -- New SG node, LEX edge to lhs.envScope, define inhs using lhs.defs
-  rhs.envScope = placeholderScope();
+  rhs.envScope = newScopeLex(lhs.envScope, lhs.defs);
 
   local lType::Type = lhs.typerep;
   lType.otherType = rhs.typerep;
@@ -580,7 +580,7 @@ top::Expr ::= lhs::Expr rhs::Expr
   lhs.envScope = top.envScope;
   rhs.env = addEnv(lhs.defs, lhs.env);
   -- New SG node, LEX edge to lhs.envScope, define inhs using lhs.defs
-  rhs.envScope = placeholderScope();
+  rhs.envScope = newScopeLex(lhs.envScope, lhs.defs);
 
   local lType::Type = lhs.typerep;
   lType.otherType = rhs.typerep;
@@ -617,7 +617,7 @@ top::Expr ::= lhs::Expr rhs::Expr
   lhs.envScope = top.envScope;
   rhs.env = addEnv(lhs.defs, lhs.env);
   -- New SG node, LEX edge to lhs.envScope, define inhs using lhs.defs
-  rhs.envScope = placeholderScope();
+  rhs.envScope = newScopeLex(lhs.envScope, lhs.defs);
 
   local lType::Type = lhs.typerep;
   lType.otherType = rhs.typerep;
@@ -654,7 +654,7 @@ top::Expr ::= lhs::Expr rhs::Expr
   lhs.envScope = top.envScope;
   rhs.env = addEnv(lhs.defs, lhs.env);
   -- New SG node, LEX edge to lhs.envScope, define inhs using lhs.defs
-  rhs.envScope = placeholderScope();
+  rhs.envScope = newScopeLex(lhs.envScope, lhs.defs);
 
   local lType::Type = lhs.typerep;
   lType.otherType = rhs.typerep;
@@ -689,7 +689,7 @@ top::Expr ::= lhs::Expr rhs::Expr
   lhs.envScope = top.envScope;
   rhs.env = addEnv(lhs.defs, lhs.env);
   -- New SG node, LEX edge to lhs.envScope, define inhs using lhs.defs
-  rhs.envScope = placeholderScope();
+  rhs.envScope = newScopeLex(lhs.envScope, lhs.defs);
 
   local lType::Type = lhs.typerep;
   lType.otherType = rhs.typerep;
@@ -724,7 +724,7 @@ top::Expr ::= lhs::Expr rhs::Expr
   lhs.envScope = top.envScope;
   rhs.env = addEnv(lhs.defs, lhs.env);
   -- New SG node, LEX edge to lhs.envScope, define inhs using lhs.defs
-  rhs.envScope = placeholderScope();
+  rhs.envScope = newScopeLex(lhs.envScope, lhs.defs);
 
   local lType::Type = lhs.typerep;
   lType.otherType = rhs.typerep;
@@ -759,7 +759,7 @@ top::Expr ::= lhs::Expr rhs::Expr
   lhs.envScope = top.envScope;
   rhs.env = addEnv(lhs.defs, lhs.env);
   -- New SG node, LEX edge to lhs.envScope, define inhs using lhs.defs
-  rhs.envScope = placeholderScope();
+  rhs.envScope = newScopeLex(lhs.envScope, lhs.defs);
 
   local lType::Type = lhs.typerep;
   lType.otherType = rhs.typerep;
@@ -805,7 +805,7 @@ top::Expr ::= lhs::Expr rhs::Expr
   lhs.envScope = top.envScope;
   rhs.env = addEnv(lhs.defs, lhs.env);
   -- New SG node, LEX edge to lhs.envScope, define inhs using lhs.defs
-  rhs.envScope = placeholderScope();
+  rhs.envScope = newScopeLex(lhs.envScope, lhs.defs);
 
   local lType::Type = lhs.typerep;
   lType.otherType = rhs.typerep;
@@ -840,7 +840,7 @@ top::Expr ::= lhs::Expr rhs::Expr
   lhs.envScope = top.envScope;
   rhs.env = addEnv(lhs.defs, lhs.env);
   -- New SG node, LEX edge to lhs.envScope, define inhs using lhs.defs
-  rhs.envScope = placeholderScope();
+  rhs.envScope = newScopeLex(lhs.envScope, lhs.defs);
 
   local lType::Type = lhs.typerep;
   lType.otherType = rhs.typerep;
@@ -875,7 +875,7 @@ top::Expr ::= lhs::Expr rhs::Expr
   lhs.envScope = top.envScope;
   rhs.env = addEnv(lhs.defs, lhs.env);
   -- New SG node, LEX edge to lhs.envScope, define inhs using lhs.defs
-  rhs.envScope = placeholderScope();
+  rhs.envScope = newScopeLex(lhs.envScope, lhs.defs);
 
   local lType::Type = lhs.typerep;
   lType.otherType = rhs.typerep;
@@ -910,7 +910,7 @@ top::Expr ::= lhs::Expr rhs::Expr
   lhs.envScope = top.envScope;
   rhs.env = addEnv(lhs.defs, lhs.env);
   -- New SG node, LEX edge to lhs.envScope, define inhs using lhs.defs
-  rhs.envScope = placeholderScope();
+  rhs.envScope = newScopeLex(lhs.envScope, lhs.defs);
 
   local lType::Type = lhs.typerep;
   lType.otherType = rhs.typerep;
@@ -945,7 +945,7 @@ top::Expr ::= lhs::Expr rhs::Expr
   lhs.envScope = top.envScope;
   rhs.env = addEnv(lhs.defs, lhs.env);
   -- New SG node, LEX edge to lhs.envScope, define inhs using lhs.defs
-  rhs.envScope = placeholderScope();
+  rhs.envScope = newScopeLex(lhs.envScope, lhs.defs);
 
   local lType::Type = lhs.typerep;
   lType.otherType = rhs.typerep;
@@ -980,7 +980,7 @@ top::Expr ::= lhs::Expr rhs::Expr
   lhs.envScope = top.envScope;
   rhs.env = addEnv(lhs.defs, lhs.env);
   -- New SG node, LEX edge to lhs.envScope, define inhs using lhs.defs
-  rhs.envScope = placeholderScope();
+  rhs.envScope = newScopeLex(lhs.envScope, lhs.defs);
 
   local lType::Type = lhs.typerep;
   lType.otherType = rhs.typerep;
@@ -1015,7 +1015,7 @@ top::Expr ::= lhs::Expr rhs::Expr
   lhs.envScope = top.envScope;
   rhs.env = addEnv(lhs.defs, lhs.env);
   -- New SG node, LEX edge to lhs.envScope, define inhs using lhs.defs
-  rhs.envScope = placeholderScope();
+  rhs.envScope = newScopeLex(lhs.envScope, lhs.defs);
 
   local lType::Type = lhs.typerep;
   lType.otherType = rhs.typerep;
@@ -1050,7 +1050,7 @@ top::Expr ::= lhs::Expr rhs::Expr
   lhs.envScope = top.envScope;
   rhs.env = addEnv(lhs.defs, lhs.env);
   -- New SG node, LEX edge to lhs.envScope, define inhs using lhs.defs
-  rhs.envScope = placeholderScope();
+  rhs.envScope = newScopeLex(lhs.envScope, lhs.defs);
 
   local lType::Type = lhs.typerep;
   lType.otherType = rhs.typerep;
@@ -1085,7 +1085,7 @@ top::Expr ::= lhs::Expr rhs::Expr
   lhs.envScope = top.envScope;
   rhs.env = addEnv(lhs.defs, lhs.env);
   -- New SG node, LEX edge to lhs.envScope, define inhs using lhs.defs
-  rhs.envScope = placeholderScope();
+  rhs.envScope = newScopeLex(lhs.envScope, lhs.defs);
 
   local lType::Type = lhs.typerep;
   lType.otherType = rhs.typerep;
@@ -1123,7 +1123,7 @@ top::Expr ::= lhs::Expr rhs::Expr
   lhs.envScope = top.envScope;
   rhs.env = addEnv(lhs.defs, lhs.env);
   -- New SG node, LEX edge to lhs.envScope, define inhs using lhs.defs
-  rhs.envScope = placeholderScope();
+  rhs.envScope = newScopeLex(lhs.envScope, lhs.defs);
   top.isLValue = false;
 }
 

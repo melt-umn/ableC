@@ -95,7 +95,7 @@ top::Attrib ::= n::AttribName  e::Exprs
   n.envScope = top.envScope;
   e.env = emptyEnv();
   -- New SG node, no LEX edges
-  e.envScope = placeholderScope();
+  e.envScope = newScopeEmpty();
   e.controlStmtContext = initialControlStmtContext;
 }
 -- e.g. __attribute__((something(foo, "well whatever")))
